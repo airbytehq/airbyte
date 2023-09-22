@@ -16,7 +16,6 @@ dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation "com.datastax.oss:java-driver-core:${cassandraDriver}"
     implementation "com.datastax.oss:java-driver-query-builder:${cassandraDriver}"
@@ -25,7 +24,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation "org.assertj:assertj-core:${assertVersion}"
-    testImplementation libs.connectors.testcontainers.cassandra
+    testImplementation libs.testcontainers.cassandra
     testImplementation project(':airbyte-integrations:bases:standard-destination-test')
 
 

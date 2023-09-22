@@ -5,6 +5,7 @@ This page guides you through the process of setting up the Facebook Marketing so
 ## Prerequisites
 
 - A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
+- The credentials of your Facebook account with permission to access your ads account
 <!-- env:oss -->
 - (For Airbyte Open Source) A [Facebook app](https://developers.facebook.com/apps/) with the Marketing API enabled
 <!-- /env:oss -->
@@ -48,7 +49,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
 #### Facebook Marketing Source Settings:
 
 1. For **Account ID**, enter the [Facebook Ad Account ID Number](https://www.facebook.com/business/help/1492627900875762) to use when pulling data from the Facebook Marketing API. To find this ID, open your Meta Ads Manager. The Ad Account ID number is in the **Account** dropdown menu or in your browser's address bar. Refer to the [Facebook docs](https://www.facebook.com/business/help/1492627900875762) for more information.
-2. For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate all data.
+2. (Optional) For **Start Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. If not set then all data will be replicated for usual streams and only last 2 years for insight streams.
 
    :::warning
    Insight tables are only able to pull data from the last 37 months. If you are syncing insight tables and your start date is older than 37 months, your sync will fail.
@@ -92,8 +93,7 @@ To set up Facebook Marketing as a source in Airbyte Open Source, you will first 
 
 7. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
 8. (Optional) For **Insights Window Lookback**, you may set a window in days to revisit data during syncing to capture updated conversion data from the API. Facebook allows for attribution windows of up to 28 days, during which time a conversion can be attributed to an ad. If you have set a custom attribution window in your Facebook account, please set the same value here. Otherwise, you may leave it at the default value of 28. For more information on action attributions, please refer to [the Meta Help Center](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
-9. (Optional) You can set a **Maximum size of Batched Requests** for the connector. This is the maximum number of records that will be sent in a single request to the Facebook Marketing API. Most users do not need to configure this field, unless specific issues arise of there are unique use cases that require tuning the connector's settings. The maximum number of requests per batch allowed by the API is 50. More information on this topic can be found in the [Facebook documentation](https://developers.facebook.com/docs/graph-api/batch-requests).
-10. Click **Set up source** and wait for the tests to complete.
+9. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
@@ -178,6 +178,11 @@ The Facebook Marketing connector uses the `lookback_window` parameter to repeate
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.12  | 2023-09-22 | [30655](https://github.com/airbytehq/airbyte/pull/30655) | Updated doc; improved schema for custom insight streams; updated SAT or custom insight streams; removed obsolete optional max_batch_size option from spec                                                                                                                                         |
+| 1.1.11  | 2023-09-21 | [30650](https://github.com/airbytehq/airbyte/pull/30650) | Fix None issue since start_date is optional                                                                                                                                                                                                                                                       |
+| 1.1.10  | 2023-09-15 | [30485](https://github.com/airbytehq/airbyte/pull/30485) | added 'status' and 'configured_status' fields for campaigns stream schema                                                                                                                                                                                                                         |
+| 1.1.9   | 2023-08-31 | [29994](https://github.com/airbytehq/airbyte/pull/29994) | Removed batch processing, updated description in specs, added user-friendly error message, removed start_date from required attributes                                                                                                                                                            |
+| 1.1.8   | 2023-09-04 | [29666](https://github.com/airbytehq/airbyte/pull/29666) | Adding custom field `boosted_object_id` to a streams schema in `campaigns` catalog `CustomAudiences`                                                                                                                                                                                              |
 | 1.1.7   | 2023-08-21 | [29674](https://github.com/airbytehq/airbyte/pull/29674) | Exclude `rule` from stream `CustomAudiences`                                                                                                                                                                                                                                                      |
 | 1.1.6   | 2023-08-18 | [29642](https://github.com/airbytehq/airbyte/pull/29642) | Stop batch requests if only 1 left in a batch                                                                                                                                                                                                                                                     |
 | 1.1.5   | 2023-08-18 | [29610](https://github.com/airbytehq/airbyte/pull/29610) | Automatically reduce batch size                                                                                                                                                                                                                                                                   |

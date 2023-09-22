@@ -2,7 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, SchemaInferenceError
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
@@ -14,7 +16,7 @@ single_csv_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -63,11 +65,6 @@ single_csv_scenario = (
                             "type": "object",
                             "properties": {
                                 "name": {"title": "Name", "description": "The name of the stream.", "type": "string"},
-                                "file_type": {
-                                    "title": "File Type",
-                                    "description": "The data file type that is being extracted for a stream.",
-                                    "type": "string",
-                                },
                                 "globs": {
                                     "title": "Globs",
                                     "description": 'The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
@@ -277,7 +274,7 @@ single_csv_scenario = (
                                     "type": "boolean",
                                 },
                             },
-                            "required": ["name", "file_type"],
+                            "required": ["name", "format"],
                         },
                     },
                 },
@@ -338,7 +335,7 @@ multi_csv_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -440,7 +437,7 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -534,13 +531,13 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
 
 invalid_csv_scenario = (
     TestScenarioBuilder()
-    .set_name("invalid_csv_scenario")
+    .set_name("invalid_csv_scenario")  # too many values for the number of headers
     .set_config(
         {
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -582,7 +579,7 @@ invalid_csv_scenario = (
         }
     )
     .set_expected_records([])
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_logs(
         {
             "read": [
@@ -603,7 +600,7 @@ csv_single_stream_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
                 }
@@ -683,13 +680,13 @@ csv_multi_stream_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["b.csv"],
                     "validation_policy": "Emit Record",
                 },
@@ -801,7 +798,6 @@ csv_custom_format_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -907,14 +903,12 @@ multi_stream_custom_format = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
                     "format": {"filetype": "csv", "delimiter": "#", "escape_char": "!", "double_quote": True, "newlines_in_values": False},
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
                     "globs": ["b.csv"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -1054,7 +1048,7 @@ empty_schema_inference_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -1095,8 +1089,8 @@ empty_schema_inference_scenario = (
             ]
         }
     )
-    .set_parsers({"csv": EmptySchemaParser()})
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_parsers({CsvFormat: EmptySchemaParser()})
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_records(
         [
             {
@@ -1129,7 +1123,7 @@ schemaless_csv_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Skip Record",
                     "schemaless": True,
@@ -1224,14 +1218,14 @@ schemaless_csv_multi_stream_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["a.csv"],
                     "validation_policy": "Skip Record",
                     "schemaless": True,
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["b.csv"],
                     "validation_policy": "Skip Record",
                 },
@@ -1331,7 +1325,7 @@ schemaless_with_user_input_schema_fails_connection_check_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Skip Record",
                     "input_schema": '{"col1": "string", "col2": "string", "col3": "string"}',
@@ -1395,7 +1389,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["a.csv"],
                     "validation_policy": "Skip Record",
                     "schemaless": True,
@@ -1403,7 +1397,7 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["b.csv"],
                     "validation_policy": "Skip Record",
                 },
@@ -1479,7 +1473,6 @@ csv_string_can_be_null_with_input_schemas_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "string"}',
@@ -1548,7 +1541,6 @@ csv_string_are_not_null_if_strings_can_be_null_is_false_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "string", "col2": "string"}',
@@ -1618,7 +1610,6 @@ csv_string_not_null_if_no_null_values_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -1685,7 +1676,6 @@ csv_strings_can_be_null_not_quoted_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {"filetype": "csv", "null_values": ["null"]},
@@ -1750,7 +1740,6 @@ csv_newline_in_values_quoted_value_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -1817,7 +1806,6 @@ csv_newline_in_values_not_quoted_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -1885,7 +1873,7 @@ csv_newline_in_values_not_quoted_scenario = (
             ]
         }
     )
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()
 
 csv_escape_char_is_set_scenario = (
@@ -1896,7 +1884,6 @@ csv_escape_char_is_set_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -1968,7 +1955,6 @@ csv_double_quote_is_set_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -2039,7 +2025,6 @@ csv_custom_delimiter_with_escape_char_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {"filetype": "csv", "double_quotes": True, "quote_char": "@", "delimiter": "|", "escape_char": "+"},
@@ -2105,7 +2090,6 @@ csv_custom_delimiter_in_double_quotes_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -2175,7 +2159,6 @@ csv_skip_before_header_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {"filetype": "csv", "skip_rows_before_header": 2},
@@ -2242,7 +2225,6 @@ csv_skip_after_header_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {"filetype": "csv", "skip_rows_after_header": 2},
@@ -2309,7 +2291,6 @@ csv_skip_before_and_after_header_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -2380,7 +2361,6 @@ csv_autogenerate_column_names_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "format": {
@@ -2447,7 +2427,6 @@ csv_custom_bool_values_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "boolean", "col2": "boolean"}',
@@ -2517,7 +2496,6 @@ csv_custom_null_values_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "boolean", "col2": "string"}',
@@ -2586,7 +2564,7 @@ earlier_csv_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -2630,5 +2608,5 @@ earlier_csv_scenario = (
         }
     )
     .set_expected_records([])
-    .set_expected_discover_error(SchemaInferenceError, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
+    .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.debezium;
 
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.Map;
 
@@ -13,9 +14,13 @@ import java.util.Map;
  */
 public interface CdcStateHandler {
 
-  AirbyteMessage saveState(Map<String, String> offset, String dbHistory);
+  AirbyteMessage saveState(final Map<String, String> offset, final SchemaHistory<String> dbHistory);
 
   AirbyteMessage saveStateAfterCompletionOfSnapshotOfNewStreams();
+
+  default boolean compressSchemaHistoryForState() {
+    return false;
+  }
 
   /**
    * This function is used as feature flag for sending state messages as checkpoints in CDC syncs.

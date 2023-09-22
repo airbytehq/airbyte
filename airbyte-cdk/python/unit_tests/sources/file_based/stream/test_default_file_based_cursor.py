@@ -7,6 +7,7 @@ from typing import Any, List, Mapping
 from unittest.mock import MagicMock
 
 import pytest
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
@@ -264,5 +265,5 @@ def get_cursor(max_history_size: int, days_to_sync_if_history_is_full: int) -> D
     cursor_cls = DefaultFileBasedCursor
     cursor_cls.DEFAULT_MAX_HISTORY_SIZE = max_history_size
     config = FileBasedStreamConfig(
-        file_type="csv", name="test", validation_policy=ValidationPolicy.emit_record, days_to_sync_if_history_is_full=days_to_sync_if_history_is_full)
+        format=CsvFormat(), name="test", validation_policy=ValidationPolicy.emit_record, days_to_sync_if_history_is_full=days_to_sync_if_history_is_full)
     return cursor_cls(config)

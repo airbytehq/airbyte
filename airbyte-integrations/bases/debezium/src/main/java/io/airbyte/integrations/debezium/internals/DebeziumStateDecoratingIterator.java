@@ -27,9 +27,6 @@ import org.slf4j.LoggerFactory;
  */
 public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<AirbyteMessage> implements Iterator<AirbyteMessage> {
 
-  public static final Duration SYNC_CHECKPOINT_DURATION = Duration.ofMinutes(15);
-  public static final Integer SYNC_CHECKPOINT_RECORDS = 10_000;
-
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumStateDecoratingIterator.class);
 
   private final Iterator<ChangeEventWithMetadata> changeEventIterator;

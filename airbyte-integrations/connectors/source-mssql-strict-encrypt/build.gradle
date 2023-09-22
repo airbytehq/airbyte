@@ -21,12 +21,10 @@ dependencies {
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.connectors.testcontainers.mssqlserver
+    testImplementation libs.testcontainers.mssqlserver
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mssql-strict-encrypt')
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 }
 

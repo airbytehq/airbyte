@@ -22,7 +22,7 @@ acceptance_tests:
         path: "integration_tests/expected_records.jsonl"
       empty_streams:
       - name: "project_permission_schemes"
-        bypass_reason: "unable to populate"
+        bypass_reason: "Unable to populate. Jira doesn't support issue security for Free plan."
       ignored_fields:
         sprint_issues:
           - name: updated
@@ -30,7 +30,6 @@ acceptance_tests:
           - name: fields/updated
             bypass_reason: "Unstable data"
       timeout_seconds: 2400
-      fail_on_extra_columns: false
   incremental:
     tests:
     - config_path: "secrets/config.json"

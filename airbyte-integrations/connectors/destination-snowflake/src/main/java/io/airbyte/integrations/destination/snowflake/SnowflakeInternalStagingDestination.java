@@ -30,6 +30,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
@@ -145,7 +146,7 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
     parsedCatalog = catalogParser.parseCatalog(catalog);
     final SnowflakeV1V2Migrator migrator = new SnowflakeV1V2Migrator(getNamingResolver(), database, databaseName);
     final SnowflakeV2TableMigrator v2TableMigrator = new SnowflakeV2TableMigrator(database, databaseName, sqlGenerator, snowflakeDestinationHandler);
-    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator);
+    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, snowflakeDestinationHandler, parsedCatalog, migrator, v2TableMigrator, 8);
 
     return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
@@ -159,7 +160,12 @@ public class SnowflakeInternalStagingDestination extends AbstractJdbcDestination
         typerDeduper,
         parsedCatalog,
         defaultNamespace,
-        true);
+        true,
+        Optional.of(getSnowflakeBufferMemoryLimit()));
+  }
+
+  private static long getSnowflakeBufferMemoryLimit() {
+    return (long) (Runtime.getRuntime().maxMemory() * 0.5);
   }
 
 }

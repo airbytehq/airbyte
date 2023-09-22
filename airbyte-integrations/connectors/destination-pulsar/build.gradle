@@ -14,11 +14,10 @@ dependencies {
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:bases:base-java')
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation 'org.apache.pulsar:pulsar-client:2.8.1'
 
-    testImplementation libs.connectors.testcontainers.pulsar
+    testImplementation libs.testcontainers.pulsar
     testImplementation project(':airbyte-integrations:bases:standard-destination-test')
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
