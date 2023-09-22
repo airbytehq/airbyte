@@ -91,10 +91,16 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
     )
 
     time.sleep(5)
-    container = docker_client.containers.get(container.name)
-    ip_address = container.attrs["NetworkSettings"]["IPAddress"]
-
-    yield ip_address
+    # container = docker_client.containers.get(container.name)
+    # ip_address = container.attrs["NetworkSettings"]["IPAddress"]
+    import paramiko
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect("localhost", 2222, "user1", "abc123@456#")
+    stdin, stdout, stderr = ssh.exec_command("ls")
+    lines = stdout.readlines()
+    print(lines)
+    yield "localhost"
 
     container.kill()
     container.remove()
