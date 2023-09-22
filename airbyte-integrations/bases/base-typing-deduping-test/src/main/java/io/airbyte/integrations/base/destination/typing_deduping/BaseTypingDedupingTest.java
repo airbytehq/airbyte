@@ -508,11 +508,12 @@ public abstract class BaseTypingDedupingTest {
 
   /**
    * Run two syncs at the same time. They each have one stream, which has the same name for both syncs
-   * but different namespace. This should work fine. This test is similar to {@link #incrementalDedupIdenticalName()},
-   * but uses two separate syncs instead of one sync with two streams.
+   * but different namespace. This should work fine. This test is similar to
+   * {@link #incrementalDedupIdenticalName()}, but uses two separate syncs instead of one sync with
+   * two streams.
    * <p>
-   * Note that destination stdout is a bit misleading: The two syncs' stdout _should_ be interleaved, but we're just
-   * dumping the entire sync1 stdout, and then the entire sync2 stdout.
+   * Note that destination stdout is a bit misleading: The two syncs' stdout _should_ be interleaved,
+   * but we're just dumping the entire sync1 stdout, and then the entire sync2 stdout.
    */
   @Test
   public void identicalNameSimultaneousSync() throws Exception {
@@ -553,7 +554,8 @@ public abstract class BaseTypingDedupingTest {
     }
     // This will dump sync1's entire stdout to our stdout
     endSync(sync1);
-    // Write some more messages to the second sync. It should not be affected by the first sync's shutdown.
+    // Write some more messages to the second sync. It should not be affected by the first sync's
+    // shutdown.
     for (int i = 0; i < 100_000; i++) {
       pushMessages(messages2, sync2);
     }
@@ -746,10 +748,12 @@ public abstract class BaseTypingDedupingTest {
   }
 
   private static void pushMessages(final List<AirbyteMessage> messages, final AirbyteDestination destination) {
-    messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
+    messages.forEach(
+        message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
   }
 
-  // TODO Eventually we'll want to somehow extract the state messages while a sync is running, to verify checkpointing.
+  // TODO Eventually we'll want to somehow extract the state messages while a sync is running, to
+  // verify checkpointing.
   // That's going to require some nontrivial changes to how attemptRead() works.
   private static void endSync(final AirbyteDestination destination) throws Exception {
     destination.notifyEndOfInput();
