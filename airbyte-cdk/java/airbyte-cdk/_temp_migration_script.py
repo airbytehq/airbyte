@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Migration script.
 
 Usage:
@@ -326,6 +327,13 @@ def main() -> None:
             update_cdk_package_defs()
 
     refactor_cdk_package_refs()
+
+    # Move the base-java folder back, as base docker image definition for java connectors:
+    move_files(
+        source_dir="airbyte-cdk/java/airbyte-cdk/archive/base-java",
+        dest_dir="airbyte-integrations/bases/base-java",
+        path_desc="base java dockerfile definitions (moving back)",
+    )
 
     print("Migration operation complete!")
 
