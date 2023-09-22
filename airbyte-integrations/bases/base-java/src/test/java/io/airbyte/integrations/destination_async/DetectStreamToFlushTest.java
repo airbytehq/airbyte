@@ -44,7 +44,9 @@ class DetectStreamToFlushTest {
     when(bufferDequeue.getBufferedStreams()).thenReturn(Set.of(DESC1));
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(0L));
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
+
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
     assertEquals(Optional.empty(), detect.getNextStreamToFlush(0));
   }
 
@@ -54,7 +56,8 @@ class DetectStreamToFlushTest {
     when(bufferDequeue.getBufferedStreams()).thenReturn(Set.of(DESC1));
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L));
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
     // if above threshold, triggers
     assertEquals(Optional.of(DESC1), detect.getNextStreamToFlush(0));
     // if below threshold, no trigger
@@ -68,7 +71,8 @@ class DetectStreamToFlushTest {
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L));
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.of(SIZE_10MB)));
-    final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
+    final DetectStreamToFlush detect =
+        new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);
     assertEquals(Optional.empty(), detect.getNextStreamToFlush(0));
   }
 
