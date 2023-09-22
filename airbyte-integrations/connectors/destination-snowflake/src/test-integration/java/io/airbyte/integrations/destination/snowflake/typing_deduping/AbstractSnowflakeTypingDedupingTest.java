@@ -37,8 +37,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
       "_airbyte_extracted_at", "_AIRBYTE_EXTRACTED_AT",
       "_airbyte_loaded_at", "_AIRBYTE_LOADED_AT",
       "_airbyte_data", "_AIRBYTE_DATA",
-      "_airbyte_meta", "_AIRBYTE_META"
-  );
+      "_airbyte_meta", "_AIRBYTE_META");
   private String databaseName;
   private JdbcDatabase database;
   private DataSource dataSource;

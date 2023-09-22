@@ -7,14 +7,12 @@ package io.airbyte.integrations.destination.snowflake;
 import static java.util.stream.Collectors.joining;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import org.apache.commons.text.StringSubstitutor;
 
 public class SnowflakeTestUtils {
