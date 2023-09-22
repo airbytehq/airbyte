@@ -3,7 +3,7 @@
 The LinkedIn Ads Connector by Airbyte is a Snowflake Native Application that allows you to extract data from your LinkedIn Ads account and load records into a Snowflake database of your choice.
 
 :::info
-The LinkedIn Ads Connector is in _private preview_ and is subject to further development that may affect setup and configuration of the application.
+The Snowflake Native Apps platform is new and rapidly evolving.  The LinkedIn Ads Connector by Airbyte is in _private preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a full table refresh without dedupe is supported.  
 :::
 
 # Getting started
@@ -32,7 +32,7 @@ Do not refresh the Apps page while the application is being installed. This may 
 You should now see the LinkedIn Ads Connector by Airbyte application under `Installed Apps`. You may need to refresh the page.
 
 ## LinkedIn Ads Account
-In order for the Snowflake Native App to query LinkedIn Ads, you will need an account with the right permissions. Please follow the [LinkedIn Ads authentication guide](https://docs.airbyte.com/integrations/sources/linkedin-ads/#set-up-linkedin-ads-authentication-airbyte-open-source) for further information.
+In order for the LinkedIn Ads Connector by Airbyte to query LinkedIn, you will need an account with the right permissions. Please follow the [LinkedIn Ads authentication guide](https://docs.airbyte.com/integrations/sources/linkedin-ads/#set-up-linkedin-ads-authentication-airbyte-open-source) for further information.
 
 ## Snowflake Native App Authorizations
 
@@ -61,7 +61,7 @@ CREATE OR REPLACE NETWORK RULE linkedin_apis_network_rule
 
 :::note  
 As of 2023-09-13, the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-external-access-integration) mentions that direct external access is a preview feature and that it is `available to all accounts on AWS` which might restrict the number of users able to use the connector.
-::::
+:::
 
 4. Once you have external access configured, you need define your authorization/authentication. Provide the credentials to the app as such:
 ```
