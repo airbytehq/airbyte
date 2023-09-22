@@ -32,7 +32,7 @@ import org.mockito.Mockito;
 
 public class BigQuerySqlGeneratorTest {
 
-  private final BigQuerySqlGenerator generator = new BigQuerySqlGenerator("US");
+  private final BigQuerySqlGenerator generator = new BigQuerySqlGenerator("foo", "US");
 
   @Test
   public void testToDialectType() {

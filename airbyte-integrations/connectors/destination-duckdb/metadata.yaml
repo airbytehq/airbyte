@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 94bd199c-2ff0-4aa2-b98e-17f0acb72610
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.2.1
   dockerRepository: airbyte/destination-duckdb
   githubIssueLabel: destination-duckdb
   icon: duckdb.svg

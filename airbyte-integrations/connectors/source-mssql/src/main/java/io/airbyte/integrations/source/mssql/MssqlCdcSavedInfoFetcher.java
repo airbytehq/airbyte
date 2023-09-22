@@ -9,9 +9,10 @@ import static io.airbyte.integrations.source.mssql.MssqlSource.MSSQL_DB_HISTORY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
+import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import java.util.Optional;
-import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
+
 public class MssqlCdcSavedInfoFetcher implements CdcSavedInfoFetcher {
 
   private final JsonNode savedOffset;
