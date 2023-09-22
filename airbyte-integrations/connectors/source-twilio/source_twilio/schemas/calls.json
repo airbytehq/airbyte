@@ -1,12 +1,17 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "type": "object",
   "properties": {
     "sid": {
       "type": ["null", "string"]
     },
     "date_created": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "parent_call_sid": {
@@ -34,17 +39,17 @@
       "type": ["null", "string"]
     },
     "start_time": {
-      "type": ["null", "string"]
-    },
-    "end_time": {
       "format": "date-time",
       "type": ["null", "string"]
     },
+    "end_time": {
+      "type": ["null", "string"]
+    },
     "duration": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "price": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "price_unit": {
       "type": ["null", "string"]
@@ -71,7 +76,7 @@
       "type": ["null", "string"]
     },
     "queue_time": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "trunk_sid": {
       "type": ["null", "string"]
@@ -115,7 +120,5 @@
         }
       }
     }
-  },
-  "type": "object",
-  "additionalProperties": true
+  }
 }

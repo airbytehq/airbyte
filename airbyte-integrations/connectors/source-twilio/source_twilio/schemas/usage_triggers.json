@@ -4,9 +4,11 @@
       "type": ["null", "string"]
     },
     "date_updated": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_fired": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "friendly_name": {
@@ -28,9 +30,10 @@
       "type": ["null", "string"]
     },
     "current_value": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "date_created": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "callback_url": {
@@ -43,7 +46,7 @@
       "type": ["null", "string"]
     },
     "trigger_value": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "api_version": {
       "type": ["null", "string"]

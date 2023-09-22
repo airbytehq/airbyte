@@ -6,7 +6,7 @@ definitions:
       field_path:
         - "{{ parameters['name'] }}"
   requester:
-    url_base: "https://api.twilio.com/2010-04-01"
+    url_base: "https://api.twilio.com/"
     http_method: "GET"
     authenticator:
       type: BasicHttpAuthenticator
@@ -53,7 +53,17 @@ definitions:
       name: "accounts"
       path: "/Accounts.json"
       primary_key: "sid"
-  
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        type: HttpRequester
+        url_base: "https://api.twilio.com/2010-04-01"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['account_sid'] }}"
+          password: "{{ config['auth_token'] }}"
+
   accounts_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -65,42 +75,184 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "addresses"
-      path: "/Accounts/{{ stream_slice.id }}/Addresses.json"
+      path: "/Accounts/{{stream_interval.id}}/Addresses.json"
       primary_key: "sid"
     retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+      $ref: "#/definitions/accounts_stream/retriever"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/accounts_partition_router"
-  
+
   addresses_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
       - stream: "#/definitions/addresses_stream"
         parent_key: sid
-        partition_field: id
-      - stream: "#/definitions/addresses_stream"
-        parent_key: account_sid
-        partition_field: account_id
-  
-  
+        partition_field: address_id
+
   dependent_phone_numbers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "dependent_phone_numbers"
-      path: "/Accounts/{{stream_slice.account_id}}/Addresses/{{stream_slice.id}}/DependentPhoneNumbers.json"
+      path: "/Accounts/{{stream_partition.parent_slice.id}}/Addresses/{{stream_interval.address_id}}/DependentPhoneNumbers.json"
       primary_key: "sid"
     retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+      $ref: "#/definitions/addresses_stream/retriever"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/addresses_partition_router"
+
+  applications_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "applications"
+      path: "Accounts/{{stream_interval.id}}/Applications.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/accounts_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+
+  available_phone_number_countries_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "available_phone_number_countries"
+      path: "Accounts/{{stream_interval.id}}/AvailablePhoneNumbers.json"
+      primary_key: "country_code"
+    retriever:
+      $ref: "#/definitions/accounts_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+
+  available_phone_number_countries_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/available_phone_number_countries_stream"
+        parent_key: "country_code"
+        partition_field: country_code
+
+  available_phone_numbers_local_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "available_phone_numbers_local"
+      path: "/Accounts/{{stream_interval.parent_slice.id}}/AvailablePhoneNumbers/{{stream_interval.country_code}}/Local.json"
+      primary_key: "iso_country"
+    retriever:
+      $ref: "#/definitions/available_phone_number_countries_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/available_phone_number_countries_partition_router"
+
+  available_phone_numbers_mobile_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "available_phone_numbers_mobile"
+      path: "/Accounts/{{stream_interval.parent_slice.id}}/AvailablePhoneNumbers/{{stream_interval.country_code}}/Mobile.json"
+      primary_key: "iso_country"
+    retriever:
+      $ref: "#/definitions/available_phone_number_countries_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/available_phone_number_countries_partition_router"
+
+  available_phone_numbers_toll_free_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "available_phone_numbers"
+      path: "/Accounts/{{stream_interval.parent_slice.id}}/AvailablePhoneNumbers/{{stream_interval.country_code}}/TollFree.json"
+      primary_key: "iso_country"
+    retriever:
+      $ref: "#/definitions/available_phone_number_countries_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/available_phone_number_countries_partition_router"
+
+  calls_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "calls"
+      path: "/Accounts/{{stream_interval.id}}/Calls.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/accounts_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "end_time"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
+
+  conferences_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "conferences"
+      path: "/Accounts/{{stream_interval.id}}/Conferences.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/accounts_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "date_created"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
+
+  conferences_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/conferences_stream"
+        parent_key: sid
+        partition_field: conferences_id
+
+  conference_participants_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "conference_participants"
+      path: "/Accounts/{{stream_interval.parent_slice.id}}/Conferences/{{ stream_interval.conferences_id}}/Participants.json"
+      primary_key: "conference_sid"
+    retriever:
+      $ref: "#/definitions/conferences_stream/retriever"
+      record_selector:
+        extractor:
+          field_path: ["participants"]
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/conferences_partition_router"
+
+  conversations_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "conversations"
+      path: "/Conversations"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        type: HttpRequester
+        url_base: "https://conversations.twilio.com/v1"
+        http_method: "GET"
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['account_sid'] }}"
+          password: "{{ config['auth_token'] }}"
 
   alerts_stream:
     $ref: "#/definitions/base_stream"
@@ -124,173 +276,6 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
         cursor_granularity: "PT0.000001S"
         step: "P1D"
-
-  applications_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "applications"
-      path: "Accounts/{{stream_slice.id}}/Applications.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-
-  available_phone_number_countries_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "available_phone_number_countries"
-      path: "Accounts/{{stream_slice.id}}/AvailablePhoneNumbers.json"
-      primary_key: "country_code"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-    
-  available_phone_number_countries_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/available_phone_number_countries_stream"
-        parent_key: "country_code"
-        partition_field: country_code
-      - stream: "#/definitions/available_phone_number_countries_stream"
-        parent_key: "account_id"
-        partition_field: id
-
-  available_phone_numbers_local_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "available_phone_numbers_local"
-      path: "/Accounts/{{stream_slice.id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/Local.json"
-      primary_key: "iso_country"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/available_phone_number_countries_partition_router"
-
-  available_phone_numbers_mobile_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "available_phone_numbers_mobile"
-      path: "/Accounts/{{stream_slice.id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/Mobile.json"
-      primary_key: "iso_country"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/available_phone_number_countries_partition_router"
-
-  available_phone_numbers_toll_free_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "available_phone_numbers"
-      path: "/Accounts/{{stream_slice.id}}/AvailablePhoneNumbers/{{stream_slice.country_code}}/TollFree.json"
-      primary_key: "iso_country"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/available_phone_number_countries_partition_router"
-  
-  calls_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "calls"
-      path: "/Accounts/{{stream_slice.id}}/Calls.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: "end_time"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        cursor_granularity: "PT0.000001S"
-        step: "P1D"
-
-  conferences_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "conferences"
-      path: "/Accounts/{{stream_slice.id}}/Conferences.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: "date_created"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        cursor_granularity: "PT0.000001S"
-        step: "P1D"
-
-  conferences_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/conferences_stream"
-        parent_key: sid
-        partition_field: conferences_id
-  
-  conference_participants_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "conference_participants"
-      path: "/Accounts/{{stream_slice.id}}/Conferences/{{ stream_slice.conferences_id}}/Participants.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/conferences_partition_router"
-
-  conversations_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "conversations"
-      path: "/Conversations"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        type: HttpRequester
-        url_base: "https://conversations.twilio.com/v1"
-        http_method: "GET"
-        authenticator:
-          type: BasicHttpAuthenticator
-          username: "{{ config['account_sid'] }}"
-          password: "{{ config['auth_token'] }}"
-
   conversations_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
@@ -302,14 +287,16 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "conversation_messages"
-      path: "/Conversations/{{stream_slice.conversations_id}}/Messages"
+      path: "/Conversations/{{stream_interval.conversations_id}}/Messages"
       primary_key: "sid"
-    requester:
-      url_base: "https://conversations.twilio.com/v1"
     retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+      $ref: "#/definitions/conversations_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        type: RecordSelector
+        extractor:
+          field_path:
+            - "messages"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
@@ -319,44 +306,186 @@ definitions:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "conversation_participants"
-      path: "/Conversations/{{stream_slice.conversations_id}}/Participants"
+      path: "/Conversations/{{stream_interval.conversations_id}}/Participants"
       primary_key: "sid"
     requester:
       url_base: "https://conversations.twilio.com/v1"
     retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+      $ref: "#/definitions/conversations_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        type: RecordSelector
+        extractor:
+          field_path:
+            - "participants"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/conversations_partition_router"
-  
+
   incoming_phone_numbers_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "incoming_phone_numbers"
-      path: "/Accounts/{{stream_slice.id}}/IncomingPhoneNumbers.json"
+      path: "/Accounts/{{stream_interval.id}}/IncomingPhoneNumbers.json"
       primary_key: "sid"
     retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+      $ref: "#/definitions/accounts_stream/retriever"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/accounts_partition_router"
-  
+
   keys_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "keys"
-      path: "/Accounts/{{stream_slice.id}}/Keys.json"
+      path: "/Accounts/{{stream_interval.id}}/Keys.json"
       primary_key: "sid"
     retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+      $ref: "#/definitions/accounts_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+
+  messages_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "messages"
+      path: "/Accounts/{{stream_interval.id}}/Messages.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/accounts_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "date_sent"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
+
+  messages_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/messages_stream"
+        parent_key: sid
+        partition_field: message_id
+
+  message_media_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "message_media"
+      path: "/Accounts/{{stream_interval.parent_slice.id}}/Messages/{{stream_interval.message_id}}/Media.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/messages_stream/retriever"
+      record_selector:
+        extractor:
+          field_path: ["media_list"]
+      record_filter:
+        condition: "{{ stream_interval.message_id != '' }}"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/messages_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "date_created"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
+
+  outgoing_caller_ids_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "outgoing_caller_ids"
+      path: "/Accounts/{{stream_interval.id}}/OutgoingCallerIds.json"
+      primary_key: ""
+    retriever:
+      $ref: "#/definitions/accounts_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+
+  queues_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "queues"
+      path: "/Accounts/{{stream_interval.id}}/Queues.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/accounts_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+
+  recordings_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "recordings"
+      path: "/Accounts/{{stream_interval.id}}/Recordings.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/accounts_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "date_created"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
+
+  transcriptions_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "transcriptions"
+      path: "/Accounts/{{stream_interval.id}}/Transcriptions.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/accounts_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+
+  usage_records_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "usage_records"
+      path: "/Accounts/{{stream_interval.id}}/Usage/Records.json"
+      primary_key:
+        - "account_sid"
+        - "category"
+    retriever:
+      $ref: "#/definitions/accounts_stream/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+      partition_router:
+        $ref: "#/definitions/accounts_partition_router"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: "start_date"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+        cursor_granularity: "PT0.000001S"
+        step: "P1D"
+
+  usage_triggers_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "usage_triggers"
+      path: "/Accounts/{{stream_interval.id}}/Usage/Triggers.json"
+      primary_key: "sid"
+    retriever:
+      $ref: "#/definitions/accounts_stream/retriever"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
@@ -384,209 +513,47 @@ definitions:
   flows_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
-    - stream: "#/definitions/flows_stream"
-      parent_key: sid
-      partition_field: flow_id
+      - stream: "#/definitions/flows_stream"
+        parent_key: sid
+        partition_field: flow_id
 
   executions_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "executions"
-      path: "/Flows/{{stream_slice.flow_id}}/Executions"
+      path: "/Flows/{{stream_interval.flow_id}}/Executions"
       primary_key: "sid"
     requester:
       url_base: "https://studio.twilio.com/v1"
     retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+      $ref: "#/definitions/flows_stream/retriever"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/flows_partition_router"
-    
+
   executions_partition_router:
     type: SubstreamPartitionRouter
     parent_stream_configs:
-    - stream: "#/definitions/executions_stream"
-      parent_key: sid
-      partition_field: execution_id
-  
+      - stream: "#/definitions/executions_stream"
+        parent_key: sid
+        partition_field: execution_id
+
   step_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "step"
-      path: "/Flows/{{stream_slice.flow_id}}/Executions/{{stream_slice.execution_id}}/Steps"
+      path: "/Flows/{{stream_interval.parent_slice.flow_id}}/Executions/{{stream_interval.execution_id}}/Steps"
       primary_key: "sid"
     requester:
       url_base: "https://studio.twilio.com/v1"
     retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+      $ref: "#/definitions/executions_stream/retriever"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/executions_partition_router"
-  
-  outgoing_caller_ids_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "outgoing_caller_ids"
-      path: "/Accounts/{{stream_slice.id}}/OutgoingCallerIds"
-      primary_key: ""
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-  
-  queues_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "queues"
-      path: "/Accounts/{{stream_slice.id}}/Queues.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-  
-  transcriptions_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "transcriptions"
-      path: "/Accounts/{{stream_slice.id}}/Transcriptions.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-  
-  messages_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "messages"
-      path: "/Accounts/{{stream_slice.id}}/Messages.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: "date_sent"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        cursor_granularity: "PT0.000001S"
-        step: "P1D"
 
-  messages_partition_router:
-    type: SubstreamPartitionRouter
-    parent_stream_configs:
-      - stream: "#/definitions/conferences_stream"
-        parent_key: sid
-        partition_field: message_id
-
-  message_media_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "message_media"
-      path: "/Accounts/{{stream_slice.id}}/Messages/{{stream_slice.message_id}}/Media.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      record_selector:
-        extractor:
-          field_path: ["parameters['name']"]
-      record_filter:
-        condition: "{{ stream_slice.message_id != '' }}"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/messages_partition_router"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: "date_created"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        cursor_granularity: "PT0.000001S"
-        step: "P1D"
-  
-  usage_records_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "usage_records"
-      path: "/Accounts/{{stream_slice.id}}/Usage/Records.json"
-      primary_key: 
-        - "account_sid"
-        - "category"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: "start_date"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        cursor_granularity: "PT0.000001S"
-        step: "P1D"
-  
-  usage_triggers_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "usage_triggers"
-      path: "/Accounts/{{stream_slice.id}}/Usage/Triggers.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-  
-  recordings_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "recordings"
-      path: "/Accounts/{{stream_slice.id}}/Recordings.json"
-      primary_key: "sid"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-      paginator:
-        $ref: "#/definitions/default_paginator"
-      partition_router:
-        $ref: "#/definitions/accounts_partition_router"
-      incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: "date_created"
-        datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-        cursor_granularity: "PT0.000001S"
-        step: "P1D"
-    
   services_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -610,24 +577,26 @@ definitions:
       - stream: "#/definitions/services_stream"
         parent_key: sid
         partition_field: service_id
-  
+
   roles_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "roles"
-      path: "/Services/{{stream_slice.service_id}}"
+      path: "/Services/{{stream_interval.service_id}}"
       primary_key: "service_sid"
-    requester:
-      url_base: "https://conversations.twilio.com/v1"
     retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+      $ref: "#/definitions/services_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        type: RecordSelector
+        extractor:
+          field_path:
+            - "services"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/users_partition_router"
-  
+
   trunks_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -653,6 +622,12 @@ definitions:
       primary_key: "sid"
     retriever:
       $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        type: RecordSelector
+        extractor:
+          field_path:
+            - "services"
       paginator:
         $ref: "#/definitions/default_paginator"
         page_size: 100
@@ -673,6 +648,9 @@ definitions:
       primary_key: "sid"
     retriever:
       $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+        page_size: 1000
       requester:
         type: HttpRequester
         url_base: "https://conversations.twilio.com/v1"
@@ -687,25 +665,26 @@ definitions:
     parent_stream_configs:
       - stream: "#/definitions/users_stream"
         parent_key: sid
-        partition_field: user_id
-  
+        partition_field: user_sid
+
   user_conversations_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "user_conversations"
-      path: "/Users/{{stream_slice.user_id}}/Conversations"
-      primary_key: "user_sid"
-    requester:
-      url_base: "https://conversations.twilio.com/v1"
+      path: "/Users/{{stream_interval.user_sid}}/Conversations"
+      primary_key: "account_sid"
     retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
+      $ref: "#/definitions/users_stream/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        type: RecordSelector
+        extractor:
+          field_path:
+            - "conversations"
       paginator:
         $ref: "#/definitions/default_paginator"
       partition_router:
         $ref: "#/definitions/users_partition_router"
-  
 
 streams:
   - "#/definitions/accounts_stream"
@@ -743,50 +722,39 @@ streams:
   - "#/definitions/step_stream"
   - "#/definitions/verify_services_stream"
 
-
-
 check:
   stream_names:
     - "accounts"
     - "addresses"
-    - "available_phone_number_countries"
-    - "available_phone_numbers_local"
-    - "available_phone_numbers_mobile"
-    - "available_phone_numbers_toll_free"
-    - "alerts"
+    - "dependent_phone_numbers"
+    - "applications"
     - "calls"
     - "conferences"
-    - "conference_participants"
+    - "conversations"
     - "conversation_messages"
     - "conversation_participants"
-    - "conversations"
-    - "dependent_phone_numbers"
-    - "usage_triggers"
-    - "message_media"
-    - "step"
-    - "applications"
     - "flows"
-    - "executions"
     - "incoming_phone_numbers"
-    - "keys"
+    - "message_media"
+    - "messages"
     - "outgoing_caller_ids"
     - "queues"
     - "recordings"
-    - "transcriptions"
-    - "usage_records"
-    - "messages"
-    - "services"
     - "roles"
-    - "verify_services"
+    - "services"
+    - "transcriptions"
     - "trunks"
+    - "usage_records"
+    - "usage_triggers"
     - "users"
     - "user_conversations"
-
+    - "verify_services"
 
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/twilio
   connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
     title: Twilio Spec
     type: object
     required:
@@ -809,11 +777,12 @@ spec:
         order: 2
       start_date:
         title: Replication Start Date
-        description: UTC date and time in the format 2020-10-01T00:00:00Z. Any data
+        description:
+          UTC date and time in the format 2020-10-01T00:00:00Z. Any data
           before this date will not be replicated.
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:
-        - '2020-10-01T00:00:00Z'
+          - "2020-10-01T00:00:00Z"
         type: string
         order: 3
         format: date-time
@@ -821,7 +790,7 @@ spec:
         title: Lookback window
         description: How far into the past to look for records. (in minutes)
         examples:
-        - 60
+          - 60
         default: 0
         minimum: 0
         maximum: 576000

@@ -1,268 +1,514 @@
 {
   "streams": [
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "accounts",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
         "name": "addresses",
-        "json_schema": {},
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
         "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
-        "name": "applications",
+        "default_cursor_field": null,
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "incoming_phone_numbers",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "keys",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "conversation_messages",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "calls",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["end_time"]
-      },
-      "cursor_field": ["end_time"],
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "conferences",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["date_created"]
-      },
-      "cursor_field": ["date_created"],
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "outgoing_caller_ids",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "recordings",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["date_created"]
-      },
-      "cursor_field": ["date_created"],
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "services",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "roles",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "transcriptions",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "trunks",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "queues",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "messages",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["date_sent"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["date_sent"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "message_media",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["date_created"]
-      },
-      "sync_mode": "incremental",
-      "cursor_field": ["date_created"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "usage_records",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["start_date"]
-      },
-      "cursor_field": ["start_date"],
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "usage_triggers",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "alerts",
-        "json_schema": {},
-        "supported_sync_modes": ["incremental", "full_refresh"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["date_created"]
-      },
-      "cursor_field": ["date_created"],
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
-        "name": "conversations",
-        "json_schema": {},
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
         "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "applications",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "available_phone_number_countries",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["country_code"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "available_phone_numbers_local",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["iso_country"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "available_phone_numbers_mobile",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["iso_country"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "available_phone_numbers",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["iso_country"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "calls",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "conference_participants",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "conferences",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "conversation_messages",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
         "name": "conversation_participants",
-        "json_schema": {},
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
         "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "conversations",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "dependent_phone_numbers",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
         "name": "flows",
-        "json_schema": {},
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
         "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
         "name": "executions",
-        "json_schema": {},
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
         "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
-        "name": "step",
+        "default_cursor_field": null,
         "json_schema": {},
+        "name": "incoming_phone_numbers",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
         "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "keys",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "message_media",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "messages",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "outgoing_caller_ids",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": null,
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "queues",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "recordings",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "transcriptions",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "usage_records",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["account_sid"], ["category"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "usage_triggers",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
         "name": "users",
-        "json_schema": {},
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
         "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
         "name": "user_conversations",
-        "json_schema": {},
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["user_sid"]],
         "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "full_refresh"
     },
     {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
       "stream": {
-        "name": "verify_services",
+        "default_cursor_field": null,
         "json_schema": {},
+        "name": "trunks",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
         "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "roles",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["service_sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "services",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "step",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
+    },
+    {
+      "cursor_field": null,
+      "destination_sync_mode": "append",
+      "primary_key": null,
+      "stream": {
+        "default_cursor_field": null,
+        "json_schema": {},
+        "name": "verify_services",
+        "namespace": null,
+        "source_defined_cursor": null,
+        "source_defined_primary_key": [["sid"]],
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh"
     }
   ]
 }

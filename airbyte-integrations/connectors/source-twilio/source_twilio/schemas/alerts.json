@@ -7,6 +7,7 @@
       "type": ["null", "string"]
     },
     "date_updated": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "account_sid": {
@@ -19,6 +20,7 @@
       "type": ["null", "string"]
     },
     "date_generated": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "alert_text": {
@@ -28,6 +30,7 @@
       "type": ["null", "string"]
     },
     "date_created": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "request_url": {

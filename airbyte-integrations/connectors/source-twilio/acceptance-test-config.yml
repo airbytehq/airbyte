@@ -3,7 +3,7 @@ test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_twilio/manifest.yaml"
+      - spec_path: "source_twilio/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -32,24 +32,30 @@ acceptance_tests:
             bypass_reason: "expected records could not be provided without field bypassing, skipping for now. Read #TODO above."
           - name: "alerts"
             bypass_reason: "alerts are transient - they emerge and disappear from time to time"
-          - name: "dependent_phone_numbers"
-            bypass_reason: "stream not filled yet"
-          - name: "conference_participants"
-            bypass_reason: "stream not filled yet"
-          - name: "keys"
-            bypass_reason: "stream not filled yet"
+          - name: "available_phone_numbers"
+            bypass_reason: "no records in the sandbox"
+          - name: "available_phone_numbers"
+            bypass_reason: "you cannot directly call this endpoint but it's still discovered as a stream somehow"
+          - name: "available_phone_number_countries"
+            bypass_reason: "no records in the sandbox"
           - name: "available_phone_numbers_local"
             bypass_reason: "very volatile data"
           - name: "available_phone_numbers_mobile"
             bypass_reason: "very volatile data"
           - name: "available_phone_numbers_toll_free"
             bypass_reason: "very volatile data"
-          - name: "usage_records"
-            bypass_reason: "very volatile data"
-          - name: step
-            bypass_reason: "No data for this stream currently"
+          - name: "dependent_phone_numbers"
+            bypass_reason: "stream not filled yet"
+          - name: "conference_participants"
+            bypass_reason: "stream not filled yet"
           - name: executions
             bypass_reason: "No data for this stream currently"
+          - name: "keys"
+            bypass_reason: "stream not filled yet"
+          - name: step
+            bypass_reason: "No data for this stream currently"
+          - name: "usage_records"
+            bypass_reason: "very volatile data"
         timeout_seconds: 600
         fail_on_extra_columns: false
   incremental:
@@ -64,6 +70,7 @@ acceptance_tests:
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
         timeout_seconds: 3600
+        skip_comprehensive_incremental_tests: true # no state is produced during reads
   full_refresh:
     tests:
       - config_path:

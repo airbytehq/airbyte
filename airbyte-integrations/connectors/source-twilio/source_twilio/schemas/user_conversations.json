@@ -32,6 +32,7 @@
       "type": ["null", "integer"]
     },
     "date_created": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "timers": {
@@ -46,6 +47,7 @@
       "type": ["null", "string"]
     },
     "date_updated": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "attributes": {

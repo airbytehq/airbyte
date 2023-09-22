@@ -13,22 +13,25 @@
       "type": ["null", "string"]
     },
     "date_created": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "date_updated": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "start_time": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "duration": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "sid": {
       "type": ["null", "string"]
     },
     "price": {
-      "type": ["null", "number"]
+      "type": ["null", "string"]
     },
     "price_unit": {
       "type": ["null", "string"]
@@ -50,9 +53,6 @@
     },
     "uri": {
       "type": ["null", "string"]
-    },
-    "media_url": {
-      "type": "string"
     },
     "encryption_details": {
       "properties": {

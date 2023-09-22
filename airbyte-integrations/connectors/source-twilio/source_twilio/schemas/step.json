@@ -11,6 +11,7 @@
       "type": ["null", "string"]
     },
     "date_updated": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "transitioned_to": {
@@ -32,6 +33,7 @@
       "type": ["null", "string"]
     },
     "date_created": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "execution_sid": {

@@ -95,6 +95,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.11.0  | 2023-09-20 | [28981](https://github.com/airbytehq/airbyte/pull/28981)  | Migrate Python CDK to Low-code CDK
 | 0.10.0  | 2023-07-28 | [27323](https://github.com/airbytehq/airbyte/pull/27323)  | Add new stream `Step`                                                                                  |
 | 0.9.0   | 2023-06-27 | [27221](https://github.com/airbytehq/airbyte/pull/27221)  | Add new stream `UserConversations` with parent `Users`                                                  |
 | 0.8.1   | 2023-07-12 | [28216](https://github.com/airbytehq/airbyte/pull/28216)  | Add property `channel_metadata` to `ConversationMessages` schema                                                                         |

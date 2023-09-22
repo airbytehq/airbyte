@@ -29,6 +29,7 @@
       "type": ["null", "string"]
     },
     "date_updated": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "totp": {
@@ -72,6 +73,7 @@
       }
     },
     "date_created": {
+      "format": "date-time",
       "type": ["null", "string"]
     },
     "dtmf_input_required": {
