@@ -11,6 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import LegacyAvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.error_message_parser import LegacyErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import LegacyPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -51,6 +52,7 @@ class ConcurrentStreamAdapter(Stream):
                 availability_strategy=LegacyAvailabilityStrategy(stream, source),
                 primary_key=stream.primary_key,
                 cursor_field=stream.cursor_field,
+                error_display_message_parser=LegacyErrorMessageParser(stream),
             )
         )
 

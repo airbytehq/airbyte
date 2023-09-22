@@ -12,6 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
+from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader, PartitionSentinel
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
@@ -29,6 +30,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         availability_strategy: Optional[AbstractAvailabilityStrategy],
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         cursor_field: Union[str, List[str]],
+        error_display_message_parser: ErrorMessageParser,
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -38,6 +40,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._availability_strategy = availability_strategy
         self._primary_key = primary_key
         self._cursor_field = cursor_field
+        self._error_message_parser = error_display_message_parser
 
     def read(self) -> Iterable[StreamData]:
         self.logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
@@ -115,13 +118,4 @@ class ThreadBasedConcurrentStream(AbstractStream):
         return False
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        """
-        Retrieves the user-friendly display message that corresponds to an exception.
-        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
-
-        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
-
-        :param exception: The exception that was raised
-        :return: A user-friendly message that indicates the cause of the error
-        """
-        return None
+        return self._error_message_parser.get_error_display_message(exception)

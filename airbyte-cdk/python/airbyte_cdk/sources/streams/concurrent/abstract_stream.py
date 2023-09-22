@@ -91,6 +91,16 @@ class AbstractStream(ABC):
         :return: A dict of the JSON schema representing this stream.
         """
 
+    @abstractmethod
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        """
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        """
+
 
 @deprecated("This class is experimental. Use at your own risk.")
 class StreamFacade(Stream):
@@ -153,3 +163,15 @@ class StreamFacade(Stream):
 
     def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         return self._stream.check_availability()
+
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        """
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        """
+        return self._stream.get_error_display_message(exception)
