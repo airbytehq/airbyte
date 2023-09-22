@@ -6,6 +6,15 @@ import re
 from dataclasses import dataclass
 from typing import Optional, Tuple
 
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
+from google.ads.googleads.errors import GoogleAdsException
+from google.ads.googleads.v13.errors.types.authentication_error import AuthenticationErrorEnum
+from google.ads.googleads.v13.errors.types.authorization_error import AuthorizationErrorEnum
+from google.ads.googleads.v13.errors.types.quota_error import QuotaErrorEnum
+from google.ads.googleads.v13.errors.types.request_error import RequestErrorEnum
+from source_google_ads.google_ads import logger
+
 # maps stream name to name of resource in Google Ads
 REPORT_MAPPING = {
     "accounts": "customer",
@@ -39,6 +48,82 @@ REPORT_MAPPING = {
     "user_interest": "user_interest",
     "user_location_report": "user_location_view",
 }
+
+
+class ExpiredPageTokenError(AirbyteTracedException):
+    """
+    Custom AirbyteTracedException exception to handle the scenario when the page token has expired
+    while processing a response from Google Ads.
+    """
+
+    pass
+
+
+def is_error_type(error_value, target_enum_value):
+    """Compares error value with target enum value after converting both to integers."""
+    return int(error_value) == int(target_enum_value)
+
+
+def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_disabled_customer_error: bool):
+    """Add user-friendly message for GoogleAdsException"""
+    unknown_error = False
+    for error in ga_exception.failure.errors:
+        authorization_error = error.error_code.authorization_error
+        authentication_error = error.error_code.authentication_error
+        if (is_error_type(authorization_error, AuthorizationErrorEnum.AuthorizationError.USER_PERMISSION_DENIED) or
+                is_error_type(authentication_error, AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND)):
+            message = f"Failed to access the customer '{customer_id}'. Ensure the customer is linked to your manager account or check your permissions to access this customer account."
+            raise AirbyteTracedException(
+                message=message, failure_type=FailureType.config_error, exception=ga_exception, internal_message=message
+            )
+
+        # If the error is encountered in the internally used class `ServiceAccounts`, an exception is raised.
+        # For other classes, the error is logged and skipped to prevent sync failure. See: https://github.com/airbytehq/airbyte/issues/12486
+        is_customer_disabled = is_error_type(authorization_error, AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED)
+        if is_customer_disabled:
+            if catch_disabled_customer_error:
+                logger.error(error.message)
+                continue
+            else:
+                message = (
+                    f"The Google Ads account '{customer_id}' you're trying to access is not enabled. "
+                    "This may occur if the account hasn't been fully set up or activated. "
+                    "Please ensure that you've completed all necessary setup steps in the Google Ads platform and that the account is active. "
+                    "If the account is recently created, it might take some time before it's fully activated."
+                )
+                raise AirbyteTracedException.from_exception(
+                    ga_exception, message=message, failure_type=FailureType.config_error
+                ) from ga_exception
+
+        query_error = error.error_code.query_error
+        if query_error:
+            message = f"Incorrect custom query. {error.message}"
+            raise AirbyteTracedException.from_exception(
+                ga_exception, message=message, failure_type=FailureType.config_error
+            ) from ga_exception
+
+        quota_error = error.error_code.quota_error
+        if is_error_type(quota_error, QuotaErrorEnum.QuotaError.RESOURCE_EXHAUSTED):
+            message = (
+                f"You've exceeded your 24-hour quota limits for operations on your Google Ads account '{customer_id}'. Try again later."
+            )
+            raise AirbyteTracedException.from_exception(
+                ga_exception, message=message, failure_type=FailureType.config_error
+            ) from ga_exception
+
+        request_error = error.error_code.request_error
+        if is_error_type(request_error, RequestErrorEnum.RequestError.EXPIRED_PAGE_TOKEN):
+            message = "Page token has expired during processing response."
+            # raise new error for easier catch in child class - this error will be handled in IncrementalGoogleAdsStream
+            raise ExpiredPageTokenError(message=message, failure_type=FailureType.system_error, exception=ga_exception) from ga_exception
+
+        unknown_error = True
+
+    if unknown_error:
+        message = ", ".join([error.message for error in ga_exception.failure.errors])
+        raise AirbyteTracedException(
+            message=message, failure_type=FailureType.system_error, exception=ga_exception, internal_message=message
+        )
 
 
 @dataclass(repr=False, eq=False, frozen=True)
