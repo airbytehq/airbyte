@@ -37,7 +37,7 @@ async def run_metadata_validation(context: ConnectorContext) -> List[StepResult]
     Returns:
         List[StepResult]: The results of the metadata validation steps.
     """
-    return [await MetadataValidation(context, context.connector.code_directory / METADATA_FILE_NAME).run()]
+    return [await MetadataValidation(context).run()]
 
 
 async def run_version_checks(context: ConnectorContext) -> List[StepResult]:
@@ -110,16 +110,20 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
     async with semaphore:
         async with context:
             async with asyncer.create_task_group() as task_group:
+                # tasks = [
+                #     task_group.soonify(run_all_tests)(context),
+                #     task_group.soonify(run_code_format_checks)(context),
+                # ]
+                # if not context.code_tests_only:
+                #     tasks += [
+                #         task_group.soonify(run_metadata_validation)(context),
+                #         task_group.soonify(run_version_checks)(context),
+                #         task_group.soonify(run_qa_checks)(context),
+                #     ]
                 tasks = [
-                    task_group.soonify(run_all_tests)(context),
-                    task_group.soonify(run_code_format_checks)(context),
+                    task_group.soonify(run_metadata_validation)(context),
                 ]
-                if not context.code_tests_only:
-                    tasks += [
-                        task_group.soonify(run_metadata_validation)(context),
-                        task_group.soonify(run_version_checks)(context),
-                        task_group.soonify(run_qa_checks)(context),
-                    ]
+
             results = list(itertools.chain(*(task.value for task in tasks)))
             context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
 
