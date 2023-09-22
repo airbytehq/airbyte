@@ -30,11 +30,11 @@ def check_source(repo_line: str) -> AirbyteConnectionStatus:
 @pytest.mark.parametrize(
     "api_url, deployment_env, expected_message",
     (
-            ("github.my.company.org", "CLOUD", "Please enter full url starting from http..."),
-            ("http://github.my.company.org", "CLOUD","HTTP connection is insecure an is not allowed in this environment. Please use `https` instead."),
-            ("http:/github.my.company.org", "NOT_CLOUD", "Please provide correct URL"),
-            ("https:/github.my.company.org", "CLOUD", "Please provide correct URL")
-    )
+        ("github.my.company.org", "CLOUD", "Please enter a full URL starting with http..."),
+        ("http://github.my.company.org", "CLOUD", "HTTP connection is insecure and is not allowed in this environment. Please use `https` instead."),
+        ("http:/github.my.company.org", "NOT_CLOUD", "Please provide a correct URL"),
+        ("https:/github.my.company.org", "CLOUD", "Please provide a correct URL"),
+    ),
 )
 def test_connection_fail_due_to_config_error(api_url, deployment_env, expected_message):
     os.environ["DEPLOYMENT_MODE"] = deployment_env
