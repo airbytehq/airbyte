@@ -2,10 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import functools
 import uuid
 from pathlib import Path
-from typing import Optional, Set, List
+from typing import Optional, List
 from dataclasses import dataclass
 import dagger
 from pipelines import main_logger
@@ -13,28 +12,12 @@ from pipelines.actions.environments import with_pip_packages, with_poetry_module
 from pipelines.bases import Report, Step, StepResult
 from pipelines.contexts import PipelineContext, ConnectorContext
 from pipelines.helpers.steps import run_steps
-from pipelines.utils import DAGGER_CONFIG, METADATA_FILE_NAME, METADATA_ICON_FILE_NAME, execute_concurrently, get_secret_host_variable
+from pipelines.utils import DAGGER_CONFIG, get_secret_host_variable
 
 METADATA_DIR = "airbyte-ci/connectors/metadata_service"
 METADATA_LIB_MODULE_PATH = "lib"
 METADATA_SERVICE_TOOL_MODULE_PATH = Path(f"{METADATA_DIR}/{METADATA_LIB_MODULE_PATH}")
 METADATA_ORCHESTRATOR_MODULE_PATH = "orchestrator"
-
-# HELPERS
-
-
-def get_metadata_file_from_path(context: PipelineContext, metadata_path: Path) -> dagger.File:
-    if metadata_path.is_file() and metadata_path.name != METADATA_FILE_NAME:
-        raise ValueError(f"The metadata file name is not {METADATA_FILE_NAME}, it is {metadata_path.name} .")
-    if metadata_path.is_dir():
-        metadata_path = metadata_path / METADATA_FILE_NAME
-    if not metadata_path.exists():
-        raise FileNotFoundError(f"{str(metadata_path)} does not exist.")
-    return context.get_repo_dir(str(metadata_path.parent), include=[METADATA_FILE_NAME]).file(METADATA_FILE_NAME)
-
-
-def get_metadata_icon_file_from_path(context: PipelineContext, metadata_icon_path: Path) -> dagger.File:
-    return context.get_repo_dir(str(metadata_icon_path.parent), include=[METADATA_ICON_FILE_NAME]).file(METADATA_ICON_FILE_NAME)
 
 
 @dataclass(frozen=True)
@@ -61,45 +44,80 @@ class MountPath:
 # STEPS
 
 class SimpleCIStep(Step):
+    """A step that runs a given command in a container."""
     def __init__(
             self,
             title: str,
             context: PipelineContext,
-            paths_to_mount: List[MountPath],
-            internal_tools: List[MountPath],
+            paths_to_mount: List[MountPath] = [],
+            internal_tools: List[MountPath] = [],
+            secrets: dict[str, dagger.Secret] = {},
+            env_variables: dict[str, str] = {},
             working_directory: str = "/",
             command: Optional[List[str]] = None,
         ):
+        """A step that runs a given command in a container.
+
+        Args:
+            title (str): name of the step
+            context (PipelineContext): context of the step
+            paths_to_mount (List[MountPath], optional): directory paths to mount. Defaults to [].
+            internal_tools (List[MountPath], optional): internal tools to install. Defaults to [].
+            secrets (dict[str, dagger.Secret], optional): secrets to add to container. Defaults to {}.
+            env_variables (dict[str, str], optional): env variables to set in container. Defaults to {}.
+            working_directory (str, optional): working director to run the command in. Defaults to "/".
+            command (Optional[List[str]], optional): The default command to run. Defaults to None.
+        """
         self.title = title
         super().__init__(context)
 
         self.paths_to_mount = paths_to_mount
         self.working_directory = working_directory
         self.internal_tools = internal_tools
+        self.secrets = secrets
+        self.env_variables = env_variables
         self.command = command
 
-    async def init_container(self):
-        # TODO (ben): Replace with python base container when available
-        python_base_container = with_python_base(self.context)
-
-        # load all mounted directories
+    def _mount_paths(self, container: dagger.Container) -> dagger.Container:
         for path_to_mount in self.paths_to_mount:
             path_string = str(path_to_mount)
             destination_path = f"/{path_string}"
             if path_to_mount.is_file:
                 file_to_load = self.context.get_repo_file(path_string)
-                python_base_container = python_base_container.with_mounted_file(destination_path, file_to_load)
+                container = container.with_mounted_file(destination_path, file_to_load)
             else:
-                python_base_container = python_base_container.with_mounted_directory(destination_path, self.context.get_repo_dir(path_string))
+                container = container.with_mounted_directory(destination_path, self.context.get_repo_dir(path_string))
+        return container
 
-        # load all internal tools (assuming pipx)
+    async def _install_internal_tools(self, container: dagger.Container) -> dagger.Container:
         for internal_tool in self.internal_tools:
-            python_base_container = await with_installed_pipx_package(self.context, python_base_container, str(internal_tool))
+            container = await with_installed_pipx_package(self.context, container, str(internal_tool))
+        return container
 
-        # set working directory
-        python_base_container = python_base_container.with_workdir(self.working_directory)
+    def _set_workdir(self, container: dagger.Container) -> dagger.Container:
+        return container.with_workdir(self.working_directory)
 
-        return python_base_container
+    def _set_env_variables(self, container: dagger.Container) -> dagger.Container:
+        for key, value in self.env_variables.items():
+            container = container.with_env_variable(key, value)
+        return container
+
+    def _set_secrets(self, container: dagger.Container) -> dagger.Container:
+        for key, value in self.secrets.items():
+            container = container.with_secret_variable(key, value)
+        return container
+
+    async def init_container(self) -> dagger.Container:
+        # TODO (ben): Replace with python base container when available
+        container = with_python_base(self.context)
+
+        container = self._mount_paths(container)
+        container = self._set_env_variables(container)
+        container = self._set_secrets(container)
+        container = await self._install_internal_tools(container)
+        container = self._set_workdir(container)
+
+        return container
 
     async def _run(self, command = None) -> StepResult:
         command_to_run = command or self.command
@@ -126,6 +144,55 @@ class MetadataValidation(SimpleCIStep):
             command=["metadata_service", "validate", str(context.connector.metadata_file_path), str(context.connector.documentation_file_path)],
         )
 
+class MetadataUpload(SimpleCIStep):
+    # When the metadata service exits with this code, it means the metadata is valid but the upload was skipped because the metadata is already uploaded
+    skipped_exit_code = 5
+
+    def __init__(
+        self,
+        context: ConnectorContext,
+        metadata_bucket_name: str,
+        metadata_service_gcs_credentials_secret: dagger.Secret,
+        docker_hub_username_secret: dagger.Secret,
+        docker_hub_password_secret: dagger.Secret,
+        pre_release: bool = False,
+        pre_release_tag: Optional[str] = None,
+    ):
+        title = f"Upload metadata for {context.connector.technical_name} v{context.connector.docker_image_tag}"
+        command_to_run = [
+            "metadata_service",
+            "upload",
+            str(context.connector.metadata_file_path),
+            str(context.connector.documentation_file_path),
+            metadata_bucket_name
+        ]
+
+        if pre_release:
+            command_to_run += ["--prerelease", pre_release_tag]
+
+        super().__init__(
+            title=title,
+            context=context,
+            paths_to_mount=[
+                MountPath(context.connector.metadata_file_path),
+                MountPath(context.connector.documentation_file_path),
+                MountPath(context.connector.icon_path, optional=True),
+            ],
+            internal_tools=[
+                MountPath(METADATA_SERVICE_TOOL_MODULE_PATH),
+            ],
+            secrets={
+                "DOCKER_HUB_USERNAME": docker_hub_username_secret,
+                "DOCKER_HUB_PASSWORD": docker_hub_password_secret,
+                "GCS_CREDENTIALS": metadata_service_gcs_credentials_secret,
+            },
+            env_variables={
+                # The cache buster ensures we always run the upload command (in case of remote bucket change)
+                "CACHEBUSTER": str(uuid.uuid4()),
+            },
+            command=command_to_run,
+        )
+
 
 class PoetryRun(Step):
     def __init__(self, context: PipelineContext, title: str, parent_dir_path: str, module_path: str):
@@ -139,64 +206,6 @@ class PoetryRun(Step):
     async def _run(self, poetry_run_args: list) -> StepResult:
         poetry_run_exec = self.poetry_run_container.with_exec(poetry_run_args)
         return await self.get_step_result(poetry_run_exec)
-
-
-# class MetadataValidation(PoetryRun):
-#     def __init__(self, context: PipelineContext, metadata_path: Path):
-#         title = f"Validate {metadata_path}"
-#         super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
-#         self.poetry_run_container = self.poetry_run_container.with_mounted_file(
-#             METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path)
-#         )
-
-#     async def _run(self) -> StepResult:
-#         return await super()._run(["metadata_service", "validate", METADATA_FILE_NAME])
-
-
-class MetadataUpload(PoetryRun):
-    # When the metadata service exits with this code, it means the metadata is valid but the upload was skipped because the metadata is already uploaded
-    skipped_exit_code = 5
-
-    def __init__(
-        self,
-        context: PipelineContext,
-        metadata_path: Path,
-        metadata_bucket_name: str,
-        metadata_service_gcs_credentials_secret: dagger.Secret,
-        docker_hub_username_secret: dagger.Secret,
-        docker_hub_password_secret: dagger.Secret,
-        pre_release: bool = False,
-        pre_release_tag: Optional[str] = None,
-    ):
-        title = f"Upload {metadata_path}"
-        self.gcs_bucket_name = metadata_bucket_name
-        self.pre_release = pre_release
-        self.pre_release_tag = pre_release_tag
-        super().__init__(context, title, METADATA_DIR, METADATA_LIB_MODULE_PATH)
-
-        # Ensure the icon file is included in the upload
-        base_container = self.poetry_run_container.with_file(METADATA_FILE_NAME, get_metadata_file_from_path(context, metadata_path))
-        metadata_icon_path = metadata_path.parent / METADATA_ICON_FILE_NAME
-        if metadata_icon_path.exists():
-            base_container = base_container.with_file(
-                METADATA_ICON_FILE_NAME, get_metadata_icon_file_from_path(context, metadata_icon_path)
-            )
-
-        self.poetry_run_container = (
-            base_container.with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
-            .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
-            .with_secret_variable("GCS_CREDENTIALS", metadata_service_gcs_credentials_secret)
-            # The cache buster ensures we always run the upload command (in case of remote bucket change)
-            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
-        )
-
-    async def _run(self) -> StepResult:
-        upload_command = ["metadata_service", "upload", METADATA_FILE_NAME, self.gcs_bucket_name]
-
-        if self.pre_release:
-            upload_command += ["--prerelease", self.pre_release_tag]
-
-        return await super()._run(upload_command)
 
 
 class DeployOrchestrator(Step):
@@ -249,41 +258,6 @@ class TestOrchestrator(PoetryRun):
 
 
 # PIPELINES
-
-
-async def run_metadata_validation_pipeline(
-    is_local: bool,
-    git_branch: str,
-    git_revision: str,
-    gha_workflow_run_url: Optional[str],
-    dagger_logs_url: Optional[str],
-    pipeline_start_timestamp: Optional[int],
-    ci_context: Optional[str],
-    metadata_to_validate: Set[Path],
-) -> bool:
-    metadata_pipeline_context = PipelineContext(
-        pipeline_name="Validate metadata.yaml files",
-        is_local=is_local,
-        git_branch=git_branch,
-        git_revision=git_revision,
-        gha_workflow_run_url=gha_workflow_run_url,
-        dagger_logs_url=dagger_logs_url,
-        pipeline_start_timestamp=pipeline_start_timestamp,
-        ci_context=ci_context,
-    )
-
-    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
-        async with metadata_pipeline_context:
-            validation_steps = [MetadataValidation(metadata_pipeline_context, metadata_path).run for metadata_path in metadata_to_validate]
-
-            results = await execute_concurrently(validation_steps, concurrency=10)
-            metadata_pipeline_context.report = Report(
-                pipeline_context=metadata_pipeline_context, steps_results=results, name="METADATA VALIDATION RESULTS"
-            )
-
-        return metadata_pipeline_context.report.success
-
 
 async def run_metadata_lib_test_pipeline(
     is_local: bool,
@@ -352,50 +326,6 @@ async def run_metadata_orchestrator_test_pipeline(
             )
 
     return metadata_pipeline_context.report.success
-
-
-async def run_metadata_upload_pipeline(
-    is_local: bool,
-    git_branch: str,
-    git_revision: str,
-    gha_workflow_run_url: Optional[str],
-    dagger_logs_url: Optional[str],
-    pipeline_start_timestamp: Optional[int],
-    ci_context: Optional[str],
-    metadata_to_upload: Set[Path],
-    gcs_bucket_name: str,
-) -> bool:
-    pipeline_context = PipelineContext(
-        pipeline_name="Metadata Upload Pipeline",
-        is_local=is_local,
-        git_branch=git_branch,
-        git_revision=git_revision,
-        gha_workflow_run_url=gha_workflow_run_url,
-        dagger_logs_url=dagger_logs_url,
-        pipeline_start_timestamp=pipeline_start_timestamp,
-        ci_context=ci_context,
-    )
-
-    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        pipeline_context.dagger_client = dagger_client.pipeline(pipeline_context.pipeline_name)
-        async with pipeline_context:
-            get_secret = functools.partial(get_secret_host_variable, pipeline_context.dagger_client)
-            results = await execute_concurrently(
-                [
-                    MetadataUpload(
-                        context=pipeline_context,
-                        metadata_service_gcs_credentials_secret=get_secret("GCS_CREDENTIALS"),
-                        docker_hub_username_secret=get_secret("DOCKER_HUB_USERNAME"),
-                        docker_hub_password_secret=get_secret("DOCKER_HUB_PASSWORD"),
-                        metadata_bucket_name=gcs_bucket_name,
-                        metadata_path=metadata_path,
-                    ).run
-                    for metadata_path in metadata_to_upload
-                ]
-            )
-            pipeline_context.report = Report(pipeline_context, results, name="METADATA UPLOAD RESULTS")
-
-        return pipeline_context.report.success
 
 
 async def run_metadata_orchestrator_deploy_pipeline(
