@@ -90,35 +90,37 @@ class ConcurrentStream(AbstractStream):
         logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
         total_records_counter = 0
         futures = []
-        partition_generator = ConcurrentPartitionGenerator()
-        partition_reader = PartitionReader()
+        queue = Queue()
+        record_sentinel = object()
+        partition_sentinel = object()
+        partition_generator = ConcurrentPartitionGenerator(queue, partition_sentinel)
+        partition_reader = PartitionReader(queue, record_sentinel)
 
         # Submit partition generation tasks
         futures.append(
             self._threadpool.submit(partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh)
         )
 
-        # Run as long as there are partitions to process or records to read
-        while not (partition_generator.is_done() and partition_reader.is_done() and self._is_done(futures)):
-            self._check_for_errors(futures)
+        TIMEOUT_SECONDS = 300
 
-            # While there is a partition to process
-            while partition_reader.has_record_ready():
-                record = partition_reader.get_next()
-                if record is not None:
-                    yield record.stream_data
-                    if AbstractStream.is_record(record.stream_data):
-                        total_records_counter += 1
-                        if internal_config and internal_config.is_limit_reached(total_records_counter):
-                            return
-            while partition_generator.has_partition_ready():
-                partition = partition_generator.get_next()
-                if partition is not None:
-                    futures.append(self._threadpool.submit(partition_reader.process_partition, partition))
-                    if slice_logger.should_log_slice_message(logger):
-                        # FIXME: This is creating slice log messages for parity with the synchronous implementation
-                        # but these cannot be used by the connector builder to build slices because they can be unordered
-                        yield slice_logger.create_slice_log_message(partition.to_slice())
+        finished_partitions = False
+        while record_or_partition := queue.get(block=True, timeout=TIMEOUT_SECONDS):
+            if record_or_partition == partition_sentinel:
+                finished_partitions = True
+            elif finished_partitions and record_or_partition == record_sentinel:
+                break
+            elif is_record(record_or_partition):
+                yield record_or_partition.stream_data
+                if AbstractStream.is_record(record_or_partition.stream_data):
+                    total_records_counter += 1
+                    if internal_config and internal_config.is_limit_reached(total_records_counter):
+                        return
+            elif is_partition(record_or_partition):
+                futures.append(self._threadpool.submit(partition_reader.process_partition, record_or_partition))
+                if slice_logger.should_log_slice_message(logger):
+                    # FIXME: This is creating slice log messages for parity with the synchronous implementation
+                    # but these cannot be used by the connector builder to build slices because they can be unordered
+                    yield slice_logger.create_slice_log_message(record_or_partition.to_slice())
         self._check_for_errors(futures)
 
     def _is_done(self, futures: List[Future[Any]]) -> bool:
