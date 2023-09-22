@@ -59,8 +59,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   /**
    * @param projectId
    * @param datasetLocation This is technically redundant with {@link BigQueryDestinationHandler}
-   *                        setting the query execution location, but let's be explicit since this is typically a
-   *                        compliance requirement.
+   *        setting the query execution location, but let's be explicit since this is typically a
+   *        compliance requirement.
    */
   public BigQuerySqlGenerator(final String projectId, final String datasetLocation) {
     this.projectId = projectId;
@@ -337,9 +337,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
         "raw_table_id", streamId.rawTableId(QUOTE)))
-        .replace("""
-                 UPDATE ${project_id}.${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
-                 """);
+            .replace("""
+                     UPDATE ${project_id}.${raw_table_id} SET _airbyte_loaded_at = NULL WHERE 1=1;
+                     """);
   }
 
   @Override
