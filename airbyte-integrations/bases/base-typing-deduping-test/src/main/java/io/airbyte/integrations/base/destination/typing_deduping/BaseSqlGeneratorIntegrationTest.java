@@ -960,6 +960,25 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     migrationAssertions(v1RawRecords, v2RawRecords);
   }
 
+  /**
+   * Sometimes, a sync doesn't delete its soft reset temp table. (it's not entirely clear why this
+   * happens.) In these cases, the next sync should not crash.
+   */
+  @Test
+  public void softResetIgnoresPreexistingTempTable() throws Exception {
+    createRawTable(incrementalDedupStream.id());
+
+    // Create a soft reset table. Use incremental append mode, in case the destination connector uses
+    // different
+    // indexing/partitioning/etc.
+    final String createOldTempTable = generator.createTable(incrementalAppendStream, SqlGenerator.SOFT_RESET_SUFFIX, false);
+    destinationHandler.execute(createOldTempTable);
+
+    // Execute a soft reset. This should not crash.
+    final String softReset = generator.softReset(incrementalDedupStream);
+    destinationHandler.execute(softReset);
+  }
+
   protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {
     final var v2RecordMap = v2RawRecords.stream().collect(Collectors.toMap(
         record -> record.get("_airbyte_raw_id").asText(),
