@@ -12,12 +12,12 @@
       "description": "The name of the screen tab field. Required on create and update. The maximum length is 255 characters."
     },
     "screenId": {
-      "type" : ["null", "integer"],
-      "description" : "Id of the related screen."
+      "type": ["null", "integer"],
+      "description": "Id of the related screen."
     },
     "tabId": {
-      "type" : ["null", "integer"],
-      "description" : "Id of the related tab."
+      "type": ["null", "integer"],
+      "description": "Id of the related tab."
     }
   },
   "additionalProperties": true,
