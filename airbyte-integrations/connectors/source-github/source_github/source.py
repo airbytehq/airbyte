@@ -188,7 +188,9 @@ class SourceGithub(AbstractSource):
             user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated'
         elif "401 Client Error: Unauthorized for url" in message:
             # 401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc
-            user_message = "Bad credentials, re-authentication or access token renewal is required"
+            user_message = (
+                "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token."
+            )
         return user_message
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
@@ -196,7 +198,10 @@ class SourceGithub(AbstractSource):
             authenticator = self._get_authenticator(config)
             _, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
             if not repositories:
-                return False, "Invalid repositories. Valid examples: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte"
+                return (
+                    False,
+                    "Some of the provided repositories couldn't be found. Please verify if every entered repository has a valid name and it matches the following format: airbytehq/airbyte airbytehq/another-repo airbytehq/* airbytehq/airbyte.",
+                )
             return True, None
 
         except Exception as e:
