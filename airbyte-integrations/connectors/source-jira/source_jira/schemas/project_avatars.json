@@ -7,8 +7,8 @@
       "description": "The ID of the avatar."
     },
     "projectId": {
-      "type" : ["null", "string"],
-      "description" : "Id of the related project."
+      "type": ["null", "string"],
+      "description": "Id of the related project."
     },
     "owner": {
       "type": "string",
