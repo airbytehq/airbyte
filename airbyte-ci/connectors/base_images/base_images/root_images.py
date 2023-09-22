@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from .published_image import PublishedImage
 
 PYTHON_3_9_18 = PublishedImage(

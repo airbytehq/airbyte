@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from contextlib import nullcontext as does_not_raise
 
 import pytest

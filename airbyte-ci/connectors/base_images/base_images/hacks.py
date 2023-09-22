@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import dagger
 
 # If we perform addition dagger operations on the container, we need to make sure that a mapping exists for the new field name.
