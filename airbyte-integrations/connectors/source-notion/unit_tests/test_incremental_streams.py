@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture, mark
-from source_notion.streams import Blocks, IncrementalNotionStream, Pages, Comments
+from source_notion.streams import Blocks, Comments, IncrementalNotionStream, Pages
 
 
 @fixture
