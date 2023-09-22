@@ -98,6 +98,8 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
     print(container.ports)
     ip_address = container.attrs["NetworkSettings"]["IPAddress"]
     import paramiko
+    from ping3 import ping
+    print(ping(ip_address))
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(ip_address, 22, "user1", "abc123@456#")
