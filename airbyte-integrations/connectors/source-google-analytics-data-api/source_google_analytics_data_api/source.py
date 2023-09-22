@@ -438,12 +438,12 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             existing_names = ", ".join(existing_names)
             raise ConfigurationError(f"custom_reports: {existing_names} already exist as a default report(s).")
 
-        if "credentials_json" in config["credentials"]:
-            try:
-                config["credentials"]["credentials_json"] = json.loads(config["credentials"]["credentials_json"])
-            except ValueError as e:
-                raise e
-                # raise ConfigurationError(f"credentials.credentials_json is not valid JSON. got {config['credentials']['credentials_json']} ----> }")
+        # if "credentials_json" in config["credentials"]:
+        #     try:
+        #         config["credentials"]["credentials_json"] = json.loads(config["credentials"]["credentials_json"])
+        #     except ValueError as e:
+        #         raise e
+        # raise ConfigurationError(f"credentials.credentials_json is not valid JSON. got {config['credentials']['credentials_json']} ----> }")
 
         config["date_ranges_start_date"] = self._validate_and_transform_start_date(config.get("date_ranges_start_date"))
 
