@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from os import getenv
 from typing import Any, Dict, List, Mapping, MutableMapping, Set, Tuple
 from urllib.parse import urlparse
