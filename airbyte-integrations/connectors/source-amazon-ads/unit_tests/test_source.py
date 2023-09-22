@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-import pytest
 import responses
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConnectorSpecification, Status, Type
 from jsonschema import Draft4Validator
@@ -65,23 +63,25 @@ def test_check(config_gen):
     assert command_check(source, config_gen(start_date=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
     assert len(responses.calls) == 2
 
-    with pytest.raises(Exception):
-        command_check(source, config_gen(start_date=""))
+    assert command_check(source, config_gen(start_date="")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    assert len(responses.calls) == 4
 
     assert source.check(None, config_gen(start_date="2022-02-20")) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 6
 
     assert command_check(source, config_gen(start_date="2022-20-02")) == AirbyteConnectionStatus(
         status=Status.FAILED, message="'month must be in 1..12'"
     )
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 6
 
-    with pytest.raises(Exception):
-        command_check(source, config_gen(start_date="no date"))
+    assert command_check(source, config_gen(start_date="no date")) == AirbyteConnectionStatus(
+        status=Status.FAILED, message="'String does not match format YYYY-MM-DD'"
+    )
+    assert len(responses.calls) == 6
 
     assert command_check(source, config_gen(region=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
-    assert len(responses.calls) == 6
-    assert url_strip_query(responses.calls[5].request.url) == "https://advertising-api.amazon.com/v2/profiles"
+    assert len(responses.calls) == 8
+    assert url_strip_query(responses.calls[7].request.url) == "https://advertising-api.amazon.com/v2/profiles"
 
     assert command_check(source, config_gen(look_back_window=...)) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
