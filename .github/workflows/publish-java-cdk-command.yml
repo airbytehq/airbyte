@@ -138,13 +138,21 @@ jobs:
       - name: Build Java CDK
         run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:build
       - name: Publish Java Modules to LocalMaven (Dry-Run)
+        if: ${{ !(env.DRY_RUN == 'false') }}
         run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal
+      - name: Upload jars as artifacts
+        if: ${{ !(env.DRY_RUN == 'false') }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: mavenlocal-jars
+          path: ~/.m2/io/airbyte
       - name: Publish Java Modules to CloudRepo
         if: ${{ env.DRY_RUN == 'false' }}
         run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:publish
         env:
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
+
       - name: Add Success Comment
         if: github.event.inputs.comment-id && success()
         uses: peter-evans/create-or-update-comment@v1
