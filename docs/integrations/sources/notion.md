@@ -21,7 +21,7 @@ To authenticate the Notion source connector, you need to use **one** of the foll
 We have provided a quick setup guide for creating an integration in Notion below. If you would like more detailed information and context on Notion integrations, or experience any difficulties with the integration setup process, please refer to the
 [official Notion documentation](https://developers.notion.com/docs).
 
-### Step 1: Create an integration in Notion​
+### Step 1: Create an integration in Notion​ and set capabilities
 
 1. Log in to your Notion workspace and navigate to the [My integrations](https://www.notion.so/my-integrations) page. Select **+ New integration**.
 
@@ -30,17 +30,21 @@ You must be the owner of the Notion workspace to create a new integration associ
 :::
 
 2. Enter a **Name** for your integration. Make sure you have selected the workspace containing your data to replicate from the **Associated workspace** dropdown menu, and click **Submit**.
-3. In the navbar, select **Capabilities** and make sure to check the **Read content** checkbox to authorize Airbyte to read the content of your pages. You may also wish to check the **Read comments** box, as well as set a User capability to allow access to user information. For more details on the capabilities you can enable, please refer to the [Notion documentation on capabilities](https://developers.notion.com/reference/capabilities).
+3. In the navbar, select **Capabilities** and make sure to check the following capabilities:
+- **Read content**
+- **Read comments**
+- **Read user information** (either with or without emails)
 
-### Step 2: Set permissions and acquire authorization credentials
+For more details on capabilities, please refer to the [Notion documentation](https://developers.notion.com/reference/capabilities).
+
+### Step 2: Share pages and acquire authorization credentials
 
 #### Access Token (Cloud and Open Source)
 
-If you are authenticating via Access Token, you will need to manually set permissions for each page you want to share with Airbyte.
+If you are authenticating via Access Token, you will need to manually share each page you want to sync with Airbyte.
 
 1. Navigate to the page(s) you want to share with Airbyte. Click the **•••** menu at the top right of the page, select **Add connections**, and choose the integration you created in Step 1.
-2. Once you have selected all the pages to share, you can find and copy the Access Token from the **Secrets** tab of your Notion integration's page. Then proceed to
-   [setting up the connector in Airbyte](#step-2-set-up-the-notion-connector-in-airbyte).
+2. Once you have selected all the pages to share, you can find and copy the Access Token from the **Secrets** tab of your Notion integration's page. Then proceed to [setting up the connector in Airbyte](#step-2-set-up-the-notion-connector-in-airbyte).
 
 <!-- env:oss -->
 
@@ -96,7 +100,7 @@ The Notion source connector supports the following streams. For more information
 
 :::note
 
-The users stream does not support Incremental - Append sync mode.
+The users stream does not support Incremental sync mode.
 
 :::
 
