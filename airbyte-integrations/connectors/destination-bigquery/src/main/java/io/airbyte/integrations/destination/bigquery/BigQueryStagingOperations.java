@@ -55,14 +55,14 @@ public interface BigQueryStagingOperations {
    * @param stream Name of stream
    * @param tableId Name of destination's target table
    * @param schema Schema of the data being synced
-   * @param stagedFiles collection of staged files
+   * @param stagedFileName name of staged file
    * @throws Exception
    */
   void copyIntoTableFromStage(final String datasetId,
                               final String stream,
                               final TableId tableId,
                               final Schema schema,
-                              final List<String> stagedFiles)
+                              final String stagedFileName)
       throws Exception;
 
   /**

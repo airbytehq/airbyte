@@ -19,15 +19,11 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
-import io.airbyte.integrations.destination.s3.avro.JsonToAvroSchemaConverter;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.io.IOException;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import javax.annotation.Nullable;
-import org.apache.avro.Schema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,18 +48,6 @@ public class BigQueryDenormalizedDestination extends BigQueryDestination {
   protected boolean isDefaultAirbyteTmpTableSchema() {
     // Build temporary table structure based on incoming JsonSchema
     return false;
-  }
-
-  @Override
-  protected BiFunction<BigQueryRecordFormatter, AirbyteStreamNameNamespacePair, Schema> getAvroSchemaCreator() {
-    // the json schema needs to be processed by the record former to denormalize
-    return (formatter, pair) -> new JsonToAvroSchemaConverter().getAvroSchema(formatter.getJsonSchema(), pair.getName(),
-        pair.getNamespace(), true, false, false, true);
-  }
-
-  @Override
-  protected Function<JsonNode, BigQueryRecordFormatter> getRecordFormatterCreator(final BigQuerySQLNameTransformer namingResolver) {
-    return streamSchema -> new GcsBigQueryDenormalizedRecordFormatter(streamSchema, namingResolver);
   }
 
   @Override
