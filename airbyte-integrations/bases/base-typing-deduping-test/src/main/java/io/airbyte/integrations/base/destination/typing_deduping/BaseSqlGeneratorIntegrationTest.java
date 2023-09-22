@@ -374,6 +374,41 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
+   * Test that T+D supports streams whose name and namespace are the same.
+   */
+  @Test
+  public void incrementalDedupSameNameNamespace() throws Exception {
+    final StreamId streamId = buildStreamId(namespace, namespace, namespace + "_raw");
+    final StreamConfig stream = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND_DEDUP,
+        incrementalDedupStream.primaryKey(),
+        incrementalDedupStream.cursor(),
+        incrementalDedupStream.columns());
+
+    createRawTable(streamId);
+    createFinalTable(stream, "");
+    insertRawTableRecords(
+        streamId,
+        List.of(Jsons.deserialize(
+            """
+            {
+              "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {"id1": 1, "id2": 100}
+            }
+            """)));
+
+    final String sql = generator.updateTable(stream, "");
+    destinationHandler.execute(sql);
+
+    final List<JsonNode> rawRecords = dumpRawTableRecords(streamId);
+    final List<JsonNode> finalRecords = dumpFinalTableRecords(streamId, "");
+    verifyRecordCounts(1, rawRecords, 1, finalRecords);
+  }
+
+  /**
    * Run a full T+D update for an incremental-dedup stream, writing to a final table with "_foo"
    * suffix, with values for all data types. Verifies all behaviors for all types:
    * <ul>

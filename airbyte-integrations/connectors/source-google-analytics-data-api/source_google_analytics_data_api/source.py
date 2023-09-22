@@ -33,6 +33,7 @@ from .utils import (
     get_metrics_type,
     get_source_defined_primary_key,
     metrics_type_to_python,
+    serialize_to_date_string,
 )
 
 # set the quota handler globaly since limitations are the same for all streams
@@ -131,7 +132,11 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
     @property
     def cursor_field(self) -> Optional[str]:
-        return "date" if "date" in self.config.get("dimensions", []) else []
+        date_fields = ["date", "yearWeek", "yearMonth", "year"]
+        for field in date_fields:
+            if field in self.config.get("dimensions", []):
+                return field
+        return []
 
     @property
     def primary_key(self):
@@ -169,7 +174,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         schema["properties"].update(
             {
-                d.replace(":", "_"): {
+                d: {
                     "type": get_dimensions_type(d),
                     "description": self.metadata["dimensions"].get(d, {}).get("description", d),
                 }
@@ -187,7 +192,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         schema["properties"].update(
             {
-                m.replace(":", "_"): {
+                m: {
                     "type": ["null", get_metrics_type(self.metadata["metrics"].get(m, {}).get("type"))],
                     "description": self.metadata["metrics"].get(m, {}).get("description", m),
                 }
@@ -229,9 +234,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     ) -> Iterable[Mapping]:
         r = response.json()
 
-        dimensions = [h.get("name").replace(":", "_") if "name" in h else None for h in r.get("dimensionHeaders", [{}])]
-        metrics = [h.get("name").replace(":", "_") if "name" in h else None for h in r.get("metricHeaders", [{}])]
-        metrics_type_map = {h.get("name").replace(":", "_"): h.get("type") for h in r.get("metricHeaders", [{}]) if "name" in h}
+        dimensions = [h.get("name") for h in r.get("dimensionHeaders", [{}])]
+        metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
+        metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}]) if "name" in h}
 
         for row in r.get("rows", []):
             record = {
@@ -254,12 +259,22 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
+        updated_state = (
+            utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
+            if self.cursor_field == "date"
+            else latest_record[self.cursor_field]
+        )
         stream_state_value = current_stream_state.get(self.cursor_field)
         if stream_state_value:
-            stream_state_value = utils.string_to_date(stream_state_value, self._record_date_format, old_format=DATE_FORMAT)
+            stream_state_value = (
+                utils.string_to_date(stream_state_value, self._record_date_format, old_format=DATE_FORMAT)
+                if self.cursor_field == "date"
+                else stream_state_value
+            )
             updated_state = max(updated_state, stream_state_value)
-        current_stream_state[self.cursor_field] = updated_state.strftime(self._record_date_format)
+        current_stream_state[self.cursor_field] = (
+            updated_state.strftime(self._record_date_format) if self.cursor_field == "date" else updated_state
+        )
         return current_stream_state
 
     def request_body_json(
@@ -276,6 +291,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "offset": str(0),
             "limit": str(self.page_size),
         }
+
         if next_page_token and next_page_token.get("offset") is not None:
             payload.update({"offset": str(next_page_token["offset"])})
         return payload
@@ -287,6 +303,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         start_date = stream_state and stream_state.get(self.cursor_field)
         if start_date:
+            start_date = (
+                serialize_to_date_string(start_date, DATE_FORMAT, self.cursor_field) if not self.cursor_field == "date" else start_date
+            )
             start_date = utils.string_to_date(start_date, self._record_date_format, old_format=DATE_FORMAT)
             start_date -= LOOKBACK_WINDOW
             start_date = max(start_date, self.config["date_ranges_start_date"])

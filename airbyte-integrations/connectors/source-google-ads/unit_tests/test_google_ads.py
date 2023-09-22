@@ -152,3 +152,36 @@ def test_parse_single_result():
     date = "2001-01-01"
     response = GoogleAds.parse_single_result(SAMPLE_SCHEMA, MockedDateSegment(date))
     assert response == response
+
+
+def test_get_fields_metadata(mocker):
+    # Mock the GoogleAdsClient to return our mock client
+    mocker.patch("source_google_ads.google_ads.GoogleAdsClient", MockGoogleAdsClient)
+
+    # Instantiate the GoogleAds client
+    google_ads_client = GoogleAds(**SAMPLE_CONFIG)
+
+    # Define the fields we want metadata for
+    fields = ["field1", "field2", "field3"]
+
+    # Call the method to get fields metadata
+    response = google_ads_client.get_fields_metadata(fields)
+
+    # Get the mock service to check the request query
+    mock_service = google_ads_client.client.get_service("GoogleAdsFieldService")
+
+    # Assert the constructed request query
+    expected_query = """
+        SELECT
+          name,
+          data_type,
+          enum_values,
+          is_repeated
+        WHERE name in ('field1','field2','field3')
+        """
+    assert mock_service.request_query.strip() == expected_query.strip()
+
+    # Assert the response
+    assert set(response.keys()) == set(fields)
+    for field in fields:
+        assert response[field].name == field
