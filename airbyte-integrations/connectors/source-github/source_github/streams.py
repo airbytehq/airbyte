@@ -20,8 +20,7 @@ from .graphql import CursorStorage, QueryReactions, get_query_issue_reactions, g
 from .utils import getter
 
 
-class GithubStream(HttpStream, ABC):
-    url_base = "https://api.github.com/"
+class GithubStreamABC(HttpStream, ABC):
 
     primary_key = "id"
 
@@ -30,29 +29,19 @@ class GithubStream(HttpStream, ABC):
 
     stream_base_params = {}
 
-    def __init__(self, repositories: List[str], page_size_for_large_streams: int, access_token_type: str = "", **kwargs):
+    def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
         super().__init__(**kwargs)
-        self.repositories = repositories
+
         self.access_token_type = access_token_type
+        self.api_url = api_url
 
-        # GitHub pagination could be from 1 to 100.
-        # This parameter is deprecated and in future will be used sane default, page_size: 10
-        self.page_size = page_size_for_large_streams if self.large_stream else constants.DEFAULT_PAGE_SIZE
-
-        MAX_RETRIES = 3
-        adapter = requests.adapters.HTTPAdapter(max_retries=MAX_RETRIES)
-        self._session.mount("https://", adapter)
+    @property
+    def url_base(self) -> str:
+        return self.api_url
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         return None
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/{self.name}"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for repository in self.repositories:
-            yield {"repository": repository}
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         links = response.links
@@ -62,13 +51,32 @@ class GithubStream(HttpStream, ABC):
             page = dict(parse.parse_qsl(parsed_link.query)).get("page")
             return {"page": page}
 
-    def check_graphql_rate_limited(self, response_json) -> bool:
-        errors = response_json.get("errors")
-        if errors:
-            for error in errors:
-                if error.get("type") == "RATE_LIMITED":
-                    return True
-        return False
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+
+        params = {"per_page": self.page_size}
+
+        if next_page_token:
+            params.update(next_page_token)
+
+        params.update(self.stream_base_params)
+
+        return params
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        # Without sending `User-Agent` header we will be getting `403 Client Error: Forbidden for url` error.
+        return {"User-Agent": "PostmanRuntime/7.28.0"}
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        for record in response.json():  # GitHub puts records in an array.
+            yield self.transform(record=record, stream_slice=stream_slice)
 
     def should_retry(self, response: requests.Response) -> bool:
         if super().should_retry(response):
@@ -118,16 +126,6 @@ class GithubStream(HttpStream, ABC):
         reset_time = response.headers.get("X-RateLimit-Reset")
         if reset_time:
             return max(float(reset_time) - time.time(), min_backoff_time)
-
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        if (
-            isinstance(exception, DefaultBackoffException)
-            and exception.response.status_code == requests.codes.BAD_GATEWAY
-            and self.large_stream
-            and self.page_size > 1
-        ):
-            return f'Please try to decrease the "Page size for large streams" below {self.page_size}. The stream "{self.name}" is a large stream, such streams can fail with 502 for high "page_size" values.'
-        return super().get_error_display_message(exception)
 
     def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # get out the stream_slice parts for later use.
@@ -188,34 +186,41 @@ class GithubStream(HttpStream, ABC):
                 self.logger.error(f"Undefined error while reading records: {e.response.text}")
                 raise e
 
-            self.logger.warn(error_msg)
+            self.logger.warning(error_msg)
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
 
-        params = {"per_page": self.page_size}
+class GithubStream(GithubStreamABC):
+    def __init__(self, repositories: List[str], page_size_for_large_streams: int, **kwargs):
+        super().__init__(**kwargs)
+        self.repositories = repositories
+        # GitHub pagination could be from 1 to 100.
+        # This parameter is deprecated and in future will be used sane default, page_size: 10
+        self.page_size = page_size_for_large_streams if self.large_stream else constants.DEFAULT_PAGE_SIZE
 
-        if next_page_token:
-            params.update(next_page_token)
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/{self.name}"
 
-        params.update(self.stream_base_params)
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for repository in self.repositories:
+            yield {"repository": repository}
 
-        return params
+    def check_graphql_rate_limited(self, response_json) -> bool:
+        errors = response_json.get("errors")
+        if errors:
+            for error in errors:
+                if error.get("type") == "RATE_LIMITED":
+                    return True
+        return False
 
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        # Without sending `User-Agent` header we will be getting `403 Client Error: Forbidden for url` error.
-        return {"User-Agent": "PostmanRuntime/7.28.0"}
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        for record in response.json():  # GitHub puts records in an array.
-            yield self.transform(record=record, stream_slice=stream_slice)
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        if (
+            isinstance(exception, DefaultBackoffException)
+            and exception.response.status_code == requests.codes.BAD_GATEWAY
+            and self.large_stream
+            and self.page_size > 1
+        ):
+            return f'Please try to decrease the "Page size for large streams" below {self.page_size}. The stream "{self.name}" is a large stream, such streams can fail with 502 for high "page_size" values.'
+        return super().get_error_display_message(exception)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
@@ -368,7 +373,7 @@ class IssueLabels(GithubStream):
         return f"repos/{stream_slice['repository']}/labels"
 
 
-class Organizations(GithubStream):
+class Organizations(GithubStreamABC):
     """
     API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
     """
@@ -377,7 +382,7 @@ class Organizations(GithubStream):
     page_size = 100
 
     def __init__(self, organizations: List[str], access_token_type: str = "", **kwargs):
-        super(GithubStream, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.organizations = organizations
         self.access_token_type = access_token_type
 
