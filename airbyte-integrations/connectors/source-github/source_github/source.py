@@ -2,7 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Dict, List, Mapping, Set, Tuple
+from os import getenv
+from typing import Any, Dict, List, Mapping, MutableMapping, Set, Tuple
+from urllib.parse import urlparse
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType, SyncMode
@@ -92,7 +94,7 @@ class SourceGithub(AbstractSource):
                 unchecked_repos.add(org_repos)
 
         if unchecked_orgs:
-            stream = Repositories(authenticator=authenticator, organizations=unchecked_orgs)
+            stream = Repositories(authenticator=authenticator, organizations=unchecked_orgs, api_url=config.get("api_url"))
             for record in read_full_refresh(stream):
                 repositories.add(record["full_name"])
                 organizations.add(record["organization"])
@@ -102,6 +104,7 @@ class SourceGithub(AbstractSource):
             stream = RepositoryStats(
                 authenticator=authenticator,
                 repositories=unchecked_repos,
+                api_url=config.get("api_url"),
                 # This parameter is deprecated and in future will be used sane default, page_size: 10
                 page_size_for_large_streams=config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM),
             )
@@ -138,6 +141,25 @@ class SourceGithub(AbstractSource):
                 requests_per_hour=requests_per_hour,
             )
         return MultipleTokenAuthenticator(tokens=tokens, auth_method="token")
+
+    def _ensure_default_values(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        config.setdefault("api_url", "https://api.github.com")
+        api_url_parsed = urlparse(config["api_url"])
+
+        if not api_url_parsed.scheme.startswith("http"):
+            message = "Please enter a full URL starting with http..."
+        elif api_url_parsed.scheme == "http" and not self._is_http_allowed():
+            message = "HTTP connection is insecure and is not allowed in this environment. Please use `https` instead."
+        elif not api_url_parsed.netloc:
+            message = "Please provide a correct URL"
+        else:
+            return config
+
+        raise AirbyteTracedException(message=message, failure_type=FailureType.config_error)
+
+    @staticmethod
+    def _is_http_allowed() -> bool:
+        return getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD"
 
     @staticmethod
     def _get_branches_data(selected_branches: str, full_refresh_args: Dict[str, Any] = None) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
@@ -194,6 +216,7 @@ class SourceGithub(AbstractSource):
         return user_message
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        config = self._ensure_default_values(config)
         try:
             authenticator = self._get_authenticator(config)
             _, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
@@ -211,6 +234,7 @@ class SourceGithub(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
+        config = self._ensure_default_values(config)
         try:
             organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
         except Exception as e:
@@ -238,11 +262,17 @@ class SourceGithub(AbstractSource):
         page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
         access_token_type, _ = self.get_access_token(config)
 
-        organization_args = {"authenticator": authenticator, "organizations": organizations, "access_token_type": access_token_type}
+        organization_args = {
+            "authenticator": authenticator,
+            "organizations": organizations,
+            "api_url": config.get("api_url"),
+            "access_token_type": access_token_type,
+        }
         organization_args_with_start_date = {**organization_args, "start_date": config["start_date"]}
 
         repository_args = {
             "authenticator": authenticator,
+            "api_url": config.get("api_url"),
             "repositories": repositories,
             "page_size_for_large_streams": page_size,
             "access_token_type": access_token_type,
