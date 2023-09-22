@@ -78,7 +78,6 @@ public abstract class AbstractCdcPostgresSourceSslAcceptanceTest extends CdcPost
   }
 
   protected abstract String getServerImageName();
-
   public abstract ImmutableMap getCertificateConfiguration();
 
 }
