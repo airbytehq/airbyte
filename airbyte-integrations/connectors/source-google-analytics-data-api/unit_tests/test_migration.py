@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
-from source_google_analytics_data_api.config_migrations import MigrateCustomReports
+from source_google_analytics_data_api.config_migrations import MigratePropertyID
 
 
 @patch.object(SourceGoogleAnalyticsDataApi, "read_config")
@@ -36,4 +36,4 @@ def test_migration(ab_entrypoint_extract_config_mock, source_write_config_mock, 
 
     source_write_config_mock.side_effect = check_migrated_value
 
-    MigrateCustomReports.migrate(["--config", "/path/to/config.json"], source)
+    MigratePropertyID.migrate(["--config", "/path/to/config.json"], source)
