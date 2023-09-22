@@ -187,6 +187,9 @@
     "float_ts": {
       "type": ["null", "number"]
     },
+    "is_locked": {
+      "type": ["null", "boolean"]
+    },
     "type": {
       "type": ["null", "string"]
     },

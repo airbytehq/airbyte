@@ -519,7 +519,7 @@ def test_sprints_stream(config, sprints_response):
 
 
 @responses.activate
-def test_board_does_not_support_sprints(config):
+def test_board_does_not_support_sprints(config, caplog):
     url = f"https://{config['domain']}/rest/agile/1.0/board/4/sprint?maxResults=50"
     error = {'errorMessages': ['The board does not support sprints'], 'errors': {}}
     responses.add(responses.GET, url, json=error, status=400)
@@ -529,6 +529,9 @@ def test_board_does_not_support_sprints(config):
     response = requests.get(url)
     actual = stream.should_retry(response)
     assert actual is False
+    assert ("The board does not support sprints. The board does not have a sprint board. if it's a team-managed one, "
+            "does it have sprints enabled under project settings? If it's a company-managed one,"
+            " check that it has at least one Scrum board associated with it.") in caplog.text
 
 
 @responses.activate
@@ -687,7 +690,7 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
     projects_response['values'].append({"id": "3", "key": "Project1"})
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
         json=projects_response,
     )
     responses.add(
@@ -703,7 +706,7 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
     records = list(read_full_refresh(stream))
     assert len(records) == 1
     assert len(responses.calls) == 4
-    error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"].Check permissions for this project. Skipping for now."
+    error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"].Check permissions for this project. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
     assert error_message in caplog.messages
 
 
@@ -721,7 +724,7 @@ def test_issue_comments_stream(config, mock_projects_responses, mock_issues_resp
     records = [r for r in
                stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 2
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -754,6 +757,26 @@ def test_issue_property_keys_stream(config, issue_property_keys_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
                                               stream_slice={"issue_key": "TESTKEY13-1", "key": "TESTKEY13-1"})]
     assert len(records) == 2
+    assert len(responses.calls) == 1
+
+
+@responses.activate
+def test_issue_property_keys_stream_not_found_skip(config, issue_property_keys_response):
+    config["domain"] = "test_skip_properties"
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/properties?maxResults=50",
+        json={"errorMessages": [
+            "Issue does not exist or you do not have permission to see it."], "errors": {}},
+        status=404,
+    )
+
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = IssuePropertyKeys(**args)
+    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
+                                              stream_slice={"issue_key": "TESTKEY13-1", "key": "TESTKEY13-1"})]
+    assert len(records) == 0
     assert len(responses.calls) == 1
 
 
@@ -862,7 +885,7 @@ def test_issue_worklogs_stream(config, mock_projects_responses, mock_issues_resp
     stream = IssueWorklogs(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -878,7 +901,7 @@ def test_issue_watchers_stream(config, mock_projects_responses, mock_issues_resp
     stream = IssueWatchers(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 1
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -895,7 +918,7 @@ def test_issue_votes_stream(config, mock_projects_responses, mock_issues_respons
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 1
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -912,7 +935,7 @@ def test_issue_remote_links_stream(config, mock_projects_responses, mock_issues_
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
     assert len(records) == 2
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 2
 
 
 @responses.activate

@@ -1,5 +1,12 @@
 # S3 Migration Guide
 
+## Upgrading to 4.0.4
+
+Note: This change is only breaking if you created S3 sources using the API and did not provide `streams.*.format`.
+
+Following 4.0.0 config change, we are removing `streams.*.file_type` field which was redundant with `streams.*.format`. This is a breaking change as `format` now needs to be required. Given that the UI would always populate `format`, only users creating actors using the API and not providing `format` are be affected. In order to fix that, simply set `streams.*.format` to `{"filetype": <file_type>}`.
+
+
 ## Upgrading to 4.0.0
 
 We have revamped the implementation to use the File-Based CDK. The goal is to increase resiliency and reduce development time. Here are the breaking changes:
@@ -12,9 +19,10 @@ Given that you are not affected by the above, your migration should proceed auto
 * Run at least one sync for all your source-s3 connectors
   * Migration will be performed and an AirbyteControlMessage will be emitted to the platform so that the migrated config is persisted
 
-If a user tries to modify the config after source-s3 is upgraded to v4.0.0 and before there was a sync or a periodic discover check, he will have to update the already provided fields manually. To avoid this, he can run a sync on any of the connections for this source.
+If a user tries to modify the config after source-s3 is upgraded to v4.0.0 and before there was a sync or a periodic discover check, they will have to update the already provided fields manually. To avoid this, a sync can be executed on any of the connections for this source.
 
 Other than breaking changes, we have changed the UI from which the user configures the source:
 * You can now configure multiple streams by clicking on `Add` under `Streams`.
 * `Output Stream Name` has been renamed to `Name` when configuring a specific stream.
 * `Pattern of files to replicate` field has been renamed `Globs` under the stream configuration.
+

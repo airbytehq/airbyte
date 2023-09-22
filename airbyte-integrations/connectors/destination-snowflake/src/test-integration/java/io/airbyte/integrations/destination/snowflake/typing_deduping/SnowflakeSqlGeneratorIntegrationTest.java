@@ -37,7 +37,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
-import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
@@ -332,7 +331,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
     final String sql = generator.updateTable(incrementalDedupStream, "");
     final Exception exception = assertThrows(
-        SnowflakeSQLException.class,
+        RuntimeException.class,
         () -> destinationHandler.execute(sql));
 
     assertTrue(exception.getMessage().contains("_AB_MISSING_PRIMARY_KEY"));
