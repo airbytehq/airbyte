@@ -116,16 +116,16 @@
       "enum": ["active", "disabled", "pending_deletion", "deletion_in_progress"]
     },
     "access": {
-      "type" : ["null", "array"],
-      "items" : {
-        "type" : ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
       }
     },
-    "firstTransactionEvent": {"type" : ["null", "boolean"]},
-    "hasMonitors": {"type" : ["null", "boolean"]},
-    "hasProfiles": {"type" : ["null", "boolean"]},
-    "hasReplays": {"type" : ["null", "boolean"]},
-    "hasSessions": {"type" : ["null", "boolean"]},
-    "hasMinifiedStackTrace": {"type" : ["null", "boolean"]}
+    "firstTransactionEvent": { "type": ["null", "boolean"] },
+    "hasMonitors": { "type": ["null", "boolean"] },
+    "hasProfiles": { "type": ["null", "boolean"] },
+    "hasReplays": { "type": ["null", "boolean"] },
+    "hasSessions": { "type": ["null", "boolean"] },
+    "hasMinifiedStackTrace": { "type": ["null", "boolean"] }
   }
 }

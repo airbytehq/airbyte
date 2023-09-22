@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import pytest
 from source_jira.source import SourceJira
 from source_jira.streams import ApplicationRoles

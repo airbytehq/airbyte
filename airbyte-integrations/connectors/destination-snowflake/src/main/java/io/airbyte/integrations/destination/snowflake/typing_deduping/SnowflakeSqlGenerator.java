@@ -36,7 +36,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   private final ColumnId CDC_DELETED_AT_COLUMN = buildColumnId("_ab_cdc_deleted_at");
 
   // See https://docs.snowflake.com/en/sql-reference/reserved-keywords.html
-  // and https://github.com/airbytehq/airbyte/blob/f226503bd1d4cd9c7412b04d47de584523988443/airbyte-integrations/bases/base-normalization/normalization/transform_catalog/reserved_keywords.py
+  // and
+  // https://github.com/airbytehq/airbyte/blob/f226503bd1d4cd9c7412b04d47de584523988443/airbyte-integrations/bases/base-normalization/normalization/transform_catalog/reserved_keywords.py
   private static final List<String> RESERVED_COLUMN_NAMES = ImmutableList.of(
       "CURRENT_DATE",
       "CURRENT_TIME",
@@ -62,8 +63,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     // No escaping needed, as far as I can tell. We quote all our identifier names.
     final String nameWithSuffix = name + suffix;
     return new ColumnId(prefixReservedColumnName(escapeSqlIdentifier(name).toUpperCase()) + suffix,
-                        nameWithSuffix,
-                        nameWithSuffix.toUpperCase());
+        nameWithSuffix,
+        nameWithSuffix.toUpperCase());
   }
 
   public String toDialectType(final AirbyteType type) {
@@ -196,18 +197,22 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   /**
-   * The `${` bigram causes problems inside script blocks. For example, a perfectly innocuous query like
-   * `SELECT "_airbyte_data":"${foo}" FROM ...` works fine normally, but running this block will throw
-   * an error:
-   * <pre>{@code
+   * The `${` bigram causes problems inside script blocks. For example, a perfectly innocuous query
+   * like `SELECT "_airbyte_data":"${foo}" FROM ...` works fine normally, but running this block will
+   * throw an error:
+   *
+   * <pre>
+   * {@code
    * EXECUTE IMMEDIATE 'BEGIN
    * LET x INTEGER := (SELECT "_airbyte_data":"${foo}" FROM ...);
    * END;';
-   * }</pre>
+   * }
+   * </pre>
    * <p>
-   * This method is a workaround for this behavior. We switch to using the {@code get} method to extract
-   * JSON values, and avoid the `${` sequence by using string concatenation. This generates a sql statement
-   * like {@code SELECT TRY_CAST((get("_airbyte_data", '$' + '{foo}')::text) as INTEGER) FROM ...}.
+   * This method is a workaround for this behavior. We switch to using the {@code get} method to
+   * extract JSON values, and avoid the `${` sequence by using string concatenation. This generates a
+   * sql statement like {@code SELECT TRY_CAST((get("_airbyte_data", '$' + '{foo}')::text) as INTEGER)
+   * FROM ...}.
    */
   private String extractAndCastInsideScript(final ColumnId column, final AirbyteType airbyteType) {
     final String[] parts = column.originalName().split("\\$\\{", -1);
@@ -561,8 +566,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   /**
-   * Snowflake json object access is done using double-quoted strings, e.g. `SELECT "_airbyte_data":"foo"`.
-   * As such, we need to escape double-quotes in the field name.
+   * Snowflake json object access is done using double-quoted strings, e.g. `SELECT
+   * "_airbyte_data":"foo"`. As such, we need to escape double-quotes in the field name.
    */
   public static String escapeJsonIdentifier(final String identifier) {
     // Note that we don't need to escape backslashes here!
@@ -592,8 +597,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   private static String prefixReservedColumnName(final String columnName) {
-    return RESERVED_COLUMN_NAMES.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ?
-        "_" + columnName : columnName;
+    return RESERVED_COLUMN_NAMES.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ? "_" + columnName : columnName;
   }
 
   public static String escapeSingleQuotedString(final String str) {
