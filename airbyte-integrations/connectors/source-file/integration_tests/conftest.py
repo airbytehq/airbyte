@@ -142,11 +142,9 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
     print(container.attrs["NetworkSettings"])
     print(container.attrs["NetworkSettings"]["Networks"])
     time.sleep(5)
-    resp = container.exec_run("ls", stream=True)
+    resp = container.exec_run("ls")
     print("RESPONSE")
-    for line in resp:
-        print(line)
-    from ping3 import ping
+    print(resp.output)
     print(ping(ip_address))
     # ssh = paramiko.SSHClient()
     # ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
