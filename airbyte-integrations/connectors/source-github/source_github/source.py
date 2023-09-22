@@ -189,7 +189,7 @@ class SourceGithub(AbstractSource):
         elif "401 Client Error: Unauthorized for url" in message:
             # 401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc
             user_message = (
-                "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token"
+                "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token."
             )
         return user_message
 
