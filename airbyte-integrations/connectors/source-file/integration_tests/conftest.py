@@ -131,22 +131,23 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
         detach=True,
     )
 
-    wait_net_service("localhost", 2222, 10)
+    # wait_net_service("localhost", 2222, 10)
     # container = docker_client.containers.get(container.name)
     container.reload()
     print(container.attrs.get("Status"))
     print(container.attrs.get("State"))
     print(container.ports)
     ip_address = container.attrs["NetworkSettings"]["IPAddress"]
-    import paramiko
+    # import paramiko
+    time.sleep(60)
     from ping3 import ping
     print(ping(ip_address))
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(ip_address, 22, "user1", "abc123@456#")
-    stdin, stdout, stderr = ssh.exec_command("ls")
-    lines = stdout.readlines()
-    print(lines)
+    # ssh = paramiko.SSHClient()
+    # ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # ssh.connect(ip_address, 22, "user1", "abc123@456#")
+    # stdin, stdout, stderr = ssh.exec_command("ls")
+    # lines = stdout.readlines()
+    # print(lines)
     yield "localhost"
 
     container.kill()
