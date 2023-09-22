@@ -130,7 +130,7 @@ jobs:
       - name: Build Java CDK
         run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:build
       - name: Publish Java Modules to LocalMaven (Dry-Run)
-        run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:publishToLocalMaven
+        run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:publishToMavenLocal
       - name: Publish Java Modules to CloudRepo
         if: ${{ env.DRY_RUN == 'false' }}
         run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:publish
