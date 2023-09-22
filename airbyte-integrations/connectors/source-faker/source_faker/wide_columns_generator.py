@@ -72,6 +72,7 @@ class WideColumnGenerator:
             elif key == "updated_at":
                 record["updated_at"] = format_airbyte_time(datetime.datetime.now())
             else:
+                # keys should be named {type}_{column count}, e.g. string_42, time_w_tz_5, etc.
                 last_underscore = key.rfind("_")
                 if last_underscore > 0:
                     record[key] = next_value(key[:last_underscore])
@@ -97,7 +98,7 @@ class WideColumnGenerator:
         numeric = Numeric(seed=seed_with_offset)
         text = Text(seed=seed_with_offset)
 
-    def generate(self, user_id: int) -> List[Dict]:
+    def generate(self, _: int) -> List[Dict]:
         row = self.new_record()
         record = AirbyteRecordMessage(stream=self.stream_name, data=row, emitted_at=now_millis())
         return AirbyteMessageWithCachedJSON(type=Type.RECORD, record=record)
