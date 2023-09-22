@@ -94,8 +94,8 @@ TEST_CMDS = [
     # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-gcs:test",
 
     # Working on:
-    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:bases:typing-deduping:build",
-    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:bases:typing-deduping-test:build",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping:build",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping-test:build",
 
     # Failing:
     # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:build", # 10 failing tests (mostly due to s3)
@@ -282,7 +282,7 @@ def refactor_cdk_package_refs() -> None:
             REPO_ROOT,
         ),
         (
-            r"(?<!package )io\.airbyte\.(integrations\.base|integrations\.debezium|integrations\.standardtest|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.normalization|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)",
+            r"(?<!package )io\.airbyte\.(?!.*typing_deduping)(integrations\.base|integrations\.debezium|integrations\.standardtest|integrations\.destination\.NamingConventionTransformer|integrations\.destination\.StandardNameTransformer|integrations\.destination\.jdbc|integrations\.destination\.record_buffer|integrations\.destination\.normalization|integrations\.destination\.buffered_stream_consumer|integrations\.destination\.dest_state_lifecycle_manager|integrations\.destination\.staging|integrations\.destination_async|integrations\.source\.jdbc|integrations\.source\.relationaldb|integrations\.util|integrations\.BaseConnector|test\.utils)",
             r"io.airbyte.cdk.\1",
             REPO_ROOT,
         ),
