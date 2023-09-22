@@ -64,7 +64,7 @@ MAIN_PACKAGES = {
     ],
     DB_DESTINATIONS_FEATURE: [
         "airbyte-integrations/bases/bases-destination-jdbc",
-        "airbyte-integrations/bases/base-typing-deduping",
+        # "airbyte-integrations/bases/base-typing-deduping",  # Excluded by request
     ],
 }
 TEST_FIXTURE_PACKAGES = {
@@ -76,7 +76,7 @@ TEST_FIXTURE_PACKAGES = {
         "airbyte-integrations/bases/standard-source-test",
     ],
     DB_DESTINATIONS_FEATURE: [
-        "airbyte-integrations/bases/base-typing-deduping-test",
+        # "airbyte-integrations/bases/base-typing-deduping-test",  # Excluded by request
         "airbyte-integrations/bases/s3-destination-base-integration-test",
         "airbyte-integrations/bases/standard-destination-test",
     ]
@@ -94,6 +94,8 @@ TEST_CMDS = [
     # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-gcs:test",
 
     # Working on:
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:bases:typing-deduping:build",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:bases:typing-deduping-test:build",
 
     # Failing:
     # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:build", # 10 failing tests (mostly due to s3)
