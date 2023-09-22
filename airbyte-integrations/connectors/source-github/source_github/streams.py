@@ -143,7 +143,7 @@ class GithubStreamABC(HttpStream, ABC):
                 if isinstance(self, Organizations):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{organisation}`."
                 elif isinstance(self, TeamMemberships):
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
+                    error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
                 else:
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`."
             elif e.response.status_code == requests.codes.FORBIDDEN:
