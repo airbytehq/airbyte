@@ -69,8 +69,8 @@ public class BigQueryStagingConsumerFactory {
   }
 
   /**
-   * Out BigQuery's uploader threads use a fair amount of memory. We believe this is largely
-   * due to the sdk client we use.
+   * Out BigQuery's uploader threads use a fair amount of memory. We believe this is largely due to
+   * the sdk client we use.
    *
    * @return number of bytes to make available for message buffering.
    */
@@ -79,10 +79,10 @@ public class BigQueryStagingConsumerFactory {
   }
 
   private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
-                                                                                      final ConfiguredAirbyteCatalog catalog,
-                                                                                      final ParsedCatalog parsedCatalog,
-                                                                                      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                                                                      final Function<String, String> tmpTableNameTransformer) {
+                                                                        final ConfiguredAirbyteCatalog catalog,
+                                                                        final ParsedCatalog parsedCatalog,
+                                                                        final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                                                        final Function<String, String> tmpTableNameTransformer) {
     return catalog.getStreams().stream()
         .map(configuredStream -> {
           Preconditions.checkNotNull(configuredStream.getDestinationSyncMode(), "Undefined destination sync mode");

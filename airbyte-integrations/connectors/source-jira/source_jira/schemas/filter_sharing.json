@@ -8,8 +8,8 @@
       "readOnly": true
     },
     "filterId": {
-      "type" : ["null", "string"],
-      "description" : "Id of the related filter"
+      "type": ["null", "string"],
+      "description": "Id of the related filter"
     },
     "type": {
       "type": "string",
