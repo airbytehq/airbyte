@@ -138,7 +138,7 @@ jobs:
           CLOUDREPO_USER: ${{ secrets.CLOUDREPO_USER }}
           CLOUDREPO_PASSWORD: ${{ secrets.CLOUDREPO_PASSWORD }}
       - name: "Post failure to Slack channel `#dev-connectors-extensibility-releases`"
-        if: ${{ failure() }}
+        if: ${{ env.DRY_RUN == 'false' && failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
@@ -166,20 +166,20 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
       - name: "Post success to Slack channel `#dev-connectors-extensibility-releases`"
-        if: ${{ !failure() }}
+        if: ${{ env.DRY_RUN == 'false' && !failure() }}
         uses: slackapi/slack-github-action@v1.23.0
         continue-on-error: true
         with:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "New version of Java CDK was successfully published!",
+                "text": "New `${{ env.CDK_VERSION }}` version of Java CDK was successfully published!",
                 "blocks": [
                     {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "Java CDK published successfully!"
+                            "text": "Java CDK ${{ env.CDK_VERSION }} published successfully!"
                         }
                     },
                     {
