@@ -144,7 +144,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
 
     cursor_field = "updated_time"
 
-    def __init__(self, start_date: datetime, end_date: datetime, **kwargs):
+    def __init__(self, start_date: Optional[datetime], end_date: Optional[datetime], **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.instance(start_date) if start_date else None
         self._end_date = pendulum.instance(end_date) if end_date else None

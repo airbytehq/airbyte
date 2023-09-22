@@ -174,7 +174,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         schema["properties"].update(
             {
-                d.replace(":", "_"): {
+                d: {
                     "type": get_dimensions_type(d),
                     "description": self.metadata["dimensions"].get(d, {}).get("description", d),
                 }
@@ -192,7 +192,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         schema["properties"].update(
             {
-                m.replace(":", "_"): {
+                m: {
                     "type": ["null", get_metrics_type(self.metadata["metrics"].get(m, {}).get("type"))],
                     "description": self.metadata["metrics"].get(m, {}).get("description", m),
                 }
@@ -234,9 +234,9 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
     ) -> Iterable[Mapping]:
         r = response.json()
 
-        dimensions = [h.get("name").replace(":", "_") if "name" in h else None for h in r.get("dimensionHeaders", [{}])]
-        metrics = [h.get("name").replace(":", "_") if "name" in h else None for h in r.get("metricHeaders", [{}])]
-        metrics_type_map = {h.get("name").replace(":", "_"): h.get("type") for h in r.get("metricHeaders", [{}]) if "name" in h}
+        dimensions = [h.get("name") for h in r.get("dimensionHeaders", [{}])]
+        metrics = [h.get("name") for h in r.get("metricHeaders", [{}])]
+        metrics_type_map = {h.get("name"): h.get("type") for h in r.get("metricHeaders", [{}]) if "name" in h}
 
         for row in r.get("rows", []):
             record = {

@@ -6,6 +6,7 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.MySqlUtils;
@@ -26,7 +27,7 @@ public abstract class AbstractMySqlSslCertificateSourceAcceptanceTest extends My
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
     addTestData(container);
