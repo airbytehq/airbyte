@@ -66,7 +66,11 @@ dependencies {
     testImplementation libs.testcontainers.postgresql
     implementation 'org.codehaus.plexus:plexus-utils:3.4.2'
 
+    // bouncycastle is pinned to version-match the transitive dependency from kubernetes client-java
+    // because a version conflict causes "parameter object not a ECParameterSpec" on ssh tunnel initiation
+    implementation 'org.bouncycastle:bcpkix-jdk15on:1.66'
     implementation 'org.bouncycastle:bcprov-jdk15on:1.66'
+    implementation 'org.bouncycastle:bctls-jdk15on:1.66'
 
     // Lombok
     implementation 'org.projectlombok:lombok:1.18.20'
@@ -79,4 +83,10 @@ dependencies {
     implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
 
     testImplementation libs.junit.jupiter.system.stubs
+
+    implementation libs.jackson.annotations
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-layout-template-json', version: '2.17.2'
+
+    // Replaced from base-java by api ref when migrated to java-cdk:
+    // implementation project(':airbyte-json-validation')
 }
