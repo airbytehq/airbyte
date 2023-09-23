@@ -14,7 +14,7 @@ import com.google.cloud.bigquery.DatasetInfo;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.bigquery.BigQueryDatabase;
+import io.airbyte.cdk.db.bigquery.BigQueryDatabase;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.nio.file.Files;

@@ -10,7 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil;
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 import io.airbyte.integrations.destination.iceberg.container.HiveMetastoreS3PostgresCompose;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;

@@ -8,7 +8,7 @@ import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadS
 
 import autovalue.shaded.com.google.common.collect.AbstractIterator;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.debezium.DebeziumIteratorConstants;
+import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.integrations.source.mysql.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;

@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
