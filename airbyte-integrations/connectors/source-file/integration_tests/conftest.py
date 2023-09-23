@@ -164,7 +164,7 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
     print(container.attrs["NetworkSettings"])
     print(container.attrs["NetworkSettings"]["Networks"])
     count = 0
-    while not is_ssh_ready(ip_address, 22) and count < 10:
+    while not is_ssh_ready("localhost", 2222) and count < 10:
         print('sleep')
         time.sleep(1)
         count += 1
@@ -184,7 +184,7 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
     # stdin, stdout, stderr = ssh.exec_command("ls")
     # lines = stdout.readlines()
     # print(lines)
-    yield ip_address
+    yield "localhost"
 
     container.kill()
     container.remove()
@@ -194,8 +194,8 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
 def provider_config(ssh_service):
     def lookup(name):
         providers = {
-            "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="abc123@456#", port=22),
-            "scp": dict(storage="SCP", host=ssh_service, user="user1", password="abc123@456#", port=22),
+            "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="abc123@456#", port=2222),
+            "scp": dict(storage="SCP", host=ssh_service, user="user1", password="abc123@456#", port=2222),
             "sftp": dict(storage="SFTP", host=ssh_service, user="user1", password="abc123@456#", port=100),
             "gcs": dict(storage="GCS"),
             "s3": dict(storage="S3"),
