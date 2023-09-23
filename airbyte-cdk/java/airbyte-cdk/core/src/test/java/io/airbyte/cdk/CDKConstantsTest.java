@@ -14,7 +14,7 @@ class CDKConstantsTest {
   /* TODO: Remove these canary tests once real tests are in place. */
   @Test
   void getVersion() {
-    assertEquals("0.0.2", CDKConstants.VERSION.replace("-SNAPSHOT", ""));
+    assertEquals("0.1.0", CDKConstants.VERSION.replace("-SNAPSHOT", ""));
   }
 
   @Test
