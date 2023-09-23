@@ -184,7 +184,7 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
     # stdin, stdout, stderr = ssh.exec_command("ls")
     # lines = stdout.readlines()
     # print(lines)
-    yield "localhost"
+    yield ip_address
 
     container.kill()
     container.remove()
@@ -194,8 +194,8 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
 def provider_config(ssh_service):
     def lookup(name):
         providers = {
-            "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="abc123@456#", port=2222),
-            "scp": dict(storage="SCP", host=ssh_service, user="user1", password="abc123@456#", port=2222),
+            "ssh": dict(storage="SSH", host=ssh_service, user="user1", password="abc123@456#", port=22),
+            "scp": dict(storage="SCP", host=ssh_service, user="user1", password="abc123@456#", port=22),
             "sftp": dict(storage="SFTP", host=ssh_service, user="user1", password="abc123@456#", port=100),
             "gcs": dict(storage="GCS"),
             "s3": dict(storage="S3"),
