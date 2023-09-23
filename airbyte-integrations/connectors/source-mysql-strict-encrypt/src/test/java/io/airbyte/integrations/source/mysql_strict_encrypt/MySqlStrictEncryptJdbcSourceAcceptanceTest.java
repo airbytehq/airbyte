@@ -343,10 +343,10 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     database.query(connection -> {
       connection.fetch(String.format("USE %s;", getDefaultNamespace()));
       connection.fetch(String.format("CREATE TABLE %s (\n"
-                                         + "    id int PRIMARY KEY,\n"
-                                         + "    name VARCHAR(200) NOT NULL,\n"
-                                         + "    updated_at VARCHAR(200) NOT NULL\n"
-                                         + ");", streamOneName));
+          + "    id int PRIMARY KEY,\n"
+          + "    name VARCHAR(200) NOT NULL,\n"
+          + "    updated_at VARCHAR(200) NOT NULL\n"
+          + ");", streamOneName));
       connection.execute(
           String.format(
               "INSERT INTO %s(id, name, updated_at) VALUES (1,'picard', '2004-10-19')",
@@ -368,22 +368,22 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     // Insert records into second table
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE TABLE %s (\n"
-                                  + "    id int PRIMARY KEY,\n"
-                                  + "    name VARCHAR(200) NOT NULL,\n"
-                                  + "    updated_at DATE NOT NULL\n"
-                                  + ");", streamTwoName));
+          + "    id int PRIMARY KEY,\n"
+          + "    name VARCHAR(200) NOT NULL,\n"
+          + "    updated_at DATE NOT NULL\n"
+          + ");", streamTwoName));
       ctx.execute(
           String.format("INSERT INTO %s(id, name, updated_at)"
-                            + "VALUES (40,'Jean Luc','2006-10-19')",
-                        streamTwoFullyQualifiedName));
+              + "VALUES (40,'Jean Luc','2006-10-19')",
+              streamTwoFullyQualifiedName));
       ctx.execute(
           String.format("INSERT INTO %s(id, name, updated_at)"
-                            + "VALUES (41, 'Groot', '2006-10-19')",
-                        streamTwoFullyQualifiedName));
+              + "VALUES (41, 'Groot', '2006-10-19')",
+              streamTwoFullyQualifiedName));
       ctx.execute(
           String.format("INSERT INTO %s(id, name, updated_at)"
-                            + "VALUES (42, 'Thanos','2006-10-19')",
-                        streamTwoFullyQualifiedName));
+              + "VALUES (42, 'Thanos','2006-10-19')",
+              streamTwoFullyQualifiedName));
       return null;
     });
     // Create records list that we expect to see in the state message
@@ -424,7 +424,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     // All records in the 2 configured streams should be present
     assertThat(filterRecords(recordsFromFirstSync)).containsExactlyElementsOf(
         Stream.concat(getTestMessages(streamOneName).stream().parallel(),
-                      streamTwoExpectedRecords.stream().parallel()).collect(toList()));
+            streamTwoExpectedRecords.stream().parallel()).collect(toList()));
 
     final List<AirbyteStateMessage> actualFirstSyncState = extractStateMessage(messagesFromFirstSync);
     // Since we are emitting a state message after each record, we should have 1 state for each record -
@@ -462,12 +462,12 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     // Extract the incremental states of each stream's first and second state message
     final List<JsonNode> streamOneIncrementalStatesFromFirstSync =
         List.of(streamOneStateMessagesFromFirstSync.get(0).getStream().getStreamState().get("incremental_state"),
-                streamOneStateMessagesFromFirstSync.get(1).getStream().getStreamState().get("incremental_state"));
+            streamOneStateMessagesFromFirstSync.get(1).getStream().getStreamState().get("incremental_state"));
     final JsonNode streamOneFinalStreamStateFromFirstSync = streamOneStateMessagesFromFirstSync.get(2).getStream().getStreamState();
 
     final List<JsonNode> streamTwoIncrementalStatesFromFirstSync =
         List.of(streamTwoStateMessagesFromFirstSync.get(0).getStream().getStreamState().get("incremental_state"),
-                streamTwoStateMessagesFromFirstSync.get(1).getStream().getStreamState().get("incremental_state"));
+            streamTwoStateMessagesFromFirstSync.get(1).getStream().getStreamState().get("incremental_state"));
     final JsonNode streamTwoFinalStreamStateFromFirstSync = streamTwoStateMessagesFromFirstSync.get(2).getStream().getStreamState();
 
     // The incremental_state of each stream's first and second incremental states is expected
@@ -484,8 +484,8 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     // switch
     final List<AirbyteMessage> messagesFromSecondSyncWithMixedStates = MoreIterators
         .toList(source.read(config, configuredCatalog,
-                            Jsons.jsonNode(List.of(streamOneStateMessagesFromFirstSync.get(0),
-                                                   streamTwoStateMessagesFromFirstSync.get(1)))));
+            Jsons.jsonNode(List.of(streamOneStateMessagesFromFirstSync.get(0),
+                streamTwoStateMessagesFromFirstSync.get(1)))));
 
     // Extract only state messages for each stream after second sync
     final List<AirbyteStateMessage> streamOneStateMessagesFromSecondSync =
@@ -514,19 +514,19 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     database.query(ctx -> {
       ctx.execute(
           String.format("INSERT INTO %s(id, name, updated_at)"
-                            + "VALUES (4,'Hooper','2006-10-19')",
-                        getFullyQualifiedTableName(streamOneName)));
+              + "VALUES (4,'Hooper','2006-10-19')",
+              getFullyQualifiedTableName(streamOneName)));
       ctx.execute(
           String.format("INSERT INTO %s(id, name, updated_at)"
-                            + "VALUES (43, 'Iron Man', '2006-10-19')",
-                        streamTwoFullyQualifiedName));
+              + "VALUES (43, 'Iron Man', '2006-10-19')",
+              streamTwoFullyQualifiedName));
       return null;
     });
 
     final List<AirbyteMessage> messagesFromThirdSync = MoreIterators
         .toList(source.read(config, configuredCatalog,
-                            Jsons.jsonNode(List.of(streamOneStateMessagesFromSecondSync.get(1),
-                                                   streamTwoStateMessagesFromSecondSync.get(0)))));
+            Jsons.jsonNode(List.of(streamOneStateMessagesFromSecondSync.get(1),
+                streamTwoStateMessagesFromSecondSync.get(0)))));
 
     // Extract only state messages, state type, and cursor for each stream after second sync
     final List<AirbyteStateMessage> streamOneStateMessagesFromThirdSync =
@@ -648,32 +648,32 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     return List.of(
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                            .withData(Jsons.jsonNode(Map
-                                                         .of(COL_ID, ID_VALUE_1,
-                                                             COL_NAME, "picard",
-                                                             COL_UPDATED_AT, "2004-10-19")))),
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_1,
+                        COL_NAME, "picard",
+                        COL_UPDATED_AT, "2004-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                            .withData(Jsons.jsonNode(Map
-                                                         .of(COL_ID, ID_VALUE_2,
-                                                             COL_NAME, "crusher",
-                                                             COL_UPDATED_AT,
-                                                             "2005-10-19")))),
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_2,
+                        COL_NAME, "crusher",
+                        COL_UPDATED_AT,
+                        "2005-10-19")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
-                            .withData(Jsons.jsonNode(Map
-                                                         .of(COL_ID, ID_VALUE_3,
-                                                             COL_NAME, "vash",
-                                                             COL_UPDATED_AT, "2006-10-19")))));
+                .withData(Jsons.jsonNode(Map
+                    .of(COL_ID, ID_VALUE_3,
+                        COL_NAME, "vash",
+                        COL_UPDATED_AT, "2006-10-19")))));
   }
 
   private AirbyteStream getAirbyteStream(final String tableName, final String namespace) {
     return CatalogHelpers.createAirbyteStream(
-            tableName,
-            namespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
+        tableName,
+        namespace,
+        Field.of(COL_ID, JsonSchemaType.INTEGER),
+        Field.of(COL_NAME, JsonSchemaType.STRING),
+        Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE))
         .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
         .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID)));
   }
