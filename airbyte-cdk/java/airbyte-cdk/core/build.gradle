@@ -13,6 +13,9 @@ dependencies {
 
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
+    // SSH dependencies
+    implementation 'net.i2p.crypto:eddsa:0.3.0'
+
     // First party test dependencies
     testImplementation project(':airbyte-test-utils')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-sources-feature'))
