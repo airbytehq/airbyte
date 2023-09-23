@@ -47,13 +47,10 @@ class MissingCachedSpecError(Exception):
 @sentry_sdk.trace
 def apply_spec_to_registry_entry(registry_entry: dict, spec_cache: SpecCache, registry_name: str) -> dict:
     cached_spec = spec_cache.find_spec_cache_with_fallback(
-        registry_entry["dockerRepository"],
-        registry_entry["dockerImageTag"],
-        registry_name
+        registry_entry["dockerRepository"], registry_entry["dockerImageTag"], registry_name
     )
     if cached_spec is None:
         raise MissingCachedSpecError(f"No cached spec found for {registry_entry['dockerRepository']}:{registry_entry['dockerImageTag']}")
-
 
     entry_with_spec = copy.deepcopy(registry_entry)
     entry_with_spec["spec"] = spec_cache.download_spec(cached_spec)

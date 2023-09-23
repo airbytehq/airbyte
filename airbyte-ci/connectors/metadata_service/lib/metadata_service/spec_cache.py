@@ -4,23 +4,22 @@
 
 import json
 from dataclasses import dataclass
-from typing import List
 from enum import Enum
+from typing import List
 
 from google.cloud import storage
 
 PROD_SPEC_CACHE_BUCKET_NAME = "io-airbyte-cloud-spec-cache"
 CACHE_FOLDER = "specs"
 
+
 class Registries(Enum):
     OSS = "oss"
     CLOUD = "cloud"
 
 
-SPEC_FILE_NAMES = {
-    Registries.OSS: "spec.json",
-    Registries.CLOUD: "spec.cloud.json"
-}
+SPEC_FILE_NAMES = {Registries.OSS: "spec.json", Registries.CLOUD: "spec.cloud.json"}
+
 
 @dataclass
 class CachedSpec:
@@ -28,6 +27,9 @@ class CachedSpec:
     docker_image_tag: str
     spec_cache_path: str
     registry: Registries
+
+    def __str__(self) -> str:
+        return self.spec_cache_path
 
 
 def get_spec_file_name(registry: Registries) -> str:
@@ -37,10 +39,11 @@ def get_spec_file_name(registry: Registries) -> str:
 def get_registry_from_spec_cache_path(spec_cache_path: str) -> Registries:
     """Returns the registry from the spec cache path."""
     for registry in Registries:
-        if registry.value in spec_cache_path:
+        file_name = get_spec_file_name(registry)
+        if file_name in spec_cache_path:
             return registry
 
-    raise Exception(f"Could not find registry in spec cache path: {spec_cache_path}")
+    raise Exception(f"Could not find any registry file name in spec cache path: {spec_cache_path}")
 
 
 def get_docker_info_from_spec_cache_path(spec_cache_path: str) -> CachedSpec:
@@ -59,11 +62,9 @@ def get_docker_info_from_spec_cache_path(spec_cache_path: str) -> CachedSpec:
     docker_repository = without_file.replace(f"/{docker_image_tag}", "")
 
     return CachedSpec(
-        docker_repository=docker_repository,
-        docker_image_tag=docker_image_tag,
-        spec_cache_path=spec_cache_path,
-        registry=registry
+        docker_repository=docker_repository, docker_image_tag=docker_image_tag, spec_cache_path=spec_cache_path, registry=registry
     )
+
 
 class SpecCache:
     def __init__(self, bucket_name: str = PROD_SPEC_CACHE_BUCKET_NAME):
@@ -76,24 +77,25 @@ class SpecCache:
 
         blobs = self.bucket.list_blobs(prefix=CACHE_FOLDER)
 
-        return [get_docker_info_from_spec_cache_path(blob.name) for blob in blobs]
+        return [get_docker_info_from_spec_cache_path(blob.name) for blob in blobs if blob.name.endswith(".json")]
 
-    def find_spec_cache(self, docker_repository: str, docker_image_tag: str, registry: Registries) -> CachedSpec:
+    def _find_spec_cache(self, docker_repository: str, docker_image_tag: str, registry: Registries) -> CachedSpec:
         """Returns the spec cache path for a given docker repository and tag."""
 
         # find the spec cache path for the given docker repository and tag
         for cached_spec in self.cached_specs:
             if (
-                    cached_spec.docker_repository == docker_repository
-                    and cached_spec.registry == registry
-                    and cached_spec.docker_image_tag == docker_image_tag
-                ):
+                cached_spec.docker_repository == docker_repository
+                and cached_spec.registry == registry
+                and cached_spec.docker_image_tag == docker_image_tag
+            ):
                 return cached_spec
 
         return None
 
-    def find_spec_cache_with_fallback(self, docker_repository: str, docker_image_tag: str, registry: Registries = Registries.OSS) -> CachedSpec:
+    def find_spec_cache_with_fallback(self, docker_repository: str, docker_image_tag: str, registry_str: str) -> CachedSpec:
         """Returns the spec cache path for a given docker repository and tag and fallback to OSS if none found"""
+        registry = Registries(registry_str)
 
         # if the registry is cloud try to return the cloud spec first
         if registry == Registries.CLOUD:
@@ -104,6 +106,6 @@ class SpecCache:
         # fallback to OSS
         return self._find_spec_cache(docker_repository, docker_image_tag, Registries.OSS)
 
-    def download_spec(self, spec_cache_path: str) -> dict:
+    def download_spec(self, spec: CachedSpec) -> dict:
         """Downloads the spec from the spec cache bucket."""
-        return json.loads(self.bucket.blob(spec_cache_path).download_as_string())
+        return json.loads(self.bucket.blob(spec.spec_cache_path).download_as_string())
