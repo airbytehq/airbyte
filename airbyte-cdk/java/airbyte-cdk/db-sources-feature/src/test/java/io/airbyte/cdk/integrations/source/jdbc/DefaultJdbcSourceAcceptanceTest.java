@@ -161,22 +161,6 @@ class DefaultJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
       return Set.of("information_schema", "pg_catalog", "pg_internal", "catalog_history");
     }
 
-    // TODO This is a temporary override so that the Postgres source can take advantage of per-stream
-    // state
-    @Override
-    protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
-      if (getSupportedStateType(config) == AirbyteStateType.GLOBAL) {
-        final AirbyteGlobalState globalState = new AirbyteGlobalState()
-            .withSharedState(Jsons.jsonNode(new CdcState()))
-            .withStreamStates(List.of());
-        return List.of(new AirbyteStateMessage().withType(AirbyteStateType.GLOBAL).withGlobal(globalState));
-      } else {
-        return List.of(new AirbyteStateMessage()
-            .withType(AirbyteStateType.STREAM)
-            .withStream(new AirbyteStreamState()));
-      }
-    }
-
     @Override
     protected AirbyteStateType getSupportedStateType(final JsonNode config) {
       return AirbyteStateType.STREAM;
