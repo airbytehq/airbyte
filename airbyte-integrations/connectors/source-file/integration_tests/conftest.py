@@ -132,6 +132,7 @@ def is_ssh_ready(ip, port):
             )
         return True
     except (SSHException, socket.error, EOFError) as e:
+        print(e)
         return False
 
 
