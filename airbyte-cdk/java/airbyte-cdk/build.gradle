@@ -140,7 +140,6 @@ dependencies {
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'mysql:mysql-connector-java:8.0.30'
-    implementation 'net.i2p.crypto:eddsa:0.3.0'
     implementation 'net.java.dev.jna:jna-platform:5.8.0'
     implementation 'net.java.dev.jna:jna:5.8.0'
     implementation 'net.sourceforge.argparse4j:argparse4j:0.8.1'
