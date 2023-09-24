@@ -86,20 +86,21 @@ TEST_CMDS = [
     # These should pass:
     f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:assemble",
     f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:test",
-    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble",
-    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:assemble",
-    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-sources-feature:assemble",
-    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-destinations-feature:assemble",
-    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-bigquery:test",
-    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-bigquery:test",
-    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-gcs:test",
+    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble",
+    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:assemble",
+    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-sources-feature:assemble",
+    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-destinations-feature:assemble",
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-bigquery:test",
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-bigquery:test",
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-gcs:test",
+    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:build",
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping:build",
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping-test:build",
 
     # Working on:
-    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping:build",
-    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping-test:build",
 
     # Failing:
-    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:build", # 10 failing tests (mostly due to s3)
+    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-sources-feature:test --tests=GlobalStateManagerTest.testToState", # 1 failure: Could not find cursor information for stream: public_cars
     # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-sources-feature:build", # 1 failure: Could not find cursor information for stream: public_cars
     # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-destinations-feature:build", # 1 failure: Could not find cursor information for stream: public_cars
 
