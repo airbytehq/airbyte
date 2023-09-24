@@ -4,12 +4,13 @@
 
 import random
 from http import HTTPStatus
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
+import logging
 import requests
 from airbyte_cdk.models import SyncMode
-from source_notion.streams import Blocks, NotionStream, Users
+from source_notion.streams import Blocks, NotionStream, Users, Pages
 
 
 @pytest.fixture
@@ -167,3 +168,42 @@ def test_user_stream_handles_pagination_correctly(requests_mock):
     records = stream.read_records(sync_mode=SyncMode.full_refresh)
     records_length = sum(1 for _ in records)
     assert records_length == 220
+
+
+@pytest.mark.parametrize("stream_class,parent_class,status_code,expected_availability,expected_reason_substring", [
+    (Users, None, 403, False, "insufficient permissions"),
+    (Blocks, Pages, 403, False, "insufficient permissions"),
+    (Users, None, 200, True, None)
+])
+def test_403_error_handling(stream_class, parent_class, status_code, expected_availability, expected_reason_substring):
+    """
+    Test that availability strategy properly handles 403 errors.
+    """
+
+    with patch(f'source_notion.streams.{stream_class.__name__}._send_request') as mock_send_request:
+        mock_resp = requests.Response()
+        mock_resp.status_code = status_code
+
+        if status_code == 403:
+            mock_resp._content = b'{"object": "error", "status": 403, "code": "restricted_resource"}'
+            mock_error = requests.HTTPError(response=mock_resp)
+            mock_send_request.side_effect = mock_error
+        else:
+            mock_resp._content = b'{"object": "list", "results": [{"id": "123", "object": "user", "type": "person"}]}'
+            mock_send_request.return_value = mock_resp
+
+        if parent_class:
+            stream = stream_class(parent=parent_class, config=MagicMock())
+            stream.parent.stream_slices = MagicMock(return_value=[{"id": "123"}])
+            stream.parent.read_records = MagicMock(return_value=[{"id": "123", "object": "page"}])
+        else:
+            stream = stream_class(config=MagicMock())
+
+        is_available, reason = stream.check_availability(logger=logging.Logger, source=MagicMock())
+
+        assert is_available is expected_availability
+
+        if expected_reason_substring:
+            assert expected_reason_substring in reason
+        else:
+            assert reason is None

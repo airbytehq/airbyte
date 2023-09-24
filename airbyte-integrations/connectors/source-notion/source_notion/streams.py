@@ -90,7 +90,7 @@ class NotionStream(HttpStream, ABC):
         }
         Doc: https://developers.notion.com/reference/pagination
         """
-        next_cursor = response.json()["next_cursor"]
+        next_cursor = response.json().get("next_cursor")
         if next_cursor:
             return {"next_cursor": next_cursor}
 
