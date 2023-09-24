@@ -62,6 +62,10 @@ test {
     dependsOn subprojects*.test
 }
 
+integrationTestJava {
+    dependsOn subprojects*.integrationTestJava
+}
+
 publish {
     dependsOn subprojects*.publish
 }
