@@ -311,7 +311,10 @@ def main() -> None:
         if sys.argv[1] == "test":
             for cmd in TEST_CMDS:
                 print(f"Running test command: {cmd}")
-                os.system(cmd)
+                exit_code = os.system(cmd)
+                if exit_code != 0:
+                    print(f"Error running command: {cmd}")
+                    sys.exit(exit_code)
             return
         else:
             raise ValueError(f"Unknown argument: {sys.argv[1]}")
