@@ -84,27 +84,30 @@ TEST_FIXTURE_PACKAGES = {
 }
 TEST_CMDS = [
     # These should pass:
-    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:assemble",
-    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:test",
-    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:assemble",
-    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:assemble",
-    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-sources-feature:assemble",
-    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-destinations-feature:assemble",
-    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-bigquery:test",
-    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-bigquery:test",
-    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-gcs:test",
-    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:core:build",
-    f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping:build",
-    f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping-test:build",
+    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:build",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:test --fail-fast",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-bigquery:test --fail-fast",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-bigquery:test --fail-fast",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-snowflake:test --fail-fast",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-gcs:test --fail-fast",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping:build",
+    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping-test:build",
 
     # Working on:
 
     # Failing:
-    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-sources-feature:test --tests=GlobalStateManagerTest.testToState", # 1 failure: Could not find cursor information for stream: public_cars
-    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-sources-feature:build", # 1 failure: Could not find cursor information for stream: public_cars
-    # f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:db-destinations-feature:build", # 1 failure: Could not find cursor information for stream: public_cars
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-postgres:test --fail-fast",  # Needs cdk plugin and extension settings.
+    f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:integrationTest",  # Missing image for source-jdbc
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:integrationTestJava", # org.testcontainers.containers.ContainerLaunchException: Container startup failed for image postgres:13-alpine
 
-    # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:test", # Failing due to jooq issue
+    # "java.io.StreamCorruptedException: Overriding the global section with a specific one at line 3: Host *":
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:integrationTestJava --tests=SshKeyPostgresSourceAcceptanceTest.testEntrypointEnvVar",
+    # SshKeyPostgresSourceAcceptanceTest.testIdenticalFullRefreshes
+    # SshKeyPostgresSourceAcceptanceTest.testIncrementalSyncWithState
+    # SshPasswordPostgresSourceAcceptanceTest.testEntrypointEnvVar
+    # SshPasswordPostgresSourceAcceptanceTest.testIdenticalFullRefreshes
+    # SshPasswordPostgresSourceAcceptanceTest.testIncrementalSyncWithState
+
 ]
 
 def move_files(source_dir, dest_dir, path_desc):
