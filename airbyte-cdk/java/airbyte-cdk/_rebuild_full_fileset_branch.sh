@@ -18,7 +18,7 @@ python ./airbyte-cdk/java/airbyte-cdk/_temp_migration_script.py
 git add .
 git commit -m "commit the migration script result"
 # Force push to the origin (this PR)
-git push -f origin java-cdk-010-d2
+git push -uf origin java-cdk-010-d2
 
 # git cherry-pick c125f14cdce8be61da85ebedffd3c4a576dc1fc5  # delete dead code (incorrectly annotated as override)
 # git cherry-pick 89d81ec62fcfa44fff36196e2d34571b46593818  # disable GlobalStateManagerTest.testToState
