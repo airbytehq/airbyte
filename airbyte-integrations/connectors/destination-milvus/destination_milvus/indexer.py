@@ -51,6 +51,7 @@ class MilvusIndexer(Indexer):
 
         self._collection = Collection(self.config.collection)
         self._collection.load()
+        self._primary_key = next((field["name"] for field in self._collection.describe()["fields"] if field["is_primary"]), None)
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
@@ -99,8 +100,8 @@ class MilvusIndexer(Indexer):
 
         for key, value in metadata.items():
             normalized_key = key
-            # "id" is a reserved properties in Milvus, prefix to disambiguate
-            if key == "id":
+            # the primary key can't be set directly with auto_id, so we prefix it with an underscore
+            if key == self._primary_key:
                 normalized_key = f"_{key}"
             result[normalized_key] = value
 

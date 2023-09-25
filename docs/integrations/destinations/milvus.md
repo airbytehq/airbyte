@@ -61,6 +61,8 @@ To get started, create a new collection in your Milvus instance. Make sure that
 * The primary key field is set to [auto_id](https://milvus.io/docs/create_collection.md)
 * There is a vector field with the correct dimensionality (1536 for OpenAI, 1024 for Cohere) and [a configured index](https://milvus.io/docs/build_index.md)
 
+If the record contains a field with the same name as the primary key, it will be prefixed with an underscore so Milvus can control the value.
+
 ### Setting up a collection
 
 When using the Zilliz cloud, this can be done using the UI - in this case only the colleciton name and the vector dimensionality needs to be configured, the vector field with index will be automatically created under the name `vector`. Using the REST API, the following command will create the index:
