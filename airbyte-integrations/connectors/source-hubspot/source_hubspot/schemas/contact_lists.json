@@ -5,6 +5,26 @@
     "parentId": {
       "type": ["null", "integer"]
     },
+    "metaData": {
+      "type": ["null", "object"],
+      "properties": {
+        "processing": {
+          "type": ["null", "string"]
+        },
+        "size": {
+          "type": ["null", "integer"]
+        },
+        "error": {
+          "type": ["null", "string"]
+        },
+        "lastProcessingStateChangeAt": {
+          "type": ["null", "integer"]
+        },
+        "lastSizeChangeAt": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
     "metaData_processing": {
       "type": ["null", "string"]
     },

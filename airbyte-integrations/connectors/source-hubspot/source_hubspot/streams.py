@@ -81,7 +81,7 @@ class RecordUnnester:
     def unnest(self, records: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
         for record in records:
             fields_to_unnest = self.fields + ["properties"]
-            data_to_unnest = {field: record.pop(field, {}) for field in fields_to_unnest}
+            data_to_unnest = {field: record.get(field, {}) for field in fields_to_unnest}
             unnested_data = {
                 f"{top_level_name}_{name}": value for (top_level_name, data) in data_to_unnest.items() for (name, value) in data.items()
             }
@@ -263,6 +263,7 @@ class API:
                 "createdAt": {"type": ["null", "string"], "format": "date-time"},
                 "updatedAt": {"type": ["null", "string"], "format": "date-time"},
                 "archived": {"type": ["null", "boolean"]},
+                "properties": {"type": ["null", "object"], "properties": properties},
                 **unnested_properties,
             },
         }
@@ -386,11 +387,12 @@ class Stream(HttpStream, ABC):
     def get_json_schema(self) -> Mapping[str, Any]:
         json_schema = super().get_json_schema()
         if self.properties:
+            properties = {"properties": {"type": "object", "properties": self.properties}}
             unnested_properties = {
                 f"properties_{property_name}": property_value for (property_name, property_value) in self.properties.items()
             }
             default_props = json_schema["properties"]
-            json_schema["properties"] = {**default_props, **unnested_properties}
+            json_schema["properties"] = {**default_props, **properties, **unnested_properties}
         return json_schema
 
     @retry_token_expired_handler(max_tries=5)

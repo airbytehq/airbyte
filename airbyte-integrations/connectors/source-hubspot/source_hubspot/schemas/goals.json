@@ -5,6 +5,43 @@
     "id": {
       "type": ["null", "string"]
     },
+    "properties": {
+      "type": ["null", "object"],
+      "properties": {
+        "hs_created_by_user_id": {
+          "type": ["null", "string"]
+        },
+        "hs_createdate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_start_datetime": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_end_datetime": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_goal_name": {
+          "type": ["null", "string"]
+        },
+        "hs_lastmodifieddate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_kpi_value_last_calculated_at": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "hs_object_id": {
+          "type": ["null", "string"]
+        },
+        "hs_target_amount": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "properties_hs_created_by_user_id": {
       "type": ["null", "string"]
     },

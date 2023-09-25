@@ -26,6 +26,23 @@
         "type": ["null", "integer"]
       }
     },
+    "contactListIds": {
+      "type": ["null", "object"],
+      "properties": {
+        "enrolled": {
+          "type": ["null", "integer"]
+        },
+        "active": {
+          "type": ["null", "integer"]
+        },
+        "steps": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
     "contactListIds_enrolled": {
       "type": ["null", "integer"]
     },

@@ -11,6 +11,59 @@
     "contentId": {
       "type": ["null", "integer"]
     },
+    "counters": {
+      "type": ["null", "object"],
+      "properties": {
+        "open": {
+          "type": ["null", "integer"]
+        },
+        "processed": {
+          "type": ["null", "integer"]
+        },
+        "sent": {
+          "type": ["null", "integer"]
+        },
+        "deferred": {
+          "type": ["null", "integer"]
+        },
+        "unsubscribed": {
+          "type": ["null", "integer"]
+        },
+        "statuschange": {
+          "type": ["null", "integer"]
+        },
+        "bounce": {
+          "type": ["null", "integer"]
+        },
+        "mta_dropped": {
+          "type": ["null", "integer"]
+        },
+        "dropped": {
+          "type": ["null", "integer"]
+        },
+        "suppressed": {
+          "type": ["null", "integer"]
+        },
+        "click": {
+          "type": ["null", "integer"]
+        },
+        "delivered": {
+          "type": ["null", "integer"]
+        },
+        "forward": {
+          "type": ["null", "integer"]
+        },
+        "print": {
+          "type": ["null", "integer"]
+        },
+        "reply": {
+          "type": ["null", "integer"]
+        },
+        "spamreport": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
     "counters_open": {
       "type": ["null", "integer"]
     },

@@ -401,6 +401,7 @@ def expected_custom_object_json_schema():
             "createdAt": {"type": ["null", "string"], "format": "date-time"},
             "updatedAt": {"type": ["null", "string"], "format": "date-time"},
             "archived": {"type": ["null", "boolean"]},
+            "properties": {"type": ["null", "object"], "properties": {"name": {"type": ["null", "string"]}}},
             "properties_name": {"type": ["null", "string"]},
         },
     }

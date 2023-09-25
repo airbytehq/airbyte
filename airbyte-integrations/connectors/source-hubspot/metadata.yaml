@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 36c891d9-4bd9-43ac-bad2-10e12756272c
-  dockerImageTag: 2.0.0
+  dockerImageTag: 1.5.0
   dockerRepository: airbyte/source-hubspot
   githubIssueLabel: source-hubspot
   icon: hubspot.svg
@@ -17,11 +17,6 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
-  releases:
-    breakingChanges:
-      2.0.0:
-        message: "Version 2.0.0 changes the schema for most of the Hubspot streams. This is done to unnest deeply nested data so it is available as a column in the new Destinations V2 regarding normalization is no more supported. A schema refresh of all the streams is required as well as resetting the data to use the new version."
-        upgradeDeadline: "2023-10-01"
   suggestedStreams:
     streams:
       - contacts
