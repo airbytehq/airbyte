@@ -67,7 +67,7 @@ streams:
       path: "datasets"
     schema_loader:
       type: JsonFileSchemaLoader
-      file_path: "schemas/dataset_collection.json"
+      file_path: "./source_apify_dataset/schemas/dataset_collection.json"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -83,7 +83,7 @@ streams:
       path: "datasets/{{ config['dataset_id'] }}"
     schema_loader:
       type: JsonFileSchemaLoader
-      file_path: "schemas/dataset.json"
+      file_path: "./source_apify_dataset/schemas/dataset.json"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
@@ -98,7 +98,7 @@ streams:
       path: "datasets/{{ config['dataset_id'] }}/items"
     schema_loader:
       type: JsonFileSchemaLoader
-      file_path: "schemas/item_collection_wcc.json"
+      file_path: "./source_apify_dataset/schemas/item_collection_wcc.json"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
