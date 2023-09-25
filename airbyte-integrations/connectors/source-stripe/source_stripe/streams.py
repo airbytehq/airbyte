@@ -55,9 +55,15 @@ class UpdatedCursorIncrementalRecordExtractor(DefaultRecordExtractor):
     def extract_records(self, response: requests.Response) -> Iterable[MutableMapping]:
         records = super().extract_records(response)
         for record in records:
-            if self.legacy_cursor_field and self.cursor_field not in record:
-                record[self.cursor_field] = record[self.legacy_cursor_field]
-            yield record
+            if self.cursor_field in record:
+                yield record
+                continue  # Skip the rest of the loop iteration
+
+            # fetch legacy_cursor_field from record; default to current timestamp for initial syncs without an any cursor.
+            current_cursor_value = record.get(self.legacy_cursor_field, pendulum.now().int_timestamp)
+
+            # yield the record with the added cursor_field
+            yield record | {self.cursor_field: current_cursor_value}
 
 
 class FilteringRecordExtractor(UpdatedCursorIncrementalRecordExtractor):
@@ -213,9 +219,9 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
         """
         state_cursor_value = current_stream_state.get(self.cursor_field, 0)
         latest_record_value = latest_record.get(self.cursor_field)
-        if state_cursor_value and latest_record_value:
+        if state_cursor_value:
             return {self.cursor_field: max(latest_record_value, state_cursor_value)}
-        return current_stream_state
+        return {self.cursor_field: latest_record_value}
 
     def request_params(
         self,
@@ -350,9 +356,9 @@ class UpdatedCursorIncrementalStripeStream(StripeStream):
         latest_record_value = latest_record.get(self.cursor_field)
         current_stream_state = self.update_cursor_field(current_stream_state)
         current_state_value = current_stream_state.get(self.cursor_field)
-        if latest_record_value and current_state_value:
+        if current_state_value:
             return {self.cursor_field: max(latest_record_value, current_state_value)}
-        return current_stream_state
+        return {self.cursor_field: latest_record_value}
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -443,7 +449,7 @@ class IncrementalStripeStream(StripeStream):
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
-        return [self._cursor_field]
+        return self._cursor_field
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -810,14 +816,14 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
     ):
         super().__init__(*args, **kwargs)
         self._cursor_field = cursor_field
-        updated_cursor_incremental_stream = UpdatedCursorIncrementalStripeStream(
+        self.updated_cursor_incremental_stream = UpdatedCursorIncrementalStripeStream(
             *args,
             cursor_field=cursor_field,
             legacy_cursor_field=legacy_cursor_field,
             event_types=event_types,
             **kwargs,
         )
-        lazy_substream = StripeLazySubStream(
+        self.lazy_substream = StripeLazySubStream(
             *args,
             parent=parent,
             parent_id=parent_id,
@@ -827,11 +833,11 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
             **kwargs,
         )
         self._parent_stream = None
-        self.stream_selector = IncrementalStripeLazySubStreamSelector(updated_cursor_incremental_stream, lazy_substream)
+        self.stream_selector = IncrementalStripeLazySubStreamSelector(self.updated_cursor_incremental_stream, self.lazy_substream)
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
-        return [self._cursor_field]
+        return self._cursor_field
 
     @property
     def parent_stream(self):
@@ -848,7 +854,8 @@ class UpdatedCursorIncrementalStripeLazySubStream(StripeStream, ABC):
         yield from self.parent_stream.stream_slices(sync_mode, cursor_field=cursor_field, stream_state=stream_state)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return self.parent_stream.get_updated_state(current_stream_state, latest_record)
+        # important note: do not call self.parent_stream here as one of the parents does not have the needed method implemented
+        return self.updated_cursor_incremental_stream.get_updated_state(current_stream_state, latest_record)
 
     def read_records(
         self,

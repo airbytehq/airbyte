@@ -7,6 +7,14 @@ plugins {
     id 'org.jsonschema2pojo' version '1.2.1'
 }
 
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-sources']
+    useLocalCdk = true
+}
+
+airbyteJavaConnector.addCdkDependencies()
+
 application {
     mainClass = 'io.airbyte.integrations.source.mysql.MySqlSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']

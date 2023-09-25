@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte_cdk==0.1.60", "genson==1.2.2"]
+MAIN_REQUIREMENTS = ["airbyte_cdk==0.51.18", "genson==1.2.2"]
 
 TEST_REQUIREMENTS = ["pytest"]
 

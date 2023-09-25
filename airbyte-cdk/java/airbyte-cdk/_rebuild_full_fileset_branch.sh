@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # This script is used to rebuild the java-cdk-010-d2 branch from scratch.
+# TODO: Delete this script once the migration is complete.
 
 # Check with the use to confirm the action
 read -p "This script will delete and recreate the java-cdk-010-d2 branch. You should merge in the latest from from master before running this. Are you sure? (y/n) " -n 1 -r
