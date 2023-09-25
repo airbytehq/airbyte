@@ -1,16 +1,7 @@
 plugins {
     id 'application'
     id 'airbyte-docker'
-    id 'airbyte-java-connector'
 }
-
-airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
-    features = ['db-sources']
-    useLocalCdk = true
-}
-
-airbyteJavaConnector.addCdkDependencies()
 
 repositories {
     maven {
@@ -28,7 +19,6 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'io.airbyte:airbyte-commons-worker:0.42.0'
     implementation 'io.airbyte.airbyte-config:config-models:0.42.0'
-    implementation 'junit:junit:4.13.1'
     implementation 'junit:junit:4.13.1'
     implementation 'org.testng:testng:7.1.0'
     implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
