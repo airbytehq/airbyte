@@ -139,7 +139,8 @@ def test_page_token_expired_retry_fails(config, customers):
 
     with pytest.raises(AirbyteTracedException) as exception:
         list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
-    assert exception.value.message == "Page token has expired during processing response. Please contact support for assistance."
+    assert exception.value.message == ("Page token has expired during processing response. "
+                                       "Please contact the Airbyte team with the link of your connection for assistance.")
 
     stream.get_query.assert_called_with({"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-15"})
     assert stream.get_query.call_count == 2
@@ -184,7 +185,8 @@ def test_page_token_expired_it_should_fail_date_range_1_day(config, customers):
 
     with pytest.raises(AirbyteTracedException) as exception:
         list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
-    assert exception.value.message == "Page token has expired during processing response. Please contact support for assistance."
+    assert exception.value.message == ("Page token has expired during processing response. "
+                                       "Please contact the Airbyte team with the link of your connection for assistance.")
     stream.get_query.assert_called_with({"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04"})
     assert stream.get_query.call_count == 1
 

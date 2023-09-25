@@ -14,13 +14,13 @@ from source_google_ads.streams import AdGroupLabels, Labels, ServiceAccounts
 from .common import MockGoogleAdsClient, mock_google_ads_request_failure
 
 params = [
-    ("USER_PERMISSION_DENIED",
+    (["USER_PERMISSION_DENIED"],
      "Failed to access the customer '123'. Ensure the customer is linked to your manager account or check your permissions to access this customer account."),
 
-    ("CUSTOMER_NOT_FOUND",
+    (["CUSTOMER_NOT_FOUND"],
      "Failed to access the customer '123'. Ensure the customer is linked to your manager account or check your permissions to access this customer account."),
 
-    ("CUSTOMER_NOT_ENABLED",
+    (["CUSTOMER_NOT_ENABLED"],
      (
          "The customer account '123' hasn't finished signup or has been deactivated. "
          "Sign in to the Google Ads UI to verify its status. "
@@ -28,9 +28,9 @@ params = [
          "https://support.google.com/google-ads/answer/2375392."
      )),
 
-    ("QUERY_ERROR", "Incorrect custom query. Error in query: unexpected end of query."),
+    (["QUERY_ERROR"], "Incorrect custom query. Error in query: unexpected end of query."),
 
-    ("RESOURCE_EXHAUSTED",
+    (["RESOURCE_EXHAUSTED"],
      (
          "The operation limits for your Google Ads account '123' have been exceeded for the last 24 hours. "
          "To avoid these limitations, consider applying for Standard access which offers unlimited operations per day. "
@@ -38,7 +38,9 @@ params = [
          "https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2"
      )),
 
-    ("UNEXPECTED_ERROR", "Unexpected error message")
+    (["UNEXPECTED_ERROR"], "Unexpected error message"),
+
+    (["QUERY_ERROR", "UNEXPECTED_ERROR"], "Incorrect custom query. Error in query: unexpected end of query.\nUnexpected error message"),
 ]
 
 
@@ -60,7 +62,7 @@ def test_expected_errors(mocker, config, exception, error_message):
     ),
 )
 def test_read_record_error_handling(mocker, config, customers, cls, raise_expected):
-    mock_google_ads_request_failure(mocker, "CUSTOMER_NOT_ENABLED")
+    mock_google_ads_request_failure(mocker, ["CUSTOMER_NOT_ENABLED"])
     google_api = GoogleAds(credentials=config["credentials"])
     stream = cls(api=google_api, customers=customers)
 

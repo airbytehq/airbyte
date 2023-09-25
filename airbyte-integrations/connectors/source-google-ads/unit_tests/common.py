@@ -67,15 +67,6 @@ class MockGoogleAdsFieldService:
         return [MockResponse(name) for name in fields]
 
 
-def make_google_ads_exception(failure_code: int = 1, failure_msg: str = "it failed", error_type: str = "requestError"):
-    # There is no easy way I could find to mock a GoogleAdsException without doing something heinous like this
-    # Following the definition of the object here
-    # https://developers.google.com/google-ads/api/reference/rpc/v10/GoogleAdsFailure
-    protobuf_as_json = json.dumps({"errors": [{"error_code": {error_type: failure_code}, "message": failure_msg}], "request_id": "1"})
-    failure = GoogleAdsFailure.from_json(protobuf_as_json)
-    return GoogleAdsException(None, None, failure, 1)
-
-
 ERROR_MAP = {
     "CUSTOMER_NOT_FOUND": {"failure_code": AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND, "failure_msg": "msg2",
                            "error_type": "authenticationError"},
@@ -91,13 +82,20 @@ ERROR_MAP = {
 }
 
 
-def mock_google_ads_request_failure(mocker, error_name):
-    param = ERROR_MAP[error_name]
-    # Extract the parameter values from the request object
-    failure_code = param.get("failure_code", 1)
-    failure_msg = param.get("failure_msg", "it failed")
-    error_type = param.get("error_type", "request_error")
+def mock_google_ads_request_failure(mocker, error_names):
+    errors = []
+    for error_name in error_names:
+        param = ERROR_MAP[error_name]
+        # Extract the parameter values from the request object
+        failure_code = param.get("failure_code", 1)
+        failure_msg = param.get("failure_msg", "it failed")
+        error_type = param.get("error_type", "requestError")
 
-    exception = make_google_ads_exception(failure_code=failure_code, failure_msg=failure_msg, error_type=error_type)
+        errors.append({"error_code": {error_type: failure_code}, "message": failure_msg})
+
+    protobuf_as_json = json.dumps({"errors": errors, "request_id": "1"})
+    failure= GoogleAdsFailure.from_json(protobuf_as_json)
+
+    exception = GoogleAdsException(None, None, failure, 1)
 
     mocker.patch("source_google_ads.google_ads.GoogleAds.send_request", side_effect=exception)
