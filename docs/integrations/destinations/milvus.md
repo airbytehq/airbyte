@@ -103,5 +103,5 @@ vector_store.similarity_search("test")
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.0.2   | 2023-08-25 | [#30689](https://github.com/airbytehq/airbyte/pull/30689)     | Update CDK to support azure OpenAI embeddings  | 
+| 0.0.2   | 2023-08-25 | [#30689](https://github.com/airbytehq/airbyte/pull/30689)     | Update CDK to support azure OpenAI embeddings and text splitting options | 
 | 0.0.1   | 2023-08-12 | [#29442](https://github.com/airbytehq/airbyte/pull/29442)     | Milvus connector with some embedders  | 
