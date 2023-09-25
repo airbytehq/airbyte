@@ -5,9 +5,10 @@ FROM base as builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
+# Include socat binary in the connector image
 RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base
+    && apk --no-cache add tzdata build-base socat
 
 
 COPY setup.py ./
@@ -36,5 +37,5 @@ COPY source_google_sheets ./source_google_sheets
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.3.7
+LABEL io.airbyte.version=0.3.8
 LABEL io.airbyte.name=airbyte/source-google-sheets
