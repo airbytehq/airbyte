@@ -115,10 +115,20 @@ You can iterate on changes in the CDK local and test them in the connector witho
 
 When modifying the CDK and a connector in the same PR or branch, please use the following steps:
 
-1. Set the version of the CDK in `version.properties` to the next appropriate version number, along with a `-SNAPSHOT` suffix, as explained above.
-1. In your connector project, modify the `build.gradle` to use the _new_ local CDK version with the `-SNAPSHOT` suffix, as explained above.
-1. Build and test your connector as usual. Gradle will automatically build the snapshot version of the CDK, and it will use this version when building and testing your connector.
-1. As you make additional changes to the CDK, Gradle will automatically rebuild and republish the CDK locally in order to incorporate the latest changes.
+1. Set the version of the CDK in `version.properties` to the next appropriate version number and add a description in the `Changelog` at the bottom of this readme file.
+2. Modify your connector's build.gradle file as follows:
+   1. Set `useLocalCdk` to `true` in the connector you are working on. This will ensure the connector always uses the local CDK definitions instead of the published version.
+   2. Set `cdkVersionRequired` to use the new _to-be-published_ CDK version.
+
+After the above, you can build and test your connector as usual. Gradle will automatically use the local CDK code files while you are working on the connector.
+
+Once you are done developing and testing your CDK changes:
+
+1. Publish the CDK using the instructions here in this readme.
+2. After publishing the CDK, update the `useLocalCdk` setting by running `./gradlew :airbyte-integrations:connectors:<connector-name>:disableLocalCdkRefs`. to automatically revert `useLocalCdk` to `false`.
+3. You can optionally run `./gradlew :airbyte-integrations:connectors:<connector-name>:assertNotUsingLocalCdk` to ensure that the project is not using a local CDK reference.
+
+_Note: You can also use  `./gradlew assertNotUsingLocalCdk` or `./gradlew disableLocalCdkRefs` to run these tasks on **all** connectors simultaneously._
 
 ### Developing a connector against a pinned CDK version
 
