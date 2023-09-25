@@ -49,7 +49,8 @@ def test_check_connection_empty():
 
 
 def test_check_connection_incomplete(config):
-    config.pop("token")
+    credentials = config["credentials"]
+    credentials.pop("access_token")
 
     ok, error = SourceTypeform().check_connection(logger, config)
 

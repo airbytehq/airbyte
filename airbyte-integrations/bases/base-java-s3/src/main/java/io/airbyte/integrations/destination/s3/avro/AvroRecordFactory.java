@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.UUID;
 import org.apache.avro.Schema;
@@ -32,8 +33,14 @@ public class AvroRecordFactory {
 
   public GenericData.Record getAvroRecord(final UUID id, final AirbyteRecordMessage recordMessage) throws JsonProcessingException {
     final ObjectNode jsonRecord = MAPPER.createObjectNode();
-    jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
-    jsonRecord.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, id.toString());
+      jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, recordMessage.getEmittedAt());
+      jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT, (Long) null);
+    } else {
+      jsonRecord.put(JavaBaseConstants.COLUMN_NAME_AB_ID, id.toString());
+      jsonRecord.put(JavaBaseConstants.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt());
+    }
     jsonRecord.setAll((ObjectNode) recordMessage.getData());
 
     return converter.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema);

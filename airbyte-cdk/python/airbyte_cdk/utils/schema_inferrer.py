@@ -3,10 +3,10 @@
 #
 
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteRecordMessage
-from genson import SchemaBuilder
+from genson import SchemaBuilder, SchemaNode
 from genson.schema.strategies.object import Object
 from genson.schema.strategies.scalar import Number
 
@@ -17,8 +17,8 @@ class NoRequiredObj(Object):
     every time it parses object. So we dont add unnecessary extra field.
     """
 
-    def to_schema(self):
-        schema = super(NoRequiredObj, self).to_schema()
+    def to_schema(self) -> Mapping[str, Any]:
+        schema: Dict[str, Any] = super(NoRequiredObj, self).to_schema()
         schema.pop("required", None)
         return schema
 
@@ -28,7 +28,7 @@ class IntegerToNumber(Number):
     This class has the regular Number behaviour, but it will never emit an integer type.
     """
 
-    def __init__(self, node_class):
+    def __init__(self, node_class: SchemaNode):
         super().__init__(node_class)
         self._type = "number"
 
@@ -38,7 +38,7 @@ class NoRequiredSchemaBuilder(SchemaBuilder):
 
 
 # This type is inferred from the genson lib, but there is no alias provided for it - creating it here for type safety
-InferredSchema = Dict[str, Union[str, Any, List, List[Dict[str, Union[Any, List]]]]]
+InferredSchema = Dict[str, Any]
 
 
 class SchemaInferrer:
@@ -53,10 +53,10 @@ class SchemaInferrer:
 
     stream_to_builder: Dict[str, SchemaBuilder]
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.stream_to_builder = defaultdict(NoRequiredSchemaBuilder)
 
-    def accumulate(self, record: AirbyteRecordMessage):
+    def accumulate(self, record: AirbyteRecordMessage) -> None:
         """Uses the input record to add to the inferred schemas maintained by this object"""
         self.stream_to_builder[record.stream].add_object(record.data)
 
@@ -70,7 +70,7 @@ class SchemaInferrer:
             schemas[stream_name] = self._clean(builder.to_schema())
         return schemas
 
-    def _clean(self, node: InferredSchema):
+    def _clean(self, node: InferredSchema) -> InferredSchema:
         """
         Recursively cleans up a produced schema:
         - remove anyOf if one of them is just a null value
@@ -83,7 +83,7 @@ class SchemaInferrer:
                     node.update(real_type)
                     node["type"] = [node["type"], "null"]
                     node.pop("anyOf")
-            if "properties" in node:
+            if "properties" in node and isinstance(node["properties"], dict):
                 for key, value in list(node["properties"].items()):
                     if isinstance(value, dict) and value.get("type", None) == "null":
                         node["properties"].pop(key)

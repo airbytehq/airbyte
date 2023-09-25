@@ -1,0 +1,75 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "ad_group.id": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.criterion_id": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.listing_group.case_value.activity_country.value": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.activity_id.value": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.activity_rating.value": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.listing_group.case_value.hotel_city.city_criterion": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.hotel_class.value": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.listing_group.case_value.hotel_country_region.country_region_criterion": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.hotel_id.value": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.hotel_state.state_criterion": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.product_bidding_category.id": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_criterion.listing_group.case_value.product_bidding_category.level": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.product_brand.value": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.product_channel.channel": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.product_channel_exclusivity.channel_exclusivity": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.product_condition.condition": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.product_custom_attribute.index": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.product_custom_attribute.value": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.product_item_id.value": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.product_type.level": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.case_value.product_type.value": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.parent_ad_group_criterion": {
+      "type": ["null", "string"]
+    },
+    "ad_group_criterion.listing_group.type": {
+      "type": ["null", "string"]
+    }
+  }
+}

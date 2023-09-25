@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from airbyte_cdk.models import SyncMode
 from pytest import fixture
@@ -189,3 +189,17 @@ def test_recursive_read(blocks, requests_mock):
     inputs = {"sync_mode": SyncMode.incremental}
     stream.block_id_stack = [root]
     assert list(stream.read_records(**inputs)) == [record3, record2, record1, record4]
+
+
+def test_invalid_start_cursor(parent, requests_mock, caplog):
+    stream = parent
+    error_message = "The start_cursor provided is invalid: wrong_start_cursor"
+    search_endpoint = requests_mock.post("https://api.notion.com/v1/search", status_code=400,
+                                         json={"object": "error", "status": 400, "code": "validation_error",
+                                               "message": error_message})
+
+    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
+    with patch.object(stream, "backoff_time", return_value=0.1):
+        list(stream.read_records(**inputs))
+        assert search_endpoint.call_count == 6
+        assert f"Skipping stream pages, error message: {error_message}" in caplog.messages

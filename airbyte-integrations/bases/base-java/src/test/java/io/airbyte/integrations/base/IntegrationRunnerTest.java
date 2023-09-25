@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base;
 
+import static io.airbyte.integrations.base.IntegrationRunner.ORPHANED_THREAD_FILTER;
 import static io.airbyte.integrations.util.ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
@@ -371,24 +372,20 @@ class IntegrationRunnerTest {
   }
 
   @Test
-  void testInterruptOrphanThreadFailure() {
-    final String testName = Thread.currentThread().getName();
+  void testInterruptOrphanThread() {
     final List<Exception> caughtExceptions = new ArrayList<>();
     startSleepingThread(caughtExceptions, false);
-    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
-        () -> {
-          throw new IOException("random error");
-        },
+    IntegrationRunner.stopOrphanedThreads(
         Assertions::fail,
         3, TimeUnit.SECONDS,
-        10, TimeUnit.SECONDS));
+        10, TimeUnit.SECONDS);
     try {
       TimeUnit.SECONDS.sleep(15);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
     final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
-        .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
+        .filter(ORPHANED_THREAD_FILTER)
         .collect(Collectors.toList());
     // all threads should be interrupted
     assertEquals(List.of(), runningThreads);
@@ -396,26 +393,23 @@ class IntegrationRunnerTest {
   }
 
   @Test
-  void testNoInterruptOrphanThreadFailure() {
-    final String testName = Thread.currentThread().getName();
+  void testNoInterruptOrphanThread() {
     final List<Exception> caughtExceptions = new ArrayList<>();
     final AtomicBoolean exitCalled = new AtomicBoolean(false);
     startSleepingThread(caughtExceptions, true);
-    assertThrows(IOException.class, () -> IntegrationRunner.watchForOrphanThreads(
-        () -> {
-          throw new IOException("random error");
-        },
+    IntegrationRunner.stopOrphanedThreads(
         () -> exitCalled.set(true),
         3, TimeUnit.SECONDS,
-        10, TimeUnit.SECONDS));
+        10, TimeUnit.SECONDS);
     try {
       TimeUnit.SECONDS.sleep(15);
     } catch (final Exception e) {
       throw new RuntimeException(e);
     }
+
     final List<Thread> runningThreads = ThreadUtils.getAllThreads().stream()
-        .filter(runningThread -> !runningThread.isDaemon() && !runningThread.getName().equals(testName))
-        .toList();
+        .filter(ORPHANED_THREAD_FILTER)
+        .collect(Collectors.toList());
     // a thread that refuses to be interrupted should remain
     assertEquals(1, runningThreads.size());
     assertEquals(1, caughtExceptions.size());
@@ -423,7 +417,13 @@ class IntegrationRunnerTest {
   }
 
   private void startSleepingThread(final List<Exception> caughtExceptions, final boolean ignoreInterrupt) {
-    final ExecutorService executorService = Executors.newFixedThreadPool(1);
+    final ExecutorService executorService = Executors.newFixedThreadPool(1, r -> {
+      // Create a thread that should be identified as orphaned if still running during shutdown
+      final Thread thread = new Thread(r);
+      thread.setName("sleeping-thread");
+      thread.setDaemon(false);
+      return thread;
+    });
     executorService.submit(() -> {
       for (int tries = 0; tries < 3; tries++) {
         try {

@@ -21,12 +21,14 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_DECIMAL_DIGITS;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
+import static io.airbyte.db.jdbc.JdbcConstants.KEY_SEQ;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
@@ -59,10 +61,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -110,7 +112,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    // This corresponds to the initial sync for in INCREMENTAL_MODE, where the ordering of the records matters
+    // This corresponds to the initial sync for in INCREMENTAL_MODE, where the ordering of the records
+    // matters
     // as intermediate state messages are emitted (if the connector emits intermediate state).
     if (syncMode.equals(SyncMode.INCREMENTAL) && getStateEmissionFrequency() > 0) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
@@ -145,13 +148,14 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
    *
    * @return a map by StreamName to associated list of primary keys
    */
-  private static Map<String, List<String>> aggregatePrimateKeys(final List<SimpleImmutableEntry<String, String>> entries) {
+  @VisibleForTesting
+  public static Map<String, List<String>> aggregatePrimateKeys(final List<PrimaryKeyAttributesFromDb> entries) {
     final Map<String, List<String>> result = new HashMap<>();
-    entries.forEach(entry -> {
-      if (!result.containsKey(entry.getKey())) {
-        result.put(entry.getKey(), new ArrayList<>());
+    entries.stream().sorted(Comparator.comparingInt(PrimaryKeyAttributesFromDb::keySequence)).forEach(entry -> {
+      if (!result.containsKey(entry.streamName())) {
+        result.put(entry.streamName(), new ArrayList<>());
       }
-      result.get(entry.getKey()).add(entry.getValue());
+      result.get(entry.streamName()).add(entry.primaryKey());
     });
     return result;
   }
@@ -260,6 +264,13 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     return sourceOperations.getAirbyteType(columnType);
   }
 
+  @VisibleForTesting
+  public record PrimaryKeyAttributesFromDb(String streamName,
+                                           String primaryKey,
+                                           int keySequence) {
+
+  }
+
   @Override
   protected Map<String, List<String>> discoverPrimaryKeys(final JdbcDatabase database,
                                                           final List<TableInfo<CommonField<Datatype>>> tableInfos) {
@@ -274,7 +285,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
             final String streamName = JdbcUtils.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
             final String primaryKey = r.getString(JDBC_COLUMN_COLUMN_NAME);
-            return new SimpleImmutableEntry<>(streamName, primaryKey);
+            final int keySeq = r.getInt(KEY_SEQ);
+            return new PrimaryKeyAttributesFromDb(streamName, primaryKey, keySeq);
           }));
       if (!tablePrimaryKeys.isEmpty()) {
         return tablePrimaryKeys;
@@ -291,7 +303,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
                     connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
-                    r -> new SimpleImmutableEntry<>(streamName, r.getString(JDBC_COLUMN_COLUMN_NAME))));
+                    r -> new PrimaryKeyAttributesFromDb(streamName, r.getString(JDBC_COLUMN_COLUMN_NAME), r.getInt(KEY_SEQ))));
                 return primaryKeys.getOrDefault(streamName, Collections.emptyList());
               } catch (final SQLException e) {
                 LOGGER.error(String.format("Could not retrieve primary keys for %s: %s", streamName, e));
@@ -476,6 +488,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     final Set<AirbyteStreamNameNamespacePair> newlyAddedStreams = new HashSet<>(Sets.difference(allStreams, alreadySyncedStreams));
 
     return catalog.getStreams().stream()
+        .filter(c -> c.getSyncMode() == SyncMode.INCREMENTAL)
         .filter(stream -> newlyAddedStreams.contains(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream())))
         .map(Jsons::clone)
         .collect(Collectors.toList());

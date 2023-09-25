@@ -208,6 +208,46 @@ class Calls(IncrementalOutreachStream):
         return "calls"
 
 
+class Users(IncrementalOutreachStream):
+    """
+    Users stream. Yields data from the GET /users endpoint.
+    See https://api.outreach.io/api/v2/docs#user
+    """
+
+    def path(self, **kwargs) -> str:
+        return "users"
+
+
+class Tasks(IncrementalOutreachStream):
+    """
+    Tasks stream. Yields data from the GET /tasts endpoint.
+    See https://api.outreach.io/api/v2/docs#task
+    """
+
+    def path(self, **kwargs) -> str:
+        return "tasks"
+
+
+class Templates(IncrementalOutreachStream):
+    """
+    Templates stream. Yields data from the GET /templates endpoint.
+    See https://api.outreach.io/api/v2/docs#template
+    """
+
+    def path(self, **kwargs) -> str:
+        return "templates"
+
+
+class Snippets(IncrementalOutreachStream):
+    """
+    Snippets stream. Yields data from the GET /snippets endpoint.
+    See https://api.outreach.io/api/v2/docs#snippet
+    """
+
+    def path(self, **kwargs) -> str:
+        return "snippets"
+
+
 class OutreachAuthenticator(Oauth2Authenticator):
     def __init__(self, redirect_uri: str, token_refresh_endpoint: str, client_id: str, client_secret: str, refresh_token: str):
         super().__init__(
@@ -256,4 +296,8 @@ class SourceOutreach(AbstractSource):
             Mailboxes(authenticator=auth, **config),
             Stages(authenticator=auth, **config),
             Calls(authenticator=auth, **config),
+            Users(authenticator=auth, **config),
+            Tasks(authenticator=auth, **config),
+            Templates(authenticator=auth, **config),
+            Snippets(authenticator=auth, **config),
         ]

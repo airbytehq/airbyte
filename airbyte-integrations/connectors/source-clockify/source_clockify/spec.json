@@ -17,6 +17,12 @@
         "description": "You can get your api access_key <a href=\"https://app.clockify.me/user/settings\">here</a> This API is Case Sensitive.",
         "type": "string",
         "airbyte_secret": true
+      },
+      "api_url": {
+        "title": "API Url",
+        "description": "The URL for the Clockify API. This should only need to be modified if connecting to an enterprise version of Clockify.",
+        "type": "string",
+        "default": "https://api.clockify.me"
       }
     }
   }

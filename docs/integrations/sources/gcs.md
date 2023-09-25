@@ -8,9 +8,9 @@ Cloud storage may incur egress costs. Egress refers to data that is transferred 
 
 ## Prerequisites
 
-* JSON credentials for the service account that has access to GCS. For more details check [instructions](https://cloud.google.com/iam/docs/creating-managing-service-accounts)
-* GCS bucket
-* Path to file(s)
+- JSON credentials for the service account that has access to GCS. For more details check [instructions](https://cloud.google.com/iam/docs/creating-managing-service-accounts)
+- GCS bucket
+- Path to file(s)
 
 ## Set up Source
 
@@ -29,11 +29,13 @@ Use the service account ID from above, grant read access to your target bucket. 
 
 ### Set up the source in Airbyte UI
 
-* Paste the service account JSON key to `service_account`
-* Enter your GCS bucket name to `gcs_bucket`
-* Enter path to your file(s) to `gcs_path`
+- Paste the service account JSON key to `service_account`
+- Enter your GCS bucket name to `gcs_bucket`
+- Enter path to your file(s) to `gcs_path`
 
 ## Changelog
-| Version | Date       | Pull Request                                             | Subject                     |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
-| 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS             |
+
+| Version | Date       | Pull Request                                             | Subject              |
+| :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.0   | 2023-06-26 | [27725](https://github.com/airbytehq/airbyte/pull/27725) | License Update: Elv2 |
+| 0.1.0   | 2023-02-16 | [23186](https://github.com/airbytehq/airbyte/pull/23186) | New Source: GCS      |

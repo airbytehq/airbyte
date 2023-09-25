@@ -145,24 +145,32 @@ public class GlobalAsyncStateManager {
     final List<PartialAirbyteMessage> output = new ArrayList<>();
     Long bytesFlushed = 0L;
     for (final Map.Entry<StreamDescriptor, LinkedList<Long>> entry : streamToStateIdQ.entrySet()) {
-      // remove all states with 0 counters.
-      final LinkedList<Long> stateIdQueue = entry.getValue();
-      while (true) {
-        final Long oldestState = stateIdQueue.peek();
-        final boolean emptyQ = oldestState == null;
-        final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
-        if (emptyQ || noCorrespondingStateMsg) {
-          break;
-        }
+      // Remove all states with 0 counters.
+      // Per-stream synchronized is required to make sure the state (at the head of the queue)
+      // logic is applied to is the state actually removed.
+      synchronized (this) {
+        final LinkedList<Long> stateIdQueue = entry.getValue();
+        while (true) {
+          final Long oldestState = stateIdQueue.peek();
+          if (oldestState == null) {
+            break;
+          }
 
-        final boolean noPrevRecs = !stateIdToCounter.containsKey(oldestState);
-        final boolean allRecsEmitted = stateIdToCounter.get(oldestState).get() == 0;
-        if (noPrevRecs || allRecsEmitted) {
-          entry.getValue().poll(); // poll to remove. no need to read as the earlier peek is still valid.
-          output.add(stateIdToState.get(oldestState).getLeft());
-          bytesFlushed += stateIdToState.get(oldestState).getRight();
-        } else {
-          break;
+          // technically possible this map hasn't been updated yet.
+          final boolean noCorrespondingStateMsg = stateIdToState.get(oldestState) == null;
+          if (noCorrespondingStateMsg) {
+            break;
+          }
+
+          final boolean noPrevRecs = !stateIdToCounter.containsKey(oldestState);
+          final boolean allRecsEmitted = stateIdToCounter.get(oldestState).get() == 0;
+          if (noPrevRecs || allRecsEmitted) {
+            var polled = entry.getValue().poll(); // poll to remove. no need to read as the earlier peek is still valid.
+            output.add(stateIdToState.get(oldestState).getLeft());
+            bytesFlushed += stateIdToState.get(oldestState).getRight();
+          } else {
+            break;
+          }
         }
       }
     }
@@ -173,7 +181,9 @@ public class GlobalAsyncStateManager {
 
   private Long getStateIdAndIncrement(final StreamDescriptor streamDescriptor, final long increment) {
     final StreamDescriptor resolvedDescriptor = stateType == AirbyteStateMessage.AirbyteStateType.STREAM ? streamDescriptor : SENTINEL_GLOBAL_DESC;
-    if (!streamToStateIdQ.containsKey(resolvedDescriptor)) {
+    // As concurrent collections do not guarantee data consistency when iterating, use `get` instead of
+    // `containsKey`.
+    if (streamToStateIdQ.get(resolvedDescriptor) == null) {
       registerNewStreamDescriptor(resolvedDescriptor);
     }
     final Long stateId = streamToStateIdQ.get(resolvedDescriptor).peekLast();

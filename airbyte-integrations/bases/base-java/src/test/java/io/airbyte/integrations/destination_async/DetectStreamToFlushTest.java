@@ -76,9 +76,15 @@ class DetectStreamToFlushTest {
     when(bufferDequeue.getBufferedStreams()).thenReturn(Set.of(DESC1));
     when(bufferDequeue.getQueueSizeBytes(DESC1)).thenReturn(Optional.of(1L));
     when(bufferDequeue.getTimeOfLastRecord(DESC1))
+        // because we eagerly load values and later access them again
+        // double the mocks for correctness; two calls here equals one test case.
+        .thenReturn(Optional.empty())
         .thenReturn(Optional.empty())
         .thenReturn(Optional.of(NOW))
+        .thenReturn(Optional.of(NOW))
+        .thenReturn(Optional.of(FIVE_MIN_AGO))
         .thenReturn(Optional.of(FIVE_MIN_AGO));
+
     final RunningFlushWorkers runningFlushWorkers = mock(RunningFlushWorkers.class);
     when(runningFlushWorkers.getSizesOfRunningWorkerBatches(any())).thenReturn(List.of(Optional.of(SIZE_10MB)));
     final DetectStreamToFlush detect = new DetectStreamToFlush(bufferDequeue, runningFlushWorkers, new AtomicBoolean(false), flusher);

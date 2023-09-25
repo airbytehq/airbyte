@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.record_buffer;
 
 import com.google.common.io.CountingOutputStream;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +19,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Base implementation of a {@link SerializableBuffer}. It is composed of a {@link BufferStorage}
  * where the actual data is being stored in a serialized format.
- *
+ * <p>
  * Such data format is defined by concrete implementation inheriting from this base abstract class.
  * To do so, necessary methods on handling "writer" methods should be defined. This writer would
  * take care of converting {@link AirbyteRecordMessage} into the serialized form of the data such as
@@ -57,7 +58,20 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
    * Transform the @param record into a serialized form of the data and writes it to the registered
    * OutputStream provided when {@link BaseSerializedBuffer#initWriter} was called.
    */
+  @Deprecated
   protected abstract void writeRecord(AirbyteRecordMessage record) throws IOException;
+
+  /**
+   * TODO: (ryankfu) move destination to use serialized record string instead of passing entire
+   * AirbyteRecord
+   *
+   * @param recordString serialized record
+   * @param emittedAt timestamp of the record in milliseconds
+   * @throws IOException
+   */
+  protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
+    writeRecord(Jsons.deserialize(recordString, AirbyteRecordMessage.class).withEmittedAt(emittedAt));
+  }
 
   /**
    * Stops the writer from receiving new data and prepares it for being finalized and converted into
@@ -90,6 +104,26 @@ public abstract class BaseSerializedBuffer implements SerializableBuffer {
     if (inputStream == null && !isClosed) {
       final long startCount = byteCounter.getCount();
       writeRecord(record);
+      return byteCounter.getCount() - startCount;
+    } else {
+      throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");
+    }
+  }
+
+  @Override
+  public long accept(final String recordString, final long emittedAt) throws Exception {
+    if (!isStarted) {
+      if (useCompression) {
+        compressedBuffer = new GzipCompressorOutputStream(byteCounter);
+        initWriter(compressedBuffer);
+      } else {
+        initWriter(byteCounter);
+      }
+      isStarted = true;
+    }
+    if (inputStream == null && !isClosed) {
+      final long startCount = byteCounter.getCount();
+      writeRecord(recordString, emittedAt);
       return byteCounter.getCount() - startCount;
     } else {
       throw new IllegalCallerException("Buffer is already closed, it cannot accept more messages");

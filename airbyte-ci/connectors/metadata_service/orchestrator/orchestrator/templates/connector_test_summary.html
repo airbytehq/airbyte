@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title%}{{ connector_name }} Test Summary{% endblock %}
+
+{% block content %}
+<h1>{{ connector_name }}</h1>
+<div class="table-container">
+  {{ connector_test_summary_html }}
+</div>
+
+{% endblock %}

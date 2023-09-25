@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.2.5", "pytest-mock~=3.6.1", "connector-acceptance-test", "responses~=0.14.0"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2.5", "pytest-mock~=3.6.1", "responses~=0.14.0"]
 
 setup(
     name="source_lemlist",

@@ -1,55 +1,66 @@
 # Confluence
 
-This page contains the setup guide and reference information for the Confluence source connector.
+This page contains the setup guide and reference information for the
+[Confluence](https://www.atlassian.com/software/confluence) source connector.
 
 ## Prerequisites
 
-* [API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
-* Your Confluence domain name
-* Your Confluence login email
+- Atlassian API Token
+- Your Confluence domain name
+- Your Confluence login email
 
 ## Setup guide
-### Step 1: Set up Confluence connector
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
-2. Click **Sources** and then click **+ New source**. 
-3. On the Set up the source page, select **Confluence** from the Source type dropdown.
-4. Enter a name for your source.
-5. For **API Token** follow the Jira confluence for generating an  [API Token](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/)
-6. For **Domain name** enter your Confluence domain name.
-7. For **Email** enter your Confluence login email.
+
+### Step 1: Create an API Token
+
+For detailed instructions on creating an Atlassian API Token, please refer to the
+[official documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+
+### Step 2: Set up the Confluence connector in Airbyte
+
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to the Airbyte Open Source dashboard.
+2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **Confluence** from the list of available sources.
+3. Enter a **Source name** of your choosing.
+4. In the **API Token** field, enter your Atlassian API Token.
+5. In the **Domain name** field, enter your Confluence domain name.
+6. In the **Email** field, enter your Confluence login email.
+7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
 | Feature                   | Supported? |
-|:--------------------------|:-----------|
+| :------------------------ | :--------- |
 | Full Refresh Sync         | Yes        |
 | Incremental - Append Sync | No         |
 | Incremental - Dedupe Sync | No         |
 | SSL connection            | No         |
 | Namespaces                | No         |
 
-## Supported Streams
+## Supported streams
 
-* [Pages](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
-* [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
-* [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
-* [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
-* [Audit](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get)
+- [Audit](https://developer.atlassian.com/cloud/confluence/rest/api-group-audit/#api-wiki-rest-api-audit-get)
+- [Blog Posts](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
+- [Group](https://developer.atlassian.com/cloud/confluence/rest/api-group-group/#api-wiki-rest-api-group-get)
+- [Pages](https://developer.atlassian.com/cloud/confluence/rest/api-group-content/#api-wiki-rest-api-content-get)
+- [Space](https://developer.atlassian.com/cloud/confluence/rest/api-group-space/#api-wiki-rest-api-space-get)
 
 :::note
-Stream Audit requires Standard or Premium plan.
+The `audit` stream requires a Standard or Premium plan.
 :::
-## Data type map
-The [Confluence API](https://developer.atlassian.com/cloud/confluence/rest/intro/#about) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
-### Performance considerations
+## Data type mapping
+
+The [Confluence Cloud REST API](https://developer.atlassian.com/cloud/confluence/rest/v1/intro/#about) uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
+
+## Performance considerations
 
 The Confluence connector should not run into Confluence API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
-|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 0.2.0   | 2023-08-14 | [29125](https://github.com/airbytehq/airbyte/pull/29125) | Migrate Confluence Source Connector to Low Code                |
 | 0.1.3   | 2023-03-13 | [23988](https://github.com/airbytehq/airbyte/pull/23988) | Add view and storage to pages body, add check for stream Audit |
 | 0.1.2   | 2023-03-06 | [23775](https://github.com/airbytehq/airbyte/pull/23775) | Set additionalProperties: true, update docs and spec           |
 | 0.1.1   | 2022-01-31 | [9831](https://github.com/airbytehq/airbyte/pull/9831)   | Fix: Spec was not pushed to cache                              |

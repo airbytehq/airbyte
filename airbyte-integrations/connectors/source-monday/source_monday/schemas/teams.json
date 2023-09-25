@@ -7,8 +7,12 @@
     "picture_url": { "type": ["null", "string"] },
     "users": {
       "type": ["null", "array"],
-      "properties": {
-        "id": { "type": ["null", "integer"] }
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true,
+        "properties": {
+          "id": { "type": ["null", "integer"] }
+        }
       }
     }
   }

@@ -7,11 +7,11 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: ca81ee7c-3163-4246-af40-094cc31e5e42
-  dockerImageTag: 0.1.21
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/destination-mysql-strict-encrypt
   githubIssueLabel: destination-mysql
   icon: mysql.svg
-  license: MIT
+  license: ELv2
   name: MySQL
   normalizationConfig:
     normalizationIntegrationType: mysql

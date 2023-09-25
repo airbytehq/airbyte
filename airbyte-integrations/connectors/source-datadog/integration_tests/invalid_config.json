@@ -1,4 +1,5 @@
 {
+  "site": "<site>",
   "api_key": "<api_key>",
   "application_key": "<api_key>",
   "query": "sample query",

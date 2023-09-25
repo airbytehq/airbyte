@@ -88,6 +88,10 @@
       "type": "string",
       "format": "date-time"
     },
+    "archived_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "type": {
       "type": ["null", "string"]
     },

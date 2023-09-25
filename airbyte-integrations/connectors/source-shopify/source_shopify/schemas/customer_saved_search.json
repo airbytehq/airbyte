@@ -1,0 +1,26 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "query": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

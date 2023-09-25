@@ -2,16 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, Dict, Mapping
 
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
 class NotImplementedAuth(Exception):
     """Not implemented Auth option error"""
 
-    logger = AirbyteLogger()
+    logger = logging.getLogger("airbyte")
 
     def __init__(self, auth_method: str = None):
         self.message = f"Not implemented Auth method = {auth_method}"
