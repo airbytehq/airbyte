@@ -48,7 +48,7 @@
           "type": ["null", "integer"]
         },
         "end": {
-          "type": ["null", "number"]
+          "type": ["null", "integer"]
         }
       }
     },
@@ -149,6 +149,80 @@
     },
     "currency": {
       "type": ["null", "string"]
+    },
+    "amount_excluding_tax": {
+      "type": ["null", "integer"]
+    },
+    "unit_amount_excluding_tax": {
+      "type": ["null", "string"]
+    },
+    "proration_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "credited_items": {
+          "type": ["null", "object"],
+          "properties": {
+            "invoice": {
+              "type": ["null", "string"]
+            },
+            "invoice_line_items": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "price": {
+      "$ref": "price.json"
+    },
+    "discount_amounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "amount": {
+            "type": ["null", "integer"]
+          },
+          "discount": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "discounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "tax_rates": {
+      "$ref": "tax_rates.json"
+    },
+    "tax_amounts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "amount": {
+            "type": ["null", "integer"]
+          },
+          "inclusive": {
+            "type": ["null", "boolean"]
+          },
+          "tax_rate": {
+            "type": ["null", "string"]
+          },
+          "taxability_reason": {
+            "type": ["null", "string"]
+          },
+          "taxable_amount": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
     }
   }
 }

@@ -24,6 +24,7 @@ import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -60,7 +61,6 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
         ClickhouseDestination.DRIVER_CLASS,
         jdbcStr), new ClickhouseTestSourceOperations());
   }
-
 
   @Override
   protected String getImageName() {
@@ -165,7 +165,7 @@ public class ClickhouseDestinationStrictEncryptAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     db = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
         .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
         .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))

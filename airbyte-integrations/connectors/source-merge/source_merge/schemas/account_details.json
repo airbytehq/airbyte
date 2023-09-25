@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Account Details",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "integration": {
+      "type": ["null", "string"]
+    },
+    "integration_slug": {
+      "type": ["null", "string"]
+    },
+    "category": {
+      "type": ["null", "string"]
+    },
+    "end_user_origin_id": {
+      "type": ["null", "string"]
+    },
+    "end_user_organization_name": {
+      "type": ["null", "string"]
+    },
+    "end_user_email_address": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "webhook_listener_url": {
+      "type": ["null", "string"]
+    },
+    "is_duplicate": {}
+  }
+}

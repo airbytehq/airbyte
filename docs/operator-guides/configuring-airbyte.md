@@ -68,11 +68,11 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 
 1. `DATABASE_USER` - Define the Jobs Database user.
 2. `DATABASE_PASSWORD` - Define the Jobs Database password.
-3. `DATABASE_URL` - Define the Jobs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}`. Do not include username or password.
+3. `DATABASE_URL` - Define the Jobs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}`. Do not include username or password.
 4. `JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Jobs Database to be initialized. This includes migrations.
 5. `CONFIG_DATABASE_USER` - Define the Configs Database user. Defaults to the Jobs Database user if empty.
 6. `CONFIG_DATABASE_PASSWORD` - Define the Configs Database password. Defaults to the Jobs Database password if empty.
-7. `CONFIG_DATABASE_URL` - Define the Configs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT/${DATABASE_DB}`. Defaults to the Jobs Database url if empty.
+7. `CONFIG_DATABASE_URL` - Define the Configs Database url in the form of `jdbc:postgresql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}`. Defaults to the Jobs Database url if empty.
 8. `CONFIG_DATABASE_INITIALIZATION_TIMEOUT_MS` - Define the total time to wait for the Configs Database to be initialized. This includes migrations.
 9. `RUN_DATABASE_MIGRATION_ON_STARTUP` - Define if the Bootloader should run migrations on start up.
 
@@ -84,12 +84,19 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 
 #### Jobs
 
-1. `SYNC_JOB_MAX_ATTEMPTS` - Define the number of attempts a sync will attempt before failing.
-2. `SYNC_JOB_MAX_TIMEOUT_DAYS` - Define the number of days a sync job will execute for before timing out.
-3. `JOB_MAIN_CONTAINER_CPU_REQUEST` - Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-4. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Define the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-5. `JOB_MAIN_CONTAINER_MEMORY_REQUEST` - Define the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
-6. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Define the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+1. `SYNC_JOB_MAX_ATTEMPTS` - Define the number of attempts a sync will attempt before failing. *Legacy - this is superseded by the values below*
+2. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_SUCCESSIVE` - Defines the max number of successive attempts in which no data was synchronized before failing the job.
+3. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which no data was synchronized before failing the job.
+4. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MIN_INTERVAL_S` - Defines the minimum backoff interval in seconds between failed attempts in which no data was synchronized.
+5. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_MAX_INTERVAL_S` - Defines the maximum backoff interval in seconds between failed attempts in which no data was synchronized.
+6. `SYNC_JOB_RETRIES_COMPLETE_FAILURES_BACKOFF_BASE` - Defines the exponential base of the backoff interval between failed attempts in which no data was synchronized.
+7. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_SUCCESSIVE` - Defines the max number of attempts in which some data was synchronized before failing the job.
+8. `SYNC_JOB_RETRIES_PARTIAL_FAILURES_MAX_TOTAL` - Defines the max number of attempts in which some data was synchronized before failing the job.
+9. `SYNC_JOB_MAX_TIMEOUT_DAYS` - Define the number of days a sync job will execute for before timing out.
+10. `JOB_MAIN_CONTAINER_CPU_REQUEST` - Define the job container's minimum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+11. `JOB_MAIN_CONTAINER_CPU_LIMIT` - Define the job container's maximum CPU usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+12. `JOB_MAIN_CONTAINER_MEMORY_REQUEST` - Define the job container's minimum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
+13. `JOB_MAIN_CONTAINER_MEMORY_LIMIT` - Define the job container's maximum RAM usage. Units follow either Docker or Kubernetes, depending on the deployment. Defaults to none.
 
 #### Logging
 
@@ -109,11 +116,10 @@ Set to empty values, e.g. "" to disable basic auth. **Be sure to change these va
 2. `MAX_CHECK_WORKERS` - Define the maximum number of Check workers each Airbyte Worker container can support. Defaults to 5.
 3. `MAX_SYNC_WORKERS` - Define the maximum number of Sync workers each Airbyte Worker container can support. Defaults to 5.
 4. `MAX_DISCOVER_WORKERS` - Define the maximum number of Discover workers each Airbyte Worker container can support. Defaults to 5.
-5. `SENTRY_DSN` - Define the [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/) of necessary Sentry instance. Defaults to empty. Integration with Sentry is explained [here](./sentry-integration.md)
 
 #### Data Retention
 
-1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Define the retention period of the job history in Temporal, defaults to 30 days. When running in docker, 
+1. `TEMPORAL_HISTORY_RETENTION_IN_DAYS` - Define the retention period of the job history in Temporal, defaults to 30 days. When running in docker,
    this same value is applied to the log retention.
 
 ### Docker-Only
@@ -156,7 +162,7 @@ A job specific variable overwrites the default sync job variable defined above.
 
 Note that Airbyte does not support logging to separate Cloud Storage providers.
 
-Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes#configure-logs) for more information on configuring Kubernetes logging.
+Please see [here](https://docs.airbyte.com/deploying-airbyte/on-kubernetes-via-helm#configure-logs) for more information on configuring Kubernetes logging.
 
 1. `GCS_LOG_BUCKET` - Define the GCS bucket to store logs.
 2. `S3_BUCKET` - Define the S3 bucket to store logs.

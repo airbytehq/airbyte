@@ -14,7 +14,7 @@ definitions:
     expires_in_name: expires_at
   bearer_authenticator:
     type: BearerAuthenticator
-    api_token: "{{ config['api_key'] }}"
+    api_token: "{{ config['credentials']['api_key'] }}"
   selector:
     extractor:
       field_path: ["{{ parameters['name'] }}"]

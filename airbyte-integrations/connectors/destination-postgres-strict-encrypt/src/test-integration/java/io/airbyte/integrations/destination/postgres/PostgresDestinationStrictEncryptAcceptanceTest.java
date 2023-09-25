@@ -22,6 +22,7 @@ import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -38,7 +39,9 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
 
   protected static final String PASSWORD = "Passw0rd";
   protected static PostgresUtils.Certificate certs;
-  private static final String NORMALIZATION_VERSION = "dev"; //this is hacky. This test should extend or encapsulate PostgresDestinationAcceptanceTest
+  private static final String NORMALIZATION_VERSION = "dev"; // this is hacky. This test should extend or encapsulate
+                                                             // PostgresDestinationAcceptanceTest
+
   @Override
   protected String getImageName() {
     return "airbyte/destination-postgres-strict-encrypt:dev";
@@ -138,7 +141,7 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     db = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
         .asCompatibleSubstituteFor("postgres"));
     db.start();
@@ -208,4 +211,5 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
   protected String getDestinationDefinitionKey() {
     return "airbyte/destination-postgres";
   }
+
 }

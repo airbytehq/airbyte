@@ -6,25 +6,53 @@
     "followerCountsByStaffCountRange": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "object"]
+        "type": ["null", "object"],
+        "additionalProperties": true
       }
     },
     "followerCountsByFunction": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "object"]
+        "type": ["null", "object"],
+        "additionalProperties": true
       }
     },
     "followerCountsByAssociationType": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "object"]
+        "type": ["null", "object"],
+        "additionalProperties": true
       }
     },
     "followerCountsBySeniority": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "object"]
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
+    },
+    "followerCountsByRegion": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
+    },
+    "organizationalEntity": {
+      "type": ["null", "string"]
+    },
+    "followerCountsByCountry": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
+    },
+    "followerCountsByIndustry": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
       }
     }
   }

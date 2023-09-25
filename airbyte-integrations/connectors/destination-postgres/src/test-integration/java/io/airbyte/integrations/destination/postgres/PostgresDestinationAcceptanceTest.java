@@ -17,6 +17,7 @@ import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanc
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -97,7 +98,9 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   @Override
-  protected boolean supportIncrementalSchemaChanges() { return true; }
+  protected boolean supportIncrementalSchemaChanges() {
+    return true;
+  }
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv env, final String streamName, final String namespace)
@@ -125,7 +128,7 @@ public class PostgresDestinationAcceptanceTest extends JdbcDestinationAcceptance
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     db = new PostgreSQLContainer<>("postgres:13-alpine");
     db.start();
   }

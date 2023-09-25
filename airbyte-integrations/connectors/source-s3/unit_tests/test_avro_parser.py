@@ -45,15 +45,18 @@ nested_records_schema_str = """{
     ]
 }"""
 
-nested_schema_output = {"lastname": "string", "address": "object"}
+nested_schema_output = {"address": {"type": ["object", "null"],
+                                    "city": {"type": ["string", "null"]},
+                                    "streetaddress": {"type": ["string", "null"]},
+                                    },
+                        "lastname": {"type": ["string", "null"]}}
 
-master_schema = {
-    "name": "string",
-    "age": ["integer", "null"],
-    "address": ["number", "null"],
-    "street": "number",
-    "valid": "boolean",
-}
+master_schema = {"address": {"type": ["number", "null"]},
+                 "age": {"type": ["integer", "null"]},
+                 "name": {"type": ["string", "null"]},
+                 "street": {"type": ["number", "null"]},
+                 "valid": {"type": ["boolean", "null"]}
+                 }
 
 
 class TestAvroParser(AbstractTestParser):

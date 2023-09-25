@@ -187,10 +187,10 @@
           "type": ["null", "string"]
         },
         "hs_is_closed": {
-          "type": ["null", "string"]
+          "type": ["null", "boolean"]
         },
         "hs_is_closed_won": {
-          "type": ["null", "string"]
+          "type": ["null", "boolean"]
         },
         "hs_lastmodifieddate": {
           "type": ["null", "string"],
@@ -206,25 +206,25 @@
           "type": ["null", "string"]
         },
         "hs_line_item_global_term_hs_discount_percentage_enabled": {
-          "type": ["null", "string"]
+          "type": ["null", "boolean"]
         },
         "hs_line_item_global_term_hs_recurring_billing_period": {
           "type": ["null", "string"]
         },
         "hs_line_item_global_term_hs_recurring_billing_period_enabled": {
-          "type": ["null", "string"]
+          "type": ["null", "boolean"]
         },
         "hs_line_item_global_term_hs_recurring_billing_start_date": {
           "type": ["null", "string"]
         },
         "hs_line_item_global_term_hs_recurring_billing_start_date_enabled": {
-          "type": ["null", "string"]
+          "type": ["null", "boolean"]
         },
         "hs_line_item_global_term_recurringbillingfrequency": {
           "type": ["null", "string"]
         },
         "hs_line_item_global_term_recurringbillingfrequency_enabled": {
-          "type": ["null", "string"]
+          "type": ["null", "boolean"]
         },
         "hs_manual_forecast_category": {
           "type": ["null", "string"]

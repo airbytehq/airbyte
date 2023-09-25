@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -30,7 +31,7 @@
       "type": ["null", "string"]
     },
     "progress": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "progress_source": {
       "type": ["null", "string"]
@@ -54,19 +55,38 @@
       "type": ["null", "object"]
     },
     "initiatives": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
     },
     "comments_count": {
       "type": ["null", "integer"]
     },
     "features": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
     },
     "releases": {
       "type": ["null", "array"]
     },
     "custom_fields": {
       "type": ["null", "array"]
+    },
+    "parent": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "parents": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
     }
   }
 }

@@ -52,6 +52,45 @@
     },
     "is_official_content": {
       "type": ["null", "boolean"]
+    },
+    "chart_id": {
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "type": ["null", "integer"]
+    },
+    "edit_id": {
+      "type": ["null", "string"]
+    },
+    "last_viewed": {
+      "type": ["null", "integer"]
+    },
+    "location_id": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "popularity": {
+      "type": ["null", "integer"]
+    },
+    "shortcut_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "view_count": {
+      "type": ["null", "integer"]
+    },
+    "viewers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

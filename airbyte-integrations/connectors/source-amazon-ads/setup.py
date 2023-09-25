@@ -8,10 +8,11 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = ["airbyte-cdk~=0.16", "requests_oauthlib~=1.3.1", "pendulum~=2.1.2"]
 
 TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
     "pytest~=6.1",
     "pytest-mock~=3.7.0",
     "jsonschema~=3.2.0",
-    "responses~=0.13.3",
+    "responses~=0.23.1",
     "freezegun~=1.2.0",
 ]
 

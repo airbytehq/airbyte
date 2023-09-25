@@ -5,7 +5,7 @@
     "title": "Apify Dataset Spec",
     "type": "object",
     "required": ["datasetId"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "datasetId": {
         "type": "string",

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.databricks;
 
 import static io.airbyte.integrations.destination.databricks.utils.DatabricksConstants.DATABRICKS_HTTP_PATH_KEY;
@@ -18,6 +22,7 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -41,9 +46,9 @@ public class DatabricksManagedTablesDestinationAcceptanceTest extends Destinatio
 
   @Override
   protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
-      final String streamName,
-      final String namespace,
-      final JsonNode streamSchema)
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws SQLException {
     {
       final String catalogName = databricksConfig.catalog();
@@ -53,13 +58,12 @@ public class DatabricksManagedTablesDestinationAcceptanceTest extends Destinatio
       List<JsonNode> result = new ArrayList<>();
       try (final DSLContext dslContext = DatabricksUtilTest.getDslContext(databricksConfig)) {
         final Database database = new Database(dslContext);
-        List<JsonNode> query = database.query(ctx ->
-            ctx.select(asterisk())
-                .from(String.format("%s.%s.%s", catalogName, schemaName, tableName))
-                .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
-                .fetch().stream()
-                .map(record -> Jsons.deserialize(record.get(JavaBaseConstants.COLUMN_NAME_DATA).toString()))
-                .collect(Collectors.toList()));
+        List<JsonNode> query = database.query(ctx -> ctx.select(asterisk())
+            .from(String.format("%s.%s.%s", catalogName, schemaName, tableName))
+            .orderBy(field(JavaBaseConstants.COLUMN_NAME_EMITTED_AT).asc())
+            .fetch().stream()
+            .map(record -> Jsons.deserialize(record.get(JavaBaseConstants.COLUMN_NAME_DATA).toString()))
+            .collect(Collectors.toList()));
         result.addAll(query);
       }
       return result;
@@ -77,7 +81,7 @@ public class DatabricksManagedTablesDestinationAcceptanceTest extends Destinatio
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
     this.configJson = Jsons.deserialize(IOs.readFile(Path.of(SECRETS_CONFIG_JSON)));
     this.databricksConfig = DatabricksDestinationConfig.get(configJson);
   }

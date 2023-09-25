@@ -36,7 +36,7 @@ public class ThrottledDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new ThrottledConsumer(config.get("millis_per_record").asLong(), outputRecordCollector);
+    return new ThrottledConsumer(config.get("test_destination").get("millis_per_record").asLong(), outputRecordCollector);
   }
 
   public static class ThrottledConsumer implements AirbyteMessageConsumer {

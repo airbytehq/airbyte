@@ -23,7 +23,7 @@ public class DatabricksStorageConfigProvider {
     return switch (DatabricksStorageType.valueOf(typeConfig.asText())) {
       case MANAGED_TABLES_STORAGE -> null; // No need for extra storage config
       case S3_STORAGE -> new DatabricksS3StorageConfigProvider(config);
-      case AZURE_BLOB_STORAGE ->  new DatabricksAzureBlobStorageConfigProvider(config);
+      case AZURE_BLOB_STORAGE -> new DatabricksAzureBlobStorageConfigProvider(config);
     };
   }
 

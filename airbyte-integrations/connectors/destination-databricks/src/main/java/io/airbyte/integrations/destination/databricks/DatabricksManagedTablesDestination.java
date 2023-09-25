@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -42,4 +46,5 @@ public class DatabricksManagedTablesDestination extends AbstractJdbcDestination 
   public DataSource getDataSource(final JsonNode config) {
     return DatabricksDatabaseUtil.getDataSource(config);
   }
+
 }

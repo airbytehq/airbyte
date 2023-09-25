@@ -4,13 +4,15 @@
 
 
 import logging
+from datetime import timedelta
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
+import mock
 import pendulum
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode, Type
-from source_hubspot.errors import HubspotRateLimited
+from source_hubspot.errors import HubspotRateLimited, InvalidStartDateConfigError
 from source_hubspot.helpers import APIv3Property
 from source_hubspot.source import SourceHubspot
 from source_hubspot.streams import API, Companies, Deals, Engagements, MarketingEmails, Products, Stream
@@ -61,10 +63,29 @@ def test_check_connection_exception(config):
     assert error_msg
 
 
-def test_streams(config):
+def test_check_connection_bad_request_exception(requests_mock, config_invalid_client_id):
+    responses = [
+        {"json": {"message": "invalid client_id"}, "status_code": 400},
+    ]
+    requests_mock.register_uri("POST", "/oauth/v1/token", responses)
+    ok, error_msg = SourceHubspot().check_connection(logger, config=config_invalid_client_id)
+    assert not ok
+    assert error_msg
+
+
+def test_check_connection_invalid_start_date_exception(config_invalid_date):
+    with pytest.raises(InvalidStartDateConfigError):
+        ok, error_msg = SourceHubspot().check_connection(logger, config=config_invalid_date)
+        assert not ok
+        assert error_msg
+
+
+@mock.patch("source_hubspot.source.SourceHubspot.get_custom_object_streams")
+def test_streams(requests_mock, config):
+
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 27
+    assert len(streams) == 30
 
 
 def test_check_credential_title_exception(config):
@@ -140,23 +161,68 @@ def test_stream_forbidden(requests_mock, config, caplog):
         "message": "This access_token does not have proper permissions!",
     }
     requests_mock.get("https://api.hubapi.com/automation/v3/workflows", json=json, status_code=403)
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
 
-    catalog = ConfiguredAirbyteCatalog.parse_obj({
-        "streams": [
-            {
-                "stream": {
-                    "name": "workflows",
-                    "json_schema": {},
-                    "supported_sync_modes": ["full_refresh"],
-                },
-                "sync_mode": "full_refresh",
-                "destination_sync_mode": "overwrite"
-            }
-        ]
-    })
+    catalog = ConfiguredAirbyteCatalog.parse_obj(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "workflows",
+                        "json_schema": {},
+                        "supported_sync_modes": ["full_refresh"],
+                    },
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "overwrite",
+                }
+            ]
+        }
+    )
 
     records = list(SourceHubspot().read(logger, config, catalog, {}))
     assert json["message"] in caplog.text
+    assert "The authenticated user does not have permissions to access the URL" in caplog.text
+    records = [r for r in records if r.type == Type.RECORD]
+    assert not records
+
+
+def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_list):
+    json = {
+        "status": "error",
+        "message": "This access_token does not have proper permissions!",
+    }
+    requests_mock.get("https://api.hubapi.com/marketing/v3/forms", json=json, status_code=403)
+    properties_response = [
+        {
+            "json": [
+                {"name": property_name, "type": "string", "updatedAt": 1571085954360, "createdAt": 1565059306048}
+                for property_name in fake_properties_list
+            ],
+            "status_code": 200,
+        }
+    ]
+    requests_mock.get("https://api.hubapi.com/properties/v2/form/properties", properties_response)
+    requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json=json, status_code=403)
+
+    catalog = ConfiguredAirbyteCatalog.parse_obj(
+        {
+            "streams": [
+                {
+                    "stream": {
+                        "name": "form_submissions",
+                        "json_schema": {},
+                        "supported_sync_modes": ["full_refresh"],
+                    },
+                    "sync_mode": "full_refresh",
+                    "destination_sync_mode": "overwrite",
+                }
+            ]
+        }
+    )
+
+    records = list(SourceHubspot().read(logger, config, catalog, {}))
+    assert json["message"] in caplog.text
+    assert "The authenticated user does not have permissions to access the URL" in caplog.text
     records = [r for r in records if r.type == Type.RECORD]
     assert not records
 
@@ -472,36 +538,95 @@ def test_engagements_stream_pagination_works(requests_mock, common_params):
     test_stream = Engagements(**common_params)
     records, _ = read_incremental(test_stream, {})
     # The stream should handle pagination correctly and output 250 records.
-    assert len(records) == 250
+    assert len(records) == 100
     assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
 
-def test_incremental_engagements_stream_stops_at_10K_records(requests_mock, common_params, fake_properties_list):
+def test_engagements_stream_since_old_date(requests_mock, common_params, fake_properties_list):
     """
-    If there are more than 10,000 engagements that would be returned by the Hubspot recent engagements endpoint,
-    the Engagements instance should stop at the 10Kth record.
+    Connector should use 'All Engagements' API for old dates (more than 30 days)
     """
-
+    old_date = 1614038400000  # Tuesday, 23 February 2021 г., 0:00:00
     responses = [
         {
             "json": {
-                "results": [{"engagement": {"id": f"{y}", "lastUpdated": 1641234595252}} for y in range(100)],
-                "hasMore": True,
-                "offset": x * 100,
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": old_date}} for y in range(100)],
+                "hasMore": False,
+                "offset": 0,
+                "total": 100
             },
             "status_code": 200,
         }
-        for x in range(1, 102)
     ]
 
     # Create test_stream instance with some state
     test_stream = Engagements(**common_params)
-    test_stream.state = {"lastUpdated": 1641234595251}
+    test_stream.state = {"lastUpdated": old_date}
     # Mocking Request
-    requests_mock.register_uri("GET", "/engagements/v1/engagements/recent/modified?count=100", responses)
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?count=250", responses)
     records, _ = read_incremental(test_stream, {})
     # The stream should not attempt to get more than 10K records.
-    assert len(records) == 10000
+    assert len(records) == 100
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
+
+
+def test_engagements_stream_since_recent_date(requests_mock, common_params, fake_properties_list):
+    """
+    Connector should use 'Recent Engagements' API for recent dates (less than 30 days)
+    """
+    recent_date = pendulum.now() - timedelta(days=10)  # 10 days ago
+    recent_date = int(recent_date.timestamp() * 1000)
+    responses = [
+        {
+            "json": {
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
+                "hasMore": False,
+                "offset": 0,
+                "total": 100
+            },
+            "status_code": 200,
+        }
+    ]
+
+    # Create test_stream instance with some state
+    test_stream = Engagements(**common_params)
+    test_stream.state = {"lastUpdated": recent_date}
+    # Mocking Request
+    requests_mock.register_uri("GET", f"/engagements/v1/engagements/recent/modified?count=100&since={recent_date}", responses)
+    records, _ = read_incremental(test_stream, {"lastUpdated": recent_date})
+    # The stream should not attempt to get more than 10K records.
+    assert len(records) == 100
+    assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
+
+
+def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, common_params, fake_properties_list):
+    """
+    Connector should use 'Recent Engagements' API for recent dates (less than 30 days).
+    If response from 'Recent Engagements' API returns 10k records, it means that there more records,
+    so 'All Engagements' API should be used.
+    """
+    recent_date = pendulum.now() - timedelta(days=10)  # 10 days ago
+    recent_date = int(recent_date.timestamp() * 1000)
+    responses = [
+        {
+            "json": {
+                "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
+                "hasMore": False,
+                "offset": 0,
+                "total": 10001
+            },
+            "status_code": 200,
+        }
+    ]
+
+    # Create test_stream instance with some state
+    test_stream = Engagements(**common_params)
+    test_stream.state = {"lastUpdated": recent_date}
+    # Mocking Request
+    requests_mock.register_uri("GET", f"/engagements/v1/engagements/recent/modified?count=100&since={recent_date}", responses)
+    requests_mock.register_uri("GET", "/engagements/v1/engagements/paged?count=250", responses)
+    records, _ = read_incremental(test_stream, {"lastUpdated": recent_date})
+    assert len(records) == 100
     assert test_stream.state["lastUpdated"] == int(test_stream._init_sync.timestamp() * 1000)
 
 
@@ -519,7 +644,7 @@ def test_pagination_marketing_emails_stream(requests_mock, common_params):
                     "objects": [{"id": f"{y}", "updated": 1641234593251} for y in range(250)],
                     "limit": 250,
                     "offset": 0,
-                    "total": 600
+                    "total": 600,
                 },
                 "status_code": 200,
             },
@@ -528,7 +653,7 @@ def test_pagination_marketing_emails_stream(requests_mock, common_params):
                     "objects": [{"id": f"{y}", "updated": 1641234593251} for y in range(250, 500)],
                     "limit": 250,
                     "offset": 250,
-                    "total": 600
+                    "total": 600,
                 },
                 "status_code": 200,
             },
@@ -537,7 +662,7 @@ def test_pagination_marketing_emails_stream(requests_mock, common_params):
                     "objects": [{"id": f"{y}", "updated": 1641234595251} for y in range(500, 600)],
                     "limit": 250,
                     "offset": 500,
-                    "total": 600
+                    "total": 600,
                 },
                 "status_code": 200,
             },

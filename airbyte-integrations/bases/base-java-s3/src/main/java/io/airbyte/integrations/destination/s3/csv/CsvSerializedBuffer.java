@@ -21,8 +21,12 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CsvSerializedBuffer extends BaseSerializedBuffer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(CsvSerializedBuffer.class);
 
   public static final String CSV_GZ_SUFFIX = ".csv.gz";
 
@@ -36,8 +40,8 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
       throws Exception {
     super(bufferStorage);
     this.csvSheetGenerator = csvSheetGenerator;
-    this.csvPrinter = null;
-    this.csvFormat = CSVFormat.DEFAULT;
+    csvPrinter = null;
+    csvFormat = CSVFormat.DEFAULT;
     // we always want to compress csv files
     withCompression(compression);
   }
@@ -55,19 +59,41 @@ public class CsvSerializedBuffer extends BaseSerializedBuffer {
     csvPrinter = new CSVPrinter(new PrintWriter(outputStream, true, StandardCharsets.UTF_8), csvFormat);
   }
 
+  /**
+   * TODO: (ryankfu) remove this call within {@link SerializedBufferingStrategy} and move to use
+   * recordString
+   *
+   * @param record AirbyteRecordMessage to be written
+   * @throws IOException
+   */
   @Override
   protected void writeRecord(final AirbyteRecordMessage record) throws IOException {
     csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), record));
   }
 
   @Override
+  protected void writeRecord(final String recordString, final long emittedAt) throws IOException {
+    csvPrinter.printRecord(csvSheetGenerator.getDataRow(UUID.randomUUID(), recordString, emittedAt));
+  }
+
+  @Override
   protected void flushWriter() throws IOException {
-    csvPrinter.flush();
+    // in an async world, it is possible that flush writer gets called even if no records were accepted.
+    if (csvPrinter != null) {
+      csvPrinter.flush();
+    } else {
+      LOGGER.warn("Trying to flush but no printer is initialized.");
+    }
   }
 
   @Override
   protected void closeWriter() throws IOException {
-    csvPrinter.close();
+    // in an async world, it is possible that flush writer gets called even if no records were accepted.
+    if (csvPrinter != null) {
+      csvPrinter.close();
+    } else {
+      LOGGER.warn("Trying to close but no printer is initialized.");
+    }
   }
 
   public static BufferCreateFunction createFunction(final S3CsvFormatConfig config,

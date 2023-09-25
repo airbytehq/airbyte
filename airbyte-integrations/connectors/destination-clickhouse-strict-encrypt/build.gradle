@@ -28,3 +28,7 @@ dependencies {
     integrationTestJavaImplementation libs.connectors.destination.testcontainers.clickhouse
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
 }
+
+tasks.named("airbyteDocker") {
+    dependsOn project(':airbyte-integrations:bases:base-normalization').airbyteDockerClickhouse
+}

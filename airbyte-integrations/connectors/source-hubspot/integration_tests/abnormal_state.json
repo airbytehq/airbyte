@@ -9,54 +9,69 @@
         "lastUpdatedTime": 7945393076000
       }
     }
-  }, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": {
-      "name": "companies"
-    },
-    "stream_state": {
-      "updatedAt": "2221-10-12T13:37:56.412000+00:00"
-    }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": {
-      "name": "contact_lists"
-    },
-    "stream_state": {
-      "updatedAt": 7945393076000
-    }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": {
-      "name": "contacts"
-    },
-    "stream_state": {
-      "updatedAt": "2221-10-12T13:37:56.412000+00:00"
-    }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": {
-      "name": "deal_pipelines"
-    },
-    "stream_state": {
-      "updatedAt": 7945393076000
-    }
-  }
-},
+  },
   {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "deals" },
-    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
-  }
-},
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "companies"
+      },
+      "stream_state": {
+        "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "contact_lists"
+      },
+      "stream_state": {
+        "updatedAt": 7945393076000
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "contacts"
+      },
+      "stream_state": {
+        "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "contacts_merged_audit"
+      },
+      "stream_state": {
+        "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "deal_pipelines"
+      },
+      "stream_state": {
+        "updatedAt": 7945393076000
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "deals" },
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+    }
+  },
   {
     "type": "STREAM",
     "stream": {
@@ -65,66 +80,83 @@
     }
   },
   {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": {
-      "name": "email_events"
-    },
-    "stream_state": {
-      "created": 7945393076000
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "email_events"
+      },
+      "stream_state": {
+        "created": 7945393076000
+      }
     }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": {
-      "name": "engagements"
-    },
-    "stream_state": {
-      "lastUpdated": 7945393076000
-    }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "engagements_calls" },
-    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "engagements_emails" },
-    "stream_state": {
-      "updatedAt": "2221-10-12T13:37:56.412000+00:00"
-    }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": {
-      "name": "engagements_meetings"
-    },
-    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "engagements_notes" },
-    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "engagements_tasks" },
-    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
-  }
-},
+  },
   {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "forms" },
-    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
-  }
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "goals"
+      },
+      "stream_state": {
+        "updatedAt": "5023-05-12T01:32:26.602000+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "engagements"
+      },
+      "stream_state": {
+        "lastUpdated": 7945393076000
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "engagements_calls" },
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "engagements_emails" },
+      "stream_state": {
+        "updatedAt": "2221-10-12T13:37:56.412000+00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "engagements_meetings"
+      },
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "engagements_notes" },
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "engagements_tasks" },
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "forms" },
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+    }
   },
   {
     "type": "STREAM",
@@ -134,34 +166,38 @@
     }
   },
   {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "owners" },
-    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "owners" },
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "products" },
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "subscription_changes" },
+      "stream_state": { "timestamp": 7945393076000 }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "tickets" },
+      "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": { "name": "workflows" },
+      "stream_state": { "updatedAt": 7945393076000 }
+    }
   }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "products" },
-    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "subscription_changes" },
-    "stream_state": { "timestamp": 7945393076000 }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "tickets" },
-    "stream_state": { "updatedAt": "2221-10-12T13:37:56.412000+00:00" }
-  }
-}, {
-  "type": "STREAM",
-  "stream": {
-    "stream_descriptor": { "name": "workflows" },
-    "stream_state": { "updatedAt": 7945393076000 }
-  }
-}
 ]

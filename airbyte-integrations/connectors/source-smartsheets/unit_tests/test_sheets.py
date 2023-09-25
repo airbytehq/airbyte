@@ -17,11 +17,20 @@ def test_fetch_sheet(config, get_sheet_mocker):
     mock, resp = get_sheet_mocker(sheet)
 
     sheet._fetch_sheet()
-    mock.assert_called_once_with(spreadsheet_id, rows_modified_since=None, page_size=1)
+    mock.assert_called_once_with(
+        spreadsheet_id,
+        rows_modified_since=None,
+        page_size=1,
+        include=["rowPermalink", "writerInfo"]
+        )
     assert sheet.data == resp
 
     sheet._fetch_sheet(from_dt="2022-03-04T00:00:00Z")
-    mock.assert_called_with(spreadsheet_id, rows_modified_since="2022-03-04T00:00:00Z")
+    mock.assert_called_with(
+        spreadsheet_id,
+        rows_modified_since="2022-03-04T00:00:00Z",
+        include=["rowPermalink", "writerInfo"]
+        )
     assert sheet.data == resp
 
 
@@ -115,5 +124,5 @@ def test_different_cell_order_produces_same_result(get_sheet_mocker, config, row
     get_sheet_mocker(sheet, data=Mock(return_value=sheet_mock))
 
     records = sheet.read_records(from_dt="2020-01-01T00:00:00Z")
-    expected_records = [] if not row else [{"id": "11", "first_name": "Leonardo", "last_name": "Dicaprio", "modifiedAt": ANY}]
+    expected_records = [] if not row else [{"id": "11", "first_name": "Leonardo", "last_name": "Dicaprio", "modifiedAt": ANY, "row_id": ANY}]
     assert list(records) == expected_records

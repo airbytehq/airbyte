@@ -18,7 +18,6 @@
     "self": {
       "type": "string",
       "description": "The URL of the issue details.",
-      "format": "uri",
       "readOnly": true
     },
     "key": {

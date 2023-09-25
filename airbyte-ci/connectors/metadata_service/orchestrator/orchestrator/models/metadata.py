@@ -1,8 +1,12 @@
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-from pydantic import ValidationError
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
-from pydantic import ValidationError
-from typing import Tuple, Any, Optional
+from dataclasses import dataclass
+from typing import Any, Optional, Tuple
+
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+from pydantic import BaseModel, ValidationError
 
 
 class PydanticDelayValidationMixin:
@@ -40,3 +44,10 @@ class PartialMetadataDefinition(PydanticDelayValidationMixin, PydanticDictMixin,
 
 class MetadataDefinition(PydanticDictMixin, ConnectorMetadataDefinitionV0):
     pass
+
+
+class LatestMetadataEntry(BaseModel):
+    metadata_definition: MetadataDefinition
+    icon_url: Optional[str] = None
+    bucket_name: Optional[str] = None
+    file_path: Optional[str] = None

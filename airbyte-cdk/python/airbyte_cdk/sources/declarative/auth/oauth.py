@@ -9,7 +9,9 @@ import pendulum
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 
 
 @dataclass
@@ -31,15 +33,16 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         token_expiry_date (Optional[Union[InterpolatedString, str]]): The access token expiration date
         token_expiry_date_format str: format of the datetime; provide it if expires_in is returned in datetime instead of seconds
         refresh_request_body (Optional[Mapping[str, Any]]): The request body to send in the refresh request
-        grant_type: The grant_type to request for access_token
+        grant_type: The grant_type to request for access_token. If set to refresh_token, the refresh_token parameter has to be provided
+        message_repository (MessageRepository): the message repository used to emit logs on HTTP requests
     """
 
     token_refresh_endpoint: Union[InterpolatedString, str]
     client_id: Union[InterpolatedString, str]
     client_secret: Union[InterpolatedString, str]
-    refresh_token: Union[InterpolatedString, str]
     config: Mapping[str, Any]
     parameters: InitVar[Mapping[str, Any]]
+    refresh_token: Optional[Union[InterpolatedString, str]] = None
     scopes: Optional[List[str]] = None
     token_expiry_date: Optional[Union[InterpolatedString, str]] = None
     _token_expiry_date: pendulum.DateTime = field(init=False, repr=False, default=None)
@@ -48,12 +51,14 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     expires_in_name: Union[InterpolatedString, str] = "expires_in"
     refresh_request_body: Optional[Mapping[str, Any]] = None
     grant_type: Union[InterpolatedString, str] = "refresh_token"
+    message_repository: MessageRepository = NoopMessageRepository()
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self.token_refresh_endpoint = InterpolatedString.create(self.token_refresh_endpoint, parameters=parameters)
         self.client_id = InterpolatedString.create(self.client_id, parameters=parameters)
         self.client_secret = InterpolatedString.create(self.client_secret, parameters=parameters)
-        self.refresh_token = InterpolatedString.create(self.refresh_token, parameters=parameters)
+        if self.refresh_token is not None:
+            self.refresh_token = InterpolatedString.create(self.refresh_token, parameters=parameters)
         self.access_token_name = InterpolatedString.create(self.access_token_name, parameters=parameters)
         self.expires_in_name = InterpolatedString.create(self.expires_in_name, parameters=parameters)
         self.grant_type = InterpolatedString.create(self.grant_type, parameters=parameters)
@@ -65,6 +70,9 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         )
         self._access_token = None
 
+        if self.get_grant_type() == "refresh_token" and self.refresh_token is None:
+            raise ValueError("OAuthAuthenticator needs a refresh_token parameter if grant_type is set to `refresh_token`")
+
     def get_token_refresh_endpoint(self) -> str:
         return self.token_refresh_endpoint.eval(self.config)
 
@@ -74,8 +82,8 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     def get_client_secret(self) -> str:
         return self.client_secret.eval(self.config)
 
-    def get_refresh_token(self) -> str:
-        return self.refresh_token.eval(self.config)
+    def get_refresh_token(self) -> Optional[str]:
+        return None if self.refresh_token is None else self.refresh_token.eval(self.config)
 
     def get_scopes(self) -> [str]:
         return self.scopes
@@ -117,7 +125,10 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         if self.token_expiry_date_format:
             self._token_expiry_date = pendulum.from_format(value, self.token_expiry_date_format)
         else:
-            self._token_expiry_date = pendulum.now().add(seconds=value)
+            try:
+                self._token_expiry_date = pendulum.now().add(seconds=int(float(value)))
+            except ValueError:
+                raise ValueError(f"Invalid token expiry value {value}; a number is required.")
 
     @property
     def access_token(self) -> str:
@@ -126,3 +137,20 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     @access_token.setter
     def access_token(self, value: str):
         self._access_token = value
+
+    @property
+    def _message_repository(self) -> MessageRepository:
+        """
+        Overriding AbstractOauth2Authenticator._message_repository to allow for HTTP request logs
+        """
+        return self.message_repository
+
+
+@dataclass
+class DeclarativeSingleUseRefreshTokenOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator, DeclarativeAuthenticator):
+    """
+    Declarative version of SingleUseRefreshTokenOauth2Authenticator which can be used in declarative connectors.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)

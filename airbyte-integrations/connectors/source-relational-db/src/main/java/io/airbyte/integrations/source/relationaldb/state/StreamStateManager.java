@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage, AirbyteStreamState> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StreamStateManager.class);
+  private final List<AirbyteStateMessage> rawAirbyteStateMessages;
 
   /**
    * Constructs a new {@link StreamStateManager} that is seeded with the provided
@@ -50,11 +51,17 @@ public class StreamStateManager extends AbstractStateManager<AirbyteStateMessage
         CURSOR_FIELD_FUNCTION,
         CURSOR_RECORD_COUNT_FUNCTION,
         NAME_NAMESPACE_PAIR_FUNCTION);
+    this.rawAirbyteStateMessages = airbyteStateMessages;
   }
 
   @Override
   public CdcStateManager getCdcStateManager() {
     throw new UnsupportedOperationException("CDC state management not supported by stream state manager.");
+  }
+
+  @Override
+  public List<AirbyteStateMessage> getRawStateMessages() {
+    return rawAirbyteStateMessages;
   }
 
   @Override

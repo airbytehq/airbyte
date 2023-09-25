@@ -10,6 +10,7 @@ import static io.airbyte.db.jdbc.DateTimeConverter.convertToTimestamp;
 import static io.airbyte.db.jdbc.DateTimeConverter.convertToTimestampWithTimezone;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_BOOLEAN_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_FLOAT64_SCHEMA;
+import static org.apache.kafka.connect.data.Schema.OPTIONAL_INT64_SCHEMA;
 import static org.apache.kafka.connect.data.Schema.OPTIONAL_STRING_SCHEMA;
 
 import io.airbyte.db.jdbc.DateTimeConverter;
@@ -54,6 +55,11 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   private final String[] ARRAY_TYPES = {"_NAME", "_NUMERIC", "_BYTEA", "_MONEY", "_BIT", "_DATE", "_TIME", "_TIMETZ", "_TIMESTAMP", "_TIMESTAMPTZ"};
   private final String BYTEA_TYPE = "BYTEA";
 
+  // Debezium is manually setting the variable scale decimal length (precision)
+  // of numeric_array columns to 131089 if not specified. e.g: NUMERIC vs NUMERIC(38,0)
+  // https://github.com/debezium/debezium/blob/main/debezium-connector-postgres/src/main/java/io/debezium/connector/postgresql/PostgresValueConverter.java#L113
+  private final int VARIABLE_SCALE_DECIMAL_LENGTH = 131089;
+
   @Override
   public void configure(final Properties props) {}
 
@@ -76,10 +82,19 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     }
   }
 
-  private void registerArray(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
+  private void registerArray(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     final String fieldType = field.typeName().toUpperCase();
     final SchemaBuilder arraySchema = switch (fieldType) {
-      case "_NUMERIC", "_MONEY" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA);
+      case "_NUMERIC" -> {
+        // If a numeric_array column does not have variable precision AND scale is 0
+        // then we know the precision and scale are purposefully chosen
+        if (numericArrayColumnPrecisionIsNotVariable(field) && field.scale().orElse(0) == 0) {
+          yield SchemaBuilder.array(OPTIONAL_INT64_SCHEMA);
+        } else {
+          yield SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA);
+        }
+      }
+      case "_MONEY" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA);
       case "_NAME", "_DATE", "_TIME", "_TIMESTAMP", "_TIMESTAMPTZ", "_TIMETZ", "_BYTEA" -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA);
       case "_BIT" -> SchemaBuilder.array(OPTIONAL_BOOLEAN_SCHEMA);
       default -> SchemaBuilder.array(OPTIONAL_STRING_SCHEMA);
@@ -164,7 +179,17 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
             .map(Double::valueOf)
             .collect(Collectors.toList());
       case "_NUMERIC":
-        return Arrays.stream(getArray(x)).map(value -> value == null ? null : Double.valueOf(value.toString())).collect(Collectors.toList());
+        return Arrays.stream(getArray(x)).map(value -> {
+          if (value == null) {
+            return null;
+          } else {
+            if (numericArrayColumnPrecisionIsNotVariable(field) && field.scale().orElse(0) == 0) {
+              return Long.parseLong(value.toString());
+            } else {
+              return Double.valueOf(value.toString());
+            }
+          }
+        }).collect(Collectors.toList());
       case "_TIME":
         return Arrays.stream(getArray(x)).map(value -> value == null ? null : convertToTime(value)).collect(Collectors.toList());
       case "_DATE":
@@ -215,7 +240,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
   }
 
   // Ref :
-  // https://debezium.io/documentation/reference/2.1/connectors/postgresql.html#postgresql-temporal-types
+  // https://debezium.io/documentation/reference/2.2/connectors/postgresql.html#postgresql-temporal-types
   private void registerDate(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     final var fieldType = field.typeName();
 
@@ -328,6 +353,10 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     return pgInterval.getHours() < 0
         || pgInterval.getMinutes() < 0
         || pgInterval.getWholeSeconds() < 0;
+  }
+
+  private boolean numericArrayColumnPrecisionIsNotVariable(final RelationalColumn column) {
+    return column.length().orElse(VARIABLE_SCALE_DECIMAL_LENGTH) != VARIABLE_SCALE_DECIMAL_LENGTH;
   }
 
 }

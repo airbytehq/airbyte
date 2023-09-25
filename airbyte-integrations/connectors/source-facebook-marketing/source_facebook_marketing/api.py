@@ -9,6 +9,8 @@ from time import sleep
 
 import backoff
 import pendulum
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
 from facebook_business.adobjects.adaccount import AdAccount
@@ -31,6 +33,12 @@ class MyFacebookAdsApi(FacebookAdsApi):
 
     MAX_RATE, MAX_PAUSE_INTERVAL = (95, pendulum.duration(minutes=10))
     MIN_RATE, MIN_PAUSE_INTERVAL = (85, pendulum.duration(minutes=2))
+
+    # see `_should_restore_page_size` method docstring for more info.
+    # attribute to handle the reduced request limit
+    request_record_limit_is_reduced: bool = False
+    # attribute to save the status of last successfull call
+    last_api_call_is_successful: bool = False
 
     @dataclass
     class Throttle:
@@ -137,6 +145,14 @@ class MyFacebookAdsApi(FacebookAdsApi):
                 per_account=ads_insights_throttle.get("acc_id_util_pct", 0),
             )
 
+    def _should_restore_default_page_size(self, params):
+        """
+        Track the state of the `request_record_limit_is_reduced` and `last_api_call_is_successfull`,
+        based on the logic from `@backoff_policy` (common.py > `reduce_request_record_limit` and `revert_request_record_limit`)
+        """
+        params = True if params else False
+        return params and not self.request_record_limit_is_reduced and self.last_api_call_is_successful
+
     @backoff_policy
     def call(
         self,
@@ -149,6 +165,8 @@ class MyFacebookAdsApi(FacebookAdsApi):
         api_version=None,
     ):
         """Makes an API call, delegate actual work to parent class and handles call rates"""
+        if self._should_restore_default_page_size(params):
+            params.update(**{"limit": self.default_page_size})
         response = super().call(method, path, params, headers, files, url_override, api_version)
         self._update_insights_throttle_limit(response)
         self._handle_call_rate_limit(response, params)
@@ -158,10 +176,14 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str):
+    def __init__(self, account_id: str, access_token: str, page_size: int = 100):
         self._account_id = account_id
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
+        # adding the default page size from config to the api base class
+        # reference issue: https://github.com/airbytehq/airbyte/issues/25383
+        setattr(self.api, "default_page_size", page_size)
+        # set the default API client to Facebook lib.
         FacebookAdsApi.set_default_api(self.api)
 
     @cached_property
@@ -175,8 +197,12 @@ class API:
         try:
             return AdAccount(f"act_{account_id}").api_get()
         except FacebookRequestError as exc:
-            raise FacebookAPIException(
+            message = (
                 f"Error: {exc.api_error_code()}, {exc.api_error_message()}. "
                 f"Please also verify your Account ID: "
                 f"See the https://www.facebook.com/business/help/1492627900875762 for more information."
+            )
+            raise AirbyteTracedException(
+                message=message,
+                failure_type=FailureType.config_error,
             ) from exc

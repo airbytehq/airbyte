@@ -1,3 +1,5 @@
+import ConnectorRegistry from '@site/src/components/ConnectorRegistry';
+
 # Connector Catalog
 
 ## Connector Release Stages
@@ -12,22 +14,12 @@ Airbyte uses a grading system for connectors to help you understand what to expe
 
 For more information about the grading system, see [Product Release Stages](https://docs.airbyte.com/project-overview/product-release-stages)
 
+_[View the connector registries in full](https://connectors.airbyte.com/files/generated_reports/connector_registry_report.html)_
+
 ## Sources
 
-<iframe
-    src="https://airbyte.metabaseapp.com/public/question/9af21fd5-ff87-4809-8e04-966207490e0b#titled=false&hide_download_button=true"
-    frameborder="0"
-    width="600"
-    height="2000"
-    allowtransparency
-></iframe>
+<ConnectorRegistry type="source"/>
 
 ## Destinations
 
-<iframe
-    src="https://airbyte.metabaseapp.com/public/question/263d737e-533a-4cc2-a1cf-4c8c7eca87d6#titled=false&hide_download_button=true"
-    frameborder="0"
-    width="600"
-    height="2000"
-    allowtransparency
-></iframe>
+<ConnectorRegistry type="destination"/>

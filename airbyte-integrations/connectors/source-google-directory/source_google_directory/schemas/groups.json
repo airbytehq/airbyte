@@ -25,6 +25,18 @@
     },
     "adminCreated": {
       "type": ["null", "boolean"]
+    },
+    "aliases": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "nonEditableAliases": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

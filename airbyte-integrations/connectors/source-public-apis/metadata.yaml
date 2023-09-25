@@ -1,18 +1,24 @@
 data:
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  ab_internal:
+    ql: 200
+    sl: 100
   connectorSubtype: api
   connectorType: source
   definitionId: a4617b39-3c14-44cd-a2eb-6e720f269235
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-public-apis
+  documentationUrl: https://docs.airbyte.com/integrations/sources/public-apis
   githubIssueLabel: source-public-apis
   icon: publicapi.svg
   license: MIT
   name: Public APIs
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/public-apis
+  supportLevel: community
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

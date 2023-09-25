@@ -83,8 +83,8 @@ class SourceXero(AbstractSource):
         return XeroSingleUseRefreshTokenOauth2Authenticator(
             connector_config=config,
             token_refresh_endpoint="https://identity.xero.com/connect/token",
-            client_id_config_path=["authentication", "client_id"],
-            client_secret_config_path=["authentication", "client_secret"],
+            client_id=config["authentication"]["client_id"],
+            client_secret=config["authentication"]["client_secret"],
             access_token_config_path=["authentication", "access_token"],
             refresh_token_config_path=["authentication", "refresh_token"],
             token_expiry_date_config_path=["authentication", "token_expiry_date"],

@@ -136,13 +136,15 @@ class TestIncrementalKlaviyoStreamV1:
                 {"updated_at": "2021-04-03 17:15:12", "some_field": 100},
                 {"updated_at": datetime.strptime("2021-04-03 17:15:12", "%Y-%m-%d %H:%M:%S").timestamp()},
             ),
+            ({"updated_at": 12}, {"updated_at": 7998603215}, None),
+            ({"updated_at": 7998603215}, {"updated_at": 12}, None),
         ],
     )
     def test_get_updated_state(self, current_state, latest_record, expected_state):
         stream = SomeIncrementalStream(api_key="some_key", start_date=START_DATE.isoformat())
         result = stream.get_updated_state(current_stream_state=current_state, latest_record=latest_record)
 
-        assert result == expected_state
+        assert result == (expected_state if expected_state else {stream.cursor_field: stream._start_sync})
 
     @pytest.mark.parametrize(
         ["response_json", "next_page_token"],

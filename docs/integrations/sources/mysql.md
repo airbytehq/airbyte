@@ -3,7 +3,7 @@
 ## Features
 
 | Feature                       | Supported | Notes                             |
-|:------------------------------|:----------|:----------------------------------|
+| :---------------------------- | :-------- | :-------------------------------- |
 | Full Refresh Sync             | Yes       |                                   |
 | Incremental - Append Sync     | Yes       |                                   |
 | Replicate Incremental Deletes | Yes       |                                   |
@@ -137,11 +137,13 @@ In this case, you can configure the server timezone to the equivalent IANA timez
 
 When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. Airbyte doesn't acquire any table locks \(for tables defined with MyISAM engine, the tables would still be locked\) while creating the snapshot to allow writes by other database clients. But in order for the sync to work without any error/unexpected behaviour, it is assumed that no schema changes are happening while the snapshot is running.
 
-If seeing `EventDataDeserializationException` errors intermittently with root cause `EOFException` or `SocketException`, you may need to extend the following *MySql server* timeout values by running:
+If seeing `EventDataDeserializationException` errors intermittently with root cause `EOFException` or `SocketException`, you may need to extend the following _MySql server_ timeout values by running:
+
 ```
 set global slave_net_timeout = 120;
 set global thread_pool_idle_timeout = 120;
 ```
+
 ## Connection via SSH Tunnel
 
 Airbyte has the ability to connect to a MySQl instance via an SSH Tunnel. The reason you might want to do this because it is not possible \(or against security policy\) to connect to the database directly \(e.g. it does not have a public IP address\).
@@ -180,8 +182,10 @@ This produces the private key in pem format, and the public key remains in the s
 
 MySQL data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
+Any database or table encoding combination of charset and collation is supported. Charset setting however will not be carried over to destination and data will be encoded with whatever is configured by the destination.
+
 | MySQL Type                                | Resulting Type         | Notes                                                                                                          |
-|:------------------------------------------|:-----------------------|:---------------------------------------------------------------------------------------------------------------|
+| :---------------------------------------- | :--------------------- | :------------------------------------------------------------------------------------------------------------- |
 | `bit(1)`                                  | boolean                |                                                                                                                |
 | `bit(>1)`                                 | base64 binary string   |                                                                                                                |
 | `boolean`                                 | boolean                |                                                                                                                |
@@ -202,7 +206,6 @@ MySQL data types are mapped to the following data types when synchronizing data.
 | `time`                                    | string                 | ISO 8601 time string. Values are in range between 00:00:00 and 23:59:59.                                       |
 | `year`                                    | year string            | [Doc](https://dev.mysql.com/doc/refman/8.0/en/year.html)                                                       |
 | `char`, `varchar` with non-binary charset | string                 |                                                                                                                |
-| `char`, `varchar` with binary charset     | base64 binary string   |                                                                                                                |
 | `tinyblob`                                | base64 binary string   |                                                                                                                |
 | `blob`                                    | base64 binary string   |                                                                                                                |
 | `mediumblob`                              | base64 binary string   |                                                                                                                |
@@ -261,6 +264,17 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.1   | 2023-08-21 | [29308](https://github.com/airbytehq/airbyte/pull/29308)   | CDC: Enable frequent state emissions during incremental runs                                                                                    |
+| 3.0.0   | 2023-08-08 | [28756](https://github.com/airbytehq/airbyte/pull/28756)   | CDC: Set a default cursor                                                                                                                       |
+| 2.1.2   | 2023-08-08 | [29220](https://github.com/airbytehq/airbyte/pull/29220)   | Add indicator that CDC is the recommended update method                                                                                         |
+| 2.1.1   | 2023-07-31 | [28882](https://github.com/airbytehq/airbyte/pull/28882)   | Improve replication method labels and descriptions                                                                                              |
+| 2.1.0   | 2023-06-26 | [27737](https://github.com/airbytehq/airbyte/pull/27737)   | License Update: Elv2                                                                                                                            |
+| 2.0.25  | 2023-06-20 | [27212](https://github.com/airbytehq/airbyte/pull/27212)   | Fix silent exception swallowing in StreamingJdbcDatabase                                                                                        |
+| 2.0.24  | 2023-05-25 | [26473](https://github.com/airbytehq/airbyte/pull/26473)   | CDC : Limit queue size                                                                                                                          |
+| 2.0.23  | 2023-05-24 | [25586](https://github.com/airbytehq/airbyte/pull/25586)   | No need to base64 encode strings on databases sorted with binary collation                                                                      |
+| 2.0.22  | 2023-05-22 | [25859](https://github.com/airbytehq/airbyte/pull/25859)   | Allow adding sessionVariables JDBC parameters                                                                                                   |
+| 2.0.21  | 2023-05-10 | [25460](https://github.com/airbytehq/airbyte/pull/25460)   | Handle a decimal number with 0 decimal points as an integer                                                                                     |
+| 2.0.20  | 2023-05-01 | [25740](https://github.com/airbytehq/airbyte/pull/25740)   | Disable index logging                                                                                                                           |
 | 2.0.19  | 2023-04-26 | [25401](https://github.com/airbytehq/airbyte/pull/25401)   | CDC : Upgrade Debezium to version 2.2.0                                                                                                         |
 | 2.0.18  | 2023-04-19 | [25345](https://github.com/airbytehq/airbyte/pull/25345)   | Logging : Log database indexes per stream                                                                                                       |
 | 2.0.17  | 2023-04-19 | [24582](https://github.com/airbytehq/airbyte/pull/24582)   | CDC : refactor for performance improvement                                                                                                      |

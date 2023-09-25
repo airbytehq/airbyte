@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": ["null", "string"]
@@ -81,6 +82,21 @@
     },
     "additional_data_is_root_payload": {
       "type": ["null", "boolean"]
+    },
+    "apns_key_id": {
+      "type": ["null", "string"]
+    },
+    "apns_p8": {
+      "type": ["null", "string"]
+    },
+    "apns_team_id": {
+      "type": ["null", "string"]
+    },
+    "fcm_v1_service_account_json": {
+      "type": ["null", "string"]
+    },
+    "apns_bundle_id": {
+      "type": ["null", "string"]
     }
   }
 }

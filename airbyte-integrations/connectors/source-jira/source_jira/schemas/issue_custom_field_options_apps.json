@@ -4,8 +4,7 @@
   "properties": {
     "id": {
       "type": "integer",
-      "description": "The unique identifier for the option. This is only unique within the select field's set of options.",
-      "format": "int64"
+      "description": "The unique identifier for the option. This is only unique within the select field's set of options."
     },
     "value": {
       "type": "string",
@@ -28,8 +27,7 @@
               "type": "array",
               "description": "DEPRECATED",
               "items": {
-                "type": "integer",
-                "format": "int64"
+                "type": "integer"
               }
             },
             "projects2": {
@@ -41,8 +39,7 @@
                 "properties": {
                   "id": {
                     "type": "integer",
-                    "description": "The ID of the project that the option's behavior applies to.",
-                    "format": "int64"
+                    "description": "The ID of the project that the option's behavior applies to."
                   },
                   "attributes": {
                     "uniqueItems": true,

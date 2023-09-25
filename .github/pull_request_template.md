@@ -1,3 +1,17 @@
+<!--
+Thanks for your contribution! 
+Before you submit the pull request, 
+I'd like to kindly remind you to take a moment and read through our guidelines
+to ensure that your contribution aligns with the type of contributions our project accepts.
+All the information you need can be found here:
+   https://docs.airbyte.com/contributing-to-airbyte/
+
+We truly appreciate your interest in contributing to Airbyte,
+and we're excited to see what you have to offer! 
+
+If you have any questions or need any assistance, feel free to reach out in #contributions Slack channel.
+-->
+
 ## What
 *Describe what the change is solving*
 *It helps to add screenshots if it affects the frontend.*
@@ -65,7 +79,7 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 <details><summary><strong>Connector Generator</strong></summary>
 
 - Issue acceptance criteria met
-- PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests)
+- PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests#pull-request-title-convention)
 - If adding a new generator, add it to the [list of scaffold modules being tested](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/generator/build.gradle#L41)
 - The generator test modules (all connectors with `-scaffold` in their name) have been updated with the latest scaffold by running `./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates` then checking in your changes
 - Documentation which references the generator is updated as needed

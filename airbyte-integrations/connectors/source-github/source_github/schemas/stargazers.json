@@ -3,13 +3,13 @@
   "type": "object",
   "properties": {
     "repository": {
-      "type": ["string"]
+      "type": "string"
     },
     "user_id": {
       "type": ["null", "integer"]
     },
     "starred_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "user": {

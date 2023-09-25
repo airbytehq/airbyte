@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=0.44.2
+VERSION=0.50.21
 # Run away from anything even a little scary
 set -o nounset # -u exit if a variable is not set
 set -o errexit # -f exit for any command failure"
@@ -30,6 +30,7 @@ Help()
    echo -e "   -r --refresh     ${red_text}DELETE${default_text} existing assets and re-download new ones"
    echo -e "   -h --help        Print this Help."
    echo -e "   -x --debug       Verbose mode."
+   echo -e "   -b --background  Run docker compose up in detached mode."
    echo -e ""
 }
 
@@ -39,8 +40,9 @@ docker_compose_debug_yaml="docker-compose.debug.yaml"
                   dot_env=".env"
               dot_env_dev=".env.dev"
                      flags="flags.yml"
+             temporal_yaml="temporal/dynamicconfig/development.yaml"
 # any string is an array to POSIX shell. Space seperates values
-all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev $flags"
+all_files="$docker_compose_yaml $docker_compose_debug_yaml $dot_env $dot_env_dev $flags $temporal_yaml"
 
 base_github_url="https://raw.githubusercontent.com/airbytehq/airbyte-platform/v$VERSION/"
 
@@ -51,6 +53,10 @@ Download()
 {
   ########## Check if we already have the assets we are looking for ##########
   for file in $all_files; do
+    # Account for the case where the file is in a subdirectory.
+    # Make sure the directory exists to keep curl happy.
+    dir_path=$(dirname "${file}")
+    mkdir -p "${dir_path}"
     if test -f $file; then
       # Check if the assets are old.  A possibly sharp corner
       if test $(find $file -type f -mtime +60 > /dev/null); then
@@ -82,6 +88,7 @@ DeleteLocalAssets()
   done
 }
 
+dockerDetachedMode=""
 
 # $0 is the currently running program (this file)
 this_file_directory=$(dirname $0)
@@ -105,6 +112,9 @@ for argument in $@; do
       ;;
     -x | --debug)
       set -o xtrace  # -x display every line before execution; enables PS4
+      ;;
+    -b | --background)
+      dockerDetachedMode="-d"
       ;;
     *)
       echo "$argument is not a known command."
@@ -155,7 +165,7 @@ done
 echo
 echo -e "$blue_text""Starting Docker Compose""$default_text"
 
-docker compose up
+docker compose up $dockerDetachedMode
 
 # $? is the exit code of the last command. So here: docker compose up
 if test $? -ne 0; then
@@ -164,6 +174,8 @@ if test $? -ne 0; then
 fi
 
 ########## Ending Docker ##########
-docker compose down
-
-echo -e "$blue_text""Stopping Docker Compose""$default_text"
+if [ -z "$dockerDetachedMode" ]; then
+  docker compose down
+else
+  echo -e "$blue_text""Airbyte containers are running!""$default_text"
+fi

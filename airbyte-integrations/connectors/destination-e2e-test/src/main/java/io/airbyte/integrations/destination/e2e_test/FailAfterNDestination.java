@@ -30,7 +30,7 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new FailAfterNConsumer(config.get("num_messages").asLong(), outputRecordCollector);
+    return new FailAfterNConsumer(config.get("test_destination").get("num_messages").asLong(), outputRecordCollector);
   }
 
   public static class FailAfterNConsumer implements AirbyteMessageConsumer {

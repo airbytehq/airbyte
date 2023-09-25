@@ -13,6 +13,7 @@ dependencies {
 
     implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
+    implementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
 
     // parquet
     implementation ('org.apache.hadoop:hadoop-common:3.3.3') {
@@ -35,5 +36,4 @@ dependencies {
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
-    testImplementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
 }

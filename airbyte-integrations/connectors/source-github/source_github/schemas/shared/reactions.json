@@ -1,0 +1,35 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "url": {
+      "type": ["null", "string"]
+    },
+    "total_count": {
+      "type": ["null", "integer"]
+    },
+    "+1": {
+      "type": ["null", "integer"]
+    },
+    "-1": {
+      "type": ["null", "integer"]
+    },
+    "laugh": {
+      "type": ["null", "integer"]
+    },
+    "hooray": {
+      "type": ["null", "integer"]
+    },
+    "confused": {
+      "type": ["null", "integer"]
+    },
+    "heart": {
+      "type": ["null", "integer"]
+    },
+    "rocket": {
+      "type": ["null", "integer"]
+    },
+    "eyes": {
+      "type": ["null", "integer"]
+    }
+  }
+}

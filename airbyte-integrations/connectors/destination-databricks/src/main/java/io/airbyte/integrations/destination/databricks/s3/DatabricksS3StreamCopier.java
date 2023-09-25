@@ -115,12 +115,14 @@ public class DatabricksS3StreamCopier extends DatabricksStreamCopier {
         "COPY INTO %s.%s.%s " +
             "FROM '%s' " +
             "FILEFORMAT = PARQUET " +
-            "PATTERN = '%s'",
+            "PATTERN = '%s' " +
+            "COPY_OPTIONS ('mergeSchema' = '%s')",
         catalogName,
         schemaName,
         destTableName,
         getTmpTableLocation(),
-        parquetWriter.getOutputFilename());
+        parquetWriter.getOutputFilename(),
+        databricksConfig.enableSchemaEvolution());
     LOGGER.info(copyData);
     return copyData;
   }

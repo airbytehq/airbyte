@@ -21,10 +21,11 @@ properties:
       - dockerRepository
       - dockerImageTag
       - license
-      - supportUrl
+      - documentationUrl
       - githubIssueLabel
       - connectorSubtype
       - releaseStage
+    additionalProperties: true
     properties:
       name:
         type: string
@@ -48,11 +49,21 @@ properties:
         type: boolean
       license:
         type: string
-      supportUrl:
+      documentationUrl:
         type: string
         format: uri
       githubIssueLabel:
         type: string
+      maxSecondsBetweenMessages:
+        description: Maximum delay between 2 airbyte protocol messages, in second. The source will timeout if this delay is reached
+        type: integer
+      releaseDate:
+        description: The date when this connector was first released, in yyyy-mm-dd format.
+        type: string
+        format: date
+      protocolVersion:
+        type: string
+        description: the Airbyte Protocol version supported by the connector
       connectorSubtype:
         type: string
         enum:
@@ -63,13 +74,15 @@ properties:
           - message_queue
           - unknown
       releaseStage:
-        type: string
-        enum:
-          - alpha
-          - beta
-          - generally_available
-          - source
-
+        "$ref": ReleaseStage.yaml
+      supportLevel:
+        "$ref": SupportLevel.yaml
+      tags:
+        type: array
+        description: "An array of tags that describe the connector. E.g: language:python, keyword:rds, etc."
+        items:
+          type: string
+        default: []
       registries:
         anyOf:
           - type: object
@@ -84,9 +97,13 @@ properties:
 
       allowedHosts:
         "$ref": AllowedHosts.yaml
+      releases:
+        "$ref": ConnectorReleases.yaml
       normalizationConfig:
         "$ref": NormalizationDestinationDefinitionConfig.yaml
       suggestedStreams:
         "$ref": SuggestedStreams.yaml
       resourceRequirements:
         "$ref": ActorDefinitionResourceRequirements.yaml
+      ab_internal:
+        "$ref": AirbyteInternal.yaml

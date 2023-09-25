@@ -18,7 +18,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "1.0.0"
+          disable_for_version: "2.0.0" #change type of a field in payments schema
   basic_read:
     tests:
       - config_path: "secrets/config.json"

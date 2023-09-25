@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "repository": {
-      "type": ["string"]
+      "type": "string"
     },
     "type": {
       "type": ["null", "string"]
@@ -53,7 +53,7 @@
       }
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "id": {

@@ -9,6 +9,8 @@
         "title": "Account ID",
         "description": "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. Open your Meta Ads Manager. The Ad account ID number is in the account dropdown menu or in your browser's address bar. See the <a href=\"https://www.facebook.com/business/help/1492627900875762\">docs</a> for more information.",
         "order": 0,
+        "pattern": "^[0-9]+$",
+        "pattern_descriptor": "1234567890",
         "examples": ["111111111111111"],
         "type": "string"
       },
@@ -27,11 +29,12 @@
         "order": 2,
         "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         "examples": ["2017-01-26T00:00:00Z"],
-        "type": "string"
+        "type": "string",
+        "format": "date-time"
       },
       "access_token": {
         "title": "Access Token",
-        "description": "The value of the generated access token. From your App’s Dashboard, click on \"Marketing API\" then \"Tools\". Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on \"Get token\". See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a> for more information.",
+        "description": "The value of the generated access token. From your App\u2019s Dashboard, click on \"Marketing API\" then \"Tools\". Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on \"Get token\". See the <a href=\"https://docs.airbyte.com/integrations/sources/facebook-marketing\">docs</a> for more information.",
         "order": 3,
         "airbyte_secret": true,
         "type": "string"
@@ -79,19 +82,17 @@
               "type": "array",
               "items": {
                 "title": "ValidEnums",
-                "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
+                "description": "An enumeration.",
                 "enum": [
                   "account_currency",
                   "account_id",
                   "account_name",
                   "action_values",
                   "actions",
-                  "ad_bid_value",
                   "ad_click_actions",
                   "ad_id",
                   "ad_impression_actions",
                   "ad_name",
-                  "adset_bid_value",
                   "adset_end",
                   "adset_id",
                   "adset_name",
@@ -138,6 +139,7 @@
                   "cpm",
                   "cpp",
                   "created_time",
+                  "creative_media_type",
                   "ctr",
                   "date_start",
                   "date_stop",
@@ -158,6 +160,7 @@
                   "inline_link_click_ctr",
                   "inline_link_clicks",
                   "inline_post_engagement",
+                  "instagram_upcoming_event_reminders_set",
                   "instant_experience_clicks_to_open",
                   "instant_experience_clicks_to_start",
                   "instant_experience_outbound_clicks",
@@ -181,6 +184,7 @@
                   "spend",
                   "total_postbacks",
                   "total_postbacks_detailed",
+                  "total_postbacks_detailed_v4",
                   "unique_actions",
                   "unique_clicks",
                   "unique_conversions",
@@ -222,21 +226,24 @@
               "type": "array",
               "items": {
                 "title": "ValidBreakdowns",
-                "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
+                "description": "An enumeration.",
                 "enum": [
                   "ad_format_asset",
                   "age",
                   "app_id",
                   "body_asset",
                   "call_to_action_asset",
+                  "coarse_conversion_value",
                   "country",
                   "description_asset",
                   "device_platform",
                   "dma",
+                  "fidelity_type",
                   "frequency_value",
                   "gender",
                   "hourly_stats_aggregated_by_advertiser_time_zone",
                   "hourly_stats_aggregated_by_audience_time_zone",
+                  "hsid",
                   "image_asset",
                   "impression_device",
                   "is_conversion_id_modeled",
@@ -244,8 +251,10 @@
                   "mmm",
                   "place_page_id",
                   "platform_position",
+                  "postback_sequence_index",
                   "product_id",
                   "publisher_platform",
+                  "redownload",
                   "region",
                   "skan_campaign_id",
                   "skan_conversion_id",
@@ -261,7 +270,7 @@
               "type": "array",
               "items": {
                 "title": "ValidActionBreakdowns",
-                "description": "Generic enumeration.\n\nDerive from this class to define new enumerations.",
+                "description": "An enumeration.",
                 "enum": [
                   "action_canvas_component_name",
                   "action_carousel_card_id",
@@ -275,6 +284,13 @@
                   "action_video_type"
                 ]
               }
+            },
+            "action_report_time": {
+              "title": "Action Report Time",
+              "description": "Determines the report time of action stats. For example, if a person saw the ad on Jan 1st but converted on Jan 2nd, when you query the API with action_report_time=impression, you see a conversion on Jan 1st. When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd.",
+              "default": "mixed",
+              "enum": ["conversion", "impression", "mixed"],
+              "type": "string"
             },
             "time_increment": {
               "title": "Time Increment",
@@ -337,6 +353,7 @@
         "default": 50,
         "order": 9,
         "exclusiveMinimum": 0,
+        "maximum": 50,
         "type": "integer"
       },
       "action_breakdowns_allow_empty": {
@@ -345,18 +362,63 @@
         "default": true,
         "airbyte_hidden": true,
         "type": "boolean"
+      },
+      "client_id": {
+        "title": "Client Id",
+        "description": "The Client Id for your OAuth app",
+        "airbyte_secret": true,
+        "airbyte_hidden": true,
+        "type": "string"
+      },
+      "client_secret": {
+        "title": "Client Secret",
+        "description": "The Client Secret for your OAuth app",
+        "airbyte_secret": true,
+        "airbyte_hidden": true,
+        "type": "string"
       }
     },
     "required": ["account_id", "start_date", "access_token"]
   },
   "supportsIncremental": true,
   "supported_destination_sync_modes": ["append"],
-  "authSpecification": {
-    "auth_type": "oauth2.0",
-    "oauth2Specification": {
-      "rootObject": [],
-      "oauthFlowInitParameters": [],
-      "oauthFlowOutputParameters": [["access_token"]]
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["access_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["client_secret"]
+          }
+        }
+      }
     }
   }
 }

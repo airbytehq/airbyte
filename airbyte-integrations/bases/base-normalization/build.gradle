@@ -1,3 +1,5 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
 plugins {
     id 'airbyte-docker'
     id 'airbyte-python'
@@ -47,9 +49,20 @@ static def getImageNameWithTag(String customConnector) {
 
 
 def buildAirbyteDocker(String customConnector) {
-    def baseCommand = ['docker', 'build', '.', '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector)]
+    // def baseCommand = ['docker', 'build', '.', '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector)]
+    // As the base dbt image (https://hub.docker.com/r/fishtownanalytics/dbt/tags) we are using is only build for amd64, we need to use buildkit to force builds for your local environment
+    // We are lucky that all the python code dbt uses is mutli-arch compatible
+
+    def arch = 'linux/amd64'
+    if (Os.isArch("aarch_64") || Os.isArch("aarch64")) {
+        arch = 'linux/arm64'
+    }
+
+    def cmdArray = ['docker', 'buildx', 'build', '--load', '--platform', arch, '-f', getDockerfile(customConnector), '-t', getImageNameWithTag(customConnector), '.']
+    // println("Building normalization container: " + cmdArray.join(" "))
+
     return {
-        commandLine baseCommand
+        commandLine cmdArray
     }
 }
 

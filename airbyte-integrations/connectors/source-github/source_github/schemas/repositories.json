@@ -236,11 +236,11 @@
       "type": ["null", "string"]
     },
     "pushed_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
@@ -258,6 +258,54 @@
         },
         "pull": {
           "type": ["null", "boolean"]
+        },
+        "maintain": {
+          "type": ["null", "boolean"]
+        },
+        "triage": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "allow_forking": {
+      "type": ["null", "boolean"]
+    },
+    "forks": {
+      "type": ["null", "integer"]
+    },
+    "has_discussions": {
+      "type": ["null", "boolean"]
+    },
+    "open_issues": {
+      "type": ["null", "integer"]
+    },
+    "organization": {
+      "type": ["null", "string"]
+    },
+    "watchers": {
+      "type": ["null", "integer"]
+    },
+    "web_commit_signoff_required": {
+      "type": ["null", "boolean"]
+    },
+    "security_and_analysis": {
+      "type": ["null", "object"],
+      "properties": {
+        "secret_scanning": {
+          "type": ["null", "object"],
+          "properties": {
+            "status": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "secret_scanning_push_protection": {
+          "type": ["null", "object"],
+          "properties": {
+            "status": {
+              "type": ["null", "string"]
+            }
+          }
         }
       }
     }

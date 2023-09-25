@@ -22187,7 +22187,7 @@ components:
               type: string
             promotionalText:
               type: string
-            supportUrl:
+            documentationUrl:
               format: uri
               type: string
             whatsNew:
@@ -22307,7 +22307,7 @@ components:
                   type: string
                 promotionalText:
                   type: string
-                supportUrl:
+                documentationUrl:
                   format: uri
                   type: string
                 whatsNew:
@@ -22382,7 +22382,7 @@ components:
                   type: string
                 promotionalText:
                   type: string
-                supportUrl:
+                documentationUrl:
                   format: uri
                   type: string
                 whatsNew:

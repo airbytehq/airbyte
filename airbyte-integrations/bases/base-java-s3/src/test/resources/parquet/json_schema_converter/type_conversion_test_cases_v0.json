@@ -7,12 +7,19 @@
     "avroFieldType": ["null", "string"]
   },
   {
-    "fieldName": "integer_field",
+    "fieldName": "airbyte_integer_field",
     "jsonFieldSchema": {
       "type": "number",
       "airbyte_type": "integer"
     },
-    "avroFieldType": ["null", "int"]
+    "avroFieldType": ["null", "long"]
+  },
+  {
+    "fieldName": "integer_field",
+    "jsonFieldSchema": {
+      "type": "integer"
+    },
+    "avroFieldType": ["null", "long"]
   },
   {
     "fieldName": "big_integer_field",

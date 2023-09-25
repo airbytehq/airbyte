@@ -1,55 +1,62 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.teradata.envclient.dto;
 
 import java.util.List;
 
 public record EnvironmentResponse(
 
-    State state,
+                                  State state,
 
-    String region,
+                                  String region,
 
-    // Use for subsequent environment operations i.e GET, DELETE, etc
-    String name,
+                                  // Use for subsequent environment operations i.e GET, DELETE, etc
+                                  String name,
 
-    // Use for connecting with JDBC driver
-    String ip,
+                                  // Use for connecting with JDBC driver
+                                  String ip,
 
-    String dnsName,
+                                  String dnsName,
 
-    String owner,
+                                  String owner,
 
-    String type,
+                                  String type,
 
-    List<Service> services
+                                  List<Service> services
 
 ) {
 
-    record Service(
+  record Service(
 
-        List<Credential> credentials,
+                 List<Credential> credentials,
 
-        String name,
+                 String name,
 
-        String url
+                 String url
 
-    ) {
+  ) {
 
-    }
+  }
 
-    record Credential(
+  record Credential(
 
-        String name,
+                    String name,
 
-        String value
+                    String value
 
-    ) {
+  ) {
 
-    }
+  }
 
-    enum State {
+  enum State {
 
-        INITIALIZING, RUNNING, STOPPING, TERMINATING,
+    INITIALIZING,
+    RUNNING,
+    STOPPING,
+    TERMINATING,
 
-    }
+  }
 
 }

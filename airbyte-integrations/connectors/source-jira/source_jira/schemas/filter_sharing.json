@@ -5,7 +5,6 @@
     "id": {
       "type": "integer",
       "description": "The unique identifier of the share permission.",
-      "format": "int64",
       "readOnly": true
     },
     "type": {
@@ -36,7 +35,6 @@
         "self": {
           "type": "string",
           "description": "The URL of the project details.",
-          "format": "uri",
           "readOnly": true
         },
         "id": {
@@ -61,7 +59,6 @@
             "self": {
               "type": "string",
               "description": "The URL of the user.",
-              "format": "uri",
               "readOnly": true
             },
             "key": {
@@ -95,23 +92,19 @@
               "properties": {
                 "16x16": {
                   "type": "string",
-                  "description": "The URL of the item's 16x16 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 16x16 pixel avatar."
                 },
                 "24x24": {
                   "type": "string",
-                  "description": "The URL of the item's 24x24 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 24x24 pixel avatar."
                 },
                 "32x32": {
                   "type": "string",
-                  "description": "The URL of the item's 32x32 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 32x32 pixel avatar."
                 },
                 "48x48": {
                   "type": "string",
-                  "description": "The URL of the item's 48x48 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 48x48 pixel avatar."
                 }
               }
             },
@@ -142,7 +135,6 @@
               "properties": {
                 "size": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "attribute": true
                   }
@@ -159,7 +151,6 @@
                       "self": {
                         "type": "string",
                         "description": "The URL for these group details.",
-                        "format": "uri",
                         "readOnly": true
                       }
                     }
@@ -173,7 +164,6 @@
                 },
                 "max-results": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "name": "max-results",
                     "attribute": true
@@ -188,7 +178,6 @@
               "properties": {
                 "size": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "attribute": true
                   }
@@ -232,18 +221,15 @@
                       },
                       "numberOfSeats": {
                         "type": "integer",
-                        "description": "The maximum count of users on your license.",
-                        "format": "int32"
+                        "description": "The maximum count of users on your license."
                       },
                       "remainingSeats": {
                         "type": "integer",
-                        "description": "The count of users remaining on your license.",
-                        "format": "int32"
+                        "description": "The count of users remaining on your license."
                       },
                       "userCount": {
                         "type": "integer",
-                        "description": "The number of users counting against your license.",
-                        "format": "int32"
+                        "description": "The number of users counting against your license."
                       },
                       "userCountDescription": {
                         "type": "string",
@@ -267,7 +253,6 @@
                 },
                 "max-results": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "name": "max-results",
                     "attribute": true
@@ -295,7 +280,6 @@
               "self": {
                 "type": "string",
                 "description": "The URL of the component.",
-                "format": "uri",
                 "readOnly": true
               },
               "id": {
@@ -319,7 +303,6 @@
                   "self": {
                     "type": "string",
                     "description": "The URL of the user.",
-                    "format": "uri",
                     "readOnly": true
                   },
                   "key": {
@@ -353,23 +336,19 @@
                     "properties": {
                       "16x16": {
                         "type": "string",
-                        "description": "The URL of the item's 16x16 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 16x16 pixel avatar."
                       },
                       "24x24": {
                         "type": "string",
-                        "description": "The URL of the item's 24x24 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 24x24 pixel avatar."
                       },
                       "32x32": {
                         "type": "string",
-                        "description": "The URL of the item's 32x32 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 32x32 pixel avatar."
                       },
                       "48x48": {
                         "type": "string",
-                        "description": "The URL of the item's 48x48 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 48x48 pixel avatar."
                       }
                     }
                   },
@@ -400,7 +379,6 @@
                     "properties": {
                       "size": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "attribute": true
                         }
@@ -417,7 +395,6 @@
                             "self": {
                               "type": "string",
                               "description": "The URL for these group details.",
-                              "format": "uri",
                               "readOnly": true
                             }
                           }
@@ -431,7 +408,6 @@
                       },
                       "max-results": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "name": "max-results",
                           "attribute": true
@@ -446,7 +422,6 @@
                     "properties": {
                       "size": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "attribute": true
                         }
@@ -490,18 +465,15 @@
                             },
                             "numberOfSeats": {
                               "type": "integer",
-                              "description": "The maximum count of users on your license.",
-                              "format": "int32"
+                              "description": "The maximum count of users on your license."
                             },
                             "remainingSeats": {
                               "type": "integer",
-                              "description": "The count of users remaining on your license.",
-                              "format": "int32"
+                              "description": "The count of users remaining on your license."
                             },
                             "userCount": {
                               "type": "integer",
-                              "description": "The number of users counting against your license.",
-                              "format": "int32"
+                              "description": "The number of users counting against your license."
                             },
                             "userCountDescription": {
                               "type": "string",
@@ -525,7 +497,6 @@
                       },
                       "max-results": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "name": "max-results",
                           "attribute": true
@@ -571,7 +542,6 @@
                   "self": {
                     "type": "string",
                     "description": "The URL of the user.",
-                    "format": "uri",
                     "readOnly": true
                   },
                   "key": {
@@ -605,23 +575,19 @@
                     "properties": {
                       "16x16": {
                         "type": "string",
-                        "description": "The URL of the item's 16x16 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 16x16 pixel avatar."
                       },
                       "24x24": {
                         "type": "string",
-                        "description": "The URL of the item's 24x24 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 24x24 pixel avatar."
                       },
                       "32x32": {
                         "type": "string",
-                        "description": "The URL of the item's 32x32 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 32x32 pixel avatar."
                       },
                       "48x48": {
                         "type": "string",
-                        "description": "The URL of the item's 48x48 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 48x48 pixel avatar."
                       }
                     }
                   },
@@ -652,7 +618,6 @@
                     "properties": {
                       "size": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "attribute": true
                         }
@@ -669,7 +634,6 @@
                             "self": {
                               "type": "string",
                               "description": "The URL for these group details.",
-                              "format": "uri",
                               "readOnly": true
                             }
                           }
@@ -683,7 +647,6 @@
                       },
                       "max-results": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "name": "max-results",
                           "attribute": true
@@ -698,7 +661,6 @@
                     "properties": {
                       "size": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "attribute": true
                         }
@@ -742,18 +704,15 @@
                             },
                             "numberOfSeats": {
                               "type": "integer",
-                              "description": "The maximum count of users on your license.",
-                              "format": "int32"
+                              "description": "The maximum count of users on your license."
                             },
                             "remainingSeats": {
                               "type": "integer",
-                              "description": "The count of users remaining on your license.",
-                              "format": "int32"
+                              "description": "The count of users remaining on your license."
                             },
                             "userCount": {
                               "type": "integer",
-                              "description": "The number of users counting against your license.",
-                              "format": "int32"
+                              "description": "The number of users counting against your license."
                             },
                             "userCountDescription": {
                               "type": "string",
@@ -777,7 +736,6 @@
                       },
                       "max-results": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "name": "max-results",
                           "attribute": true
@@ -814,7 +772,6 @@
                   "self": {
                     "type": "string",
                     "description": "The URL of the user.",
-                    "format": "uri",
                     "readOnly": true
                   },
                   "key": {
@@ -848,23 +805,19 @@
                     "properties": {
                       "16x16": {
                         "type": "string",
-                        "description": "The URL of the item's 16x16 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 16x16 pixel avatar."
                       },
                       "24x24": {
                         "type": "string",
-                        "description": "The URL of the item's 24x24 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 24x24 pixel avatar."
                       },
                       "32x32": {
                         "type": "string",
-                        "description": "The URL of the item's 32x32 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 32x32 pixel avatar."
                       },
                       "48x48": {
                         "type": "string",
-                        "description": "The URL of the item's 48x48 pixel avatar.",
-                        "format": "uri"
+                        "description": "The URL of the item's 48x48 pixel avatar."
                       }
                     }
                   },
@@ -895,7 +848,6 @@
                     "properties": {
                       "size": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "attribute": true
                         }
@@ -912,7 +864,6 @@
                             "self": {
                               "type": "string",
                               "description": "The URL for these group details.",
-                              "format": "uri",
                               "readOnly": true
                             }
                           }
@@ -926,7 +877,6 @@
                       },
                       "max-results": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "name": "max-results",
                           "attribute": true
@@ -941,7 +891,6 @@
                     "properties": {
                       "size": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "attribute": true
                         }
@@ -985,18 +934,15 @@
                             },
                             "numberOfSeats": {
                               "type": "integer",
-                              "description": "The maximum count of users on your license.",
-                              "format": "int32"
+                              "description": "The maximum count of users on your license."
                             },
                             "remainingSeats": {
                               "type": "integer",
-                              "description": "The count of users remaining on your license.",
-                              "format": "int32"
+                              "description": "The count of users remaining on your license."
                             },
                             "userCount": {
                               "type": "integer",
-                              "description": "The number of users counting against your license.",
-                              "format": "int32"
+                              "description": "The number of users counting against your license."
                             },
                             "userCountDescription": {
                               "type": "string",
@@ -1020,7 +966,6 @@
                       },
                       "max-results": {
                         "type": "integer",
-                        "format": "int32",
                         "xml": {
                           "name": "max-results",
                           "attribute": true
@@ -1050,7 +995,6 @@
               "projectId": {
                 "type": "integer",
                 "description": "The ID of the project the component is assigned to.",
-                "format": "int64",
                 "readOnly": true
               }
             }
@@ -1096,19 +1040,16 @@
               "avatarId": {
                 "type": "integer",
                 "description": "The ID of the issue type's avatar.",
-                "format": "int64",
                 "readOnly": true
               },
               "entityId": {
                 "type": "string",
                 "description": "Unique ID for next-gen projects.",
-                "format": "uuid",
                 "readOnly": true
               },
               "hierarchyLevel": {
                 "type": "integer",
                 "description": "Hierarchy level of the issue type.",
-                "format": "int32",
                 "readOnly": true
               },
               "scope": {
@@ -1164,23 +1105,19 @@
                         "properties": {
                           "16x16": {
                             "type": "string",
-                            "description": "The URL of the item's 16x16 pixel avatar.",
-                            "format": "uri"
+                            "description": "The URL of the item's 16x16 pixel avatar."
                           },
                           "24x24": {
                             "type": "string",
-                            "description": "The URL of the item's 24x24 pixel avatar.",
-                            "format": "uri"
+                            "description": "The URL of the item's 24x24 pixel avatar."
                           },
                           "32x32": {
                             "type": "string",
-                            "description": "The URL of the item's 32x32 pixel avatar.",
-                            "format": "uri"
+                            "description": "The URL of the item's 32x32 pixel avatar."
                           },
                           "48x48": {
                             "type": "string",
-                            "description": "The URL of the item's 48x48 pixel avatar.",
-                            "format": "uri"
+                            "description": "The URL of the item's 48x48 pixel avatar."
                           }
                         }
                       },
@@ -1250,7 +1187,6 @@
               "self": {
                 "type": "string",
                 "description": "The URL of the version.",
-                "format": "uri",
                 "readOnly": true
               },
               "id": {
@@ -1305,13 +1241,11 @@
               },
               "projectId": {
                 "type": "integer",
-                "description": "The ID of the project to which this version is attached. Required when creating a version. Not applicable when updating a version.",
-                "format": "int64"
+                "description": "The ID of the project to which this version is attached. Required when creating a version. Not applicable when updating a version."
               },
               "moveUnfixedIssuesTo": {
                 "type": "string",
-                "description": "The URL of the self link to the version to which all unfixed issues are moved when a version is released. Not applicable when creating a version. Optional when updating a version.",
-                "format": "uri"
+                "description": "The URL of the self link to the version to which all unfixed issues are moved when a version is released. Not applicable when creating a version. Optional when updating a version."
               },
               "operations": {
                 "type": "array",
@@ -1339,8 +1273,7 @@
                       "type": "string"
                     },
                     "weight": {
-                      "type": "integer",
-                      "format": "int32"
+                      "type": "integer"
                     }
                   }
                 }
@@ -1353,25 +1286,21 @@
                   "unmapped": {
                     "type": "integer",
                     "description": "Count of issues with a status other than *to do*, *in progress*, and *done*.",
-                    "format": "int64",
                     "readOnly": true
                   },
                   "toDo": {
                     "type": "integer",
                     "description": "Count of issues with status *to do*.",
-                    "format": "int64",
                     "readOnly": true
                   },
                   "inProgress": {
                     "type": "integer",
                     "description": "Count of issues with status *in progress*.",
-                    "format": "int64",
                     "readOnly": true
                   },
                   "done": {
                     "type": "integer",
                     "description": "Count of issues with status *done*.",
-                    "format": "int64",
                     "readOnly": true
                   }
                 }
@@ -1397,23 +1326,19 @@
           "properties": {
             "16x16": {
               "type": "string",
-              "description": "The URL of the item's 16x16 pixel avatar.",
-              "format": "uri"
+              "description": "The URL of the item's 16x16 pixel avatar."
             },
             "24x24": {
               "type": "string",
-              "description": "The URL of the item's 24x24 pixel avatar.",
-              "format": "uri"
+              "description": "The URL of the item's 24x24 pixel avatar."
             },
             "32x32": {
               "type": "string",
-              "description": "The URL of the item's 32x32 pixel avatar.",
-              "format": "uri"
+              "description": "The URL of the item's 32x32 pixel avatar."
             },
             "48x48": {
               "type": "string",
-              "description": "The URL of the item's 48x48 pixel avatar.",
-              "format": "uri"
+              "description": "The URL of the item's 48x48 pixel avatar."
             }
           }
         },
@@ -1425,7 +1350,6 @@
             "self": {
               "type": "string",
               "description": "The URL of the project category.",
-              "format": "uri",
               "readOnly": true
             },
             "id": {
@@ -1480,38 +1404,31 @@
                 "type": "object",
                 "properties": {
                   "id": {
-                    "type": "integer",
-                    "format": "int64"
+                    "type": "integer"
                   },
                   "name": {
                     "type": "string"
                   },
                   "aboveLevelId": {
-                    "type": "integer",
-                    "format": "int64"
+                    "type": "integer"
                   },
                   "belowLevelId": {
-                    "type": "integer",
-                    "format": "int64"
+                    "type": "integer"
                   },
                   "projectConfigurationId": {
-                    "type": "integer",
-                    "format": "int64"
+                    "type": "integer"
                   },
                   "level": {
-                    "type": "integer",
-                    "format": "int32"
+                    "type": "integer"
                   },
                   "issueTypeIds": {
                     "type": "array",
                     "items": {
-                      "type": "integer",
-                      "format": "int64"
+                      "type": "integer"
                     }
                   },
                   "externalUuid": {
-                    "type": "string",
-                    "format": "uuid"
+                    "type": "string"
                   },
                   "globalHierarchyLevel": {
                     "type": "string",
@@ -1543,7 +1460,6 @@
         "uuid": {
           "type": "string",
           "description": "Unique ID for next-gen projects.",
-          "format": "uuid",
           "readOnly": true
         },
         "insight": {
@@ -1554,7 +1470,6 @@
             "totalIssueCount": {
               "type": "integer",
               "description": "Total issue count.",
-              "format": "int64",
               "readOnly": true
             },
             "lastIssueUpdateTime": {
@@ -1590,7 +1505,6 @@
             "self": {
               "type": "string",
               "description": "The URL of the user.",
-              "format": "uri",
               "readOnly": true
             },
             "key": {
@@ -1624,23 +1538,19 @@
               "properties": {
                 "16x16": {
                   "type": "string",
-                  "description": "The URL of the item's 16x16 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 16x16 pixel avatar."
                 },
                 "24x24": {
                   "type": "string",
-                  "description": "The URL of the item's 24x24 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 24x24 pixel avatar."
                 },
                 "32x32": {
                   "type": "string",
-                  "description": "The URL of the item's 32x32 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 32x32 pixel avatar."
                 },
                 "48x48": {
                   "type": "string",
-                  "description": "The URL of the item's 48x48 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 48x48 pixel avatar."
                 }
               }
             },
@@ -1671,7 +1581,6 @@
               "properties": {
                 "size": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "attribute": true
                   }
@@ -1688,7 +1597,6 @@
                       "self": {
                         "type": "string",
                         "description": "The URL for these group details.",
-                        "format": "uri",
                         "readOnly": true
                       }
                     }
@@ -1702,7 +1610,6 @@
                 },
                 "max-results": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "name": "max-results",
                     "attribute": true
@@ -1717,7 +1624,6 @@
               "properties": {
                 "size": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "attribute": true
                   }
@@ -1761,18 +1667,15 @@
                       },
                       "numberOfSeats": {
                         "type": "integer",
-                        "description": "The maximum count of users on your license.",
-                        "format": "int32"
+                        "description": "The maximum count of users on your license."
                       },
                       "remainingSeats": {
                         "type": "integer",
-                        "description": "The count of users remaining on your license.",
-                        "format": "int32"
+                        "description": "The count of users remaining on your license."
                       },
                       "userCount": {
                         "type": "integer",
-                        "description": "The number of users counting against your license.",
-                        "format": "int32"
+                        "description": "The number of users counting against your license."
                       },
                       "userCountDescription": {
                         "type": "string",
@@ -1796,7 +1699,6 @@
                 },
                 "max-results": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "name": "max-results",
                     "attribute": true
@@ -1833,7 +1735,6 @@
             "self": {
               "type": "string",
               "description": "The URL of the user.",
-              "format": "uri",
               "readOnly": true
             },
             "key": {
@@ -1867,23 +1768,19 @@
               "properties": {
                 "16x16": {
                   "type": "string",
-                  "description": "The URL of the item's 16x16 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 16x16 pixel avatar."
                 },
                 "24x24": {
                   "type": "string",
-                  "description": "The URL of the item's 24x24 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 24x24 pixel avatar."
                 },
                 "32x32": {
                   "type": "string",
-                  "description": "The URL of the item's 32x32 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 32x32 pixel avatar."
                 },
                 "48x48": {
                   "type": "string",
-                  "description": "The URL of the item's 48x48 pixel avatar.",
-                  "format": "uri"
+                  "description": "The URL of the item's 48x48 pixel avatar."
                 }
               }
             },
@@ -1914,7 +1811,6 @@
               "properties": {
                 "size": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "attribute": true
                   }
@@ -1931,7 +1827,6 @@
                       "self": {
                         "type": "string",
                         "description": "The URL for these group details.",
-                        "format": "uri",
                         "readOnly": true
                       }
                     }
@@ -1945,7 +1840,6 @@
                 },
                 "max-results": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "name": "max-results",
                     "attribute": true
@@ -1960,7 +1854,6 @@
               "properties": {
                 "size": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "attribute": true
                   }
@@ -2004,18 +1897,15 @@
                       },
                       "numberOfSeats": {
                         "type": "integer",
-                        "description": "The maximum count of users on your license.",
-                        "format": "int32"
+                        "description": "The maximum count of users on your license."
                       },
                       "remainingSeats": {
                         "type": "integer",
-                        "description": "The count of users remaining on your license.",
-                        "format": "int32"
+                        "description": "The count of users remaining on your license."
                       },
                       "userCount": {
                         "type": "integer",
-                        "description": "The number of users counting against your license.",
-                        "format": "int32"
+                        "description": "The number of users counting against your license."
                       },
                       "userCountDescription": {
                         "type": "string",
@@ -2039,7 +1929,6 @@
                 },
                 "max-results": {
                   "type": "integer",
-                  "format": "int32",
                   "xml": {
                     "name": "max-results",
                     "attribute": true
@@ -2066,7 +1955,6 @@
         "self": {
           "type": "string",
           "description": "The URL the project role details.",
-          "format": "uri",
           "readOnly": true
         },
         "name": {
@@ -2076,7 +1964,6 @@
         "id": {
           "type": "integer",
           "description": "The ID of the project role.",
-          "format": "int64",
           "readOnly": true
         },
         "description": {
@@ -2094,7 +1981,6 @@
               "id": {
                 "type": "integer",
                 "description": "The ID of the role actor.",
-                "format": "int64",
                 "readOnly": true
               },
               "displayName": {
@@ -2119,7 +2005,6 @@
               "avatarUrl": {
                 "type": "string",
                 "description": "The avatar of the role actor.",
-                "format": "uri",
                 "readOnly": true
               },
               "actorUser": {
@@ -2204,23 +2089,19 @@
                   "properties": {
                     "16x16": {
                       "type": "string",
-                      "description": "The URL of the item's 16x16 pixel avatar.",
-                      "format": "uri"
+                      "description": "The URL of the item's 16x16 pixel avatar."
                     },
                     "24x24": {
                       "type": "string",
-                      "description": "The URL of the item's 24x24 pixel avatar.",
-                      "format": "uri"
+                      "description": "The URL of the item's 24x24 pixel avatar."
                     },
                     "32x32": {
                       "type": "string",
-                      "description": "The URL of the item's 32x32 pixel avatar.",
-                      "format": "uri"
+                      "description": "The URL of the item's 32x32 pixel avatar."
                     },
                     "48x48": {
                       "type": "string",
-                      "description": "The URL of the item's 48x48 pixel avatar.",
-                      "format": "uri"
+                      "description": "The URL of the item's 48x48 pixel avatar."
                     }
                   }
                 },
@@ -2291,7 +2172,6 @@
         "self": {
           "type": "string",
           "description": "The URL for these group details.",
-          "format": "uri",
           "readOnly": true
         }
       }

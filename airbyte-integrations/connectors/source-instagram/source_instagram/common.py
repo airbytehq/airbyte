@@ -57,7 +57,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         # The media was posted before the most recent time that the user's account
         # was converted to a business account from a personal account.
         if exc.api_error_type() == "OAuthException" and exc.api_error_code() == 100 and exc.api_error_subcode() == 2108006:
-            return True
+            return False
 
         return False
 

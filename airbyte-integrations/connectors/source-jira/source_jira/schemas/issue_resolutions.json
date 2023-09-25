@@ -4,8 +4,7 @@
   "properties": {
     "self": {
       "type": "string",
-      "description": "The URL of the issue resolution.",
-      "format": "uri"
+      "description": "The URL of the issue resolution."
     },
     "id": {
       "type": "string",

@@ -1,14 +1,20 @@
-import pandas as pd
-import numpy as np
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+import os
 from typing import List
-from dagster import Output, asset, OpExecutionContext
+
+import numpy as np
+import pandas as pd
 import yaml
-
+from dagster import OpExecutionContext, Output, asset
+from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
-
+from orchestrator.config import get_public_url_for_gcs_file
+from orchestrator.logging import sentry
+from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition, PartialMetadataDefinition
 from orchestrator.utils.object_helpers import are_values_equal, merge_values
-from orchestrator.utils.dagster_helpers import OutputDataFrame, output_dataframe
-from orchestrator.models.metadata import PartialMetadataDefinition, MetadataDefinition
 
 GROUP_NAME = "metadata"
 
@@ -97,130 +103,34 @@ def compute_registry_overrides(merged_df):
     return registries
 
 
-def merge_into_metadata_definitions(
-    id_field: str, connector_type: str, oss_connector_df: pd.DataFrame, cloud_connector_df: pd.DataFrame
-) -> List[PartialMetadataDefinition]:
-    """Merges the OSS and Cloud connector metadata into a single metadata definition.
-
-    Args:
-        id_field (str): The field that uniquely identifies a connector.
-        connector_type (str): The type of connector (source or destination).
-        oss_connector_df (pd.DataFrame): The dataframe containing the related OSS connector in the registry.
-        cloud_connector_df (pd.DataFrame): The dataframe containing the related Cloud connector in the registry.
-
-    Returns:
-        pd.Series: The merged metadata definition.
-    """
-    merged_connectors = pd.merge(
-        oss_connector_df, cloud_connector_df, on=id_field, how="outer", suffixes=(OSS_SUFFIX, CLOUD_SUFFIX), indicator=True
-    )
-
-    # Replace numpy nan values with None
-    sanitized_connectors = merged_connectors.replace([np.nan], [None])
-
-    def build_metadata(connector_registry_entry: dict) -> PartialMetadataDefinition:
-        """Builds the metadata definition for a single connector.
-
-        Args:
-            connector_registry_entry (dict): The merged connector metadata from the existing json registries.
-
-        Returns:
-            PartialMetadataDefinition: The final metadata definition.
-        """
-        raw_data = {
-            "name": get_field_with_fallback(connector_registry_entry, "name"),
-            "definitionId": connector_registry_entry[id_field],
-            "connectorType": connector_type,
-            "dockerRepository": get_field_with_fallback(connector_registry_entry, "dockerRepository"),
-            "githubIssueLabel": get_field_with_fallback(connector_registry_entry, "dockerRepository").replace("airbyte/", ""),
-            "dockerImageTag": get_field_with_fallback(connector_registry_entry, "dockerImageTag"),
-            "icon": get_field_with_fallback(connector_registry_entry, "icon"),
-            "supportUrl": get_field_with_fallback(connector_registry_entry, "documentationUrl"),
-            "connectorSubtype": get_field_with_fallback(connector_registry_entry, "sourceType"),
-            "releaseStage": get_field_with_fallback(connector_registry_entry, "releaseStage"),
-            "license": "MIT",
-            "supportsDbt": get_field_with_fallback(connector_registry_entry, "supportsDbt"),
-            "supportsNormalization": get_field_with_fallback(connector_registry_entry, "supportsNormalization"),
-            "allowedHosts": get_field_with_fallback(connector_registry_entry, "allowedHosts"),
-            "normalizationConfig": get_field_with_fallback(connector_registry_entry, "normalizationConfig"),
-            "suggestedStreams": get_field_with_fallback(connector_registry_entry, "suggestedStreams"),
-            "resourceRequirements": get_field_with_fallback(connector_registry_entry, "resourceRequirements"),
-        }
-
-        # remove none values
-        data = {k: v for k, v in raw_data.items() if v is not None}
-
-        metadata = {"metadataSpecVersion": "1.0", "data": data}
-
-        registries = compute_registry_overrides(connector_registry_entry)
-        metadata["data"]["registries"] = registries
-
-        return PartialMetadataDefinition.construct(**metadata)
-
-    metadata_list = [build_metadata(connector_registry_entry) for _, connector_registry_entry in sanitized_connectors.iterrows()]
-
-    return metadata_list
-
-
-def validate_metadata(metadata: PartialMetadataDefinition) -> tuple[bool, str]:
-    try:
-        ConnectorMetadataDefinitionV0.parse_obj(metadata)
-        return True, None
-    except Exception as e:
-        return False, str(e)
-
-
 # ASSETS
 
 
-@asset(group_name=GROUP_NAME)
-def valid_metadata_report_dataframe(overrode_metadata_definitions: List[PartialMetadataDefinition]) -> OutputDataFrame:
-    """
-    Validates the metadata definitions and returns a dataframe with the results
-    """
-
-    result = []
-
-    for metadata in overrode_metadata_definitions:
-        valid, error_msg = metadata.is_valid
-        result.append(
-            {
-                "definitionId": metadata["data"]["definitionId"],
-                "name": metadata["data"]["name"],
-                "dockerRepository": metadata["data"]["dockerRepository"],
-                "is_metadata_valid": valid,
-                "error_msg": error_msg,
-            }
-        )
-
-    result_df = pd.DataFrame(result)
-
-    return output_dataframe(result_df)
-
-
-@asset(group_name=GROUP_NAME)
-def legacy_registry_derived_metadata_definitions(
-    legacy_cloud_sources_dataframe, legacy_cloud_destinations_dataframe, legacy_oss_sources_dataframe, legacy_oss_destinations_dataframe
-) -> Output[List[PartialMetadataDefinition]]:
-    sources_metadata_list = merge_into_metadata_definitions(
-        "sourceDefinitionId", "source", legacy_oss_sources_dataframe, legacy_cloud_sources_dataframe
-    )
-    destinations_metadata_list = merge_into_metadata_definitions(
-        "destinationDefinitionId", "destination", legacy_oss_destinations_dataframe, legacy_cloud_destinations_dataframe
-    )
-    all_definitions = sources_metadata_list + destinations_metadata_list
-    return Output(all_definitions, metadata={"count": len(all_definitions)})
-
-
 @asset(required_resource_keys={"latest_metadata_file_blobs"}, group_name=GROUP_NAME)
-def metadata_definitions(context: OpExecutionContext) -> List[MetadataDefinition]:
+@sentry.instrument_asset_op
+def metadata_definitions(context: OpExecutionContext) -> List[LatestMetadataEntry]:
     latest_metadata_file_blobs = context.resources.latest_metadata_file_blobs
 
-    metadata_definitions = []
+    metadata_entries = []
     for blob in latest_metadata_file_blobs:
         yaml_string = blob.download_as_string().decode("utf-8")
         metadata_dict = yaml.safe_load(yaml_string)
         metadata_def = MetadataDefinition.parse_obj(metadata_dict)
-        metadata_definitions.append(metadata_def)
 
-    return metadata_definitions
+        metadata_file_path = blob.name
+        icon_file_path = metadata_file_path.replace(METADATA_FILE_NAME, ICON_FILE_NAME)
+        icon_blob = blob.bucket.blob(icon_file_path)
+
+        icon_url = (
+            get_public_url_for_gcs_file(icon_blob.bucket.name, icon_blob.name, os.getenv("METADATA_CDN_BASE_URL"))
+            if icon_blob.exists()
+            else None
+        )
+
+        metadata_entry = LatestMetadataEntry(
+            metadata_definition=metadata_def,
+            icon_url=icon_url,
+        )
+        metadata_entries.append(metadata_entry)
+
+    return metadata_entries

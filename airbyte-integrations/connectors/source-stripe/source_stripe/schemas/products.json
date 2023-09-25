@@ -81,6 +81,12 @@
     },
     "url": {
       "type": ["null", "string"]
+    },
+    "default_price": {
+      "type": ["null", "string"]
+    },
+    "tax_code": {
+      "type": ["null", "string"]
     }
   }
 }

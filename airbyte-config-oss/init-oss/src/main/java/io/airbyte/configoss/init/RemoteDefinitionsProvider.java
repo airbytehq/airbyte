@@ -72,7 +72,7 @@ public class RemoteDefinitionsProvider implements DefinitionsProvider {
   public StandardSourceDefinition getSourceDefinition(final UUID definitionId) throws ConfigNotFoundException {
     final StandardSourceDefinition definition = getSourceDefinitionsMap().get(definitionId);
     if (definition == null) {
-      throw new ConfigNotFoundException(SeedType.STANDARD_SOURCE_DEFINITION.name(), definitionId.toString());
+      throw new ConfigNotFoundException("remote_registry:source_def", definitionId.toString());
     }
     return definition;
   }
@@ -86,7 +86,7 @@ public class RemoteDefinitionsProvider implements DefinitionsProvider {
   public StandardDestinationDefinition getDestinationDefinition(final UUID definitionId) throws ConfigNotFoundException {
     final StandardDestinationDefinition definition = getDestinationDefinitionsMap().get(definitionId);
     if (definition == null) {
-      throw new ConfigNotFoundException(SeedType.STANDARD_DESTINATION_DEFINITION.name(), definitionId.toString());
+      throw new ConfigNotFoundException("remote_registry:destination_def", definitionId.toString());
     }
     return definition;
   }

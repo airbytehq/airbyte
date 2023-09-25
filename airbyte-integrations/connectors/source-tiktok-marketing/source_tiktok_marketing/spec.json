@@ -94,9 +94,18 @@
       "attribution_window": {
         "title": "Attribution Window",
         "description": "The attribution window in days.",
-        "default": 0,
+        "minimum": 0,
+        "maximum": 364,
+        "default": 3,
         "order": 3,
         "type": "integer"
+      },
+      "include_deleted": {
+        "title": "Include Deleted Data in Reports",
+        "description": "Set to active if you want to include deleted data in reports.",
+        "default": false,
+        "order": 4,
+        "type": "boolean"
       }
     }
   },

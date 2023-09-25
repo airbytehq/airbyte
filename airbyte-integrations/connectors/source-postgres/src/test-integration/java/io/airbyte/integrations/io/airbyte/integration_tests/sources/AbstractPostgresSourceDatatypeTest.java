@@ -293,11 +293,58 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 "08:00:2b:01:02:03:04:07")
             .build());
 
+    /*
+     * Verify NUMERIC/DECIMAL Datatypes has - the default precision of 131089 (See PostgresConverter) -
+     * unspecified scale - any decimal value is preserved
+     */
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .fullSourceDataType("NUMERIC")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues("'33'")
+            .addExpectedValues("33")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .fullSourceDataType("NUMERIC")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues("'33.345'")
+            .addExpectedValues("33.345")
+            .build());
+
+    // case of a column type being a NUMERIC data type
+    // with precision but no decimal
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .fullSourceDataType("NUMERIC(38)")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .addInsertValues("'33'")
+            .addExpectedValues("33")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .fullSourceDataType("NUMERIC(28,2)")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues(
+                "'123'", "null", "'14525.22'")
+            // Postgres source does not support these special values yet
+            // https://github.com/airbytehq/airbyte/issues/8902
+            // "'infinity'", "'-infinity'", "'nan'"
+            .addExpectedValues("123", null, "14525.22")
+            .build());
+
     // Blocked by https://github.com/airbytehq/airbyte/issues/8902
     for (final String type : Set.of("numeric", "decimal")) {
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
+              .fullSourceDataType("NUMERIC(20,7)")
               .airbyteType(JsonSchemaType.NUMBER)
               .addInsertValues(
                   "'123'", "null", "'1234567890.1234567'")
@@ -541,6 +588,13 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
             .build());
 
+    addHstoreTest();
+    addTimeWithTimeZoneTest();
+    addArraysTestData();
+    addMoneyTest();
+  }
+
+  protected void addHstoreTest() {
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("hstore")
@@ -555,10 +609,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 {"ISBN-13":"978-1449370000","weight":"11.2 ounces","paperback":"243","publisher":"postgresqltutorial.com","language":"English"}""",
                 null)
             .build());
-
-    addTimeWithTimeZoneTest();
-    addArraysTestData();
-    addMoneyTest();
   }
 
   protected void addMoneyTest() {
@@ -726,29 +776,52 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .addExpectedValues("[\"object\",\"integer\"]")
             .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("numeric_array")
-            .fullSourceDataType("NUMERIC[]")
-            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                    .build())
-                .build())
-            .addInsertValues("'{131070.23,231072.476596593}'")
-            .addExpectedValues("[131070.23,231072.476596593]")
-            .build());
+    for (final String type : Set.of("numeric", "decimal")) {
+      /*
+       * Verify NUMERIC[]/DECIMAL[] Datatypes has - the default precision of 131089 (See
+       * PostgresConverter) - unspecified scale - any decimal value is preserved
+       */
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(String.format("%s_array", type))
+              .fullSourceDataType(String.format("%s[]", type.toUpperCase()))
+              .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                  .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .build())
+                  .build())
+              .addInsertValues("'{131070.23,231072.476596593}'")
+              .addExpectedValues("[131070.23,231072.476596593]")
+              .build());
+      /*
+       * Verify NUMERIC(`anyNumber`)[]/DECIMAL(`anyNumber`)[] Datatypes has default scale of 0 if the
+       * Precision is set
+       */
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(String.format("%s_array", type))
+              .fullSourceDataType(String.format("%s(20)[]", type.toUpperCase()))
+              .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                  .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .build())
+                  .build())
+              .addInsertValues("'{131070,231072}'")
+              .addExpectedValues("[131070,231072]")
+              .build());
 
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("decimal_array")
-            .fullSourceDataType("DECIMAL[]")
-            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-                    .build())
-                .build())
-            .addInsertValues("'{131070.23,231072.476596593}'")
-            .addExpectedValues("[131070.23,231072.476596593]")
-            .build());
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(String.format("%s_array", type))
+              .fullSourceDataType(String.format("%s(30,2)[]", type.toUpperCase()))
+              .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                  .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+                      .build())
+                  .build())
+              // When a decimal scale is explicitly chosen, 2 in this case,
+              // Postgres stores the rounded off value
+              .addInsertValues("'{131070.23,231072.476596593}'")
+              .addExpectedValues("[131070.23,231072.48]")
+              .build());
+    }
 
     addDataTypeTestData(
         TestDataHolder.builder()

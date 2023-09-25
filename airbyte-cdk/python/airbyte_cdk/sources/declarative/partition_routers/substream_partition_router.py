@@ -54,18 +54,7 @@ class SubstreamPartitionRouter(StreamSlicer):
     def __post_init__(self, parameters: Mapping[str, Any]):
         if not self.parent_stream_configs:
             raise ValueError("SubstreamPartitionRouter needs at least 1 parent stream")
-        self._cursor = None
         self._parameters = parameters
-
-    def update_cursor(self, stream_slice: StreamSlice, last_record: Optional[Record] = None):
-        # This method is called after the records are processed.
-        cursor = {}
-        for parent_stream_config in self.parent_stream_configs:
-            partition_field = parent_stream_config.partition_field.eval(self.config)
-            slice_value = stream_slice.get(partition_field)
-            if slice_value:
-                cursor.update({partition_field: slice_value})
-        self._cursor = cursor
 
     def get_request_params(
         self,
@@ -114,10 +103,7 @@ class SubstreamPartitionRouter(StreamSlicer):
                         params.update({parent_config.request_option.field_name: value})
         return params
 
-    def get_stream_state(self) -> StreamState:
-        return self._cursor if self._cursor else {}
-
-    def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
+    def stream_slices(self) -> Iterable[StreamSlice]:
         """
         Iterate over each parent stream's record and create a StreamSlice for each record.
 
@@ -139,7 +125,9 @@ class SubstreamPartitionRouter(StreamSlicer):
                 parent_stream = parent_stream_config.stream
                 parent_field = parent_stream_config.parent_key.eval(self.config)
                 stream_state_field = parent_stream_config.partition_field.eval(self.config)
-                for parent_stream_slice in parent_stream.stream_slices(sync_mode=sync_mode, cursor_field=None, stream_state=stream_state):
+                for parent_stream_slice in parent_stream.stream_slices(
+                    sync_mode=SyncMode.full_refresh, cursor_field=None, stream_state=None
+                ):
                     empty_parent_slice = True
                     parent_slice = parent_stream_slice
 
@@ -152,6 +140,8 @@ class SubstreamPartitionRouter(StreamSlicer):
                                 parent_record = parent_record.record.data
                             else:
                                 continue
+                        elif isinstance(parent_record, Record):
+                            parent_record = parent_record.data
                         try:
                             stream_state_value = dpath.util.get(parent_record, parent_field)
                         except KeyError:

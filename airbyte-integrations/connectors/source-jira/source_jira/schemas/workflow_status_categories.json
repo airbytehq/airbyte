@@ -10,7 +10,6 @@
     "id": {
       "type": "integer",
       "description": "The ID of the status category.",
-      "format": "int64",
       "readOnly": true
     },
     "key": {

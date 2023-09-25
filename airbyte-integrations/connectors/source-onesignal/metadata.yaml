@@ -1,18 +1,24 @@
 data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
+  dockerImageTag: 1.0.1
+  dockerRepository: airbyte/source-onesignal
+  documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
+  githubIssueLabel: source-onesignal
+  icon: onesignal.svg
+  license: MIT
+  name: OneSignal
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
-  connectorSubtype: api
-  connectorType: source
-  definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
-  dockerImageTag: 1.0.0
-  dockerRepository: airbyte/source-onesignal
-  githubIssueLabel: source-onesignal
-  icon: onesignal.svg
-  license: MIT
-  name: OneSignal
   releaseStage: alpha
-  supportUrl: https://docs.airbyte.com/integrations/sources/onesignal
+  supportLevel: community
+  tags:
+    - language:python
 metadataSpecVersion: "1.0"

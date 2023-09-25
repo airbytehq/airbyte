@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Posts Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "author_id": {
+      "type": ["null", "number"]
+    },
+    "content_tag_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "number"]
+      }
+    },
+    "featured": {
+      "type": ["null", "boolean"]
+    },
+    "id": {
+      "type": ["null", "number"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

@@ -45,6 +45,7 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
@@ -203,7 +204,7 @@ public class BigQueryDenormalizedDestinationAcceptanceTest extends DestinationAc
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     config = createConfig();
     bigquery = configureBigQuery(config);
     dataset = getBigQueryDataSet(config, bigquery);

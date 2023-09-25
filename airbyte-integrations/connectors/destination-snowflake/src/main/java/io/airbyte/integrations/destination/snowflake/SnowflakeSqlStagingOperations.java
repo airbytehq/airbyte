@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.snowflake;
 
 import io.airbyte.commons.json.Jsons;
@@ -9,14 +13,15 @@ import io.airbyte.integrations.destination.staging.StagingOperations;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.Map;
 
-public abstract class SnowflakeSqlStagingOperations extends SnowflakeSqlOperations implements StagingOperations{
+public abstract class SnowflakeSqlStagingOperations extends SnowflakeSqlOperations implements StagingOperations {
 
   /**
    * This method is used in Check connection method to make sure that user has the Write permission
    */
   protected void attemptWriteToStage(final String outputSchema,
-      final String stageName,
-      final JdbcDatabase database) throws Exception {
+                                     final String stageName,
+                                     final JdbcDatabase database)
+      throws Exception {
 
     final CsvSerializedBuffer csvSerializedBuffer = new CsvSerializedBuffer(
         new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),

@@ -5,7 +5,6 @@
     "id": {
       "type": "integer",
       "description": "The ID of the audit record.",
-      "format": "int64",
       "readOnly": true
     },
     "summary": {

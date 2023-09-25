@@ -1,5 +1,8 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": ["null", "object"],
+  "title": "Campaign Groups",
+  "additionalProperties": true,
   "properties": {
     "runSchedule": {
       "type": ["null", "object"],
@@ -26,13 +29,18 @@
     "test": {
       "type": ["null", "boolean"]
     },
-    "servingStatuses": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
+    "totalBudget": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "string"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
+        }
       }
     },
-    "allowedCampaignTypes": {
+    "servingStatuses": {
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
@@ -49,6 +57,12 @@
     },
     "status": {
       "type": ["null", "string"]
+    },
+    "allowedCampaignTypes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

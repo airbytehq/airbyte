@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
@@ -59,6 +60,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
@@ -82,6 +84,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   public static final String CDC_EVENT_SERIAL_NO = "_ab_cdc_event_serial_no";
   private static final String HIERARCHYID = "hierarchyid";
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+  public static final String CDC_DEFAULT_CURSOR = "_ab_cdc_cursor";
   private List<String> schemas;
 
   public static Source sshWrappedSource() {
@@ -100,7 +103,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                final SyncMode syncMode,
                                                                final Optional<String> cursorField) {
     LOGGER.info("Queueing query for table: {}", tableName);
-    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters as intermediate state messages are emitted.
+    // This corresponds to the initial sync for in INCREMENTAL_MODE. The ordering of the records matters
+    // as intermediate state messages are emitted.
     if (syncMode.equals(SyncMode.INCREMENTAL)) {
       final String quotedCursorField = enquoteIdentifier(cursorField.get(), getQuoteString());
       final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
@@ -110,7 +114,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
       return queryTable(database, preparedSqlQuery, tableName, schemaName);
     } else {
-      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering of the records.
+      // If we are in FULL_REFRESH mode, state messages are never emitted, so we don't care about ordering
+      // of the records.
       final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
       final String preparedSqlQuery =
           String.format("SELECT %s FROM %s", newIdentifiers, getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString()));
@@ -237,6 +242,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           .map(MssqlSource::overrideSyncModes)
           .map(MssqlSource::removeIncrementalWithoutPk)
           .map(MssqlSource::setIncrementalToSourceDefined)
+          .map(MssqlSource::setDefaultCursorFieldForCdc)
           .map(MssqlSource::addCdcMetadataColumns)
           .collect(toList());
 
@@ -447,12 +453,15 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       final AirbyteDebeziumHandler<Lsn> handler =
           new AirbyteDebeziumHandler<>(sourceConfig,
-              MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), true, firstRecordWaitTime);
+              MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), true, firstRecordWaitTime,
+              OptionalInt.empty());
+
+      final MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector = MssqlCdcConnectorMetadataInjector.getInstance(emittedAt);
 
       final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
           new MssqlCdcStateHandler(stateManager),
-          new MssqlCdcConnectorMetadataInjector(),
+          mssqlCdcConnectorMetadataInjector,
           MssqlCdcHelper.getDebeziumProperties(database, catalog),
           emittedAt, true);
 
@@ -490,17 +499,30 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return stream;
   }
 
+  /*
+   * To prepare for Destination v2, cdc streams must have a default cursor field Cursor format: the
+   * airbyte [emittedAt] + [sync wide record counter]
+   */
+  private static AirbyteStream setDefaultCursorFieldForCdc(final AirbyteStream stream) {
+    if (stream.getSupportedSyncModes().contains(SyncMode.INCREMENTAL)) {
+      stream.setDefaultCursorField(ImmutableList.of(CDC_DEFAULT_CURSOR));
+    }
+    return stream;
+  }
+
   // Note: in place mutation.
   private static AirbyteStream addCdcMetadataColumns(final AirbyteStream stream) {
 
     final ObjectNode jsonSchema = (ObjectNode) stream.getJsonSchema();
     final ObjectNode properties = (ObjectNode) jsonSchema.get("properties");
 
+    final JsonNode airbyteIntegerType = Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     properties.set(CDC_LSN, stringType);
     properties.set(CDC_UPDATED_AT, stringType);
     properties.set(CDC_DELETED_AT, stringType);
     properties.set(CDC_EVENT_SERIAL_NO, stringType);
+    properties.set(CDC_DEFAULT_CURSOR, airbyteIntegerType);
 
     return stream;
   }

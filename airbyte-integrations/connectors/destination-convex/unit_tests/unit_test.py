@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -81,7 +81,7 @@ def record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
 
 
 def setup_good_responses(config):
-    responses.add(responses.POST, f"{config['deployment_url']}/api/streaming_import/replace_tables", status=200)
+    responses.add(responses.PUT, f"{config['deployment_url']}/api/streaming_import/clear_tables", status=200)
     responses.add(responses.POST, f"{config['deployment_url']}/api/streaming_import/import_airbyte_records", status=200)
     responses.add(responses.GET, f"{config['deployment_url']}/version", status=200)
     responses.add(responses.PUT, f"{config['deployment_url']}/api/streaming_import/add_primary_key_indexes", status=200)
@@ -94,7 +94,7 @@ def setup_good_responses(config):
 
 
 def setup_bad_response(config):
-    responses.add(responses.POST, f"{config['deployment_url']}/api/streaming_import/replace_tables", status=400, json={"code": "ErrorCode", "message": "error message"})
+    responses.add(responses.PUT, f"{config['deployment_url']}/api/streaming_import/clear_tables", status=400, json={"code": "ErrorCode", "message": "error message"})
 
 
 @responses.activate
@@ -102,8 +102,8 @@ def test_bad_write(config: ConvexConfig, configured_catalog: ConfiguredAirbyteCa
     setup_bad_response(config)
     client = ConvexClient(config, {})
     with pytest.raises(Exception) as e:
-        client.replace_tables({})
-    assert "/api/streaming_import/replace_tables failed with: 400: {'code': 'ErrorCode', 'message': 'error message'}" in str(e.value)
+        client.delete([])
+    assert "/api/streaming_import/clear_tables failed with: 400: {'code': 'ErrorCode', 'message': 'error message'}" in str(e.value)
 
 
 @responses.activate

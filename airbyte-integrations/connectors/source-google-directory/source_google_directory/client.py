@@ -3,8 +3,9 @@
 #
 
 
-from typing import Any, Mapping, Tuple
+from typing import Any, Generator, Mapping, Tuple
 
+from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources.deprecated.client import BaseClient
 
 from .api import API, GroupMembersAPI, GroupsAPI, UsersAPI
@@ -40,3 +41,9 @@ class Client(BaseClient):
             error_msg = repr(error)
 
         return alive, error_msg
+
+    @property
+    def streams(self) -> Generator[AirbyteStream, None, None]:
+        for stream in super().streams:
+            stream.source_defined_primary_key = [["id"]]
+            yield stream

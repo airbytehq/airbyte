@@ -246,6 +246,12 @@ streams:
         request_parameters:
           limit: "1000"
           query: 'last_event_time BETWEEN TIMESTAMP "{{stream_slice.start_time}}" AND TIMESTAMP "{{stream_slice.end_time}}"'
+  - $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "unsubscribe_groups"
+      primary_key: "id"
+      path: "/v3/asm/groups"
+      field_path: []
 check:
   type: CheckStream
   stream_names: ["lists"]

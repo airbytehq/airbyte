@@ -1,0 +1,23 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*"
+  connectorSubtype: file
+  connectorType: source
+  definitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
+  dockerImageTag: 0.3.11
+  dockerRepository: airbyte/source-file-secure
+  githubIssueLabel: source-file
+  icon: file.svg
+  license: MIT
+  name: File (CSV, JSON, Excel, Feather, Parquet)
+  registries:
+    cloud:
+      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
+    oss:
+      enabled: false # strict encrypt connectors are not used on OSS.
+  releaseStage: generally_available
+  documentationUrl: https://docs.airbyte.com/integrations/sources/file
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

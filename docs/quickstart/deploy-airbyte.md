@@ -15,9 +15,11 @@ Once you see an Airbyte banner, the UI is ready to go at [http://localhost:8000]
 
 Alternatively, if you have an Airbyte Cloud invite, just follow [these steps.](../deploying-airbyte/on-cloud.md)
 
+If you need direct access to our team for any kind of assistance, don't hesitate to [talk to our team](https://airbyte.com/talk-to-sales-premium-support) to discuss about our premium support offers.
+
 ## FAQ
 
-If you have any questions about the Airbyte Open-Source setup and deployment process, head over to our [Getting Started FAQ](https://discuss.airbyte.io/c/faq/15) on our Discourse that answers the following questions and more:
+If you have any questions about the Airbyte Open-Source setup and deployment process, head over to our [Getting Started FAQ](https://github.com/airbytehq/airbyte/discussions/categories/questions) on our Airbyte Forum that answers the following questions and more:
 
 - How long does it take to set up Airbyte?
 - Where can I see my data once I've run a sync?

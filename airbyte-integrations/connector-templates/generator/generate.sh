@@ -32,10 +32,10 @@ docker build --build-arg UID="$_UID" --build-arg GID="$_GID" . -t airbyte/connec
 # Run the container and mount the airbyte folder
 if [ $# -eq 2 ]; then
   echo "2 arguments supplied: 1=$1 2=$2"
-  docker run --name airbyte-connector-bootstrap --user "$_UID:$_GID" -e HOME=/tmp -e package_desc="$1" -e package_name="$2" -v "$(pwd)/../../../.":/airbyte airbyte/connector-bootstrap
+  docker run --name airbyte-connector-bootstrap --user "$_UID:$_GID" -e HOME=/tmp -e package_desc="$1" -e package_name="$2" -e CI=$CI -v "$(pwd)/../../../.":/airbyte airbyte/connector-bootstrap
 else
   echo "Running generator..."
-  docker run --rm -it --name airbyte-connector-bootstrap --user "$_UID:$_GID" -e HOME=/tmp -v "$(pwd)/../../../.":/airbyte airbyte/connector-bootstrap
+  docker run --rm -it --name airbyte-connector-bootstrap --user "$_UID:$_GID" -e HOME=/tmp -e CI=$CI -v "$(pwd)/../../../.":/airbyte airbyte/connector-bootstrap
 fi
 
 echo "Finished running generator"

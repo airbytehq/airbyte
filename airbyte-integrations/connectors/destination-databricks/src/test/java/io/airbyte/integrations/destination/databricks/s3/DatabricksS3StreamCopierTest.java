@@ -6,7 +6,6 @@ package io.airbyte.integrations.destination.databricks.s3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import io.airbyte.integrations.destination.databricks.s3.DatabricksS3StreamCopier;
 import io.airbyte.integrations.destination.s3.S3DestinationConfig;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

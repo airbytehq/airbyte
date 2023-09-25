@@ -15,34 +15,30 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from pendulum.datetime import DateTime
-from requests import codes
+from requests import HTTPError, codes
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
-from source_iterable.utils import IterableGenericErrorHandler, dateutil_parse
+from source_iterable.utils import dateutil_parse
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
 
 
 class IterableStream(HttpStream, ABC):
-    raise_on_http_errors = True
     # in case we get a 401 error (api token disabled or deleted) on a stream slice, do not make further requests within the current stream
     # to prevent 429 error on other streams
     ignore_further_slices = False
-    # to handle the Generic Errors (500 with msg pattern)
-    generic_error_handler: IterableGenericErrorHandler = IterableGenericErrorHandler()
 
     url_base = "https://api.iterable.com/api/"
     primary_key = "id"
 
     def __init__(self, authenticator):
         self._cred = authenticator
+        self._slice_retry = 0
         super().__init__(authenticator)
-        # placeholder for last slice used for API request
-        # to reuse it later in logs or whatever
-        self._last_slice: Mapping[str, Any] = {}
 
     @property
     def retry_factor(self) -> int:
@@ -64,38 +60,58 @@ class IterableStream(HttpStream, ABC):
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         return None
 
-    def check_unauthorized_key(self, response: requests.Response) -> bool:
-        if response.status_code == codes.UNAUTHORIZED:
-            self.logger.warn(f"Provided API Key has not sufficient permissions to read from stream: {self.data_field}")
-            self.ignore_further_slices = True
-            setattr(self, "raise_on_http_errors", False)
-            return False
-        return True
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
         Iterable API does not support pagination
         """
         return None
 
+    def check_unauthorized_key(self, response: requests.Response) -> bool:
+        if response.status_code == codes.UNAUTHORIZED:
+            self.logger.warning(f"Provided API Key has not sufficient permissions to read from stream: {self.data_field}")
+            return True
+
+    def check_generic_error(self, response: requests.Response) -> bool:
+        """
+        https://github.com/airbytehq/oncall/issues/1592#issuecomment-1499109251
+        https://github.com/airbytehq/oncall/issues/1985
+        """
+        codes = ["Generic Error", "GenericError"]
+        msg_pattern = "Please try again later"
+
+        if response.status_code == 500:
+            # I am not sure that all 500 errors return valid json
+            try:
+                response_json = json.loads(response.text)
+            except ValueError:
+                return
+            if response_json.get("code") in codes and msg_pattern in response_json.get("msg", ""):
+                return True
+
+    def request_kwargs(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        """
+        https://requests.readthedocs.io/en/latest/user/advanced/#timeouts
+        https://github.com/airbytehq/oncall/issues/1985#issuecomment-1559276465
+        """
+        return {"timeout": (60, 300)}
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if not self.check_unauthorized_key(response):
-            return []
         response_json = response.json() or {}
         records = response_json.get(self.data_field, [])
-
         for record in records:
             yield record
 
     def should_retry(self, response: requests.Response) -> bool:
-        # check the authentication
-        if not self.check_unauthorized_key(response):
+        if self.check_generic_error(response):
+            self._slice_retry += 1
+            if self._slice_retry < 3:
+                return True
             return False
-        # retry on generic error 500
-        if response.status_code == 500:
-            # will retry for 2 times, then give up and skip the fetch for slice
-            return self.generic_error_handler.handle(response, self.name, self._last_slice)
-        # all other cases
         return super().should_retry(response)
 
     def read_records(
@@ -105,11 +121,20 @@ class IterableStream(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
+        self._slice_retry = 0
         if self.ignore_further_slices:
-            return []
-        # save last slice
-        self._last_slice = stream_slice
-        yield from super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+            return
+
+        try:
+            yield from super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
+        except (HTTPError, UserDefinedBackoffException, DefaultBackoffException) as e:
+            response = e.response
+            if self.check_unauthorized_key(response):
+                self.ignore_further_slices = True
+                return
+            if self.check_generic_error(response):
+                return
+            raise e
 
 
 class IterableExportStream(IterableStream, ABC):
@@ -185,8 +210,6 @@ class IterableExportStream(IterableStream, ABC):
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if not self.check_unauthorized_key(response):
-            return []
         for obj in response.iter_lines():
             record = json.loads(obj)
             record[self.cursor_field] = self._field_to_datetime(record[self.cursor_field])
@@ -205,7 +228,10 @@ class IterableExportStream(IterableStream, ABC):
         Passing stream=True argument to requests.session.send method to avoid
         loading whole analytics report content into memory.
         """
-        return {"stream": True}
+        return {
+            **super().request_kwargs(stream_state, stream_slice, next_page_token),
+            "stream": True,
+        }
 
     def get_start_date(self, stream_state: Mapping[str, Any]) -> DateTime:
         stream_state = stream_state or {}
@@ -329,7 +355,6 @@ class ListUsers(IterableStream):
     name = "list_users"
     # enable caching, because this stream used by other ones
     use_cache = True
-    raise_on_http_errors = False
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"lists/{self.data_field}?listId={stream_slice['list_id']}"
@@ -340,14 +365,6 @@ class ListUsers(IterableStream):
             yield {"list_id": list_record["id"]}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if not response.ok:
-            if not self.check_unauthorized_key(response):
-                return []
-            # Avoid block whole of sync if a slice is broken. Skip current slice on 500 Internal Server Error.
-            # See on-call: https://github.com/airbytehq/oncall/issues/1592#issuecomment-1499109251
-            if response.status_code == codes.INTERNAL_SERVER_ERROR:
-                return []
-            response.raise_for_status()
         list_id = self._get_list_id(response.url)
         for user in response.iter_lines():
             yield {"email": user.decode(), "listId": list_id}
@@ -406,8 +423,6 @@ class CampaignsMetrics(IterableStream):
             yield {"campaign_ids": campaign_ids}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if not self.check_unauthorized_key(response):
-            return []
         content = response.content.decode()
         records = self._parse_csv_string_to_dict(content)
 
@@ -505,8 +520,6 @@ class Events(IterableStream):
         Put common event fields at the top level.
         Put the rest of the fields in the `data` subobject.
         """
-        if not self.check_unauthorized_key(response):
-            return []
         jsonl_records = StringIO(response.text)
         for record in jsonl_records:
             record_dict = json.loads(record)
@@ -668,8 +681,6 @@ class Templates(IterableExportStreamRanged):
                 yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if not self.check_unauthorized_key(response):
-            return []
         response_json = response.json()
         records = response_json.get(self.data_field, [])
 

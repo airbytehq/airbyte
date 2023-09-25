@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
 
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.Queue;
 
 /**
@@ -69,6 +70,11 @@ public interface DestStateLifecycleManager {
    * Buffer -(flush)-> Staging (Blob Storage) -(commit to airbyte_raw)-> Destination table
    */
   void markPendingAsCommitted();
+
+  /**
+   * Mark all pending states for the given stream as committed.
+   */
+  void markPendingAsCommitted(AirbyteStreamNameNamespacePair stream);
 
   /**
    * List all tracked state messages that are committed.

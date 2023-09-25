@@ -1,29 +1,40 @@
 data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
+  dockerImageTag: 2.1.3
+  dockerRepository: airbyte/destination-snowflake
+  githubIssueLabel: destination-snowflake
+  icon: snowflake.svg
+  license: ELv2
+  name: Snowflake
+  normalizationConfig:
+    normalizationIntegrationType: snowflake
+    normalizationRepository: airbyte/normalization-snowflake
+    normalizationTag: 0.4.3
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
-  connectorSubtype: database
-  connectorType: destination
-  definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 0.4.61
-  dockerRepository: airbyte/destination-snowflake
-  githubIssueLabel: destination-snowflake
-  icon: snowflake.svg
-  license: MIT
-  name: Snowflake
-  normalizationConfig:
-    normalizationIntegrationType: snowflake
-    normalizationRepository: airbyte/normalization-snowflake
-    normalizationTag: 0.4.0
   releaseStage: generally_available
   resourceRequirements:
     jobSpecific:
       - jobType: sync
         resourceRequirements:
-          memory_limit: 1Gi
-          memory_request: 1Gi
-  supportUrl: https://docs.airbyte.com/integrations/destinations/snowflake
+          memory_limit: 2Gi
+          memory_request: 2Gi
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   supportsDbt: true
+  tags:
+    - language:java
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "Remove GCS/S3 loading method support."
+        upgradeDeadline: "2023-08-31"
+  ab_internal:
+    sl: 200
+    ql: 400
+  supportLevel: certified
 metadataSpecVersion: "1.0"

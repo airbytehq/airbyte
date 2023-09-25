@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "repository": {
-      "type": ["string"]
+      "type": "string"
     },
     "html_url": {
       "type": ["null", "string"]
@@ -36,15 +36,18 @@
       "$ref": "user.json"
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "author_association": {
       "type": ["null", "string"]
+    },
+    "reactions": {
+      "$ref": "reactions.json"
     }
   }
 }

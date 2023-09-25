@@ -10,7 +10,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from cached_property import cached_property
 from facebook_business.adobjects.igmedia import IGMedia
 from facebook_business.exceptions import FacebookRequestError
@@ -76,12 +76,32 @@ class InstagramStream(Stream, ABC):
         return record
 
 
-class InstagramIncrementalStream(InstagramStream, ABC):
+class InstagramIncrementalStream(InstagramStream, IncrementalMixin):
     """Base class for incremental streams"""
 
     def __init__(self, start_date: datetime, **kwargs):
         super().__init__(**kwargs)
         self._start_date = pendulum.instance(start_date)
+        self._state = {}
+
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state.update(**value)
+
+    def _update_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        """Update stream state from latest record"""
+        # if there is no `end_date` value take the `start_date`
+        record_value = latest_record.get(self.cursor_field) or self._start_date.to_iso8601_string()
+        account_id = latest_record.get("business_account_id")
+        state_value = current_stream_state.get(account_id, {}).get(self.cursor_field) or record_value
+        max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
+        new_stream_state = copy.deepcopy(current_stream_state)
+        new_stream_state[account_id] = {self.cursor_field: str(max_cursor)}
+        return new_stream_state
 
 
 class Users(InstagramStream):
@@ -122,8 +142,8 @@ class UserLifetimeInsights(InstagramStream):
                 "page_id": account["page_id"],
                 "business_account_id": ig_account.get("id"),
                 "metric": insight["name"],
-                "date": insight["values"][0]["end_time"],
-                "value": insight["values"][0]["value"],
+                "date": insight["values"][0].get("end_time"),
+                "value": insight["values"][0].get("value"),
             }
 
     def request_params(
@@ -218,7 +238,14 @@ class UserInsights(InstagramIncrementalStream):
                 f"temporarily unavailable data."
             )
             self.should_exit_gracefully = True
+
         yield from complete_records
+
+        # update state using IncrementalMixin
+        # reference issue: https://github.com/airbytehq/airbyte/issues/24697
+        if sync_mode == SyncMode.incremental and complete_records:
+            for record in complete_records:
+                self.state = self._update_state(self.state, record)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -266,20 +293,6 @@ class UserInsights(InstagramIncrementalStream):
             if not isinstance(value, Mapping):
                 return True
         return False
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        """Update stream state from latest record"""
-        record_value = latest_record[self.cursor_field]
-        account_id = latest_record.get("business_account_id")
-        state_value = current_stream_state.get(account_id, {}).get(self.cursor_field) or record_value
-        max_cursor = max(pendulum.parse(state_value), pendulum.parse(record_value))
-
-        new_stream_state = copy.deepcopy(current_stream_state)
-        new_stream_state[account_id] = {
-            self.cursor_field: str(max_cursor),
-        }
-
-        return new_stream_state
 
 
 class Media(InstagramStream):
@@ -344,7 +357,7 @@ class MediaInsights(Media):
             account_id = ig_account.get("id")
             insights = self._get_insights(ig_media, account_id)
             if insights is None:
-                break
+                continue
 
             insights["id"] = ig_media["id"]
             insights["page_id"] = account["page_id"]
@@ -374,6 +387,9 @@ class MediaInsights(Media):
                 self.logger.error(f"Insights error for business_account_id {account_id}: {details}")
                 # We receive all Media starting from the last one, and if on the next Media we get an Insight error,
                 # then no reason to make inquiries for each Media further, since they were published even earlier.
+                return None
+            elif error.api_error_code() == 100 and error.api_error_subcode() == 33:
+                self.logger.error(f"Check provided permissions for {account_id}: {error.api_error_message()}")
                 return None
             raise error
 

@@ -58,6 +58,8 @@ Either way, your connector will automatically increment the `offset` for subsequ
 
 So for the example API and dataset above, you could apply the following Pagination configurations in the Connector Builder:
 
+<iframe width="640" height="548" src="https://www.loom.com/embed/ec18b3c4e6db4007b4ef10ee808ab873" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 - Mode: `Offset Increment`
 - Limit: `2`
 - Inject limit into outgoing HTTP request:
@@ -89,7 +91,7 @@ GET https://api.example.com/products?limit=3&offset=4
      // less than 2 records returned -> stop
 ```
 
-The Connector Builder currently supports injecting these values into the request parameters (i.e. query parameters), headers, or body.
+The Connector Builder currently supports injecting these values into the query parameters (i.e. request parameters), headers, or body.
 
 #### Examples
 
@@ -153,6 +155,8 @@ Either way, your connector will automatically increment the page number by 1 for
 
 So for the example API and dataset above, you could apply the following configurations in the Connector Builder:
 
+<iframe width="640" height="554" src="https://www.loom.com/embed/c6187b4e21534b9a825e93a002c33d06" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 - Mode: `Page Increment`
 - Page size: `3`
 - Start from page: `1`
@@ -185,7 +189,7 @@ GET https://api.example.com/products?page_size=3&page=3
      // less than 2 records returned -> stop
 ```
 
-The Connector Builder currently supports injecting these values into the request parameters (i.e. query parameters), headers, or body.
+The Connector Builder currently supports injecting these values into the query parameters (i.e. request parameters), headers, or body.
 
 #### Examples
 
@@ -236,6 +240,8 @@ To integrate with such an API in the Connector Builder, you must configure how t
 
 You can also configure how the cursor value is injected into the API Requests. In the above example, this would be set as a `request_parameter` with the field name `pagination_token`, but this is dependent on the API - check the docs to see if they describe how to set the cursor/token for subsequent requests. For cursor pagination, if `path` is selected as the `Inject into` option, then the entire request URL for the subsequent request will be replaced by the cursor value. This can be useful for APIs that return a full URL that should be requested for the next page of results, such as the [GitHub API](https://docs.github.com/en/rest/guides/using-pagination-in-the-rest-api?apiVersion=2022-11-28).
 
+<iframe width="640" height="563" src="https://www.loom.com/embed/c4f657153baa407b993bfadf6ea51532" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>
+
 The "Page size" can optionally be specified as well; if so, how this page size gets injected into the HTTP requests can be configured similar to the above pagination methods.
 
 When using the "response" or "headers" option for obtaining the next page cursor, the connector will stop requesting more pages as soon as no value can be found at the specified location. In some situations, this is not sufficient. If you need more control over how to obtain the cursor value and when to stop requesting pages, use the "custom" option and specify the "stop condition" using a jinja placeholder. For example if your API also has a boolean `more_results` property included in the response to indicate if there are more items to be retrieved, the stop condition should be `{{ response.more_results is false }}`
@@ -258,7 +264,7 @@ This API also has a boolean `has_more` property included in the response to indi
 
 The following APIs implement cursor pagination in various ways:
 
-- [Twitter API](https://developer.twitter.com/en/docs/twitter-api/pagination) - includes `next_token` IDs in its responses which are passed in as request parameters to subsequent requests
+- [Twitter API](https://developer.twitter.com/en/docs/twitter-api/pagination) - includes `next_token` IDs in its responses which are passed in as query parameters to subsequent requests
 - [GitHub API](https://docs.github.com/en/rest/guides/using-pagination-in-the-rest-api?apiVersion=2022-11-28) - includes full-URL `link`s to subsequent pages of results
 - [FourSquare API](https://location.foursquare.com/developer/reference/pagination) - includes full-URL `link`s to subsequent pages of results
 
@@ -272,5 +278,5 @@ Using the "Inject page size / limit / offset into outgoing HTTP request" option 
 
 To handle these cases, disable injection in the pagination form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables as part of the URL path.
 
-For example the [Prestashop API](https://devdocs.prestashop-project.org/8/webservice/cheat-sheet/#list-options) requires to set offset and limit separated by a comma into a single request parameter (`?limit=<offset>,<limit>`)
-For this case, you can use the `next_page_token` variable to configure a request parameter with key `limit` and value `{{ next_page_token['next_page_token'] or '0' }},50` to inject the offset from the pagination strategy and a hardcoded limit of 50 into the same parameter.
+For example the [Prestashop API](https://devdocs.prestashop-project.org/8/webservice/cheat-sheet/#list-options) requires to set offset and limit separated by a comma into a single query parameter (`?limit=<offset>,<limit>`)
+For this case, you can use the `next_page_token` variable to configure a query parameter with key `limit` and value `{{ next_page_token['next_page_token'] or '0' }},50` to inject the offset from the pagination strategy and a hardcoded limit of 50 into the same parameter.

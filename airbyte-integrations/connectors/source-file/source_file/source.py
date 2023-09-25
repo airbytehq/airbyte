@@ -84,8 +84,13 @@ class SourceFile(Source):
         if "reader_options" in config:
             try:
                 config["reader_options"] = json.loads(config["reader_options"])
+                if not isinstance(config["reader_options"], dict):
+                    raise ConfigurationError(
+                        "Field 'reader_options' is not a valid JSON object. "
+                        "Please provide key-value pairs, See field description for examples."
+                    )
             except ValueError:
-                raise ConfigurationError("Field 'reader_options' is not valid JSON. https://www.json.org/")
+                raise ConfigurationError("Field 'reader_options' is not valid JSON object. https://www.json.org/")
         else:
             config["reader_options"] = {}
         config["url"] = dropbox_force_download(config["url"])

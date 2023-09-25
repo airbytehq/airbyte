@@ -40,13 +40,16 @@ from airbyte_api_client.model.destination_id_request_body import DestinationIdRe
 from airbyte_api_client.model.destination_read import DestinationRead
 from airbyte_api_client.model.destination_sync_mode import DestinationSyncMode
 from airbyte_api_client.model.destination_update import DestinationUpdate
+from airbyte_api_client.model.geography import Geography
 from airbyte_api_client.model.namespace_definition_type import NamespaceDefinitionType
+from airbyte_api_client.model.non_breaking_changes_preference import NonBreakingChangesPreference
 from airbyte_api_client.model.operation_create import OperationCreate
 from airbyte_api_client.model.operator_configuration import OperatorConfiguration
 from airbyte_api_client.model.operator_dbt import OperatorDbt
 from airbyte_api_client.model.operator_normalization import OperatorNormalization
 from airbyte_api_client.model.operator_type import OperatorType
 from airbyte_api_client.model.resource_requirements import ResourceRequirements
+from airbyte_api_client.model.selected_field_info import SelectedFieldInfo
 from airbyte_api_client.model.source_create import SourceCreate
 from airbyte_api_client.model.source_definition_id_request_body import SourceDefinitionIdRequestBody
 from airbyte_api_client.model.source_definition_id_with_workspace_id import SourceDefinitionIdWithWorkspaceId
@@ -630,6 +633,16 @@ class Connection(BaseResource):
         self._check_for_legacy_connection_configuration_keys(configuration)
         configuration["sync_catalog"] = self._create_configured_catalog(configuration["sync_catalog"])
         configuration["namespace_definition"] = NamespaceDefinitionType(configuration["namespace_definition"])
+        if "non_breaking_changes_preference" in configuration:
+            configuration["non_breaking_changes_preference"] = NonBreakingChangesPreference(
+                configuration["non_breaking_changes_preference"]
+            )
+        else:
+            configuration["non_breaking_changes_preference"] = NonBreakingChangesPreference("ignore")
+        if "geography" in configuration:
+            configuration["geography"] = Geography(configuration["geography"])
+        else:
+            configuration["geography"] = Geography("auto")
 
         if "schedule_type" in configuration:
             # If schedule type is manual we do not expect a schedule_data field to be set
@@ -742,7 +755,10 @@ class Connection(BaseResource):
             stream["stream"]["supported_sync_modes"] = [SyncMode(sm) for sm in stream["stream"]["supported_sync_modes"]]
             stream["config"]["sync_mode"] = SyncMode(stream["config"]["sync_mode"])
             stream["config"]["destination_sync_mode"] = DestinationSyncMode(stream["config"]["destination_sync_mode"])
-
+            if "selected_fields" in stream["config"]:
+                stream["config"]["selected_fields"] = [
+                    SelectedFieldInfo(field_path=selected_field["field_path"]) for selected_field in stream["config"]["selected_fields"]
+                ]
             streams_and_configurations.append(
                 AirbyteStreamAndConfiguration(
                     stream=AirbyteStream(**stream["stream"]), config=AirbyteStreamConfiguration(**stream["config"])
