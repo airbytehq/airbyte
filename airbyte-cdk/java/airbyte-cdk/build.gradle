@@ -50,27 +50,19 @@ subprojects { subproject ->
 
 description = "Airbyte Connector Development Kit (CDK) for Java."
 
-assemble {
-    dependsOn subprojects*.assemble
+def recursiveTasks = [
+    'assemble', 
+    'build', 
+    'integrationTestJava', 
+    'publish', 
+    'publishToMavenLocal'
+    'test', 
+]
+recursiveTasks.each { taskName ->
+    tasks.named(taskName).configure {
+        dependsOn subprojects*.tasks.named(taskName)
+    }
 }
-
-build {
-    dependsOn subprojects*.build
-}
-
-test {
-    dependsOn subprojects*.test
-}
-
-integrationTestJava {
-    dependsOn subprojects*.integrationTestJava
-}
-
-publish {
-    dependsOn subprojects*.publish
-}
-
-publishToMavenLocal.dependsOn subprojects*.publishToMavenLocal
 
 // The `publishSnapshotIfNeeded` task will be a no-op if CDK version does not end with '-SNAPSHOT'.
 task publishSnapshotIfNeeded {}
