@@ -200,6 +200,23 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
 
+## Unnesting top level properties
+
+Since version 1.5.0, in order to not make the users query their destinations for complicated json fields, we duplicate most of nested data as top level fields.
+For instance:
+
+`{"id": 1, "updatedAt": "2020-01-01", "properties": {"hs_note_body": "World's best boss", "hs_created_by": "Michael Scott"}}`
+
+becomes
+
+`{
+    "id": 1,
+    "updatedAt": "2020-01-01",
+    "properties": {"hs_note_body": "World's best boss", "hs_created_by": "Michael Scott"},
+    "properties_hs_note_body": "World's best boss",
+    "properties_hs_created_by": "Michael Scott"
+}`
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
