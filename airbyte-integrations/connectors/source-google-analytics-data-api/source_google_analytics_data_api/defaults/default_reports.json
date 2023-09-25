@@ -269,6 +269,11 @@
     "metrics": ["eventCount", "totalUsers", "eventCountPerUser", "totalRevenue"]
   },
   {
+    "name": "weekly_events_report",
+    "dimensions": ["yearWeek", "eventName"],
+    "metrics": ["eventCount", "totalUsers", "eventCountPerUser", "totalRevenue"]
+  },
+  {
     "name": "conversions_report",
     "dimensions": ["date", "eventName"],
     "metrics": ["conversions", "totalUsers", "totalRevenue"]
@@ -632,18 +637,6 @@
   {
     "name": "tech_platform_report",
     "dimensions": ["date", "platform"],
-    "metrics": [
-      "totalUsers",
-      "newUsers",
-      "engagedSessions",
-      "engagementRate",
-      "conversions",
-      "totalRevenue"
-    ]
-  },
-  {
-    "name": "tech_platform_report",
-    "dimensions": ["date", "operatingSystemVersion"],
     "metrics": [
       "totalUsers",
       "newUsers",
