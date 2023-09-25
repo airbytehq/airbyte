@@ -68,14 +68,18 @@ public class BigQueryStagingConsumerFactory {
         defaultNamespace);
   }
 
-  /**
-   * Out BigQuery's uploader threads use a fair amount of memory. We believe this is largely due to
-   * the sdk client we use.
-   *
-   * @return number of bytes to make available for message buffering.
-   */
-  private long getBigQueryBufferMemoryLimit() {
-    return (long) (Runtime.getRuntime().maxMemory() * 0.4);
+  // TODO Commenting this out for now since it slows down syncs
+  private CheckedConsumer<AirbyteStreamNameNamespacePair, Exception> incrementalTypingAndDedupingStreamConsumer(final TyperDeduper typerDeduper) {
+    // final TypeAndDedupeOperationValve valve = new TypeAndDedupeOperationValve();
+    return (streamId) -> {
+      // if (!valve.containsKey(streamId)) {
+      // valve.addStream(streamId);
+      // }
+      // if (valve.readyToTypeAndDedupe(streamId)) {
+      // typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), false);
+      // valve.updateTimeAndIncreaseInterval(streamId);
+      // }
+    };
   }
 
   private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
