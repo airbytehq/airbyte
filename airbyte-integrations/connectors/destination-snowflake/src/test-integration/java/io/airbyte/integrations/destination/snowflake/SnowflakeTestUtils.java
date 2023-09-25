@@ -7,14 +7,12 @@ package io.airbyte.integrations.destination.snowflake;
 import static java.util.stream.Collectors.joining;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import org.apache.commons.text.StringSubstitutor;
 
 public class SnowflakeTestUtils {
@@ -87,22 +85,7 @@ public class SnowflakeTestUtils {
             """
             SELECT ${columns} FROM ${table} ORDER BY ${extracted_at} ASC
             """)),
-        new SnowflakeTestSourceOperations()::rowToJson)
-        .stream().peek(row -> {
-          // Downcase the airbyte_* fields so that our test framework can recognize them.
-          Stream.of(
-              JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
-              JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
-              JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
-              JavaBaseConstants.COLUMN_NAME_DATA,
-              JavaBaseConstants.COLUMN_NAME_AB_META).forEach(columnName -> {
-                final JsonNode value = row.get(columnName.toUpperCase());
-                if (value != null) {
-                  ((ObjectNode) row).set(columnName, value);
-                  ((ObjectNode) row).remove(columnName.toUpperCase());
-                }
-              });
-        }).toList();
+        new SnowflakeTestSourceOperations()::rowToJson);
   }
 
   private static String quote(final String name) {

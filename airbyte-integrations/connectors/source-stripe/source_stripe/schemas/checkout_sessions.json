@@ -321,6 +321,14 @@
               "type": ["null", "string"]
             }
           }
+        },
+        "terms_of_service": {
+          "type": ["null", "object"],
+          "properties": {
+            "message": {
+              "type": ["null", "string"]
+            }
+          }
         }
       }
     },
