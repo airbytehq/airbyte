@@ -28,12 +28,12 @@ The java CDK is comprised of separate modules:
 - `db-sources-feature` - Shared classes for building DB sources.
 - `db-destinations-feature` - Shared classes for building DB destinations.
 
-Each CDK submodule contains these elements:
+Each CDK submodule may contain these elements:
 
-- `src/main` code and resources - The part of the module that will ship with the connector, providing base capabilities.
-- `src/test` - These are unit tests that run as part of every build of the CDK. They help ensure that CDK `main` code is in a healthy state.
-- `src/test-integration` - Integration tests which provide a more extensive test of the code in `src/main`. These are not by the `build` command but are executed as part of the `integrationTest` or `integrationTestJava` Gradle tasks.
-- `src/testFixtures` - These shared classes are exported for connectors for use in the connectors' own test implementations. Connectors will have access to these classes within their unit and integration tests, but the classes will not be shipped with connectors when they are published.
+- `src/main` - (Required.) The classes that will ship with the connector, providing capabilities to the connectors.
+- `src/test` - (Required.) These are unit tests that run as part of every build of the CDK. They help ensure that CDK `main` code is in a healthy state.
+- `src/test-integration` - (Optional.) Integration tests which provide a more extensive test of the code in `src/main`. These are not by the `build` command but are executed as part of the `integrationTest` or `integrationTestJava` Gradle tasks.
+- `src/testFixtures` - (Optional.) These shared classes are exported for connectors for use in the connectors' own test implementations. Connectors will have access to these classes within their unit and integration tests, but the classes will not be shipped with connectors when they are published.
 
 ### How is the CDK published?
 
@@ -58,12 +58,6 @@ You will need to bump this version manually whenever you are making changes to c
 While under development, the next version number for the CDK is tracked in the file: `airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties`.
 
 If the CDK is not being modified, this file will contain the most recently published version number.
-
-<!-- TODO: Remove or update this section. Snapshots are no longer required or preferred.
-
-## Publishing the CDK to Local Maven
-
-If your connector pins to a work-in-progress `-SNAPSHOT` version of the CDK (e.g. `0.0.1-SNAPSHOT` or `0.2.0-SNAPSHOT`), Gradle can notice this and automatically run the task to build and publish it to your MavenLocal repository before running the connector's own build and test tasks. -->
 
 ### Publishing the CDK
 
@@ -153,6 +147,6 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                               |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------ |
-| 0.1.0   | 2023-08-21 | [\#30445](https://github.com/airbytehq/airbyte/pull/30445) | First launch, including share code for all connectors. |
+| 0.1.0   | 2023-08-21 | [\#30445](https://github.com/airbytehq/airbyte/pull/30445) | First launch, including shared classes for all connectors. |
 | 0.0.2   | 2023-08-21 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Version bump only (no other changes). |
 | 0.0.1   | 2023-08-08 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Initial release for testing.          |
