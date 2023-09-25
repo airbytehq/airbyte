@@ -90,18 +90,25 @@ def test_chunk_date_range():
     start_date = "2021-03-04"
     end_date = "2021-05-04"
     conversion_window = 14
-    slices = list(chunk_date_range(start_date=start_date, end_date=end_date, conversion_window=conversion_window,
-                                   slice_duration=pendulum.Duration(days=9), time_zone="UTC"))
+    slices = list(
+        chunk_date_range(
+            start_date=start_date,
+            end_date=end_date,
+            conversion_window=conversion_window,
+            slice_duration=pendulum.Duration(days=9),
+            time_zone="UTC",
+        )
+    )
     assert [
-               {"start_date": "2021-02-18", "end_date": "2021-02-27"},
-               {"start_date": "2021-02-28", "end_date": "2021-03-09"},
-               {"start_date": "2021-03-10", "end_date": "2021-03-19"},
-               {"start_date": "2021-03-20", "end_date": "2021-03-29"},
-               {"start_date": "2021-03-30", "end_date": "2021-04-08"},
-               {"start_date": "2021-04-09", "end_date": "2021-04-18"},
-               {"start_date": "2021-04-19", "end_date": "2021-04-28"},
-               {"start_date": "2021-04-29", "end_date": "2021-05-04"},
-           ] == slices
+        {"start_date": "2021-02-18", "end_date": "2021-02-27"},
+        {"start_date": "2021-02-28", "end_date": "2021-03-09"},
+        {"start_date": "2021-03-10", "end_date": "2021-03-19"},
+        {"start_date": "2021-03-20", "end_date": "2021-03-29"},
+        {"start_date": "2021-03-30", "end_date": "2021-04-08"},
+        {"start_date": "2021-04-09", "end_date": "2021-04-18"},
+        {"start_date": "2021-04-19", "end_date": "2021-04-28"},
+        {"start_date": "2021-04-29", "end_date": "2021-05-04"},
+    ] == slices
 
 
 def test_streams_count(config, mock_account_info):
@@ -113,12 +120,12 @@ def test_streams_count(config, mock_account_info):
 
 @pytest.mark.parametrize(
     (
-            "query",
-            "is_metrics_in_query",
+        "query",
+        "is_metrics_in_query",
     ),
     (
-            ("SELECT customer.id, metrics.conversions, campaign.start_date FROM campaign", True),
-            ("SELECT segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign", False),
+        ("SELECT customer.id, metrics.conversions, campaign.start_date FROM campaign", True),
+        ("SELECT segments.ad_destination_type, campaign.start_date, campaign.end_date FROM campaign", False),
     ),
 )
 def test_metrics_in_custom_query(query, is_metrics_in_query):
@@ -129,9 +136,9 @@ def test_metrics_in_custom_query(query, is_metrics_in_query):
 @pytest.mark.parametrize(
     ("latest_record", "current_state", "expected_state"),
     (
-            ({"segments.date": "2020-01-01"}, {}, {"segments.date": "2020-01-01"}),
-            ({"segments.date": "2020-02-01"}, {"segments.date": "2020-01-01"}, {"segments.date": "2020-02-01"}),
-            ({"segments.date": "2021-03-03"}, {"1234567890": {"segments.date": "2020-02-01"}}, {"segments.date": "2021-03-03"}),
+        ({"segments.date": "2020-01-01"}, {}, {"segments.date": "2020-01-01"}),
+        ({"segments.date": "2020-02-01"}, {"segments.date": "2020-01-01"}, {"segments.date": "2020-02-01"}),
+        ({"segments.date": "2021-03-03"}, {"1234567890": {"segments.date": "2020-02-01"}}, {"segments.date": "2021-03-03"}),
     ),
 )
 def test_updated_state(stream_mock, latest_record, current_state, expected_state):
@@ -159,7 +166,7 @@ def stream_instance(query, api_mock, **kwargs):
     "original_query, expected_query",
     [
         (
-                """
+            """
     SELECT
       campaign.id,
       campaign.name,
@@ -170,7 +177,7 @@ def stream_instance(query, api_mock, **kwargs):
     AND metrics.impressions > 100
     ORDER BY campaign.status
     """,
-                """
+            """
     SELECT
       campaign.id,
       campaign.name,
@@ -185,7 +192,7 @@ def stream_instance(query, api_mock, **kwargs):
     """,
         ),
         (
-                """
+            """
     SELECT
       campaign.id,
       campaign.name,
@@ -194,7 +201,7 @@ def stream_instance(query, api_mock, **kwargs):
     FROM campaign
     ORDER BY campaign.status
     """,
-                """
+            """
     SELECT
       campaign.id,
       campaign.name,
@@ -207,7 +214,7 @@ def stream_instance(query, api_mock, **kwargs):
     """,
         ),
         (
-                """
+            """
     SELECT
       campaign.id,
       campaign.name,
@@ -217,7 +224,7 @@ def stream_instance(query, api_mock, **kwargs):
     WHERE campaign.status = 'PAUSED'
     AND metrics.impressions > 100
     """,
-                """
+            """
     SELECT
       campaign.id,
       campaign.name,
@@ -231,7 +238,7 @@ def stream_instance(query, api_mock, **kwargs):
     """,
         ),
         (
-                """
+            """
     SELECT
         campaign.accessible_bidding_strategy,
         segments.ad_destination_type,
@@ -239,7 +246,7 @@ def stream_instance(query, api_mock, **kwargs):
         campaign.end_date
     FROM campaign
     """,
-                """
+            """
     SELECT
         campaign.accessible_bidding_strategy,
         segments.ad_destination_type,

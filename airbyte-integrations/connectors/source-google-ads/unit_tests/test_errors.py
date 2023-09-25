@@ -15,32 +15,34 @@ from source_google_ads.streams import AdGroupLabels, Labels, ServiceAccounts
 from .common import MockGoogleAdsClient, mock_google_ads_request_failure
 
 params = [
-    (["USER_PERMISSION_DENIED"],
-     "Failed to access the customer '123'. Ensure the customer is linked to your manager account or check your permissions to access this customer account."),
-
-    (["CUSTOMER_NOT_FOUND"],
-     "Failed to access the customer '123'. Ensure the customer is linked to your manager account or check your permissions to access this customer account."),
-
-    (["CUSTOMER_NOT_ENABLED"],
-     (
-         "The customer account '123' hasn't finished signup or has been deactivated. "
-         "Sign in to the Google Ads UI to verify its status. "
-         "For reactivating deactivated accounts, refer to: "
-         "https://support.google.com/google-ads/answer/2375392."
-     )),
-
+    (
+        ["USER_PERMISSION_DENIED"],
+        "Failed to access the customer '123'. Ensure the customer is linked to your manager account or check your permissions to access this customer account.",
+    ),
+    (
+        ["CUSTOMER_NOT_FOUND"],
+        "Failed to access the customer '123'. Ensure the customer is linked to your manager account or check your permissions to access this customer account.",
+    ),
+    (
+        ["CUSTOMER_NOT_ENABLED"],
+        (
+            "The customer account '123' hasn't finished signup or has been deactivated. "
+            "Sign in to the Google Ads UI to verify its status. "
+            "For reactivating deactivated accounts, refer to: "
+            "https://support.google.com/google-ads/answer/2375392."
+        ),
+    ),
     (["QUERY_ERROR"], "Incorrect custom query. Error in query: unexpected end of query."),
-
-    (["RESOURCE_EXHAUSTED"],
-     (
-         "The operation limits for your Google Ads account '123' have been exceeded for the last 24 hours. "
-         "To avoid these limitations, consider applying for Standard access which offers unlimited operations per day. "
-         "Learn more about access levels and how to apply for Standard access here: "
-         "https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2"
-     )),
-
+    (
+        ["RESOURCE_EXHAUSTED"],
+        (
+            "The operation limits for your Google Ads account '123' have been exceeded for the last 24 hours. "
+            "To avoid these limitations, consider applying for Standard access which offers unlimited operations per day. "
+            "Learn more about access levels and how to apply for Standard access here: "
+            "https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2"
+        ),
+    ),
     (["UNEXPECTED_ERROR"], "Unexpected error message"),
-
     (["QUERY_ERROR", "UNEXPECTED_ERROR"], "Incorrect custom query. Error in query: unexpected end of query.\nUnexpected error message"),
 ]
 
@@ -57,9 +59,9 @@ def test_expected_errors(mocker, config, exception, error_message):
 @pytest.mark.parametrize(
     ("cls", "raise_expected"),
     (
-            (AdGroupLabels, False),
-            (Labels, False),
-            (ServiceAccounts, True),
+        (AdGroupLabels, False),
+        (Labels, False),
+        (ServiceAccounts, True),
     ),
 )
 def test_read_record_error_handling(mocker, config, customers, cls, raise_expected):
@@ -87,35 +89,43 @@ def test_read_record_error_handling(mocker, config, customers, cls, raise_expect
     "custom_query, is_manager_account, error_message, warning",
     [
         (
-                {
-                    "query": "SELECT campaign.accessible_bidding_strategy, metrics.clicks from campaigns",
-                    "primary_key": None,
-                    "cursor_field": "None",
-                    "table_name": "happytable",
-                },
-                True, None, ('Metrics are not available for manager account 8765. Please remove metrics '
-                             'fields in your custom query: SELECT campaign.accessible_bidding_strategy, '
-                             'metrics.clicks FROM campaigns.')
+            {
+                "query": "SELECT campaign.accessible_bidding_strategy, metrics.clicks from campaigns",
+                "primary_key": None,
+                "cursor_field": "None",
+                "table_name": "happytable",
+            },
+            True,
+            None,
+            (
+                "Metrics are not available for manager account 8765. Please remove metrics "
+                "fields in your custom query: SELECT campaign.accessible_bidding_strategy, "
+                "metrics.clicks FROM campaigns."
+            ),
         ),
         (
-                {
-                    "query": "SELECT campaign.accessible_bidding_strategy, metrics.clicks from campaigns",
-                    "primary_key": None,
-                    "cursor_field": None,
-                    "table_name": "happytable",
-                },
-                False, None, None
+            {
+                "query": "SELECT campaign.accessible_bidding_strategy, metrics.clicks from campaigns",
+                "primary_key": None,
+                "cursor_field": None,
+                "table_name": "happytable",
+            },
+            False,
+            None,
+            None,
         ),
         (
-                {
-                    "query": "SELECT segments.ad_destination_type, segments.date from campaigns",
-                    "primary_key": "customer.id",
-                    "cursor_field": None,
-                    "table_name": "unhappytable",
-                },
-                False, "Custom query should not contain segments.date", None
+            {
+                "query": "SELECT segments.ad_destination_type, segments.date from campaigns",
+                "primary_key": "customer.id",
+                "cursor_field": None,
+                "table_name": "unhappytable",
+            },
+            False,
+            "Custom query should not contain segments.date",
+            None,
         ),
-    ]
+    ],
 )
 def test_check_custom_queries(mocker, config, custom_query, is_manager_account, error_message, warning):
     config["custom_queries"] = [custom_query]

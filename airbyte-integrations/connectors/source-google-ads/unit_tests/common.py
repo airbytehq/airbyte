@@ -68,17 +68,32 @@ class MockGoogleAdsFieldService:
 
 
 ERROR_MAP = {
-    "CUSTOMER_NOT_FOUND": {"failure_code": AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND, "failure_msg": "msg2",
-                           "error_type": "authenticationError"},
-    "USER_PERMISSION_DENIED": {"failure_code": AuthorizationErrorEnum.AuthorizationError.USER_PERMISSION_DENIED, "failure_msg": "msg1",
-                               "error_type": "authorizationError"},
-    "CUSTOMER_NOT_ENABLED": {"failure_code": AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED, "failure_msg": "msg2",
-                             "error_type": "authorizationError"},
-    "QUERY_ERROR": {"failure_code": QueryErrorEnum.QueryError.UNEXPECTED_END_OF_QUERY,
-                    "failure_msg": "Error in query: unexpected end of query.", "error_type": "queryError"},
+    "CUSTOMER_NOT_FOUND": {
+        "failure_code": AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND,
+        "failure_msg": "msg2",
+        "error_type": "authenticationError",
+    },
+    "USER_PERMISSION_DENIED": {
+        "failure_code": AuthorizationErrorEnum.AuthorizationError.USER_PERMISSION_DENIED,
+        "failure_msg": "msg1",
+        "error_type": "authorizationError",
+    },
+    "CUSTOMER_NOT_ENABLED": {
+        "failure_code": AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED,
+        "failure_msg": "msg2",
+        "error_type": "authorizationError",
+    },
+    "QUERY_ERROR": {
+        "failure_code": QueryErrorEnum.QueryError.UNEXPECTED_END_OF_QUERY,
+        "failure_msg": "Error in query: unexpected end of query.",
+        "error_type": "queryError",
+    },
     "RESOURCE_EXHAUSTED": {"failure_code": QuotaErrorEnum.QuotaError.RESOURCE_EXHAUSTED, "failure_msg": "msg4", "error_type": "quotaError"},
-    "UNEXPECTED_ERROR": {"failure_code": AuthorizationErrorEnum.AuthorizationError.UNKNOWN, "failure_msg": "Unexpected error message",
-                         "error_type": "authorizationError"}
+    "UNEXPECTED_ERROR": {
+        "failure_code": AuthorizationErrorEnum.AuthorizationError.UNKNOWN,
+        "failure_msg": "Unexpected error message",
+        "error_type": "authorizationError",
+    },
 }
 
 
@@ -94,7 +109,7 @@ def mock_google_ads_request_failure(mocker, error_names):
         errors.append({"error_code": {error_type: failure_code}, "message": failure_msg})
 
     protobuf_as_json = json.dumps({"errors": errors, "request_id": "1"})
-    failure= GoogleAdsFailure.from_json(protobuf_as_json)
+    failure = GoogleAdsFailure.from_json(protobuf_as_json)
 
     exception = GoogleAdsException(None, None, failure, 1)
 
