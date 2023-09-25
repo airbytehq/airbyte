@@ -36,6 +36,10 @@ The primary key for the following streams is `pipelineId`:
 
 - deal_pipelines
 
+The primary key for the following streams is `vid-to-merge`:
+
+- contacts_merged_audit
+
 The following streams do not have a primary key:
 
 - contact_lists (The primary key could potentially be a composite key (portalId, listId) - https://legacydocs.hubspot.com/docs/methods/lists/get_lists)

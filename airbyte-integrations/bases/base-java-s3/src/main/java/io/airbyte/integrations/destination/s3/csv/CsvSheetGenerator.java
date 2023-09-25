@@ -18,9 +18,13 @@ public interface CsvSheetGenerator {
 
   List<String> getHeaderRow();
 
+  // TODO: (ryankfu) remove this and switch over all destinations to pass in serialized recordStrings,
+  // both for performance and lowers memory footprint
   List<Object> getDataRow(UUID id, AirbyteRecordMessage recordMessage);
 
   List<Object> getDataRow(JsonNode formattedData);
+
+  List<Object> getDataRow(UUID id, String formattedString, long emittedAt);
 
   final class Factory {
 

@@ -81,7 +81,7 @@ def unixtime2str(unix_time: int) -> str:
 def test_random_items(prepared_prod_args):
     stream = Ads(**prepared_prod_args)
     advertiser_count = 100
-    test_advertiser_ids = set([random_integer() for _ in range(advertiser_count)])
+    test_advertiser_ids = set([str(random_integer()) for _ in range(advertiser_count)])
     advertiser_count = len(test_advertiser_ids)
     page_size = 100
     with requests_mock.Mocker() as m:

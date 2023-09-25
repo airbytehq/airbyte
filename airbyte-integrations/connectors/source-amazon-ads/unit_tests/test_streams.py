@@ -16,6 +16,7 @@ from source_amazon_ads import SourceAmazonAds
 
 def setup_responses(
     profiles_response=None,
+    portfolios_response=None,
     campaigns_response=None,
     adgroups_response=None,
     targeting_response=None,
@@ -32,6 +33,12 @@ def setup_responses(
             responses.GET,
             "https://advertising-api.amazon.com/v2/profiles",
             body=profiles_response,
+        )
+    if portfolios_response:
+        responses.add(
+            responses.GET,
+            "https://advertising-api.amazon.com/v2/portfolios/extended",
+            body=portfolios_response,
         )
     if campaigns_response:
         responses.add(
@@ -91,6 +98,24 @@ def test_streams_profile(config, profiles_response):
     assert len(profile_stream._profiles) == 4
     assert len(records) == 4
     expected_records = json.loads(profiles_response)
+    for record, expected_record in zip(records, expected_records):
+        validate(schema=schema, instance=record)
+        assert record == expected_record
+
+
+@responses.activate
+def test_streams_portfolios(config, profiles_response, portfolios_response):
+    setup_responses(profiles_response=profiles_response, portfolios_response=portfolios_response)
+
+    source = SourceAmazonAds()
+    streams = source.streams(config)
+
+    portfolio_stream = get_stream_by_name(streams, "portfolios")
+    schema = portfolio_stream.get_json_schema()
+    records = get_all_stream_records(portfolio_stream)
+    assert len(responses.calls) == 6
+    assert len(records) == 8
+    expected_records = json.loads(portfolios_response)
     for record, expected_record in zip(records, expected_records):
         validate(schema=schema, instance=record)
         assert record == expected_record

@@ -1,0 +1,60 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "address1": {
+      "type": ["null", "string"]
+    },
+    "address2": {
+      "type": ["null", "string"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "country_code": {
+      "type": ["null", "string"]
+    },
+    "country_name": {
+      "type": ["null", "string"]
+    },
+    "company": {
+      "type": ["null", "string"]
+    },
+    "customer_id": {
+      "type": ["null", "integer"]
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "province": {
+      "type": ["null", "string"]
+    },
+    "province_code": {
+      "type": ["null", "string"]
+    },
+    "zip": {
+      "type": ["null", "string"]
+    },
+    "default": {
+      "type": ["null", "boolean"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
+    }
+  }
+}

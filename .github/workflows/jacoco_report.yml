@@ -1,4 +1,4 @@
-name: Measure coverage
+name: Measure Java Test Coverage
 
 on:
   pull_request:
@@ -17,6 +17,10 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "17"
+
+      - name: Publish CDK to MavenLocal
+        run: |
+          ./gradlew :airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded
 
       - name: Run Coverage
         run: |

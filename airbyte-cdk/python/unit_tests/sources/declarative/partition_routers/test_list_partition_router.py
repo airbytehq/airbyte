@@ -3,7 +3,6 @@
 #
 
 import pytest as pytest
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.partition_routers.list_partition_router import ListPartitionRouter
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 
@@ -37,27 +36,8 @@ parameters = {"cursor_field": "owner_resource"}
 )
 def test_list_partition_router(test_name, partition_values, cursor_field, expected_slices):
     slicer = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, parameters=parameters)
-    slices = [s for s in slicer.stream_slices(SyncMode.incremental, stream_state=None)]
+    slices = [s for s in slicer.stream_slices()]
     assert slices == expected_slices
-
-
-@pytest.mark.parametrize(
-    "test_name, stream_slice, last_record, expected_state",
-    [
-        ("test_update_cursor_no_state_no_record", {}, None, {}),
-        ("test_update_cursor_with_state_no_record", {"owner_resource": "customer"}, None, {"owner_resource": "customer"}),
-        ("test_update_cursor_value_not_in_list", {"owner_resource": "invalid"}, None, {}),
-    ],
-)
-def test_update_cursor(test_name, stream_slice, last_record, expected_state):
-    slicer = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, parameters={})
-    if expected_state:
-        slicer.update_cursor(stream_slice, last_record)
-        updated_state = slicer.get_stream_state()
-        assert expected_state == updated_state
-    else:
-        with pytest.raises(ValueError):
-            slicer.update_cursor(stream_slice, last_record)
 
 
 @pytest.mark.parametrize(

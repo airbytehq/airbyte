@@ -24,6 +24,7 @@ import java.io.FileReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -51,7 +52,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
     return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString()));
   }
 
-  protected JsonNode getConfigWithDelimiter(String delimiter) {
+  protected JsonNode getConfigWithDelimiter(final String delimiter) {
     config = Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString(), "delimiter", delimiter));
     return config;
   }
@@ -75,7 +76,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @ParameterizedTest
   @ArgumentsSource(CSVDataArgumentsProvider.class)
-  public void testSyncWithDelimiter(final String messagesFilename, final String catalogFilename, String delimiter)
+  public void testSyncWithDelimiter(final String messagesFilename, final String catalogFilename, final String delimiter)
       throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
         AirbyteCatalog.class);
@@ -118,7 +119,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     // no op
   }
 
@@ -133,7 +134,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     @Override
     public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
-      ProtocolVersion protocolVersion = ArgumentProviderUtil.getProtocolVersion(context);
+      final ProtocolVersion protocolVersion = ArgumentProviderUtil.getProtocolVersion(context);
       return Stream.of(
           Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
               "\\u002c"),

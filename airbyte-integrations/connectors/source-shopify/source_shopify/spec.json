@@ -10,8 +10,9 @@
       "shop": {
         "type": "string",
         "title": "Shopify Store",
-        "description": "The name of your Shopify store found in the URL. For example, if your URL was https://NAME.myshopify.com, then the name would be 'NAME'.",
-        "pattern": "^(?!https:\/\/)(?!http:\/\/)(?!.*\\.myshopify\\.)(?!.*\\.myshopify).*",
+        "description": "The name of your Shopify store found in the URL. For example, if your URL was https://NAME.myshopify.com, then the name would be 'NAME' or 'NAME.myshopify.com'.",
+        "pattern": "^(?!https://)(?!http://).*",
+        "examples": ["my-store", "my-store.myshopify.com"],
         "order": 1
       },
       "credentials": {
@@ -96,6 +97,10 @@
         "type": "object",
         "additionalProperties": false,
         "properties": {
+          "shop": {
+            "type": "string",
+            "path_in_connector_config": ["shop"]
+          },
           "access_token": {
             "type": "string",
             "path_in_connector_config": ["credentials", "access_token"]
@@ -125,16 +130,6 @@
           "client_secret": {
             "type": "string",
             "path_in_connector_config": ["credentials", "client_secret"]
-          }
-        }
-      },
-      "oauth_user_input_from_connector_config_specification": {
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "shop": {
-            "type": "string",
-            "path_in_connector_config": ["shop"]
           }
         }
       }

@@ -1,0 +1,163 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "type": ["null", "string"]
+    },
+    "approximate_count_lower_bound": {
+      "type": ["null", "integer"]
+    },
+    "approximate_count_upper_bound": {
+      "type": ["null", "integer"]
+    },
+    "customer_file_source": {
+      "type": ["null", "string"]
+    },
+    "data_source": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"]
+        },
+        "sub_type": {
+          "type": ["null", "string"]
+        },
+        "creation_params": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "delivery_status": {
+      "type": ["null", "object"],
+      "properties": {
+        "code": {
+          "type": ["null", "integer"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "is_value_based": {
+      "type": ["null", "boolean"]
+    },
+    "lookalike_audience_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "lookalike_spec": {
+      "type": ["null", "object"],
+      "properties": {
+        "country": {
+          "type": ["null", "string"]
+        },
+        "ratio": {
+          "type": ["null", "number"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "origin": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "operation_status": {
+      "type": ["null", "object"],
+      "properties": {
+        "code": {
+          "type": ["null", "integer"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "opt_out_link": {
+      "type": ["null", "string"]
+    },
+    "page_deletion_marked_delete_time": {
+      "type": ["null", "integer"]
+    },
+    "permission_for_actions": {
+      "type": ["null", "object"],
+      "properties": {
+        "can_edit": {
+          "type": ["null", "boolean"]
+        },
+        "can_see_insight": {
+          "type": ["null", "string"]
+        },
+        "can_share": {
+          "type": ["null", "string"]
+        },
+        "subtype_supports_lookalike": {
+          "type": ["null", "string"]
+        },
+        "supports_recipient_lookalike": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "pixel_id": {
+      "type": ["null", "string"]
+    },
+    "retention_days": {
+      "type": ["null", "integer"]
+    },
+    "rule": {
+      "type": ["null", "string"]
+    },
+    "rule_aggregation": {
+      "type": ["null", "string"]
+    },
+    "sharing_status": {
+      "type": ["null", "object"],
+      "properties": {
+        "code": {
+          "type": ["null", "integer"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "subtype": {
+      "type": ["null", "string"]
+    },
+    "time_content_updated": {
+      "type": ["null", "integer"]
+    },
+    "time_created": {
+      "type": ["null", "integer"]
+    },
+    "time_updated": {
+      "type": ["null", "integer"]
+    }
+  }
+}

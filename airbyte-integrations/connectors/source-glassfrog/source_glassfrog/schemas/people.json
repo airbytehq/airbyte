@@ -4,47 +4,39 @@
   "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "integer",
-      "default": 0
+      "type": ["null", "integer"]
     },
     "tag_names": {
-      "type": "array",
-      "default": [],
+      "type": ["null", "array"],
       "items": {
-        "type": "string",
-        "default": ""
+        "type": ["null", "string"]
       }
     },
     "name": {
-      "type": "string",
-      "default": ""
+      "type": ["null", "string"]
+    },
+    "settings": {
+      "type": ["null", "object"]
     },
     "email": {
-      "type": "string",
-      "default": ""
+      "type": ["null", "string"]
     },
     "external_id": {
-      "type": ["null", "integer"],
-      "default": null
+      "type": ["null", "integer"]
     },
     "links": {
-      "type": "object",
-      "default": {},
+      "type": ["null", "object"],
       "properties": {
         "circles": {
-          "type": "array",
-          "default": [],
+          "type": ["null", "array"],
           "items": {
-            "type": ["null", "integer"],
-            "default": null
+            "type": ["null", "integer"]
           }
         },
         "organization_ids": {
-          "type": "array",
-          "default": [],
+          "type": ["null", "array"],
           "items": {
-            "type": ["null", "integer"],
-            "default": null
+            "type": ["null", "integer"]
           }
         }
       }

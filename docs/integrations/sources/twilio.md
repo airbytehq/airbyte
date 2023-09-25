@@ -76,11 +76,15 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 * [Queues](https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources)
 * [Recordings](https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources) \(Incremental\)
 * [Services](https://www.twilio.com/docs/chat/rest/service-resource#read-multiple-service-resources)
+* [Step](https://www.twilio.com/docs/studio/rest-api/v2/step#read-a-list-of-step-resources)
 * [Roles](https://www.twilio.com/docs/chat/rest/role-resource#read-multiple-role-resources)
 * [Transcriptions](https://www.twilio.com/docs/voice/api/recording-transcription?code-sample=code-read-list-all-transcriptions&code-language=curl&code-sdk-version=json#read-multiple-transcription-resources)
 * [Trunks](https://www.twilio.com/docs/sip-trunking/api/trunk-resource#trunk-properties)
 * [Usage Records](https://www.twilio.com/docs/usage/api/usage-record#read-multiple-usagerecord-resources) \(Incremental\)
 * [Usage Triggers](https://www.twilio.com/docs/usage/api/usage-trigger#read-multiple-usagetrigger-resources)
+* [Users](https://www.twilio.com/docs/conversations/api/user-resource)
+* [UserConversations](https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations)
+* [VerifyServices](https://www.twilio.com/docs/verify/api/service#maincontent)
 
 ## Performance considerations
 
@@ -91,8 +95,12 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                 |
 |:--------|:-----------|:----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
-| 0.7.0   | 2023-05-03 | [25781](https://github.com/airbytehq/airbyte/pull/25781)      | Add new stream `Trunks`                                                              |
-| 0.6.0   | 2023-05-03 | [](https://github.com/airbytehq/airbyte/pull/)      | Add new stream `Roles` with parent `Services`                                                              |
+| 0.10.0  | 2023-07-28 | [27323](https://github.com/airbytehq/airbyte/pull/27323)  | Add new stream `Step`                                                                                  |
+| 0.9.0   | 2023-06-27 | [27221](https://github.com/airbytehq/airbyte/pull/27221)  | Add new stream `UserConversations` with parent `Users`                                                  |
+| 0.8.1   | 2023-07-12 | [28216](https://github.com/airbytehq/airbyte/pull/28216)  | Add property `channel_metadata` to `ConversationMessages` schema                                                                         |
+| 0.8.0   | 2023-06-11 | [27231](https://github.com/airbytehq/airbyte/pull/27231)  | Add new stream `VerifyServices`                                                                         |
+| 0.7.0   | 2023-05-03 | [25781](https://github.com/airbytehq/airbyte/pull/25781)  | Add new stream `Trunks`                                                                                 |
+| 0.6.0   | 2023-05-03 | [25783](https://github.com/airbytehq/airbyte/pull/25783)  | Add new stream `Roles` with parent `Services`                                                           |
 | 0.5.0   | 2023-03-21 | [23995](https://github.com/airbytehq/airbyte/pull/23995)  | Add new stream `Conversation Participants`                                                              |
 | 0.4.0   | 2023-03-18 | [23995](https://github.com/airbytehq/airbyte/pull/23995)  | Add new stream `Conversation Messages`                                                                  |
 | 0.3.0   | 2023-03-18 | [22874](https://github.com/airbytehq/airbyte/pull/22874)  | Add new stream `Executions` with parent `Flows`                                                         |

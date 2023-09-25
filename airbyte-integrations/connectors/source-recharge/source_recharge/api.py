@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
@@ -11,6 +10,9 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+
+API_VERSION = "2021-11"
+OLD_API_VERSION = "2021-01"
 
 
 class RechargeStream(HttpStream, ABC):
@@ -22,7 +24,7 @@ class RechargeStream(HttpStream, ABC):
     period_in_months = 1  # Slice data request for 1 month
     raise_on_http_errors = True
 
-    # regestring the default schema transformation
+    # registering the default schema transformation
     transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config, **kwargs):
@@ -33,28 +35,32 @@ class RechargeStream(HttpStream, ABC):
     def data_path(self):
         return self.name
 
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"x-recharge-version": API_VERSION}
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return self.name
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        stream_data = self.get_stream_data(response.json())
-        if len(stream_data) == self.limit:
-            self.page_num += 1
-            return {"page": self.page_num}
+        cursor = response.json().get("next_cursor")
+        if cursor:
+            return {"cursor": cursor}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         params = {
             "limit": self.limit,
-            "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
-            "updated_at_max": (stream_slice or {}).get("end_date", self._start_date),
         }
 
         if next_page_token:
             params.update(next_page_token)
+        else:
+            params.update({"updated_at_min": (stream_state or {}).get("updated_at", self._start_date)})
 
         return params
 
@@ -174,16 +180,28 @@ class Orders(IncrementalRechargeStream):
 class Products(RechargeStream):
     """
     Products Stream: https://developer.rechargepayments.com/v1-shopify?python#list-products
+    Products endpoint has 422 error with 2021-11 API version
     """
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"x-recharge-version": OLD_API_VERSION}
 
 
 class Shop(RechargeStream):
     """
     Shop Stream: https://developer.rechargepayments.com/v1-shopify?python#shop
+    Shop endpoint is not available in 2021-11 API version
     """
 
     primary_key = ["shop", "store"]
     data_path = None
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"x-recharge-version": OLD_API_VERSION}
 
 
 class Subscriptions(IncrementalRechargeStream):

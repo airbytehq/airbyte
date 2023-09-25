@@ -54,6 +54,9 @@
         "minimum_amount": { "type": ["null", "integer"] },
         "minimum_amount_currency": { "type": ["null", "string"] }
       }
+    },
+    "times_redeemed": {
+      "type": ["null", "integer"]
     }
   }
 }

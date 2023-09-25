@@ -1,33 +1,35 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "prefix": {
-      "type": "null"
+      "type": ["null", "string"]
     },
     "first_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "middle_name": {
-      "type": "null"
+      "type": ["null", "string"]
     },
     "last_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "suffix": {
-      "type": "null"
+      "type": ["null", "string"]
     },
     "address": {
-      "type": "object",
+      "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "street": {
-          "type": "string"
+          "type": ["string", "null"]
         },
         "city": {
           "type": ["string", "null"]
@@ -44,55 +46,85 @@
       }
     },
     "assignee_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "company_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "company_name": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "tags": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "socials": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
+    },
+    "leads_converted_from": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+      }
     },
     "contact_type_id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "details": {
-      "type": "null"
+      "type": ["null", "string"]
     },
     "emails": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "category": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "email": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "phone_numbers": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "number": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "category": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "title": {
-      "type": "null"
+      "type": ["null", "string"]
     },
     "websites": {
-      "type": "array",
+      "type": ["null", "array"],
       "items": {
-        "type": "object",
+        "type": ["null", "object"],
+        "additionalProperties": true,
         "properties": {
           "url": {
             "type": "string"
@@ -104,7 +136,7 @@
       }
     },
     "date_created": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "date_modified": {
       "type": ["integer", "null"]
@@ -113,11 +145,10 @@
       "type": ["integer", "null"]
     },
     "interaction_count": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "date_lead_created": {
       "type": ["integer", "null"]
     }
-  },
-  "required": ["id"]
+  }
 }

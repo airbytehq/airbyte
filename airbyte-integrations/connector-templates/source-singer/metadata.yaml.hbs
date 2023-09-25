@@ -5,6 +5,8 @@ data:
   registries:
     oss:
       enabled: false
+    cloud:
+      enabled: false
   connectorSubtype: api
   connectorType: source
   definitionId: {{generateDefinitionId}}
@@ -15,6 +17,7 @@ data:
   license: MIT
   name: {{capitalCase name}}
   releaseDate: TODO
+  supportLevel: community
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/sources/{{dashCase name}}
   tags:

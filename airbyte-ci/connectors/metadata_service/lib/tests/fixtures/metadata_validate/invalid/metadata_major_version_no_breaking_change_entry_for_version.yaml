@@ -1,0 +1,24 @@
+metadataSpecVersion: "1.0"
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bb6afd81-87d5-47e3-97c4-e2c2901b1cf8
+  dockerImageTag: 2.0.0
+  dockerRepository: airbyte/source-onesignal
+  githubIssueLabel: source-onesignal
+  icon: onesignal.svg
+  license: MIT
+  name: OneSignal
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  releases:
+    1.0.0:
+      upgradeDeadline: 2023-08-22
+      message: "This version made a change."
+  documentationUrl: https://docs.airbyte.com/integrations/sources/onesignal
+  tags:
+    - language:python

@@ -6,6 +6,9 @@
     "id": {
       "type": ["null", "string"]
     },
+    "description": {
+      "type": ["null", "string"]
+    },
     "label": {
       "type": ["null", "string"]
     },

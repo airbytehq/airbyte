@@ -6,13 +6,14 @@ package io.airbyte.integrations.destination.staging;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
 import io.airbyte.integrations.destination_async.DestinationFlushFunction;
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.util.List;
@@ -31,15 +32,38 @@ class AsyncFlush implements DestinationFlushFunction {
   private final StagingOperations stagingOperations;
   private final JdbcDatabase database;
   private final ConfiguredAirbyteCatalog catalog;
+  private final TypeAndDedupeOperationValve typerDeduperValve;
+  private final TyperDeduper typerDeduper;
+  private final long optimalBatchSizeBytes;
 
   public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
                     final StagingOperations stagingOperations,
                     final JdbcDatabase database,
-                    final ConfiguredAirbyteCatalog catalog) {
+                    final ConfiguredAirbyteCatalog catalog,
+                    final TypeAndDedupeOperationValve typerDeduperValve,
+                    final TyperDeduper typerDeduper) {
+    this(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, 50 * 1024 * 1024);
+  }
+
+  public AsyncFlush(final Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig,
+                    final StagingOperations stagingOperations,
+                    final JdbcDatabase database,
+                    final ConfiguredAirbyteCatalog catalog,
+                    final TypeAndDedupeOperationValve typerDeduperValve,
+                    final TyperDeduper typerDeduper,
+                    // In general, this size is chosen to improve the performance of lower memory connectors. With 1 Gi
+                    // of
+                    // resource the connector will usually at most fill up around 150 MB in a single queue. By lowering
+                    // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
+                    // freed earlier similar to a sliding window effect
+                    long optimalBatchSizeBytes) {
     this.streamDescToWriteConfig = streamDescToWriteConfig;
     this.stagingOperations = stagingOperations;
     this.database = database;
     this.catalog = catalog;
+    this.typerDeduperValve = typerDeduperValve;
+    this.typerDeduper = typerDeduper;
+    this.optimalBatchSizeBytes = optimalBatchSizeBytes;
   }
 
   @Override
@@ -57,7 +81,7 @@ class AsyncFlush implements DestinationFlushFunction {
           // todo (cgardens) - most writers just go ahead and re-serialize the contents of the record message.
           // we should either just pass the raw string or at least have a way to do that and create a default
           // impl that maintains backwards compatible behavior.
-          writer.accept(Jsons.deserialize(record.getSerialized(), AirbyteMessage.class).getRecord());
+          writer.accept(record.getSerialized(), record.getRecord().getEmittedAt());
         } catch (final Exception e) {
           throw new RuntimeException(e);
         }
@@ -81,9 +105,18 @@ class AsyncFlush implements DestinationFlushFunction {
             writeConfig.getWriteDatetime());
     try {
       final String stagedFile = stagingOperations.uploadRecordsToStage(database, writer, schemaName, stageName, stagingPath);
-      GeneralStagingFunctions.copyIntoTableFromStage(database, stageName, stagingPath, List.of(stagedFile), writeConfig.getOutputTableName(),
+      GeneralStagingFunctions.copyIntoTableFromStage(
+          database,
+          stageName,
+          stagingPath,
+          List.of(stagedFile),
+          writeConfig.getOutputTableName(),
           schemaName,
-          stagingOperations);
+          stagingOperations,
+          writeConfig.getNamespace(),
+          writeConfig.getStreamName(),
+          typerDeduperValve,
+          typerDeduper);
     } catch (final Exception e) {
       log.error("Failed to flush and commit buffer data into destination's raw table", e);
       throw new RuntimeException("Failed to upload buffer to stage and commit to destination", e);
@@ -94,8 +127,7 @@ class AsyncFlush implements DestinationFlushFunction {
 
   @Override
   public long getOptimalBatchSizeBytes() {
-    // todo(davin): this should be per-destination specific. currently this is for Snowflake.
-    return 200 * 1024 * 1024;
+    return optimalBatchSizeBytes;
   }
 
 }

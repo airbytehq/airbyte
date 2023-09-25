@@ -5,7 +5,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: [ "{{ parameters.get('data_field') }}" ]
+      field_path: ["{{ parameters.get('data_field') }}"]
   requester:
     type: HttpRequester
     url_base: "https://{{'analytics.eu.' if config['data_region'] == 'EU Residency Server' else '' }}amplitude.com/api"
@@ -17,13 +17,13 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       response_filters:
-        - http_codes: [ 400 ]
+        - http_codes: [400]
           action: FAIL
           error_message: The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB.
-        - http_codes: [ 404 ]
+        - http_codes: [404]
           action: IGNORE
           error_message: No data collected
-        - http_codes: [ 504 ]
+        - http_codes: [504]
           action: FAIL
           error_message: The amount of data is large causing a timeout. For large amounts of data, the Amazon S3 destination is recommended.
 
@@ -118,7 +118,6 @@ definitions:
       name: "active_users"
       primary_key: "date"
       path: "/2/users"
-
 
 streams:
   - "#/definitions/annotations_stream"

@@ -4,7 +4,7 @@ data:
   definitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/image-exists-1
   githubIssueLabel: source-alloydb-strict-encrypt
-  dockerImageTag: 0.0.1-exists
+  dockerImageTag: 0.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   connectorSubtype: database
   releaseStage: generally_available

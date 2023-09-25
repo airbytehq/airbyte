@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KCBot Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "createdBy": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "createdDate": {
+      "type": ["null", "number"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "environments": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "modifiedBy": {
+      "additionalProperties": true,
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "modifiedDate": {
+      "type": ["null", "number"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "priority": {
+      "type": ["null", "number"]
+    },
+    "productId": {
+      "type": ["null", "string"]
+    },
+    "productName": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    }
+  }
+}

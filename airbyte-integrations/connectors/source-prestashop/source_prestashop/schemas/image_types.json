@@ -1,33 +1,33 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "width": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "height": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "categories": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "products": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "manufacturers": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "suppliers": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "stores": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

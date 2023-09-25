@@ -36,6 +36,7 @@
             "properties": {
               "filetype": {
                 "title": "Filetype",
+                "default": "csv",
                 "const": "csv",
                 "type": "string"
               },
@@ -122,6 +123,7 @@
             "properties": {
               "filetype": {
                 "title": "Filetype",
+                "default": "parquet",
                 "const": "parquet",
                 "type": "string"
               },
@@ -156,6 +158,7 @@
             "properties": {
               "filetype": {
                 "title": "Filetype",
+                "default": "avro",
                 "const": "avro",
                 "type": "string"
               }
@@ -168,6 +171,7 @@
             "properties": {
               "filetype": {
                 "title": "Filetype",
+                "default": "jsonl",
                 "const": "jsonl",
                 "type": "string"
               },

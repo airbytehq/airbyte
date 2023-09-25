@@ -23,6 +23,7 @@ import io.airbyte.integrations.standardtest.destination.comparator.TestDataCompa
 import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -137,7 +138,7 @@ public class ClickhouseDestinationAcceptanceTest extends DestinationAcceptanceTe
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     db = new ClickHouseContainer("clickhouse/clickhouse-server:22.5")
         .waitingFor(Wait.forHttp("/ping").forPort(8123)
             .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));

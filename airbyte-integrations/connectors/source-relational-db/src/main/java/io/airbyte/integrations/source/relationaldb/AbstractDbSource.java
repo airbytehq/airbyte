@@ -176,10 +176,10 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         });
   }
 
-  private void validateCursorFieldForIncrementalTables(
-                                                       final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                       final ConfiguredAirbyteCatalog catalog,
-                                                       final Database database)
+  protected void validateCursorFieldForIncrementalTables(
+                                                         final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+                                                         final ConfiguredAirbyteCatalog catalog,
+                                                         final Database database)
       throws SQLException {
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
@@ -250,8 +250,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     /* no-op */
   }
 
-  private List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(
-                                                                             final Database database)
+  protected List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(final Database database)
       throws Exception {
     final Set<String> systemNameSpaces = getExcludedInternalNameSpaces();
     final Set<String> systemViews = getExcludedViews();
@@ -262,12 +261,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                 Collectors.toList()));
   }
 
-  private List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(
-                                                                              final Database database,
-                                                                              final ConfiguredAirbyteCatalog catalog,
-                                                                              final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                                              final StateManager stateManager,
-                                                                              final Instant emittedAt) {
+  protected List<AutoCloseableIterator<AirbyteMessage>> getFullRefreshIterators(
+                                                                                final Database database,
+                                                                                final ConfiguredAirbyteCatalog catalog,
+                                                                                final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+                                                                                final StateManager stateManager,
+                                                                                final Instant emittedAt) {
     return getSelectedIterators(
         database,
         catalog,

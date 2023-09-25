@@ -80,6 +80,39 @@
     "metrics.impressions": {
       "type": ["null", "integer"]
     },
+    "metrics.active_view_impressions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.active_view_measurability": {
+      "type": ["null", "number"]
+    },
+    "metrics.active_view_measurable_cost_micros": {
+      "type": ["null", "integer"]
+    },
+    "metrics.active_view_measurable_impressions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.active_view_viewability": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions": {
+      "type": ["null", "number"]
+    },
+    "metrics.conversions_value": {
+      "type": ["null", "number"]
+    },
+    "metrics.interactions": {
+      "type": ["null", "integer"]
+    },
+    "metrics.interaction_event_types": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "metrics.view_through_conversions": {
+      "type": ["null", "integer"]
+    },
     "ad_group_criterion.criterion_id": {
       "type": ["null", "integer"]
     }

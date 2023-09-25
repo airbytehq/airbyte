@@ -20,7 +20,7 @@ When your Apify job \(aka [actor run](https://docs.apify.com/actors/running)\) f
 
 ### Output schema
 
-Since the dataset items do not have strongly typed schema, they are synced as objects, without any assumption on their content.
+Since the dataset items do not have strongly typed schema, they are synced as objects stored in the `data` field, without any assumption on their content.
 
 ### Features
 
@@ -43,6 +43,7 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.0 | 2022-06-20 | [28290](https://github.com/airbytehq/airbyte/pull/28290) | Make connector work with platform changes not syncing empty stream schemas. |
 | 0.1.11 | 2022-04-27 | [12397](https://github.com/airbytehq/airbyte/pull/12397) | No changes. Used connector to test publish workflow changes. |
 | 0.1.9 | 2022-04-05 | [PR\#11712](https://github.com/airbytehq/airbyte/pull/11712) | No changes from 0.1.4. Used connector to test publish workflow changes. |
 | 0.1.4 | 2021-12-23 | [PR\#8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |

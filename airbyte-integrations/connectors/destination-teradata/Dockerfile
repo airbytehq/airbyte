@@ -22,5 +22,5 @@ ENV APPLICATION destination-teradata
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=0.1.1
+LABEL io.airbyte.version=0.1.2
 LABEL io.airbyte.name=airbyte/destination-teradata

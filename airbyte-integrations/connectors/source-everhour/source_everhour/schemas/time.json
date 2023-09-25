@@ -80,7 +80,7 @@
     },
     "history": {
       "type": ["null", "array"],
-      "items": { 
+      "items": {
         "type": ["null", "object"],
         "additionalProperties": true
       }
