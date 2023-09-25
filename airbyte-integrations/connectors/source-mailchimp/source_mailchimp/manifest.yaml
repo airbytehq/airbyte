@@ -55,7 +55,7 @@ definitions:
       - "%Y-%m-%dT%H:%M:%S+00:00"
     datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
     start_datetime:
-      datetime: "{{ format_datetime(config.get('start_date', day_delta(-365, '%Y-%m-%dT%H:%M:%S+00:00')), '%Y-%m-%dT%H:%M:%S+00:00') }}"
+      datetime: "{{ format_datetime(config.get('start_date'), '%Y-%m-%dT%H:%M:%S+00:00') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S+00:00"
     start_time_option:
       type: RequestOption
@@ -83,6 +83,7 @@ definitions:
       path: lists
       field_path: lists
       cursor_field: date_created
+
   campaigns_stream:
     $ref: "#/definitions/base_stream"
     name: campaigns
@@ -90,6 +91,7 @@ definitions:
       path: campaigns
       field_path: campaigns
       cursor_field: create_time
+
   automations_stream:
     $ref: "#/definitions/base_stream"
     name: automations
@@ -132,7 +134,6 @@ definitions:
               partition_field: campaign_id
               stream:
                 $ref: "#/definitions/campaigns_stream"
-
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: timestamp
@@ -146,119 +147,10 @@ definitions:
         type: RequestOption
         field_name: since
         inject_into: request_parameter
+
 streams:
   - "#/definitions/lists_stream"
   - "#/definitions/campaigns_stream"
   - "#/definitions/automations_stream"
   - "#/definitions/reports_stream"
   - "#/definitions/email_activity_stream"
-
-spec:
-  type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/mailchimp
-  connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
-    type: object
-    required:
-      - credentials
-    additionalProperties: true
-    properties:
-      credentials:
-        type: object
-        title: Authentication
-        oneOf:
-          - title: OAuth2.0
-            type: object
-            required:
-              - auth_type
-              - access_token
-            properties:
-              auth_type:
-                type: string
-                const: oauth2.0
-                order: 0
-              client_id:
-                title: Client ID
-                type: string
-                description: The Client ID of your OAuth application.
-                airbyte_secret: true
-              client_secret:
-                title: Client Secret
-                type: string
-                description: The Client Secret of your OAuth application.
-                airbyte_secret: true
-              access_token:
-                title: Access Token
-                type: string
-                description: An access token generated using the above client ID and secret.
-                airbyte_secret: true
-          - type: object
-            title: API Key
-            required:
-              - auth_type
-              - apikey
-            properties:
-              auth_type:
-                type: string
-                const: apikey
-                order: 1
-              apikey:
-                type: string
-                title: API Key
-                description:
-                  Mailchimp API Key. See the <a href="https://docs.airbyte.com/integrations/sources/mailchimp">docs</a>
-                  for information on how to generate this key.
-                airbyte_secret: true
-      start_date:
-        type: string
-        title: Start date
-        format: date-time
-        order: 2
-        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
-        description: >-
-          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
-          this date will not be replicated.
-        examples:
-          - "2017-01-25T00:00:00Z"
-      campaign_id:
-        type: string
-        title: ID of a campaign to sync email activities
-        airbyte_hidden: true
-  advanced_auth:
-    auth_flow_type: oauth2.0
-    predicate_key:
-      - credentials
-      - auth_type
-    predicate_value: oauth2.0
-    oauth_config_specification:
-      complete_oauth_output_specification:
-        type: object
-        additionalProperties: false
-        properties:
-          access_token:
-            type: string
-            path_in_connector_config:
-              - credentials
-              - access_token
-      complete_oauth_server_input_specification:
-        type: object
-        additionalProperties: false
-        properties:
-          client_id:
-            type: string
-          client_secret:
-            type: string
-      complete_oauth_server_output_specification:
-        type: object
-        additionalProperties: false
-        properties:
-          client_id:
-            type: string
-            path_in_connector_config:
-              - credentials
-              - client_id
-          client_secret:
-            type: string
-            path_in_connector_config:
-              - credentials
-              - client_secret
