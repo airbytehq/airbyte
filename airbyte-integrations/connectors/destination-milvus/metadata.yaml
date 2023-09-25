@@ -9,6 +9,7 @@ data:
     cloud:
       enabled: true
     oss:
+      enabled: true
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -16,7 +17,6 @@ data:
         resourceRequirements:
           memory_limit: 2Gi
           memory_request: 2Gi
-      enabled: true
   resourceRequirements:
     jobSpecific:
       - jobType: sync

@@ -17,7 +17,6 @@ data:
         resourceRequirements:
           memory_limit: 2Gi
           memory_request: 2Gi
-      enabled: true
   connectorSubtype: database
   connectorType: destination
   definitionId: 6eb1198a-6d38-43e5-aaaa-dccd8f71db2b
