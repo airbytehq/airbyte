@@ -2,6 +2,12 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "deleted_at": {
+      "type": ["null", "string"]
+    },
+    "change_status.last_change_date_time": {
+      "type": ["null", "string"]
+    },
     "ad_group.id": {
       "type": ["null", "integer"]
     },

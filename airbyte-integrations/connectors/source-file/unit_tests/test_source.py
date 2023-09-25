@@ -5,7 +5,6 @@
 import json
 import logging
 from copy import deepcopy
-from unittest.mock import PropertyMock
 
 import jsonschema
 import pytest
@@ -21,7 +20,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from source_file.client import ConfigurationError
+from airbyte_cdk.utils import AirbyteTracedException
 from source_file.source import SourceFile
 
 logger = logging.getLogger("airbyte")
@@ -133,9 +132,8 @@ def test_check_invalid_config(source, invalid_config):
 
 
 def test_check_invalid_reader_options(source, invalid_reader_options_config):
-    expected = AirbyteConnectionStatus(status=Status.FAILED)
-    actual = source.check(logger=logger, config=invalid_reader_options_config)
-    assert actual.status == expected.status
+    with pytest.raises(AirbyteTracedException, match="Field 'reader_options' is not a valid JSON object. Please provide key-value pairs"):
+        source.check(logger=logger, config=invalid_reader_options_config)
 
 
 def test_discover_dropbox_link(source, config_dropbox_link):
@@ -149,25 +147,17 @@ def test_discover(source, config, client):
     for schema in schemas:
         jsonschema.Draft7Validator.check_schema(schema)
 
-    type(client).streams = PropertyMock(side_effect=Exception)
-
-    with pytest.raises(Exception):
-        source.discover(logger=logger, config=config)
-
 
 def test_check_wrong_reader_options(source, config):
     config["reader_options"] = '{encoding":"utf_16"}'
-    assert source.check(logger=logger, config=config) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="Field 'reader_options' is not valid JSON object. https://www.json.org/"
-    )
+    with pytest.raises(AirbyteTracedException, match="Field 'reader_options' is not valid JSON object. https://www.json.org/"):
+        source.check(logger=logger, config=config)
 
 
 def test_check_google_spreadsheets_url(source, config):
     config["url"] = "https://docs.google.com/spreadsheets/d/"
-    assert source.check(logger=logger, config=config) == AirbyteConnectionStatus(
-        status=Status.FAILED,
-        message="Failed to load https://docs.google.com/spreadsheets/d/: please use the Official Google Sheets Source connector",
-    )
+    with pytest.raises(AirbyteTracedException, match="Failed to load https://docs.google.com/spreadsheets/d/: please use the Official Google Sheets Source connector"):
+        source.check(logger=logger, config=config)
 
 
 def test_pandas_header_not_none(absolute_path, test_files):
@@ -218,9 +208,11 @@ def test_incorrect_reader_options(absolute_path, test_files):
         "provider": {"storage": "local"},
     }
 
-    catalog = get_catalog({"0": {"type": ["string", "null"]}, "1": {"type": ["string", "null"]}})
     source = SourceFile()
-    with pytest.raises(ConfigurationError) as e:
+    with pytest.raises(AirbyteTracedException, match="can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"):
+        _ = source.discover(logger=logger, config=deepcopy(config))
+
+    with pytest.raises(AirbyteTracedException, match="can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"):
+        catalog = get_catalog({"0": {"type": ["string", "null"]}, "1": {"type": ["string", "null"]}})
         records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
         records = [r.record.data for r in records]
-    assert "can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html" in str(e.value)
