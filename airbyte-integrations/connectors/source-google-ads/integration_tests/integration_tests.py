@@ -213,7 +213,6 @@ def test_empty_streams(mocker, stream_fixture_name, expected_records, request):
     due to free subscription plan for the sandbox
     """
     stream = request.getfixturevalue(stream_fixture_name)
-    print(f"{stream=}")
     records_reader = stream.read_records(
         sync_mode=SyncMode.full_refresh,
         cursor_field=None,

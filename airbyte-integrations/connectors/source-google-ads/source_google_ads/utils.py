@@ -87,10 +87,10 @@ def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_d
                 continue
             else:
                 message = (
-                    f"The Google Ads account '{customer_id}' you're trying to access is not enabled. "
-                    "This may occur if the account hasn't been fully set up or activated. "
-                    "Please ensure that you've completed all necessary setup steps in the Google Ads platform and that the account is active. "
-                    "If the account is recently created, it might take some time before it's fully activated."
+                    f"The customer account '{customer_id}' hasn't finished signup or has been deactivated. "
+                    "Sign in to the Google Ads UI to verify its status. "
+                    "For reactivating deactivated accounts, refer to: "
+                    "https://support.google.com/google-ads/answer/2375392."
                 )
                 raise AirbyteTracedException.from_exception(
                     ga_exception, message=message, failure_type=FailureType.config_error
@@ -106,15 +106,19 @@ def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_d
         quota_error = error.error_code.quota_error
         if is_error_type(quota_error, QuotaErrorEnum.QuotaError.RESOURCE_EXHAUSTED):
             message = (
-                f"You've exceeded your 24-hour quota limits for operations on your Google Ads account '{customer_id}'. Try again later."
+                f"The operation limits for your Google Ads account '{customer_id}' have been exceeded for the last 24 hours. "
+                f"To avoid these limitations, consider applying for Standard access which offers unlimited operations per day. "
+                f"Learn more about access levels and how to apply for Standard access here: "
+                f"https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2"
             )
             raise AirbyteTracedException.from_exception(
                 ga_exception, message=message, failure_type=FailureType.config_error
             ) from ga_exception
 
+        # this error occurs when the page token expires while processing results, it is partially handled in IncrementalGoogleAdsStream
         request_error = error.error_code.request_error
         if is_error_type(request_error, RequestErrorEnum.RequestError.EXPIRED_PAGE_TOKEN):
-            message = "Page token has expired during processing response."
+            message = "Page token has expired during processing response. Please contact support for assistance."
             # raise new error for easier catch in child class - this error will be handled in IncrementalGoogleAdsStream
             raise ExpiredPageTokenError(message=message, failure_type=FailureType.system_error, exception=ga_exception) from ga_exception
 

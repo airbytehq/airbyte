@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest.mock import Mock
-
 import pytest
+from unittest.mock import Mock
+from contextlib import nullcontext as does_not_raise
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads.google_ads import GoogleAds
@@ -21,15 +21,22 @@ params = [
      "Failed to access the customer '123'. Ensure the customer is linked to your manager account or check your permissions to access this customer account."),
 
     ("CUSTOMER_NOT_ENABLED",
-     ("The Google Ads account '123' you're trying to access is not enabled. "
-      "This may occur if the account hasn't been fully set up or activated. "
-      "Please ensure that you've completed all necessary setup steps in the Google Ads platform and that the account is active. "
-      "If the account is recently created, it might take some time before it's fully activated.")),
+     (
+         "The customer account '123' hasn't finished signup or has been deactivated. "
+         "Sign in to the Google Ads UI to verify its status. "
+         "For reactivating deactivated accounts, refer to: "
+         "https://support.google.com/google-ads/answer/2375392."
+     )),
 
     ("QUERY_ERROR", "Incorrect custom query. Error in query: unexpected end of query."),
 
     ("RESOURCE_EXHAUSTED",
-     "You've exceeded your 24-hour quota limits for operations on your Google Ads account '123'. Try again later."),
+     (
+         "The operation limits for your Google Ads account '123' have been exceeded for the last 24 hours. "
+         "To avoid these limitations, consider applying for Standard access which offers unlimited operations per day. "
+         "Learn more about access levels and how to apply for Standard access here: "
+         "https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2"
+     )),
 
     ("UNEXPECTED_ERROR", "Unexpected error message")
 ]
@@ -56,18 +63,21 @@ def test_read_record_error_handling(mocker, config, customers, cls, raise_expect
     mock_google_ads_request_failure(mocker, "CUSTOMER_NOT_ENABLED")
     google_api = GoogleAds(credentials=config["credentials"])
     stream = cls(api=google_api, customers=customers)
-    if raise_expected:
-        with pytest.raises(AirbyteTracedException) as exception:
-            for _ in stream.read_records(sync_mode=Mock(), stream_slice={"customer_id": "1234567890"}):
-                pass
-        assert exception.value.message == ("The Google Ads account '1234567890' you're trying to access is not enabled. "
-                                           "This may occur if the account hasn't been fully set up or activated. Please "
-                                           "ensure that you've completed all necessary setup steps in the Google Ads "
-                                           "platform and that the account is active. If the account is recently created, "
-                                           "it might take some time before it's fully activated.")
-    else:
+
+    # Use nullcontext or pytest.raises based on raise_expected
+    context = pytest.raises(AirbyteTracedException) if raise_expected else does_not_raise()
+
+    with context as exception:
         for _ in stream.read_records(sync_mode=Mock(), stream_slice={"customer_id": "1234567890"}):
             pass
+
+    if raise_expected:
+        assert exception.value.message == (
+            "The customer account '1234567890' hasn't finished signup or has been deactivated. "
+            "Sign in to the Google Ads UI to verify its status. "
+            "For reactivating deactivated accounts, refer to: "
+            "https://support.google.com/google-ads/answer/2375392."
+        )
 
 
 @pytest.mark.parametrize(
@@ -112,13 +122,16 @@ def test_check_custom_queries(mocker, config, custom_query, is_manager_account, 
     )
     mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
     source = SourceGoogleAds()
-
     logger_mock = Mock()
-    if error_message:
-        with pytest.raises(AirbyteTracedException) as exception:
-            status_ok, error = source.check_connection(logger_mock, config)
-        assert exception.value.message == error_message
-    else:
+
+    # Use nullcontext or pytest.raises based on error_message
+    context = pytest.raises(AirbyteTracedException) if error_message else does_not_raise()
+
+    with context as exception:
         status_ok, error = source.check_connection(logger_mock, config)
-        if warning:
-            logger_mock.warning.assert_called_with(warning)
+
+    if error_message:
+        assert exception.value.message == error_message
+
+    if warning:
+        logger_mock.warning.assert_called_with(warning)
