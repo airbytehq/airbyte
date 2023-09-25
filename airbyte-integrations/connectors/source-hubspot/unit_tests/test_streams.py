@@ -30,6 +30,7 @@ from source_hubspot.streams import (
     Owners,
     OwnersArchived,
     Products,
+    RecordUnnester,
     TicketPipelines,
     Tickets,
     Workflows,
@@ -451,3 +452,81 @@ def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema
         assert entity == "animals"
         assert fully_qualified_name == "p19936848_Animal"
         assert schema == expected_custom_object_json_schema
+
+
+@pytest.mark.parametrize(
+    "input_data, unnest_fields, expected_output",
+    (
+        (
+            [{"id": 1, "createdAt": "2020-01-01", "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"}}],
+            [],
+            [{"id": 1, "createdAt": "2020-01-01", "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"}}]
+        ),
+        (
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"}
+                }
+            ],
+            [],
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"},
+                    "properties_phone": "+38044-111-111",
+                    "properties_address": "31, Cleveland str, Washington DC"
+                }
+            ]
+        ),
+        (
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                }
+            ],
+            ["email"],
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "email_from": "integration-test@airbyte.io",
+                    "email_to": "michael_scott@gmail.com",
+                }
+            ]
+        ),
+        (
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"}
+                }
+            ],
+            ["email"],
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "email_from": "integration-test@airbyte.io",
+                    "email_to": "michael_scott@gmail.com",
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"},
+                    "properties_phone": "+38044-111-111",
+                    "properties_address": "31, Cleveland str, Washington DC"
+                }
+            ]
+        )
+    )
+)
+def test_records_unnester(input_data, unnest_fields, expected_output):
+    unnester = RecordUnnester(fields=unnest_fields)
+    assert list(unnester.unnest(input_data)) == expected_output

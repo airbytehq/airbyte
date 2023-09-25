@@ -79,6 +79,20 @@ class RecordUnnester:
         self.fields = fields or []
 
     def unnest(self, records: Iterable[MutableMapping[str, Any]]) -> Iterable[MutableMapping[str, Any]]:
+        """
+        In order to not make the users query their destinations for complicated json fields, duplicate some nested data as top level fields.
+        For instance:
+        {"id": 1, "updatedAt": "2020-01-01", "properties": {"hs_note_body": "World's best boss", "hs_created_by": "Michael Scott"}}
+        becomes
+        {
+            "id": 1,
+            "updatedAt": "2020-01-01",
+            "properties": {"hs_note_body": "World's best boss", "hs_created_by": "Michael Scott"},
+            "properties_hs_note_body": "World's best boss",
+            "properties_hs_created_by": "Michael Scott"
+        }
+        """
+
         for record in records:
             fields_to_unnest = self.fields + ["properties"]
             data_to_unnest = {field: record.get(field, {}) for field in fields_to_unnest}
