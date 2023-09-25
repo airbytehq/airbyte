@@ -216,8 +216,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     setDefaultStreamNamespace(catalog, defaultNamespace);
 
     final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
-    final ParsedCatalog parsedCatalog = parseCatalog(catalog, datasetLocation);
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
+    final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation);
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation);
 
@@ -241,8 +241,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     setDefaultStreamNamespace(catalog, defaultNamespace);
 
     final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
-    final ParsedCatalog parsedCatalog = parseCatalog(catalog, datasetLocation);
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
+    final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation);
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation);
     // Shared code end
@@ -374,8 +374,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private ParsedCatalog parseCatalog(final ConfiguredAirbyteCatalog catalog, final String datasetLocation) {
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
+  private ParsedCatalog parseCatalog(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final String datasetLocation) {
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
     final CatalogParser catalogParser = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()
         ? new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get())
         : new CatalogParser(sqlGenerator);
