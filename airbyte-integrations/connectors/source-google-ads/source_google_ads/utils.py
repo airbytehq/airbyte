@@ -81,8 +81,10 @@ def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_d
         if is_error_type(authorization_error, AuthorizationErrorEnum.AuthorizationError.USER_PERMISSION_DENIED) or is_error_type(
             authentication_error, AuthenticationErrorEnum.AuthenticationError.CUSTOMER_NOT_FOUND
         ):
-            message = (f"Failed to access the customer '{customer_id}'. "
-                       f"Ensure the customer is linked to your manager account or check your permissions to access this customer account.")
+            message = (
+                f"Failed to access the customer '{customer_id}'. "
+                f"Ensure the customer is linked to your manager account or check your permissions to access this customer account."
+            )
 
         # If the error is encountered in the internally used class `ServiceAccounts`, an exception is raised.
         # For other classes, the error is logged and skipped to prevent sync failure. See: https://github.com/airbytehq/airbyte/issues/12486
@@ -111,8 +113,10 @@ def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_d
 
         # This error occurs when the page token expires while processing results, it is partially handled in IncrementalGoogleAdsStream
         elif is_error_type(request_error, RequestErrorEnum.RequestError.EXPIRED_PAGE_TOKEN):
-            message = ("Page token has expired during processing response. "
-                       "Please contact the Airbyte team with the link of your connection for assistance.")
+            message = (
+                "Page token has expired during processing response. "
+                "Please contact the Airbyte team with the link of your connection for assistance."
+            )
 
             # Raise new error for easier catch in child class - this error will be handled in IncrementalGoogleAdsStream
             raise_exception = ExpiredPageTokenError
@@ -127,9 +131,7 @@ def traced_exception(ga_exception: GoogleAdsException, customer_id: str, catch_d
 
     if messages:
         message = "\n".join(messages)
-        raise raise_exception.from_exception(
-            failure_type=failure_type, exc=ga_exception, message=message
-        ) from ga_exception
+        raise raise_exception.from_exception(failure_type=failure_type, exc=ga_exception, message=message) from ga_exception
 
 
 @dataclass(repr=False, eq=False, frozen=True)

@@ -2,9 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
-from unittest.mock import Mock
 from contextlib import nullcontext as does_not_raise
+from unittest.mock import Mock
+
+import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads.google_ads import GoogleAds
