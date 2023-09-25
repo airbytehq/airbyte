@@ -5,6 +5,14 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.9.0'
 }
 
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-sources']
+    useLocalCdk = true
+}
+
+airbyteJavaConnector.addCdkDependencies()
+
 application {
     mainClass = 'io.airbyte.integrations.source.mongodb.internal.MongoDbSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
