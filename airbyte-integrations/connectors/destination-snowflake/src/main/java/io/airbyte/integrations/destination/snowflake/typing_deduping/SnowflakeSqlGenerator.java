@@ -164,9 +164,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
     String dedupFinalTable = "";
     String cdcDeletes = "";
-    String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
       // If we're in dedup mode, then we must have a cursor
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
@@ -178,14 +176,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
         "cdc_deletes", cdcDeletes,
-        "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
             """
             BEGIN TRANSACTION;
             ${validate_primary_keys}
             ${insert_new_records}
             ${dedup_final_table}
-            ${dedupe_raw_table}
             ${cdc_deletes}
             ${commit_raw_table}
             COMMIT;

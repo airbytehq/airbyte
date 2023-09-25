@@ -373,9 +373,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
     String dedupFinalTable = "";
     String cdcDeletes = "";
-    String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
       // If we're in dedup mode, then we must have a cursor
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
@@ -388,25 +386,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
         "cdc_deletes", cdcDeletes,
-        "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
             """
             ${pk_var_declaration}
-
             BEGIN TRANSACTION;
-
             ${validate_primary_keys}
-
             ${insert_new_records}
-
             ${dedup_final_table}
-
-            ${dedupe_raw_table}
-
             ${cdc_deletes}
-
             ${commit_raw_table}
-
             COMMIT TRANSACTION;
             """);
   }
@@ -571,25 +559,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                   )
                 FROM  ${project_id}.${raw_table_id}
                 WHERE JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at'), wide_number_mode=>'round')) != 'null'
-              )
-            ;""");
-  }
-
-  @VisibleForTesting
-  String dedupRawTable(final StreamId id, final String finalSuffix) {
-    return new StringSubstitutor(Map.of(
-        "project_id", '`' + projectId + '`',
-        "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix))).replace(
-            // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
-            // would be painful,
-            // and it only matters in a few edge cases.
-            """
-            DELETE FROM
-              ${project_id}.${raw_table_id}
-            WHERE
-              `_airbyte_raw_id` NOT IN (
-                SELECT `_airbyte_raw_id` FROM ${project_id}.${final_table_id}
               )
             ;""");
   }
