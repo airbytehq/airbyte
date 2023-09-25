@@ -1,4 +1,10 @@
 data:
+  allowedHosts:
+    hosts:
+      - "${indexing.host}"
+      - api.openai.com
+      - api.cohere.ai
+      - "${embedding.api_base}"
   connectorSubtype: database
   connectorType: destination
   definitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
@@ -13,6 +19,13 @@ data:
       enabled: true 
     oss:
       enabled: true
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        # TODO: Remove once https://github.com/airbytehq/airbyte/issues/30611 is resolved
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
   releaseStage: alpha
   documentationUrl: https://docs.airbyte.com/integrations/destinations/weaviate
   tags:
