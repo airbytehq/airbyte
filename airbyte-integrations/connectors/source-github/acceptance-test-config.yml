@@ -34,6 +34,11 @@ acceptance_tests:
       - name: "events"
         bypass_reason: "Only events created within the past 90 days can be showed"
       ignored_fields:
+        contributor_activity:
+        - name: weeks
+          bypass_reason: "depend on changing data"
+        - name: total
+          bypass_reason: "depend on changing data"
         workflows:
         - name: created_at
           bypass_reason: value may be returned in different time zones
@@ -84,6 +89,7 @@ acceptance_tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       future_state:
         future_state_path: "integration_tests/abnormal_state.json"
+      skip_comprehensive_incremental_tests: true
   full_refresh:
     tests:
     - config_path: "secrets/config.json"

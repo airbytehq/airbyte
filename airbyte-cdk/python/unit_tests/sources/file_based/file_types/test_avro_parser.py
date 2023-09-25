@@ -142,17 +142,17 @@ _double_as_string_avro_format = AvroFormat(double_as_string=True)
                      id="test_decimal_missing_precision"),
         pytest.param(_default_avro_format, {"type": "bytes", "logicalType": "decimal", "precision": 9}, None, ValueError,
                      id="test_decimal_missing_scale"),
-        pytest.param(_default_avro_format, {"type": "bytes", "logicalType": "uuid"}, {"type": ["null", "string"]}, None, id="test_uuid"),
-        pytest.param(_default_avro_format, {"type": "int", "logicalType": "date"}, {"type": ["null", "string"], "format": "date"}, None,
+        pytest.param(_default_avro_format, {"type": "bytes", "logicalType": "uuid"}, {"type": "string"}, None, id="test_uuid"),
+        pytest.param(_default_avro_format, {"type": "int", "logicalType": "date"}, {"type": "string", "format": "date"}, None,
                      id="test_date"),
-        pytest.param(_default_avro_format, {"type": "int", "logicalType": "time-millis"}, {"type": ["null", "integer"]}, None, id="test_time_millis"),
-        pytest.param(_default_avro_format, {"type": "long", "logicalType": "time-micros"}, {"type": ["null", "integer"]}, None,
+        pytest.param(_default_avro_format, {"type": "int", "logicalType": "time-millis"}, {"type": "integer"}, None, id="test_time_millis"),
+        pytest.param(_default_avro_format, {"type": "long", "logicalType": "time-micros"}, {"type": "integer"}, None,
                      id="test_time_micros"),
         pytest.param(
             _default_avro_format,
-            {"type": "long", "logicalType": "timestamp-millis"}, {"type": ["null", "string"], "format": "date-time"}, None, id="test_timestamp_millis"
+            {"type": "long", "logicalType": "timestamp-millis"}, {"type": "string", "format": "date-time"}, None, id="test_timestamp_millis"
         ),
-        pytest.param(_default_avro_format, {"type": "long", "logicalType": "timestamp-micros"}, {"type": ["null", "string"]}, None,
+        pytest.param(_default_avro_format, {"type": "long", "logicalType": "timestamp-micros"}, {"type": "string"}, None,
                      id="test_timestamp_micros"),
         pytest.param(
             _default_avro_format,

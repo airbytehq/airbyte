@@ -63,8 +63,10 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -72,7 +74,11 @@ import javax.sql.DataSource;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
@@ -81,6 +87,9 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
 public class CdcMysqlSourceTest extends CdcSourceTest {
+
+  private static final String START_DB_CONTAINER_WITH_INVALID_TIMEZONE = "START-DB-CONTAINER-WITH-INVALID-TIMEZONE";
+  private static final String INVALID_TIMEZONE_CEST = "CEST";
 
   @SystemStub
   private EnvironmentVariables environmentVariables;
@@ -93,16 +102,19 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   private static final Random RANDOM = new Random();
 
   @BeforeEach
-  public void setup() throws SQLException {
+  public void setup(final TestInfo testInfo) throws SQLException {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    init();
+    init(testInfo);
     revokeAllPermissions();
     grantCorrectPermissions();
     super.setup();
   }
 
-  private void init() {
+  private void init(final TestInfo testInfo) {
     container = new MySQLContainer<>("mysql:8.0");
+    if (testInfo.getTags().contains(START_DB_CONTAINER_WITH_INVALID_TIMEZONE)) {
+      container.withEnv(Map.of("TZ", INVALID_TIMEZONE_CEST));
+    }
     container.start();
     source = new MySqlSource();
     database = new Database(DSLContextFactory.create(
@@ -117,7 +129,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-        .put("time_zone", "America/Los_Angeles")
+        .put("server_time_zone", "America/Los_Angeles")
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -167,9 +179,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
             container.getHost(),
             container.getFirstMappedPort()),
         Collections.emptyMap());
-    final JdbcDatabase jdbcDatabase = new DefaultJdbcDatabase(dataSource);
-
-    return MySqlCdcTargetPosition.targetPosition(jdbcDatabase);
+    return MySqlCdcTargetPosition.targetPosition(new DefaultJdbcDatabase(dataSource));
   }
 
   @Override
@@ -488,6 +498,32 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Test
+  @Timeout(value = 60)
+  @Tags(value = {@Tag(START_DB_CONTAINER_WITH_INVALID_TIMEZONE)})
+  public void syncWouldWorkWithDBWithInvalidTimezone() throws Exception {
+    final String systemTimeZone = "@@system_time_zone";
+    final JdbcDatabase jdbcDatabase = ((MySqlSource) getSource()).createDatabase(getConfig());
+    final Properties properties = MySqlCdcProperties.getDebeziumProperties(jdbcDatabase);
+    final String databaseTimezone = jdbcDatabase.unsafeQuery(String.format("SELECT %s;", systemTimeZone)).toList().get(0).get(systemTimeZone)
+        .asText();
+    final String debeziumEngineTimezone = properties.getProperty("database.connectionTimeZone");
+
+    assertEquals(INVALID_TIMEZONE_CEST, databaseTimezone);
+    assertEquals("America/Los_Angeles", debeziumEngineTimezone);
+
+    final AutoCloseableIterator<AirbyteMessage> read = getSource()
+        .read(getConfig(), CONFIGURED_CATALOG, null);
+
+    final List<AirbyteMessage> actualRecords = AutoCloseableIterators.toListAndClose(read);
+
+    final Set<AirbyteRecordMessage> recordMessages = extractRecordMessages(actualRecords);
+    final List<AirbyteStateMessage> stateMessages = extractStateMessages(actualRecords);
+
+    assertExpectedRecords(new HashSet<>(MODEL_RECORDS), recordMessages);
+    assertExpectedStateMessages(stateMessages);
+  }
+
+  @Test
   public void testCompositeIndexInitialLoad() throws Exception {
     // Simulate adding a composite index by modifying the catalog.
     final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(CONFIGURED_CATALOG);
@@ -669,13 +705,15 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   /**
-   * This test creates lots of tables increasing the schema history size above the limit of {@link AirbyteSchemaHistoryStorage#SIZE_LIMIT_TO_COMPRESS_MB}
-   * forcing the {@link AirbyteSchemaHistoryStorage#read()} method to compress the schema history blob as part of the state message
-   * which allows us to test that the next sync is able to work fine when provided with a compressed blob in the state.
+   * This test creates lots of tables increasing the schema history size above the limit of
+   * {@link AirbyteSchemaHistoryStorage#SIZE_LIMIT_TO_COMPRESS_MB} forcing the
+   * {@link AirbyteSchemaHistoryStorage#read()} method to compress the schema history blob as part of
+   * the state message which allows us to test that the next sync is able to work fine when provided
+   * with a compressed blob in the state.
    */
   @Test
   public void testCompressedSchemaHistory() throws Exception {
-    createTablesToIncreaseSchemaHitorySize();
+    createTablesToIncreaseSchemaHistorySize();
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
@@ -717,7 +755,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     assertEquals(recordsToCreate, extractRecordMessages(dataFromSecondBatch).size());
   }
 
-  private void createTablesToIncreaseSchemaHitorySize() {
+  private void createTablesToIncreaseSchemaHistorySize() {
     for (int i = 0; i <= 200; i++) {
       final String tableName = generateRandomStringOf32Characters();
       final StringBuilder createTableQuery = new StringBuilder("CREATE TABLE models_schema." + tableName + "(");
@@ -749,4 +787,5 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
     return randomString.toString();
   }
+
 }

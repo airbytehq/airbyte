@@ -26,11 +26,18 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedupingTest {
 
+  public static final Map<String, String> FINAL_METADATA_COLUMN_NAMES = Map.of(
+      "_airbyte_raw_id", "_AIRBYTE_RAW_ID",
+      "_airbyte_extracted_at", "_AIRBYTE_EXTRACTED_AT",
+      "_airbyte_loaded_at", "_AIRBYTE_LOADED_AT",
+      "_airbyte_data", "_AIRBYTE_DATA",
+      "_airbyte_meta", "_AIRBYTE_META");
   private String databaseName;
   private JdbcDatabase database;
   private DataSource dataSource;
@@ -98,6 +105,11 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   @Override
   protected SqlGenerator<?> getSqlGenerator() {
     return new SnowflakeSqlGenerator();
+  }
+
+  @Override
+  protected Map<String, String> getFinalMetadataColumnNames() {
+    return FINAL_METADATA_COLUMN_NAMES;
   }
 
   /**
