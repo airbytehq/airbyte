@@ -82,3 +82,32 @@ if (version.endsWith("-SNAPSHOT")) {
     // Uncomment as needed for debugging:
     // logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
 }
+
+task assertCdkVersionNotPublished {
+    doLast {
+        def checkGroupId = "io.airbyte"
+        def checkArtifactId = "airbyte-cdk-core"
+        def checkVersion = getCdkTargetVersion()
+        def repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
+        def groupIdUrl = checkGroupId.replace('.', '/')
+        def artifactUrl = "${repoUrl}/${groupIdUrl}/${checkArtifactId}/${checkVersion}/${checkArtifactId}-${checkVersion}.pom"
+
+        def connection = artifactUrl.toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod("HEAD")
+        connection.connect()
+
+        def responseCode = connection.getResponseCode()
+
+        if (responseCode == 200) {
+            throw new GradleException("Assert failed. Java CDK '${checkVersion}' already published at: ${artifactUrl}")
+        } else if (responseCode == 404) {
+            logger.lifecycle(
+                "Assert succeeded. Version ${checkVersion} of ${checkArtifactId} has not been published. " +
+                "Checked: ${artifactUrl}"
+            )
+        } else {
+            logger.error("Received unexpected HTTP response code ${responseCode}. Ensure the repository is accessible.")
+            throw new GradleException("Error during assertion. Received unexpected HTTP response code ${responseCode}.")
+        }
+    }
+}
