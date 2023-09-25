@@ -690,7 +690,7 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
     projects_response['values'].append({"id": "3", "key": "Project1"})
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
         json=projects_response,
     )
     responses.add(
@@ -757,6 +757,26 @@ def test_issue_property_keys_stream(config, issue_property_keys_response):
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
                                               stream_slice={"issue_key": "TESTKEY13-1", "key": "TESTKEY13-1"})]
     assert len(records) == 2
+    assert len(responses.calls) == 1
+
+
+@responses.activate
+def test_issue_property_keys_stream_not_found_skip(config, issue_property_keys_response):
+    config["domain"] = "test_skip_properties"
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/issue/TESTKEY13-1/properties?maxResults=50",
+        json={"errorMessages": [
+            "Issue does not exist or you do not have permission to see it."], "errors": {}},
+        status=404,
+    )
+
+    authenticator = SourceJira().get_authenticator(config=config)
+    args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
+    stream = IssuePropertyKeys(**args)
+    records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
+                                              stream_slice={"issue_key": "TESTKEY13-1", "key": "TESTKEY13-1"})]
+    assert len(records) == 0
     assert len(responses.calls) == 1
 
 
