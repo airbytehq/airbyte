@@ -113,15 +113,15 @@ The Zendesk Support source connector supports the following streams:
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 
 ### Deleted Records Support
-The Zendesk Support source connector fetch deleted records in streams:
+The Zendesk Support connector fetches deleted records in the following streams:
 
-| Stream                   | Deleted indicator field |
-|:-------------------------|:------------------------|
-| **Brands**               | `is_deleted`            |
-| **Groups**               | `deleted`               |
-| **Organizations**        | `deleted_at`            |
-| **Ticket Metric Events** | `deleted`               |
-| **Tickets**              | `status`==`deleted`     |
+| Stream                   | Deletion indicator field |
+|:-------------------------|:-------------------------|
+| **Brands**               | `is_deleted`             |
+| **Groups**               | `deleted`                |
+| **Organizations**        | `deleted_at`             |
+| **Ticket Metric Events** | `deleted`                |
+| **Tickets**              | `status`==`deleted`      |
 
 
 ## Performance considerations
