@@ -75,7 +75,7 @@
                   "type": {
                     "enum": ["rich_text"]
                   },
-                  "rich_text": { 
+                  "rich_text": {
                     "type": ["null", "array"],
                     "items": { "$ref": "rich_text.json" }
                   }
@@ -270,7 +270,7 @@
                 "properties": {
                   "id": { "type": "string" },
                   "type": { "enum": ["number"] },
-                  "number": { 
+                  "number": {
                     "type": "object",
                     "properties": {
                       "format": { "type": "string" }
@@ -316,7 +316,7 @@
                         "enum": ["verified", "unverified"]
                       },
                       "verified_by": { "$ref": "user.json" },
-                      "date": { "$ref": "date.json" }             
+                      "date": { "$ref": "date.json" }
                     }
                   }
                 }
