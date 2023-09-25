@@ -45,7 +45,7 @@ definitions:
             https://github.com/airbytehq/alpha-beta-issues/issues/245
             "
           response_filters:
-            - http_codes: [500]
+            - http_codes: [500, 502]
               action: RETRY
           backoff_strategies:
             - type: ExponentialBackoffStrategy

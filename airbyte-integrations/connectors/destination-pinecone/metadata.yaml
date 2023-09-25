@@ -1,0 +1,37 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*.${indexing.pinecone_environment}.pinecone.io"
+      - api.openai.com
+      - api.cohere.ai
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        # TODO: Remove once https://github.com/airbytehq/airbyte/issues/30611 is resolved
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 3d2b6f84-7f0d-4e3f-a5e5-7c7d4b50eabd
+  dockerImageTag: 0.0.11
+  dockerRepository: airbyte/destination-pinecone
+  githubIssueLabel: destination-pinecone
+  icon: pinecone.svg
+  license: MIT
+  name: Pinecone
+  releaseDate: 2023-08-15
+  releaseStage: beta
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/pinecone
+  tags:
+    - language:python
+  ab_internal:
+    sl: 200
+    ql: 300
+  supportLevel: certified
+metadataSpecVersion: "1.0"

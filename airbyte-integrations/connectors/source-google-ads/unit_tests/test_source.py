@@ -6,9 +6,9 @@ import re
 from collections import namedtuple
 from unittest.mock import Mock
 
+import pendulum
 import pytest
 from airbyte_cdk import AirbyteLogger
-from freezegun import freeze_time
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
 from pendulum import today
@@ -105,31 +105,12 @@ def mock_fields_meta_data():
     return Mock(get_fields_metadata=Mock(return_value={node.name: node for node in nodes}))
 
 
-# Test chunk date range without end date
-@freeze_time("2022-01-30")
-def test_chunk_date_range_without_end_date():
-    start_date_str = "2022-01-24"
-    conversion_window = 0
-    slices = list(chunk_date_range(
-        start_date=start_date_str, conversion_window=conversion_window, end_date=None, days_of_data_storage=None, range_days=1, time_zone="UTC"
-    ))
-    expected_response = [
-        {"start_date": "2022-01-24", "end_date": "2022-01-24"},
-        {"start_date": "2022-01-25", "end_date": "2022-01-25"},
-        {"start_date": "2022-01-26", "end_date": "2022-01-26"},
-        {"start_date": "2022-01-27", "end_date": "2022-01-27"},
-        {"start_date": "2022-01-28", "end_date": "2022-01-28"},
-        {"start_date": "2022-01-29", "end_date": "2022-01-29"},
-        {"start_date": "2022-01-30", "end_date": "2022-01-30"},
-    ]
-    assert expected_response == slices
-
-
 def test_chunk_date_range():
     start_date = "2021-03-04"
     end_date = "2021-05-04"
     conversion_window = 14
-    slices = list(chunk_date_range(start_date, conversion_window, end_date, range_days=10, time_zone="UTC"))
+    slices = list(chunk_date_range(start_date=start_date, end_date=end_date, conversion_window=conversion_window,
+                                   slice_duration=pendulum.Duration(days=9), time_zone="UTC"))
     assert [
         {"start_date": "2021-02-18", "end_date": "2021-02-27"},
         {"start_date": "2021-02-28", "end_date": "2021-03-09"},
@@ -145,7 +126,7 @@ def test_chunk_date_range():
 def test_streams_count(config, mock_account_info):
     source = SourceGoogleAds()
     streams = source.streams(config)
-    expected_streams_number = 29
+    expected_streams_number = 30
     assert len(streams) == expected_streams_number
 
 

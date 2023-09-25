@@ -6,16 +6,15 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
+import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -43,7 +42,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private final TypeAndDedupeOperationValve streamTDValve = new TypeAndDedupeOperationValve();
   private final ParsedCatalog catalog;
-  private final boolean use1s1t;
   private final TyperDeduper typerDeduper;
 
   public BigQueryRecordConsumer(final BigQuery bigquery,
@@ -58,7 +56,6 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     this.defaultDatasetId = defaultDatasetId;
     this.typerDeduper = typerDeduper;
     this.catalog = catalog;
-    this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
 
     LOGGER.info("Got parsed catalog {}", catalog);
     LOGGER.info("Got canonical stream IDs {}", uploaderMap.keySet());
@@ -67,22 +64,20 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
   @Override
   protected void startTracked() {
     // todo (cgardens) - move contents of #write into this method.
-    if (use1s1t) {
-      // Set up our raw tables
-      uploaderMap.forEach((streamId, uploader) -> {
-        final StreamConfig stream = catalog.getStream(streamId);
-        if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
-          // For streams in overwrite mode, truncate the raw table.
-          // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
-          // 1s1t mode.
-          final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
-          bigquery.delete(rawTableId);
-          BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
-        } else {
-          uploader.createRawTable();
-        }
-      });
-    }
+    // Set up our raw tables
+    uploaderMap.forEach((streamId, uploader) -> {
+      final StreamConfig stream = catalog.getStream(streamId);
+      if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+        // For streams in overwrite mode, truncate the raw table.
+        // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
+        // 1s1t mode.
+        final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
+        bigquery.delete(rawTableId);
+        BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
+      } else {
+        uploader.createRawTable();
+      }
+    });
   }
 
   /**
@@ -129,16 +124,16 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
     uploaderMap.forEach((streamId, uploader) -> {
       try {
         uploader.close(hasFailed, outputRecordCollector, lastStateMessage);
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), true);
       } catch (final Exception e) {
         exceptionsThrown.add(e);
         LOGGER.error("Exception while closing uploader {}", uploader, e);
       }
     });
     typerDeduper.commitFinalTables();
-    if (!exceptionsThrown.isEmpty()) {
-      throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
-    }
+    typerDeduper.cleanup();
+
+    ConnectorExceptionUtil.logAllAndThrowFirst("Exceptions thrown while closing consumer: ", exceptionsThrown);
   }
 
 }

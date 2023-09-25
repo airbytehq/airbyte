@@ -61,7 +61,8 @@ public class SshHelpers {
    * @return a pair of host and port
    */
   public static ImmutablePair<String, Integer> getOuterContainerAddress(final Container container) {
-    return ImmutablePair.of(container.getHost(),
+    return ImmutablePair.of(
+        container.getHost(),
         container.getFirstMappedPort());
   }
 

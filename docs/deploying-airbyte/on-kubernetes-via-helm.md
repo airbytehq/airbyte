@@ -116,16 +116,16 @@ After specifying your own configuration, run the following command:
 helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 ```
 
-### (Alpha) Airbyte Enterprise deployment
+### (Early Access) Airbyte Enterprise deployment
 
-[Airbyte Enterprise](/airbyte-enterprise) is in early alpha stages, so this section will likely evolve. That said, if you have an Airbyte Enterprise license key and wish to install Airbyte Enterprise via helm, follow these steps:
+[Airbyte Enterprise](/airbyte-enterprise) is in an early access stage, so this section will likely evolve. That said, if you have an Airbyte Enterprise license key and wish to install Airbyte Enterprise via helm, follow these steps:
 
 1. Checkout the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
 
-2. Add your Airbyte Enterprise license key and [auth configuration details](/airbyte-enterprise#single-sign-on-sso) to a file called `airbyte.yml` in the root directory of `airbyte-platform`. You can copy `airbyte.sample.yml` to use as a template:
+2. Add your Airbyte Enterprise license key and [auth configuration details](/airbyte-enterprise#single-sign-on-sso) to a file called `airbyte.yml` in the `configs` directory of `airbyte-platform`. You can copy `airbyte.sample.yml` to use as a template:
 
-```text
-cp airbyte.sample.yml airbyte.yml
+```sh
+cp configs/airbyte.sample.yml configs/airbyte.yml
 ```
 
 Then, open up `airbyte.yml` in your text editor to fill in the indicated fields.
@@ -145,10 +145,11 @@ helm repo update
 4. Install Airbyte Enterprise on helm using the following command:
 
 ```text
-RELEASE_NAME=<your release name>./tools/bin/install_airbyte_pro_on_helm.sh
+./tools/bin/install_airbyte_pro_on_helm.sh
 ```
 
-If unspecified, the default release name is `airbyte-pro`. You can change this by editing the `install_airbyte_pro_on_helm.sh` script.
+The default release name is `airbyte-pro`. You can change this via the `RELEASE_NAME` environment
+variable.
 
 ## Migrate from old charts to new ones
 

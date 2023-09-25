@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import lombok.SneakyThrows;
-import org.apache.commons.lang3.StringUtils;
 
 public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<SnowflakeTableDefinition> {
 
@@ -43,7 +42,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
             WHERE schema_name = ?
             AND catalog_name = ?;
             """,
-            StringUtils.wrap(streamConfig.id().rawNamespace(), "\""),
+            streamConfig.id().rawNamespace(),
             databaseName)
         .isEmpty();
   }

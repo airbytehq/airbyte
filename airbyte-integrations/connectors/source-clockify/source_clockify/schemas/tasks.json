@@ -2,6 +2,9 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": true,
   "properties": {
+    "budgetEstimate": {
+      "type": ["null", "number"]
+    },
     "assigneeId": {
       "type": ["null", "string"]
     },

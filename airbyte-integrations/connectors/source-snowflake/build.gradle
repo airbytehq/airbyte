@@ -2,7 +2,6 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
-    id 'airbyte-connector-acceptance-test'
 }
 
 application {
@@ -16,7 +15,6 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
     implementation libs.airbyte.protocol
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.13.22'
     implementation 'com.zaxxer:HikariCP:5.0.1'
 
@@ -25,7 +23,6 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-snowflake')
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 }
 

@@ -29,7 +29,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -68,11 +70,7 @@ public abstract class BaseTypingDedupingTest {
       throw new RuntimeException(e);
     }
   }
-  private static final RecordDiffer DIFFER = new RecordDiffer(
-      Pair.of("id1", AirbyteProtocolType.INTEGER),
-      Pair.of("id2", AirbyteProtocolType.INTEGER),
-      Pair.of("updated_at", AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),
-      Pair.of("old_cursor", AirbyteProtocolType.INTEGER));
+  private RecordDiffer DIFFER;
 
   private String randomSuffix;
   private JsonNode config;
@@ -112,7 +110,8 @@ public abstract class BaseTypingDedupingTest {
   /**
    * For a given stream, return the records that exist in the destination's final table. Each record
    * must be in the format {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...", "_airbyte_meta":
-   * {...}, "field1": ..., "field2": ..., ...}.
+   * {...}, "field1": ..., "field2": ..., ...}. If the destination renames (e.g. upcases) the airbyte
+   * fields, this method must revert that naming to use the exact strings "_airbyte_raw_id", etc.
    * <p>
    * For JSON-valued columns, there is some nuance: a SQL null should be represented as a missing
    * entry, whereas a JSON null should be represented as a
@@ -137,12 +136,33 @@ public abstract class BaseTypingDedupingTest {
    */
   protected abstract void teardownStreamAndNamespace(String streamNamespace, String streamName) throws Exception;
 
+  protected abstract SqlGenerator<?> getSqlGenerator();
+
   /**
    * Destinations which need to clean up resources after an entire test finishes should override this
    * method. For example, if you want to gracefully close a database connection, you should do that
    * here.
    */
   protected void globalTeardown() throws Exception {}
+
+  /**
+   * Conceptually identical to {@link #getFinalMetadataColumnNames()}, but for the raw table.
+   */
+  protected Map<String, String> getRawMetadataColumnNames() {
+    return new HashMap<>();
+  }
+
+  /**
+   * If the destination connector uses a nonstandard schema for the final table, override this method.
+   * For example, destination-snowflake upcases all column names in the final tables.
+   * <p>
+   * You only need to add mappings for the airbyte metadata column names (_airbyte_raw_id,
+   * _airbyte_extracted_at, etc.). The test framework automatically populates mappings for the primary
+   * key and cursor using the SqlGenerator.
+   */
+  protected Map<String, String> getFinalMetadataColumnNames() {
+    return new HashMap<>();
+  }
 
   /**
    * @return A suffix which is different for each concurrent test, but stable within a single test.
@@ -164,6 +184,16 @@ public abstract class BaseTypingDedupingTest {
     streamNamespace = "typing_deduping_test" + getUniqueSuffix();
     streamName = "test_stream" + getUniqueSuffix();
     streamsToTearDown = new ArrayList<>();
+
+    final SqlGenerator<?> generator = getSqlGenerator();
+    DIFFER = new RecordDiffer(
+        getRawMetadataColumnNames(),
+        getFinalMetadataColumnNames(),
+        Pair.of(generator.buildColumnId("id1"), AirbyteProtocolType.INTEGER),
+        Pair.of(generator.buildColumnId("id2"), AirbyteProtocolType.INTEGER),
+        Pair.of(generator.buildColumnId("updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),
+        Pair.of(generator.buildColumnId("old_cursor"), AirbyteProtocolType.INTEGER));
+
     LOGGER.info("Using stream namespace {} and name {}", streamNamespace, streamName);
   }
 
@@ -409,7 +439,7 @@ public abstract class BaseTypingDedupingTest {
     // The raw data is unaffected by the schema, but the final table should not have a `name` column.
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl").stream()
-        .peek(record -> ((ObjectNode) record).remove("name"))
+        .peek(record -> ((ObjectNode) record).remove(getSqlGenerator().buildColumnId("name").name()))
         .toList();
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }

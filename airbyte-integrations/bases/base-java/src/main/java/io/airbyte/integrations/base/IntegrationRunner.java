@@ -52,6 +52,8 @@ public class IntegrationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(IntegrationRunner.class);
 
+  public static final String TYPE_AND_DEDUPE_THREAD_NAME = "type-and-dedupe";
+
   /**
    * Filters threads that should not be considered when looking for orphaned threads at shutdown of
    * the integration runner.
@@ -63,7 +65,7 @@ public class IntegrationRunner {
    */
   @VisibleForTesting
   static final Predicate<Thread> ORPHANED_THREAD_FILTER = runningThread -> !runningThread.getName().equals(Thread.currentThread().getName())
-      && !runningThread.isDaemon();
+      && !runningThread.isDaemon() && !TYPE_AND_DEDUPE_THREAD_NAME.equals(runningThread.getName());
 
   public static final int INTERRUPT_THREAD_DELAY_MINUTES = 60;
   public static final int EXIT_THREAD_DELAY_MINUTES = 70;

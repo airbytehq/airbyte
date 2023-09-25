@@ -64,7 +64,7 @@ cmd_build() {
 
   if [ "$run_tests" = false ] ; then
     echo "Building and skipping unit tests + integration tests..."
-    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)" -x test
+    ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)" -x check
   else
     echo "Building and running unit tests + integration tests..."
     ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" build)"

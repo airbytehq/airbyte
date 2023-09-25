@@ -4,11 +4,8 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
-import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
-import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractSpecificFieldFromCombinedMessages;
-import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractStateMessage;
-import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.filterRecords;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.map;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -515,7 +512,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @Test
   void testReadMultipleTablesIncrementally() throws Exception {
-    ((ObjectNode) config).put("sync_checkpoint_records", 1);
+    ((ObjectNode) config).put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1);
     final String namespace = getDefaultNamespace();
     final String streamOneName = TABLE_NAME + "one";
     // Create a fresh first table

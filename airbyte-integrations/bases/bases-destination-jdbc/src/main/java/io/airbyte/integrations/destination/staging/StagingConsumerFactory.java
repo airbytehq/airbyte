@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.staging;
 
+import static io.airbyte.integrations.destination_async.buffers.BufferManager.MEMORY_LIMIT_RATIO;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
@@ -13,7 +14,6 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -74,8 +75,9 @@ public class StagingConsumerFactory {
                                        final TypeAndDedupeOperationValve typerDeduperValve,
                                        final TyperDeduper typerDeduper,
                                        final ParsedCatalog parsedCatalog,
-                                       final String defaultNamespace) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
+                                       final String defaultNamespace,
+                                       final boolean useDestinationsV2Columns) {
+    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog, useDestinationsV2Columns);
     return new BufferedStreamConsumer(
         outputRecordCollector,
         GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
@@ -99,10 +101,40 @@ public class StagingConsumerFactory {
                                                       final TypeAndDedupeOperationValve typerDeduperValve,
                                                       final TyperDeduper typerDeduper,
                                                       final ParsedCatalog parsedCatalog,
-                                                      final String defaultNamespace) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog);
+                                                      final String defaultNamespace,
+                                                      final boolean useDestinationsV2Columns) {
+    return createAsync(outputRecordCollector,
+        database,
+        stagingOperations,
+        namingResolver,
+        config,
+        catalog,
+        purgeStagingData,
+        typerDeduperValve,
+        typerDeduper,
+        parsedCatalog,
+        defaultNamespace,
+        useDestinationsV2Columns,
+        Optional.empty());
+  }
+
+  public SerializedAirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
+                                                      final JdbcDatabase database,
+                                                      final StagingOperations stagingOperations,
+                                                      final NamingConventionTransformer namingResolver,
+                                                      final JsonNode config,
+                                                      final ConfiguredAirbyteCatalog catalog,
+                                                      final boolean purgeStagingData,
+                                                      final TypeAndDedupeOperationValve typerDeduperValve,
+                                                      final TyperDeduper typerDeduper,
+                                                      final ParsedCatalog parsedCatalog,
+                                                      final String defaultNamespace,
+                                                      final boolean useDestinationsV2Columns,
+                                                      final Optional<Long> bufferMemoryLimit) {
+    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog, useDestinationsV2Columns);
     final var streamDescToWriteConfig = streamDescToWriteConfig(writeConfigs);
-    final var flusher = new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper);
+    final var flusher =
+        new AsyncFlush(streamDescToWriteConfig, stagingOperations, database, catalog, typerDeduperValve, typerDeduper, useDestinationsV2Columns);
     return new AsyncStreamConsumer(
         outputRecordCollector,
         GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
@@ -110,8 +142,12 @@ public class StagingConsumerFactory {
         () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
         flusher,
         catalog,
-        new BufferManager(),
+        new BufferManager(getMemoryLimit(bufferMemoryLimit)),
         defaultNamespace);
+  }
+
+  private static long getMemoryLimit(Optional<Long> bufferMemoryLimit) {
+    return bufferMemoryLimit.orElse((long) (Runtime.getRuntime().maxMemory() * MEMORY_LIMIT_RATIO));
   }
 
   private static Map<StreamDescriptor, WriteConfig> streamDescToWriteConfig(final List<WriteConfig> writeConfigs) {
@@ -156,14 +192,16 @@ public class StagingConsumerFactory {
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
                                                       final JsonNode config,
                                                       final ConfiguredAirbyteCatalog catalog,
-                                                      final ParsedCatalog parsedCatalog) {
+                                                      final ParsedCatalog parsedCatalog,
+                                                      final boolean useDestinationsV2Columns) {
 
-    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config, parsedCatalog)).collect(toList());
+    return catalog.getStreams().stream().map(toWriteConfig(namingResolver, config, parsedCatalog, useDestinationsV2Columns)).collect(toList());
   }
 
   private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(final NamingConventionTransformer namingResolver,
                                                                               final JsonNode config,
-                                                                              final ParsedCatalog parsedCatalog) {
+                                                                              final ParsedCatalog parsedCatalog,
+                                                                              final boolean useDestinationsV2Columns) {
     return stream -> {
       Preconditions.checkNotNull(stream.getDestinationSyncMode(), "Undefined destination sync mode");
       final AirbyteStream abStream = stream.getStream();
@@ -171,7 +209,7 @@ public class StagingConsumerFactory {
 
       final String outputSchema;
       final String tableName;
-      if (TypingAndDedupingFlag.isDestinationV2()) {
+      if (useDestinationsV2Columns) {
         final StreamId streamId = parsedCatalog.getStream(abStream.getNamespace(), streamName).id();
         outputSchema = streamId.rawNamespace();
         tableName = streamId.rawName();

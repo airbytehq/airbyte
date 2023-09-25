@@ -13,6 +13,7 @@ import io.airbyte.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -78,15 +79,19 @@ public class GeneralStagingFunctions {
                                             final TyperDeduper typerDeduper)
       throws Exception {
     try {
-      stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
-          tableName, schemaName);
-
-      AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
-      if (!typerDeduperValve.containsKey(streamId)) {
-        typerDeduperValve.addStream(streamId);
+      final Lock rawTableInsertLock = typerDeduper.getRawTableInsertLock(streamNamespace, streamName);
+      rawTableInsertLock.lock();
+      try {
+        stagingOperations.copyIntoTableFromStage(database, stageName, stagingPath, stagedFiles,
+            tableName, schemaName);
+      } finally {
+        rawTableInsertLock.unlock();
       }
+
+      final AirbyteStreamNameNamespacePair streamId = new AirbyteStreamNameNamespacePair(streamName, streamNamespace);
+      typerDeduperValve.addStreamIfAbsent(streamId);
       if (typerDeduperValve.readyToTypeAndDedupe(streamId)) {
-        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName());
+        typerDeduper.typeAndDedupe(streamId.getNamespace(), streamId.getName(), false);
         typerDeduperValve.updateTimeAndIncreaseInterval(streamId);
       }
     } catch (final Exception e) {
@@ -114,6 +119,7 @@ public class GeneralStagingFunctions {
       // After moving data from staging area to the target table (airybte_raw) clean up the staging
       // area (if user configured)
       log.info("Cleaning up destination started for {} streams", writeConfigs.size());
+      typerDeduper.typeAndDedupe();
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {
@@ -122,11 +128,9 @@ public class GeneralStagingFunctions {
               stageName);
           stagingOperations.dropStageIfExists(database, stageName);
         }
-
-        typerDeduper.typeAndDedupe(writeConfig.getNamespace(), writeConfig.getStreamName());
       }
-
       typerDeduper.commitFinalTables();
+      typerDeduper.cleanup();
       log.info("Cleaning up destination completed.");
     };
   }

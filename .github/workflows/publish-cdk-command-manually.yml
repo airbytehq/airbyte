@@ -1,4 +1,4 @@
-name: Publish CDK Manually
+name: Publish Python CDK Manually
 on:
   workflow_dispatch:
     inputs:
@@ -82,13 +82,13 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "Error during `build-cdk` while publishing Airbyte CDK!",
+                "text": "Error during `build-cdk` while publishing Python CDK!",
                 "blocks": [
                     {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "Error while publishing Airbyte CDK!"
+                            "text": "Error while publishing Python CDK!"
                         }
                     },
                     {
@@ -119,7 +119,7 @@ jobs:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
           token: ${{ secrets.GH_PAT_MAINTENANCE_OSS }}
-      - name: "Publish Airbyte CDK: bump version"
+      - name: "Publish Python CDK: bump version"
         id: bumpversion
         run: |
           pip install bumpversion
@@ -132,7 +132,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           file_pattern: airbyte-cdk/python/setup.py airbyte-cdk/python/.bumpversion.cfg airbyte-cdk/python/CHANGELOG.md airbyte-cdk/python/Dockerfile
-          commit_message: 🤖 Bump ${{ github.event.inputs.release-type }} version of Airbyte CDK
+          commit_message: 🤖 Bump ${{ github.event.inputs.release-type }} version of Python CDK
           commit_user_name: Octavia Squidington III
           commit_user_email: octavia-squidington-iii@users.noreply.github.com
       - name: Post failure to Slack channel dev-connectors-extensibility
@@ -143,13 +143,13 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "Error during `bump-version` while publishing Airbyte CDK!",
+                "text": "Error during `bump-version` while publishing Python CDK!",
                 "blocks": [
                     {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "Error while publishing Airbyte CDK!"
+                            "text": "Error while publishing Python CDK!"
                         }
                     },
                     {
@@ -191,13 +191,13 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "Error during `publish-cdk` while publishing Airbyte CDK!",
+                "text": "Error during `publish-cdk` while publishing Python CDK!",
                 "blocks": [
                     {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "Error while publishing Airbyte CDK!"
+                            "text": "Error while publishing Python CDK!"
                         }
                     },
                     {
@@ -255,13 +255,13 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "Error during `publish-docker-image` while publishing Airbyte CDK!",
+                "text": "Error during `publish-docker-image` while publishing Python CDK!",
                 "blocks": [
                     {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "Error while publishing Docker image following Airbyte CDK release!"
+                            "text": "Error while publishing Docker image following Python CDK release!"
                         }
                     },
                     {
@@ -318,13 +318,13 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": "A new version of Airbyte CDK has been released!",
+                "text": "A new version of Python CDK has been released!",
                 "blocks": [
                     {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "A new version of Airbyte CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
+                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
                         }
                     },
                     {
@@ -353,13 +353,13 @@ jobs:
           channel-id: C04J1M66D8B
           payload: |
             {
-                "text": ":warning: A new version of Airbyte CDK has been released but Connector Builder hasn't been automatically updated",
+                "text": ":warning: A new version of Python CDK has been released but Connector Builder hasn't been automatically updated",
                 "blocks": [
                     {
                         "type": "section",
                         "text": {
                             "type": "mrkdwn",
-                            "text": "A new version of Airbyte CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
+                            "text": "A new version of Python CDK has been released with <https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/CHANGELOG.md|changelog>: ${{ github.event.inputs.changelog-message }}\n\n"
                         }
                     },
                     {

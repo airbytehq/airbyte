@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Callable
 
 import pytest
@@ -24,6 +25,7 @@ def test_get_selected_connectors_by_name_no_file_modification():
         selected_languages=(),
         modified=False,
         metadata_changes_only=False,
+        metadata_query=None,
         modified_files=set(),
     )
 
@@ -40,6 +42,7 @@ def test_get_selected_connectors_by_support_level_no_file_modification():
         selected_languages=(),
         modified=False,
         metadata_changes_only=False,
+        metadata_query=None,
         modified_files=set(),
     )
 
@@ -53,6 +56,7 @@ def test_get_selected_connectors_by_language_no_file_modification():
         selected_languages=(ConnectorLanguage.LOW_CODE,),
         modified=False,
         metadata_changes_only=False,
+        metadata_query=None,
         modified_files=set(),
     )
 
@@ -68,6 +72,7 @@ def test_get_selected_connectors_by_name_with_file_modification():
         selected_languages=(),
         modified=False,
         metadata_changes_only=False,
+        metadata_query=None,
         modified_files=modified_files,
     )
 
@@ -86,6 +91,7 @@ def test_get_selected_connectors_by_name_and_support_level_or_languages_leads_to
         selected_languages=(connector.language,),
         modified=False,
         metadata_changes_only=False,
+        metadata_query=None,
         modified_files=modified_files,
     )
 
@@ -102,6 +108,7 @@ def test_get_selected_connectors_with_modified():
         selected_languages=(),
         modified=True,
         metadata_changes_only=False,
+        metadata_query=None,
         modified_files=modified_files,
     )
 
@@ -118,6 +125,7 @@ def test_get_selected_connectors_with_modified_and_language():
         selected_languages=(ConnectorLanguage.JAVA,),
         modified=True,
         metadata_changes_only=False,
+        metadata_query=None,
         modified_files=modified_files,
     )
 
@@ -135,6 +143,7 @@ def test_get_selected_connectors_with_modified_and_support_level():
         selected_languages=(),
         modified=True,
         metadata_changes_only=False,
+        metadata_query=None,
         modified_files=modified_files,
     )
 
@@ -156,6 +165,7 @@ def test_get_selected_connectors_with_modified_and_metadata_only():
         selected_languages=(),
         modified=True,
         metadata_changes_only=True,
+        metadata_query=None,
         modified_files=modified_files,
     )
 
@@ -181,6 +191,7 @@ def test_get_selected_connectors_with_metadata_only():
         selected_languages=(),
         modified=False,
         metadata_changes_only=True,
+        metadata_query=None,
         modified_files=modified_files,
     )
 
@@ -190,6 +201,25 @@ def test_get_selected_connectors_with_metadata_only():
         second_modified_connector.code_directory / METADATA_FILE_NAME,
         second_modified_connector.code_directory / "setup.py",
     }
+
+
+def test_get_selected_connectors_with_metadata_query():
+    connector = pick_a_random_connector()
+    metadata_query = f"data.dockerRepository == '{connector.metadata['dockerRepository']}'"
+    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+        selected_names=(),
+        selected_support_levels=(),
+        selected_languages=(),
+        modified=False,
+        metadata_changes_only=False,
+        metadata_query=metadata_query,
+        modified_files=set(),
+    )
+
+    assert len(selected_connectors) == 1
+    assert isinstance(selected_connectors[0], ConnectorWithModifiedFiles)
+    assert selected_connectors[0].technical_name == connector.technical_name
+    assert not selected_connectors[0].modified_files
 
 
 @pytest.fixture()

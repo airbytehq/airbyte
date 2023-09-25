@@ -9,9 +9,9 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Optional
 
+from connector_ops.utils import console
 from pipelines import main_logger
 from pipelines.bases import CIContext
-from connector_ops.utils import console
 
 if TYPE_CHECKING:
     from logging import Logger
