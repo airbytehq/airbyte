@@ -9,6 +9,7 @@ data:
       - "${indexing.url}"
       - api.openai.com
       - api.cohere.ai
+      - "${embedding.api_base}"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -17,11 +18,10 @@ data:
           memory_limit: 2Gi
           memory_request: 2Gi
       enabled: true
-      - "${embedding.api_base}"
   connectorSubtype: database
   connectorType: destination
   definitionId: 6eb1198a-6d38-43e5-aaaa-dccd8f71db2b
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/destination-qdrant
   githubIssueLabel: destination-qdrant
   icon: qdrant.svg
