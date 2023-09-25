@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.21
+Change Error message if Stream is not found
+
 ## 0.51.20
 Vector DB CDK: Add text splitting options to document processing
 
