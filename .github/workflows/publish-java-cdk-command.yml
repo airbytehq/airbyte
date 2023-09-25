@@ -69,6 +69,13 @@ jobs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
+      - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -93,13 +100,6 @@ jobs:
     needs: start-publish-docker-image-runner-0
     runs-on: ubuntu-latest
     steps:
-      - name: Link comment to workflow run
-        if: github.event.inputs.comment-id
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
@@ -120,7 +120,7 @@ jobs:
           GROUP_ID="io.airbyte"
           ARTIFACT_ID="airbyte-cdk"
           VERSION=${CDK_VERSION}
-          REPO_URL="https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars"
+          REPO_URL="https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
           GROUP_ID_URL=$(echo $GROUP_ID | tr '.' '/')
           URL="${REPO_URL}/${GROUP_ID_URL}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.pom"
           echo "Checking if URL exists: ${URL}"
