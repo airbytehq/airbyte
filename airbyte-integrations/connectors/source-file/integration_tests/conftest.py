@@ -7,6 +7,7 @@ import json
 import os
 import random
 import shutil
+import socket
 import string
 import tempfile
 import time
@@ -17,15 +18,13 @@ from typing import Mapping
 import boto3
 import docker
 import pandas
-import socket
 import pytest
 from azure.storage.blob import BlobServiceClient
 from botocore.errorfactory import ClientError
 from google.api_core.exceptions import Conflict
 from google.cloud import storage
 from paramiko.client import AutoAddPolicy, SSHClient
-from paramiko.ssh_exception import SSHException, BadHostKeyException
-
+from paramiko.ssh_exception import BadHostKeyException, SSHException
 
 HERE = Path(__file__).parent.absolute()
 
@@ -87,12 +86,13 @@ def wait_net_service(server, port, timeout=None):
         @return: True of False, if timeout is None may return only True or
                  throw unhandled network exception
     """
-    import socket
     import errno
+    import socket
 
     s = socket.socket()
     if timeout:
         from time import time as now
+
         # time module is needed to calc timeout shared between two exceptions
         end = now() + timeout
 
