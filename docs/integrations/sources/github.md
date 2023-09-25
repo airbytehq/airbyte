@@ -101,6 +101,7 @@ This connector outputs the following incremental streams:
 - [Project cards](https://docs.github.com/en/rest/reference/projects#list-project-cards)
 - [Project columns](https://docs.github.com/en/rest/reference/projects#list-project-columns)
 - [Projects](https://docs.github.com/en/rest/reference/projects#list-repository-projects)
+- [ProjectsV2](https://docs.github.com/en/graphql/reference/objects#projectv2)
 - [Pull request comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment)
 - [Pull request stats](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request)
 - [Pull requests](https://docs.github.com/en/rest/reference/pulls#list-pull-requests)
