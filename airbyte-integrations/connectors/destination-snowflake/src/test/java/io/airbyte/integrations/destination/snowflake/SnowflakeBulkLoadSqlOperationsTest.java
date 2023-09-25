@@ -4,18 +4,13 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.DestinationConfig;
-
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class SnowflakeBulkLoadSqlOperationsTest {
 
@@ -67,10 +62,9 @@ class SnowflakeBulkLoadSqlOperationsTest {
     final List<String> fileList = List.of(
         "s3://my-bucket/root/path/filename1.csv",
         "s3://my-bucket/root/path/filename2.csv",
-        "s3://my-bucket/root/path/filename3.csv"
-    );
+        "s3://my-bucket/root/path/filename3.csv");
     final String actualCopyQuery =
-        snowflakeBulkLoadSqlOperations.getCopyQuery(STAGE_NAME, fileList, "tableName", SCHEMA_NAME,  FILE_FORMAT_NAME);
+        snowflakeBulkLoadSqlOperations.getCopyQuery(STAGE_NAME, fileList, "tableName", SCHEMA_NAME, FILE_FORMAT_NAME);
     assertEquals(expectedQuery, actualCopyQuery);
   }
 

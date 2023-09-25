@@ -206,7 +206,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     "file_record_schema": {"type": "object"},
                     self.ab_last_mod_col: {"type": "string"},
                     self.ab_file_name_col: {"type": "string"},
-                }
+                },
             }
         else:
             files = self.list_files()

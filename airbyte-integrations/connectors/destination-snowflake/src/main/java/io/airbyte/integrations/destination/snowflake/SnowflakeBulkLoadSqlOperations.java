@@ -116,7 +116,6 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
     return String.format(LIST_STAGE_QUERY, stageName, stagingPath, filename).replaceAll("/+", "/");
   }
 
-
   public void copyIntoTableFromStage(final JdbcDatabase database,
                                      final String stageName,
                                      final List<String> stagedFiles,

@@ -1,57 +1,60 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
-    "name": "S3 Source Connector DevContainer (Python)",
+  "name": "S3 Source Connector DevContainer (Python)",
 
-    "image": "mcr.microsoft.com/devcontainers/python:0-3.9",
+  "image": "mcr.microsoft.com/devcontainers/python:0-3.9",
 
-    // Features to add to the dev container. More info: https://containers.dev/features.
-    "features": {
-        "ghcr.io/devcontainers/features/docker-in-docker": {},
-        "ghcr.io/devcontainers-contrib/features/poetry:2": {}
-    },
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker": {},
+    "ghcr.io/devcontainers-contrib/features/poetry:2": {}
+  },
 
-    "workspaceFolder": "/workspaces/airbyte/airbyte-integrations/connectors/source-s3",
+  "workspaceFolder": "/workspaces/airbyte/airbyte-integrations/connectors/source-s3",
 
-    // Configure tool-specific properties.
-    "customizations": {
-        "vscode": {
-            "extensions": [
-				"ms-python.python",
-				"ms-python.black-formatter",
-				"matangover.mypy",
-				"charliermarsh.ruff",
-				"tamasfe.even-better-toml"
-			],
-            "settings": {
-                "extensions.ignoreRecommendations": true,
-                "git.openRepositoryInParentFolders": "always",
-                "python.defaultInterpreterPath": ".venv/bin/python",
-                "python.interpreter.infoVisibility": "always",
-                "python.terminal.activateEnvironment": true,
-                "python.testing.pytestEnabled": true,
-                "python.testing.cwd": "/workspaces/airbyte/airbyte-integrations/connectors/source-s3",
-                "python.testing.pytestArgs": ["--rootdir=/workspaces/airbyte/airbyte-integrations/connectors/source-s3", "."]
-            }
-        }
-    },
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "matangover.mypy",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml"
+      ],
+      "settings": {
+        "extensions.ignoreRecommendations": true,
+        "git.openRepositoryInParentFolders": "always",
+        "python.defaultInterpreterPath": ".venv/bin/python",
+        "python.interpreter.infoVisibility": "always",
+        "python.terminal.activateEnvironment": true,
+        "python.testing.pytestEnabled": true,
+        "python.testing.cwd": "/workspaces/airbyte/airbyte-integrations/connectors/source-s3",
+        "python.testing.pytestArgs": [
+          "--rootdir=/workspaces/airbyte/airbyte-integrations/connectors/source-s3",
+          "."
+        ]
+      }
+    }
+  },
 
-    "containerEnv": {
-        "POETRY_VIRTUALENVS_IN_PROJECT": "true",
-        "CONNECTOR_NAME": "source-s3"
-    },
+  "containerEnv": {
+    "POETRY_VIRTUALENVS_IN_PROJECT": "true",
+    "CONNECTOR_NAME": "source-s3"
+  },
 
-    // Use 'postCreateCommand' to run commands after the container is created.
-    // Post-create tasks:
-    // 1. Create a symlink directory.
-    // 2. Map the devcontainer.json file to it.
-    // 3. Mark the root directory as 'safe' for git.
-    // 4. Install the Python/Poetry dependencies.
-    "postCreateCommand": "mkdir -p ./.symlinks && ln -sf /workspaces/airbyte/.devcontainer/source-s3/devcontainer.json ./.symlinks/source-s3-devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/sources/s3.md ./.symlinks/${CONNECTOR_NAME}-docs.md && ln -sf /workspaces/airbyte/airbyte-cdk/python/ ./.symlinks/airbyte_cdk && git config --add safe.directory /workspaces/airbyte && pip install --editable ."
+  // Use 'postCreateCommand' to run commands after the container is created.
+  // Post-create tasks:
+  // 1. Create a symlink directory.
+  // 2. Map the devcontainer.json file to it.
+  // 3. Mark the root directory as 'safe' for git.
+  // 4. Install the Python/Poetry dependencies.
+  "postCreateCommand": "mkdir -p ./.symlinks && ln -sf /workspaces/airbyte/.devcontainer/source-s3/devcontainer.json ./.symlinks/source-s3-devcontainer.json && ln -sf /workspaces/airbyte/docs/integrations/sources/s3.md ./.symlinks/${CONNECTOR_NAME}-docs.md && ln -sf /workspaces/airbyte/airbyte-cdk/python/ ./.symlinks/airbyte_cdk && git config --add safe.directory /workspaces/airbyte && pip install --editable ."
 
-    // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    // "forwardPorts": [],
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
 
-    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-    // "remoteUser": "root"
+  // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "root"
 }

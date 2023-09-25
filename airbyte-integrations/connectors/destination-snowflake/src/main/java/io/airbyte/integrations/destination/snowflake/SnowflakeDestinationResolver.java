@@ -26,11 +26,10 @@ public class SnowflakeDestinationResolver {
     final SnowflakeBulkLoadDestination BulkLoadDestination = new SnowflakeBulkLoadDestination(airbyteEnvironment);
 
     return ImmutableMap.of(
-      DestinationType.INTERNAL_STAGING,
-      internalStagingDestination,
-      DestinationType.BULK_LOAD_FROM_S3,
-      BulkLoadDestination
-    );
+        DestinationType.INTERNAL_STAGING,
+        internalStagingDestination,
+        DestinationType.BULK_LOAD_FROM_S3,
+        BulkLoadDestination);
   }
 
 }

@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -14,8 +13,6 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.configoss.StandardCheckConnectionOutput;
-import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.DestinationConfig;
@@ -24,20 +21,15 @@ import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.v0.*;
-
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
-
+import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
-
-import javax.sql.DataSource;
 
 public class SnowflakeBulkLoadDestinationAcceptanceTest extends SnowflakeInsertDestinationAcceptanceTest {
 
@@ -104,11 +96,11 @@ public class SnowflakeBulkLoadDestinationAcceptanceTest extends SnowflakeInsertD
                                            final String streamName,
                                            final String namespace,
                                            final JsonNode streamSchema)
-          throws Exception {
+      throws Exception {
     return retrieveRecordsFromTable(NAME_TRANSFORMER.getRawTableName(streamName), NAME_TRANSFORMER.getNamespace(namespace))
-            .stream()
-            .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
-            .collect(Collectors.toList());
+        .stream()
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
+        .collect(Collectors.toList());
   }
 
   @Override
@@ -128,7 +120,7 @@ public class SnowflakeBulkLoadDestinationAcceptanceTest extends SnowflakeInsertD
 
   @Override
   protected List<JsonNode> retrieveNormalizedRecords(final TestDestinationEnv testEnv, final String streamName, final String namespace)
-          throws Exception {
+      throws Exception {
     final String tableName = NAME_TRANSFORMER.getIdentifier(streamName);
     final String schema = NAME_TRANSFORMER.getNamespace(namespace);
     return retrieveRecordsFromTable(tableName, schema);
@@ -139,19 +131,19 @@ public class SnowflakeBulkLoadDestinationAcceptanceTest extends SnowflakeInsertD
     TimeZone.setDefault(timeZone);
 
     return database.bufferedResultSetQuery(
-            connection -> {
-              try (final ResultSet tableInfo = connection.createStatement()
-                      .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema))) {
-                assertTrue(tableInfo.next());
-                // check that we're creating permanent tables. DBT defaults to transient tables, which have
-                // `TRANSIENT` as the value for the `kind` column.
-                assertEquals("TABLE", tableInfo.getString("kind"));
-                connection.createStatement().execute("ALTER SESSION SET TIMEZONE = 'UTC';");
-                return connection.createStatement()
-                        .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
-              }
-            },
-            new SnowflakeTestSourceOperations()::rowToJson);
+        connection -> {
+          try (final ResultSet tableInfo = connection.createStatement()
+              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema))) {
+            assertTrue(tableInfo.next());
+            // check that we're creating permanent tables. DBT defaults to transient tables, which have
+            // `TRANSIENT` as the value for the `kind` column.
+            assertEquals("TABLE", tableInfo.getString("kind"));
+            connection.createStatement().execute("ALTER SESSION SET TIMEZONE = 'UTC';");
+            return connection.createStatement()
+                .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
+          }
+        },
+        new SnowflakeTestSourceOperations()::rowToJson);
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
@@ -191,10 +183,10 @@ public class SnowflakeBulkLoadDestinationAcceptanceTest extends SnowflakeInsertD
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-            .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).toList();
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).toList();
 
     final List<AirbyteMessage> largeNumberRecords =
-            Collections.nCopies(1000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
+        Collections.nCopies(1000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
 
     final JsonNode config = getConfig();
     runSyncAndVerifyStateOutput(config, largeNumberRecords, configuredCatalog, false);

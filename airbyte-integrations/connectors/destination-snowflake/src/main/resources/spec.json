@@ -176,7 +176,7 @@
       },
       "bulk_load_s3_stages": {
         "description": "Enter a map of S3 file prefixes to Snowflake external stages, for use in 'FileRead' mode.",
-        "examples": [{"MY_STAGE_NAME": "s3://my-bucket/my-prefix/"}],
+        "examples": [{ "MY_STAGE_NAME": "s3://my-bucket/my-prefix/" }],
         "type": "object",
         "title": "External S3 Stages (Bulk Mode)",
         "order": 10,

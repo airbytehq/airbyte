@@ -11,14 +11,14 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
-import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
@@ -27,7 +27,6 @@ import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1
 import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.integrations.destination.staging.StagingOperations;
 import io.airbyte.protocol.models.v0.*;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -36,9 +35,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/* 
+/*
  * This destination type expects data files already loaded to an external stage.
- * 
+ *
  * The stage name and file format name will be provided by the user.
  */
 public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination implements Destination {
@@ -53,19 +52,24 @@ public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination implem
   public SnowflakeBulkLoadDestination(final String airbyteEnvironment) {
     this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
   }
+
   public static class StageNotFoundException extends Exception {
+
     public StageNotFoundException(String message) {
       super(message);
     }
+
   }
 
   public static class InvalidValueException extends Exception {
+
     public InvalidValueException(String message) {
       super(message);
     }
+
   }
 
-  public static String findMatchingStageName(Map<String, String> s3StageMap, String s3Path) throws StageNotFoundException{
+  public static String findMatchingStageName(Map<String, String> s3StageMap, String s3Path) throws StageNotFoundException {
     for (Map.Entry<String, String> entry : s3StageMap.entrySet()) {
       if (s3Path.startsWith(entry.getValue())) {
         return entry.getKey();
