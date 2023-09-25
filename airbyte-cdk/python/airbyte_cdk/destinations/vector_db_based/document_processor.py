@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
 from dataclasses import dataclass
 from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import dpath.util
-from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
+from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, SeparatorSplitterConfigModel, TextSplitterConfigModel
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.document_loaders.base import Document
@@ -26,6 +27,9 @@ class Chunk:
     embedding: Optional[List[float]] = None
 
 
+headers_to_split_on = ["(?:^|\n)# ", "(?:^|\n)## ", "(?:^|\n)### ", "(?:^|\n)#### ", "(?:^|\n)##### ", "(?:^|\n)###### "]
+
+
 class DocumentProcessor:
     """
     DocumentProcessor is a helper class that generates documents from Airbyte records.
@@ -39,16 +43,52 @@ class DocumentProcessor:
     except if you want to implement a custom writer.
 
     The config parameters specified by the ProcessingConfigModel has to be made part of the connector spec to allow the user to configure the document processor.
+    Calling DocumentProcessor.check_config(config) will validate the config and return an error message if the config is invalid.
     """
 
     streams: Mapping[str, ConfiguredAirbyteStream]
 
+    @staticmethod
+    def check_config(config: ProcessingConfigModel) -> Optional[str]:
+        if config.text_splitter is not None and config.text_splitter.mode == "separator":
+            for s in config.text_splitter.separators:
+                try:
+                    separator = json.loads(s)
+                    if not isinstance(separator, str):
+                        return f"Invalid separator: {s}. Separator needs to be a valid JSON string using double quotes."
+                except json.decoder.JSONDecodeError:
+                    return f"Invalid separator: {s}. Separator needs to be a valid JSON string using double quotes."
+        return None
+
+    def _get_text_splitter(self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel]):
+        if splitter_config is None:
+            splitter_config = SeparatorSplitterConfigModel(mode="separator")
+        if splitter_config.mode == "separator":
+            return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                separators=[json.loads(s) for s in splitter_config.separators],
+                keep_separator=splitter_config.keep_separator,
+            )
+        if splitter_config.mode == "markdown":
+            return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                separators=headers_to_split_on[: splitter_config.split_level],
+                is_separator_regex=True,
+                keep_separator=True,
+            )
+        if splitter_config.mode == "code":
+            return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+                separators=RecursiveCharacterTextSplitter.get_separators_for_language(splitter_config.language),
+            )
+
     def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog):
         self.streams = {self._stream_identifier(stream.stream): stream for stream in catalog.streams}
 
-        self.splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
-            chunk_size=config.chunk_size, chunk_overlap=config.chunk_overlap
-        )
+        self.splitter = self._get_text_splitter(config.chunk_size, config.chunk_overlap, config.text_splitter)
         self.text_fields = config.text_fields
         self.metadata_fields = config.metadata_fields
         self.logger = logging.getLogger("airbyte.document_processor")

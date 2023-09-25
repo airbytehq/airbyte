@@ -29,7 +29,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -144,6 +146,25 @@ public abstract class BaseTypingDedupingTest {
   protected void globalTeardown() throws Exception {}
 
   /**
+   * Conceptually identical to {@link #getFinalMetadataColumnNames()}, but for the raw table.
+   */
+  protected Map<String, String> getRawMetadataColumnNames() {
+    return new HashMap<>();
+  }
+
+  /**
+   * If the destination connector uses a nonstandard schema for the final table, override this method.
+   * For example, destination-snowflake upcases all column names in the final tables.
+   * <p>
+   * You only need to add mappings for the airbyte metadata column names (_airbyte_raw_id,
+   * _airbyte_extracted_at, etc.). The test framework automatically populates mappings for the primary
+   * key and cursor using the SqlGenerator.
+   */
+  protected Map<String, String> getFinalMetadataColumnNames() {
+    return new HashMap<>();
+  }
+
+  /**
    * @return A suffix which is different for each concurrent test, but stable within a single test.
    */
   protected synchronized String getUniqueSuffix() {
@@ -166,6 +187,8 @@ public abstract class BaseTypingDedupingTest {
 
     final SqlGenerator<?> generator = getSqlGenerator();
     DIFFER = new RecordDiffer(
+        getRawMetadataColumnNames(),
+        getFinalMetadataColumnNames(),
         Pair.of(generator.buildColumnId("id1"), AirbyteProtocolType.INTEGER),
         Pair.of(generator.buildColumnId("id2"), AirbyteProtocolType.INTEGER),
         Pair.of(generator.buildColumnId("updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),

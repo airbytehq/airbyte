@@ -20,6 +20,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -165,6 +166,20 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract void teardownNamespace(String namespace) throws Exception;
 
   /**
+   * Identical to {@link BaseTypingDedupingTest#getRawMetadataColumnNames()}.
+   */
+  protected Map<String, String> getRawMetadataColumnNames() {
+    return new HashMap<>();
+  }
+
+  /**
+   * Identical to {@link BaseTypingDedupingTest#getFinalMetadataColumnNames()}.
+   */
+  protected Map<String, String> getFinalMetadataColumnNames() {
+    return new HashMap<>();
+  }
+
+  /**
    * This test implementation is extremely destination-specific, but all destinations must implement
    * it. This test should verify that creating a table using {@link #incrementalDedupStream} works as
    * expected, including column types, indexing, partitioning, etc.
@@ -204,6 +219,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     cdcColumns.put(generator.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
 
     DIFFER = new RecordDiffer(
+        getRawMetadataColumnNames(),
+        getFinalMetadataColumnNames(),
         Pair.of(id1, AirbyteProtocolType.INTEGER),
         Pair.of(id2, AirbyteProtocolType.INTEGER),
         Pair.of(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));

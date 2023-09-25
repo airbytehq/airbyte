@@ -11,7 +11,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .readdirSync(dir)
     .filter(
       (fileName) =>
-        !(fileName.endsWith(".inapp.md") || fileName.endsWith("postgres.md") || fileName.endsWith("-migrations.md"))
+        !(fileName.endsWith(".inapp.md") || fileName.endsWith("-migrations.md"))
     )
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
@@ -40,7 +40,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
 }
 
 function getSourceConnectors() {
-  return getFilenamesInDir("integrations/sources/", sourcesDocs, ["readme"]);
+  return getFilenamesInDir("integrations/sources/", sourcesDocs, ["readme", "postgres"]);
 }
 
 function getDestinationConnectors() {
