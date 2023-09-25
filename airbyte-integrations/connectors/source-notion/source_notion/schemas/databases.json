@@ -54,7 +54,7 @@
       "type": ["null", "boolean"]
     },
     "public_url": {
-      "type": ["null", "string"]
+      "type": ["null", "string"] 
     },
     "properties": {
       "type": "array",
