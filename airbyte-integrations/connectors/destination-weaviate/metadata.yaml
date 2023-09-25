@@ -16,7 +16,7 @@ data:
   name: Weaviate
   registries:
     cloud:
-      enabled: true 
+      enabled: true
     oss:
       enabled: true
   resourceRequirements:
