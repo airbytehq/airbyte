@@ -112,7 +112,7 @@ public class CatalogParser {
         // Append _1, _2, _3, ... to the column name until we find one that doesn't collide.
         int i = 1;
         while (true) {
-          columnId = sqlGenerator.buildColumnId(entry.getKey() + "_" + i);
+          columnId = sqlGenerator.buildColumnId(entry.getKey(), "_" + i);
           final String canonicalName = columnId.canonicalName();
           if (columns.keySet().stream().noneMatch(c -> c.canonicalName().equals(canonicalName))) {
             break;

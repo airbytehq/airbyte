@@ -159,6 +159,7 @@ class QaChecks(Step):
                 str(original_connector.code_directory),
                 str(original_connector.documentation_file_path),
                 str(original_connector.icon_path),
+                str(original_connector.migration_guide_file_path),
             ]
 
         filtered_repo = self.context.get_repo_dir(

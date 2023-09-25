@@ -18,7 +18,6 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import lombok.extern.slf4j.Slf4j;
@@ -110,16 +109,14 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
      * to try to use a thread pool to partially deserialize to get record type and stream name, we can
      * do it without touching buffer manager.
      */
-    deserializeAirbyteMessage(messageString)
-        .ifPresent(message -> {
-          if (Type.RECORD.equals(message.getType())) {
-            if (Strings.isNullOrEmpty(message.getRecord().getNamespace())) {
-              message.getRecord().setNamespace(defaultNamespace);
-            }
-            validateRecord(message);
-          }
-          bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
-        });
+    final var message = deserializeAirbyteMessage(messageString);
+    if (Type.RECORD.equals(message.getType())) {
+      if (Strings.isNullOrEmpty(message.getRecord().getNamespace())) {
+        message.getRecord().setNamespace(defaultNamespace);
+      }
+      validateRecord(message);
+    }
+    bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
   }
 
   /**
@@ -134,24 +131,27 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
    * @return PartialAirbyteMessage if the message is valid, empty otherwise
    */
   @VisibleForTesting
-  public static Optional<PartialAirbyteMessage> deserializeAirbyteMessage(final String messageString) {
+  public static PartialAirbyteMessage deserializeAirbyteMessage(final String messageString) {
     // TODO: (ryankfu) plumb in the serialized AirbyteStateMessage to match AirbyteRecordMessage code
     // parity. https://github.com/airbytehq/airbyte/issues/27530 for additional context
-    final Optional<PartialAirbyteMessage> messageOptional = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
-        .map(partial -> {
-          if (Type.RECORD.equals(partial.getType()) && partial.getRecord().getData() != null) {
-            return partial.withSerialized(partial.getRecord().getData().toString());
-          } else if (Type.STATE.equals(partial.getType())) {
-            return partial.withSerialized(messageString);
-          } else {
-            return null;
-          }
-        });
+    final var partial = Jsons.tryDeserialize(messageString, PartialAirbyteMessage.class)
+        .orElseThrow(() -> new RuntimeException("Unable to deserialize PartialAirbyteMessage."));
 
-    if (messageOptional.isPresent()) {
-      return messageOptional;
+    final var msgType = partial.getType();
+    if (Type.RECORD.equals(msgType) && partial.getRecord().getData() != null) {
+      // store serialized json
+      partial.withSerialized(partial.getRecord().getData().toString());
+      // The connector doesn't need to be able to access to the record value. We can serialize it here and
+      // drop the json
+      // object. Having this data stored as a string is slightly more optimal for the memory usage.
+      partial.getRecord().setData(null);
+    } else if (Type.STATE.equals(msgType)) {
+      partial.withSerialized(messageString);
+    } else {
+      throw new RuntimeException(String.format("Unsupported message type: %s", msgType));
     }
-    throw new RuntimeException("Invalid serialized message");
+
+    return partial;
   }
 
   @Override

@@ -5,6 +5,7 @@
 import asyncio
 import itertools
 import traceback
+from copy import deepcopy
 from functools import cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Set, Union
 
@@ -79,7 +80,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             # On read requests we should always have the catalog available
             raise MissingSchemaError(FileBasedSourceError.MISSING_SCHEMA, stream=self.name)
         # The stream only supports a single file type, so we can use the same parser for all files
-        parser = self.get_parser(self.config.file_type)
+        parser = self.get_parser()
         for file in stream_slice["files"]:
             # only serialize the datetime once
             file_datetime_string = file.last_modified.strftime(self.DATE_TIME_FORMAT)
@@ -190,7 +191,7 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
             if not inferred_schema:
                 raise InvalidSchemaError(
                     FileBasedSourceError.INVALID_SCHEMA_ERROR,
-                    details=f"Empty schema. Please check that the files are valid {self.config.file_type}",
+                    details=f"Empty schema. Please check that the files are valid for format {self.config.format}",
                     stream=self.name,
                 )
 
@@ -210,7 +211,8 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
     def infer_schema(self, files: List[RemoteFile]) -> Mapping[str, Any]:
         loop = asyncio.get_event_loop()
         schema = loop.run_until_complete(self._infer_schema(files))
-        return self._fill_nulls(schema)
+        # as infer schema returns a Mapping that is assumed to be immutable, we need to create a deepcopy to avoid modifying the reference
+        return self._fill_nulls(deepcopy(schema))
 
     @staticmethod
     def _fill_nulls(schema: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -258,11 +260,11 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
 
     async def _infer_file_schema(self, file: RemoteFile) -> SchemaType:
         try:
-            return await self.get_parser(self.config.file_type).infer_schema(self.config, file, self._stream_reader, self.logger)
+            return await self.get_parser().infer_schema(self.config, file, self._stream_reader, self.logger)
         except Exception as exc:
             raise SchemaInferenceError(
                 FileBasedSourceError.SCHEMA_INFERENCE_ERROR,
                 file=file.uri,
-                stream_file_type=self.config.file_type,
+                format=str(self.config.format),
                 stream=self.name,
             ) from exc

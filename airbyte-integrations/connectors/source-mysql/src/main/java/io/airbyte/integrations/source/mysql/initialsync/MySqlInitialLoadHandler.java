@@ -13,8 +13,10 @@ import com.mysql.cj.MysqlType;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.mysql.MySqlQueryUtils.TableSizeInfo;
+import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
 import io.airbyte.integrations.source.relationaldb.DbSourceDiscoverUtil;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -36,6 +38,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +49,7 @@ public class MySqlInitialLoadHandler {
   private static final long RECORD_LOGGING_SAMPLE_RATE = 1_000_000;
   private final JsonNode config;
   private final JdbcDatabase database;
-  private final MySqlInitialLoadSourceOperations sourceOperations;
+  private final JdbcCompatibleSourceOperations sourceOperations;
   private final String quoteString;
   private final MySqlInitialLoadStateManager initialLoadStateManager;
   private final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier;
@@ -57,7 +60,7 @@ public class MySqlInitialLoadHandler {
 
   public MySqlInitialLoadHandler(final JsonNode config,
                                  final JdbcDatabase database,
-                                 final MySqlInitialLoadSourceOperations sourceOperations,
+                                 final MySqlSourceOperations sourceOperations,
                                  final String quoteString,
                                  final MySqlInitialLoadStateManager initialLoadStateManager,
                                  final Function<AirbyteStreamNameNamespacePair, JsonNode> streamStateForIncrementalRunSupplier,
@@ -80,6 +83,7 @@ public class MySqlInitialLoadHandler {
       final AirbyteStream stream = airbyteStream.getStream();
       final String streamName = stream.getName();
       final String namespace = stream.getNamespace();
+      final List<String> primaryKeys = stream.getSourceDefinedPrimaryKey().stream().flatMap(pk -> Stream.of(pk.get(0))).toList();
       final AirbyteStreamNameNamespacePair pair = new AirbyteStreamNameNamespacePair(streamName, namespace);
       final String fullyQualifiedTableName = DbSourceDiscoverUtil.getFullyQualifiedTableName(namespace, streamName);
       if (!tableNameToTable.containsKey(fullyQualifiedTableName)) {
@@ -95,6 +99,15 @@ public class MySqlInitialLoadHandler {
             .map(CommonField::getName)
             .filter(CatalogHelpers.getTopLevelFieldNames(airbyteStream)::contains)
             .collect(Collectors.toList());
+
+        // This is to handle the case if the user de-selects the PK column
+        // Necessary to query the data via pk but won't be added to the final record
+        primaryKeys.forEach(pk -> {
+          if (!selectedDatabaseFields.contains(pk)) {
+            selectedDatabaseFields.add(0, pk);
+          }
+        });
+
         final AutoCloseableIterator<JsonNode> queryStream =
             new MySqlInitialLoadRecordIterator(database, sourceOperations, quoteString, initialLoadStateManager, selectedDatabaseFields, pair,
                 calculateChunkSize(tableSizeInfoMap.get(pair), pair), isCompositePrimaryKey(airbyteStream));
