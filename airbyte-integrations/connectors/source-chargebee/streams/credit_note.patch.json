@@ -5,6 +5,12 @@
               "integer",
               "null"
             ]
-          }
+        },
+        "taxable_amount": {
+            "type": [
+              "integer",
+              "null"
+            ]
+        }
     }
 }
