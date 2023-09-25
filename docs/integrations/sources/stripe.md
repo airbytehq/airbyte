@@ -115,9 +115,9 @@ Please be aware: this also means that any change older than 30 days will not be 
 
 :::note
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
-However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field to query for new data in your Stripe account. These are the entities synced based on the date of creation:
+However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
 - `BalanceTransactions`
-- `CheckoutSessionLineItems`
+- `CheckoutSessionLineItems` (cursor field is `checkout_session_expires_at`)
 - `Events`
 - `FileLinks`
 - `Files`
@@ -191,7 +191,8 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.0   | 2023-09-21 | [30660](https://github.com/airbytehq/airbyte/pull/30660) | Fix updated state for the incremental syncs                                                                                                          |
 | 4.1.1   | 2023-09-15 | [30494](https://github.com/airbytehq/airbyte/pull/30494) | Fix datatype of invoices.lines property                                                                                                              |
 | 4.1.0   | 2023-08-29 | [29950](https://github.com/airbytehq/airbyte/pull/29950) | Implement incremental deletes, add suggested streams                                                                                                 |
 | 4.0.1   | 2023-09-07 | [30254](https://github.com/airbytehq/airbyte/pull/30254) | Fix cursorless incremental streams                                                                                                                   |
