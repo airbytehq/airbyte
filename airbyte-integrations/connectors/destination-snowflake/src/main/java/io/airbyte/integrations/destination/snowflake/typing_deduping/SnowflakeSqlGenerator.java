@@ -469,22 +469,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @VisibleForTesting
-  String dedupRawTable(final StreamId id, final String finalSuffix) {
-    return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix.toUpperCase()))).replace(
-            // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
-            // would be painful,
-            // and it only matters in a few edge cases.
-            """
-            DELETE FROM ${raw_table_id}
-            WHERE "_airbyte_raw_id" NOT IN (
-              SELECT "_AIRBYTE_RAW_ID" FROM ${final_table_id}
-            );
-            """);
-  }
-
-  @VisibleForTesting
   String commitRawTable(final StreamId id) {
     return new StringSubstitutor(Map.of(
         "raw_table_id", id.rawTableId(QUOTE))).replace(
