@@ -36,6 +36,19 @@ def test_next_page_token(patch_base_class, requests_mock):
     assert stream.next_page_token(**inputs) == expected_token
 
 
+@pytest.mark.parametrize('response_json, expected_output', [
+    ({'next_cursor': 'some_cursor', 'has_more': True}, {'next_cursor': 'some_cursor'}),
+    ({'has_more': False}, None),
+    ({}, None)
+])
+def test_next_page_token_with_no_cursor(patch_base_class, response_json, expected_output):
+    stream = NotionStream(config=MagicMock())
+    mock_response = MagicMock()
+    mock_response.json.return_value = response_json
+    result = stream.next_page_token(mock_response)
+    assert result == expected_output
+
+
 def test_parse_response(patch_base_class, requests_mock):
     stream = NotionStream(config=MagicMock())
     requests_mock.get("https://dummy", json={"results": [{"a": 123}, {"b": "xx"}]})
