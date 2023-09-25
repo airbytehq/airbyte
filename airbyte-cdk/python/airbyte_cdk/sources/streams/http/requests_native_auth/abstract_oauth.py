@@ -5,7 +5,7 @@
 import logging
 from abc import abstractmethod
 from dataclasses import field
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union, Dict
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import pendulum
