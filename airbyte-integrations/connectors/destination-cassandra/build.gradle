@@ -24,7 +24,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.assertj/assertj-core
     testImplementation "org.assertj:assertj-core:${assertVersion}"
-    testImplementation libs.connectors.testcontainers.cassandra
+    testImplementation libs.testcontainers.cassandra
     testImplementation project(':airbyte-integrations:bases:standard-destination-test')
 
 

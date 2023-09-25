@@ -23,6 +23,7 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -115,8 +116,8 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
         .build());
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, container.getHost())
-        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
         .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
         .put(JdbcUtils.USERNAME_KEY, container.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
@@ -217,10 +218,10 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    String.format("%s", STREAM_NAME),
-                    String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
-                    Field.of("id", JsonSchemaType.NUMBER)
-                    /* no name field */)
+                String.format("%s", STREAM_NAME),
+                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                Field.of("id", JsonSchemaType.NUMBER)
+            /* no name field */)
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(
@@ -229,10 +230,10 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
             .withSyncMode(INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    String.format("%s", STREAM_NAME2),
-                    String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
-                    /* no name field */
-                    Field.of("id", JsonSchemaType.NUMBER))
+                String.format("%s", STREAM_NAME2),
+                String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                /* no name field */
+                Field.of("id", JsonSchemaType.NUMBER))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))
                 .withSupportedSyncModes(
