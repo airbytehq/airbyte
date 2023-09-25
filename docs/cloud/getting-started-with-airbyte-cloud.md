@@ -64,26 +64,27 @@ A connection is an automated data pipeline that replicates data from a source to
 
 Setting up a connection involves configuring the following parameters:
 
-| Parameter                              | Description                                                                                                                                                                                                                                                           |
-|----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Replication frequency                  | How often should the data sync?                                                                                                                                                                                                                                       |
-| [Data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-the-data-residency-for-a-connection)                         | Where should the data be processed? |
-| Destination Namespace and stream names | Where should the replicated data be written?                                                                                                                                                                                                                          |
-| Catalog selection                      | Which streams and fields should be replicated from the source to the destination?                                                                                                                                                                                     |
-| Sync mode                              | How should the streams be replicated (read and written)?                                                                                                                                                                                                              |
-| Optional transformations               | How should Airbyte protocol messages (raw JSON blob) data be converted into other data representations?                                                                                                                                                               |
+| Parameter                                                                                                                                | Description                                                                                             |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Replication frequency                                                                                                                    | How often should the data sync?                                                                         |
+| [Data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-the-data-residency-for-a-connection) | Where should the data be processed?                                                                     |
+| Destination Namespace and stream names                                                                                                   | Where should the replicated data be written?                                                            |
+| Catalog selection                                                                                                                        | Which streams and fields should be replicated from the source to the destination?                       |
+| Sync mode                                                                                                                                | How should the streams be replicated (read and written)?                                                |
+| Optional transformations                                                                                                                 | How should Airbyte protocol messages (raw JSON blob) data be converted into other data representations? |
 
 For more information, see [Connections and Sync Modes](../understanding-airbyte/connections/README.md) and [Namespaces](../understanding-airbyte/namespaces.md)
 
 If you need to use [cron scheduling](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html):
-1. In the **Replication Frequency** dropdown, click **Cron**. 
+
+1. In the **Replication Frequency** dropdown, click **Cron**.
 2. Enter a cron expression and choose a time zone to create a sync schedule.
 
 :::note
 
-* Only one sync per connection can run at a time. 
-* If cron schedules a sync to run before the last one finishes, the scheduled sync will start after the last sync completes.
-* Cloud does not allow schedules that sync more than once per hour. 
+- Only one sync per connection can run at a time.
+- If cron schedules a sync to run before the last one finishes, the scheduled sync will start after the last sync completes.
+- Cloud does not allow schedules that sync more than once per hour.
 
 :::
 
@@ -171,12 +172,12 @@ To better understand the destination namespace configurations, see [Destination 
       - Select **Overwrite** to erase the old data and replace it completely
       - Select **Append** to capture changes to your table
         **Note:** This creates duplicate records
-      - Select **Deduped + history** to mirror your source while keeping records unique
+      - Select **Append + Deduped** to mirror your source while keeping records unique
 
         **Note:** Some sync modes may not yet be available for your source or destination
 
    4. **Cursor field**: Used in **Incremental** sync mode to determine which records to sync. Airbyte pre-selects the cursor field for you (example: updated date). If you have multiple cursor fields, select the one you want.
-   5. **Primary key**: Used in **Deduped + history** sync mode to determine the unique identifier.
+   5. **Primary key**: Used in **Append + Deduped** sync mode to determine the unique identifier.
    6. **Destination**:
       - **Namespace:** The database schema of your destination tables.
       - **Stream name:** The final table name in destination.
@@ -193,38 +194,28 @@ Verify the sync by checking the logs:
 3. Check the data at your destination. If you added a Destination Stream Prefix while setting up the connection, make sure to search for the stream name with the prefix.
 
 ## Allowlist IP addresses
+
 Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-data-residency#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
 
 ### United States and Airbyte Default
+
 #### GCP region: us-west3
-* 34.106.109.131
-* 34.106.196.165
-* 34.106.60.246
-* 34.106.229.69
-* 34.106.127.139
-* 34.106.218.58
-* 34.106.115.240
-* 34.106.225.141
+
+[comment]: # "IMPORTANT: if changing the list of IP addresses below, you must also update the connector.airbyteCloudIpAddresses LaunchDarkly flag to show the new list so that the correct list is shown in the Airbyte Cloud UI, then reach out to the frontend team and ask them to update the default value in the useAirbyteCloudIps hook!"
+
+- 34.106.109.131
+- 34.106.196.165
+- 34.106.60.246
+- 34.106.229.69
+- 34.106.127.139
+- 34.106.218.58
+- 34.106.115.240
+- 34.106.225.141
 
 ### European Union
 
-:::note 
-
-Some workflows still run in the US, even when the data residency is in the EU. If you use the EU as a data residency, you must allowlist the following IP addresses from both GCP us-west3 and AWS eu-west-3.
-
-:::
-
-#### GCP region: us-west3
-* 34.106.109.131
-* 34.106.196.165
-* 34.106.60.246
-* 34.106.229.69
-* 34.106.127.139
-* 34.106.218.58
-* 34.106.115.240
-* 34.106.225.141
-
 #### AWS region: eu-west-3
-* 13.37.4.46
-* 13.37.142.60
-* 35.181.124.238
+
+- 13.37.4.46
+- 13.37.142.60
+- 35.181.124.238

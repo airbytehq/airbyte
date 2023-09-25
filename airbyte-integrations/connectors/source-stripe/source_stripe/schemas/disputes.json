@@ -148,6 +148,12 @@
     },
     "status": {
       "type": ["null", "string"]
+    },
+    "payment_intent": {
+      "type": ["null", "string"]
+    },
+    "balance_transaction": {
+      "type": ["null", "string"]
     }
   }
 }

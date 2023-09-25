@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Post Comments",
+  "type": ["null", "object"],
+  "properties": {
+    "author_id": {
+      "type": ["null", "integer"]
+    },
+    "body": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "html_url": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "non_author_editor_id": {
+      "type": ["null", "integer"]
+    },
+    "non_author_updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "official": {
+      "type": ["null", "boolean"]
+    },
+    "post_id": {
+      "type": ["null", "integer"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "vote_count": {
+      "type": ["null", "integer"]
+    },
+    "vote_sum": {
+      "type": ["null", "integer"]
+    }
+  }
+}

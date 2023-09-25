@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -210,11 +211,18 @@ public class DetectStreamToFlush {
    */
   @VisibleForTesting
   List<StreamDescriptor> orderStreamsByPriority(final Set<StreamDescriptor> streams) {
+    // eagerly pull attributes so that values are consistent throughout comparison
+    final Map<StreamDescriptor, Optional<Long>> sdToQueueSize = streams.stream()
+        .collect(Collectors.toMap(s -> s, bufferDequeue::getQueueSizeBytes));
+
+    final Map<StreamDescriptor, Optional<Instant>> sdToTimeOfLastRecord = streams.stream()
+        .collect(Collectors.toMap(s -> s, bufferDequeue::getTimeOfLastRecord));
+
     return streams.stream()
-        .sorted(Comparator.comparing((StreamDescriptor s) -> bufferDequeue.getQueueSizeBytes(s).orElseThrow(), Comparator.reverseOrder())
+        .sorted(Comparator.comparing((StreamDescriptor s) -> sdToQueueSize.get(s).orElseThrow(), Comparator.reverseOrder())
             // if no time is present, it suggests the queue has no records. set MAX time as a sentinel value to
             // represent no records.
-            .thenComparing(s -> bufferDequeue.getTimeOfLastRecord(s).orElse(Instant.MAX))
+            .thenComparing(s -> sdToTimeOfLastRecord.get(s).orElse(Instant.MAX))
             .thenComparing(s -> s.getNamespace() + s.getName()))
         .collect(Collectors.toList());
   }

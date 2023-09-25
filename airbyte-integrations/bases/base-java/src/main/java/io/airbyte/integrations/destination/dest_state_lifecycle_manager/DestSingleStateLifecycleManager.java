@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.dest_state_lifecycle_manager;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -69,6 +70,12 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
       lastCommittedState = lastPendingState;
       lastPendingState = null;
     }
+  }
+
+  @Override
+  public void markPendingAsCommitted(final AirbyteStreamNameNamespacePair stream) {
+    // We declare supportsPerStreamFlush as false, so this method should never be called.
+    throw new IllegalStateException("Committing a single stream state is not supported for this state type.");
   }
 
   @Override

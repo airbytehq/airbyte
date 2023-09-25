@@ -7,8 +7,6 @@ acceptance_tests:
     - spec_path: "source_prestashop/spec.yaml"
         # unfortunately timeout plugin takes into account setup code as well (docker setup)
       timeout_seconds: 300
-      backward_compatibility_tests_config:
-        disable_for_version: "0.2.0"
   connection:
     tests:
     - config_path: "secrets/config.json"
@@ -18,10 +16,15 @@ acceptance_tests:
   discovery:
     tests:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.3.1"
   basic_read:
     tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams:
+        - name: "messages"
+          bypass_reason: "Can not populate"
       expect_records:
         path: "integration_tests/expected_records.jsonl"
         extra_fields: no

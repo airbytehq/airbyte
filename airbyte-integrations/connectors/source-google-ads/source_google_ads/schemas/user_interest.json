@@ -1,0 +1,27 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "user_interest.availabilities": {
+      "type": ["null", "array"]
+    },
+    "user_interest.launched_to_all": {
+      "type": ["null", "boolean"]
+    },
+    "user_interest.name": {
+      "type": ["null", "string"]
+    },
+    "user_interest.resource_name": {
+      "type": ["null", "string"]
+    },
+    "user_interest.taxonomy_type": {
+      "type": ["null", "string"]
+    },
+    "user_interest.user_interest_id": {
+      "type": ["null", "integer"]
+    },
+    "user_interest.user_interest_parent": {
+      "type": ["null", "string"]
+    }
+  }
+}

@@ -57,78 +57,108 @@ def test_fetch_adoption_metrics_per_connector_version(mocker):
 
 
 @pytest.mark.parametrize(
-    "connector_name, connector_version, mocked_json_payload, mocked_status_code, expected_status",
+    "connector_name, mocked_json_payload, mocked_status_code, expected_status",
     [
         (
             "connectors/source-pokeapi",
-            "0.1.5",
-            {
-                "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
-                "outcome": "success",
-                "docker_version": "0.1.5",
-                "timestamp": "1674872401",
-                "connector": "connectors/source-pokeapi",
-            },
+            [
+                {
+                    "connector_version": "0.3.0",
+                    "success": True,
+                    "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5222619538",
+                    "date": "2023-06-09T06:50:04",
+                },
+                {
+                    "connector_version": "0.3.0",
+                    "success": False,
+                    "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5220000547",
+                    "date": "2023-06-09T01:42:46",
+                },
+            ],
             200,
             inputs.BUILD_STATUSES.SUCCESS,
         ),
         (
             "connectors/source-pokeapi",
-            "0.1.5",
-            {
-                "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
-                "outcome": "failure",
-                "docker_version": "0.1.5",
-                "timestamp": "1674872401",
-                "connector": "connectors/source-pokeapi",
-            },
+            [
+                {
+                    "connector_version": "0.3.0",
+                    "success": False,
+                    "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5222619538",
+                    "date": "2023-06-09T06:50:04",
+                },
+                {
+                    "connector_version": "0.3.0",
+                    "success": True,
+                    "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5220000547",
+                    "date": "2023-06-09T01:42:46",
+                },
+            ],
             200,
             inputs.BUILD_STATUSES.FAILURE,
         ),
-        ("connectors/source-pokeapi", "0.1.5", None, 404, inputs.BUILD_STATUSES.NOT_FOUND),
+        ("connectors/source-pokeapi", None, 404, inputs.BUILD_STATUSES.NOT_FOUND),
         (
             "connectors/source-pokeapi",
-            "0.1.5",
-            {
-                "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
-                "docker_version": "0.1.5",
-                "timestamp": "1674872401",
-                "connector": "connectors/source-pokeapi",
-            },
+            [
+                {
+                    "connector_version": "0.3.0",
+                    "success": None,
+                    "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5222619538",
+                    "date": "2023-06-09T06:50:04",
+                }
+            ],
             200,
             inputs.BUILD_STATUSES.NOT_FOUND,
         ),
-        ("connectors/source-pokeapi", "0.1.5", None, 404, inputs.BUILD_STATUSES.NOT_FOUND),
+        ("connectors/source-pokeapi", None, 404, inputs.BUILD_STATUSES.NOT_FOUND),
     ],
 )
-def test_fetch_latest_build_status_for_connector_version(
-    mocker, connector_name, connector_version, mocked_json_payload, mocked_status_code, expected_status
-):
+def test_fetch_latest_build_status_for_connector(mocker, connector_name, mocked_json_payload, mocked_status_code, expected_status):
     # Mock the api call to get the latest build status for a connector version
     mock_response = MagicMock()
     mock_response.json.return_value = mocked_json_payload
     mock_response.status_code = mocked_status_code
     mock_get = mocker.patch.object(requests, "get", return_value=mock_response)
+    connector_name = connector_name.replace("connectors/", "")
 
-    assert inputs.fetch_latest_build_status_for_connector_version(connector_name, connector_version) == expected_status
-    assert mock_get.call_args == call(f"{constants.CONNECTOR_BUILD_OUTPUT_URL}/{connector_name}/version-{connector_version}.json")
+    assert inputs.fetch_latest_build_status_for_connector(connector_name) == expected_status
+    assert mock_get.call_args == call(f"{constants.CONNECTOR_TEST_SUMMARY_URL}/{connector_name}/index.json")
 
 
-def test_fetch_latest_build_status_for_connector_version_invalid_status(mocker, caplog):
+def test_fetch_latest_build_status_for_connector_invalid_status(mocker, caplog):
     connector_name = "connectors/source-pokeapi"
-    connector_version = "0.1.5"
-    mocked_json_payload = {
-        "link": "https://github.com/airbytehq/airbyte/actions/runs/4029659593",
-        "outcome": "unknown_outcome_123",
-        "docker_version": "0.1.5",
-        "timestamp": "1674872401",
-        "connector": "connectors/source-pokeapi",
-    }
+    mocked_json_payload = [
+        {
+            "connector_version": "0.3.0",
+            "success": "unknown_outcome_123",
+            "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5222619538",
+            "date": "2023-06-09T06:50:04",
+        },
+        {
+            "connector_version": "0.3.0",
+            "success": False,
+            "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5220000547",
+            "date": "2023-06-09T01:42:46",
+        },
+        {
+            "connector_version": "0.3.0",
+            "success": True,
+            "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5212578854",
+            "date": "2023-06-08T07:46:37",
+        },
+        {
+            "connector_version": "0.3.0",
+            "success": True,
+            "gha_workflow_run_url": "https://github.com/airbytehq/airbyte/actions/runs/5198665885",
+            "date": "2023-06-07T03:05:40",
+        },
+    ]
     # Mock the api call to get the latest build status for a connector version
     mock_response = MagicMock()
     mock_response.json.return_value = mocked_json_payload
     mock_response.status_code = 200
     mocker.patch.object(requests, "get", return_value=mock_response)
 
-    assert inputs.fetch_latest_build_status_for_connector_version(connector_name, connector_version) == inputs.BUILD_STATUSES.NOT_FOUND
-    assert "Error: Unexpected build status value: unknown_outcome_123 for connector connectors/source-pokeapi:0.1.5" in caplog.text
+    assert inputs.fetch_latest_build_status_for_connector(connector_name) == inputs.BUILD_STATUSES.NOT_FOUND
+    assert "Error: Unexpected build status value: unknown_outcome_123 for connector connectors/source-pokeapi" in caplog.text

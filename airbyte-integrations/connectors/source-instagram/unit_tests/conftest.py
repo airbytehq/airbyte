@@ -2,6 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import List
+
 from facebook_business import FacebookAdsApi, FacebookSession
 from pytest import fixture
 from source_instagram.api import InstagramAPI as API
@@ -90,6 +92,72 @@ def user_insight_data_fixture():
         "description": "Total number of times this profile has been seen",
         "id": "17841400008460056/insights/impressions/day",
     }
+
+
+@fixture(name="user_lifetime_insights")
+def user_lifetime_insights():
+    class UserLiftimeInsightEntityMock:
+        def __new__(cls, values: dict):
+            cls.insights = [
+                # No `end_time` Key, reference to this issue:
+                # https://github.com/airbytehq/airbyte/issues/22929
+                {
+                    "description": "Test_no_end_time",
+                    "id": "18/insights/audience_gender_age/lifetime",
+                    "name": "audience_gender_age",
+                    "period": "lifetime",
+                    "title": "Gender and Age",
+                    "values": [values],
+                },
+            ]
+
+        @classmethod
+        def get(cls, element):
+            for insight in cls.insights:
+                return insight[element]
+
+        @classmethod
+        def get_insights(cls, **kwargs) -> List[dict]:
+            return cls.insights
+
+    return UserLiftimeInsightEntityMock
+
+
+@fixture(name="user_insights")
+def user_insights():
+    class UserInsightEntityMock:
+        # reference Issue:
+        # https://github.com/airbytehq/airbyte/issues/24697
+        class UserInsight:
+
+            def __init__(self, values: dict):
+                self.data = {
+                    "description": "test_insight",
+                    "id": "123",
+                    "name": "test_insight_metric",
+                    "period": "day",
+                    "title": "Test Insight",
+                    "values": [values],
+                }
+
+            def __dict__(self):
+                return self.data
+
+            def export_all_data(self):
+                return self.__dict__()
+
+        def __new__(cls, values: dict):
+            cls.insights = [cls.UserInsight(values)]
+
+        @classmethod
+        def get(cls, element):
+            return cls.insights[0].__dict__()[element]
+
+        @classmethod
+        def get_insights(cls, **kwargs) -> List[dict]:
+            return cls.insights
+
+    return UserInsightEntityMock
 
 
 @fixture(name="user_stories_data")

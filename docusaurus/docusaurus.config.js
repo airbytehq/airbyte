@@ -20,13 +20,16 @@ const config = {
   projectName: "airbyte", // Usually your repo name.
 
   plugins: [
-    [require.resolve("@cmfcmf/docusaurus-search-local"), { indexBlog: false }],
     [
       "@docusaurus/plugin-client-redirects",
       {
         fromExtensions: ["html", "htm"], // /myPage.html -> /myPage
         redirects: [
           // /docs/oldDoc -> /docs/newDoc
+          {
+            from: "/airbyte-pro",
+            to: "/airbyte-enterprise"
+          },
           {
             from: "/upgrading-airbyte",
             to: "/operator-guides/upgrading-airbyte",
@@ -139,6 +142,11 @@ const config = {
           autoCollapseCategories: true,
         },
       },
+      algolia: {
+          appId: 'OYKDBC51MU',
+          apiKey: '15c487fd9f7722282efd8fcb76746fce', // Public API key: it is safe to commit it
+          indexName: 'airbyte',
+      },
       navbar: {
         title: "",
         logo: {
@@ -165,7 +173,7 @@ const config = {
             position: "left",
           },
           {
-            href: "https://discuss.airbyte.io/",
+            href: "https://support.airbyte.com/",
             label: "Support",
             position: "left",
           },

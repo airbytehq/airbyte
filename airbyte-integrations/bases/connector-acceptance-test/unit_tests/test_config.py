@@ -100,6 +100,33 @@ class TestConfig:
             parsed_config = config.Config.parse_obj(raw_config)
             assert parsed_config == expected_output_config
 
+    def test_cursor_path_union_str(self):
+        parsed_config = config.Config.parse_obj(self._config_with_incremental_cursor_paths(["2331"]))
+        assert type(parsed_config.acceptance_tests.incremental.tests[0].cursor_paths["stream_name"][0]) == str
+
+    def test_cursor_path_union_int(self):
+        parsed_config = config.Config.parse_obj(self._config_with_incremental_cursor_paths([2331]))
+        assert type(parsed_config.acceptance_tests.incremental.tests[0].cursor_paths["stream_name"][0]) == int
+
+    @staticmethod
+    def _config_with_incremental_cursor_paths(cursor_paths):
+        return {
+            "connector_image": "foo",
+            "acceptance_tests": {
+                "incremental": {
+                    "tests": [
+                        {
+                            "config_path": "config_path.json",
+                            "cursor_paths": {
+                                "stream_name": cursor_paths
+                            }
+                        }
+                    ]
+                }
+            },
+            "test_strictness_level": "low"
+        }
+
     @pytest.mark.parametrize(
         "legacy_config, expected_parsed_config",
         [

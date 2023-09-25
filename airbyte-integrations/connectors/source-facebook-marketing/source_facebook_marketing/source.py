@@ -8,7 +8,14 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 import facebook_business
 import pendulum
 import requests
-from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, FailureType, OAuth2Specification
+from airbyte_cdk.models import (
+    AdvancedAuth,
+    AuthFlowType,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    FailureType,
+    OAuthConfigSpecification,
+)
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
@@ -42,10 +49,12 @@ from source_facebook_marketing.streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    CustomAudiences,
     CustomConversions,
     Images,
     Videos,
 )
+from source_facebook_marketing.streams.common import AccountTypeException
 
 from .utils import validate_end_date, validate_start_date
 
@@ -78,9 +87,19 @@ class SourceFacebookMarketing(AbstractSource):
             if config.end_date < config.start_date:
                 return False, "end_date must be equal or after start_date."
 
-            api = API(account_id=config.account_id, access_token=config.access_token)
+            api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
             logger.info(f"Select account {api.account}")
-        except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
+
+            account_info = api.account.api_get(fields=["is_personal"])
+
+            if account_info.get("is_personal"):
+                message = (
+                    "The personal ad account you're currently using is not eligible "
+                    "for this operation. Please switch to a business ad account."
+                )
+                raise AccountTypeException(message)
+
+        except (requests.exceptions.RequestException, ValidationError, FacebookAPIException, AccountTypeException) as e:
             return False, e
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
@@ -101,7 +120,7 @@ class SourceFacebookMarketing(AbstractSource):
         config.start_date = validate_start_date(config.start_date)
         config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_id=config.account_id, access_token=config.access_token)
+        api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
 
         insights_args = dict(
             api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
@@ -164,6 +183,12 @@ class SourceFacebookMarketing(AbstractSource):
                 page_size=config.page_size,
                 max_batch_size=config.max_batch_size,
             ),
+            CustomAudiences(
+                api=api,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
+                max_batch_size=config.max_batch_size,
+            ),
             Images(
                 api=api,
                 start_date=config.start_date,
@@ -203,10 +228,30 @@ class SourceFacebookMarketing(AbstractSource):
             supportsIncremental=True,
             supported_destination_sync_modes=[DestinationSyncMode.append],
             connectionSpecification=ConnectorConfig.schema(),
-            authSpecification=AuthSpecification(
-                auth_type="oauth2.0",
-                oauth2Specification=OAuth2Specification(
-                    rootObject=[], oauthFlowInitParameters=[], oauthFlowOutputParameters=[["access_token"]]
+            advanced_auth=AdvancedAuth(
+                auth_flow_type=AuthFlowType.oauth2_0,
+                oauth_config_specification=OAuthConfigSpecification(
+                    complete_oauth_output_specification={
+                        "type": "object",
+                        "properties": {
+                            "access_token": {
+                                "type": "string",
+                                "path_in_connector_config": ["access_token"],
+                            }
+                        },
+                    },
+                    complete_oauth_server_input_specification={
+                        "type": "object",
+                        "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                    },
+                    complete_oauth_server_output_specification={
+                        "type": "object",
+                        "additionalProperties": True,
+                        "properties": {
+                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
+                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+                        },
+                    },
                 ),
             ),
         )
@@ -233,6 +278,7 @@ class SourceFacebookMarketing(AbstractSource):
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
+                action_report_time=insight.action_report_time,
                 time_increment=insight.time_increment,
                 start_date=insight.start_date or config.start_date,
                 end_date=insight.end_date or config.end_date,

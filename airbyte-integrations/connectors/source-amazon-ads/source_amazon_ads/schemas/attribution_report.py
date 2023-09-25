@@ -2,12 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import List
-
 from .common import CatalogModel
 
 
-class Report(CatalogModel):
+class AttributionReportModel(CatalogModel):
     date: str
     brandName: str
     marketplace: str
@@ -22,9 +20,3 @@ class Report(CatalogModel):
     productSubcategory: str
     productGroup: str
     publisher: str
-
-
-class AttributionReportModel(CatalogModel):
-    reports: List[Report]
-    size: int
-    cursorId: str

@@ -7,7 +7,7 @@ import logging
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import Generic, List, Mapping, Optional, Set, TypeVar
+from typing import Generic, List, Mapping, Optional, Set, TypeVar, Union
 
 from pydantic import BaseModel, Field, root_validator, validator
 from pydantic.generics import GenericModel
@@ -160,7 +160,7 @@ class FutureStateConfig(BaseConfig):
 class IncrementalConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
-    cursor_paths: Optional[Mapping[str, List[str]]] = Field(
+    cursor_paths: Optional[Mapping[str, List[Union[int, str]]]] = Field(
         description="For each stream, the path of its cursor field in the output state messages."
     )
     future_state: Optional[FutureStateConfig] = Field(description="Configuration for the future state.")
@@ -173,6 +173,9 @@ class IncrementalConfig(BaseConfig):
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
         description="Determines whether to skip more granular testing for incremental syncs", default=False
     )
+
+    class Config:
+        smart_union = True
 
 
 class GenericTestConfig(GenericModel, Generic[TestConfigT]):
@@ -200,9 +203,6 @@ class Config(BaseConfig):
         high = "high"
         low = "low"
 
-    cache_discovered_catalog: bool = Field(
-        default=True, description="Enable or disable caching of discovered catalog for reuse in multiple tests."
-    )
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
     acceptance_tests: AcceptanceTestConfigurations = Field(description="List of the acceptance test to run with their configs")
     base_path: Optional[str] = Field(description="Base path for all relative paths")

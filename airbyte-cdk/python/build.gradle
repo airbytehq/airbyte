@@ -23,7 +23,13 @@ task runLowCodeConnectorUnitTests(type: Exec) {
     commandLine 'bin/low-code-unit-tests.sh'
 }
 
-blackFormat.dependsOn generateComponentManifestClassFiles
+task runMypyOnModifiedFiles(type: Exec) {
+    environment 'ROOT_DIR', rootDir.absolutePath
+    commandLine 'bin/run-mypy-on-modified-files.sh'
+}
+
+blackFormat.dependsOn runMypyOnModifiedFiles
 isortFormat.dependsOn generateComponentManifestClassFiles
 flakeCheck.dependsOn generateComponentManifestClassFiles
 installReqs.dependsOn generateComponentManifestClassFiles
+runMypyOnModifiedFiles.dependsOn generateComponentManifestClassFiles

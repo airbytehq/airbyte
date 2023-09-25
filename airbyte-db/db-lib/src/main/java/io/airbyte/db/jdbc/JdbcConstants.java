@@ -27,5 +27,6 @@ public final class JdbcConstants {
   public static final String INTERNAL_COLUMN_SIZE = "columnSize";
   public static final String INTERNAL_IS_NULLABLE = "isNullable";
   public static final String INTERNAL_DECIMAL_DIGITS = "decimalDigits";
+  public static final String KEY_SEQ = "KEY_SEQ";
 
 }

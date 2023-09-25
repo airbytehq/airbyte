@@ -41,9 +41,6 @@
     "files_count": {
       "type": ["null", "integer"]
     },
-    "followers_count": {
-      "type": ["null", "integer"]
-    },
     "add_time": {
       "type": ["null", "string"]
     },

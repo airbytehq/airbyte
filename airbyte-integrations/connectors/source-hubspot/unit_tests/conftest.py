@@ -32,6 +32,11 @@ def common_params_fixture(config):
     return common_params
 
 
+@pytest.fixture(name="config_invalid_client_id")
+def config_invalid_client_id_fixture():
+    return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "OAuth Credentials", "client_id": "invalid_client_id", "client_secret": "invalid_client_secret", "access_token": "test_access_token", "refresh_token": "test_refresh_token"}}
+
+
 @pytest.fixture(name="config")
 def config_fixture():
     return {"start_date": "2021-01-10T00:00:00Z", "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"}}

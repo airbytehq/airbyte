@@ -1,147 +1,147 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "id_order": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_attribute_id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_quantity_reinjected": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "group_reduction": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "discount_quantity_applied": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "download_hash": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "download_deadline": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_order_invoice": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_warehouse": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_shop": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_customization": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_quantity": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_quantity_in_stock": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_quantity_return": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_quantity_refunded": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_price": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "reduction_percent": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "reduction_amount": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "reduction_amount_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "reduction_amount_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_quantity_discount": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_ean13": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_isbn": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_upc": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_mpn": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_reference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_supplier_reference": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "product_weight": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "tax_computation_method": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "id_tax_rules_group": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ecotax": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ecotax_tax_rate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "download_nb": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "unit_price_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "unit_price_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_price_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_price_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_shipping_price_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_shipping_price_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "purchase_supplier_price": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "original_product_price": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "original_wholesale_price": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_refunded_tax_excl": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "total_refunded_tax_incl": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

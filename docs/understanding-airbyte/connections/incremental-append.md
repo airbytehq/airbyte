@@ -80,7 +80,7 @@ Some sources cannot define the cursor without user input. For example, in the [p
 
 As demonstrated in the examples above, with **Incremental Append,** a record which was updated in the source will be appended to the destination rather than updated in-place. This means that if data in the source uses a primary key \(e.g: `user_id` in the `users` table\), then the destination will end up having multiple records with the same primary key value.
 
-However, some use cases require only the latest snapshot of the data. This is available by using other flavors of sync modes such as [Incremental - Deduped History](incremental-deduped-history.md) instead.
+However, some use cases require only the latest snapshot of the data. This is available by using other flavors of sync modes such as [Incremental - Append + Deduped](incremental-append-deduped.md) instead.
 
 Note that in **Incremental Append**, the size of the data in your warehouse increases monotonically since an updated record in the source is appended to the destination rather than updated in-place.
 
