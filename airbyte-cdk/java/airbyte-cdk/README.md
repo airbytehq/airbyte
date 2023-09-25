@@ -105,9 +105,9 @@ plugins {
 
 airbyteJavaConnector {
     cdkVersionRequired = '0.1.0'   // The CDK version to pin to.
+    features = ['db-destinations'] // An array of CDK features to depend on.
     useCdkProjectRef = true        // Use 'true' to use a live reference to the 
                                    // local cdk project.
-    features = ['db-destinations'] // An array of CDK features to depend on.
 }
 
 airbyteJavaConnector.addCdkDependencies()
