@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, DestinationSyncMode, OAuthConfigSpecification
 from airbyte_cdk.sources import AbstractSource
@@ -32,6 +32,18 @@ class ConnectorConfig(BaseModel):
             "information"
         ),
         airbyte_secret=True,
+    )
+
+    client_id: Optional[str] = Field(
+        description=("The Client ID for your Oauth application"),
+        airbyte_secret=True,
+        airbyte_hidden=True,
+    )
+
+    client_secret: Optional[str] = Field(
+        description=("The Client Secret for your Oauth application"),
+        airbyte_secret=True,
+        airbyte_hidden=True,
     )
 
 
@@ -95,6 +107,13 @@ class SourceInstagram(AbstractSource):
                     complete_oauth_server_input_specification={
                         "type": "object",
                         "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                    },
+                    complete_oauth_server_output_specification={
+                        "type": "object",
+                        "properties": {
+                            "client_id": {"type": "string", "path_in_connector_config": ["client_id"]},
+                            "client_secret": {"type": "string", "path_in_connector_config": ["client_secret"]},
+                        },
                     },
                 ),
             ),

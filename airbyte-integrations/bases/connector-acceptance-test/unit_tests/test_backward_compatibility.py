@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import MutableMapping, Union
 
 import pytest
-from airbyte_cdk.models import AirbyteStream, ConnectorSpecification
+from airbyte_protocol.models import AirbyteStream, ConnectorSpecification
 from connector_acceptance_test.tests.test_core import TestDiscovery as _TestDiscovery
 from connector_acceptance_test.tests.test_core import TestSpec as _TestSpec
 from connector_acceptance_test.utils.backward_compatibility import NonBackwardCompatibleError, validate_previous_configs

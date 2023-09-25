@@ -95,7 +95,7 @@ def test_events_request_params():
 
 def test_issues_request_params():
     stream = Issues(**INIT_ARGS)
-    expected = {"cursor": "next-page", "statsPeriod": "", "query": ""}
+    expected = {"cursor": "next-page", "statsPeriod": "", "query": "lastSeen:>1900-01-01T00:00:00Z"}
     assert stream.request_params(stream_state=None, next_page_token={"cursor": "next-page"}) == expected
 
 

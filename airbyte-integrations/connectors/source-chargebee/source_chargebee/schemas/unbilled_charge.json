@@ -42,7 +42,12 @@
     },
     "entity_type": {
       "type": ["string", "null"],
-      "enum": ["adhoc", "plan_item_price", "addon_item_price", "charge_item_price"]
+      "enum": [
+        "adhoc",
+        "plan_item_price",
+        "addon_item_price",
+        "charge_item_price"
+      ]
     },
     "entity_id": {
       "type": ["string", "null"]

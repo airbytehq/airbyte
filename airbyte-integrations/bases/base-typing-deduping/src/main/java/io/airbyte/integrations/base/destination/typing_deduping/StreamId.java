@@ -36,7 +36,7 @@ public record StreamId(String finalNamespace,
     return quote + finalNamespace + quote + "." + quote + finalName + quote;
   }
 
-  public String finalTableId(String suffix, String quote) {
+  public String finalTableId(String quote, String suffix) {
     return quote + finalNamespace + quote + "." + quote + finalName + suffix + quote;
   }
 

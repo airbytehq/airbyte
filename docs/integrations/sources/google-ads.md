@@ -9,7 +9,7 @@ This page contains the setup guide and reference information for the Google Ads 
 - (For Airbyte Open Source):
   - A Developer Token
   - OAuth credentials to authenticate your Google account
-<!-- /env:oss -->
+  <!-- /env:oss -->
 
 ## Setup guide
 
@@ -24,10 +24,10 @@ To set up the Google Ads source connector with Airbyte Open Source, you will nee
 2. To apply for the developer token, please follow [Google's instructions](https://developers.google.com/google-ads/api/docs/first-call/dev-token).
 
 3. When you apply for the token, make sure to include the following:
-    - Why you need the token (example: Want to run some internal analytics)
-    - That you will be using the Airbyte Open Source project
-    - That you have full access to the code base (because we're open source)
-    - That you have full access to the server running the code (because you're self-hosting Airbyte)
+   - Why you need the token (example: Want to run some internal analytics)
+   - That you will be using the Airbyte Open Source project
+   - That you have full access to the code base (because we're open source)
+   - That you have full access to the server running the code (because you're self-hosting Airbyte)
 
 :::note
 You will _not_ be able to access your data via the Google Ads API until this token is approved. You cannot use a test developer token; it has to be at least a basic developer token. The approval process typically takes around 24 hours.
@@ -61,7 +61,7 @@ To set up Google Ads as a source in Airbyte Cloud:
 7. Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 8. (Optional) You can use the **Custom GAQL Queries** field to enter a custom query using Google Ads Query Language. Click **Add** and enter your query, as well as the desired name of the table for this data in the destination. Multiple queries can be provided. For more information on formulating these queries, refer to our [guide below](#custom-query-understanding-google-ads-query-language).
 9. (Required for Manager accounts) If accessing your account through a Google Ads Manager account, you must enter the [**Customer ID**](https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid) of the Manager account.
-10. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en).  This field defaults to 14 days.
+10. (Optional) Enter a **Conversion Window**. This is the number of days after an ad interaction during which a conversion is recorded in Google Ads. For more information on this topic, refer to the [Google Ads Help Center](https://support.google.com/google-ads/answer/3123169?hl=en). This field defaults to 14 days.
 11. (Optional) Enter an **End Date** in YYYY-MM-DD format. Any data added after this date will not be replicated. Leaving this field blank will replicate all data from the start date onward.
 12. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
@@ -95,7 +95,7 @@ The Google Ads source connector supports the following [sync modes](https://docs
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-- [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
@@ -115,8 +115,9 @@ The Google Ads source connector can sync the following tables. It can also sync 
 
 Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field, which should be joined against their respective `*_labels` streams if you want to view the actual labels. For example, the `ad_groups` stream contains an `ad_group.labels` field, which you would join against the `ad_group_labels` stream's `label.resource_name` field.
 
+
 ### Report Tables
- 
+
 - [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
 - [ad_groups](https://developers.google.com/google-ads/api/fields/v14/ad_group)
 - [ad_group_ad_report](https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance)
@@ -133,6 +134,12 @@ Note that `ad_groups`, `ad_group_ads`, and `campaigns` contain a `labels` field,
 
 :::note
 Due to Google Ads API constraints, the `click_view` stream retrieves data one day at a time and can only retrieve data newer than 90 days ago. Also, [metrics](https://developers.google.com/google-ads/api/fields/v11/metrics) cannot be requested for a Google Ads Manager account. Report streams are only available when pulling data from a non-manager account.
+:::
+
+:::warning
+Google Ads doesn't support `PERFORMACE_MAX` campaigns on `ad_group` or `ad` stream level, only on `campaign` level. 
+If you have this type of campaign Google will remove them from the results for the `ads` reports.
+More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discussions](https://groups.google.com/g/adwords-api/c/_mxbgNckaLQ).
 :::
 
 For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
@@ -183,10 +190,10 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 ## Changelog
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
-|:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| `0.7.4`  | 2023-07-28 | [28832](https://github.com/airbytehq/airbyte/pull/28832) | Update field descriptions  |
+| :------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
+| `0.7.4`  | 2023-07-28 | [28832](https://github.com/airbytehq/airbyte/pull/28832) | Update field descriptions                                                                                                            |
 | `0.7.3`  | 2023-07-24 | [28510](https://github.com/airbytehq/airbyte/pull/28510) | Set dates with client's timezone                                                                                                     |
-| `0.7.2`  | 2023-07-20 | [28535](https://github.com/airbytehq/airbyte/pull/28535) | UI improvement: Make the query field in custom reports a multi-line string field                                                                    |
+| `0.7.2`  | 2023-07-20 | [28535](https://github.com/airbytehq/airbyte/pull/28535) | UI improvement: Make the query field in custom reports a multi-line string field                                                     |
 | `0.7.1`  | 2023-07-17 | [28365](https://github.com/airbytehq/airbyte/pull/28365) | 0.3.1 and 0.3.2 follow up: make today the end date, not yesterday                                                                    |
 | `0.7.0`  | 2023-07-12 | [28246](https://github.com/airbytehq/airbyte/pull/28246) | Add new streams: labels, criterions, biddig strategies                                                                               |
 | `0.6.1`  | 2023-07-12 | [28230](https://github.com/airbytehq/airbyte/pull/28230) | Reduce amount of logs produced by the connector while working with big amount of data                                                |
@@ -263,4 +270,3 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 | `0.1.3`  | 2021-07-23 | [4788](https://github.com/airbytehq/airbyte/pull/4788)   | Support main streams, fix bug with exception `DATE_RANGE_TOO_NARROW` for incremental streams                                         |
 | `0.1.2`  | 2021-07-06 | [4539](https://github.com/airbytehq/airbyte/pull/4539)   | Add `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                                      |
 | `0.1.1`  | 2021-06-23 | [4288](https://github.com/airbytehq/airbyte/pull/4288)   | Fix `Bugfix: Correctly declare required parameters`                                                                                  |
-

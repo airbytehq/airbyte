@@ -33,7 +33,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: generally_available
+  supportLevel: certified
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
 metadataSpecVersion: "1.0"
 ```

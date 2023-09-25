@@ -22,6 +22,7 @@ LOGGER = AirbyteLogger()
 def mock_big_size_object():
     mock = MagicMock()
     mock.__sizeof__.return_value = 1000000001
+    mock.items = lambda: [("2023-08-01", ["file1.txt", "file2.txt"])]
     return mock
 
 
@@ -592,3 +593,145 @@ class TestIncrementalFileStream:
             path_pattern="**/prefix*.csv"
         )
         assert stream_instance.get_updated_state(current_state, latest_record)["_ab_source_file_last_modified"] == "2022-11-09T11:12:00Z"
+
+    @pytest.mark.parametrize(
+        "input_state, expected_output",
+        [
+            pytest.param({}, {}, id="empty-input"),
+            pytest.param(
+                {
+                    "history": {
+                        "file1.txt": "2023-08-01T00:00:00.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-08-01T00:00:00.000000Z_file1.txt",
+                },
+                {
+                    "history": {
+                        "2023-08-01": ["file1.txt"],
+                    },
+                    "_ab_source_file_last_modified": "2023-08-01T00:00:00Z",
+                },
+                id="single-file-single-timestamp",
+            ),
+            pytest.param(
+                {
+                    "history": {
+                        "file1.txt": "2023-08-01T00:00:00.000000Z",
+                        "file2.txt": "2023-08-01T00:00:00.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-08-01T00:00:00.000000Z_file2.txt",
+                },
+                {
+                    "history": {
+                        "2023-08-01": ["file1.txt", "file2.txt"],
+                    },
+                    "_ab_source_file_last_modified": "2023-08-01T00:00:00Z",
+                },
+                id="multiple-files-same-timestamp",
+            ),
+            pytest.param(
+                {
+                    "history": {
+                        "file1.txt": "2023-08-01T00:00:00.000000Z",
+                        "file2.txt": "2023-08-02T00:00:00.000000Z",
+                        "file3.txt": "2023-08-02T00:00:00.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-08-02T00:00:00.000000Z_file3.txt",
+                },
+                {
+                    "history": {
+                        "2023-08-01": ["file1.txt"],
+                        "2023-08-02": ["file2.txt", "file3.txt"],
+                    },
+                    "_ab_source_file_last_modified": "2023-08-02T00:00:00Z",
+                },
+                id="multiple-files-different-timestamps",
+            ),
+            pytest.param(
+                {
+                    "history": {
+                        "file1.txt": "2023-08-01T10:30:00.000000Z",
+                        "file2.txt": "2023-08-01T15:45:00.000000Z",
+                        "file3.txt": "2023-08-02T02:00:00.000000Z",
+                    },
+                    "_ab_source_file_last_modified": "2023-08-02T00:00:00.000000Z_file3.txt",
+                },
+                {
+                    "history": {
+                        "2023-08-01": ["file1.txt", "file2.txt"],
+                        "2023-08-02": ["file3.txt"],
+                    },
+                    "_ab_source_file_last_modified": "2023-08-02T00:00:00Z",
+                },
+                id="handling-different-times",
+            ),
+        ],
+    )
+    def test_get_converted_stream_state(self, input_state, expected_output):
+        assert IncrementalFileStreamS3(dataset="dummy", provider={}, format={}, path_pattern="")._get_converted_stream_state(input_state) == expected_output
+
+    @pytest.mark.parametrize(
+        "stream_state, expected_output",
+        [
+            pytest.param({}, False, id="empty-stream-state"),
+            pytest.param(
+                {
+                    "history": {
+                        "2023-08-01": "file1.txt",
+                        "2023-08-02": "file2.txt",
+                        "2023-08-03": "file3.txt",
+                    },
+                    "_ab_source_file_last_modified": "2023-08-01T00:00:00.000000Z",
+                },
+                True,
+                id="v4-format-history-and-cursor",
+            ),
+            pytest.param(
+                {
+                    "history": {
+                        "2023-08-01": ["file1.txt"],
+                        "2023-08-02": ["file2.txt", "file3.txt"],
+                    },
+                    "_ab_source_file_last_modified": "2023-08-01T00:00:00Z",
+                },
+                False,
+                id="v3-format-history-and-cursor",
+            ),
+            pytest.param(
+                {
+                    "history": {
+                        "2023-08-01": "file1.txt",
+                        "2023-08-02": "file2.txt",
+                    },
+                },
+                True,
+                id="v4-missing-cursor",
+            ),
+            pytest.param(
+                {
+                    "history": {
+                        "2023-08-01": ["file1.txt"],
+                        "2023-08-02": ["file2.txt", "file3.txt"],
+                    },
+                },
+                False,
+                id="v3-missing-cursor",
+            ),
+            pytest.param(
+                {
+                    "_ab_source_file_last_modified": "2023-08-01T00:00:00.000000Z",
+                },
+                True,
+                id="v4-cursor-only",
+            ),
+            pytest.param(
+                {
+                    "_ab_source_file_last_modified": "2023-08-01T00:00:00Z",  # Invalid format (missing microseconds)
+                },
+                False,
+                id="v3-cursor-only",
+            ),
+        ],
+    )
+    def test_is_v4_state_format(self, stream_state: Mapping[str, Any], expected_output):
+        assert IncrementalFileStreamS3(dataset="dummy", provider={}, format={}, path_pattern="")._is_v4_state_format(stream_state) == expected_output

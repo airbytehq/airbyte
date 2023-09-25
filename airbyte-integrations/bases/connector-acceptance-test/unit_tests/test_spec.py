@@ -5,7 +5,7 @@
 from typing import Any, Callable, Dict
 
 import pytest
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_protocol.models import ConnectorSpecification
 from connector_acceptance_test import conftest
 from connector_acceptance_test.tests.test_core import TestSpec as _TestSpec
 
@@ -548,10 +548,7 @@ def test_enum_usage(connector_spec, should_fail):
         (
             ConnectorSpecification(
                 connectionSpecification={"type": "object"},
-                advanced_auth={
-                    "auth_type": "oauth2.0",
-                    "oauth_config_specification": {}
-                },
+                advanced_auth={"auth_type": "oauth2.0", "oauth_config_specification": {}},
             ),
             "",
         ),
@@ -583,12 +580,7 @@ def test_enum_usage(connector_spec, should_fail):
                     "oauth_config_specification": {
                         "oauth_user_input_from_connector_config_specification": {
                             "type": "object",
-                            "properties": {
-                                "api_url": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["api_url"]
-                                }
-                            }
+                            "properties": {"api_url": {"type": "string", "path_in_connector_config": ["api_url"]}},
                         }
                     },
                 },
@@ -600,28 +592,14 @@ def test_enum_usage(connector_spec, should_fail):
             ConnectorSpecification(
                 connectionSpecification={
                     "type": "object",
-                    "properties": {
-                        "authentication": {
-                            "type": "object",
-                            "properties": {
-                                "client_id": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
+                    "properties": {"authentication": {"type": "object", "properties": {"client_id": {"type": "string"}}}},
                 },
                 advanced_auth={
                     "auth_type": "oauth2.0",
                     "oauth_config_specification": {
                         "complete_oauth_output_specification": {
                             "type": "object",
-                            "properties": {
-                                "client_id": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["credentials", "client_id"]
-                                }
-                            }
+                            "properties": {"client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]}},
                         }
                     },
                 },
@@ -633,28 +611,14 @@ def test_enum_usage(connector_spec, should_fail):
             ConnectorSpecification(
                 connectionSpecification={
                     "type": "object",
-                    "properties": {
-                        "authentication": {
-                            "type": "object",
-                            "properties": {
-                                "client_id": {
-                                    "type": "string"
-                                }
-                            }
-                        }
-                    },
+                    "properties": {"authentication": {"type": "object", "properties": {"client_id": {"type": "string"}}}},
                 },
                 advanced_auth={
                     "auth_type": "oauth2.0",
                     "oauth_config_specification": {
                         "complete_oauth_server_output_specification": {
                             "type": "object",
-                            "properties": {
-                                "client_id": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["credentials", "client_id"]
-                                }
-                            }
+                            "properties": {"client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]}},
                         }
                     },
                 },
@@ -667,34 +631,18 @@ def test_enum_usage(connector_spec, should_fail):
                 connectionSpecification={
                     "type": "object",
                     "properties": {
-                        "api_url": {
-                            "type": "object"
-                        },
+                        "api_url": {"type": "object"},
                         "credentials": {
                             "type": "object",
                             "properties": {
-                                "auth_type": {
-                                    "type": "string",
-                                    "const": "oauth2.0"
-                                },
-                                "client_id": {
-                                    "type": "string"
-                                },
-                                "client_secret": {
-                                    "type": "string"
-                                },
-                                "access_token": {
-                                    "type": "string"
-                                },
-                                "refresh_token": {
-                                    "type": "string"
-                                },
-                                "token_expiry_date": {
-                                    "type": "string",
-                                    "format": "date-time"
-                                }
-                            }
-                        }
+                                "auth_type": {"type": "string", "const": "oauth2.0"},
+                                "client_id": {"type": "string"},
+                                "client_secret": {"type": "string"},
+                                "access_token": {"type": "string"},
+                                "refresh_token": {"type": "string"},
+                                "token_expiry_date": {"type": "string", "format": "date-time"},
+                            },
+                        },
                     },
                 },
                 advanced_auth={
@@ -704,56 +652,32 @@ def test_enum_usage(connector_spec, should_fail):
                     "oauth_config_specification": {
                         "oauth_user_input_from_connector_config_specification": {
                             "type": "object",
-                            "properties": {
-                                "domain": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["api_url"]
-                                }
-                            }
+                            "properties": {"domain": {"type": "string", "path_in_connector_config": ["api_url"]}},
                         },
                         "complete_oauth_output_specification": {
                             "type": "object",
                             "properties": {
-                                "access_token": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["credentials", "access_token"]
-                                },
-                                "refresh_token": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["credentials", "refresh_token"]
-                                },
+                                "access_token": {"type": "string", "path_in_connector_config": ["credentials", "access_token"]},
+                                "refresh_token": {"type": "string", "path_in_connector_config": ["credentials", "refresh_token"]},
                                 "token_expiry_date": {
                                     "type": "string",
                                     "format": "date-time",
-                                    "path_in_connector_config": ["credentials", "token_expiry_date"]
-                                }
-                            }
+                                    "path_in_connector_config": ["credentials", "token_expiry_date"],
+                                },
+                            },
                         },
                         "complete_oauth_server_input_specification": {
                             "type": "object",
-                            "properties": {
-                                "client_id": {
-                                    "type": "string"
-                                },
-                                "client_secret": {
-                                    "type": "string"
-                                }
-                            }
+                            "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
                         },
                         "complete_oauth_server_output_specification": {
                             "type": "object",
                             "properties": {
-                                "client_id": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["credentials", "client_id"]
-                                },
-                                "client_secret": {
-                                    "type": "string",
-                                    "path_in_connector_config": ["credentials", "client_secret"]
-                                }
-                            }
-                        }
-                    }
+                                "client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]},
+                                "client_secret": {"type": "string", "path_in_connector_config": ["credentials", "client_secret"]},
+                            },
+                        },
+                    },
                 },
             ),
             "",

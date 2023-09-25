@@ -16,7 +16,7 @@ single_jsonl_scenario = (
                     "name": "stream1",
                     "file_type": "jsonl",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -83,7 +83,7 @@ multi_jsonl_with_different_keys_scenario = (
                     "name": "stream1",
                     "file_type": "jsonl",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -164,7 +164,7 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
                     "name": "stream1",
                     "file_type": "jsonl",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -242,7 +242,7 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
                     "name": "stream1",
                     "file_type": "jsonl",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -320,7 +320,7 @@ invalid_jsonl_scenario = (
                     "name": "stream1",
                     "file_type": "jsonl",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -391,13 +391,13 @@ jsonl_multi_stream_scenario = (
                     "name": "stream1",
                     "file_type": "jsonl",
                     "globs": ["*.jsonl"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
                 {
                     "name": "stream2",
                     "file_type": "jsonl",
                     "globs": ["b.jsonl"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -502,7 +502,7 @@ schemaless_jsonl_scenario = (
                     "name": "stream1",
                     "file_type": "jsonl",
                     "globs": ["*"],
-                    "validation_policy": "skip_record",
+                    "validation_policy": "Skip Record",
                     "schemaless": True,
                 }
             ]
@@ -578,14 +578,14 @@ schemaless_jsonl_multi_stream_scenario = (
                     "name": "stream1",
                     "file_type": "jsonl",
                     "globs": ["a.jsonl"],
-                    "validation_policy": "skip_record",
+                    "validation_policy": "Skip Record",
                     "schemaless": True,
                 },
                 {
                     "name": "stream2",
                     "file_type": "jsonl",
                     "globs": ["b.jsonl"],
-                    "validation_policy": "skip_record",
+                    "validation_policy": "Skip Record",
                 }
             ]
         }
@@ -679,7 +679,7 @@ jsonl_user_input_schema_scenario = (
                     "name": "stream1",
                     "file_type": "jsonl",
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                     "input_schema": '{"col1": "integer", "col2": "string"}'
                 }
             ]

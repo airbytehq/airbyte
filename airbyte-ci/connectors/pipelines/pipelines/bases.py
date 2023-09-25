@@ -19,7 +19,7 @@ import anyio
 import asyncer
 from anyio import Path
 from connector_ops.utils import Connector, console
-from dagger import Container, DaggerError, QueryError
+from dagger import Container, DaggerError
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines import sentry_utils
 from pipelines.actions import remote_storage
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class ConnectorWithModifiedFiles(Connector):
-    modified_files: Set[Path] = field(default_factory=list)
+    modified_files: Set[Path] = field(default_factory=frozenset)
 
     @property
     def has_metadata_change(self) -> bool:
@@ -91,12 +91,15 @@ class Step(ABC):
 
     title: ClassVar[str]
     max_retries: ClassVar[int] = 0
+    max_dagger_error_retries: ClassVar[int] = 3
     should_log: ClassVar[bool] = True
     success_exit_code: ClassVar[int] = 0
     skipped_exit_code: ClassVar[int] = None
     # The max duration of a step run. If the step run for more than this duration it will be considered as timed out.
     # The default of 5 hours is arbitrary and can be changed if needed.
     max_duration: ClassVar[timedelta] = timedelta(hours=5)
+
+    retry_delay = timedelta(seconds=10)
 
     def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
@@ -155,28 +158,39 @@ class Step(ABC):
         Returns:
             StepResult: The step result following the step run.
         """
+        self.logger.info(f"🚀 Start {self.title}")
+        self.started_at = datetime.utcnow()
+        completion_event = anyio.Event()
         try:
-            self.started_at = datetime.utcnow()
-            self.logger.info(f"🚀 Start {self.title}")
-            completion_event = anyio.Event()
             async with asyncer.create_task_group() as task_group:
                 soon_result = task_group.soonify(self.run_with_completion)(completion_event, *args, **kwargs)
                 task_group.soonify(self.log_progress)(completion_event)
+            step_result = soon_result.value
+        except DaggerError as e:
+            self.logger.error("Step failed with an unexpected dagger error", exc_info=e)
+            step_result = StepResult(self, StepStatus.FAILURE, stderr=str(e), exc_info=e)
 
-            result = soon_result.value
+        self.stopped_at = datetime.utcnow()
+        self.log_step_result(step_result)
 
-            if result.status is StepStatus.FAILURE and self.retry_count <= self.max_retries and self.max_retries > 0:
-                self.retry_count += 1
-                await anyio.sleep(10)
-                self.logger.warn(f"Retry #{self.retry_count}.")
-                return await self.run(*args, **kwargs)
-            self.stopped_at = datetime.utcnow()
-            self.log_step_result(result)
-            return result
-        except (DaggerError, QueryError) as e:
-            self.stopped_at = datetime.utcnow()
-            self.logger.error(f"Dagger error on step {self.title}: {e}")
-            return StepResult(self, StepStatus.FAILURE, stderr=str(e))
+        lets_retry = self.should_retry(step_result)
+        step_result = await self.retry(step_result, *args, **kwargs) if lets_retry else step_result
+        return step_result
+
+    def should_retry(self, step_result: StepResult) -> bool:
+        """Return True if the step should be retried."""
+        if step_result.status is not StepStatus.FAILURE:
+            return False
+        max_retries = self.max_dagger_error_retries if step_result.exc_info else self.max_retries
+        return self.retry_count < max_retries and max_retries > 0
+
+    async def retry(self, step_result, *args, **kwargs) -> StepResult:
+        self.retry_count += 1
+        self.logger.warn(
+            f"Failed with error: {step_result.stderr}.\nRetry #{self.retry_count} in {self.retry_delay.total_seconds()} seconds..."
+        )
+        await anyio.sleep(self.retry_delay.total_seconds())
+        return await self.run(*args, **kwargs)
 
     def log_step_result(self, result: StepResult) -> None:
         """Log the step result.
@@ -186,7 +200,7 @@ class Step(ABC):
         """
         duration = format_duration(self.run_duration)
         if result.status is StepStatus.FAILURE:
-            self.logger.error(f"{result.status.get_emoji()} failed (duration: {duration})")
+            self.logger.info(f"{result.status.get_emoji()} failed (duration: {duration})")
         if result.status is StepStatus.SKIPPED:
             self.logger.info(f"{result.status.get_emoji()} was skipped (duration: {duration})")
         if result.status is StepStatus.SUCCESS:
@@ -322,6 +336,7 @@ class StepResult:
     stderr: Optional[str] = None
     stdout: Optional[str] = None
     output_artifact: Any = None
+    exc_info: Optional[Exception] = None
 
     def __repr__(self) -> str:  # noqa D105
         return f"{self.step.title}: {self.status.value}"
@@ -570,7 +585,7 @@ class ConnectorReport(Report):
             markdown_comment += f"☁️ [View runs for commit in Dagger Cloud]({self.pipeline_context.dagger_cloud_url})\n\n"
 
         markdown_comment += "*Please note that tests are only run on PR ready for review. Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.*\n"
-        markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connector_ops/connector_ops/pipelines/README.md) tool with the following command**\n"
+        markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool with the following command**\n"
         markdown_comment += f"```bash\nairbyte-ci connectors --name={self.pipeline_context.connector.technical_name} test\n```\n\n"
         self.pipeline_context.pull_request.create_issue_comment(markdown_comment)
 

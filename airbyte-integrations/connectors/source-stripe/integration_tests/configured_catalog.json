@@ -304,7 +304,6 @@
     },
     {
       "stream": {
-
         "name": "persons",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],

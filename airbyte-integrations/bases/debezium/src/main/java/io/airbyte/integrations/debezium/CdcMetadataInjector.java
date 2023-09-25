@@ -12,7 +12,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Postgres we add the lsn to the records. In MySql we add the file name and position to the
  * records.
  */
-public interface CdcMetadataInjector {
+public interface CdcMetadataInjector<T> {
 
   /**
    * A debezium record contains multiple pieces. Ref :
@@ -24,7 +24,7 @@ public interface CdcMetadataInjector {
    */
   void addMetaData(ObjectNode event, JsonNode source);
 
-  default void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final long lsn) {
+  default void addMetaDataToRowsFetchedOutsideDebezium(final ObjectNode record, final String transactionTimestamp, final T metadataToAdd) {
     throw new RuntimeException("Not Supported");
   }
 

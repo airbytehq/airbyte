@@ -14,6 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
@@ -24,13 +25,17 @@ import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.bson.Document;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -115,14 +120,16 @@ class MongoDbSourceTest {
   @Test
   void testDiscoverOperation() throws IOException {
     final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
-    final Document schemaDiscoveryResponse = Document.parse(MoreResources.readResource("schema_discovery_response.json"));
+    final List<Map<String, Object>> schemaDiscoveryJsonResponses =
+        Jsons.deserialize(MoreResources.readResource("schema_discovery_response.json"), new TypeReference<>() {});
+    final List<Document> schemaDiscoveryResponses = schemaDiscoveryJsonResponses.stream().map(s -> new Document(s)).collect(Collectors.toList());
     final Document authorizedCollectionsResponse = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
     final MongoCollection mongoCollection = mock(MongoCollection.class);
     final MongoCursor<Document> cursor = mock(MongoCursor.class);
     final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
 
-    when(cursor.hasNext()).thenReturn(true);
-    when(cursor.next()).thenReturn(schemaDiscoveryResponse);
+    when(cursor.hasNext()).thenReturn(true, true, false);
+    when(cursor.next()).thenReturn(schemaDiscoveryResponses.get(0), schemaDiscoveryResponses.get(1));
     when(aggregateIterable.cursor()).thenReturn(cursor);
     when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
     when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
@@ -138,13 +145,32 @@ class MongoDbSourceTest {
     assertTrue(stream.isPresent());
     assertEquals(DB_NAME, stream.get().getNamespace());
     assertEquals("testCollection", stream.get().getName());
-    assertEquals("string", stream.get().getJsonSchema().get("properties").get("_id").get("type").asText());
-    assertEquals("string", stream.get().getJsonSchema().get("properties").get("name").get("type").asText());
-    assertEquals("string", stream.get().getJsonSchema().get("properties").get("last_updated").get("type").asText());
-    assertEquals("number", stream.get().getJsonSchema().get("properties").get("total").get("type").asText());
-    assertEquals("number", stream.get().getJsonSchema().get("properties").get("price").get("type").asText());
-    assertEquals("array", stream.get().getJsonSchema().get("properties").get("items").get("type").asText());
-    assertEquals("object", stream.get().getJsonSchema().get("properties").get("owners").get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("_id").get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("name").get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("last_updated").get("type").asText());
+    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("total").get("type").asText());
+    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("price").get("type").asText());
+    assertEquals(JsonSchemaType.ARRAY.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("items").get("type").asText());
+    assertEquals(JsonSchemaType.OBJECT.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("owners").get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get("other").get("type").asText());
+    assertEquals(JsonSchemaType.NUMBER.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_LSN).get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_DELETED_AT).get("type").asText());
+    assertEquals(JsonSchemaType.STRING.getJsonSchemaTypeMap().get("type"),
+        stream.get().getJsonSchema().get("properties").get(DebeziumEventUtils.CDC_UPDATED_AT).get("type").asText());
+    assertEquals(true, stream.get().getSourceDefinedCursor());
+    assertEquals(List.of(MongoCatalogHelper.DEFAULT_CURSOR_FIELD), stream.get().getDefaultCursorField());
+    assertEquals(List.of(List.of(MongoCatalogHelper.DEFAULT_CURSOR_FIELD)), stream.get().getSourceDefinedPrimaryKey());
+    assertEquals(MongoCatalogHelper.SUPPORTED_SYNC_MODES, stream.get().getSupportedSyncModes());
   }
 
   @Test
@@ -163,6 +189,16 @@ class MongoDbSourceTest {
   @Test
   void testIncrementalRefresh() throws Exception {
     // TODO implement
+  }
+
+  @Test
+  void testConvertState() {
+    final var state1 = Jsons.deserialize(
+        "[{\"type\":\"STREAM\",\"stream\":{\"stream_descriptor\":{\"name\":\"test.acceptance_test1\"},\"stream_state\":{\"id\":\"64c0029d95ad260d69ef28a2\"}}}]");
+    final var actual = source.convertState(state1);
+    assertTrue(actual.containsKey("test.acceptance_test1"), "missing test.acceptance_test1");
+    assertEquals("64c0029d95ad260d69ef28a2", actual.get("test.acceptance_test1").id(), "id value does not match");
+
   }
 
   private static JsonNode createConfiguration(final Optional<String> username, final Optional<String> password) {

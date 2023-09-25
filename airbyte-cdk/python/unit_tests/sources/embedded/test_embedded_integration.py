@@ -7,6 +7,7 @@ from typing import Any, Mapping, Optional
 from unittest.mock import MagicMock
 
 from airbyte_cdk.sources.embedded.base_integration import BaseEmbeddedIntegration
+from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import (
     AirbyteCatalog,
     AirbyteLogMessage,
@@ -16,6 +17,7 @@ from airbyte_protocol.models import (
     AirbyteStream,
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
+    ConnectorSpecification,
     DestinationSyncMode,
     Level,
     SyncMode,
@@ -33,7 +35,14 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
         self.source_class = MagicMock()
         self.source = MagicMock()
         self.source_class.return_value = self.source
-        self.config = MagicMock()
+        self.source.spec.return_value = ConnectorSpecification(connectionSpecification={
+            "properties": {
+                "test": {
+                    "type": "string",
+                }
+            }
+        })
+        self.config = {"test": "abc"}
         self.integration = TestIntegration(self.source, self.config)
         self.stream1 = AirbyteStream(
             name="test",
@@ -75,6 +84,12 @@ class EmbeddedIntegrationTestCase(unittest.TestCase):
             ),
             None,
         )
+
+    def test_failed_check(self):
+        self.config = {"test": 123}
+        with self.assertRaises(AirbyteTracedException) as error:
+            TestIntegration(self.source, self.config)
+        assert str(error.exception) == "123 is not of type 'string'"
 
     def test_state(self):
         state = AirbyteStateMessage(data={})

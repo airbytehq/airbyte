@@ -1,8 +1,14 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
+
+import io
 import logging
 from datetime import datetime
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
+from unittest.mock import patch
 
 import pytest
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
@@ -119,9 +125,28 @@ def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, An
         raise exc
 
     stub = set_stub(reader, mocked_response, multiple_pages)
-    files = list(reader.get_matching_files(globs, logger))
+    files = list(reader.get_matching_files(globs, None, logger))
     stub.deactivate()
     assert set(f.uri for f in files) == expected_uris
+
+
+@patch("boto3.client")
+def test_given_multiple_pages_when_get_matching_files_then_pass_continuation_token(boto3_client_mock) -> None:
+    boto3_client_mock.return_value.list_objects_v2.side_effect = [
+        {"Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}], "KeyCount": 2, "NextContinuationToken": "a key"},
+        {"Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}], "KeyCount": 2},
+    ]
+    reader = SourceS3StreamReader()
+    reader.config = Config(
+        bucket="test",
+        aws_access_key_id="aws_access_key_id",
+        aws_secret_access_key="aws_secret_access_key",
+        streams=[],
+        endpoint=None,
+    )
+    list(reader.get_matching_files(["**"], None, logger))
+    assert boto3_client_mock.return_value.list_objects_v2.call_count == 2
+    assert "ContinuationToken" in boto3_client_mock.return_value.list_objects_v2.call_args_list[1].kwargs
 
 
 def test_get_matching_files_exception():
@@ -131,20 +156,43 @@ def test_get_matching_files_exception():
     stub.add_client_error("list_objects_v2")
     stub.activate()
     with pytest.raises(ErrorListingFiles) as exc:
-        list(reader.get_matching_files(["*"], logger))
+        list(reader.get_matching_files(["*"], None, logger))
     stub.deactivate()
     assert FileBasedSourceError.ERROR_LISTING_FILES.value in exc.value.args[0]
 
 
 def test_get_matching_files_without_config_raises_exception():
     with pytest.raises(ValueError):
-        next(SourceS3StreamReader().get_matching_files([], logger))
+        next(SourceS3StreamReader().get_matching_files([], None, logger))
 
 
 def test_open_file_without_config_raises_exception():
     with pytest.raises(ValueError):
-        with SourceS3StreamReader().open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, logger) as fp:
+        with SourceS3StreamReader().open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, None, logger) as fp:
             fp.read()
+
+
+@patch("smart_open.open")
+def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
+    smart_open_mock.return_value = io.BytesIO()
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+    try:
+        reader.config = Config(
+            bucket="test",
+            aws_access_key_id="test",
+            aws_secret_access_key="test",
+            streams=[],
+            endpoint=None,
+        )
+    except Exception as exc:
+        raise exc
+
+    encoding = "utf8"
+    with reader.open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, encoding, logger) as fp:
+        fp.read()
+
+    smart_open_mock.assert_called_once_with('s3://test/', transport_params={"client": reader.s3_client}, mode=FileReadMode.READ.value, encoding=encoding)
 
 
 def test_get_s3_client_without_config_raises_exception():

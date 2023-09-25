@@ -89,6 +89,7 @@ This Source is capable of syncing the following core Streams:
 - [Customers](https://shopify.dev/api/admin-rest/2022-01/resources/customer#top)
 - [Draft Orders](https://shopify.dev/api/admin-rest/2022-01/resources/draftorder#top)
 - [Discount Codes](https://shopify.dev/api/admin-rest/2022-01/resources/discountcode#top)
+- [Disputes](https://shopify.dev/docs/api/admin-rest/2023-07/resources/dispute)
 - [Metafields](https://shopify.dev/api/admin-rest/2022-01/resources/metafield#top)
 - [Orders](https://shopify.dev/api/admin-rest/2022-01/resources/order#top)
 - [Orders Refunds](https://shopify.dev/api/admin-rest/2022-01/resources/refund#top)
@@ -149,6 +150,9 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| 0.6.2   | 2023-08-09 | [29302](https://github.com/airbytehq/airbyte/pull/29302) | Handle the `Internal Server Error` when entity could be fetched                 |
+| 0.6.1   | 2023-08-08 | [28291](https://github.com/airbytehq/airbyte/pull/28291) | Allow `shop` field to accept `*.myshopify.com` shop names, updated `OAuth Spec`                  |
+| 0.6.0   | 2023-08-02 | [28770](https://github.com/airbytehq/airbyte/pull/28770) | Added `Disputes` stream  |
 | 0.5.1   | 2023-07-13 | [28700](https://github.com/airbytehq/airbyte/pull/28700) | Improved `error messages` with more user-friendly description, refactored code  |
 | 0.5.0   | 2023-06-13 | [27732](https://github.com/airbytehq/airbyte/pull/27732) | License Update: Elv2                                                                                                            |
 | 0.4.0   | 2023-06-13 | [27083](https://github.com/airbytehq/airbyte/pull/27083) | Added `CustomerSavedSearch`, `CustomerAddress` and `Countries` streams                                                          |

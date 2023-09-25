@@ -37,6 +37,8 @@ acceptance_tests:
             bypass_reason: The stream requires real purchases to fill in the data.
           - name: customer_saved_search
             bypass_reason: The stream is not available for our sandbox.
+          - name: disputes
+            bypass_reason: The stream requires real purchases to fill in the data.
   incremental:
     tests:
       - config_path: "secrets/config.json"

@@ -20,7 +20,6 @@ from airbyte_cdk.connector_builder.connector_builder_handler import (
     TestReadLimits,
     create_source,
     get_limits,
-    list_streams,
     resolve_manifest,
 )
 from airbyte_cdk.connector_builder.main import handle_connector_builder_request, handle_request, read_stream
@@ -43,7 +42,6 @@ from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetrieverTestReadDecorator
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.streams.core import Stream
 from unit_tests.connector_builder.utils import create_configured_catalog
 
 _stream_name = "stream_with_custom_requester"
@@ -537,7 +535,7 @@ def test_read_returns_error_response(mock_from_exception):
 )
 def test_invalid_protocol_command(command, valid_resolve_manifest_config_file):
     config = copy.deepcopy(RESOLVE_MANIFEST_CONFIG)
-    config["__command"] = "list_streams"
+    config["__command"] = "resolve_manifest"
     with pytest.raises(SystemExit):
         handle_request([command, "--config", str(valid_resolve_manifest_config_file), "--catalog", ""])
 
@@ -565,71 +563,6 @@ def test_invalid_config_command(invalid_config_file, dummy_catalog):
 @pytest.fixture
 def manifest_declarative_source():
     return mock.Mock(spec=ManifestDeclarativeSource, autospec=True)
-
-
-def test_list_streams(manifest_declarative_source):
-    manifest_declarative_source.streams.return_value = [
-        create_mock_declarative_stream(create_mock_retriever("a name", "https://a-url-base.com", "a-path")),
-        create_mock_declarative_stream(create_mock_retriever("another name", "https://another-url-base.com", "another-path")),
-    ]
-
-    result = list_streams(manifest_declarative_source, {})
-
-    assert result.type == MessageType.RECORD
-    assert result.record.stream == "list_streams"
-    assert result.record.data == {
-        "streams": [
-            {"name": "a name", "url": "https://a-url-base.com/a-path"},
-            {"name": "another name", "url": "https://another-url-base.com/another-path"},
-        ]
-    }
-
-
-def test_given_stream_is_not_declarative_stream_when_list_streams_then_return_exception_message(manifest_declarative_source):
-    manifest_declarative_source.streams.return_value = [mock.Mock(spec=Stream)]
-
-    error_message = list_streams(manifest_declarative_source, {})
-
-    assert error_message.type == MessageType.TRACE
-    assert error_message.trace.error.message.startswith("Error listing streams")
-    assert "A declarative source should only contain streams of type DeclarativeStream" in error_message.trace.error.internal_message
-
-
-def test_given_declarative_stream_retriever_is_not_http_when_list_streams_then_return_exception_message(manifest_declarative_source):
-    declarative_stream = mock.Mock(spec=DeclarativeStream)
-    # `spec=DeclarativeStream` is needed for `isinstance` work but `spec` does not expose dataclasses fields, so we create one ourselves
-    declarative_stream.retriever = mock.Mock()
-    manifest_declarative_source.streams.return_value = [declarative_stream]
-
-    error_message = list_streams(manifest_declarative_source, {})
-
-    assert error_message.type == MessageType.TRACE
-    assert error_message.trace.error.message.startswith("Error listing streams")
-    assert "A declarative stream should only have a retriever of type SimpleRetriever" in error_message.trace.error.internal_message
-
-
-def test_given_unexpected_error_when_list_streams_then_return_exception_message(manifest_declarative_source):
-    manifest_declarative_source.streams.side_effect = Exception("unexpected error")
-
-    error_message = list_streams(manifest_declarative_source, {})
-
-    assert error_message.type == MessageType.TRACE
-    assert error_message.trace.error.message.startswith("Error listing streams")
-    assert "unexpected error" == error_message.trace.error.internal_message
-
-
-def test_list_streams_integration_test():
-    config = copy.deepcopy(RESOLVE_MANIFEST_CONFIG)
-    command = "list_streams"
-    config["__command"] = command
-    source = ManifestDeclarativeSource(MANIFEST)
-    limits = TestReadLimits()
-
-    list_streams = handle_connector_builder_request(source, command, config, None, limits)
-
-    assert list_streams.record.data == {
-        "streams": [{"name": "stream_with_custom_requester", "url": "https://api.sendgrid.com/v3/marketing/lists"}]
-    }
 
 
 def create_mock_retriever(name, url_base, path):

@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.51.6
+File-based CDK: allow for extension mismatch
+
+## 0.51.5
+File-based CDK: Remove CSV noisy log
+
+## 0.51.4
+Source-S3 V4: feature parity rollout
+
+## 0.51.3
+File-based CDK: Do not stop processing files in slice on error
+
+## 0.51.2
+Check config against spec in embedded sources and remove list endpoint from connector builder module
+
+## 0.51.1
+low-code: allow formatting datetime as milliseconds since unix epoch
+
+## 0.51.0
+File-based CDK: handle legacy options
+
+## 0.50.2
+Fix title and description of datetime_format fields
+
+## 0.50.1
+File-based CDK cursor and entrypoint updates
+
 ## 0.50.0
 Low code CDK: Decouple SimpleRetriever and HttpStream
 

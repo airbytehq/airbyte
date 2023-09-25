@@ -53,10 +53,7 @@
         "properties": {
           "refresh_token": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "refresh_token"
-            ]
+            "path_in_connector_config": ["credentials", "refresh_token"]
           }
         }
       },
@@ -76,17 +73,11 @@
         "properties": {
           "client_id": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "client_id"
-            ]
+            "path_in_connector_config": ["credentials", "client_id"]
           },
           "client_secret": {
             "type": "string",
-            "path_in_connector_config": [
-              "credentials",
-              "client_secret"
-            ]
+            "path_in_connector_config": ["credentials", "client_secret"]
           }
         }
       }

@@ -25,7 +25,7 @@ properties:
       - githubIssueLabel
       - connectorSubtype
       - releaseStage
-    additionalProperties: false
+    additionalProperties: true
     properties:
       name:
         type: string
@@ -105,5 +105,5 @@ properties:
         "$ref": SuggestedStreams.yaml
       resourceRequirements:
         "$ref": ActorDefinitionResourceRequirements.yaml
-      _ab_internal:
+      ab_internal:
         "$ref": AirbyteInternal.yaml

@@ -4,18 +4,15 @@
 
 import dataclasses
 from datetime import datetime
-from typing import Any, Dict, List, Mapping
-from urllib.parse import urljoin
+from typing import Any, Mapping
 
 from airbyte_cdk.connector_builder.message_grouper import MessageGrouper
 from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.models import Type
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
-from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
 from airbyte_cdk.sources.declarative.parsers.model_to_component_factory import ModelToComponentFactory
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE = 5
@@ -87,45 +84,6 @@ def resolve_manifest(source: ManifestDeclarativeSource) -> AirbyteMessage:
     except Exception as exc:
         error = AirbyteTracedException.from_exception(exc, message=f"Error resolving manifest: {str(exc)}")
         return error.as_airbyte_message()
-
-
-def list_streams(source: ManifestDeclarativeSource, config: Dict[str, Any]) -> AirbyteMessage:
-    try:
-        streams = [
-            {
-                "name": http_stream.name,
-                "url": urljoin(
-                    http_stream.requester.get_url_base(),
-                    http_stream.requester.get_path(stream_state=None, stream_slice=None, next_page_token=None),
-                ),
-            }
-            for http_stream in _get_http_streams(source, config)
-        ]
-        return AirbyteMessage(
-            type=Type.RECORD,
-            record=AirbyteRecordMessage(
-                data={"streams": streams},
-                emitted_at=_emitted_at(),
-                stream="list_streams",
-            ),
-        )
-    except Exception as exc:
-        return AirbyteTracedException.from_exception(exc, message=f"Error listing streams: {str(exc)}").as_airbyte_message()
-
-
-def _get_http_streams(source: ManifestDeclarativeSource, config: Dict[str, Any]) -> List[SimpleRetriever]:
-    http_streams = []
-    for stream in source.streams(config=config):
-        if isinstance(stream, DeclarativeStream):
-            if isinstance(stream.retriever, SimpleRetriever):
-                http_streams.append(stream.retriever)
-            else:
-                raise TypeError(
-                    f"A declarative stream should only have a retriever of type SimpleRetriever, but received: {stream.retriever.__class__}"
-                )
-        else:
-            raise TypeError(f"A declarative source should only contain streams of type DeclarativeStream, but received: {stream.__class__}")
-    return http_streams
 
 
 def _emitted_at() -> int:

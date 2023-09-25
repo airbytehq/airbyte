@@ -1,21 +1,29 @@
-from dagster import get_dagster_logger
-from dagster_gcp.gcs.file_manager import GCSFileManager, GCSFileHandle
-
-from orchestrator.models.metadata import LatestMetadataEntry
-from metadata_service.constants import METADATA_FILE_NAME
-from metadata_service.gcs_upload import get_metadata_remote_file_path
-from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
-from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 
 from typing import Union
 
+from dagster import get_dagster_logger
+from dagster_gcp.gcs.file_manager import GCSFileHandle, GCSFileManager
+from metadata_service.constants import METADATA_FILE_NAME
+from metadata_service.gcs_upload import get_metadata_remote_file_path
+from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
+from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
+from orchestrator.models.metadata import LatestMetadataEntry
+
 PolymorphicRegistryEntry = Union[ConnectorRegistrySourceDefinition, ConnectorRegistryDestinationDefinition]
 
-def _is_docker_repository_overridden(metadata_entry: LatestMetadataEntry, registry_entry: PolymorphicRegistryEntry,) -> bool:
+
+def _is_docker_repository_overridden(
+    metadata_entry: LatestMetadataEntry,
+    registry_entry: PolymorphicRegistryEntry,
+) -> bool:
     """Check if the docker repository is overridden in the registry entry."""
     registry_entry_docker_repository = registry_entry.dockerRepository
     metadata_docker_repository = metadata_entry.metadata_definition.data.dockerRepository
     return registry_entry_docker_repository != metadata_docker_repository
+
 
 def _get_version_specific_registry_entry_file_path(registry_entry, registry_name):
     """Get the file path for the version specific registry entry file."""
@@ -26,11 +34,15 @@ def _get_version_specific_registry_entry_file_path(registry_entry, registry_name
     registry_entry_file_path = assumed_metadata_file_path.replace(METADATA_FILE_NAME, registry_name)
     return registry_entry_file_path
 
+
 def _check_for_invalid_write_path(write_path: str):
     """Check if the write path is valid."""
 
     if "latest" in write_path:
-        raise ValueError("Cannot write to a path that contains 'latest'. That is reserved for the latest metadata file and its direct transformations")
+        raise ValueError(
+            "Cannot write to a path that contains 'latest'. That is reserved for the latest metadata file and its direct transformations"
+        )
+
 
 def write_registry_to_overrode_file_paths(
     registry_entry: PolymorphicRegistryEntry,
@@ -72,7 +84,8 @@ def write_registry_to_overrode_file_paths(
     overrode_registry_entry_version_write_path = _get_version_specific_registry_entry_file_path(registry_entry, registry_name)
     _check_for_invalid_write_path(overrode_registry_entry_version_write_path)
     logger.info(f"Writing registry entry to {overrode_registry_entry_version_write_path}")
-    file_handle = registry_directory_manager.write_data(registry_entry_json.encode("utf-8"), ext="json", key=overrode_registry_entry_version_write_path)
+    file_handle = registry_directory_manager.write_data(
+        registry_entry_json.encode("utf-8"), ext="json", key=overrode_registry_entry_version_write_path
+    )
     logger.info(f"Successfully wrote registry entry to {file_handle.public_url}")
     return file_handle
-

@@ -11,13 +11,176 @@ Thus, there are generally 4 types of workers.
 
 **Note: Workers here refers to Airbyte workers. Temporal, which Airbyte uses under the hood for scheduling, has its own worker concept. This distinction is important.**
 
-## Job State Machine
+## Sync Jobs
 
-Jobs have the following state machine.
+At a high level, a sync job is an individual invocation of the Airbyte pipeline to synchronize data from a source to a destination data store.
+
+### Sync Job State Machine
+
+Sync jobs have the following state machine.
 
 ![Job state machine](../.gitbook/assets/job-state-machine.png)
 
 [Image Source](https://docs.google.com/drawings/d/1cp8LRZs6UnhAt3jbQ4h40nstcNB0OBOnNRdMFwOJL8I/edit)
+
+### Attempts and Retries
+
+In the event of a failure, the Airbyte platform will retry the pipeline. Each of these sub-invocations of a job is called an attempt.
+
+### Retry Rules
+
+Based on the outcome of previous attempts, the number of permitted attempts per job changes. By default, Airbyte is configured to allow the following:
+
+* 5 subsequent attempts where no data was synchronized
+* 10 total attempts where no data was synchronized
+* 10 total attempts where some data was synchronized
+
+For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+
+### Retry Backoff
+
+After an attempt where no data was synchronized, we implement a short backoff period before starting a new attempt. This will increase with each successive complete failure—a partially successful attempt will reset this value.
+
+By default, Airbyte is configured to backoff with the following values:
+* 10 seconds after the first complete failure
+* 30 seconds after the second
+* 90 seconds after the third
+* 4 minutes and 30 seconds after the fourth
+
+For oss users, these values are configurable. See [Configuring Airbyte](../operator-guides/configuring-airbyte.md#jobs) for more details.
+
+The duration of expected backoff between attempts can be viewed in the logs accessible from the job history UI.
+
+### Retry examples
+
+To help illustrate what is possible, below are a couple examples of how the retry rules may play out under more elaborate circumstances. 
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Job #1</th>
+        </tr>
+        <tr>
+            <th>Attempt Number</th>
+            <th>Synced data?</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">30 second backoff</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td colspan="2">Job succeeds — all data synced</td>
+        </tr>
+    </tbody>
+</table>
+
+<table>
+    <thead>
+        <tr>
+            <th colspan="2">Job #2</th>
+        </tr>
+        <tr>
+            <th>Attempt Number</th>
+            <th>Synced data?</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Yes</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">10 second backoff</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">30 second backoff</td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">90 second backoff</td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">4 minute 30 second backoff</td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td>No</td>
+        </tr>
+        <tr>
+            <td colspan="2">Job Fails — successive failure limit reached</td>
+        </tr>
+    </tbody>
+</table>
 
 ## Worker Responsibilities
 
@@ -105,9 +268,9 @@ The Container Orchestrator is only available for Airbyte Kubernetes today and au
 
 Users running Airbyte Docker should be aware of the above pitfalls.
 
-## Configuring Workers
+## Configuring Jobs & Workers
 
-Details on configuring workers can be found [here](../operator-guides/configuring-airbyte.md).
+Details on configuring jobs & workers can be found [here](../operator-guides/configuring-airbyte.md).
 
 ### Worker Parallization
 Airbyte exposes the following environment variable to change the maximum number of each type of worker allowed to run in parallel. 

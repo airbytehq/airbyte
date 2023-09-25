@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.AIRBYTE_NAMESPACE_SCHEMA;
+import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
@@ -15,8 +15,8 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
@@ -109,14 +109,15 @@ public class BigQueryStagingConsumerFactory {
           final AirbyteStream stream = configuredStream.getStream();
           final StreamConfig streamConfig;
           if (TypingAndDedupingFlag.isDestinationV2()) {
-             streamConfig = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
+            streamConfig = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
           } else {
             streamConfig = null;
           }
           final String streamName = stream.getName();
           final BigQueryRecordFormatter recordFormatter = recordFormatterCreator.apply(stream.getJsonSchema());
 
-          final var internalTableNamespace = TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawNamespace() : BigQueryUtils.sanitizeDatasetId(stream.getNamespace());
+          final var internalTableNamespace =
+              TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawNamespace() : BigQueryUtils.sanitizeDatasetId(stream.getNamespace());
           final var targetTableName =
               TypingAndDedupingFlag.isDestinationV2() ? streamConfig.id().rawName() : targetTableNameTransformer.apply(streamName);
 
@@ -154,11 +155,14 @@ public class BigQueryStagingConsumerFactory {
                                           final TyperDeduper typerDeduper) {
     return () -> {
       LOGGER.info("Preparing airbyte_raw tables in destination started for {} streams", writeConfigs.size());
+      if (TypingAndDedupingFlag.isDestinationV2()) {
+        typerDeduper.prepareTables();
+      }
       for (final BigQueryWriteConfig writeConfig : writeConfigs.values()) {
         LOGGER.info("Preparing staging are in destination for schema: {}, stream: {}, target table: {}, stage: {}",
             writeConfig.tableSchema(), writeConfig.streamName(), writeConfig.targetTableId(), writeConfig.streamName());
         // In Destinations V2, we will always use the 'airbyte' schema/namespace for raw tables
-        final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? AIRBYTE_NAMESPACE_SCHEMA : writeConfig.datasetId();
+        final String rawDatasetId = TypingAndDedupingFlag.isDestinationV2() ? DEFAULT_AIRBYTE_INTERNAL_NAMESPACE : writeConfig.datasetId();
         // Regardless, ensure the schema the customer wants to write to exists
         bigQueryGcsOperations.createSchemaIfNotExists(writeConfig.datasetId(), writeConfig.datasetLocation());
         // Schema used for raw and airbyte internal tables
@@ -174,7 +178,6 @@ public class BigQueryStagingConsumerFactory {
           bigQueryGcsOperations.truncateTableIfExists(rawDatasetId, writeConfig.targetTableId(), writeConfig.tableSchema());
         }
       }
-      typerDeduper.prepareFinalTables();
       LOGGER.info("Preparing tables in destination completed.");
     };
   }
@@ -226,7 +229,7 @@ public class BigQueryStagingConsumerFactory {
    * Tear down process, will attempt to clean out any staging area
    *
    * @param bigQueryGcsOperations collection of staging operations
-   * @param writeConfigs          configuration settings used to describe how to write data and where it exists
+   * @param writeConfigs configuration settings used to describe how to write data and where it exists
    */
   private OnCloseFunction onCloseFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                           final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,

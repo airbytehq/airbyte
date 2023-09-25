@@ -140,7 +140,7 @@
       "sync_mode": "incremental",
       "cursor_field": ["created"],
       "destination_sync_mode": "append"
-    },    
+    },
     {
       "stream": {
         "name": "unsubscribe_groups",

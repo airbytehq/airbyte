@@ -104,10 +104,7 @@
                         "type": "null"
                       },
                       "minAge": {
-                        "type": [
-                          "integer",
-                          "null"
-                        ]
+                        "type": ["integer", "null"]
                       }
                     },
                     "type": "object"

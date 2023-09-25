@@ -1,11 +1,12 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
   "properties": {
     "archived": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "billable": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "budgetEstimate": {
       "anyOf": [
@@ -21,27 +22,27 @@
               "type": ["null", "string"]
             },
             "type": {
-              "type": "string"
+              "type": ["null", "string"]
             },
             "resetOption": {
               "type": ["null", "string"]
             },
             "active": {
-              "type": "boolean"
+              "type": ["null", "boolean"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         }
       ]
     },
     "clientId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "clientName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "color": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "costRate": {
       "anyOf": [
@@ -60,12 +61,12 @@
               "type": ["null", "string"]
             }
           },
-          "type": "object"
+          "type": ["null", "object"]
         }
       ]
     },
     "duration": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "estimate": {
       "properties": {
@@ -76,27 +77,27 @@
           "type": "string"
         }
       },
-      "type": "object"
+      "type": ["null", "object"]
     },
     "hourlyRate": {
       "properties": {
         "amount": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "currency": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
-      "type": "object"
+      "type": ["null", "object"]
     },
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "memberships": {
       "items": {
         "properties": {
           "costRate": {
-            "type": "null"
+            "type": ["null"]
           },
           "hourlyRate": {
             "anyOf": [
@@ -106,67 +107,67 @@
               {
                 "properties": {
                   "amount": {
-                    "type": "integer"
+                    "type": ["null", "integer"]
                   },
                   "currency": {
-                    "type": "string"
+                    "type": ["null", "string"]
                   }
                 },
-                "type": "object"
+                "type": ["null", "object"]
               }
             ]
           },
           "membershipStatus": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "membershipType": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "targetId": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "userId": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         },
-        "type": "object"
+        "type": ["null", "object"]
       },
-      "type": "array"
+      "type": ["null", "array"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "note": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "public": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "template": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "timeEstimate": {
       "properties": {
         "active": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "estimate": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "includeNonBillable": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "resetOption": {
           "type": ["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       },
-      "type": "object"
+      "type": ["null", "object"]
     },
     "workspaceId": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   },
   "type": "object"

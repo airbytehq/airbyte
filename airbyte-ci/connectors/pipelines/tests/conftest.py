@@ -1,8 +1,11 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+import os
 import sys
 from pathlib import Path
+from typing import Set
 
 import dagger
 import git
@@ -10,14 +13,15 @@ import pytest
 import requests
 from connector_ops.utils import Connector
 from pipelines import utils
+from tests.utils import ALL_CONNECTORS
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def anyio_backend():
     return "asyncio"
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 async def dagger_client():
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
         yield client
@@ -49,3 +53,20 @@ def new_connector(airbyte_repo_path: Path, mocker) -> Connector:
     yield Connector("source-new-connector")
     new_connector_code_directory.joinpath("metadata.yaml").unlink()
     new_connector_code_directory.rmdir()
+
+
+@pytest.fixture(autouse=True, scope="session")
+def from_airbyte_root(airbyte_repo_path):
+    """
+    Change the working directory to the root of the Airbyte repo.
+    This will make all the tests current working directory to be the root of the Airbyte repo as we've set autouse=True.
+    """
+    original_dir = Path.cwd()
+    os.chdir(airbyte_repo_path)
+    yield airbyte_repo_path
+    os.chdir(original_dir)
+
+
+@pytest.fixture(scope="session")
+def all_connectors() -> Set[Connector]:
+    return ALL_CONNECTORS
