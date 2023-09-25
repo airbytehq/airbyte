@@ -1,0 +1,10 @@
+{
+    "properties": {
+        "fractional_correction": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          }
+    }
+}
