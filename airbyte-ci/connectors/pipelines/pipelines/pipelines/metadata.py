@@ -59,7 +59,7 @@ class MetadataUpload(SimpleCIStep):
         pre_release: bool = False,
         pre_release_tag: Optional[str] = None,
     ):
-        title = f"Upload metadata for {context.connector.technical_name} v{context.connector.docker_image_tag}"
+        title = f"Upload metadata for {context.connector.technical_name} v{context.connector.version}"
         command_to_run = [
             "metadata_service",
             "upload",
