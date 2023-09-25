@@ -191,7 +191,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
       setSubmitError(null);
       onListenAfterSubmit && onListenAfterSubmit(true);
       try {
-        debugger;
         const result = await onSubmit(formValues);
 
         if (result?.submitCancelled) {
