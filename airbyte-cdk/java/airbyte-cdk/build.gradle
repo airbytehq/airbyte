@@ -55,8 +55,8 @@ def recursiveTasks = [
     'build', 
     'integrationTestJava', 
     'publish', 
-    'publishToMavenLocal'
-    'test', 
+    'publishToMavenLocal',
+    'test',
 ]
 recursiveTasks.each { taskName ->
     tasks.named(taskName).configure {
