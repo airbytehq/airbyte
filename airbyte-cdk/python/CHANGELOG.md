@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.20
+Vector DB CDK: Add text splitting options to document processing
+
 ## 0.51.19
 Ensuring invalid user-provided urls does not generate sentry issues
 
