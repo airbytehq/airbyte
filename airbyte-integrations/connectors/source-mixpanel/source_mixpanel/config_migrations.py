@@ -14,9 +14,9 @@ logger = logging.getLogger("airbyte_logger")
 
 class MigrateProjectId:
     """
-    This class stands for migrating the config at runtime,
-    while providing the backward compatibility when falling back to the previous source version.
-    Specifically, starting from `1.0.0`, the property `project_id` should be inside credentials block as it is only used for Service Account
+    This class stands for migrating the config at runtime.
+    Specifically, starting from `0.1.41`, "credentials" block is required and username and secret or api_secret should be inside it;
+    the property `project_id` should be inside credentials block as it is only used for Service Account.
     """
 
     message_repository: MessageRepository = InMemoryMessageRepository()
@@ -24,27 +24,36 @@ class MigrateProjectId:
     @classmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
         """
-        This method determines if the config should be migrated to have the new path for project_id, based on the source spec.
+        This method determines if the config should be migrated.
         Returns:
-            > True, if the transformation is neccessary
+            > True, if the transformation is necessary
             > False, otherwise.
         """
-        return "project_id" in config
+        is_project = "project_id" in config
+        is_api_secret = "api_secret" in config
+        return is_project or is_api_secret
 
     @staticmethod
-    def move_project_id(config: Mapping[str, Any]) -> Mapping[str, Any]:
-        # assign old values to new property that will be used within the new version
-        if isinstance(config.get("credentials", 0), dict):
+    def transform_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
+        # add credentials dict if doesnt exist
+        if not isinstance(config.get("credentials", 0), dict):
+            config["credentials"] = dict()
+
+        # move api_secret inside credentials block
+        if "api_secret" in config:
+            config["credentials"]["api_secret"] = config["api_secret"]
+            config.pop("api_secret")
+
+        if "project_id" in config:
             config["credentials"]["project_id"] = config["project_id"]
-        else:
-            config["credentials"] = {"project_id": config["project_id"]}
-        config.pop("project_id")
+            config.pop("project_id")
+
         return config
 
     @classmethod
     def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
         # modify the config
-        migrated_config = cls.move_project_id(config)
+        migrated_config = cls.transform_config(config)
         # save the config
         source.write_config(migrated_config, config_path)
         # return modified config

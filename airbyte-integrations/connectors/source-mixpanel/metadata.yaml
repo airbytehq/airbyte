@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
-  dockerImageTag: 0.1.40
+  dockerImageTag: 0.1.41
   dockerRepository: airbyte/source-mixpanel
   githubIssueLabel: source-mixpanel
   icon: mixpanel.svg
@@ -27,11 +27,6 @@ data:
       - annotations
       - revenue
       - funnels
-  releases:
-    breakingChanges:
-      1.0.0:
-        message: In this release, the "datetime" column in the "engage" stream will transition from Date/Time/Datetime types to string due to Mixpanel inconsistencies. Additionally, the "credentials" field is now mandatory, and the "project_id" path has been updated, though a config migration will minimize disruptions.
-        upgradeDeadline: "2023-10-31"
   documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   tags:
     - language:python

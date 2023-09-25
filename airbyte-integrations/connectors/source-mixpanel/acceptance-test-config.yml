@@ -11,7 +11,7 @@ acceptance_tests:
     tests:
     - spec_path: "source_mixpanel/spec.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.1.37"
+        disable_for_version: "0.1.41"
   connection:
     tests:
     - config_path: "secrets/config_project_secret.json"

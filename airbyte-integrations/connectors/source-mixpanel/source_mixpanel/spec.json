@@ -38,7 +38,7 @@
               "project_id": {
                 "order": 3,
                 "title": "Project ID",
-                "description": "Your project ID number. See the <a href=\"https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id\">docs</a> for more information on how to obtain this. Required if you are using a service account to authenticate.",
+                "description": "Your project ID number. See the <a href=\"https://help.mixpanel.com/hc/en-us/articles/115004490503-Project-Settings#project-id\">docs</a> for more information on how to obtain this.",
                 "type": "integer"
               }
             }
