@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Migration script.
+"""Migration script. TODO: Delete this script once the migration is complete.
 
 Usage:
     python3 ./airbyte-cdk/java/airbyte-cdk/_temp_migration_script.py
