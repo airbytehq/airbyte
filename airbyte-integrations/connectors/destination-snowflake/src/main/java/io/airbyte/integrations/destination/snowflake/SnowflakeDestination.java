@@ -22,8 +22,7 @@ public class SnowflakeDestination extends SwitchingDestination<SnowflakeDestinat
   private final String airbyteEnvironment;
 
   enum DestinationType {
-    INTERNAL_STAGING,
-    BULK_LOAD_FROM_S3
+    INTERNAL_STAGING
   }
 
   public SnowflakeDestination(final String airbyteEnvironment) {

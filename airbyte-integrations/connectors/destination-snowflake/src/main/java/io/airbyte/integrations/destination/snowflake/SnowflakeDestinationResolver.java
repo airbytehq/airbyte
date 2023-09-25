@@ -13,23 +13,13 @@ import java.util.Map;
 public class SnowflakeDestinationResolver {
 
   public static DestinationType getTypeFromConfig(final JsonNode config) {
-    if (config.has("bulk_load_s3_stages")) {
-      // Assume 'bulk load' mode if S3 stages are specified
-      return DestinationType.BULK_LOAD_FROM_S3;
-    } else {
-      return DestinationType.INTERNAL_STAGING;
-    }
+    return DestinationType.INTERNAL_STAGING;
   }
 
   public static Map<DestinationType, Destination> getTypeToDestination(final String airbyteEnvironment) {
     final SnowflakeInternalStagingDestination internalStagingDestination = new SnowflakeInternalStagingDestination(airbyteEnvironment);
-    final SnowflakeBulkLoadDestination bulkLoadDestination = new SnowflakeBulkLoadDestination(airbyteEnvironment);
 
-    return ImmutableMap.of(
-        DestinationType.INTERNAL_STAGING,
-        internalStagingDestination,
-        DestinationType.BULK_LOAD_FROM_S3,
-        bulkLoadDestination);
+    return ImmutableMap.of(DestinationType.INTERNAL_STAGING, internalStagingDestination);
   }
 
 }
