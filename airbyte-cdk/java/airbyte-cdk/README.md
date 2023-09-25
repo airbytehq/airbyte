@@ -82,7 +82,7 @@ To invoke via slash command (recommended), use the following syntax in a comment
 Note:
 
 - Remember to **document your changes** in the Changelog section below.
-- After you publish the CDK, remember to toggle `useCdkProjectRef` back to `false` in all connectors.
+- After you publish the CDK, remember to toggle `useLocalCdk` back to `false` in all connectors.
 - Unless you specify `force=true`, the pipeline should fail if the version you are trying to publish already exists.
 - By running the publish with `dry-run=true`, you can confirm the process is working as expected, without actually publishing the changes.
 - In dry-run mode, you can also view and download the jars that are generated. To do so, navigate to the job status in GitHub Actions and navigate to the 'artifacts' section.
@@ -106,14 +106,14 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.1.0'   // The CDK version to pin to.
     features = ['db-destinations'] // An array of CDK features to depend on.
-    useCdkProjectRef = true        // Use 'true' to use a live reference to the 
+    useLocalCdk = true             // Use 'true' to use a live reference to the 
                                    // local cdk project.
 }
 
 airbyteJavaConnector.addCdkDependencies()
 ```
 
-Replace `0.1.0` with the CDK version you are working with. If you're actively developing the CDK and want to use the latest version locally, use the `useCdkProjectRef` flag to use the live CDK code during builds and tests.
+Replace `0.1.0` with the CDK version you are working with. If you're actively developing the CDK and want to use the latest version locally, use the `useLocalCdk` flag to use the live CDK code during builds and tests.
 
 ### Developing a connector alongside the CDK
 

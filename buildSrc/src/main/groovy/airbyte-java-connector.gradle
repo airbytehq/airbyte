@@ -9,7 +9,7 @@ import org.gradle.api.tasks.testing.Test
 
 class AirbyteJavaConnectorExtension {
 
-    boolean useCdkProjectRef = false
+    boolean useLocalCdk = false
     String cdkVersionRequired
     List<String> features = []  // e.g. 'db-sources', 'db-destinations'
     Project project
@@ -24,7 +24,7 @@ class AirbyteJavaConnectorExtension {
         features.each { feature ->
             submoduleNames.add("${feature}-feature")
         }
-        if (useCdkProjectRef) {
+        if (useLocalCdk) {
             project.dependencies {
                 submoduleNames.each { submoduleName ->
                     // Add the CDK module to the dependencies
