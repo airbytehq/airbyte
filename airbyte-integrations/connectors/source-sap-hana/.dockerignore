@@ -1,0 +1,7 @@
+*
+!Dockerfile
+!main.py
+!source_sap_hana
+!setup.py
+!secrets
+!test.py

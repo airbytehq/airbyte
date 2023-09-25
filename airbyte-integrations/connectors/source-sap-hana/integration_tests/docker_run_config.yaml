@@ -1,0 +1,18 @@
+saphana:
+      image: "saplabs/hanaexpress:2.00.061.00.20220519.1"
+      container_name: saphana
+      ports:
+        - 39013:39013
+        - 39017:39017
+        - 39041:39041
+        - 39042:39042
+        - 39043:39043
+        - 39044:39044
+        - 39045:39045
+        - 1128:1128
+        - 1129:1129 
+        - 59013:59013
+        - 59014:59014
+      command: "--master-password Password1! --agree-to-sap-license"
+      volumes:
+        - ./post_start:/hana/hooks/post_start/

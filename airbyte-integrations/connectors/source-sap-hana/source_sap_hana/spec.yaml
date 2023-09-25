@@ -1,0 +1,34 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Sap Hana Spec
+  type: object
+  required:
+    - host
+    - port
+    - username
+    - password
+    - discover_tables
+  properties:
+    host:
+      type: string
+      description: Databse Host
+    port:
+      type: number
+      description: Databse Port
+    username:
+      type: string
+      description: Databse Username
+    password:
+      type: string
+      description: Databse Password
+      airbyte_secret: true
+    discover_tables:
+      type: array
+      items:
+        type: string
+      description: > 
+        Tables to discovered by the source and will be available to sync. Fill in individual table names,
+        excatly as  they appear on your database. (Don't use quotes. Case Sensitive)
+        SAPHANA has more than 3k tables, making schema refresh expensive and slowing down replication UI.
+

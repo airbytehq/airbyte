@@ -1,0 +1,294 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "SBO_TEST.TEST",
+        "json_schema": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "AUTO_MERGE_ON": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "AUTO_OPTIMIZE_COMPRESSION_ON": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "COMMENTS": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "COMMIT_ACTION": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "COMPRESSED_EXTKEY": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "CREATE_TIME": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "FIXED_PART_SIZE": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "HAS_MASKED_COLUMNS": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "HAS_PRIMARY_KEY": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "HAS_RECORD_COMMIT_TIMESTAMP": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "HAS_SCHEMA_FLEXIBILITY": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "HAS_STRUCTURED_PRIVILEGE_CHECK": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "HAS_TEXT_FIELDS": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_COLUMN_TABLE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_INSERT_ONLY": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_LOGGED": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_MOVABLE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_PARTIAL_PRELOAD": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_PRELOAD": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_PUBLIC": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_REPLICA": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_REPLICATION_LOG_ENABLED": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_SERIES_TABLE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_SYSTEM_TABLE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_TEMPORARY": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_TENANT_SHARED_DATA": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_TENANT_SHARED_METADATA": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "IS_USER_DEFINED_TYPE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "LOAD_UNIT": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "MASK_MODE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "NUMA_NODE_INDEXES": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "PARTITION_SPEC": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "PERSISTENT_MEMORY": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ROW_ORDER_TYPE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "SCHEMA_NAME": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "SESSION_TYPE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "TABLE_NAME": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "TABLE_OID": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "TABLE_TYPE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "TEMPORAL_TYPE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "TEMPORARY_TABLE_TYPE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "UNLOAD_PRIORITY": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "USES_DIMFN_CACHE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "USES_EXTKEY": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "USES_QUEUE_TABLE": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "supported_sync_modes": [
+          "full_refresh"
+        ],
+        "source_defined_cursor": false,
+        "default_cursor_field": [
+          "column_name"
+        ]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+SAPHANA_TO_JSONSCHEMA_DATATYPE = {
+    "DATE":"string",
+    "TIME":"string",
+    "SECONDDATE":"string",
+    "TIMESTAMP": "string",
+    "TINYINT" : "number",
+    "SMALLINT" : "number",
+    "INTEGER" : "number",
+    "BIGINT" : "number",
+    "SMALLDECIMAL" : "number",
+    "DECIMAL" : "number",
+    "REAL" : "number",
+    "DOUBLE" : "number",
+    "BOOLEAN" : "bool",
+    "VARCHAR":"string",
+    "NVARCHAR":"string",
+    "ALPHANUM":"string",
+    "SHORTTEXT":"string",
+    "ARRAY":"array"
+}
