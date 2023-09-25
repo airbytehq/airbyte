@@ -43,12 +43,18 @@ class NoRequiredObj(Object):
         if self._properties:
             schema["properties"] = self._properties_to_schema(self._properties)
         if self._pattern_properties:
-            schema["patternProperties"] = self._properties_to_schema(self._pattern_properties)
+            schema["patternProperties"] = self._properties_to_schema(
+                self._pattern_properties)
+
+        schema["additionalProperties"] = True
         return schema
 
 
 class NoRequiredSchemaBuilder(SchemaBuilder):
     EXTRA_STRATEGIES = (NoRequiredObj,)
+
+    def __init__(self):
+        super().__init__(schema_uri='http://json-schema.org/draft-07/schema#')
 
 
 def infer_schemas():
