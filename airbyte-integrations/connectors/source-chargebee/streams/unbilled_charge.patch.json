@@ -1,0 +1,60 @@
+{
+    "properties": {
+        "tiers": {
+            "properties": {
+              "ending_unit": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "ending_unit_in_decimal": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "quantity_used": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "quantity_used_in_decimal": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "starting_unit": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "starting_unit_in_decimal": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "unit_amount": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "unit_amount_in_decimal": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+    }
+}
