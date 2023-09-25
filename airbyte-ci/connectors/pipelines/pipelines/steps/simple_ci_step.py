@@ -52,7 +52,7 @@ class SimpleCIStep(Step):
             internal_tools (List[MountPath], optional): internal tools to install. Defaults to [].
             secrets (dict[str, dagger.Secret], optional): secrets to add to container. Defaults to {}.
             env_variables (dict[str, str], optional): env variables to set in container. Defaults to {}.
-            working_directory (str, optional): working director to run the command in. Defaults to "/".
+            working_directory (str, optional): working directory to run the command in. Defaults to "/".
             command (Optional[List[str]], optional): The default command to run. Defaults to None.
         """
         self.title = title
