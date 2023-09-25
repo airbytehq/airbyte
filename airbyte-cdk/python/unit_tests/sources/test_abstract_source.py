@@ -52,11 +52,13 @@ class MockSource(AbstractSource):
         check_lambda: Callable[[], Tuple[bool, Optional[Any]]] = None,
         streams: List[Stream] = None,
         per_stream: bool = True,
-        message_repository: MessageRepository = None
+        message_repository: MessageRepository = None,
+        exception_on_missing_stream: bool = True,
     ):
         self._streams = streams
         self.check_lambda = check_lambda
         self.per_stream = per_stream
+        self.exception_on_missing_stream = exception_on_missing_stream
         self._message_repository = message_repository
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -68,6 +70,10 @@ class MockSource(AbstractSource):
         if not self._streams:
             raise Exception("Stream is not set")
         return self._streams
+
+    @property
+    def raise_exception_on_missing_stream(self) -> bool:
+        return self.exception_on_missing_stream
 
     @property
     def per_stream_state_enabled(self) -> bool:
@@ -237,6 +243,21 @@ def test_read_nonexistent_stream_raises_exception(mocker):
     catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
     with pytest.raises(KeyError):
         list(src.read(logger, {}, catalog))
+
+
+def test_read_nonexistent_stream_without_raises_exception(mocker):
+    """Tests that attempting to sync a stream which the source does not return from the `streams` method raises an exception"""
+    s1 = MockStream(name="s1")
+    s2 = MockStream(name="this_stream_doesnt_exist_in_the_source")
+
+    mocker.patch.object(MockStream, "get_json_schema", return_value={})
+
+    src = MockSource(streams=[s1], exception_on_missing_stream=False)
+
+    catalog = ConfiguredAirbyteCatalog(streams=[_configured_stream(s2, SyncMode.full_refresh)])
+    messages = list(src.read(logger, {}, catalog))
+
+    assert messages == []
 
 
 def test_read_stream_emits_repository_message_before_record(mocker, message_repository):
