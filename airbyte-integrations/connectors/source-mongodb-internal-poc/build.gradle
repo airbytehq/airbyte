@@ -2,7 +2,6 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
-    id 'airbyte-connector-acceptance-test'
     id 'org.jetbrains.kotlin.jvm' version '1.9.0'
 }
 

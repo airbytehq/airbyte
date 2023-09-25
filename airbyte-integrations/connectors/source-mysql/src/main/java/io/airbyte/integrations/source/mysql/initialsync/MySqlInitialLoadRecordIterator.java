@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.mysql.cj.MysqlType;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.mysql.initialsync.MySqlInitialReadUtil.PrimaryKeyInfo;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
@@ -43,7 +44,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlInitialLoadRecordIterator.class);
 
-  private final MySqlInitialLoadSourceOperations sourceOperations;
+  private final JdbcCompatibleSourceOperations sourceOperations;
 
   private final String quoteString;
   private final MySqlInitialLoadStateManager initialLoadStateManager;
@@ -59,7 +60,7 @@ public class MySqlInitialLoadRecordIterator extends AbstractIterator<JsonNode>
 
   MySqlInitialLoadRecordIterator(
                                  final JdbcDatabase database,
-                                 final MySqlInitialLoadSourceOperations sourceOperations,
+                                 final JdbcCompatibleSourceOperations<MysqlType> sourceOperations,
                                  final String quoteString,
                                  final MySqlInitialLoadStateManager initialLoadStateManager,
                                  final List<String> columnNames,

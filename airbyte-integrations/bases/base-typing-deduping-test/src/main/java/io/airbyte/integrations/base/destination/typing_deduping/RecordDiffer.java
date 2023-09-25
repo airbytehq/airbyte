@@ -40,26 +40,35 @@ public class RecordDiffer {
   private final Comparator<JsonNode> rawRecordIdentityComparator;
   private final Comparator<JsonNode> rawRecordSortComparator;
   private final Function<JsonNode, String> rawRecordIdentityExtractor;
+  private final Map<String, String> rawRecordColumnNames;
 
   private final Comparator<JsonNode> finalRecordIdentityComparator;
   private final Comparator<JsonNode> finalRecordSortComparator;
   private final Function<JsonNode, String> finalRecordIdentityExtractor;
+  private final Map<String, String> finalRecordColumnNames;
 
   /**
+   * @param rawRecordColumnNames
+   * @param finalRecordColumnNames
    * @param identifyingColumns Which fields constitute a unique record (typically PK+cursor). Do _not_
    *        include extracted_at; it is handled automatically.
    */
   @SafeVarargs
-  public RecordDiffer(final Pair<ColumnId, AirbyteType>... identifyingColumns) {
+  public RecordDiffer(final Map<String, String> rawRecordColumnNames,
+                      final Map<String, String> finalRecordColumnNames,
+                      final Pair<ColumnId, AirbyteType>... identifyingColumns) {
+    this.rawRecordColumnNames = rawRecordColumnNames;
+    this.finalRecordColumnNames = finalRecordColumnNames;
     final Pair<String, AirbyteType>[] rawTableIdentifyingColumns = Arrays.stream(identifyingColumns)
         .map(p -> Pair.of(
             // Raw tables always retain the original column names
             p.getLeft().originalName(),
             p.getRight()))
         .toArray(Pair[]::new);
-    this.rawRecordIdentityComparator = buildIdentityComparator(rawTableIdentifyingColumns);
-    this.rawRecordSortComparator = rawRecordIdentityComparator.thenComparing(record -> asString(record.get("_airbyte_raw_id")));
-    this.rawRecordIdentityExtractor = buildIdentityExtractor(rawTableIdentifyingColumns);
+    this.rawRecordIdentityComparator = buildIdentityComparator(rawTableIdentifyingColumns, rawRecordColumnNames);
+    this.rawRecordSortComparator = rawRecordIdentityComparator
+        .thenComparing(record -> asString(record.get(getMetadataColumnName(rawRecordColumnNames, "_airbyte_raw_id"))));
+    this.rawRecordIdentityExtractor = buildIdentityExtractor(rawTableIdentifyingColumns, rawRecordColumnNames);
 
     final Pair<String, AirbyteType>[] finalTableIdentifyingColumns = Arrays.stream(identifyingColumns)
         .map(p -> Pair.of(
@@ -67,9 +76,10 @@ public class RecordDiffer {
             p.getLeft().name(),
             p.getRight()))
         .toArray(Pair[]::new);
-    this.finalRecordIdentityComparator = buildIdentityComparator(finalTableIdentifyingColumns);
-    this.finalRecordSortComparator = finalRecordIdentityComparator.thenComparing(record -> asString(record.get("_airbyte_raw_id")));
-    this.finalRecordIdentityExtractor = buildIdentityExtractor(finalTableIdentifyingColumns);
+    this.finalRecordIdentityComparator = buildIdentityComparator(finalTableIdentifyingColumns, finalRecordColumnNames);
+    this.finalRecordSortComparator = finalRecordIdentityComparator
+        .thenComparing(record -> asString(record.get(getMetadataColumnName(finalRecordColumnNames, "_airbyte_raw_id"))));
+    this.finalRecordIdentityExtractor = buildIdentityExtractor(finalTableIdentifyingColumns, finalRecordColumnNames);
   }
 
   /**
@@ -88,11 +98,12 @@ public class RecordDiffer {
 
   public void diffRawTableRecords(final List<JsonNode> expectedRecords, final List<JsonNode> actualRecords) {
     final String diff = diffRecords(
-        expectedRecords.stream().map(RecordDiffer::copyWithLiftedData).collect(toList()),
-        actualRecords.stream().map(RecordDiffer::copyWithLiftedData).collect(toList()),
+        expectedRecords.stream().map(this::copyWithLiftedData).collect(toList()),
+        actualRecords.stream().map(this::copyWithLiftedData).collect(toList()),
         rawRecordIdentityComparator,
         rawRecordSortComparator,
-        rawRecordIdentityExtractor);
+        rawRecordIdentityExtractor,
+        rawRecordColumnNames);
 
     if (!diff.isEmpty()) {
       fail("Raw table was incorrect.\n" + diff);
@@ -105,7 +116,8 @@ public class RecordDiffer {
         actualRecords,
         finalRecordIdentityComparator,
         finalRecordSortComparator,
-        finalRecordIdentityExtractor);
+        finalRecordIdentityExtractor,
+        finalRecordColumnNames);
 
     if (!diff.isEmpty()) {
       fail("Final table was incorrect.\n" + diff);
@@ -117,10 +129,10 @@ public class RecordDiffer {
    *
    * @return A copy of the record, but with all fields in _airbyte_data lifted to the top level.
    */
-  private static JsonNode copyWithLiftedData(final JsonNode record) {
+  private JsonNode copyWithLiftedData(final JsonNode record) {
     final ObjectNode copy = record.deepCopy();
-    copy.remove("_airbyte_data");
-    JsonNode airbyteData = record.get("_airbyte_data");
+    copy.remove(getMetadataColumnName(rawRecordColumnNames, "_airbyte_data"));
+    JsonNode airbyteData = record.get(getMetadataColumnName(rawRecordColumnNames, "_airbyte_data"));
     if (airbyteData.isTextual()) {
       airbyteData = Jsons.deserializeExact(airbyteData.asText());
     }
@@ -140,24 +152,26 @@ public class RecordDiffer {
    * Build a Comparator to detect equality between two records. It first compares all the identifying
    * columns in order, and breaks ties using extracted_at.
    */
-  private Comparator<JsonNode> buildIdentityComparator(final Pair<String, AirbyteType>[] identifyingColumns) {
+  private Comparator<JsonNode> buildIdentityComparator(final Pair<String, AirbyteType>[] identifyingColumns, final Map<String, String> columnNames) {
     // Start with a noop comparator for convenience
     Comparator<JsonNode> comp = Comparator.comparing(record -> 0);
     for (final Pair<String, AirbyteType> column : identifyingColumns) {
       comp = comp.thenComparing(record -> extract(record, column.getKey(), column.getValue()));
     }
-    comp = comp.thenComparing(record -> asTimestampWithTimezone(record.get("_airbyte_extracted_at")));
+    comp = comp.thenComparing(record -> asTimestampWithTimezone(record.get(getMetadataColumnName(columnNames, "_airbyte_extracted_at"))));
     return comp;
   }
 
   /**
-   * See {@link #buildIdentityComparator(Pair[])} for an explanation of dataExtractor.
+   * See {@link #buildIdentityComparator(Pair[], Map<String, String>)} for an explanation of
+   * dataExtractor.
    */
-  private Function<JsonNode, String> buildIdentityExtractor(final Pair<String, AirbyteType>[] identifyingColumns) {
+  private Function<JsonNode, String> buildIdentityExtractor(final Pair<String, AirbyteType>[] identifyingColumns,
+                                                            final Map<String, String> columnNames) {
     return record -> Arrays.stream(identifyingColumns)
         .map(column -> getPrintableFieldIfPresent(record, column.getKey()))
         .collect(Collectors.joining(", "))
-        + getPrintableFieldIfPresent(record, "_airbyte_extracted_at");
+        + getPrintableFieldIfPresent(record, getMetadataColumnName(columnNames, "_airbyte_extracted_at"));
   }
 
   private static String getPrintableFieldIfPresent(final JsonNode record, final String field) {
@@ -185,11 +199,12 @@ public class RecordDiffer {
    * @param recordIdExtractor Dump the record's PK+cursor+extracted_at into a human-readable string
    * @return The diff, or empty string if there were no differences
    */
-  private static String diffRecords(final List<JsonNode> originalExpectedRecords,
-                                    final List<JsonNode> originalActualRecords,
-                                    final Comparator<JsonNode> identityComparator,
-                                    final Comparator<JsonNode> sortComparator,
-                                    final Function<JsonNode, String> recordIdExtractor) {
+  private String diffRecords(final List<JsonNode> originalExpectedRecords,
+                             final List<JsonNode> originalActualRecords,
+                             final Comparator<JsonNode> identityComparator,
+                             final Comparator<JsonNode> sortComparator,
+                             final Function<JsonNode, String> recordIdExtractor,
+                             final Map<String, String> columnNames) {
     final List<JsonNode> expectedRecords = originalExpectedRecords.stream().sorted(sortComparator).toList();
     final List<JsonNode> actualRecords = originalActualRecords.stream().sorted(sortComparator).toList();
 
@@ -205,7 +220,7 @@ public class RecordDiffer {
       if (compare == 0) {
         // These records should be the same. Find the specific fields that are different and move on
         // to the next records in both lists.
-        message += diffSingleRecord(recordIdExtractor, expectedRecord, actualRecord);
+        message += diffSingleRecord(recordIdExtractor, expectedRecord, actualRecord, columnNames);
         expectedRecordIndex++;
         actualRecordIndex++;
       } else if (compare < 0) {
@@ -233,9 +248,10 @@ public class RecordDiffer {
     return message;
   }
 
-  private static String diffSingleRecord(final Function<JsonNode, String> recordIdExtractor,
-                                         final JsonNode expectedRecord,
-                                         final JsonNode actualRecord) {
+  private String diffSingleRecord(final Function<JsonNode, String> recordIdExtractor,
+                                  final JsonNode expectedRecord,
+                                  final JsonNode actualRecord,
+                                  final Map<String, String> columnNames) {
     boolean foundMismatch = false;
     String mismatchedRecordMessage = "Row had incorrect data: " + recordIdExtractor.apply(expectedRecord) + "\n";
     // Iterate through each column in the expected record and compare it to the actual record's value.
@@ -249,7 +265,7 @@ public class RecordDiffer {
       }
     }
     // Then check the entire actual record for any columns that we weren't expecting.
-    final LinkedHashMap<String, JsonNode> extraColumns = checkForExtraOrNonNullFields(expectedRecord, actualRecord);
+    final LinkedHashMap<String, JsonNode> extraColumns = checkForExtraOrNonNullFields(expectedRecord, actualRecord, columnNames);
     if (extraColumns.size() > 0) {
       for (final Map.Entry<String, JsonNode> extraColumn : extraColumns.entrySet()) {
         mismatchedRecordMessage += generateFieldError("column " + extraColumn.getKey(), null, extraColumn.getValue());
@@ -297,11 +313,16 @@ public class RecordDiffer {
    * This has the side benefit of detecting completely unexpected columns, which would be a very weird
    * bug but is probably still useful to catch.
    */
-  private static LinkedHashMap<String, JsonNode> checkForExtraOrNonNullFields(final JsonNode expectedRecord, final JsonNode actualRecord) {
+  private LinkedHashMap<String, JsonNode> checkForExtraOrNonNullFields(final JsonNode expectedRecord,
+                                                                       final JsonNode actualRecord,
+                                                                       final Map<String, String> columnNames) {
     final LinkedHashMap<String, JsonNode> extraFields = new LinkedHashMap<>();
     for (final String column : Streams.stream(actualRecord.fieldNames()).sorted().toList()) {
       // loaded_at and raw_id are generated dynamically, so we just ignore them.
-      if (!"_airbyte_loaded_at".equals(column) && !"_airbyte_raw_id".equals(column) && !expectedRecord.has(column)) {
+      final boolean isLoadedAt = getMetadataColumnName(columnNames, "_airbyte_loaded_at").equals(column);
+      final boolean isRawId = getMetadataColumnName(columnNames, "_airbyte_raw_id").equals(column);
+      final boolean isExpected = expectedRecord.has(column);
+      if (!(isLoadedAt || isRawId || isExpected)) {
         extraFields.put(column, actualRecord.get(column));
       }
     }
@@ -429,6 +450,10 @@ public class RecordDiffer {
     } else {
       return node.toString();
     }
+  }
+
+  private String getMetadataColumnName(final Map<String, String> columnNames, final String columnName) {
+    return columnNames.getOrDefault(columnName, columnName);
   }
 
 }

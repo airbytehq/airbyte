@@ -7,8 +7,9 @@ from pathlib import Path
 
 import pytest
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.utils import AirbyteTracedException
 from source_file import SourceFile
-from source_file.client import Client, ConfigurationError
+from source_file.client import Client
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/formats")
 
@@ -59,7 +60,7 @@ def test_raises_file_wrong_format(file_format, extension, wrong_format, filename
     file_path = str(file_directory.joinpath(f"{filename}.{extension}"))
     configs = {"dataset_name": "test", "format": wrong_format, "url": file_path, "provider": {"storage": "local"}}
     client = Client(**configs)
-    with pytest.raises((TypeError, ValueError, ConfigurationError)):
+    with pytest.raises((TypeError, ValueError, AirbyteTracedException)):
         list(client.read())
 
 
