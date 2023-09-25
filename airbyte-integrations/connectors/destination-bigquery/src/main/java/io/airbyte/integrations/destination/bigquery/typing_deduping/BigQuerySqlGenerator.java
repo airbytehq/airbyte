@@ -80,10 +80,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public ColumnId buildColumnId(final String name, final String suffix) {
-    // Bigquery columns are case-insensitive, so do all our validation on the lowercased name
     final String nameWithSuffix = name + suffix;
-    final String canonicalized = nameWithSuffix.toLowerCase();
-    return new ColumnId(nameTransformer.getIdentifier(nameWithSuffix), nameWithSuffix, canonicalized);
+    return new ColumnId(
+        nameTransformer.getIdentifier(nameWithSuffix),
+        name,
+        // Bigquery columns are case-insensitive, so do all our validation on the lowercased name
+        nameTransformer.getIdentifier(nameWithSuffix.toLowerCase()));
   }
 
   public StandardSQLTypeName toDialectType(final AirbyteType type) {
