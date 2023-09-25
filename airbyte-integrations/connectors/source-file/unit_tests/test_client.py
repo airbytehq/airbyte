@@ -6,9 +6,10 @@
 from unittest.mock import patch, sentinel
 
 import pytest
+from airbyte_cdk.utils import AirbyteTracedException
 from pandas import read_csv, read_excel
 from paramiko import SSHException
-from source_file.client import Client, ConfigurationError, URLFile
+from source_file.client import Client, URLFile
 from urllib3.exceptions import ProtocolError
 
 
@@ -57,7 +58,7 @@ def test_load_dataframes(client, wrong_format_client, absolute_path, test_files)
     expected = read_csv(f)
     assert read_file.equals(expected)
 
-    with pytest.raises(ConfigurationError):
+    with pytest.raises(AirbyteTracedException):
         next(wrong_format_client.load_dataframes(fp=f))
 
     with pytest.raises(StopIteration):
@@ -66,7 +67,7 @@ def test_load_dataframes(client, wrong_format_client, absolute_path, test_files)
 
 def test_raises_configuration_error_with_incorrect_file_type(csv_format_client, absolute_path, test_files):
     f = f"{absolute_path}/{test_files}/archive_with_test_xlsx.zip"
-    with pytest.raises(ConfigurationError):
+    with pytest.raises(AirbyteTracedException):
         next(csv_format_client.load_dataframes(fp=f))
 
 
@@ -139,7 +140,7 @@ def test_open_gcs_url():
         assert URLFile(url="", provider=provider)._open_gcs_url()
 
     provider.update({"service_account_json": '{service_account_json": "service_account_json"}'})
-    with pytest.raises(ConfigurationError):
+    with pytest.raises(AirbyteTracedException):
         assert URLFile(url="", provider=provider)._open_gcs_url()
 
 
@@ -158,7 +159,7 @@ def test_read_network_issues(test_read_config):
     test_read_config.update(format='excel')
     client = Client(**test_read_config)
     client.sleep_on_retry_sec = 0  # just for test
-    with patch.object(client, "_cache_stream", side_effect=ProtocolError), pytest.raises(ConfigurationError):
+    with patch.object(client, "_cache_stream", side_effect=ProtocolError), pytest.raises(AirbyteTracedException):
         next(client.read(["date", "key"]))
 
 
