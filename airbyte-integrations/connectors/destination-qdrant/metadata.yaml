@@ -4,6 +4,20 @@ data:
       enabled: true
     oss:
       enabled: true
+  allowedHosts:
+    hosts:
+      - "${indexing.url}"
+      - api.openai.com
+      - api.cohere.ai
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        # TODO: Remove once https://github.com/airbytehq/airbyte/issues/30611 is resolved
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
+      enabled: true
+      - "${embedding.api_base}"
   connectorSubtype: database
   connectorType: destination
   definitionId: 6eb1198a-6d38-43e5-aaaa-dccd8f71db2b
