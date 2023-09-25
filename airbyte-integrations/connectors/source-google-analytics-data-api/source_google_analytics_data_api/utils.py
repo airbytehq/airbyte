@@ -138,6 +138,88 @@ def get_source_defined_primary_key(stream):
         return res.get(stream)
 
 
+def transform_string_filter(filter):
+    string_filter = {"value": filter.get("value")}
+    if "matchType" in filter:
+        string_filter["matchType"] = filter.get("matchType")[0]
+    if "caseSensitive" in filter:
+        string_filter["caseSensitive"] = filter.get("caseSensitive")
+    return {"stringFilter": string_filter}
+
+
+def transform_in_list_filter(filter):
+    in_list_filter = {"values": filter.get("values")}
+    if "caseSensitive" in filter:
+        in_list_filter["caseSensitive"] = filter.get("caseSensitive")
+    return {"inListFilter": in_list_filter}
+
+
+def transform_numeric_filter(filter):
+    numeric_filter = {
+        "value": {filter.get("value").get("value_type"): filter.get("value").get("value")},
+    }
+    if "operation" in filter:
+        numeric_filter["operation"] = filter.get("operation")[0]
+    return {"numericFilter": numeric_filter}
+
+
+def transform_between_filter(filter):
+    from_value = filter.get("fromValue")
+    to_value = filter.get("toValue")
+
+    from_value_type = from_value.get("value_type")
+    to_value_type = to_value.get("value_type")
+
+    if from_value_type == "doubleValue" and isinstance(from_value.get("value"), str):
+        from_value["value"] = float(from_value.get("value"))
+    if to_value_type == "doubleValue" and isinstance(to_value.get("value"), str):
+        to_value["value"] = float(to_value.get("value"))
+
+    return {
+        "betweenFilter": {
+            "fromValue": {from_value_type: from_value.get("value")},
+            "toValue": {to_value_type: to_value.get("value")},
+        }
+    }
+
+
+def transform_expression(expression):
+    transformed_expression = {"fieldName": expression.get("field_name")}
+    filter = expression.get("filter")
+    filter_name = filter.get("filter_name")
+
+    if filter_name == "stringFilter":
+        transformed_expression.update(transform_string_filter(filter))
+    elif filter_name == "inListFilter":
+        transformed_expression.update(transform_in_list_filter(filter))
+    elif filter_name == "numericFilter":
+        transformed_expression.update(transform_numeric_filter(filter))
+    elif filter_name == "betweenFilter":
+        transformed_expression.update(transform_between_filter(filter))
+
+    return {"filter": transformed_expression}
+
+
+def transform_json(original_json):
+    transformed_json = {}
+    filter_type = original_json.get("filter_type")
+
+    if filter_type in ["andGroup", "orGroup"]:
+        expressions = original_json.get("expressions", [])
+        transformed_expressions = [transform_expression(exp) for exp in expressions]
+        transformed_json = {filter_type: {"expressions": transformed_expressions}} if transformed_expressions else {}
+
+    elif filter_type == "notExpression":
+        expression = original_json.get("expression")
+        transformed_expression = transform_expression(expression)
+        transformed_json = {filter_type: transformed_expression}
+
+    elif filter_type == "filter":
+        transformed_json = transform_expression(original_json)
+
+    return transformed_json
+
+
 def serialize_to_date_string(date: str, date_format: str, date_type: str) -> str:
     """
     Serialize a date string to a different date format based on the date_type.
