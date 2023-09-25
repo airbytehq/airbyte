@@ -4,31 +4,6 @@
 Usage:
     python3 ./airbyte-cdk/java/airbyte-cdk/_temp_migration_script.py
     python3 ./airbyte-cdk/java/airbyte-cdk/_temp_migration_script.py test
-
-# Manual post-migration steps
-
-## Manual patches to files
-
-- airbyte-cdk/java/airbyte-cdk/src/test/java/io/airbyte/cdk/integrations/source/jdbc/DefaultJdbcSourceAcceptanceTest.java:
-
-    // @Override // CDK TODO: This was commented out because the compiler said it was not an override.
-    protected List<AirbyteStateMessage> generateEmptyInitialState(final JsonNode config) {
-
-## Known issues
-
-Issue:
-
-    FAILURE: Build failed with an exception.
-
-    * What went wrong:
-    Could not determine the dependencies of task ':airbyte-integrations:connectors:source-postgres:assemble'.
-    > Could not create task ':airbyte-integrations:connectors:source-postgres:airbyteDocker'.
-    > no known project for image airbyte/integration-base-java:dev
-
-Workaround:
-
-- Delete the Dockerfile (or rename to Dockerfile.bak)
-
 """
 
 import os
