@@ -31,6 +31,7 @@ class MetadataValidation(SimpleCIStep):
             paths_to_mount=[
                 MountPath(context.connector.metadata_file_path),
                 MountPath(context.connector.documentation_file_path),
+                MountPath(context.connector.inapp_documentation_file_path, optional=True),
                 MountPath(context.connector.icon_path, optional=True),
             ],
             internal_tools=[
@@ -77,6 +78,7 @@ class MetadataUpload(SimpleCIStep):
             paths_to_mount=[
                 MountPath(context.connector.metadata_file_path),
                 MountPath(context.connector.documentation_file_path),
+                MountPath(context.connector.inapp_documentation_file_path, optional=True),
                 MountPath(context.connector.icon_path, optional=True),
             ],
             internal_tools=[
