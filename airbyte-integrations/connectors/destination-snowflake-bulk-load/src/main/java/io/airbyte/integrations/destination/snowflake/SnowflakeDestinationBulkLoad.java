@@ -17,8 +17,43 @@ import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 
-public class SnowflakeDestinationBulkLoad extends SpecModifyingDestination implements Destination {
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.integrations.base.Destination;
+import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeDestinationHandler;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSqlGenerator;
+import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
+import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
+import io.airbyte.integrations.destination.staging.StagingOperations;
+import io.airbyte.protocol.models.v0.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.Consumer;
+import javax.sql.DataSource;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts.AIRBYTE_CLOUD;
+import static io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts.AIRBYTE_OSS;
+
+public class SnowflakeDestinationBulkLoad extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestinationBulkLoad.class);
   private static final String PROPERTIES = "properties";
@@ -30,34 +65,56 @@ public class SnowflakeDestinationBulkLoad extends SpecModifyingDestination imple
   public static final String SSL_MODE_PREFER = "prefer";
   public static final String SSL_MODE_DISABLE = "disable";
 
+  private static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
+  private static final String BULK_LOAD_FILE_FORMAT = "bulk_load_file_format";
+  private static final String BULK_LOAD_S3_STAGES = "bulk_load_s3_stages";
+
+  private final String airbyteEnvironment;
+
+  // public SnowflakeDestinationBulkLoad(final String airbyteEnvironment) {
+  //   this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
+  // }
+
   public SnowflakeDestinationBulkLoad() {
-    super(SnowflakeDestination.sshWrappedDestination());
+    this(new SnowflakeSQLNameTransformer());
   }
 
-  @Override
-  public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
-    final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    ((ObjectNode) spec.getConnectionSpecification().get(PROPERTIES)).remove(JdbcUtils.SSL_KEY);
-    return spec;
+  public SnowflakeDestinationBulkLoad(final NamingConventionTransformer nameTransformer) {
+    super("", nameTransformer, new SnowflakeBulkLoadSqlOperations(nameTransformer));
+    this.airbyteEnvironment = AIRBYTE_CLOUD;
+    // this.airbyteEnvironment = airbyteEnvironment;
   }
 
+  // @Override
+  // public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
+  //   final ConnectorSpecification spec = Jsons.clone(originalSpec);
+  //   ((ObjectNode) spec.getConnectionSpecification().get(PROPERTIES)).remove(JdbcUtils.SSL_KEY);
+  //   return spec;
+  // }
+
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
-    if (config.has(TUNNEL_METHOD)
-        && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
-        && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
-      // If no SSH tunnel
-      if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
-        if (Set.of(SSL_MODE_DISABLE, SSL_MODE_ALLOW, SSL_MODE_PREFER).contains(config.get(SSL_MODE).get(MODE).asText())) {
-          // Fail in case SSL mode is disable, allow or prefer
-          return new AirbyteConnectionStatus()
-              .withStatus(Status.FAILED)
-              .withMessage(
-                  "Unsecured connection not allowed. If no SSH Tunnel set up, please use one of the following SSL modes: require, verify-ca, verify-full");
-        }
+  public AirbyteConnectionStatus check(final JsonNode config) {
+    final NamingConventionTransformer nameTransformer = getNamingResolver();
+    final SnowflakeBulkLoadSqlOperations snowflakeBulkLoadSqlOperations = new SnowflakeBulkLoadSqlOperations(nameTransformer);
+    final DataSource dataSource = getDataSource(config);
+    try {
+      final JdbcDatabase database = getDatabase(dataSource);
+      final String outputSchema = nameTransformer.getIdentifier(config.get("schema").asText());
+      attemptTableOperations(outputSchema, database, nameTransformer,
+          snowflakeBulkLoadSqlOperations, true);
+      return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
+    } catch (final Exception e) {
+      LOGGER.error("Exception while checking connection: ", e);
+      return new AirbyteConnectionStatus()
+          .withStatus(AirbyteConnectionStatus.Status.FAILED)
+          .withMessage("Could not connect with provided configuration. \n" + e.getMessage());
+    } finally {
+      try {
+        DataSourceFactory.close(dataSource);
+      } catch (final Exception e) {
+        LOGGER.warn("Unable to close data source.", e);
       }
     }
-    return super.check(config);
   }
 
   public static void main(final String[] args) throws Exception {
@@ -66,5 +123,69 @@ public class SnowflakeDestinationBulkLoad extends SpecModifyingDestination imple
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", SnowflakeDestinationBulkLoad.class);
   }
+
+
+  public static class StageNotFoundException extends Exception {
+
+    public StageNotFoundException(String message) {
+      super(message);
+    }
+
+  }
+
+  public static class InvalidValueException extends Exception {
+
+    public InvalidValueException(String message) {
+      super(message);
+    }
+
+  }
+
+  public static String findMatchingStageName(Map<String, String> s3StageMap, String s3Path) throws StageNotFoundException {
+    for (Map.Entry<String, String> entry : s3StageMap.entrySet()) {
+      if (s3Path.startsWith(entry.getValue())) {
+        return entry.getKey();
+      }
+    }
+    throw new StageNotFoundException("No matching Snowflake stage name found for S3 path: " + s3Path);
+  }
+
+  public static String getRelativePath(String rootPath, String fullS3Path) throws InvalidValueException {
+    if (fullS3Path.startsWith(rootPath)) {
+      return fullS3Path.substring(rootPath.length());
+    }
+    throw new InvalidValueException("S3 path " + fullS3Path + " does not start with root path " + rootPath);
+  }
+
+  @Override
+  public ConnectorSpecification spec() throws Exception {
+    return null;
+  }
+
+  @Override
+  protected DataSource getDataSource(final JsonNode config) {
+    return SnowflakeDatabase.createDataSource(config, airbyteEnvironment);
+  }
+
+  @Override
+  protected JdbcDatabase getDatabase(final DataSource dataSource) {
+    return SnowflakeDatabase.getDatabase(dataSource);
+  }
+
+  @Override
+  protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
+    return Collections.emptyMap();
+  }
+
+  // this is a no op since we override getDatabase.
+  @Override
+  public JsonNode toJdbcConfig(final JsonNode config) {
+    return Jsons.emptyObject();
+  }
+
+  // @Override
+  // public AirbyteMessageConsumer getConsumer(JsonNode config, ConfiguredAirbyteCatalog catalog, Consumer<AirbyteMessage> outputRecordCollector) {
+  //   return (AirbyteMessageConsumer) getSerializedMessageConsumer(config, catalog, outputRecordCollector);
+  // }
 
 }

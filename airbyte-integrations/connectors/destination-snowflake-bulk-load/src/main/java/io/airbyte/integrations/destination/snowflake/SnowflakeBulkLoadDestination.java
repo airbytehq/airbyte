@@ -40,6 +40,9 @@ import org.slf4j.LoggerFactory;
  *
  * The stage name and file format name will be provided by the user.
  */
+
+
+/*
 public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeBulkLoadDestination.class);
@@ -193,3 +196,4 @@ public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination implem
   }
 
 }
+*/
