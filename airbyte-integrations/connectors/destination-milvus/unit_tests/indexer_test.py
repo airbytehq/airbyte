@@ -130,10 +130,10 @@ class TestMilvusIndexer(unittest.TestCase):
         self.milvus_indexer._collection.delete.assert_not_called()
 
     def test_index_calls_insert(self):
-        self.milvus_indexer.index([Mock(metadata={"key": "value"}, page_content="some content", embedding=[1,2,3])], [])
+        self.milvus_indexer.index([Mock(metadata={"key": "value", "id": 5}, page_content="some content", embedding=[1,2,3])], [])
 
         self.milvus_indexer._collection.insert.assert_called_with(
-            [{"key": "value", "vector": [1,2,3], "text": "some content"}]
+            [{"key": "value", "vector": [1,2,3], "text": "some content", "_id": 5}]
         )
 
     def test_index_calls_delete(self):
