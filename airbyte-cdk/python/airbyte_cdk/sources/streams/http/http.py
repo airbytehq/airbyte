@@ -4,10 +4,8 @@
 
 
 import logging
-import os
 import urllib
 from abc import ABC, abstractmethod
-from contextlib import suppress
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import urljoin
 
@@ -40,6 +38,7 @@ class HttpStream(Stream, ABC):
     def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None):
         if self.use_cache:
             self._session = self.request_cache()
+            self.clear_cache()
         else:
             self._session = requests.Session()
 
@@ -64,18 +63,15 @@ class HttpStream(Stream, ABC):
         return False
 
     def request_cache(self) -> requests.Session:
-        self.clear_cache()
-        return requests_cache.CachedSession(self.cache_filename)
+        backend = requests_cache.SQLiteCache(use_temp=True)
+        return requests_cache.CachedSession(self.cache_filename, backend=backend)
 
     def clear_cache(self) -> None:
         """
-        remove cache file only once
+        clear cached requests for current session, can be called any time
         """
-        STREAM_CACHE_FILES = globals().setdefault("STREAM_CACHE_FILES", set())
-        if self.cache_filename not in STREAM_CACHE_FILES:
-            with suppress(FileNotFoundError):
-                os.remove(self.cache_filename)
-            STREAM_CACHE_FILES.add(self.cache_filename)
+        if isinstance(self._session, requests_cache.CachedSession):
+            self._session.cache.clear()
 
     @property
     @abstractmethod

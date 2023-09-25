@@ -395,13 +395,19 @@ def test_parent_attribute_exist():
     assert child_stream.parent == parent_stream
 
 
-def test_cache_response(mocker):
+def test_that_response_was_cached(mocker, requests_mock):
+    requests_mock.register_uri("GET", "https://google.com/", text="text")
     stream = CacheHttpStream()
     mocker.patch.object(stream, "url_base", "https://google.com/")
-    list(stream.read_records(sync_mode=SyncMode.full_refresh))
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
-    with open(stream.cache_filename, "rb") as f:
-        assert f.read()
+    assert requests_mock.called
+
+    requests_mock.reset_mock()
+    new_records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+
+    assert len(records) == len(new_records)
+    assert not requests_mock.called
 
 
 class CacheHttpStreamWithSlices(CacheHttpStream):
@@ -516,15 +522,21 @@ def test_default_get_error_display_message_handles_http_error(mocker):
 
 
 @pytest.mark.parametrize(
-    "test_name, base_url, path, expected_full_url",[
+    "test_name, base_url, path, expected_full_url",
+    [
         ("test_no_slashes", "https://airbyte.io", "my_endpoint", "https://airbyte.io/my_endpoint"),
         ("test_trailing_slash_on_base_url", "https://airbyte.io/", "my_endpoint", "https://airbyte.io/my_endpoint"),
-        ("test_trailing_slash_on_base_url_and_leading_slash_on_path", "https://airbyte.io/", "/my_endpoint", "https://airbyte.io/my_endpoint"),
+        (
+            "test_trailing_slash_on_base_url_and_leading_slash_on_path",
+            "https://airbyte.io/",
+            "/my_endpoint",
+            "https://airbyte.io/my_endpoint",
+        ),
         ("test_leading_slash_on_path", "https://airbyte.io", "/my_endpoint", "https://airbyte.io/my_endpoint"),
         ("test_trailing_slash_on_path", "https://airbyte.io", "/my_endpoint/", "https://airbyte.io/my_endpoint/"),
         ("test_nested_path_no_leading_slash", "https://airbyte.io", "v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
         ("test_nested_path_with_leading_slash", "https://airbyte.io", "/v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
-    ]
+    ],
 )
 def test_join_url(test_name, base_url, path, expected_full_url):
     actual_url = HttpStream._join_url(base_url, path)
@@ -532,18 +544,65 @@ def test_join_url(test_name, base_url, path, expected_full_url):
 
 
 @pytest.mark.parametrize(
-    "deduplicate_query_params, path, params, expected_url", [
-        pytest.param(True, "v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
-        pytest.param(True, "v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
+    "deduplicate_query_params, path, params, expected_url",
+    [
+        pytest.param(
+            True, "v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"
+        ),
+        pytest.param(
+            True, "v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"
+        ),
         pytest.param(True, "v1/endpoint", None, "https://test_base_url.com/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
-        pytest.param(True, "v1/endpoint?param1=value1", None, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_is_none_and_no_params_in_path"),
-        pytest.param(True, "v1/endpoint?param1=value1", {"param2": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param2=value2", id="test_no_duplicate_params"),
-        pytest.param(True, "v1/endpoint?param1=value1", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_duplicate_params_same_value"),
-        pytest.param(True, "v1/endpoint?param1=1", {"param1": 1}, "https://test_base_url.com/v1/endpoint?param1=1", id="test_duplicate_params_same_value_not_string"),
-        pytest.param(True, "v1/endpoint?param1=value1", {"param1": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2", id="test_duplicate_params_different_value"),
-        pytest.param(False, "v1/endpoint?param1=value1", {"param1": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2", id="test_same_params_different_value_no_deduplication"),
-        pytest.param(False, "v1/endpoint?param1=value1", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value1", id="test_same_params_same_value_no_deduplication"),
-    ]
+        pytest.param(
+            True,
+            "v1/endpoint?param1=value1",
+            None,
+            "https://test_base_url.com/v1/endpoint?param1=value1",
+            id="test_params_is_none_and_no_params_in_path",
+        ),
+        pytest.param(
+            True,
+            "v1/endpoint?param1=value1",
+            {"param2": "value2"},
+            "https://test_base_url.com/v1/endpoint?param1=value1&param2=value2",
+            id="test_no_duplicate_params",
+        ),
+        pytest.param(
+            True,
+            "v1/endpoint?param1=value1",
+            {"param1": "value1"},
+            "https://test_base_url.com/v1/endpoint?param1=value1",
+            id="test_duplicate_params_same_value",
+        ),
+        pytest.param(
+            True,
+            "v1/endpoint?param1=1",
+            {"param1": 1},
+            "https://test_base_url.com/v1/endpoint?param1=1",
+            id="test_duplicate_params_same_value_not_string",
+        ),
+        pytest.param(
+            True,
+            "v1/endpoint?param1=value1",
+            {"param1": "value2"},
+            "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2",
+            id="test_duplicate_params_different_value",
+        ),
+        pytest.param(
+            False,
+            "v1/endpoint?param1=value1",
+            {"param1": "value2"},
+            "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2",
+            id="test_same_params_different_value_no_deduplication",
+        ),
+        pytest.param(
+            False,
+            "v1/endpoint?param1=value1",
+            {"param1": "value1"},
+            "https://test_base_url.com/v1/endpoint?param1=value1&param1=value1",
+            id="test_same_params_same_value_no_deduplication",
+        ),
+    ],
 )
 def test_duplicate_request_params_are_deduped(deduplicate_query_params, path, params, expected_url):
     stream = StubBasicReadHttpStream(deduplicate_query_params)
