@@ -7,14 +7,14 @@ from unittest.mock import ANY, Mock, call, patch
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode
-from destination_weaviate.config import NoAuth, WeaviateIndexingConfigModel
+from destination_weaviate.config import NoAuth, TokenAuth, WeaviateIndexingConfigModel
 from destination_weaviate.indexer import WeaviateIndexer, WeaviatePartialBatchError
 
 
 class TestWeaviateIndexer(unittest.TestCase):
 
     def setUp(self):
-        self.config = WeaviateIndexingConfigModel(host="https://test-host:12345", auth=NoAuth())  # Setup your config here
+        self.config = WeaviateIndexingConfigModel(host="https://test-host:12345", auth=TokenAuth(mode="token", token="abc"))  # Setup your config here
         self.indexer = WeaviateIndexer(self.config)
         mock_catalog = Mock()
         mock_stream = Mock()
@@ -37,6 +37,13 @@ class TestWeaviateIndexer(unittest.TestCase):
     def test_failed_check_due_to_cloud_env_and_no_https_host(self, mock_os_environ):
         mock_os_environ.get.return_value = "cloud"
         self.indexer.config.host = "http://example.com"
+        self.assertEqual(self.indexer.check(), "Host must start with https://")
+
+    @patch("destination_weaviate.indexer.os.environ")
+    def test_failed_check_due_to_cloud_env_and_no_auth(self, mock_os_environ):
+        mock_os_environ.get.return_value = "cloud"
+        self.indexer.config.host = "http://example.com"
+        self.indexer.config.auth = NoAuth(mode="no_auth")
         self.assertEqual(self.indexer.check(), "Host must start with https://")
 
     @patch("destination_weaviate.indexer.weaviate.Client")

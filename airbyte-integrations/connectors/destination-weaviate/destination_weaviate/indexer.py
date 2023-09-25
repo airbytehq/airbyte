@@ -61,16 +61,16 @@ class WeaviateIndexer(Indexer):
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
-        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self._uses_https():
-            return "Host must start with https://"
+        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self._uses_safe_config():
+            return "Host must start with https:// and authentication must be enabled on cloud deployment."
         try:
             self._create_client()
         except Exception as e:
             return format_exception(e)
         return None
 
-    def _uses_https(self) -> bool:
-        return self.config.host.startswith("https://")
+    def _uses_safe_config(self) -> bool:
+        return self.config.host.startswith("https://") and not self.config.auth.mode == "none"
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
