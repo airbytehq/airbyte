@@ -38,3 +38,4 @@ The Commcare source connector supports the following streams:
 | Version | Date | Pull Request | Subject |
 | 0.1.1   | 2023-07-27 | [28553](https://github.com/airbytehq/airbyte/pull/28553)   | Added Check Connection |
 | 0.1.0   | 2022-11-08 | [20220](https://github.com/airbytehq/airbyte/pull/20220)   | Commcare Source Connector |
+| 0.1.1   | 2023-04-05 | [24887](https://github.com/airbytehq/airbyte/pull/24887)   | Updating the date format  |
