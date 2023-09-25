@@ -67,7 +67,8 @@ public class CatalogParser {
     return new ParsedCatalog(streamConfigs);
   }
 
-  // TODO maybe we should extract the column collision stuff to a separate method, since that's the interesting bit
+  // TODO maybe we should extract the column collision stuff to a separate method, since that's the
+  // interesting bit
   @VisibleForTesting
   public StreamConfig toStreamConfig(final ConfiguredAirbyteStream stream) {
     final AirbyteType schema = AirbyteType.fromJsonSchema(stream.getStream().getJsonSchema());
