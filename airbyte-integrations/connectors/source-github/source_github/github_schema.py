@@ -1227,6 +1227,24 @@ class LockReason(sgqlc.types.Enum):
     __choices__ = ("OFF_TOPIC", "RESOLVED", "SPAM", "TOO_HEATED")
 
 
+class MergeStateStatus(sgqlc.types.Enum):
+    """Detailed status information about a pull request merge.
+
+    Enumeration Choices:
+
+    * `BEHIND`: The head ref is out of date.
+    * `BLOCKED`: The merge is blocked.
+    * `CLEAN`: Mergeable and passing commit status.
+    * `DIRTY`: The merge commit cannot be cleanly created.
+    * `HAS_HOOKS`: Mergeable with passing commit status and prereceive hooks.
+    * `UNKNOWN`: The state cannot currently be determined.
+    * `UNSTABLE`: Mergeable with non-passing commit status.
+    """
+
+    __schema__ = github_schema
+    __choices__ = ("BEHIND", "BLOCKED", "CLEAN", "DIRTY", "HAS_HOOKS", "UNKNOWN", "UNSTABLE")
+
+
 class MannequinOrderField(sgqlc.types.Enum):
     """Properties by which mannequins can be ordered.
 
@@ -34562,6 +34580,7 @@ class PullRequest(
         "base_ref_name",
         "base_ref_oid",
         "base_repository",
+        "can_be_rebased",
         "changed_files",
         "checks_resource_path",
         "checks_url",
@@ -34583,6 +34602,7 @@ class PullRequest(
         "latest_reviews",
         "maintainer_can_modify",
         "merge_commit",
+        "merge_state_status",
         "merge_queue_entry",
         "mergeable",
         "merged",
@@ -34642,6 +34662,9 @@ class PullRequest(
 
     base_repository = sgqlc.types.Field("Repository", graphql_name="baseRepository")
     """The repository associated with this pull request's base Ref."""
+
+    can_be_rebased = sgqlc.types.Field(sgqlc.types.non_null(Boolean), graphql_name="canBeRebased")
+    """Whether or not the pull request is rebaseable."""
 
     changed_files = sgqlc.types.Field(sgqlc.types.non_null(Int), graphql_name="changedFiles")
     """The number of changed files in this pull request."""
@@ -34864,6 +34887,11 @@ class PullRequest(
 
     merge_commit = sgqlc.types.Field(Commit, graphql_name="mergeCommit")
     """The commit that was created when this pull request was merged."""
+
+    merge_state_status = sgqlc.types.Field(sgqlc.types.non_null(MergeStateStatus), graphql_name="mergeStateStatus")
+    """Detailed information about the current pull request merge state
+    status.
+    """
 
     merge_queue_entry = sgqlc.types.Field(MergeQueueEntry, graphql_name="mergeQueueEntry")
     """The merge queue entry of the pull request in the base branch's
