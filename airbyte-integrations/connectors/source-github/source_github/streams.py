@@ -972,12 +972,6 @@ class ProjectsV2(SemiIncrementalMixin, GithubStream):
         )
         return {"query": query}
 
-    def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        base_headers = super().request_headers(**kwargs)
-        # https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
-        headers = {"Accept": "application/vnd.github.merge-info-preview+json"}
-        return {**base_headers, **headers}
-
 
 # Reactions streams
 
