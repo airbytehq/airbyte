@@ -37,14 +37,14 @@ class TestWeaviateIndexer(unittest.TestCase):
     def test_failed_check_due_to_cloud_env_and_no_https_host(self, mock_os_environ):
         mock_os_environ.get.return_value = "cloud"
         self.indexer.config.host = "http://example.com"
-        self.assertEqual(self.indexer.check(), "Host must start with https://")
+        self.assertEqual(self.indexer.check(), "Host must start with https:// and authentication must be enabled on cloud deployment.")
 
     @patch("destination_weaviate.indexer.os.environ")
     def test_failed_check_due_to_cloud_env_and_no_auth(self, mock_os_environ):
         mock_os_environ.get.return_value = "cloud"
         self.indexer.config.host = "http://example.com"
         self.indexer.config.auth = NoAuth(mode="no_auth")
-        self.assertEqual(self.indexer.check(), "Host must start with https://")
+        self.assertEqual(self.indexer.check(), "Host must start with https:// and authentication must be enabled on cloud deployment.")
 
     @patch("destination_weaviate.indexer.weaviate.Client")
     def test_pre_sync_that_creates_class(self, MockClient):

@@ -70,7 +70,7 @@ class WeaviateIndexer(Indexer):
         return None
 
     def _uses_safe_config(self) -> bool:
-        return self.config.host.startswith("https://") and not self.config.auth.mode == "none"
+        return self.config.host.startswith("https://") and not self.config.auth.mode == "no_auth"
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
