@@ -16,7 +16,14 @@ from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests.exceptions import HTTPError
 
 from . import constants
-from .graphql import CursorStorage, QueryReactions, get_query_issue_reactions, get_query_pull_requests, get_query_reviews
+from .graphql import (
+    CursorStorage,
+    QueryReactions,
+    get_query_issue_reactions,
+    get_query_projectsV2,
+    get_query_pull_requests,
+    get_query_reviews,
+)
 from .utils import getter
 
 
@@ -907,6 +914,69 @@ class PullRequestCommits(GithubStream):
         record = super().transform(record=record, stream_slice=stream_slice)
         record["pull_number"] = stream_slice["pull_number"]
         return record
+
+
+class ProjectsV2(SemiIncrementalMixin, GithubStream):
+    """
+    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
+    """
+
+    is_sorted = "asc"
+    http_method = "POST"
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "graphql"
+
+    def raise_error_from_response(self, response_json):
+        if "errors" in response_json:
+            raise Exception(str(response_json["errors"]))
+
+    def _get_name(self, repository):
+        return repository["owner"]["login"] + "/" + repository["name"]
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.raise_error_from_response(response_json=response.json())
+        repository = response.json()["data"]["repository"]
+        if repository:
+            nodes = repository["projectsV2"]["nodes"]
+            for record in nodes:
+                record["owner_id"] = record.pop("owner").get("id")
+                record["repository"] = self._get_name(repository)
+                yield record
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        repository = response.json()["data"]["repository"]
+        if repository:
+            pageInfo = repository["projectsV2"]["pageInfo"]
+            if pageInfo["hasNextPage"]:
+                return {"after": pageInfo["endCursor"]}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        organization, name = stream_slice["repository"].split("/")
+        if next_page_token:
+            next_page_token = next_page_token["after"]
+        query = get_query_projectsV2(
+            owner=organization, name=name, first=self.page_size, after=next_page_token, direction=self.is_sorted.upper()
+        )
+        return {"query": query}
+
+    def request_headers(self, **kwargs) -> Mapping[str, Any]:
+        base_headers = super().request_headers(**kwargs)
+        # https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
+        headers = {"Accept": "application/vnd.github.merge-info-preview+json"}
+        return {**base_headers, **headers}
 
 
 # Reactions streams
