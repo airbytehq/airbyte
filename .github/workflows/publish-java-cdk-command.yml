@@ -54,9 +54,7 @@ env:
   GITREF: ${{ github.event.inputs.gitref || github.ref }}
   FORCE: "${{ github.event.inputs.force == null && 'false' || github.event.inputs.force }}"
   DRY_RUN: "${{ github.event.inputs.dry-run == null && 'true' || github.event.inputs.dry-run }}"
-  CDK_VERSION_FILE_PATH: "./airbyte-cdk/java/airbyte-cdk/src/main/resources/version.properties"
-  # Uncomment and replace above when CDK 0.1.0 is released:
-  # CDK_VERSION_FILE_PATH: "./airbyte-cdk/java/airbyte-cdk/src/main/resources/version.properties"
+  CDK_VERSION_FILE_PATH: "./airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
 
 jobs:
   # We are using these runners because they are the same as the one for `publish-command.yml`
