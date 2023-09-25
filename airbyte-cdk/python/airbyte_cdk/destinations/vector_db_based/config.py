@@ -33,6 +33,12 @@ class MarkdownHeaderSplitterConfigModel(BaseModel):
         ge=1,
     )
 
+    class Config:
+        title = "By Markdown header"
+        schema_extra = {
+            "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
+        }
+
 
 class CodeSplitterConfigModel(BaseModel):
     mode: Literal["code"] = Field("code", const=True)
@@ -58,6 +64,12 @@ class CodeSplitterConfigModel(BaseModel):
             "sol",
         ],
     )
+
+    class Config:
+        title = "By Programming Language"
+        schema_extra = {
+            "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
+        }
 
 
 TextSplitterConfigModel = Union[SeparatorSplitterConfigModel, MarkdownHeaderSplitterConfigModel, CodeSplitterConfigModel]
