@@ -10,13 +10,11 @@ import shutil
 import socket
 import string
 import tempfile
-import time
 import uuid
 from pathlib import Path
 from typing import Mapping
 
 import boto3
-import docker
 import pandas
 import pytest
 from azure.storage.blob import BlobServiceClient
@@ -24,13 +22,18 @@ from botocore.errorfactory import ClientError
 from google.api_core.exceptions import Conflict
 from google.cloud import storage
 from paramiko.client import AutoAddPolicy, SSHClient
-from paramiko.ssh_exception import BadHostKeyException, SSHException
+from paramiko.ssh_exception import SSHException
 
 HERE = Path(__file__).parent.absolute()
 
 
 def random_char(length):
     return "".join(random.choice(string.ascii_letters) for x in range(length))
+
+
+@pytest.fixture(scope="session")
+def docker_compose_file() -> Path:
+    return HERE / "docker-compose.yml"
 
 
 @pytest.fixture(scope="session")
@@ -63,65 +66,6 @@ def azblob_credentials() -> Mapping:
         return json.load(json_file)
 
 
-@pytest.fixture(scope="session")
-def move_sample_files_to_tmp():
-    """Copy sample files to /tmp so that they can be accessed by the dockerd service in the context of Dagger test runs.
-    The sample files are mounted to the SSH service from the container under test (container) following instructions of docker-compose.yml in this directory."""
-    if os.path.exists("/tmp/s3_sample_files"):
-        shutil.rmtree("/tmp/s3_sample_files")
-    sample_files = Path(HERE / "sample_files")
-    shutil.copytree(sample_files, "/tmp/s3_sample_files")
-    yield True
-    shutil.rmtree("/tmp/s3_sample_files")
-
-
-@pytest.fixture(scope="session")
-def docker_client():
-    return docker.from_env()
-
-
-def wait_net_service(server, port, timeout=None):
-    """ Wait for network service to appear
-        @param timeout: in seconds, if None or 0 wait forever
-        @return: True of False, if timeout is None may return only True or
-                 throw unhandled network exception
-    """
-    import errno
-    import socket
-
-    s = socket.socket()
-    if timeout:
-        from time import time as now
-
-        # time module is needed to calc timeout shared between two exceptions
-        end = now() + timeout
-
-    while True:
-        try:
-            if timeout:
-                next_timeout = end - now()
-                if next_timeout < 0:
-                    return False
-                else:
-                    s.settimeout(next_timeout)
-
-            s.connect((server, port))
-
-        except socket.timeout as err:
-            # this exception occurs only if timeout is set
-            if timeout:
-                return False
-
-        except socket.error as err:
-            # catch timeout exception from underlying network library
-            # this one is different from socket.timeout
-            if type(err.args) != tuple or err[0] != errno.ETIMEDOUT:
-                raise
-        else:
-            s.close()
-            return True
-
-
 def is_ssh_ready(ip, port):
     try:
         with SSHClient() as ssh:
@@ -133,62 +77,27 @@ def is_ssh_ready(ip, port):
                 password="abc123@456#",
             )
         return True
-    except (SSHException, socket.error, EOFError) as e:
-        print(e)
+    except (SSHException, socket.error):
         return False
 
 
 @pytest.fixture(scope="session")
-def ssh_service(move_sample_files_to_tmp, docker_client):
+def move_sample_files_to_tmp():
+    """Copy sample files to /tmp so that they can be accessed by the dockerd service in the context of Dagger test runs.
+    The sample files are mounted to the SSH service from the container under test (container) following instructions of docker-compose.yml in this directory."""
+    sample_files = Path(HERE / "sample_files")
+    shutil.copytree(sample_files, "/tmp/s3_sample_files")
+    yield True
+    shutil.rmtree("/tmp/s3_sample_files")
+
+
+@pytest.fixture(scope="session")
+def ssh_service(move_sample_files_to_tmp, docker_ip, docker_services):
     """Ensure that SSH service is up and responsive."""
-
-    container = docker_client.containers.run(
-        "atmoz/sftp",
-        "user1:abc123@456#:1001",
-        name="ssh",
-        ports={22: 2222},
-        volumes={
-            "/tmp/s3_sample_files": {"bind": "/home/user1/files", "mode": "rw"},
-        },
-        detach=True,
-    )
-
-    # wait_net_service("localhost", 2222, 10)
-    # container = docker_client.containers.get(container.name)
-    container.reload()
-    print(container.attrs.get("Status"))
-    print(container.attrs.get("State"))
-    print(container.ports)
-    ip_address = container.attrs["NetworkSettings"]["IPAddress"]
-    # import paramiko
-    print(container.attrs["NetworkSettings"])
-    print(container.attrs["NetworkSettings"]["Networks"])
-    count = 0
-    while not is_ssh_ready("localhost", 2222) and count < 10:
-        print('sleep')
-        print(container.logs())
-        time.sleep(1)
-        count += 1
-
-    # time.sleep(5)
-    # import socket
-    # s = socket.socket()
-    # print(s.connect_ex((ip_address, 22)))
-    # s.close()
-    # resp = container.exec_run("ls")
-    # print("RESPONSE")
-    # print(resp.output)
-    # print(ping(ip_address))
-    # ssh = paramiko.SSHClient()
-    # ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    # ssh.connect(ip_address, 22, "user1", "abc123@456#")
-    # stdin, stdout, stderr = ssh.exec_command("ls")
-    # lines = stdout.readlines()
-    # print(lines)
-    yield "localhost"
-
-    container.kill()
-    container.remove()
+    # `port_for` takes a container port and returns the corresponding host port
+    port = docker_services.port_for("ssh", 22)
+    docker_services.wait_until_responsive(timeout=30.0, pause=0.1, check=lambda: is_ssh_ready(docker_ip, port))
+    return docker_ip
 
 
 @pytest.fixture

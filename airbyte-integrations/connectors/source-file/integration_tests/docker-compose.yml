@@ -1,0 +1,9 @@
+version: "3"
+services:
+  ssh:
+    image: atmoz/sftp
+    ports:
+      - "2222:22"
+    volumes:
+      - /tmp/s3_sample_files:/home/user1/files
+    command: user1:abc123@456#:1001
