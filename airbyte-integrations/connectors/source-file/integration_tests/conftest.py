@@ -166,6 +166,7 @@ def ssh_service(move_sample_files_to_tmp, docker_client):
     count = 0
     while not is_ssh_ready("localhost", 2222) and count < 10:
         print('sleep')
+        print(container.logs())
         time.sleep(1)
         count += 1
 
