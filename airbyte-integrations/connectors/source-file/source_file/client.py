@@ -44,14 +44,6 @@ SSH_TIMEOUT = 60
 logging.getLogger("smart_open").setLevel(logging.ERROR)
 
 
-class ConfigurationError(Exception):
-    """Client mis-configured"""
-
-
-class PermissionsError(Exception):
-    """User don't have enough permissions"""
-
-
 class URLFile:
     """Class to manage read from file located at different providers
 
@@ -211,7 +203,7 @@ class URLFile:
             except json.decoder.JSONDecodeError as err:
                 error_msg = f"Failed to parse gcs service account json: {repr(err)}"
                 logger.error(f"{error_msg}\n{traceback.format_exc()}")
-                raise ConfigurationError(error_msg) from err
+                raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
 
         if credentials:
             credentials = service_account.Credentials.from_service_account_info(credentials)
@@ -341,7 +333,7 @@ class Client:
         except KeyError as err:
             error_msg = f"Reader {self._reader_format} is not supported."
             logger.error(f"{error_msg}\n{traceback.format_exc()}")
-            raise ConfigurationError(error_msg) from err
+            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
 
         reader_options = {**self._reader_options}
         try:
@@ -367,13 +359,17 @@ class Client:
                     yield reader(fp, **reader_options)
             else:
                 yield reader(fp, **reader_options)
+        except ParserError as err:
+            error_msg = f"File {fp} can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"
+            logger.error(f"{error_msg}\n{traceback.format_exc()}")
+            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
         except UnicodeDecodeError as err:
             error_msg = (
                 f"File {fp} can't be parsed with reader of chosen type ({self._reader_format}). "
                 f"Please check provided Format and Reader Options. {repr(err)}."
             )
             logger.error(f"{error_msg}\n{traceback.format_exc()}")
-            raise ConfigurationError(error_msg) from err
+            raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
 
     @staticmethod
     def dtype_to_json_type(current_type: str, dtype) -> str:
@@ -430,11 +426,7 @@ class Client:
                     f"File {fp} can not be opened due to connection issues on provider side. Please check provided links and options"
                 )
                 logger.error(f"{error_msg}\n{traceback.format_exc()}")
-                raise ConfigurationError(error_msg) from err
-            except ParserError as err:
-                error_msg = f"File {fp} can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"
-                logger.error(f"{error_msg}\n{traceback.format_exc()}")
-                raise ConfigurationError(error_msg) from err
+                raise AirbyteTracedException(message=error_msg, internal_message=error_msg, failure_type=FailureType.config_error) from err
 
     def _cache_stream(self, fp):
         """cache stream to file"""

@@ -236,6 +236,11 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
+  protected Map<String, String> getFinalMetadataColumnNames() {
+    return AbstractSnowflakeTypingDedupingTest.FINAL_METADATA_COLUMN_NAMES;
+  }
+
+  @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
     final String sql = generator.createTable(incrementalDedupStream, "", false);
