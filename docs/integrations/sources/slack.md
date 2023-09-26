@@ -76,8 +76,8 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Slack connector and select **Slack** from the Source type dropdown.
 4. Select `Authenticate your account` and log in and Authorize to the Slack account.
-5. Enter your `start_date`.
-6. Enter your `lookback_window`, which corresponds to amount of days in the past from which you want to sync data.
+5. **Required** Enter your `start_date`.
+6. **Required** Enter your `lookback_window`, which corresponds to amount of days in the past from which you want to sync data.
 7. Toggle `join_channels`, if you want to join all channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
 8. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data.
 9. Click **Set up source**.
@@ -88,8 +88,8 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. Enter your `start_date`.
-4. Enter your `lookback_window`, which corresponds to amount of days in the past from which you want to sync data.
+3. **Required** Enter your `start_date`.
+4. **Required** Enter your `lookback_window`, which corresponds to amount of days in the past from which you want to sync data.
 5. Toggle `join_channels`, if you want to join all channels or to sync data only from channels the bot is already in. If not set, you'll need to manually add the bot to all the channels from which you'd like to sync messages.
 6. Enter your `channel_filter`, this should be list of channel names (without leading '#' char) that limits the channels from which you'd like to sync. If no channels are specified, Airbyte will replicate all data. 
 7. Enter your `api_token`.
