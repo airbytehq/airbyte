@@ -93,6 +93,25 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
 
 
+def has_local_cdk_ref(build_file: Path) -> bool:
+    """Return true if the build file uses the local CDK.
+
+    Args:
+        build_file (Path): Path to the build.gradle file of the project.
+
+    Returns:
+        bool: True if using local CDK.
+    """
+    contents = "\n".join(
+        [
+            # Return contents without inline code comments
+            line.split("//")[0] for line in build_file.read_text().split("\n")
+        ]
+    )
+    contents = contents.replace(" ", "")
+    return "useLocalCdk=true" in contents
+
+
 def get_gradle_dependencies_block(build_file: Path) -> str:
     """Get the dependencies block of a Gradle file.
 
@@ -151,8 +170,32 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
             else:
                 project_dependencies.append(path)
 
-    project_dependencies.append(Path("airbyte-cdk", "java", "airbyte-cdk"))
+    if has_local_cdk_ref(build_file):
+        project_dependencies += get_local_cdk_gradle_dependencies(False)
+        test_dependencies += get_local_cdk_gradle_dependencies(with_test_dependencies=True)
+
+    # Dedupe dependencies:
+    project_dependencies = list(set(project_dependencies))
+    test_dependencies = list(set(test_dependencies))
+
     return project_dependencies, test_dependencies
+
+
+def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path]:
+    """Recursively retrieve all transitive dependencies of a Gradle project.
+
+    Args:
+        with_test_dependencies: True to include test dependencies.
+
+    Returns:
+        List[Path]: All dependencies of the project.
+    """
+    base_path = Path("airbyte-cdk/java/airbyte-cdk")
+    return list(set(
+        get_all_gradle_dependencies(base_path / Path("core/build.gradle"), with_test_dependencies) +
+        get_all_gradle_dependencies(base_path / Path("db-sources-feature/build.gradle"), with_test_dependencies) +
+        get_all_gradle_dependencies(base_path / Path("db-destinations-feature/build.gradle"), with_test_dependencies)
+    ))
 
 
 def get_all_gradle_dependencies(
