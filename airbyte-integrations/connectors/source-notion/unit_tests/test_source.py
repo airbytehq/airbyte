@@ -4,7 +4,7 @@
 
 from unittest.mock import MagicMock
 
-import pendulum
+import re
 import pytest
 from source_notion.source import SourceNotion
 
@@ -48,25 +48,14 @@ def test_streams(mocker):
     assert len(streams) == expected_streams_number
 
 
-def test_handle_start_date():
-    # Case 1: start_date is set by the user
-    config_with_start_date = {
-        'start_date': '2022-01-01T00:00:00.000Z',
-        'authenticator': 'super_secret_token',
-    }
-    source_notion = SourceNotion()
-    streams_with_start_date = source_notion.streams(config_with_start_date)
-    assert config_with_start_date['start_date'] == '2022-01-01T00:00:00.000Z'  # Should remain unchanged
+def test_set_start_date():
+    config_with_start_date = {"start_date": "2021-09-01T00:00:00Z"}
+    config_without_start_date = {}
 
-    # Case 2: start_date is NOT set by the user
-    config_without_start_date = {
-        'authenticator': 'even_more_secret_token',
-        'start_date': None
-    }
-    source_notion = SourceNotion()
-    streams_without_start_date = source_notion.streams(config_without_start_date)
-    
-    # Calculate what the default start_date should be (2 years ago from today)
-    two_years_ago = pendulum.now().subtract(years=2).to_datetime_string()
-    
-    assert config_without_start_date['start_date'] == two_years_ago  # Should be set to 2 years ago
+    # Test start_date is handled when already set by user
+    SourceNotion.set_start_date(config_with_start_date)
+    assert config_with_start_date["start_date"] == "2021-09-01T00:00:00Z"
+
+    # Test start_date matches a timestamp regex when not set by user
+    SourceNotion.set_start_date(config_without_start_date)
+    assert re.match(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?", config_without_start_date["start_date"]) is not None

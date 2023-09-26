@@ -7,7 +7,7 @@
     "properties": {
       "start_date": {
         "title": "Start Date",
-        "description": "UTC date and time in the format 2017-01-25T00:00:00.000Z. Any data before this date will not be replicated. If left blank, the start date will be set to 2 years before the present date.",
+        "description": "UTC date and time in the format YYYY-MM-DDTHH:MM:SS.000Z. If left blank, the start date will be set to 2 years before the present date.",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
         "examples": ["2020-11-16T00:00:00.000Z"],
         "type": "string",

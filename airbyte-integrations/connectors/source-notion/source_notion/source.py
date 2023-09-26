@@ -34,8 +34,21 @@ class NotionAuthenticator:
 
 
 class SourceNotion(AbstractSource):
+
+    @staticmethod
+    def set_start_date(config: Mapping[str, Any]):
+        """
+        Sets the start date to two years ago if it is not already set by the user.
+        """
+        start_date = config.get("start_date")
+        if not start_date:
+            two_years_ago = pendulum.now().subtract(years=2).in_timezone("UTC").to_iso8601_string()
+            config["start_date"] = two_years_ago
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
+            self.set_start_date(config)
+            print("Start Date: ", config["start_date"])
             authenticator = NotionAuthenticator(config).get_access_token()
             stream = Users(authenticator=authenticator, config=config)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
@@ -61,11 +74,7 @@ class SourceNotion(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
-        start_date = config.get("start_date")
-
-        if not start_date:
-            two_years_ago = pendulum.now().subtract(years=2).to_datetime_string()
-            config["start_date"] = two_years_ago
+        self.set_start_date(config)
 
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
         authenticator = NotionAuthenticator(config).get_access_token()
