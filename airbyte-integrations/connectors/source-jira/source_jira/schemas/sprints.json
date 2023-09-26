@@ -37,8 +37,8 @@
       "type": "string"
     },
     "createdDate": {
-      "type" : ["null", "integer"],
-      "format" : "date-time"
+      "type": ["null", "integer"],
+      "format": "date-time"
     }
   }
 }
