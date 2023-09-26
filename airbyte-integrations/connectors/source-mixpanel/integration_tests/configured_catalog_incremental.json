@@ -13,7 +13,6 @@
       "destination_sync_mode": "append",
       "cursor_field": ["date"],
       "primary_key": [["funnel_id"], ["date"]]
-      "destination_sync_mode": "append"
     },
     {
       "stream": {
@@ -24,12 +23,14 @@
         "default_cursor_field": ["time"],
         "source_defined_primary_key": [
           ["distinct_id"],
-          ["event_name"],
-          ["event_time"]
+          ["event"],
+          ["time"]
         ]
       },
       "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "destination_sync_mode": "append",
+      "cursor_field": ["time"],
+      "primary_key": [["distinct_id"], ["event"], ["time"]]
     },
     {
       "stream": {
