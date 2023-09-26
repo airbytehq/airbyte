@@ -52,6 +52,11 @@ pipx install --editable airbyte-ci/connectors/ci_credentials/
 
 This is useful when you are making changes to the package and want to test them in real-time.
 
+Note:
+
+- The package name is `pipelines`, not `airbyte-ci`. You will need this when uninstalling or reinstalling.
+- Even with the above `--editable` method, live changes to the code in the sibling project `/airbyte-ci/connectors/connector_ops/` are not automatically captured. To ensure you are using the latest code, use the command `pipx reinstall pipelines`.
+
 ## Usage
 After installation, you can use the ci_credentials command in your terminal.
 

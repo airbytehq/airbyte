@@ -1,6 +1,5 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
     id 'airbyte-java-connector'
 }
 
@@ -31,8 +30,4 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     integrationTestJavaImplementation libs.testcontainers.clickhouse
-}
-
-tasks.named("airbyteDocker").configure {
-    dependsOn project(':airbyte-integrations:bases:base-normalization').tasks.named('airbyteDockerClickhouse')
 }

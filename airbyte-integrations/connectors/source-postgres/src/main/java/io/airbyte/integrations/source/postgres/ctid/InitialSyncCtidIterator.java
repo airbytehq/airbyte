@@ -8,7 +8,7 @@ import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterat
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.GIGABYTE;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.MAX_ALLOWED_RESYNCS;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.QUERY_TARGET_SIZE_GB;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -16,11 +16,11 @@ import com.google.common.collect.AbstractIterator;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.RowDataWithCtid;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
-import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
+import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.sql.Connection;
 import java.sql.PreparedStatement;

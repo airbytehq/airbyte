@@ -1,6 +1,5 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
     id 'airbyte-java-connector'
 }
 

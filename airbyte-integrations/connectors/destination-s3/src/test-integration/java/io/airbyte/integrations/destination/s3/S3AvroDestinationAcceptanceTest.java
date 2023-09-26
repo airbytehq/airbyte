@@ -5,8 +5,8 @@
 package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 
 public class S3AvroDestinationAcceptanceTest extends S3BaseAvroDestinationAcceptanceTest {
 
