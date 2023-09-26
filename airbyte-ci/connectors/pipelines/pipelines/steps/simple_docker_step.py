@@ -19,9 +19,9 @@ class MountPath:
         if not self.path.exists():
             message = f"{self.path} does not exist."
             if self.optional:
-                raise FileNotFoundError(message)
-            else:
                 main_logger.warning(message)
+            else:
+                raise FileNotFoundError(message)
 
     def __str__(self):
         return str(self.path)
@@ -31,7 +31,7 @@ class MountPath:
         return self.path.is_file()
 
 
-class SimpleCIStep(Step):
+class SimpleDockerStep(Step):
     def __init__(
         self,
         title: str,
@@ -67,6 +67,9 @@ class SimpleCIStep(Step):
 
     def _mount_paths(self, container: dagger.Container) -> dagger.Container:
         for path_to_mount in self.paths_to_mount:
+            if path_to_mount.optional and not path_to_mount.path.exists():
+                continue
+
             path_string = str(path_to_mount)
             destination_path = f"/{path_string}"
             if path_to_mount.is_file:

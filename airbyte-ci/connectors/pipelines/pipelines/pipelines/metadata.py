@@ -3,7 +3,6 @@
 #
 
 import uuid
-from pathlib import Path
 from typing import Optional
 import dagger
 from pipelines.actions.environments import with_pip_packages, with_python_base
@@ -11,19 +10,15 @@ from pipelines.bases import Report, Step, StepResult
 from pipelines.contexts import PipelineContext, ConnectorContext
 from pipelines.helpers.steps import run_steps
 from pipelines.steps.poetry_run_step import PoetryRunStep
-from pipelines.steps.simple_ci_step import SimpleCIStep, MountPath
+from pipelines.steps.simple_docker_step import SimpleDockerStep, MountPath
+from pipelines.tools.internal import INTERNAL_TOOL_PATHS
 from pipelines.utils import DAGGER_CONFIG, get_secret_host_variable
-
-METADATA_DIR = "airbyte-ci/connectors/metadata_service"
-METADATA_LIB_MODULE_PATH = "lib"
-METADATA_SERVICE_TOOL_MODULE_PATH = Path(f"{METADATA_DIR}/{METADATA_LIB_MODULE_PATH}")
-METADATA_ORCHESTRATOR_MODULE_PATH = "orchestrator"
 
 
 # STEPS
 
 
-class MetadataValidation(SimpleCIStep):
+class MetadataValidation(SimpleDockerStep):
     def __init__(self, context: ConnectorContext):
         super().__init__(
             title=f"Validate metadata for {context.connector.technical_name}",
@@ -35,7 +30,7 @@ class MetadataValidation(SimpleCIStep):
                 MountPath(context.connector.icon_path, optional=True),
             ],
             internal_tools=[
-                MountPath(METADATA_SERVICE_TOOL_MODULE_PATH),
+                MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE),
             ],
             command=[
                 "metadata_service",
@@ -46,7 +41,7 @@ class MetadataValidation(SimpleCIStep):
         )
 
 
-class MetadataUpload(SimpleCIStep):
+class MetadataUpload(SimpleDockerStep):
     # When the metadata service exits with this code, it means the metadata is valid but the upload was skipped because the metadata is already uploaded
     skipped_exit_code = 5
 
@@ -82,7 +77,7 @@ class MetadataUpload(SimpleCIStep):
                 MountPath(context.connector.icon_path, optional=True),
             ],
             internal_tools=[
-                MountPath(METADATA_SERVICE_TOOL_MODULE_PATH),
+                MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE),
             ],
             secrets={
                 "DOCKER_HUB_USERNAME": docker_hub_username_secret,
@@ -138,8 +133,8 @@ class TestOrchestrator(PoetryRunStep):
         super().__init__(
             context=context,
             title="Test Metadata Orchestrator",
-            parent_dir_path=METADATA_DIR,
-            module_path=METADATA_ORCHESTRATOR_MODULE_PATH,
+            parent_dir_path="airbyte-ci/connectors/metadata_service",
+            module_path="orchestrator",
         )
 
     async def _run(self) -> StepResult:
@@ -175,8 +170,8 @@ async def run_metadata_lib_test_pipeline(
             test_lib_step = PoetryRunStep(
                 context=metadata_pipeline_context,
                 title="Test Metadata Service Lib",
-                parent_dir_path=METADATA_DIR,
-                module_path=METADATA_LIB_MODULE_PATH,
+                parent_dir_path="airbyte-ci/connectors/metadata_service",
+                module_path="lib",
             )
             result = await test_lib_step.run(["pytest"])
             metadata_pipeline_context.report = Report(

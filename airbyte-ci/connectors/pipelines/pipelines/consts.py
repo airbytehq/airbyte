@@ -22,8 +22,6 @@ CONNECTOR_TESTING_REQUIREMENTS = [
     "licenseheaders==0.8.8",
 ]
 
-CI_CREDENTIALS_SOURCE_PATH = "airbyte-ci/connectors/ci_credentials"
-CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH = "airbyte-ci/connectors/connector_ops"
 BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
 LOCAL_BUILD_PLATFORM = Platform(f"linux/{platform.machine()}")
 AMAZONCORRETTO_IMAGE = "amazoncorretto:17.0.8-al2023"
