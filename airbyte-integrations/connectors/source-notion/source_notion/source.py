@@ -5,6 +5,7 @@
 
 from typing import Any, List, Mapping, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.models import SyncMode
@@ -59,6 +60,13 @@ class SourceNotion(AbstractSource):
             )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+
+        start_date = config.get("start_date")
+
+        if not start_date:
+            two_years_ago = pendulum.now().subtract(years=2).to_datetime_string()
+            config["start_date"] = two_years_ago
+
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
         authenticator = NotionAuthenticator(config).get_access_token()
         args = {"authenticator": authenticator, "config": config}
