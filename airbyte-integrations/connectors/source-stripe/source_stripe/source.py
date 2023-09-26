@@ -152,7 +152,6 @@ class SourceStripe(AbstractSource):
                 "invoice.payment_failed",
                 "invoice.payment_succeeded",
                 "invoice.sent",
-                "invoice.upcoming",
                 "invoice.updated",
                 "invoice.voided",
                 "invoice.deleted",
