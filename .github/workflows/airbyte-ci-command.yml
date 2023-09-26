@@ -117,6 +117,6 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
           subcommand: "connectors --name=${{ env.CONNECTOR_NAME }} ${{ env.CMD }} ${{ env.CMD_ARGS }}"
-          # docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          # docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          # slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
