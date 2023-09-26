@@ -74,19 +74,20 @@ jobs:
             > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Check commit message
         id: check-commit
+        if: (!env.CONNECTOR_NAME) && env.COMMIT_MSG
         run: |
           echo "Commit message is: $COMMIT_MSG"
-          
           # Use regex to find the desired pattern
           if [[ ! $COMMIT_MSG =~ --test-connector=([a-zA-Z0-9_-]+) ]]; then
-            echo "Commit message doesn't contain retest pattern. Aborting."
-            exit 1
+            echo "Commit message doesn't contain test pattern. Aborting."
+            exit 0
           fi
           # Extract connector name and set it as output
           connector_name="${BASH_REMATCH[1]}"
           echo "Found connector name: $connector_name"
           echo "CONNECTOR_NAME=${connector_name}" >> $GITHUB_ENV
       - name: Validate inputs
+        continue-on-error: true
         run: |
           # Fail if CONNECTOR_NAME is empty or null
           if [[ -z "$CONNECTOR_NAME" ]]; then
