@@ -4,22 +4,23 @@
 
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
-from airbyte_cdk.sources import Source
-from airbyte_cdk.sources.streams import Stream
 
 import pydantic
 import requests
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from requests import HTTPError
 from airbyte_cdk.logger import AirbyteLogger as Logger
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+from requests import HTTPError
 
 from .utils import transform_properties
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
+
 
 class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
     """
@@ -27,10 +28,10 @@ class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
     """
 
     def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> Dict[int, str]:
-        
+
         reasons_for_codes: Dict[int, str] = {
             requests.codes.FORBIDDEN: "This is likely due to insufficient permissions for your Notion integration. "
-            "Please make sure your integration has read access for the resources you are trying to sync"        
+            "Please make sure your integration has read access for the resources you are trying to sync"
         }
         return reasons_for_codes
 
@@ -52,7 +53,6 @@ class NotionStream(HttpStream, ABC):
     @property
     def availability_strategy(self) -> HttpAvailabilityStrategy:
         return NotionAvailabilityStrategy()
-
 
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):

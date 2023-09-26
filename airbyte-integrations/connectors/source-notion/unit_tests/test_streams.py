@@ -2,15 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import random
 from http import HTTPStatus
 from unittest.mock import MagicMock, patch
 
 import pytest
-import logging
 import requests
 from airbyte_cdk.models import SyncMode
-from source_notion.streams import Blocks, NotionStream, Users, Pages
+from source_notion.streams import Blocks, NotionStream, Pages, Users
 
 
 @pytest.fixture
