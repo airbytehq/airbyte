@@ -141,11 +141,11 @@ class GithubStreamABC(HttpStream, ABC):
             if e.response.status_code == requests.codes.NOT_FOUND:
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
                 if isinstance(self, Organizations):
-                    error_msg = (
-                        f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
-                    )
+                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{organisation}`."
+                elif isinstance(self, TeamMemberships):
+                    error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
                 else:
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
+                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`."
             elif e.response.status_code == requests.codes.FORBIDDEN:
                 error_msg = str(e.response.json().get("message"))
                 # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
