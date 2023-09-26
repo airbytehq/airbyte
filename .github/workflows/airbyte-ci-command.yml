@@ -10,7 +10,7 @@
 # You can commit and push an empty commit like this:
 #    git commit --allow-empty -m "(forcing test) --test-connector=<connector-name>"
 #    git push
-name: Airbyte CI Slash Command
+name: Airbyte-CI Command
 on:
   # Temporarily run on commits to the 'java-cdk/publish-workflow' branch.
   # TODO: Remove this 'push' trigger before merging to master.
