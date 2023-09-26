@@ -667,6 +667,15 @@ class IssueSecuritySchemes(JiraStream):
         return "issuesecurityschemes"
 
 
+class IssueTypes(JiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-group-issue-types
+    """
+
+    def path(self, **kwargs) -> str:
+        return "issuetype"
+
+
 class IssueTypeSchemes(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-rest-api-3-issuetypescheme-get
