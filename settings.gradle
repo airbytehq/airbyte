@@ -53,7 +53,7 @@ buildCache {
         bucket = 'airbyte-buildcache'
         prefix = 'cache/'
         push = isCiServer
-        enabled = !isAirbyteCI
+        enabled = isCiServer && !isAirbyteCI
         // Credentials will be taken from  S3_BUILD_CACHE_... environment variables
         // anonymous access will be used if environment variables are missing
     }
