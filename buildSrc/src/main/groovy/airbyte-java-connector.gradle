@@ -86,5 +86,12 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
             integrationTestJavaImplementation project
             performanceTestJavaImplementation project
         }
+
+        // TODO: figure out how to make this work.
+        // Currently fails with error:
+        //   "Cannot change dependencies of dependency configuration '...' after it has been included in dependency resolution."
+        // project.afterEvaluate(proj -> {
+        //     extension.addCdkDependencies();
+        // });
     }
 }
