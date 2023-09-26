@@ -9,6 +9,7 @@ from unittest.mock import Mock
 import pendulum
 import pytest
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
 from pendulum import today
@@ -109,8 +110,15 @@ def test_chunk_date_range():
     start_date = "2021-03-04"
     end_date = "2021-05-04"
     conversion_window = 14
-    slices = list(chunk_date_range(start_date=start_date, end_date=end_date, conversion_window=conversion_window,
-                                   slice_duration=pendulum.Duration(days=9), time_zone="UTC"))
+    slices = list(
+        chunk_date_range(
+            start_date=start_date,
+            end_date=end_date,
+            conversion_window=conversion_window,
+            slice_duration=pendulum.Duration(days=9),
+            time_zone="UTC",
+        )
+    )
     assert [
         {"start_date": "2021-02-18", "end_date": "2021-02-27"},
         {"start_date": "2021-02-28", "end_date": "2021-03-09"},
@@ -128,6 +136,29 @@ def test_streams_count(config, mock_account_info):
     streams = source.streams(config)
     expected_streams_number = 30
     assert len(streams) == expected_streams_number
+
+
+def test_read_missing_stream(config, mock_account_info):
+    source = SourceGoogleAds()
+
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="fake_stream",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.full_refresh],
+                ),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+        ]
+    )
+
+    try:
+        list(source.read(AirbyteLogger(), config=config, catalog=catalog))
+    except KeyError as error:
+        pytest.fail(str(error))
 
 
 @pytest.mark.parametrize(
