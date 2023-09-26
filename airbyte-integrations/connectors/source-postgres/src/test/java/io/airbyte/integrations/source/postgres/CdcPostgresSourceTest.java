@@ -115,7 +115,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @BeforeEach
   protected void setup() throws SQLException {
-    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    final DockerImageName myImage = DockerImageName.parse(getServerImageName()).asCompatibleSubstituteFor("postgres");
     container = new PostgreSQLContainer<>(myImage)
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
@@ -1005,6 +1005,10 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     // generate WAL records. Checkpoints happen even if there are no active data modifications
     assert targetPosition instanceof PostgresCdcTargetPosition;
     assertTrue(extractPosition(record.getData()).targetLsn.compareTo(((PostgresCdcTargetPosition) targetPosition).targetLsn) >= 0);
+  }
+
+  protected String getServerImageName() {
+    return "debezium/postgres:15-alpine";
   }
 
 }

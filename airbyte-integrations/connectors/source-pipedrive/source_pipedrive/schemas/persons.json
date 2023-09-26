@@ -196,6 +196,12 @@
     },
     "cc_email": {
       "type": ["null", "string"]
+    },
+    "picture_128_url": {
+      "type": ["null", "string"]
+    },
+    "delete_time": {
+      "type": ["null", "string"]
     }
   }
 }

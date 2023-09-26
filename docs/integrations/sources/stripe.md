@@ -54,19 +54,6 @@ The Stripe source connector supports the following [sync modes](https://docs.air
 - Full Refresh
 - Incremental
 
-:::note
-Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
-However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field to query for new data in your Stripe account. These are the entities synced based on the date of creation:
-
-- `CheckoutSessionLineItems`
-- `Events`
-- `SetupAttempts`
-- `ShippingRates`
-- `BalanceTransactions`
-- `Files`
-- `FileLinks`
-  :::
-
 ## Supported streams
 
 The Stripe source connector supports the following streams:
@@ -89,9 +76,6 @@ The Stripe source connector supports the following streams:
 - [Credit Notes](https://stripe.com/docs/api/credit_notes/list) \(Incremental\)
 - [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list) \(Incremental\)
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
-  :::note
-  This endpoint does _not_ include deleted customers
-  :::
 - [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
 - [Early Fraud Warnings](https://stripe.com/docs/api/radar/early_fraud_warnings/list) \(Incremental\)
 - [Events](https://stripe.com/docs/api/events/list) \(Incremental\)
@@ -129,6 +113,73 @@ The Stripe source connector supports the following streams:
 Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 30 days.
 :::
 
+:::note
+Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
+However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
+- `BalanceTransactions`
+- `CheckoutSessionLineItems` (cursor field is `checkout_session_expires_at`)
+- `Events`
+- `FileLinks`
+- `Files`
+- `SetupAttempts`
+- `ShippingRates`
+
+On the other hand, the following streams use the `updated` field value as a cursor:
+- `Application Fees`
+- `Application Fee Refunds`
+- `Authorizations`
+- `Bank accounts`
+- `Cardholders`
+- `Cards`
+- `Charges`
+- `Checkout Sessions`
+- `Coupons`
+- `Credit Notes`
+- `Customer Balance Transactions`
+- `Customers`
+- `Disputes`
+- `Early Fraud Warnings`
+- `External Account Bank Accounts`
+- `External Account Cards`
+- `Invoice Items`
+- `Invoices`
+- `Payment Intents`
+- `Payouts`
+- `Promotion Codes`
+- `Persons`
+- `Plans`
+- `Prices`
+- `Products`
+- `Refunds`
+- `Reviews`
+- `Setup Intents`
+- `Subscription Schedule`
+- `Subscriptions`
+- `Top Ups`
+- `Transactions`
+- `Transfers`
+
+  :::
+
+:::note
+The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
+- `Bank Accounts`
+- `Coupons`
+- `Customers`
+- `External Account Bank Accounts`
+- `External Account Cards`
+- `Invoices`
+- `Invoice Items`
+- `Persons`
+- `Plans`
+- `Prices`
+- `Products`
+- `Subscriptions`
+
+Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
+
+  :::
+
 ### Data type mapping
 
 The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions are performed for the Stripe connector.
@@ -140,7 +191,9 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.0   | 2023-09-26 | [30752](https://github.com/airbytehq/airbyte/pull/30752) | Do not sync upcoming invoices, extend stream schemas                                                                                                 |
+| 4.2.0   | 2023-09-21 | [30660](https://github.com/airbytehq/airbyte/pull/30660) | Fix updated state for the incremental syncs                                                                                                          |
 | 4.1.1   | 2023-09-15 | [30494](https://github.com/airbytehq/airbyte/pull/30494) | Fix datatype of invoices.lines property                                                                                                              |
 | 4.1.0   | 2023-08-29 | [29950](https://github.com/airbytehq/airbyte/pull/29950) | Implement incremental deletes, add suggested streams                                                                                                 |
 | 4.0.1   | 2023-09-07 | [30254](https://github.com/airbytehq/airbyte/pull/30254) | Fix cursorless incremental streams                                                                                                                   |
