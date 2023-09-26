@@ -5,11 +5,11 @@
 package io.airbyte.cdk.integrations.destination.staging;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;

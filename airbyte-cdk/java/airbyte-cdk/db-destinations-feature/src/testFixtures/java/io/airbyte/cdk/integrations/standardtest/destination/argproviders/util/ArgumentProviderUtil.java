@@ -14,8 +14,8 @@ public class ArgumentProviderUtil {
 
   /**
    * This method use
-   * {@link io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion#getPrefix()} to prefix
-   * the file name.
+   * {@link io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion#getPrefix()} to
+   * prefix the file name.
    * <p>
    * example:
    * <p>

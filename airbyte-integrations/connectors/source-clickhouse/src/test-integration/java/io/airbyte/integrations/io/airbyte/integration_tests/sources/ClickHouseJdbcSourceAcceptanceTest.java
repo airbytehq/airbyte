@@ -12,12 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
 import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.time.Duration;

@@ -9,10 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.json.Jsons;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;

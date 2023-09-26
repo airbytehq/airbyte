@@ -7,13 +7,13 @@ package io.airbyte.cdk.integrations.destination.staging;
 import static java.util.stream.Collectors.joining;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
 import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.HashMap;

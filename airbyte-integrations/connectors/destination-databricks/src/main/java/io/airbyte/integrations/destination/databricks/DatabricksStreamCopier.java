@@ -6,11 +6,11 @@ package io.airbyte.integrations.destination.databricks;
 
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination.databricks.utils.DatabricksConstants;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.cdk.integrations.destination.jdbc.StagingFilenameGenerator;
 import io.airbyte.cdk.integrations.destination.jdbc.constants.GlobalDataSizeConstants;
 import io.airbyte.cdk.integrations.destination.jdbc.copy.StreamCopier;
+import io.airbyte.integrations.destination.databricks.utils.DatabricksConstants;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import org.slf4j.Logger;

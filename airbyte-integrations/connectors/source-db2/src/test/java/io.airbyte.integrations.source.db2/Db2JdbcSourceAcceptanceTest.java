@@ -9,10 +9,10 @@ import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryU
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.commons.json.Jsons;
 import java.sql.JDBCType;
 import java.util.Collections;
 import java.util.Set;

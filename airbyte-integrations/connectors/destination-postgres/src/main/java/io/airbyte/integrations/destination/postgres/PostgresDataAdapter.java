@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.destination.jdbc.DataAdapter;
+import io.airbyte.commons.json.Jsons;
 
 public class PostgresDataAdapter extends DataAdapter {
 

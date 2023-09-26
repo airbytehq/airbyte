@@ -11,8 +11,8 @@ import static io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod.SSH_PA
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
+import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;

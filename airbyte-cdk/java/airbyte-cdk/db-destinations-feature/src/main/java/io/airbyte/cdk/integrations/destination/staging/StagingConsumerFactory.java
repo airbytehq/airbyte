@@ -10,14 +10,9 @@ import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
-import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
-import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
-import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
-import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
@@ -25,6 +20,11 @@ import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunctio
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;

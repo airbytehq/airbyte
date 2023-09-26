@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.exasol;
 
-import io.airbyte.commons.text.Names;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.commons.text.Names;
 
 public class ExasolSQLNameTransformer extends StandardNameTransformer {
 

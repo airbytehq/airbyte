@@ -5,9 +5,9 @@
 package io.airbyte.integrations.destination.cassandra;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
+import io.airbyte.commons.json.Jsons;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;

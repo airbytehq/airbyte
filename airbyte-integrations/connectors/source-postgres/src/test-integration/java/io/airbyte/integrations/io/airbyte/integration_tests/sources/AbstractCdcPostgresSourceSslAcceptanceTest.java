@@ -8,7 +8,6 @@ import static io.airbyte.cdk.db.PostgresUtils.getCertificate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.PostgresUtils;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
@@ -16,6 +15,7 @@ import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
+import io.airbyte.commons.json.Jsons;
 import java.util.List;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;

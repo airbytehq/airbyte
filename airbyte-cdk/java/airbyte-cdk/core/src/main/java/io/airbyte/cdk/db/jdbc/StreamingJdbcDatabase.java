@@ -5,9 +5,9 @@
 package io.airbyte.cdk.db.jdbc;
 
 import com.google.errorprone.annotations.MustBeClosed;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.jdbc.streaming.JdbcStreamingQueryConfig;
+import io.airbyte.commons.functional.CheckedFunction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

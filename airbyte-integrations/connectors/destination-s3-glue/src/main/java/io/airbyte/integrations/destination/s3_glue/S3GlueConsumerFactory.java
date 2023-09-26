@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.s3_glue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Preconditions;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
@@ -17,8 +16,9 @@ import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartF
 import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction;
 import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy;
-import io.airbyte.integrations.destination.s3.BlobStorageOperations;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.s3.BlobStorageOperations;
 import io.airbyte.integrations.destination.s3.WriteConfig;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;

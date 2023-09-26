@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 """Migration script. TODO: Delete this script once the migration is complete.
 
 Usage:
@@ -9,19 +13,46 @@ Usage:
 import os
 import re
 import shutil
-from pathlib import Path
 import sys
+from pathlib import Path
 
 REPO_ROOT = "."
 CDK_ROOT = f"{REPO_ROOT}/airbyte-cdk/java/airbyte-cdk"
 EXCLUDE_DIRS = [
-    "target", "out", "build", "dist", ".git", "docs", ".venv", "sample_files",
-    "node_modules", "lib", "bin", "__pycache__", ".gradle", ".symlinks",
+    "target",
+    "out",
+    "build",
+    "dist",
+    ".git",
+    "docs",
+    ".venv",
+    "sample_files",
+    "node_modules",
+    "lib",
+    "bin",
+    "__pycache__",
+    ".gradle",
+    ".symlinks",
 ]
 EXCLUDE_FILES = [
-    "pom\.xml", "README\.md", "LICENSE", "build", ".coverage\..*", ".*\.zip", ".*\.gz", 
-    "_temp_.*", ".*\.dat", ".*\.bin", ".*\.csv", ".*\.jsonl", ".*\.png", ".*\.db", 
-    ".*\.pyc", ".*\.jar", ".*\.archive", ".*\.coverage", 
+    "pom\.xml",
+    "README\.md",
+    "LICENSE",
+    "build",
+    ".coverage\..*",
+    ".*\.zip",
+    ".*\.gz",
+    "_temp_.*",
+    ".*\.dat",
+    ".*\.bin",
+    ".*\.csv",
+    ".*\.jsonl",
+    ".*\.png",
+    ".*\.db",
+    ".*\.pyc",
+    ".*\.jar",
+    ".*\.archive",
+    ".*\.coverage",
 ]
 CORE_FEATURE = "core"
 DB_SOURCES_FEATURE = "db-sources-feature"
@@ -44,8 +75,7 @@ MAIN_PACKAGES = {
     ],
 }
 TEST_FIXTURE_PACKAGES = {
-    CORE_FEATURE: [
-    ],
+    CORE_FEATURE: [],
     DB_SOURCES_FEATURE: [
         "airbyte-test-utils",
         "airbyte-integrations/bases/base-standard-source-test-file",
@@ -55,7 +85,7 @@ TEST_FIXTURE_PACKAGES = {
         # "airbyte-integrations/bases/base-typing-deduping-test",  # Excluded by request
         "airbyte-integrations/bases/s3-destination-base-integration-test",
         "airbyte-integrations/bases/standard-destination-test",
-    ]
+    ],
 }
 TEST_CMDS = [
     # These should pass:
@@ -67,14 +97,11 @@ TEST_CMDS = [
     # f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-gcs:test --fail-fast",
     # f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping:build",
     # f"{REPO_ROOT}/./gradlew :airbyte-integrations:bases:base-typing-deduping-test:build",
-
     # Working on:
-
     # Failing:
     f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:destination-postgres:test --fail-fast",  # Needs cdk plugin and extension settings.
     f"{REPO_ROOT}/./gradlew :airbyte-cdk:java:airbyte-cdk:integrationTest",  # Missing image for source-jdbc
-    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:integrationTestJava", # org.testcontainers.containers.ContainerLaunchException: Container startup failed for image postgres:13-alpine
-
+    f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:integrationTestJava",  # org.testcontainers.containers.ContainerLaunchException: Container startup failed for image postgres:13-alpine
     # "java.io.StreamCorruptedException: Overriding the global section with a specific one at line 3: Host *":
     f"{REPO_ROOT}/./gradlew :airbyte-integrations:connectors:source-postgres:integrationTestJava --tests=SshKeyPostgresSourceAcceptanceTest.testEntrypointEnvVar",
     # SshKeyPostgresSourceAcceptanceTest.testIdenticalFullRefreshes
@@ -82,16 +109,12 @@ TEST_CMDS = [
     # SshPasswordPostgresSourceAcceptanceTest.testEntrypointEnvVar
     # SshPasswordPostgresSourceAcceptanceTest.testIdenticalFullRefreshes
     # SshPasswordPostgresSourceAcceptanceTest.testIncrementalSyncWithState
-
 ]
+
 
 def move_files(source_dir, dest_dir, path_desc):
     if os.path.isdir(source_dir):
-        print(
-            f"Moving '{path_desc}' files (ignoring existing)...\n"
-            f" - From: {source_dir}\n"
-            f" - To:   {dest_dir}"
-        )
+        print(f"Moving '{path_desc}' files (ignoring existing)...\n" f" - From: {source_dir}\n" f" - To:   {dest_dir}")
         os.makedirs(dest_dir, exist_ok=True)
         for root, dirs, files in os.walk(source_dir):
             for file in files:
@@ -105,6 +128,7 @@ def move_files(source_dir, dest_dir, path_desc):
         pass
         # print(f"The source directory does not exist: {source_dir} ('{path_desc}')")
 
+
 def remove_empty_dirs(root_dir):
     for root, dirs, files in os.walk(root_dir, topdown=False):
         for dir in dirs:
@@ -112,12 +136,14 @@ def remove_empty_dirs(root_dir):
             if not os.listdir(path):
                 os.rmdir(path)
 
+
 def list_remnant_files(from_dir: str):
     # List remnant files in the OLD_PACKAGE_ROOT
     print(f"Files remaining in {from_dir}:")
     for root, dirs, files in os.walk(from_dir):
         for f in files:
             print(os.path.join(root, f))
+
 
 def move_package(old_package_root: str, feature_name: str, as_test_fixture: bool):
     # Define source and destination directories
@@ -164,7 +190,7 @@ def move_package(old_package_root: str, feature_name: str, as_test_fixture: bool
         ("integ test resources", old_integtest_resources_path, dest_integtest_resources_path),
         ("perf test resources", old_perftest_resources_path, dest_perftest_resources_path),
         ("test fixtures resources", old_testfixture_resources_path, dest_testfixture_resources_path),
-        ("remnants to archive", old_package_root, remnants_archive_path)
+        ("remnants to archive", old_package_root, remnants_archive_path),
     ]
     for path_desc, source_dir, dest_dir in paths:
         move_files(source_dir, dest_dir, path_desc)
@@ -200,14 +226,7 @@ def migrate_package_refs(
 
         for file in files:
             file_path = os.path.join(root, file)
-            if (
-                any(
-                    [
-                        exclude_dir in file_path.split("/")
-                        for exclude_dir in exclude_dirs
-                    ]
-                )
-            ):
+            if any([exclude_dir in file_path.split("/") for exclude_dir in exclude_dirs]):
                 continue
 
             # print("Scanning file: ", file_path)
@@ -270,7 +289,7 @@ def refactor_cdk_package_refs() -> None:
             r"(?<!package )io\.airbyte\.integrations\.destination\.s3\.(avro|constant|credential|csv|jsonl|parquet|S3BaseChecks|S3ConsumerFactory|S3DestinationConfig|S3DestinationConstants|S3Format|S3FormatConfig|S3FormatConfigs|SerializedBufferFactory|StorageProvider|S3StorageOperations|template|util|writer)\b",
             r"io.airbyte.cdk.integrations.destination.s3.\1",
             REPO_ROOT,
-        )
+        ),
     ]:
         migrate_package_refs(
             text_pattern,
@@ -298,9 +317,7 @@ def main() -> None:
             raise ValueError(f"Unknown argument: {sys.argv[1]}")
 
     for feature_name in MAIN_PACKAGES.keys():
-        paths_to_migrate = (
-            MAIN_PACKAGES[feature_name] + TEST_FIXTURE_PACKAGES[feature_name]
-        )
+        paths_to_migrate = MAIN_PACKAGES[feature_name] + TEST_FIXTURE_PACKAGES[feature_name]
         for old_package_root in paths_to_migrate:
             # Remove empty directories in the OLD_PACKAGE_ROOT
             as_test_fixture = old_package_root in TEST_FIXTURE_PACKAGES[feature_name]

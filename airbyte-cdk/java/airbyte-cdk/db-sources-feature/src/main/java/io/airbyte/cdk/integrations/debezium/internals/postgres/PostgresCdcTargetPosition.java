@@ -6,13 +6,13 @@ package io.airbyte.cdk.integrations.debezium.internals.postgres;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.PgLsn;
 import io.airbyte.cdk.db.PostgresUtils;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.SnapshotMetadata;
+import io.airbyte.commons.json.Jsons;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Objects;

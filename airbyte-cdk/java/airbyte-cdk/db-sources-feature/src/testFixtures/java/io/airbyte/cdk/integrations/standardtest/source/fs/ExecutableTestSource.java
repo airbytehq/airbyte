@@ -5,10 +5,10 @@
 package io.airbyte.cdk.integrations.standardtest.source.fs;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.io.IOs;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.commons.io.IOs;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.nio.file.Path;

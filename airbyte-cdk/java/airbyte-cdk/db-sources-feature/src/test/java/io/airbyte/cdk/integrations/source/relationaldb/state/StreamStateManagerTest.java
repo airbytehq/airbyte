@@ -19,9 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Lists;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.v0.AirbyteStream;

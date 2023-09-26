@@ -7,7 +7,6 @@ package io.airbyte.cdk.integrations.destination.jdbc.copy;
 import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.BaseConnector;
@@ -17,6 +16,7 @@ import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import javax.sql.DataSource;
 import org.slf4j.Logger;

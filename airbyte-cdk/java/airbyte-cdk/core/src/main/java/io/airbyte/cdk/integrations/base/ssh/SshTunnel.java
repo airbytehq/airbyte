@@ -6,12 +6,12 @@ package io.airbyte.cdk.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.InetSocketAddress;

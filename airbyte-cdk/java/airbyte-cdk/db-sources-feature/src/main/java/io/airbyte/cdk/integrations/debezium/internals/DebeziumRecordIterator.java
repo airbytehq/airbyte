@@ -6,9 +6,9 @@ package io.airbyte.cdk.integrations.debezium.internals;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
 import io.debezium.engine.ChangeEvent;
 import java.lang.reflect.Field;
 import java.time.Duration;

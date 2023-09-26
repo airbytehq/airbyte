@@ -133,8 +133,8 @@ public class GlobalAsyncStateManager {
 
   /**
    * Returns state messages with no more inflight records i.e. counter = 0 across all streams.
-   * Intended to be called by {@link io.airbyte.cdk.integrations.destination_async.FlushWorkers} after a
-   * worker has finished flushing its record batch.
+   * Intended to be called by {@link io.airbyte.cdk.integrations.destination_async.FlushWorkers} after
+   * a worker has finished flushing its record batch.
    * <p>
    * The return list of states should be emitted back to the platform.
    *
