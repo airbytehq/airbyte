@@ -7,7 +7,7 @@
       "description": "The key of the property. Required on create and update."
     },
     "issueId": {
-      "type" : ["null", "string"],
+      "type": ["null", "string"],
       "description": "Id of the related issue.",
       "readOnly": true
     },
