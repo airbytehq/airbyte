@@ -104,7 +104,7 @@ jobs:
         with:
           repository: ${{ env.REPO }}
           ref: ${{ env.GITREF }}
-      - name: Run airbyte-ci (${{env.CONNECTOR_NAME}}: ${{env.CMD}})
+      - name: "Run airbyte-ci (${{env.CONNECTOR_NAME}}: ${{env.CMD}})"
         id: run-airbyte-ci
         if: env.CONNECTOR_NAME
         uses: ./.github/actions/run-dagger-pipeline
