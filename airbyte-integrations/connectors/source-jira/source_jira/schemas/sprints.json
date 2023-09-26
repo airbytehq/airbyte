@@ -35,6 +35,10 @@
     },
     "goal": {
       "type": "string"
+    },
+    "createdDate": {
+      "type" : ["null", "integer"],
+      "format" : "date-time"
     }
   }
 }
