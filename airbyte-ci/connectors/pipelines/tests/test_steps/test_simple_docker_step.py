@@ -1,10 +1,10 @@
-import os
-from unittest.mock import MagicMock
+from pathlib import Path
 
 import pytest
 
 from pipelines.contexts import PipelineContext
 from pipelines.steps.simple_docker_step import SimpleDockerStep, MountPath
+from pipelines.utils import get_exec_result
 
 pytestmark = [
     pytest.mark.anyio,
@@ -22,7 +22,6 @@ def context(dagger_client):
     return context
 
 class TestSimpleDockerStep:
-
     async def test_env_variables_set(self, context):
         # Define test inputs
         title = "test"
@@ -41,3 +40,42 @@ class TestSimpleDockerStep:
             actual_value = stdout_value.strip()
             assert actual_value == expected_value
 
+    async def test_mount_paths(self, context):
+        # Define test inputs
+        title = "test"
+        context = context
+
+        path_to_current_file = Path(__file__).relative_to(Path.cwd())
+        invalid_path = Path("invalid_path")
+        paths_to_mount = [
+            MountPath(path=path_to_current_file, optional=False),
+            MountPath(path=invalid_path, optional=True),
+        ]
+
+        # Create SimpleDockerStep instance
+        step = SimpleDockerStep(title=title, context=context, paths_to_mount=paths_to_mount)
+
+        # Initialize container
+        container = await step.init_container()
+
+        for path_to_mount in paths_to_mount:
+            # count the number of files at the path
+
+            exit_code, _stdout, _stderr  = await get_exec_result(
+                container.with_exec(["test", "-f", f"{str(path_to_mount)}"])
+            )
+
+            expected_exit_code = 1 if path_to_mount.optional else 0
+            assert exit_code == expected_exit_code
+
+    async def test_invalid_mount_paths(self, context):
+        path_to_current_file = Path(__file__).relative_to(Path.cwd())
+        invalid_path = Path("invalid_path")
+
+        # No errors expected
+        MountPath(path=path_to_current_file, optional=False)
+        MountPath(path=invalid_path, optional=True)
+
+        # File not found error expected
+        with pytest.raises(FileNotFoundError):
+            MountPath(path=invalid_path, optional=False)
