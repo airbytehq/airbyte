@@ -701,7 +701,7 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/search",
-        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (3)"})],
+        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (3)", "expand": "renderedFields,transitions,changelog"})],
         json={"errorMessages": ["The value '3' does not exist for the field 'project'."]},
         status=400
     )
