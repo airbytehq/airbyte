@@ -110,17 +110,21 @@ public class MongoDbSource extends AbstractDbSource<BsonType, MongoDatabase> {
     final Set<String> authorizedCollections = getAuthorizedCollections(database);
     authorizedCollections.parallelStream().forEach(collectionName -> {
       final MongoCollection<Document> collection = database.getCollection(collectionName);
-      final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream().map(MongoUtils::nodeToCommonField).toList();
+      try{   
+        final List<CommonField<BsonType>> fields = MongoUtils.getUniqueFields(collection).stream().map(MongoUtils::nodeToCommonField).toList();
+        // The field name _id is reserved for use as a primary key;
+        final TableInfo<CommonField<BsonType>> tableInfo = TableInfo.<CommonField<BsonType>>builder()
+        .nameSpace(database.getName())
+        .name(collectionName)
+        .fields(fields)
+        .primaryKeys(List.of(MongoUtils.PRIMARY_KEY))
+        .build();
+        tableInfos.add(tableInfo);
 
-      // The field name _id is reserved for use as a primary key;
-      final TableInfo<CommonField<BsonType>> tableInfo = TableInfo.<CommonField<BsonType>>builder()
-          .nameSpace(database.getName())
-          .name(collectionName)
-          .fields(fields)
-          .primaryKeys(List.of(MongoUtils.PRIMARY_KEY))
-          .build();
-
-      tableInfos.add(tableInfo);
+      }catch (final com.mongodb.MongoCommandException e) {
+          LOGGER.info("skipping collection {} , due to exception: {}",collection,e);     
+      } 
+     
     });
     return tableInfos;
   }
