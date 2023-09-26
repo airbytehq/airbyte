@@ -25,6 +25,9 @@ application {
 integrationTestJava {
     // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
     jvmArgs = ["--add-opens=java.base/java.nio=ALL-UNNAMED"]
+    testLogging {
+        showStandardStreams = true
+    }
 }
 
 dependencies {
