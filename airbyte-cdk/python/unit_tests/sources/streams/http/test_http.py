@@ -398,6 +398,7 @@ def test_parent_attribute_exist():
 def test_that_response_was_cached(mocker, requests_mock):
     requests_mock.register_uri("GET", "https://google.com/", text="text")
     stream = CacheHttpStream()
+    stream.clear_cache()
     mocker.patch.object(stream, "url_base", "https://google.com/")
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
 
@@ -431,6 +432,7 @@ def test_using_cache(mocker, requests_mock):
 
     parent_stream = CacheHttpStreamWithSlices()
     mocker.patch.object(parent_stream, "url_base", "https://google.com/")
+    parent_stream.clear_cache()
 
     assert requests_mock.call_count == 0
     assert parent_stream._session.cache.response_count() == 0

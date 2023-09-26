@@ -38,7 +38,6 @@ class HttpStream(Stream, ABC):
     def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None):
         if self.use_cache:
             self._session = self.request_cache()
-            self.clear_cache()
         else:
             self._session = requests.Session()
 
