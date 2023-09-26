@@ -1,9 +1,0 @@
-{
-  "name": "Sergii",
-  "team_ids": [],
-  "all_of_field": {
-    "big_query_array": [4, 5, 6],
-    "big_query_string": "Some text",
-    "big_query_integer": 42
-  }
-}
