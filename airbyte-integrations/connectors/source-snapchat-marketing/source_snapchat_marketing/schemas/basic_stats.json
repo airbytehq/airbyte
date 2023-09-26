@@ -227,6 +227,33 @@
     },
     "story_completes": {
       "type": ["null", "number"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "region": {
+      "type": ["null", "string"]
+    },
+    "dma": {
+      "type": ["null", "string"]
+    },
+    "gender": {
+      "type": ["null", "string"]
+    },
+    "age_bucket": {
+      "type": ["null", "string"]
+    },
+    "operating_system": {
+      "type": ["null", "string"]
+    },
+    "make": {
+      "type": ["null", "string"]
+    },
+    "interest_category_id": {
+      "type": ["null", "number"]
+    },
+    "interest_category_name": {
+      "type": ["null", "string"]
     }
   }
 }

@@ -45,6 +45,14 @@
         "examples": ["2022-01-30"],
         "order": 4,
         "format": "date"
+      },
+      "report_dimension":  {
+        "type": "string",
+        "title": "Report Dimension",
+        "description": "Used to get reporting insights based on different geographic, demographic, interest-based, and device-based dimensions.\n For usage refer: https://marketingapi.snapchat.com/docs/#reporting-insights-and-dimensions",
+        "pattern": "^(country|country,os|os,country|region|dma|gender|age|age,gender|gender,age|os|make|lifestyle_category)$",
+        "examples": ["country", "age", "os"],
+        "order": 5
       }
     }
   },

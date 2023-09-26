@@ -99,6 +99,82 @@ METRICS_NOT_HOURLY = [
     "earned_reach",
 ]
 
+# Maps which type of metric is supported by which dimension
+# Refer: https://marketingapi.snapchat.com/docs/#reporting-insights-and-dimensions
+DIMENSION_METRIC_DICT = {
+    "country": "Delivery/Conversion",
+    "country,os": "Delivery",
+    "os,country": "Delivery",
+    "region": "Delivery",
+    "dma": "Delivery",
+    "gender": "Delivery/Conversion",
+    "age": "Delivery/Conversion",
+    "age,gender": "Delivery/Conversion",
+    "gender,age": "Delivery/Conversion",
+    "os": "Delivery/Conversion",
+    "make": "Delivery",
+    "lifestyle_category": "Delivery"
+}
+
+# Refer: https://marketingapi.snapchat.com/docs/#reporting-insights-and-dimensions
+DELIVERY_METRICS = [
+    "impressions",
+    "swipes",
+    "quartile_1",
+    "quartile_2",
+    "quartile_3",
+    "view_completion",
+    "spend",
+    "video_views",
+    "attachment_quartile_1",
+    "attachment_quartile_2",
+    "attachment_quartile_3",
+    "attachment_view_completion",
+    "attachment_total_view_time_millis",
+    "attachment_video_views",
+    "story_opens",
+    "story_completes",
+    "shares",
+    "saves"
+]
+
+# Refer: https://marketingapi.snapchat.com/docs/#reporting-insights-and-dimensions
+CONVERSION_METRICS = [
+    "total_installs",
+    "conversion_purchases",
+    "conversion_purchases_value",
+    "conversion_save",
+    "conversion_start_checkout",
+    "conversion_add_cart",
+    "conversion_view_content",
+    "conversion_add_billing",
+    "conversion_sign_ups",
+    "conversion_searches",
+    "conversion_level_completes",
+    "conversion_app_opens",
+    "conversion_page_views",
+    "conversion_subscribe",
+    "conversion_ad_click",
+    "conversion_ad_view",
+    "conversion_complete_tutorial",
+    "conversion_invite",
+    "conversion_login",
+    "conversion_share",
+    "conversion_reserve",
+    "conversion_achievement_unlocked",
+    "conversion_add_to_wishlist",
+    "conversion_spend_credits",
+    "conversion_rate",
+    "conversion_start_trial",
+    "conversion_list_view",
+    "conversion_visit",
+    "custom_event_1",
+    "custom_event_2",
+    "custom_event_3",
+    "custom_event_4",
+    "custom_event_5"
+]
+
 logger = logging.getLogger("airbyte")
 
 
@@ -165,10 +241,11 @@ class SnapchatMarketingStream(HttpStream, ABC):
     primary_key = "id"
     raise_on_http_errors = True
 
-    def __init__(self, start_date, end_date, **kwargs):
+    def __init__(self, start_date, end_date, report_dimension="", **kwargs):
         super().__init__(**kwargs)
         self.start_date = start_date
         self.end_date = end_date
+        self.report_dimension = report_dimension
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page_cursor = response.json().get("paging", False)
@@ -246,7 +323,7 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
         self.initial_state = stream_state.get(self.cursor_field) if stream_state else self.start_date
         self.max_state = self.initial_state
 
-        parent_stream = self.parent(authenticator=self.authenticator, start_date=self.start_date, end_date=self.end_date)
+        parent_stream = self.parent(authenticator=self.authenticator, start_date=self.start_date, end_date=self.end_date, report_dimension=self.report_dimension)
         stream_slices = get_parent_ids(parent_stream)
 
         if stream_slices:
@@ -368,7 +445,7 @@ class Stats(SnapchatMarketingStream, ABC):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         """Each stream slice represents each entity id from parent stream"""
 
-        parent_stream = self.parent(authenticator=self.authenticator, start_date=self.start_date, end_date=self.end_date)
+        parent_stream = self.parent(authenticator=self.authenticator, start_date=self.start_date, end_date=self.end_date, report_dimension=self.report_dimension)
         self.parent_name = parent_stream.name
         stream_slices = get_parent_ids(parent_stream)
 
@@ -390,6 +467,19 @@ class Stats(SnapchatMarketingStream, ABC):
         params["granularity"] = self.granularity.value
         if self.metrics:
             params["fields"] = ",".join(self.metrics)
+        if self.report_dimension:
+            params["report_dimension"] = self.report_dimension
+            # Filter metrics based on the type supported by the provided report_dimension
+            new_metrics = []
+            supported_type = DIMENSION_METRIC_DICT.get(self.report_dimension)
+            for metric in self.metrics:
+                if supported_type == "Delivery/Conversion":
+                    if metric in DELIVERY_METRICS or metric in CONVERSION_METRICS:
+                        new_metrics.append(metric)
+                else:
+                    if metric in DELIVERY_METRICS:
+                        new_metrics.append(metric)
+            params["fields"] = ",".join(new_metrics)
 
         return params
 
@@ -407,7 +497,12 @@ class Stats(SnapchatMarketingStream, ABC):
             response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         ):
             # move all 'stats' metrics to root level
-            record.update(record.pop("stats", {}))
+            # if report dimension is specified, they are found under 'dimension_stats' instead of 'stats'
+            # Example for report dimension output here: https://marketingapi.snapchat.com/docs/#insights-by-demo
+            if self.report_dimension:
+                record.update(record.pop("dimension_stats", {}))
+            else:
+                record.update(record.pop("stats", {}))
 
             yield record
 
@@ -524,7 +619,12 @@ class StatsIncremental(Stats, IncrementalMixin):
                 # add common record identifiers
                 stat_item.update(record_identifiers)
                 # move all 'stats' metrics to root level
-                stat_item.update(stat_item.pop("stats", {}))
+                # if report dimension is specified, they are found under 'dimension_stats' instead of 'stats'
+                # Example for report dimension output here: https://marketingapi.snapchat.com/docs/#insights-by-demo
+                if self.report_dimension:
+                    stat_item.update(stat_item.pop("dimension_stats", {}))
+                else:
+                    stat_item.update(stat_item.pop("stats", {}))
 
                 # Update state for last record in the stream
                 self.update_state_after_last_record(stat_item)
@@ -808,6 +908,7 @@ class SourceSnapchatMarketing(AbstractSource):
             ),
             "start_date": config["start_date"],
             "end_date": config.get("end_date", default_end_date),
+            "report_dimension": config.get("report_dimension", "")
         }
 
         return [
