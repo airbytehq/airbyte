@@ -74,11 +74,9 @@ export function useDefaultTransformation(): OperationCreate {
   };
 }
 
-export const connectionValidationSchema = yup
-  .object({
-    name: yup.string().required("form.empty.error"),
-    scheduleType: yup.string().oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic]),
-    scheduleData: yup
+{
+  /*
+ scheduleData: yup
       .object({
         basicSchedule: yup
           .object({
@@ -87,6 +85,29 @@ export const connectionValidationSchema = yup
           })
           .nullable()
           .defined("form.empty.error"),
+      })
+      .nullable()
+      .defined("form.empty.error")
+
+
+*/
+}
+export const connectionValidationSchema = yup
+  .object({
+    name: yup.string().required("form.empty.error"),
+    scheduleType: yup.string().oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic]),
+    scheduleData: yup
+      .mixed()
+      .test("is-valid-schedule-data", "Invalid schedule data", (value) => {
+        if (typeof value === "object") {
+          if (value.basicSchedule === "manual") {
+            return true; // Accept 'manual' as a string inside basicSchedule
+          }
+          if (value.basicSchedule && value.basicSchedule.units && value.basicSchedule.timeUnit) {
+            return true; // Accept the object structure with units and timeUnit
+          }
+        }
+        return false; // Reject other cases
       })
       .nullable()
       .defined("form.empty.error"),
