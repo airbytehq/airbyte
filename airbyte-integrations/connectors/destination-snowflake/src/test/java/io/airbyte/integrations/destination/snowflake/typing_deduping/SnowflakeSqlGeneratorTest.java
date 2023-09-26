@@ -34,7 +34,7 @@ public class SnowflakeSqlGeneratorTest {
             new ColumnId(
                 "__FOO_",
                 "${foo}",
-                "${FOO}"),
+                "__FOO_"),
             generator.buildColumnId("${foo}")),
         // But normally, we should leave those characters untouched.
         () -> assertEquals(
