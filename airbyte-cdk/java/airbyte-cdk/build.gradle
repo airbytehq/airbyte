@@ -60,7 +60,7 @@ def recursiveTasks = [
 ]
 recursiveTasks.each { taskName ->
     tasks.named(taskName).configure {
-        dependsOn subprojects*.tasks.named(taskName)
+        dependsOn subprojects.collect { it.tasks.named(taskName) }
     }
 }
 
