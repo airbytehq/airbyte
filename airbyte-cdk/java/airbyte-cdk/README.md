@@ -93,7 +93,6 @@ You can reference the CDK in your connector's `build.gradle` file:
 ```groovy
 plugins {
     id 'application'
-    id 'airbyte-docker'
     id 'airbyte-java-connector'
 }
 
