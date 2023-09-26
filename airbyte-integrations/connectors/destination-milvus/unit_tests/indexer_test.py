@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import Mock, call
 
 from airbyte_cdk.models.airbyte_protocol import AirbyteStream, DestinationSyncMode, SyncMode
-from destination_milvus.config import MilvusIndexingConfigModel
+from destination_milvus.config import MilvusIndexingConfigModel, NoAuth, TokenAuth
 from destination_milvus.indexer import MilvusIndexer
 from pymilvus import DataType
 from pymilvus.exceptions import DescribeCollectionException
@@ -49,14 +49,17 @@ class TestMilvusIndexer(unittest.TestCase):
             "fields": [{"name": "vector", "type": DataType.FLOAT_VECTOR, "params": {"dim": 128}}],
         }
         test_cases = [
-            ("cloud", "http://example.org", "Host must start with https://"),
-            ("cloud", "https://example.org", None),
-            ("", "http://example.org", None),
-            ("", "https://example.org", None)
+            ("cloud", "http://example.org", TokenAuth(mode="token", token="abc"), "Host must start with https:// and authentication must be enabled on cloud deployment."),
+            ("cloud", "https://example.org", NoAuth(mode="no_auth"), "Host must start with https:// and authentication must be enabled on cloud deployment."),
+            ("cloud", "https://example.org", TokenAuth(mode="token", token="abc"), None),
+            ("", "http://example.org", TokenAuth(mode="token", token="abc"), None),
+            ("", "https://example.org", TokenAuth(mode="token", token="abc"), None),
+            ("", "https://example.org", NoAuth(mode="no_auth"), None)
         ]
-        for deployment_mode, uri, expected_error_message in test_cases:
+        for deployment_mode, uri, auth, expected_error_message in test_cases:
             os.environ["DEPLOYMENT_MODE"] = deployment_mode
             self.milvus_indexer.config.host = uri
+            self.milvus_indexer.config.auth = auth
 
             result = self.milvus_indexer.check()
 
