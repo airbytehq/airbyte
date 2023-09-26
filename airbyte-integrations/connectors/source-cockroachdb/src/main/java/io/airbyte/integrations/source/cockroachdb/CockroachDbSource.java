@@ -8,8 +8,6 @@ import static io.airbyte.cdk.db.jdbc.JdbcUtils.AMPERSAND;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.functional.CheckedFunction;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
@@ -21,6 +19,8 @@ import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.commons.functional.CheckedFunction;
+import io.airbyte.commons.json.Jsons;
 import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;

@@ -8,8 +8,8 @@ import static io.airbyte.cdk.db.jdbc.DateTimeConverter.putJavaSQLDate;
 import static io.airbyte.cdk.db.jdbc.DateTimeConverter.putJavaSQLTime;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
+import io.airbyte.commons.json.Jsons;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

@@ -7,9 +7,9 @@ package io.airbyte.cdk.integrations.util;
 import static java.util.stream.Collectors.joining;
 
 import com.google.common.collect.ImmutableList;
+import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
-import io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
 import java.util.Collection;

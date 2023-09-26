@@ -6,8 +6,8 @@ package io.airbyte.cdk.integrations.destination.staging;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

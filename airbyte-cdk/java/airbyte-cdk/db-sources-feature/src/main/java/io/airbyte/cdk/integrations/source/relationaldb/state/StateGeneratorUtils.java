@@ -6,13 +6,13 @@ package io.airbyte.cdk.integrations.source.relationaldb.state;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.configoss.StateWrapper;
-import io.airbyte.configoss.helpers.StateMessageHelper;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbState;
 import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.configoss.StateWrapper;
+import io.airbyte.configoss.helpers.StateMessageHelper;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType;

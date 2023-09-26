@@ -8,8 +8,8 @@ import static io.airbyte.cdk.db.DataTypeUtils.TIMETZ_FORMATTER;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
+import io.airbyte.commons.json.Jsons;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.OffsetTime;

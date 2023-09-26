@@ -7,9 +7,9 @@ package io.airbyte.cdk.integrations.destination.s3.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.commons.json.Jsons;
 
 public class ConfigTestUtils {
 

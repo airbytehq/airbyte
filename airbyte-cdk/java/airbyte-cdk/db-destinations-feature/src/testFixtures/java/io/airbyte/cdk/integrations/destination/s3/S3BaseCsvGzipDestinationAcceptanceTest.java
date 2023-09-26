@@ -6,8 +6,8 @@ package io.airbyte.cdk.integrations.destination.s3;
 
 import com.amazonaws.services.s3.model.S3Object;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.destination.s3.util.Flattening;
+import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;

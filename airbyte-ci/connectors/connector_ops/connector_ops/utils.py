@@ -105,7 +105,8 @@ def has_local_cdk_ref(build_file: Path) -> bool:
     contents = "\n".join(
         [
             # Return contents without inline code comments
-            line.split("//")[0] for line in build_file.read_text().split("\n")
+            line.split("//")[0]
+            for line in build_file.read_text().split("\n")
         ]
     )
     contents = contents.replace(" ", "")
@@ -191,11 +192,13 @@ def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path
         List[Path]: All dependencies of the project.
     """
     base_path = Path("airbyte-cdk/java/airbyte-cdk")
-    return list(set(
-        get_all_gradle_dependencies(base_path / Path("core/build.gradle"), with_test_dependencies) +
-        get_all_gradle_dependencies(base_path / Path("db-sources-feature/build.gradle"), with_test_dependencies) +
-        get_all_gradle_dependencies(base_path / Path("db-destinations-feature/build.gradle"), with_test_dependencies)
-    ))
+    return list(
+        set(
+            get_all_gradle_dependencies(base_path / Path("core/build.gradle"), with_test_dependencies)
+            + get_all_gradle_dependencies(base_path / Path("db-sources-feature/build.gradle"), with_test_dependencies)
+            + get_all_gradle_dependencies(base_path / Path("db-destinations-feature/build.gradle"), with_test_dependencies)
+        )
+    )
 
 
 def get_all_gradle_dependencies(

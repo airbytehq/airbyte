@@ -7,8 +7,6 @@ package io.airbyte.integrations.destination.mssql;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
@@ -19,6 +17,8 @@ import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAccep
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.cdk.test.utils.DatabaseConnectionHelper;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;

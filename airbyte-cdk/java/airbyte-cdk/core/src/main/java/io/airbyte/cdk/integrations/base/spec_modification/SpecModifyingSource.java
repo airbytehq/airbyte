@@ -5,8 +5,8 @@
 package io.airbyte.cdk.integrations.base.spec_modification;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;

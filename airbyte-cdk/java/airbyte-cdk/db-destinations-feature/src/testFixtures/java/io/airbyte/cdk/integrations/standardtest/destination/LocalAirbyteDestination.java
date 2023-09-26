@@ -4,10 +4,10 @@
 
 package io.airbyte.cdk.integrations.standardtest.destination;
 
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.configoss.WorkerDestinationConfig;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.configoss.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.internal.AirbyteDestination;
 import java.nio.file.Path;

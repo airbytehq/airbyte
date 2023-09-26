@@ -5,8 +5,8 @@
 package io.airbyte.integrations.destination.scylla;
 
 import com.google.common.base.CharMatcher;
-import io.airbyte.commons.text.Names;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.commons.text.Names;
 
 class ScyllaNameTransformer extends StandardNameTransformer {
 

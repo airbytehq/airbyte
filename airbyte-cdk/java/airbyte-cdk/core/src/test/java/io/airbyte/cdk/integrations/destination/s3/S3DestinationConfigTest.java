@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.destination.s3.credential.S3AccessKeyCredentialConfig;
+import io.airbyte.commons.json.Jsons;
 import org.junit.jupiter.api.Test;
 
 class S3DestinationConfigTest {

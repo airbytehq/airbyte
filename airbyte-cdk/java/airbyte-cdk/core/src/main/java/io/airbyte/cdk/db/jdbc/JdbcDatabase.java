@@ -6,10 +6,10 @@ package io.airbyte.cdk.db.jdbc;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.errorprone.annotations.MustBeClosed;
-import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.SqlDatabase;
+import io.airbyte.commons.functional.CheckedConsumer;
+import io.airbyte.commons.functional.CheckedFunction;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;

@@ -4,8 +4,8 @@
 
 package io.airbyte.cdk.integrations.standardtest.destination;
 
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;

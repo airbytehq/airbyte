@@ -4,10 +4,10 @@
 
 package io.airbyte.cdk.integrations.util.concurrent;
 
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
 import io.airbyte.commons.stream.StreamStatusUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.ArrayList;

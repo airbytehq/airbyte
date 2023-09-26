@@ -16,9 +16,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
