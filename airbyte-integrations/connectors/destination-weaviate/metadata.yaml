@@ -31,9 +31,9 @@ data:
   tags:
     - language:python
   ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+    sl: 200
+    ql: 300
+  supportLevel: certified
   releases:
     breakingChanges:
       0.2.0:
