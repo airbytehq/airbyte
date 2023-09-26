@@ -92,12 +92,13 @@ class RechargeStream(HttpStream, ABC):
 
         now = pendulum.now()
 
-        start_date = pendulum.parse(start_date)
+        # dates are inclusive, so we add 1 second so that time periods do not overlap
+        start_date = pendulum.parse(start_date).add(seconds=1)
 
         while start_date <= now:
             end_date = start_date.add(months=self.period_in_months)
             yield {"start_date": start_date.strftime("%Y-%m-%d %H:%M:%S"), "end_date": end_date.strftime("%Y-%m-%d %H:%M:%S")}
-            start_date = end_date
+            start_date = end_date.add(seconds=1)
 
 
 class RechargeStreamModernAPI(RechargeStream):
