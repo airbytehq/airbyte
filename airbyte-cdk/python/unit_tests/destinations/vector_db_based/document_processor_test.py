@@ -6,15 +6,19 @@ from typing import Any, List, Mapping
 from unittest.mock import MagicMock
 
 import pytest
-from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel
+from airbyte_cdk.destinations.vector_db_based.config import (
+    CodeSplitterConfigModel,
+    MarkdownHeaderSplitterConfigModel,
+    ProcessingConfigModel,
+    SeparatorSplitterConfigModel,
+)
 from airbyte_cdk.destinations.vector_db_based.document_processor import DocumentProcessor
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, DestinationSyncMode, SyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
-def initialize_processor():
-    config = ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None)
+def initialize_processor(config=ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None)):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -210,6 +214,200 @@ def test_process_multiple_chunks_with_relevant_fields():
     for chunk in chunks:
         assert chunk.metadata["age"] == 25
     assert id_to_delete is None
+
+
+@pytest.mark.parametrize(
+    "label, text, chunk_size, chunk_overlap, splitter_config, expected_chunks",
+    [
+        (
+            "Default splitting",
+            "By default, splits are done \non multi newlines,\n\n then single newlines, then spaces",
+            10,
+            0,
+            None,
+            [
+                "text: By default, splits are done",
+                "on multi newlines,",
+                "then single newlines, then spaces"
+            ],
+        ),
+        (
+            "Overlap splitting",
+            "One two three four five six seven eight nine ten eleven twelve thirteen",
+            15,
+            5,
+            None,
+            [
+                "text: One two three four five six",
+                "four five six seven eight nine ten",
+                "eight nine ten eleven twelve thirteen",
+            ],
+        ),
+        (
+            "Custom separator",
+            "Custom \nseparatorxxxDoes not split on \n\nnewlines",
+            10,
+            0,
+            SeparatorSplitterConfigModel(mode="separator", separators=['"xxx"']),
+            [
+                "text: Custom \nseparator",
+                "Does not split on \n\nnewlines\n",
+            ],
+        ),
+        (
+            "Only splits if chunks dont fit",
+            "Does yyynot usexxxseparators yyyif not needed",
+            10,
+            0,
+            SeparatorSplitterConfigModel(mode="separator", separators=['"xxx"', '"yyy"']),
+            [
+                "text: Does yyynot use",
+                "separators yyyif not needed",
+            ],
+        ),
+        (
+            "Use first separator first",
+            "Does alwaysyyy usexxxmain separators yyyfirst",
+            10,
+            0,
+            SeparatorSplitterConfigModel(mode="separator", separators=['"yyy"', '"xxx"']),
+            [
+                "text: Does always",
+                "usexxxmain separators yyyfirst",
+            ],
+        ),
+        (
+            "Basic markdown splitting",
+            "# Heading 1\nText 1\n\n# Heading 2\nText 2\n\n# Heading 3\nText 3",
+            10,
+            0,
+            MarkdownHeaderSplitterConfigModel(mode="markdown", split_level=1),
+            [
+                "text: # Heading 1\nText 1\n",
+                "# Heading 2\nText 2",
+                "# Heading 3\nText 3",
+            ],
+        ),
+        (
+            "Split multiple levels",
+            "# Heading 1\nText 1\n\n## Sub-Heading 1\nText 2\n\n# Heading 2\nText 3",
+            10,
+            0,
+            MarkdownHeaderSplitterConfigModel(mode="markdown", split_level=2),
+            [
+                "text: # Heading 1\nText 1\n",
+                "\n## Sub-Heading 1\nText 2\n",
+                "# Heading 2\nText 3",
+            ],
+        ),
+        (
+            "Do not split if split level does not allow",
+            "## Heading 1\nText 1\n\n## Heading 2\nText 2\n\n## Heading 3\nText 3",
+            10,
+            0,
+            MarkdownHeaderSplitterConfigModel(mode="markdown", split_level=1),
+            [
+                "text: ## Heading 1\nText 1\n\n## Heading 2\nText 2\n\n## Heading 3\nText 3\n",
+            ],
+        ),
+        (
+            "Do not split if everything fits",
+            "## Does not split if everything fits. Heading 1\nText 1\n\n## Heading 2\nText 2\n\n## Heading 3\nText 3",
+            1000,
+            0,
+            MarkdownHeaderSplitterConfigModel(mode="markdown", split_level=5),
+            [
+                "text: ## Does not split if everything fits. Heading 1\nText 1\n\n## Heading 2\nText 2\n\n## Heading 3\nText 3",
+            ],
+        ),
+        (
+            "Split Java code, respecting class boundaries",
+            "class A { /* \n\nthis is the first class */ }\nclass B {}",
+            20,
+            0,
+            CodeSplitterConfigModel(mode="code", language="java"),
+            [
+                "text: class A { /* \n\nthis is the first class */ }",
+                "class B {}",
+            ],
+        ),
+        (
+            "Split Java code as proto, not respecting class boundaries",
+            "class A { /* \n\nthis is the first class */ }\nclass B {}",
+            20,
+            0,
+            CodeSplitterConfigModel(mode="code", language="proto"),
+            [
+                "text: class A { /*",
+                "this is the first class */ }\nclass B {}",
+            ],
+        ),
+    ]
+)
+def test_text_splitters(label, text, chunk_size, chunk_overlap, splitter_config, expected_chunks):
+    processor = initialize_processor(ProcessingConfigModel(chunk_size=chunk_size, chunk_overlap=chunk_overlap, text_fields=["text"], metadata_fields=None, text_splitter=splitter_config))
+
+    record = AirbyteRecordMessage(
+        stream="stream1",
+        namespace="namespace1",
+        data={
+            "id": 1,
+            "name": "John Doe",
+            "text": text,
+            "age": 25,
+        },
+        emitted_at=1234,
+    )
+
+    processor.text_fields = ["text"]
+
+    chunks, id_to_delete = processor.process(record)
+
+    assert len(chunks) == len(expected_chunks)
+
+    # check that the page_content in each chunk equals the expected chunk
+    for i, chunk in enumerate(chunks):
+        print(chunk.page_content)
+        assert chunk.page_content == expected_chunks[i]
+    assert id_to_delete is None
+
+
+@pytest.mark.parametrize(
+    "label, split_config, has_error_message",
+    [
+        (
+            "Invalid separator",
+            SeparatorSplitterConfigModel(mode="separator", separators=['"xxx']),
+            True
+        ),
+        (
+            "Missing quotes",
+            SeparatorSplitterConfigModel(mode="separator", separators=['xxx']),
+            True
+        ),
+        (
+            "Non-string separator",
+            SeparatorSplitterConfigModel(mode="separator", separators=['123']),
+            True
+        ),
+        (
+            "Object separator",
+            SeparatorSplitterConfigModel(mode="separator", separators=['{}']),
+            True
+        ),
+        (
+            "Proper separator",
+            SeparatorSplitterConfigModel(mode="separator", separators=['"xxx"', '"\\n\\n"']),
+            False
+        ),
+    ]
+)
+def test_text_splitter_check(label, split_config, has_error_message):
+    error = DocumentProcessor.check_config(ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None, text_splitter=split_config))
+    if has_error_message:
+        assert error is not None
+    else:
+        assert error is None
 
 
 @pytest.mark.parametrize(
