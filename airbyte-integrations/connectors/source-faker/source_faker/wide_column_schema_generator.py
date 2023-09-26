@@ -15,7 +15,7 @@ https://docs.airbyte.com/understanding-airbyte/supported-data-types/
 - Number	{"type": "number"}	1234.56
 - Array	{"type": "array"}; optionally items	[1, 2, 3]
 - Object	{"type": "object"}; optionally properties	{"foo": "bar"}
-- Union	{"oneOf": [...]}	
+- Union	{"oneOf": [...]}
 """
 
 from typing import Any, List, Mapping, Tuple, Union

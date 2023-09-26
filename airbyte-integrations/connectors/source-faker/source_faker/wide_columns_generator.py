@@ -6,7 +6,7 @@ import datetime
 from multiprocessing import current_process
 from random import choice
 from threading import Lock
-from typing import Any, Dict, List, Mapping, Set
+from typing import Any, Dict, List, Mapping
 
 from airbyte_cdk.models import AirbyteRecordMessage, Type
 from mimesis import Datetime, Numeric, Text
@@ -16,7 +16,7 @@ from .utils import format_airbyte_time, now_millis
 
 """The Wide Column Generator is not meant to mimic any datasets in particular, but is purely for stress testing
 Users configure their desired number of columns and this will generate a row with random values matching the given schema.
-This is tightly coupled to wide_column_schema_generator.py which defines the schema 
+This is tightly coupled to wide_column_schema_generator.py which defines the schema
 """
 
 
@@ -45,12 +45,12 @@ class WideColumnGenerator:
                 return dt.formatted_datetime(fmt="%Y-%m-%dT%H:%M:%S.%f")
             elif of_type == "timestamp_w_tz":
                 # for whatever reason random timezones aren't working
-                return dt.formatted_datetime(fmt="%Y-%m-%dT%H:%M:%S.%f-08:00")
+                return dt.formatted_datetime(fmt="%Y-%m-%dT%H:%M:%S.%f+00:00")
             elif of_type == "time_wo_tz":
-                return dt.formatted_time(fmt="%H:%M:%S.%f")
+                return dt.formatted_time(fmt="%H:%M:%S")
             elif of_type == "time_w_tz":
                 # for whatever reason random timezones aren't working
-                return dt.formatted_time(fmt="%H:%M:%S.%f-08:00")
+                return dt.formatted_time(fmt="%H:%M:%S+00:00")
             elif of_type == "integer":
                 if self.generated_errors < self.generate_errors_in_wide_columns:
                     self.increment_error_count()

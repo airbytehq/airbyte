@@ -54,7 +54,7 @@
       },
       "wide_data_set_tables": {
         "title": "Wide Data Set Tables",
-        "description": "How many copies of the Wide Dataset column should be created?",
+        "description": "How many copies of the Wide Dataset Stream should be created?",
         "type": "integer",
         "minimum": 1,
         "default": 1,
