@@ -57,6 +57,7 @@ env:
   CONNECTOR_NAME: "${{ github.event.inputs.name }}"
   CMD: ${{ github.event.inputs.cmd || 'test' }}
   CMD_ARGS: ${{ github.event.inputs.args || '' }}
+  COMMIT_MSG: ${{ github.event.head_commit.message || '' }}
 
 jobs:
 
@@ -74,11 +75,10 @@ jobs:
       - name: Check commit message
         id: check-commit
         run: |
-          commit_message=$(git log --format=%B -n 1 ${{ github.event.after }})
-          echo "Commit message is: $commit_message"
+          echo "Commit message is: $COMMIT_MSG"
           
           # Use regex to find the desired pattern
-          if [[ ! $commit_message =~ --test-connector=([a-zA-Z0-9_-]+) ]]; then
+          if [[ ! $COMMIT_MSG =~ --test-connector=([a-zA-Z0-9_-]+) ]]; then
             echo "Commit message doesn't contain retest pattern. Aborting."
             exit 1
           fi
