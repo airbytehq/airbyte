@@ -47,7 +47,7 @@ acceptance_tests:
             bypass_reason: "Data changes too often"
   full_refresh:
     tests:
-    - config_path: "secrets/config_old.json"
+    - config_path: "secrets/config_project_secret.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       timeout_seconds: 9000
   incremental:
