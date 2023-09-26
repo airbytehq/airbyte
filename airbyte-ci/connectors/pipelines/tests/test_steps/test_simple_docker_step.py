@@ -24,8 +24,7 @@ def context(dagger_client):
 class TestSimpleDockerStep:
     async def test_env_variables_set(self, context):
         # Define test inputs
-        title = "test"
-        context = context
+        title = "test_env_variables_set"
         env_variables = {"VAR1": "value1", "VAR2": "value2"}
 
         # Create SimpleDockerStep instance
@@ -42,8 +41,7 @@ class TestSimpleDockerStep:
 
     async def test_mount_paths(self, context):
         # Define test inputs
-        title = "test"
-        context = context
+        title = "test_mount_paths"
 
         path_to_current_file = Path(__file__).relative_to(Path.cwd())
         invalid_path = Path("invalid_path")
@@ -59,8 +57,6 @@ class TestSimpleDockerStep:
         container = await step.init_container()
 
         for path_to_mount in paths_to_mount:
-            # count the number of files at the path
-
             exit_code, _stdout, _stderr  = await get_exec_result(
                 container.with_exec(["test", "-f", f"{str(path_to_mount)}"])
             )
@@ -68,7 +64,7 @@ class TestSimpleDockerStep:
             expected_exit_code = 1 if path_to_mount.optional else 0
             assert exit_code == expected_exit_code
 
-    async def test_invalid_mount_paths(self, context):
+    async def test_invalid_mount_paths(self):
         path_to_current_file = Path(__file__).relative_to(Path.cwd())
         invalid_path = Path("invalid_path")
 
@@ -79,3 +75,19 @@ class TestSimpleDockerStep:
         # File not found error expected
         with pytest.raises(FileNotFoundError):
             MountPath(path=invalid_path, optional=False)
+
+    async def test_work_dir(self, context):
+        # Define test inputs
+        title = "test_work_dir"
+        working_directory = "/test"
+
+        # Create SimpleDockerStep instance
+        step = SimpleDockerStep(title=title, context=context, working_directory=working_directory)
+
+        # Initialize container
+        container = await step.init_container()
+
+        # Check if working directory is set
+        stdout_value = await container.with_exec(["pwd"]).stdout()
+        actual_value = stdout_value.strip()
+        assert actual_value == working_directory
