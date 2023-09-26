@@ -72,7 +72,6 @@ public class GlobalAsyncStateManager {
   private final ConcurrentMap<StreamDescriptor, LinkedList<Long>> descToStateIdQ = new ConcurrentHashMap<>();
   private final ConcurrentMap<Long, AtomicLong> stateIdToCounter = new ConcurrentHashMap<>();
   private final ConcurrentMap<Long, ImmutablePair<PartialAirbyteMessage, Long>> stateIdToState = new ConcurrentHashMap<>();
-  // empty in the STREAM case.
 
   // Alias-ing only exists in the non-STREAM case where we have to convert existing state ids to one
   // single global id.
@@ -274,7 +273,6 @@ public class GlobalAsyncStateManager {
     final StreamDescriptor resolvedDescriptor = extractStream(message).orElse(SENTINEL_GLOBAL_DESC);
     stateIdToState.put(getStateId(resolvedDescriptor), ImmutablePair.of(message, sizeInBytes));
     registerNewStateId(resolvedDescriptor);
-
     allocateMemoryToState(sizeInBytes);
   }
 

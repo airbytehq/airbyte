@@ -10,6 +10,7 @@ import pendulum
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 from source_mixpanel.streams import (
     Annotations,
     CohortMembers,
@@ -493,3 +494,20 @@ def test_should_retry_payment_required(http_status_code, should_retry, log_messa
         stream = stream_class(authenticator=MagicMock(), **config)
         assert stream.should_retry(response_mock) == should_retry
         assert log_message in caplog.text
+
+
+def test_raise_config_error_on_creds_expiration(config, caplog, requests_mock):
+    streams = []
+    for cls in [Annotations, CohortMembers, Cohorts, Engage, EngageSchema, Export, ExportSchema, Funnels, FunnelsList, Revenue]:
+        stream = cls(authenticator=MagicMock(), **config)
+        requests_mock.register_uri(stream.http_method, get_url_to_mock(stream), status_code=400, text="Unable to authenticate request")
+        streams.append(stream)
+
+    for stream in streams:
+        records = []
+        with pytest.raises(AirbyteTracedException) as e:
+            for slice_ in stream.stream_slices(sync_mode="full_refresh"):
+                records.extend(stream.read_records("full_refresh", stream_slice=slice_))
+        assert records == []
+        assert str(e.value) == "Your credentials might have expired. Please update your config with valid credentials. " \
+                               "See more details: Unable to authenticate request"

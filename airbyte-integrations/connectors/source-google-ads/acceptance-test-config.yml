@@ -20,6 +20,9 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: yes
+          extra_records: yes # the file with all the records is 15 MB, so comparing only 3 records
         timeout_seconds: 3600
         empty_streams:
           - name: "account_labels"
