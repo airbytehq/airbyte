@@ -30,7 +30,7 @@ class MetadataValidation(SimpleDockerStep):
                 MountPath(context.connector.icon_path, optional=True),
             ],
             internal_tools=[
-                MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE),
+                MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
             ],
             command=[
                 "metadata_service",
@@ -77,7 +77,7 @@ class MetadataUpload(SimpleDockerStep):
                 MountPath(context.connector.icon_path, optional=True),
             ],
             internal_tools=[
-                MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE),
+                MountPath(INTERNAL_TOOL_PATHS.METADATA_SERVICE.value),
             ],
             secrets={
                 "DOCKER_HUB_USERNAME": docker_hub_username_secret,

@@ -10,18 +10,26 @@ import dagger
 from typing import List, Optional
 
 
-@dataclass(frozen=True)
+@dataclass
 class MountPath:
     path: Path
     optional: bool = False
 
-    def __post_init__(self):
+    def _cast_fields(self):
+        self.path = Path(self.path)
+        self.optional = bool(self.optional)
+
+    def _check_exists(self):
         if not self.path.exists():
             message = f"{self.path} does not exist."
             if self.optional:
                 main_logger.warning(message)
             else:
                 raise FileNotFoundError(message)
+
+    def __post_init__(self):
+        self._cast_fields()
+        self._check_exists()
 
     def __str__(self):
         return str(self.path)

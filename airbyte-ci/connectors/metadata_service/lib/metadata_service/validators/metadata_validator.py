@@ -177,6 +177,7 @@ def validate_and_load(
         return None, f"Validation error: {e}"
 
     for validator in validators_to_run:
+        print(f"Running validator: {validator.__name__}")
         is_valid, error = validator(metadata_model, validator_opts)
         if not is_valid:
             return None, f"Validation error: {error}"
