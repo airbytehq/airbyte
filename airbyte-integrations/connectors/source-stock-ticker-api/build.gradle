@@ -1,0 +1,5 @@
+plugins {
+    // Makes building the docker image a dependency of Gradle's "build" command. This way you could run your entire build inside a docker image
+    // via ./gradlew :airbyte-integrations:connectors:source-stock-ticker-api:build
+    id 'airbyte-docker'
+}

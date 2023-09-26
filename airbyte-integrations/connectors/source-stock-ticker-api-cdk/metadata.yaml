@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.polygon.io
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b684bc30-737f-4d2b-b0ff-764a2be178fe
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-stock-ticker-api-cdk
+  githubIssueLabel: source-stock-ticker-api-cdk
+  icon: stock-ticker-api-cdk.svg
+  license: MIT
+  name: Stock Ticker Api Cdk
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/stock-ticker-api-cdk
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

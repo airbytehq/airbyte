@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number"
+    },
+    "stock_ticker": {
+      "type": "string"
+    }
+  }
+}

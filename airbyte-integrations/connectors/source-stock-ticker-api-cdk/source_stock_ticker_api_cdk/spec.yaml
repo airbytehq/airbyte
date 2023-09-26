@@ -1,0 +1,68 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Stock Ticker Api CDK Spec
+  type: object
+  required:
+    - api_key
+    - stock_ticker
+    - start_date
+    - end_date
+    - multiplier
+    - timespan
+  properties:
+    api_key:
+      type: string
+      description: API access key used to retrieve data from the Polygon IO API.
+      airbyte_secret: true
+    stock_ticker:
+      type: string
+      examples:
+        - TSLA
+        - AAPL
+      description: The stock ticker to track.
+    start_date:
+      type: string
+      title: Replication start date
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      description: UTC date in the format 2023-01-01. Only data generated after this date will be replicated.
+      examples:
+        - "2023-01-01"
+      format: date
+    end_date:
+      type: string
+      title: Replication end date
+      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      description: UTC date in the format 2023-01-01. Only data generated before this date will be replicated.
+      examples:
+        - "2023-01-01"
+      format: date
+    multiplier:
+      title: Multiplier
+      type: integer
+      description: The size of the timespan multiplier - should be a positive integer number.
+      minimum: 1
+      default: 1
+      examples:
+        - 1
+        - 2
+      timespan:
+        title: Timespan
+        type: string
+        description: Time grain for aggregation.
+        default: day
+        examples:
+          - hour
+          - day
+          - week
+        format:
+          type: string
+          enum:
+            - second
+            - minute
+            - hour
+            - day
+            - week
+            - month
+            - quarter
+            - year

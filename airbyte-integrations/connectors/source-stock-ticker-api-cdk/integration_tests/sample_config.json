@@ -1,0 +1,8 @@
+{
+  "api_key": "api_key",
+  "stock_ticker": "stock_ticker",
+  "start_date": "2023-09-21",
+  "end_date": "2023-09-25",
+  "multiplier": 1,
+  "timespan": "day"
+}
