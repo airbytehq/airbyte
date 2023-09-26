@@ -13,8 +13,10 @@ data:
   name: Recharge
   registries:
     cloud:
+      dockerImageTag: 1.0.1
       enabled: true
     oss:
+      dockerImageTag: 1.0.1
       enabled: true
   releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/recharge
