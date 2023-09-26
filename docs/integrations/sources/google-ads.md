@@ -93,7 +93,7 @@ To set up Google Ads as a source in Airbyte Open Source:
 
 <!-- /env:oss -->
 
-## Supported sync modes
+## Supported Sync Modes
 
 The Google Ads source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
@@ -102,7 +102,7 @@ The Google Ads source connector supports the following [sync modes](https://docs
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
-#### Incremental events streams
+#### Incremental Events Streams
 List of stream:
 - [ad_group_criterions](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion)
 - [ad_listing_group_criterions](https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion)
@@ -161,6 +161,10 @@ More [info](https://github.com/airbytehq/airbyte/issues/11062) and [Google Discu
 :::
 
 For incremental streams, data is synced up to the previous day using your Google Ads account time zone since Google Ads can filter data only by [date](https://developers.google.com/google-ads/api/fields/v11/ad_group_ad#segments.date) without time. Also, some reports cannot load data real-time due to Google Ads [limitations](https://support.google.com/google-ads/answer/2544985?hl=en).
+
+### Reasoning Behind Primary Key Selection 
+
+Primary keys are chosen to uniquely identify records within streams. In this selection, we considered the scope of ID uniqueness as detailed in [the Google Ads API structure documentation](https://developers.google.com/google-ads/api/docs/concepts/api-structure#object_ids). This approach guarantees that each record remains unique across various scopes and contexts. Moreover, in the Google Ads API, segmentation is crucial for dissecting performance data. As pointed out in [the Google Ads support documentation](https://developers.google.com/google-ads/api/docs/reporting/segmentation), segments offer a granular insight into data based on specific criteria, like device type or click interactions.
 
 ## Custom Query: Understanding Google Ads Query Language
 
