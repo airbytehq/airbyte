@@ -9,6 +9,7 @@ import static io.airbyte.integrations.source.mysql.MySqlSource.SSL_PARAMETERS;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
@@ -30,10 +31,17 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.HashMap;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
+  @SystemStub
+  public EnvironmentVariables environmentVariables;
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "public.starships";
 
@@ -42,6 +50,7 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
 

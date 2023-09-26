@@ -375,7 +375,7 @@ class SourceSlack(AbstractSource):
         end_date = config.get("end_date")
         end_date = end_date and pendulum.parse(end_date)
         threads_lookback_window = pendulum.Duration(days=config["lookback_window"])
-        channel_filter = config["channel_filter"]
+        channel_filter = config.get("channel_filter", [])
 
         channels = Channels(authenticator=authenticator, channel_filter=channel_filter)
         streams = [

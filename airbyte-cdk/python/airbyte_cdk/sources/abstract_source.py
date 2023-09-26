@@ -103,9 +103,11 @@ class AbstractSource(Source, ABC):
             for configured_stream in catalog.streams:
                 stream_instance = stream_instances.get(configured_stream.stream.name)
                 if not stream_instance:
+                    if not self.raise_exception_on_missing_stream:
+                        continue
                     raise KeyError(
-                        f"The requested stream {configured_stream.stream.name} was not found in the source."
-                        f" Available streams: {stream_instances.keys()}"
+                        f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
+                        f"Refresh the schema in replication settings and remove this stream from future sync attempts."
                     )
 
                 try:
@@ -143,6 +145,10 @@ class AbstractSource(Source, ABC):
                     logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
+
+    @property
+    def raise_exception_on_missing_stream(self) -> bool:
+        return True
 
     @property
     def per_stream_state_enabled(self) -> bool:
