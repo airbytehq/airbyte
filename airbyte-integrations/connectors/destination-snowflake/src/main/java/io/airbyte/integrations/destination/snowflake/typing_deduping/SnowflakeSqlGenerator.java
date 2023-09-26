@@ -402,7 +402,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
               OBJECT_CONSTRUCT('errors', "_airbyte_cast_errors") AS "_AIRBYTE_META",
               "_airbyte_raw_id" AS "_AIRBYTE_RAW_ID",
               "_airbyte_extracted_at" AS "_AIRBYTE_EXTRACTED_AT"
-            FROM intermediate_data;""");
+            FROM intermediate_data
+            ;""");
   }
 
   @VisibleForTesting
