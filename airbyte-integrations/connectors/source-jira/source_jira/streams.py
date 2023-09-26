@@ -1022,6 +1022,21 @@ class ProjectPermissionSchemes(JiraStream):
         return record
 
 
+class ProjectRoles(JiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-roles#api-rest-api-3-role-get
+    """
+
+    primary_key = "id"
+    skip_http_status_codes = [
+        # Application access permissions can only be edited or viewed by administrators.
+        requests.codes.FORBIDDEN
+    ]
+
+    def path(self, **kwargs) -> str:
+        return "role"
+
+
 class ProjectTypes(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-types/#api-rest-api-3-project-type-get
