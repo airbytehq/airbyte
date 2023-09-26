@@ -51,6 +51,7 @@ This connector outputs the following full refresh streams:
 - [Issue fields](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-fields/#api-rest-api-3-field-get)
 - [Issue field configurations](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get)
 - [Issue custom field contexts](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get)
+- [Issue custom field options](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get)
 - [Issue link types](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get)
 - [Issue navigator settings](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-navigator-settings/#api-rest-api-3-settings-columns-get)
 - [Issue notification schemes](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-notification-schemes/#api-rest-api-3-notificationscheme-get)
@@ -123,7 +124,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| 0.8.0   | 2023-09-26 | [\#30755](https://github.com/airbytehq/airbyte/pull/30755) | Add new streams: `IssueTypes`, `Project Roles`                                                                          |
+| 0.8.0   | 2023-09-26 | [\#30755](https://github.com/airbytehq/airbyte/pull/30755) | Add new streams: `Issue custom field options`, `IssueTypes`, `Project Roles`                                            |
 | 0.7.2   | 2023-09-19 | [\#30675](https://github.com/airbytehq/airbyte/pull/30675) | Ensure invalid URL does not trigger Sentry alert                                                                        |
 | 0.7.1   | 2023-09-19 | [\#30585](https://github.com/airbytehq/airbyte/pull/30585) | Add skip for 404 error in issue properties steam                                                                        |
 | 0.7.0   | 2023-09-17 | [\#30532](https://github.com/airbytehq/airbyte/pull/30532) | Add foreign key to stream record where it misseing                                                                      |
