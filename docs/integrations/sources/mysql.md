@@ -264,6 +264,7 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.1   | 2023-09-26 | [30744](https://github.com/airbytehq/airbyte/pull/30744)   | Update MySQL JDBC connection configs to keep default auto-commit behavior                                                                       |
 | 3.1.0   | 2023-09-21 | [30270](https://github.com/airbytehq/airbyte/pull/30270)   | Enhanced Standard Sync with initial load via Primary Key with a switch to cursor for incremental syncs                                          |
 | 3.0.9   | 2023-09-20 | [30620](https://github.com/airbytehq/airbyte/pull/30620)   | Airbyte Certified MySQL Source connector                                                                                                        |
 | 3.0.8   | 2023-09-14 | [30333](https://github.com/airbytehq/airbyte/pull/30333)   | CDC : Update the correct timezone parameter passed to Debezium to `database.connectionTimezone`                                                 |
