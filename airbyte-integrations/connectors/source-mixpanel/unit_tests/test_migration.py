@@ -1,43 +1,23 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
-from source_mixpanel.source import SourceMixpanel
 from source_mixpanel.config_migrations import MigrateProjectId
+from source_mixpanel.source import SourceMixpanel
 
 # Test data for parametrized test
 test_data = [
     # Test when only api_secret is present
-    ({
-         "api_secret": "secret_value1"
-     }, {
-         "credentials": {
-             "api_secret": "secret_value1"
-         }
-     }),
+    ({"api_secret": "secret_value1"}, {"credentials": {"api_secret": "secret_value1"}}),
     # Test when only project_id is present
-    ({
-         "project_id": "project_value1"
-     }, {
-         "credentials": {
-             "project_id": "project_value1"
-         }
-     }),
+    ({"project_id": "project_value1"}, {"credentials": {"project_id": "project_value1"}}),
     # Test when both api_secret and project_id are present
-    ({
-         "api_secret": "secret_value2",
-         "project_id": "project_value2"
-     }, {
-         "credentials": {
-             "api_secret": "secret_value2",
-             "project_id": "project_value2"
-         }
-     }),
+    (
+        {"api_secret": "secret_value2", "project_id": "project_value2"},
+        {"credentials": {"api_secret": "secret_value2", "project_id": "project_value2"}},
+    ),
     # Test when neither api_secret nor project_id are present
-    ({
-         "other_key": "value"
-     }, {
-         "other_key": "value"
-     })
+    ({"other_key": "value"}, {"other_key": "value"}),
 ]
 
 
