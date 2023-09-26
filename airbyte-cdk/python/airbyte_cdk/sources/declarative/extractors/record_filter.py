@@ -6,7 +6,7 @@ from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 
 @dataclass
@@ -22,15 +22,15 @@ class RecordFilter:
     config: Config
     condition: str = ""
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._filter_interpolator = InterpolatedBoolean(condition=self.condition, parameters=parameters)
 
     def filter_records(
         self,
-        records: List[Record],
+        records: List[Mapping[str, Any]],
         stream_state: StreamState,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> List[Record]:
+    ) -> List[Mapping[str, Any]]:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         return [record for record in records if self._filter_interpolator.eval(self.config, record=record, **kwargs)]

@@ -9,17 +9,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
 /**
- * Responsible for managing global memory across multiple queues in a thread-safe way.
+ * Responsible for managing buffer memory across multiple queues in a thread-safe way. This does not
+ * allocate or free memory in the traditional sense, but rather manages based off memory estimates
+ * provided by the callers.
  * <p>
- * This means memory allocation and de-allocation for each queue can be dynamically adjusted
+ * The goal is to enable maximum allowed memory bounds for each queue to be dynamically adjusted
  * according to the overall available memory. Memory blocks are managed in chunks of
  * {@link #BLOCK_SIZE_BYTES}, and the total amount of memory managed is configured at creation time.
  * <p>
- * As a destination has no information about incoming per-stream records, having static non-global
- * queue sizes can cause unnecessary backpressure on a per-stream basis. By providing a dynamic,
- * global view of memory management, this class allows each queue to free and consume memory
- * dynamically, enabling effective sharing of global memory resources across all the queues. and
- * avoiding accidental stream backpressure.
+ * As a destination has no information about incoming per-stream records, having static queue sizes
+ * can cause unnecessary backpressure on a per-stream basis. By providing a dynamic, global view of
+ * buffer memory management, this class allows each queue to release and request memory dynamically,
+ * enabling effective sharing of global memory resources across all the queues, and avoiding
+ * accidental stream backpressure.
  * <p>
  * This becomes particularly useful in the following scenarios:
  * <ul>
@@ -77,8 +79,8 @@ public class GlobalMemoryManager {
   }
 
   /**
-   * Frees a block of memory of the given size. If the amount of memory freed exceeds the current
-   * memory allocation, a warning will be logged.
+   * Releases a block of memory of the given size. If the amount of memory released exceeds the
+   * current memory allocation, a warning will be logged.
    *
    * @param bytes the size of the block to free, in bytes
    */

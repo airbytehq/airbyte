@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractStateMessage;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.filterRecords;
@@ -66,7 +67,7 @@ class XminPostgresSourceTest {
   @SystemStub
   private EnvironmentVariables environmentVariables;
   private static final String SCHEMA_NAME = "public";
-  private static final String STREAM_NAME = "id_and_name";
+  protected static final String STREAM_NAME = "id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
@@ -74,7 +75,7 @@ class XminPostgresSourceTest {
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedCursor(true)
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
@@ -83,7 +84,7 @@ class XminPostgresSourceTest {
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedCursor(true),
       CatalogHelpers.createAirbyteStream(
           "names",
@@ -91,23 +92,23 @@ class XminPostgresSourceTest {
           Field.of("first_name", JsonSchemaType.STRING),
           Field.of("last_name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER))
-          .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedCursor(true)
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
 
-  private static final ConfiguredAirbyteCatalog CONFIGURED_XMIN_CATALOG = toConfiguredXminCatalog(CATALOG);
+  protected static final ConfiguredAirbyteCatalog CONFIGURED_XMIN_CATALOG = toConfiguredXminCatalog(CATALOG);
 
-  private static final List<AirbyteMessage> INITIAL_RECORD_MESSAGES = Arrays.asList(
+  protected static final List<AirbyteMessage> INITIAL_RECORD_MESSAGES = Arrays.asList(
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", null, "name", "piccolo", "power", null)));
 
-  private static final List<AirbyteMessage> NEXT_RECORD_MESSAGES = Arrays.asList(
+  protected static final List<AirbyteMessage> NEXT_RECORD_MESSAGES = Arrays.asList(
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "gohan", "power", 222.1)));
 
-  private static PostgreSQLContainer<?> PSQL_DB;
+  protected static PostgreSQLContainer<?> PSQL_DB;
 
-  private String dbName;
+  protected String dbName;
 
   @BeforeAll
   static void init() {
@@ -148,11 +149,11 @@ class XminPostgresSourceTest {
     }
   }
 
-  private static Database getDatabase(final DSLContext dslContext) {
+  protected static Database getDatabase(final DSLContext dslContext) {
     return new Database(dslContext);
   }
 
-  private static DSLContext getDslContext(final JsonNode config) {
+  protected static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
@@ -164,7 +165,7 @@ class XminPostgresSourceTest {
         SQLDialect.POSTGRES);
   }
 
-  private JsonNode getXminConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
+  protected JsonNode getXminConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
         .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
@@ -174,7 +175,7 @@ class XminPostgresSourceTest {
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .put(JdbcUtils.SSL_KEY, false)
         .put("replication_method", getReplicationMethod())
-        .put("sync_checkpoint_records", 1)
+        .put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build());
   }
 
@@ -322,7 +323,7 @@ class XminPostgresSourceTest {
   }
 
   // Assert that the state message is the last message to be emitted.
-  private static void assertMessageSequence(final List<AirbyteMessage> messages) {
+  protected static void assertMessageSequence(final List<AirbyteMessage> messages) {
     assertEquals(Type.STATE, messages.get(messages.size() - 1).getType());
   }
 

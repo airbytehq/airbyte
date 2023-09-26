@@ -1,30 +1,32 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
+from unittest import mock
+from uuid import UUID
+
 import pytest
 import yaml
-from unittest import mock
-
-from uuid import UUID
-from pydantic import ValidationError
 from google.cloud import storage
-
-from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
-from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
-
+from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
+from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
 from orchestrator.assets.registry_entry import (
-    metadata_to_registry_entry,
     get_connector_type_from_registry_entry,
     get_registry_status_lists,
+    metadata_to_registry_entry,
     safe_parse_metadata_definition,
 )
 from orchestrator.assets.registry_report import (
-    all_sources_dataframe,
     all_destinations_dataframe,
-    oss_destinations_dataframe,
+    all_sources_dataframe,
     cloud_destinations_dataframe,
-    oss_sources_dataframe,
     cloud_sources_dataframe,
+    oss_destinations_dataframe,
+    oss_sources_dataframe,
 )
-from orchestrator.models.metadata import MetadataDefinition, LatestMetadataEntry
+from orchestrator.models.metadata import LatestMetadataEntry, MetadataDefinition
+from pydantic import ValidationError
 
 VALID_METADATA_DICT = {
     "metadataSpecVersion": "1.0",
@@ -38,6 +40,7 @@ VALID_METADATA_DICT = {
         "documentationUrl": "https://test_documentation_url.com",
         "githubIssueLabel": "test_label",
         "connectorSubtype": "api",
+        "supportLevel": "community",
         "releaseStage": "alpha",
         "registries": {"oss": {"enabled": True}, "cloud": {"enabled": True}},
     },
@@ -87,6 +90,26 @@ def test_safe_parse_metadata_definition(blob_name, blob_content, expected_result
             [],
             ["oss", "cloud"],
         ),
+        (
+            {"oss": {"enabled": False}, "cloud": None},
+            [],
+            ["oss", "cloud"],
+        ),
+        (
+            {"oss": {"enabled": False}},
+            [],
+            ["oss", "cloud"],
+        ),
+        (
+            None,
+            [],
+            ["oss", "cloud"],
+        ),
+        (
+            {"oss": {"enabled": True}},
+            ["oss"],
+            ["cloud"],
+        ),
     ],
 )
 def test_get_registry_status_lists(registries_data, expected_enabled, expected_disabled):
@@ -103,6 +126,7 @@ def test_get_registry_status_lists(registries_data, expected_enabled, expected_d
             "githubIssueLabel": "test_label",
             "connectorSubtype": "api",
             "releaseStage": "alpha",
+            "supportLevel": "community",
             "registries": registries_data,
         },
     }
@@ -281,9 +305,9 @@ def test_source_type_extraction():
     assert result["sourceType"] == "database"
 
 
-def test_release_stage_default():
+def test_support_level_default():
     """
-    Test if releaseStage is defaulted to alpha in the registry entry.
+    Test if supportLevel is defaulted to alpha in the registry entry.
     """
     metadata = {"data": {"connectorType": "source", "definitionId": "test-id", "registries": {"oss": {"enabled": True}}}}
 
@@ -292,7 +316,7 @@ def test_release_stage_default():
     mock_metadata_entry.icon_url = "test-icon-url"
 
     result = metadata_to_registry_entry(mock_metadata_entry, "oss")
-    assert result["releaseStage"] == "alpha"
+    assert result["supportLevel"] == "community"
 
 
 def test_migration_documentation_url_default():
@@ -305,7 +329,7 @@ def test_migration_documentation_url_default():
             "definitionId": "test-id",
             "documentationUrl": "test-doc-url",
             "registries": {"oss": {"enabled": True}},
-            "releases": {"breakingChanges": {"1.0.0": {}}},
+            "releases": {"migrationDocumentationUrl": None, "breakingChanges": {"1.0.0": {"migrationDocumentationUrl": None}}},
         }
     }
 

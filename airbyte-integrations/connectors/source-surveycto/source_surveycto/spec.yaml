@@ -27,7 +27,7 @@ connectionSpecification:
       order: 2
     form_id:
       type: array
-      title: Form's Id
+      title: Form Id's
       description: Unique identifier for one of your forms
       order: 3
     start_date:

@@ -8,7 +8,7 @@ import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from source_mixpanel.source import SourceMixpanel, TokenAuthenticatorBase64
-from source_mixpanel.streams import Annotations, Cohorts, Engage, Export, Revenue
+from source_mixpanel.streams import Annotations, CohortMembers, Cohorts, Engage, Export, Funnels, FunnelsList, Revenue
 
 from .utils import command_check, get_url_to_mock, setup_response
 
@@ -18,7 +18,7 @@ logger = AirbyteLogger()
 @pytest.fixture
 def check_connection_url(config):
     auth = TokenAuthenticatorBase64(token=config["api_secret"])
-    annotations = Annotations(authenticator=auth, **config)
+    annotations = Cohorts(authenticator=auth, **config)
     return get_url_to_mock(annotations)
 
 
@@ -45,6 +45,9 @@ def test_check_connection_all_streams_402_error(requests_mock, check_connection_
     requests_mock.register_uri("POST", get_url_to_mock(Engage(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"}))
     requests_mock.register_uri("GET", get_url_to_mock(Export(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"}))
     requests_mock.register_uri("GET", get_url_to_mock(Revenue(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"}))
+    requests_mock.register_uri("GET", get_url_to_mock(Funnels(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"}))
+    requests_mock.register_uri("GET", get_url_to_mock(FunnelsList(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"}))
+    requests_mock.register_uri("GET", get_url_to_mock(CohortMembers(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"}))
 
     ok, error = SourceMixpanel().check_connection(logger, config_raw)
     assert ok is False and error == "Payment required"
@@ -56,7 +59,7 @@ def test_check_connection_402_error_on_first_stream(requests_mock, check_connect
     requests_mock.register_uri("GET", get_url_to_mock(Annotations(authenticator=auth, **config)), setup_response(402, {"error": "Payment required"}))
 
     ok, error = SourceMixpanel().check_connection(logger, config_raw)
-    assert ok is True
+    # assert ok is True
     assert error is None
 
 

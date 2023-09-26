@@ -13,7 +13,7 @@ definitions:
     url_base: "{{ config['instance_api_url'] }}"
     http_method: "GET"
     authenticator:
-      type: "SessionTokenAuthenticator"
+      type: "LegacySessionTokenAuthenticator"
       username: "{{ config['username'] }}"
       password: "{{ config['password'] }}"
       header: "X-Metabase-Session"

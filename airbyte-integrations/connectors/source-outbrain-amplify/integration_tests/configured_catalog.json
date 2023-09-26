@@ -1,0 +1,438 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "marketers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "campaigns_geo_location",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_campaigns_by_marketers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_periodic_by_marketers",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_periodic_by_marketers_campaign",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_promoted_links",
+        "json_schema": {
+          "$schema": "http://json-schema.org/schema#",
+          "type": "object",
+          "properties": {
+            "metadata": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": ["string", "null"]
+                },
+                "fromDate": {
+                  "type": ["string", "null"]
+                },
+                "toDate": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "metrics": {
+              "type": "object",
+              "properties": {
+                "impressions": {
+                  "type": ["number", "null"]
+                },
+                "clicks": {
+                  "type": ["number", "null"]
+                },
+                "totalConversions": {
+                  "type": ["number", "null"]
+                },
+                "conversions": {
+                  "type": ["number", "null"]
+                },
+                "viewConversions": {
+                  "type": ["number", "null"]
+                },
+                "spend": {
+                  "type": ["number", "null"]
+                },
+                "ecpc": {
+                  "type": ["number", "null"]
+                },
+                "ctr": {
+                  "type": ["number", "null"]
+                },
+                "conversionRate": {
+                  "type": ["number", "null"]
+                },
+                "viewConversionRate": {
+                  "type": ["number", "null"]
+                },
+                "cpa": {
+                  "type": ["number", "null"]
+                },
+                "totalCpa": {
+                  "type": ["number", "null"]
+                },
+                "totalSumValue": {
+                  "type": ["number", "null"]
+                },
+                "sumValue": {
+                  "type": ["number", "null"]
+                },
+                "viewSumValue": {
+                  "type": ["number", "null"]
+                },
+                "totalAverageValue": {
+                  "type": ["number", "null"]
+                },
+                "averageValue": {
+                  "type": ["number", "null"]
+                },
+                "viewAverageValue": {
+                  "type": ["number", "null"]
+                },
+                "totalRoas": {
+                  "type": ["number", "null"]
+                },
+                "roas": {
+                  "type": ["number", "null"]
+                },
+                "videoReachedFirstQ": {
+                  "type": ["integer", "null"]
+                },
+                "videoReachedSecondQ": {
+                  "type": ["integer", "null"]
+                },
+                "videoReachedThirdQ": {
+                  "type": ["integer", "null"]
+                },
+                "videoReachedCompletion": {
+                  "type": ["integer", "null"]
+                },
+                "videoViewDuration": {
+                  "type": ["integer", "null"]
+                },
+                "videoAvgViewDuration": {
+                  "type": ["integer", "null"]
+                },
+                "videoPlays": {
+                  "type": ["integer", "null"]
+                }
+              }
+            },
+            "marketer_id": {
+              "type": ["string", "null"]
+            },
+            "campaign_id": {
+              "type": ["string", "null"]
+            },
+            "promoted_link_id": {
+              "type": ["string", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_by_publisher",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_publishers_by_campaigns",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_by_platforms",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_campaigns_by_platforms",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_by_geo_performance",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_campaigns_by_geo",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "performance_report_marketers_by_interest",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "campaigns",
+        "json_schema": {
+          "$schema": "http://json-schema.org/schema#",
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "id": {
+              "type": ["string", "null"]
+            },
+            "name": {
+              "type": ["string", "null"]
+            },
+            "enabled": {
+              "type": ["boolean", "null"]
+            },
+            "creationTime": {
+              "type": ["string", "null"]
+            },
+            "lastModified": {
+              "type": ["string", "null"]
+            },
+            "cpc": {
+              "type": ["number", "null"]
+            },
+            "autoArchived": {
+              "type": ["boolean", "null"]
+            },
+            "minimumCpc": {
+              "type": ["number", "null"]
+            },
+            "currency": {
+              "type": ["string", "null"]
+            },
+            "targeting": {
+              "type": "object",
+              "properties": {
+                "platform": {
+                  "type": "array",
+                  "items": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "language": {
+                  "type": ["string", "null"]
+                },
+                "excludeAdBlockUsers": {
+                  "type": ["boolean", "null"]
+                },
+                "nativePlacements": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {
+                      "type": ["boolean", "null"]
+                    }
+                  }
+                },
+                "includeCellularNetwork": {
+                  "type": ["boolean", "null"]
+                },
+                "nativePlacementsEnabled": {
+                  "type": ["boolean", "null"]
+                },
+                "locationsVersion": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "marketerId": {
+              "type": ["string", "null"]
+            },
+            "autoExpirationOfAds": {
+              "type": ["integer", "null"]
+            },
+            "contentType": {
+              "type": ["string", "null"]
+            },
+            "budget": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": ["string", "null"]
+                },
+                "name": {
+                  "type": ["string", "null"]
+                },
+                "shared": {
+                  "type": ["boolean", "null"]
+                },
+                "amount": {
+                  "type": ["number", "null"]
+                },
+                "currency": {
+                  "type": ["string", "null"]
+                },
+                "creationTime": {
+                  "type": ["string", "null"]
+                },
+                "lastModified": {
+                  "type": ["string", "null"]
+                },
+                "startDate": {
+                  "type": ["string", "null"]
+                },
+                "endDate": {
+                  "type": ["string", "null"]
+                },
+                "runForever": {
+                  "type": ["boolean", "null"]
+                },
+                "type": {
+                  "type": ["string", "null"]
+                },
+                "pacing": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "prefixTrackingCode": {
+              "type": "object",
+              "properties": {
+                "prefix": {
+                  "type": ["string", "null"]
+                },
+                "encode": {
+                  "type": ["boolean", "null"]
+                }
+              }
+            },
+            "liveStatus": {
+              "type": "object",
+              "properties": {
+                "onAirReason": {
+                  "type": ["string", "null"]
+                },
+                "campaignOnAir": {
+                  "type": ["boolean", "null"]
+                },
+                "amountSpent": {
+                  "type": ["number", "null"]
+                },
+                "onAirModificationTime": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "readonly": {
+              "type": ["boolean", "null"]
+            },
+            "startHour": {
+              "type": ["string", "null"]
+            },
+            "trackingPixels": {
+              "type": "object",
+              "properties": {
+                "enabled": {
+                  "type": ["boolean", "null"]
+                },
+                "urls": {
+                  "type": "array",
+                  "items": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            },
+            "pixels": {
+              "type": "object",
+              "properties": {
+                "impressionPixels": {
+                  "type": "array",
+                  "items": {
+                    "type": ["string", "null"]
+                  }
+                },
+                "trackingPixels": {
+                  "type": "array",
+                  "items": {
+                    "type": ["string", "null"]
+                  }
+                }
+              }
+            },
+            "onAirType": {
+              "type": ["string", "null"]
+            },
+            "objective": {
+              "type": ["string", "null"]
+            },
+            "creativeFormat": {
+              "type": ["string", "null"]
+            },
+            "dynamicRetargeting": {
+              "type": ["boolean", "null"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}

@@ -17,9 +17,9 @@ _base_success_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -55,15 +55,15 @@ success_multi_stream_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv", "*.gz"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
                 {
                     "name": "stream2",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv", "*.gz"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -79,9 +79,9 @@ success_extensionless_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ]
         }
@@ -109,10 +109,10 @@ success_user_provided_schema_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
-                    "input_schema": {"col1": "string", "col2": "string"},
+                    "validation_policy": "Emit Record",
+                    "input_schema": '{"col1": "string", "col2": "string"}',
                 }
             ],
         }
@@ -130,15 +130,7 @@ error_empty_stream_scenario = (
     _base_failure_scenario.copy()
     .set_name("error_empty_stream_scenario")
     .set_files({})
-    .set_expected_check_error(None, FileBasedSourceError.EMPTY_STREAM)
-).build()
-
-
-error_extension_mismatch_scenario = (
-    _base_failure_scenario.copy()
-    .set_name("error_extension_mismatch_scenario")
-    .set_file_type("jsonl")
-    .set_expected_check_error(None, FileBasedSourceError.EXTENSION_MISMATCH)
+    .set_expected_check_error(None, FileBasedSourceError.EMPTY_STREAM.value)
 ).build()
 
 
@@ -146,7 +138,7 @@ error_listing_files_scenario = (
     _base_failure_scenario.copy()
     .set_name("error_listing_files_scenario")
     .set_stream_reader(TestErrorListMatchingFilesInMemoryFilesStreamReader(files=_base_failure_scenario._files, file_type="csv"))
-    .set_expected_check_error(None, FileBasedSourceError.ERROR_LISTING_FILES)
+    .set_expected_check_error(None, FileBasedSourceError.ERROR_LISTING_FILES.value)
 ).build()
 
 
@@ -154,7 +146,7 @@ error_reading_file_scenario = (
     _base_failure_scenario.copy()
     .set_name("error_reading_file_scenario")
     .set_stream_reader(TestErrorOpenFileInMemoryFilesStreamReader(files=_base_failure_scenario._files, file_type="csv"))
-    .set_expected_check_error(None, FileBasedSourceError.ERROR_READING_FILE)
+    .set_expected_check_error(None, FileBasedSourceError.ERROR_READING_FILE.value)
 ).build()
 
 
@@ -166,16 +158,16 @@ error_record_validation_user_provided_schema_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv"],
                     "validation_policy": "always_fail",
-                    "input_schema": {"col1": "number", "col2": "string"},
+                    "input_schema": '{"col1": "number", "col2": "string"}',
                 }
             ],
         }
     )
     .set_validation_policies({FailingSchemaValidationPolicy.ALWAYS_FAIL:  FailingSchemaValidationPolicy()})
-    .set_expected_check_error(None, FileBasedSourceError.ERROR_VALIDATING_RECORD)
+    .set_expected_check_error(None, FileBasedSourceError.ERROR_VALIDATING_RECORD.value)
 ).build()
 
 
@@ -187,18 +179,18 @@ error_multi_stream_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "csv",
+                    "format": {"filetype": "csv"},
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 },
                 {
                     "name": "stream2",
-                    "file_type": "jsonl",
+                    "format": {"filetype": "jsonl"},
                     "globs": ["*.csv"],
-                    "validation_policy": "emit_record",
+                    "validation_policy": "Emit Record",
                 }
             ],
         }
     )
-    .set_expected_check_error(None, FileBasedSourceError.ERROR_READING_FILE)
+    .set_expected_check_error(None, FileBasedSourceError.ERROR_READING_FILE.value)
 ).build()

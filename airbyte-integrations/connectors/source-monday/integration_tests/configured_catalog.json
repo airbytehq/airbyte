@@ -4,21 +4,29 @@
       "stream": {
         "name": "items",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at_int"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at_int"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
         "name": "boards",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at_int"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at_int"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -69,6 +77,20 @@
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "activity_logs",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["created_at_int"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["created_at_int"],
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["id"]]
     }
   ]
 }

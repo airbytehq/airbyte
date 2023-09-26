@@ -39,8 +39,8 @@ public class AvroRecordFactory {
     return converter.convertToGenericDataRecord(WRITER.writeValueAsBytes(jsonRecord), schema);
   }
 
-  public GenericData.Record getAvroRecord(JsonNode formattedData) throws JsonProcessingException {
-    var bytes = WRITER.writeValueAsBytes(formattedData);
+  public GenericData.Record getAvroRecord(final JsonNode formattedData) throws JsonProcessingException {
+    final var bytes = WRITER.writeValueAsBytes(formattedData);
     return converter.convertToGenericDataRecord(bytes, schema);
   }
 

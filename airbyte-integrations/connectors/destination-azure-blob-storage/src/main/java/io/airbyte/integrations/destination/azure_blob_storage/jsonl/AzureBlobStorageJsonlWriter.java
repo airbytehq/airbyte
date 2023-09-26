@@ -91,7 +91,7 @@ public class AzureBlobStorageJsonlWriter extends BaseAzureBlobStorageWriter impl
       printWriter.println(jsonRecord);
       replicatedBytes += recordSize;
     }
-    LOGGER.info("Replicated bytes to destination {}", replicatedBytes);
+    LOGGER.debug("Replicated bytes to destination {}", replicatedBytes);
   }
 
   @Override

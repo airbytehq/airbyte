@@ -7,7 +7,6 @@ from typing import Any, List, Mapping, Optional, Tuple, Type
 
 import facebook_business
 import pendulum
-import requests
 from airbyte_cdk.models import (
     AdvancedAuth,
     AuthFlowType,
@@ -15,12 +14,12 @@ from airbyte_cdk.models import (
     DestinationSyncMode,
     FailureType,
     OAuthConfigSpecification,
+    SyncMode,
 )
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils import AirbyteTracedException
-from pydantic.error_wrappers import ValidationError
-from source_facebook_marketing.api import API, FacebookAPIException
+from source_facebook_marketing.api import API
 from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     Activities,
@@ -49,6 +48,7 @@ from source_facebook_marketing.streams import (
     AdsInsightsPlatformAndDevice,
     AdsInsightsRegion,
     Campaigns,
+    CustomAudiences,
     CustomConversions,
     Images,
     Videos,
@@ -65,9 +65,14 @@ class SourceFacebookMarketing(AbstractSource):
         config.setdefault("action_breakdowns_allow_empty", False)
         if config.get("end_date") == "":
             config.pop("end_date")
+
         config = ConnectorConfig.parse_obj(config)
-        config.start_date = pendulum.instance(config.start_date)
-        config.end_date = pendulum.instance(config.end_date)
+
+        if config.start_date:
+            config.start_date = pendulum.instance(config.start_date)
+
+        if config.end_date:
+            config.end_date = pendulum.instance(config.end_date)
         return config
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -82,13 +87,26 @@ class SourceFacebookMarketing(AbstractSource):
 
             if config.end_date > pendulum.now():
                 return False, "Date range can not be in the future."
-            if config.end_date < config.start_date:
-                return False, "end_date must be equal or after start_date."
+            if config.start_date and config.end_date < config.start_date:
+                return False, "End date must be equal or after start date."
 
             api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
-            logger.info(f"Select account {api.account}")
-        except (requests.exceptions.RequestException, ValidationError, FacebookAPIException) as e:
-            return False, e
+
+            record_iterator = AdAccount(api=api).read_records(sync_mode=SyncMode.full_refresh, stream_state={})
+            account_info = list(record_iterator)[0]
+
+            if account_info.get("is_personal"):
+                message = (
+                    "The personal ad account you're currently using is not eligible "
+                    "for this operation. Please switch to a business ad account."
+                )
+                return False, message
+
+        except AirbyteTracedException as e:
+            return False, f"{e.message}. Full error: {e.internal_message}"
+
+        except Exception as e:
+            return False, f"Unexpected error: {repr(e)}"
 
         # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
         for stream in self.get_custom_insights_streams(api, config):
@@ -105,13 +123,17 @@ class SourceFacebookMarketing(AbstractSource):
         :return: list of the stream instances
         """
         config = self._validate_and_transform(config)
-        config.start_date = validate_start_date(config.start_date)
-        config.end_date = validate_end_date(config.start_date, config.end_date)
+        if config.start_date:
+            config.start_date = validate_start_date(config.start_date)
+            config.end_date = validate_end_date(config.start_date, config.end_date)
 
         api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
 
+        # if start_date not specified then set default start_date for report streams to 2 years ago
+        report_start_date = config.start_date or pendulum.now().add(years=-2)
+
         insights_args = dict(
-            api=api, start_date=config.start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
+            api=api, start_date=report_start_date, end_date=config.end_date, insights_lookback_window=config.insights_lookback_window
         )
         streams = [
             AdAccount(api=api),
@@ -121,7 +143,6 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             Ads(
                 api=api,
@@ -129,47 +150,48 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             AdCreatives(
                 api=api,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
-            AdsInsights(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsAgeAndGender(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsCountry(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsRegion(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDma(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsPlatformAndDevice(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionType(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionCarouselCard(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionConversionDevice(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionProductID(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionReaction(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionVideoSound(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionVideoType(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDeliveryDevice(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDeliveryPlatform(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDeliveryPlatformAndDevicePlatform(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDemographicsAge(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDemographicsCountry(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDemographicsDMARegion(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDemographicsGender(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsights(page_size=config.page_size, **insights_args),
+            AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
+            AdsInsightsCountry(page_size=config.page_size, **insights_args),
+            AdsInsightsRegion(page_size=config.page_size, **insights_args),
+            AdsInsightsDma(page_size=config.page_size, **insights_args),
+            AdsInsightsPlatformAndDevice(page_size=config.page_size, **insights_args),
+            AdsInsightsActionType(page_size=config.page_size, **insights_args),
+            AdsInsightsActionCarouselCard(page_size=config.page_size, **insights_args),
+            AdsInsightsActionConversionDevice(page_size=config.page_size, **insights_args),
+            AdsInsightsActionProductID(page_size=config.page_size, **insights_args),
+            AdsInsightsActionReaction(page_size=config.page_size, **insights_args),
+            AdsInsightsActionVideoSound(page_size=config.page_size, **insights_args),
+            AdsInsightsActionVideoType(page_size=config.page_size, **insights_args),
+            AdsInsightsDeliveryDevice(page_size=config.page_size, **insights_args),
+            AdsInsightsDeliveryPlatform(page_size=config.page_size, **insights_args),
+            AdsInsightsDeliveryPlatformAndDevicePlatform(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsAge(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsCountry(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsDMARegion(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsGender(page_size=config.page_size, **insights_args),
             Campaigns(
                 api=api,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             CustomConversions(
                 api=api,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
+            ),
+            CustomAudiences(
+                api=api,
+                include_deleted=config.include_deleted,
+                page_size=config.page_size,
             ),
             Images(
                 api=api,
@@ -177,7 +199,6 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             Videos(
                 api=api,
@@ -185,7 +206,6 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             Activities(
                 api=api,
@@ -193,7 +213,6 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
         ]
 
@@ -236,7 +255,6 @@ class SourceFacebookMarketing(AbstractSource):
                     },
                 ),
             ),
-            authSpecification=None,
         )
 
     def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:
@@ -261,8 +279,9 @@ class SourceFacebookMarketing(AbstractSource):
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
+                action_report_time=insight.action_report_time,
                 time_increment=insight.time_increment,
-                start_date=insight.start_date or config.start_date,
+                start_date=insight.start_date or config.start_date or pendulum.now().add(years=-2),
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 level=insight.level,

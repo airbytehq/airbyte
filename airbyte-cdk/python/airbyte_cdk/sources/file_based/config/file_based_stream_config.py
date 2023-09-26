@@ -2,90 +2,81 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import codecs
 from enum import Enum
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Union
 
-from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from pydantic import BaseModel, validator
+from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
+from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
+from airbyte_cdk.sources.file_based.schema_helpers import type_mapping_to_jsonschema
+from pydantic import BaseModel, Field, validator
 
-PrimaryKeyType = Optional[Union[str, List[str], List[List[str]]]]
-
-VALID_FILE_TYPES = {"avro", "csv", "jsonl", "parquet"}
-
-
-class QuotingBehavior(Enum):
-    QUOTE_ALL = "Quote All"
-    QUOTE_SPECIAL_CHARACTERS = "Quote Special Characters"
-    QUOTE_NONNUMERIC = "Quote Non-numeric"
-    QUOTE_NONE = "Quote None"
+PrimaryKeyType = Optional[Union[str, List[str]]]
 
 
-class CsvFormat(BaseModel):
-    delimiter: str = ","
-    quote_char: str = '"'
-    escape_char: Optional[str]
-    encoding: Optional[str] = "utf8"
-    double_quote: bool
-    quoting_behavior: Optional[QuotingBehavior] = QuotingBehavior.QUOTE_SPECIAL_CHARACTERS
-    # Noting that the existing S3 connector had a config option newlines_in_values. This was only supported by pyarrow and not
-    # the Python csv package. It has a little adoption, but long term we should ideally phase this out because of the drawbacks
-    # of using pyarrow
-
-    @validator("delimiter")
-    def validate_delimiter(cls, v):
-        if len(v) != 1:
-            raise ValueError("delimiter should only be one character")
-        if v in {"\r", "\n"}:
-            raise ValueError(f"delimiter cannot be {v}")
-        return v
-
-    @validator("quote_char")
-    def validate_quote_char(cls, v):
-        if len(v) != 1:
-            raise ValueError("quote_char should only be one character")
-        return v
-
-    @validator("escape_char")
-    def validate_escape_char(cls, v):
-        if len(v) != 1:
-            raise ValueError("escape_char should only be one character")
-        return v
-
-    @validator("encoding")
-    def validate_encoding(cls, v):
-        try:
-            codecs.lookup(v)
-        except LookupError:
-            raise ValueError(f"invalid encoding format: {v}")
-        return v
+class ValidationPolicy(Enum):
+    emit_record = "Emit Record"
+    skip_record = "Skip Record"
+    wait_for_discover = "Wait for Discover"
 
 
 class FileBasedStreamConfig(BaseModel):
-    name: str
-    file_type: str
-    globs: Optional[List[str]]
-    validation_policy: Union[str, Any]
-    catalog_schema: Optional[ConfiguredAirbyteCatalog]
-    input_schema: Optional[Dict[str, Any]]
-    primary_key: PrimaryKeyType
-    max_history_size: Optional[int]
-    days_to_sync_if_history_is_full: Optional[int]
-    format: Optional[Mapping[str, CsvFormat]]  # this will eventually be a Union once we have more than one format type
-    schemaless: bool = False
+    name: str = Field(title="Name", description="The name of the stream.")
+    globs: Optional[List[str]] = Field(
+        title="Globs",
+        description='The pattern used to specify which files should be selected from the file system. For more information on glob pattern matching look <a href="https://en.wikipedia.org/wiki/Glob_(programming)">here</a>.',
+    )
+    legacy_prefix: Optional[str] = Field(
+        title="Legacy Prefix",
+        description="The path prefix configured in v3 versions of the S3 connector. This option is deprecated in favor of a single glob.",
+        airbyte_hidden=True,
+    )
+    validation_policy: ValidationPolicy = Field(
+        title="Validation Policy",
+        description="The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
+        default=ValidationPolicy.emit_record,
+    )
+    input_schema: Optional[str] = Field(
+        title="Input Schema",
+        description="The schema that will be used to validate records extracted from the file. This will override the stream schema that is auto-detected from incoming files.",
+    )
+    primary_key: Optional[str] = Field(
+        title="Primary Key", description="The column or columns (for a composite key) that serves as the unique identifier of a record."
+    )
+    days_to_sync_if_history_is_full: int = Field(
+        title="Days To Sync If History Is Full",
+        description="When the state history of the file store is full, syncs will only read files that were last modified in the provided day range.",
+        default=3,
+    )
+    format: Union[AvroFormat, CsvFormat, JsonlFormat, ParquetFormat] = Field(
+        title="Format",
+        description="The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
+    )
+    schemaless: bool = Field(
+        title="Schemaless",
+        description="When enabled, syncs will not validate or structure records against the stream's schema.",
+        default=False,
+    )
 
-    @validator("file_type", pre=True)
-    def validate_file_type(cls, v):
-        if v not in VALID_FILE_TYPES:
-            raise ValueError(f"Format filetype {v} is not a supported file type")
-        return v
+    @validator("input_schema", pre=True)
+    def validate_input_schema(cls, v: Optional[str]) -> Optional[str]:
+        if v:
+            if type_mapping_to_jsonschema(v):
+                return v
+            else:
+                raise ConfigValidationError(FileBasedSourceError.ERROR_PARSING_USER_PROVIDED_SCHEMA)
+        return None
 
-    @validator("format", pre=True)
-    def transform_format(cls, v):
-        if isinstance(v, Mapping):
-            file_type = v.get("filetype", "")
-            if file_type:
-                if file_type.casefold() not in VALID_FILE_TYPES:
-                    raise ValueError(f"Format filetype {file_type} is not a supported file type")
-                return {file_type: {key: val for key, val in v.items()}}
-        return v
+    def get_input_schema(self) -> Optional[Mapping[str, Any]]:
+        """
+        User defined input_schema is defined as a string in the config. This method takes the string representation
+        and converts it into a Mapping[str, Any] which is used by file-based CDK components.
+        """
+        if self.input_schema:
+            schema = type_mapping_to_jsonschema(self.input_schema)
+            if not schema:
+                raise ValueError(f"Unable to create JSON schema from input schema {self.input_schema}")
+            return schema
+        return None

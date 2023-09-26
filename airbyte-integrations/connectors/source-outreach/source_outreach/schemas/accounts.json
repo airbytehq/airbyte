@@ -6,6 +6,18 @@
     "id": {
       "type": "integer"
     },
+    "assignedTeams": {
+      "type": ["null", "array"]
+    },
+    "assignedUsers": {
+      "items": {
+        "type": ["null", "integer"]
+      },
+      "type": ["null", "array"]
+    },
+    "batches": {
+      "type": ["null", "array"]
+    },
     "buyerIntentScore": {
       "type": ["null", "number"]
     },
@@ -469,14 +481,20 @@
     "customId": {
       "type": ["null", "string"]
     },
+    "defaultPluginMapping": {
+      "type": ["null", "array"]
+    },
     "description": {
       "type": ["null", "string"]
     },
-    "domain":{
+    "domain": {
       "type": ["null", "string"]
     },
     "externalSource": {
       "type": ["null", "string"]
+    },
+    "favorites": {
+      "type": ["null", "array"]
     },
     "followers": {
       "type": ["null", "integer"]

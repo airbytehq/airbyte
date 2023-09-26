@@ -37,7 +37,6 @@ class Model(BaseModel):
     def check_segment_included_in_dimension(cls, values):
         dimensions = values.get("dimensions")
         segments = values.get("segments")
-        print(segments, dimensions)
         if segments and "ga:segment" not in dimensions:
             raise ValueError(ERROR_MSG_MISSING_SEGMENT_DIMENSION)
         return values

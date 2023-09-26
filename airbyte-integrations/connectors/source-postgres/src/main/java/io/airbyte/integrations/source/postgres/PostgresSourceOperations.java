@@ -73,7 +73,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
-    // the first call communicates with the database. after that the result is cached.
+    // the first call communicates with the database, after that the result is cached.
     final ResultSetMetaData metadata = queryContext.getMetaData();
     final int columnCount = metadata.getColumnCount();
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
@@ -217,7 +217,13 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
             case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
             case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
             case ARRAY -> putArray(json, columnName, resultSet, colIndex);
-            default -> json.put(columnName, value);
+            default -> {
+              if (columnInfo.columnType.isArrayType()) {
+                putArray(json, columnName, resultSet, colIndex);
+              } else {
+                json.put(columnName, value);
+              }
+            }
           }
         }
       }
@@ -361,7 +367,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getDouble(colIndex), Double::isFinite));
+      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getDouble(2), Double::isFinite));
     }
     node.set(columnName, arrayNode);
   }
@@ -370,7 +376,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      final String moneyValue = parseMoneyValue(arrayResultSet.getString(colIndex));
+      final String moneyValue = parseMoneyValue(arrayResultSet.getString(2));
       arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
     }
     node.set(columnName, arrayNode);

@@ -3,6 +3,7 @@
 #
 
 import logging
+from http import HTTPStatus
 from itertools import chain
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -11,6 +12,7 @@ from airbyte_cdk.logger import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from requests import HTTPError
+from source_hubspot.errors import HubspotInvalidAuth
 from source_hubspot.streams import (
     API,
     Campaigns,
@@ -18,6 +20,7 @@ from source_hubspot.streams import (
     ContactLists,
     Contacts,
     ContactsListMemberships,
+    ContactsMergedAudit,
     CustomObject,
     DealPipelines,
     Deals,
@@ -36,6 +39,7 @@ from source_hubspot.streams import (
     LineItems,
     MarketingEmails,
     Owners,
+    OwnersArchived,
     Products,
     PropertyHistory,
     SubscriptionChanges,
@@ -59,6 +63,12 @@ class SourceHubspot(AbstractSource):
         except HTTPError as error:
             alive = False
             error_msg = repr(error)
+            if error.response.status_code == HTTPStatus.BAD_REQUEST:
+                response_json = error.response.json()
+                error_msg = f"400 Bad Request: {response_json['message']}, please check if provided credentials are valid."
+        except HubspotInvalidAuth as e:
+            alive = False
+            error_msg = repr(e)
         return alive, error_msg
 
     def get_granted_scopes(self, authenticator):
@@ -93,6 +103,7 @@ class SourceHubspot(AbstractSource):
             ContactLists(**common_params),
             Contacts(**common_params),
             ContactsListMemberships(**common_params),
+            ContactsMergedAudit(**common_params),
             DealPipelines(**common_params),
             Deals(**common_params),
             DealsArchived(**common_params),
@@ -110,6 +121,7 @@ class SourceHubspot(AbstractSource):
             LineItems(**common_params),
             MarketingEmails(**common_params),
             Owners(**common_params),
+            OwnersArchived(**common_params),
             Products(**common_params),
             PropertyHistory(**common_params),
             SubscriptionChanges(**common_params),

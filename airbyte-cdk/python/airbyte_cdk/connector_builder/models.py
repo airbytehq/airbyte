@@ -32,7 +32,7 @@ class StreamReadPages:
 @dataclass
 class StreamReadSlices:
     pages: List[StreamReadPages]
-    slice_descriptor: Dict[str, Any]
+    slice_descriptor: Optional[Dict[str, Any]]
     state: Optional[Dict[str, Any]] = None
 
 

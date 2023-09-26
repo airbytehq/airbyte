@@ -35,6 +35,10 @@ acceptance_tests:
             bypass_reason: The stream holds data up to 1 month then records are removed by Shopify.
           - name: balance_transactions
             bypass_reason: The stream requires real purchases to fill in the data.
+          - name: customer_saved_search
+            bypass_reason: The stream is not available for our sandbox.
+          - name: disputes
+            bypass_reason: The stream requires real purchases to fill in the data.
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -47,3 +51,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         timeout_seconds: 3600
+        ignored_fields:
+          products_graph_ql:
+            - name: onlineStorePreviewUrl
+              bypass_reason: Floating URL values

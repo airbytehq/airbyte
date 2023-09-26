@@ -33,7 +33,7 @@ public class AirbyteDebeziumHandlerTest {
     // set all streams to incremental.
     configuredCatalog.getStreams().forEach(s -> s.setSyncMode(SyncMode.INCREMENTAL));
 
-    Assertions.assertTrue(AirbyteDebeziumHandler.shouldUseCDC(configuredCatalog));
+    Assertions.assertTrue(AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode(configuredCatalog));
   }
 
   @Test
@@ -50,7 +50,7 @@ public class AirbyteDebeziumHandlerTest {
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
         .toDefaultConfiguredCatalog(catalog);
 
-    Assertions.assertFalse(AirbyteDebeziumHandler.shouldUseCDC(configuredCatalog));
+    Assertions.assertFalse(AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode(configuredCatalog));
   }
 
 }

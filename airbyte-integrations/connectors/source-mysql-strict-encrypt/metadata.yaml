@@ -11,14 +11,19 @@ data:
   connectorSubtype: database
   connectorType: source
   definitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerImageTag: 2.1.0
+  dockerImageTag: 3.1.0
   dockerRepository: airbyte/source-mysql-strict-encrypt
   githubIssueLabel: source-mysql
   icon: mysql.svg
   license: ELv2
   name: MySQL
-  releaseStage: beta
+  releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   tags:
     - language:java
+  releases:
+    breakingChanges:
+      3.0.0:
+        message: "Add default cursor for cdc"
+        upgradeDeadline: "2023-08-17"
 metadataSpecVersion: "1.0"

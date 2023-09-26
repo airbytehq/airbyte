@@ -28,7 +28,7 @@ public class MySqlCdcProperties {
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlCdcProperties.class);
   private static final Duration HEARTBEAT_FREQUENCY = Duration.ofSeconds(10);
 
-  static Properties getDebeziumProperties(final JdbcDatabase database) {
+  public static Properties getDebeziumProperties(final JdbcDatabase database) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Properties props = commonProperties(database);
     // snapshot config
@@ -69,7 +69,12 @@ public class MySqlCdcProperties {
     if (sourceConfig.get("replication_method").has("server_time_zone")) {
       final String serverTimeZone = sourceConfig.get("replication_method").get("server_time_zone").asText();
       if (!serverTimeZone.isEmpty()) {
-        props.setProperty("database.serverTimezone", serverTimeZone);
+        /**
+         * Per Debezium docs,
+         * https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-temporal-types
+         * this property is now connectionTimeZone {@link com.mysql.cj.conf.PropertyKey#connectionTimeZone}
+         **/
+        props.setProperty("database.connectionTimeZone", serverTimeZone);
       }
     }
 
@@ -115,17 +120,11 @@ public class MySqlCdcProperties {
     return props;
   }
 
-  static Properties getSnapshotProperties(final JdbcDatabase database) {
-    final Properties props = commonProperties(database);
-    props.setProperty("snapshot.mode", "initial_only");
-    return props;
-  }
-
   private static int generateServerID() {
-    int min = 5400;
-    int max = 6400;
+    final int min = 5400;
+    final int max = 6400;
 
-    int serverId = (int) Math.floor(Math.random() * (max - min + 1) + min);
+    final int serverId = (int) Math.floor(Math.random() * (max - min + 1) + min);
     LOGGER.info("Randomly generated Server ID : " + serverId);
     return serverId;
   }
