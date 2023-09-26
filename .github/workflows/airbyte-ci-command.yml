@@ -1,0 +1,122 @@
+# Usage: This workflow can be invoked manually or by a slash command.
+#
+# To invoke via GitHub UI, go to Actions tab, select the workflow, and click "Run workflow".
+#
+# To invoke via slash command, use the following syntax in a comment on a PR:
+#    /airbyte-ci connector=<connector-name> cmd="test"
+#    /airbyte-ci connector=<connector-name>
+# Or add this to your commit message:
+#    --test-connector=<connector-name>
+# You can commit and push an empty commit like this:
+#    git commit --allow-empty -m "(forcing test) --test-connector=<connector-name>"
+#    git push
+name: Airbyte CI Slash Command
+on:
+  # Temporarily run on commits to the 'java-cdk/publish-workflow' branch.
+  # TODO: Remove this 'push' trigger before merging to master.
+  push:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo."
+        # TODO: If publishing from forks is needed, we'll need to revert type to `string` of `choice`.
+        type: choice
+        required: true
+        default: airbytehq/airbyte
+        options:
+        - airbytehq/airbyte
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: true
+      name:
+        description: "Connector's name."
+        required: true
+        type: string
+      cmd:
+        description: "The command to run."
+        # TODO: If publishing from forks is needed, we'll need to revert type to `string` of `choice`.
+        type: choice
+        required: true
+        default: test
+        options:
+        - test
+      args:
+        description: "Optional. A string containing any additional arguments or subcommands."
+        # TODO: If publishing from forks is needed, we'll need to revert type to `string` of `choice`.
+        type: string
+        required: false
+        default: ""
+      comment-id:
+        description: "Optional comment-id of the slash command. Ignore if not applicable."
+        required: false
+
+env:
+  # Use the provided GITREF or default to the branch triggering the workflow.
+  REPO: ${{ github.event.inputs.repo || 'airbytehq/airbyte' }}
+  GITREF: ${{ github.event.inputs.gitref || github.ref }}
+  CONNECTOR_NAME: "${{ github.event.inputs.name }}"
+  CMD: ${{ github.event.inputs.cmd || 'test' }}
+  CMD_ARGS: ${{ github.event.inputs.args || '' }}
+
+jobs:
+
+  airbyte-ci-command:
+    name: Run Airbyte CI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Check commit message
+        id: check-commit
+        run: |
+          commit_message=$(git log --format=%B -n 1 ${{ github.event.after }})
+          echo "Commit message is: $commit_message"
+          
+          # Use regex to find the desired pattern
+          if [[ ! $commit_message =~ --test-connector=([a-zA-Z0-9_-]+) ]]; then
+            echo "Commit message doesn't contain retest pattern. Aborting."
+            exit 1
+          fi
+          # Extract connector name and set it as output
+          connector_name="${BASH_REMATCH[1]}"
+          echo "Found connector name: $connector_name"
+          echo "CONNECTOR_NAME=${connector_name}" >> $GITHUB_ENV
+      - name: Validate inputs
+        run: |
+          # Fail if CONNECTOR_NAME is empty or null
+          if [[ -z "$CONNECTOR_NAME" ]]; then
+            echo "CONNECTOR_NAME is empty or null"
+            exit 1
+          fi
+          # Fail if CMD is not in the list [test, publish]:
+          if [[ "$CMD" != "test" ]]; then
+            echo "CMD must be one of [test]"
+            exit 1
+          fi
+      - name: Checkout Airbyte
+        if: env.CONNECTOR_NAME
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ env.REPO }}
+          ref: ${{ env.GITREF }}
+      - name: Run airbyte-ci test
+        id: run-airbyte-ci
+        if: env.CONNECTOR_NAME
+        uses: ./.github/actions/run-dagger-pipeline
+        with:
+          context: "manual"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          metadata_service_gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          spec_cache_gcs_credentials: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY_PUBLISH }}
+          subcommand: "connectors --name=${{ env.CONNECTOR_NAME }} ${{ env.CMD }} ${{ env.CMD_ARGS }}"
+          # docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          # docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          # slack_webhook_url: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
