@@ -26,7 +26,6 @@ This page contains the setup guide and reference information for the Jira source
 6. Enter the **Email** for your Jira account which you used to generate the API token. This field is used for Authorization to your account by BasicAuth.
 7. Enter the list of **Projects (Optional)** for which you need to replicate data, or leave it empty if you want to replicate data for all projects.
 8. Enter the **Start Date (Optional)** from which you'd like to replicate data for Jira in the format YYYY-MM-DDTHH:MM:SSZ. All data generated after this date will be replicated, or leave it empty if you want to replicate all data. Note that it will be used only in the following streams: Board Issues, Issue Comments, Issue Properties, Issue RemoteLinks, Issue Votes, Issue Watchers, Issue Worklogs, Issues, Pull Requests, Sprint Issues. For other streams it will replicate all data.
-9. Fill in **Expand Issues stream** with values from the suggested list. See `expand` in [Query parameters](https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get-request-Query%20parameters) for more info.
 
 ## Supported sync modes
 
@@ -122,7 +121,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| 0.7.3   | 2023-09-26 | [\#30688](https://github.com/airbytehq/airbyte/pull/30688) | Added `createdDate` field to sprints schema                                                                             |
+| 0.8.0   | 2023-09-26 | [\#30688](https://github.com/airbytehq/airbyte/pull/30688) | Added `createdDate` field to sprints schema, Removed `Expand Issues stream` from spec                                   |
 | 0.7.2   | 2023-09-19 | [\#30675](https://github.com/airbytehq/airbyte/pull/30675) | Ensure invalid URL does not trigger Sentry alert                                                                        |
 | 0.7.1   | 2023-09-19 | [\#30585](https://github.com/airbytehq/airbyte/pull/30585) | Add skip for 404 error in issue properties steam                                                                        |
 | 0.7.0   | 2023-09-17 | [\#30532](https://github.com/airbytehq/airbyte/pull/30532) | Add foreign key to stream record where it misseing                                                                      |
