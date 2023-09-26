@@ -5,11 +5,15 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.InsertAllRequest;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.integrations.destination_async.DestinationFlushFunction;
 import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
+
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -29,19 +33,22 @@ public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
 
   @Override
   public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
-    ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMapSupplied = uploaderMap.get();
+    // ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMapSupplied = uploaderMap.get();
+    InsertAllRequest.Builder request = InsertAllRequest.newBuilder(decs.getNamespace(), decs.getName());
     stream.forEach(aibyteMessage -> {
       try {
-        AirbyteStreamNameNamespacePair sd = new AirbyteStreamNameNamespacePair(aibyteMessage.getRecord().getStream(),
+        request.addRow(Jsons.deserialize(aibyteMessage.getSerialized(), Map.class));
+         /*AirbyteStreamNameNamespacePair sd = new AirbyteStreamNameNamespacePair(aibyteMessage.getRecord().getStream(),
             aibyteMessage.getRecord().getNamespace());
-        uploaderMapSupplied.get(sd).upload(aibyteMessage);
+        uploaderMapSupplied.get(sd).upload(aibyteMessage);*/
       } catch (Exception e) {
         log.error("BQ async standard flush");
         log.error(aibyteMessage.toString());
         throw e;
       }
     });
-    uploaderMapSupplied.values().forEach(test -> test.closeAfterPush());
+    bigQuery.insertAll(request.build());
+    // uploaderMapSupplied.values().forEach(test -> test.closeAfterPush());
   }
 
   @Override
