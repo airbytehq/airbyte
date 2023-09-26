@@ -12,13 +12,11 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_protocol.models import FailureType
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v11.errors.types.authorization_error import AuthorizationErrorEnum
-from google.ads.googleads.v11.errors.types.request_error import RequestErrorEnum
 from google.ads.googleads.v11.services.services.google_ads_service.pagers import SearchPager
 
-from .google_ads import GoogleAds, logger
+from .google_ads import GoogleAds
 from .models import Customer
-from .utils import REPORT_MAPPING
+from .utils import REPORT_MAPPING, ExpiredPageTokenError, traced_exception
 
 
 def parse_dates(stream_slice):
@@ -86,7 +84,7 @@ def chunk_date_range(
 
 
 class GoogleAdsStream(Stream, ABC):
-    CATCH_API_ERRORS = True
+    CATCH_CUSTOMER_NOT_ENABLED_ERROR = True
 
     def __init__(self, api: GoogleAds, customers: List[Customer]):
         self.google_ads_client = api
@@ -115,16 +113,8 @@ class GoogleAdsStream(Stream, ABC):
             response_records = self.google_ads_client.send_request(self.get_query(stream_slice), customer_id=customer_id)
             for response in response_records:
                 yield from self.parse_response(response, stream_slice)
-        except GoogleAdsException as exc:
-            exc.customer_id = customer_id
-            if not self.CATCH_API_ERRORS:
-                raise
-            for error in exc.failure.errors:
-                if error.error_code.authorization_error == AuthorizationErrorEnum.AuthorizationError.CUSTOMER_NOT_ENABLED:
-                    logger.error(error.message)
-                    continue
-                # log and ignore only CUSTOMER_NOT_ENABLED error, otherwise - raise further
-                raise
+        except GoogleAdsException as exception:
+            traced_exception(exception, customer_id, self.CATCH_CUSTOMER_NOT_ENABLED_ERROR)
 
 
 class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
@@ -201,27 +191,22 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         else:
             self.state = {customer_id: {self.cursor_field: record[self.cursor_field]}}
 
-    def _handle_expired_page_exception(self, exception: GoogleAdsException, stream_slice: MutableMapping[str, Any], customer_id: str):
+    def _handle_expired_page_exception(self, exception: ExpiredPageTokenError, stream_slice: MutableMapping[str, Any], customer_id: str):
         """
-        Handle GoogleAdsException errors, specifically, the EXPIRED_PAGE_TOKEN error by updating the stream slice.
+        Handle Google Ads EXPIRED_PAGE_TOKEN error by updating the stream slice.
         """
-        error = next(iter(exception.failure.errors))
-        if error.error_code.request_error == RequestErrorEnum.RequestError.EXPIRED_PAGE_TOKEN:
-            start_date, end_date = parse_dates(stream_slice)
-            current_state = self.get_current_state(customer_id)
+        start_date, end_date = parse_dates(stream_slice)
+        current_state = self.get_current_state(customer_id)
 
-            if end_date - start_date <= self.slice_step:
-                # If range days less than slice_step, no need in retry, because it's the minimum date range
-                raise exception
-            elif current_state == stream_slice["start_date"]:
-                # It couldn't read all the records within one day, it will enter an infinite loop,
-                # so raise the error
-                raise exception
-            # Retry reading records from where it crushed
-            stream_slice["start_date"] = self.get_current_state(customer_id, default=stream_slice["start_date"])
-        else:
-            # raise caught error for other error statuses
+        if end_date - start_date <= self.slice_step:
+            # If range days less than slice_step, no need in retry, because it's the minimum date range
             raise exception
+        elif current_state == stream_slice["start_date"]:
+            # It couldn't read all the records within one day, it will enter an infinite loop,
+            # so raise the error
+            raise exception
+        # Retry reading records from where it crushed
+        stream_slice["start_date"] = self.get_current_state(customer_id, default=stream_slice["start_date"])
 
     def read_records(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs
@@ -239,8 +224,8 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 for record in records:
                     self._update_state(customer_id, record)
                     yield record
-            except GoogleAdsException as exception:
-                # stream_slice will be updated in _handle_expired_page_exception if needed
+            except ExpiredPageTokenError as exception:
+                # handle expired page error that was caught in parent class by updating stream_slice
                 self._handle_expired_page_exception(exception, stream_slice, customer_id)
             else:
                 return
@@ -285,7 +270,7 @@ class ServiceAccounts(GoogleAdsStream):
     This stream is intended to be used as a service class, not exposed to a user
     """
 
-    CATCH_API_ERRORS = False
+    CATCH_CUSTOMER_NOT_ENABLED_ERROR = False
     primary_key = ["customer.id"]
 
 
@@ -543,8 +528,8 @@ class ChangeStatus(IncrementalGoogleAdsStream):
                 for records_count, record in enumerate(records, start=1):
                     self._update_state(customer_id, record)
                     yield record
-            except GoogleAdsException as exception:
-                # stream_slice will be updated in _handle_expired_page_exception if needed
+            except ExpiredPageTokenError as exception:
+                # handle expired page error that was caught in parent class by updating stream_slice
                 self._handle_expired_page_exception(exception, stream_slice, customer_id)
             else:
                 # if records limit is hit - update slice with new start_date to continue reading

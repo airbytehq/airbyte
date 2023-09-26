@@ -849,6 +849,17 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
 
     addDataTypeTestData(
         TestDataHolder.builder()
+            .sourceType("jsonb_array")
+            .fullSourceDataType("JSONB[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING).build())
+                .build())
+            .addInsertValues("ARRAY['{\"foo\":\"bar\"}'::JSONB, NULL]")
+            .addExpectedValues("[\"{\\\"foo\\\": \\\"bar\\\"}\",null]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
             .sourceType("money_array")
             .fullSourceDataType("MONEY[]")
             .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
