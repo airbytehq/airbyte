@@ -54,13 +54,15 @@ def test_parse_GAQL_ok():
     assert sql.parameters == ""
     assert str(sql) == "SELECT t.field1, t.field2 FROM x_Table ORDER BY field2, field1 LIMIT 10"
 
-    sql = GAQL.parse("""
+    sql = GAQL.parse(
+        """
         SELECT field1, field2
           FROM x_Table
          WHERE date = '2020-01-01'
       ORDER BY field2 ASC, field1 DESC
          LIMIT 10
-    PARAMETERS include_drafts=true """)
+    PARAMETERS include_drafts=true """
+    )
 
     assert sql.fields == ("field1", "field2")
     assert sql.resource_name == "x_Table"
@@ -68,41 +70,20 @@ def test_parse_GAQL_ok():
     assert sql.order_by == "field2 ASC, field1 DESC"
     assert sql.limit == 10
     assert sql.parameters == "include_drafts=true"
-    assert str(sql) == "SELECT field1, field2 FROM x_Table WHERE date = '2020-01-01' ORDER BY field2 ASC, field1 DESC LIMIT 10 PARAMETERS include_drafts=true"
+    assert (
+        str(sql)
+        == "SELECT field1, field2 FROM x_Table WHERE date = '2020-01-01' ORDER BY field2 ASC, field1 DESC LIMIT 10 PARAMETERS include_drafts=true"
+    )
 
 
 @pytest.mark.parametrize(
     "config",
     [
-        {
-            "custom_queries": [
-                {
-                    "query": "SELECT field1, field2 FROM x_Table2",
-                    "table_name": "test_table"
-                }]
-        },
-        {
-            "custom_queries": [
-                {
-                    "query": "SELECT field1, field2 FROM x_Table WHERE ",
-                    "table_name": "test_table"
-                }]
-        },
-        {
-            "custom_queries": [
-                {
-                    "query": "SELECT field1, , field2 FROM table",
-                    "table_name": "test_table"
-                }]
-        },
-        {
-            "custom_queries": [
-                {
-                    "query": "SELECT fie ld1, field2 FROM table",
-                    "table_name": "test_table"
-                }]
-        },
-    ]
+        {"custom_queries": [{"query": "SELECT field1, field2 FROM x_Table2", "table_name": "test_table"}]},
+        {"custom_queries": [{"query": "SELECT field1, field2 FROM x_Table WHERE ", "table_name": "test_table"}]},
+        {"custom_queries": [{"query": "SELECT field1, , field2 FROM table", "table_name": "test_table"}]},
+        {"custom_queries": [{"query": "SELECT fie ld1, field2 FROM table", "table_name": "test_table"}]},
+    ],
 )
 def test_parse_GAQL_fail(config):
     with pytest.raises(AirbyteTracedException) as e:

@@ -890,6 +890,9 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "payment_method_configuration_details": {
+      "$ref": "payment_method_configuration_details.json"
     }
   }
 }
