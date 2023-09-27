@@ -114,7 +114,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
             # queue.qsize() is not reliable since it is possible for the queue to get modified, but we only check it if all futures are done
             # an alternative would be to keep a set of partitions that have been processed and check that they were all processed
             # the issue with this alternative solution is that connectors can (and do) modify their stream_slices
-            if finished_partitions and len([f for f in futures if not f.done()]) == 0:
+            if finished_partitions and len([f for f in futures if not f.done()]) == 0 and queue.empty():
                 if num_partitions_generated != num_partitions_generated:
                     raise RuntimeError(
                         f"Expected {num_partitions_generated} partitions to be generated, but only {num_partitions_processed} were processed"
