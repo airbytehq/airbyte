@@ -15,6 +15,6 @@ class PartitionGenerator(ABC):
         """
         Generates partitions for a given sync mode.
         :param sync_mode: SyncMode
-        :return:
+        :return: An iterable of partitions
         """
         pass

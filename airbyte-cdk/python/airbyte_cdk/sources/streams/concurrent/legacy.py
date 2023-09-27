@@ -8,7 +8,9 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
@@ -41,12 +43,13 @@ class StreamFacade(Stream):
     ) -> Iterable[StreamData]:
         """
         Read full refresh. Delegate to the underlying AbstractStream, ignoring all the parameters
-        :param cursor_field:
-        :param logger:
-        :param slice_logger:
+        :param cursor_field: (ignored)
+        :param logger: (ignored)
+        :param slice_logger: (ignored)
         :return: Iterable of StreamData
         """
-        yield from self._stream.read()
+        for record in self._stream.read():
+            yield record.data
 
     def read_records(
         self,
@@ -56,7 +59,8 @@ class StreamFacade(Stream):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         if sync_mode == SyncMode.full_refresh:
-            yield from self._stream.read()
+            for record in self._stream.read():
+                yield record.data
         else:
             # Incremental reads are not supported
             raise NotImplementedError
@@ -110,3 +114,22 @@ class StreamFacade(Stream):
         :return: A user-friendly message that indicates the cause of the error
         """
         return self._stream.get_error_display_message(exception)
+
+
+@deprecated("This class is experimental. Use at your own risk.")
+class AvailabilityStrategyFacade(AvailabilityStrategy):
+    def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
+        self._abstract_availability_strategy = abstract_availability_strategy
+
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
+        """
+        Checks stream availability.
+
+        Important to note that the stream and source parameters are not used by the underlying AbstractAvailabilityStrategy.
+
+        :param stream:
+        :param logger:
+        :param source:
+        :return:
+        """
+        return self._abstract_availability_strategy.check_availability(logger)
