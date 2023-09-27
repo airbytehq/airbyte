@@ -22,6 +22,9 @@ dependencies {
     implementation libs.airbyte.protocol
     implementation libs.postgresql
 
+    implementation libs.testcontainers
+    implementation libs.testcontainers.jdbc
+    implementation libs.testcontainers.cockroachdb
     testImplementation libs.testcontainers
     testImplementation libs.testcontainers.jdbc
     testImplementation libs.testcontainers.cockroachdb

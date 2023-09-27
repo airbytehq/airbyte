@@ -18,6 +18,7 @@ application {
 
 dependencies {
     implementation libs.airbyte.protocol
+    implementation libs.postgresql
 
     testImplementation libs.testcontainers.postgresql
 
