@@ -6,9 +6,10 @@ import pathlib
 
 import click
 from metadata_service.constants import METADATA_FILE_NAME
-from metadata_service.gcs_upload import MetadataUploadInfo, upload_metadata_to_gcs, upload_all_docs_to_gcs
+from metadata_service.gcs_upload import MetadataUploadInfo, upload_metadata_to_gcs
 from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
 from pydantic import ValidationError
+from connector_ops.utils import get_all_connectors_in_repo
 
 
 def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
@@ -62,12 +63,15 @@ def upload(metadata_file_path: pathlib.Path, docs_path: pathlib.Path, bucket_nam
         exit(5)
 
 @metadata_service.command(help="Upload docs for all connectors to a GCS bucket.")
-@click.argument("connectors-dir", type=click.Path(exists=True, path_type=pathlib.Path))
+@click.argument("airbyte-repo-path", type=click.Path(exists=True, path_type=pathlib.Path))
 @click.argument("docs-dir", type=click.Path(exists=True, path_type=pathlib.Path))
 @click.argument("bucket-name", type=click.STRING)
-def upload_all_docs(connectors_dir: pathlib.Path, docs_dir: pathlib.Path, bucket_name: str):
-    print("connectors_dir: ", connectors_dir)
-    print("docs_dir: ", docs_dir)
-    print("bucket_name: ", bucket_name)
-    upload_all_docs_to_gcs(connectors_dir, docs_dir, bucket_name)
+def upload_all_metadata(airbyte_repo_path: pathlib.Path, docs_dir: pathlib.Path, bucket_name: str):
+    connectors = get_all_connectors_in_repo()
+    for connector in connectors:
+        print(f"~~~~~~ Uploading metadata for {connector}")
+        metadata_file_path = airbyte_repo_path / connector.metadata_file_path
+        upload_metadata_to_gcs(bucket_name, metadata_file_path, ValidatorOptions(docs_path=str(docs_dir)))
+        # This break just makes the script upload docs for a single connector. Comment it out to upload docs for all connectors.
+        break
     exit(0)

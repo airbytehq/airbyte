@@ -7,15 +7,16 @@ readme = "README.md"
 packages = [{include = "metadata_service"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 pydantic = "^1.10.6"
 click = "^8.1.3"
 google = "^3.0.0"
 pyyaml = "^6.0"
 gcloud = "^0.18.3"
 google-cloud-storage = "^2.8.0"
-pydash = "^6.0.2"
+pydash = "^7.0.4"
 semver = "^3.0.1"
+connector-ops = {path = "../../connector_ops", develop = true}
 
 
 [tool.poetry.group.test.dependencies]
