@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import io.airbyte.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;

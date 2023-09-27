@@ -219,7 +219,7 @@
       "type": "array"
     },
     "custom_fields": {
-      "properties": {}, 
+      "properties": {},
       "additionalProperties": true,
       "type": ["null", "object"]
     },

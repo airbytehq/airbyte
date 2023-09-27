@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.gcs;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
