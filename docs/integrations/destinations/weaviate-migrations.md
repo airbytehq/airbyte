@@ -10,7 +10,7 @@ Due to a change of the configuration structure, it's necessary to reconfigure ex
 
 ### Auto-generated ids
 
-It's not possible anymore to configure id fields in the destination. Instead, the destination will generate a UUID for each Weaviate object. The id per record is stored in the `_ab_record_id` property and can be used to identify Weaviate objects by Airbyte record.
+It's no longer possible to configure `id` fields in the destination. Instead, the destination will generate a UUID for each Weaviate object. The `id` for each record is stored in the `_ab_record_id` property and can be used to identify Weaviate objects by Airbyte record.
 
 ### Vector fields
 
