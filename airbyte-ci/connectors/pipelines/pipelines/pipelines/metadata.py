@@ -8,6 +8,7 @@ import dagger
 from pipelines.actions.environments import with_pip_packages, with_python_base
 from pipelines.bases import Report, Step, StepResult
 from pipelines.contexts import PipelineContext, ConnectorContext
+from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH
 from pipelines.helpers.steps import run_steps
 from pipelines.steps.poetry_run_step import PoetryRunStep
 from pipelines.steps.simple_docker_step import SimpleDockerStep, MountPath
@@ -25,8 +26,7 @@ class MetadataValidation(SimpleDockerStep):
             context=context,
             paths_to_mount=[
                 MountPath(context.connector.metadata_file_path),
-                MountPath(context.connector.documentation_file_path),
-                MountPath(context.connector.inapp_documentation_file_path, optional=True),
+                MountPath(DOCS_DIRECTORY_ROOT_PATH),
                 MountPath(context.connector.icon_path, optional=True),
             ],
             internal_tools=[
@@ -36,7 +36,7 @@ class MetadataValidation(SimpleDockerStep):
                 "metadata_service",
                 "validate",
                 str(context.connector.metadata_file_path),
-                str(context.connector.documentation_file_path),
+                DOCS_DIRECTORY_ROOT_PATH,
             ],
         )
 
@@ -60,7 +60,7 @@ class MetadataUpload(SimpleDockerStep):
             "metadata_service",
             "upload",
             str(context.connector.metadata_file_path),
-            str(context.connector.documentation_file_path),
+            DOCS_DIRECTORY_ROOT_PATH,
             metadata_bucket_name,
         ]
 
@@ -72,8 +72,7 @@ class MetadataUpload(SimpleDockerStep):
             context=context,
             paths_to_mount=[
                 MountPath(context.connector.metadata_file_path),
-                MountPath(context.connector.documentation_file_path),
-                MountPath(context.connector.inapp_documentation_file_path, optional=True),
+                MountPath(DOCS_DIRECTORY_ROOT_PATH),
                 MountPath(context.connector.icon_path, optional=True),
             ],
             internal_tools=[
