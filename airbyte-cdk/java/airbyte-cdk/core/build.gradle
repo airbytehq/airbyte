@@ -9,8 +9,9 @@ configurations.all {
 dependencies {
     // Exported dependencies from upstream projects
     api libs.airbyte.protocol
+    api libs.hikaricp
     api libs.jooq
-    api project(':airbyte-json-validation')
+    api libs.jooq.meta
 
     // First party main dependencies
     // TODO: Bring these into the CDK or refactor them out.
@@ -19,6 +20,7 @@ dependencies {
     compileOnly project(':airbyte-commons-cli')
     compileOnly project(':airbyte-config-oss:config-models-oss')
     compileOnly project(':airbyte-config-oss:init-oss')
+    compileOnly project(':airbyte-json-validation')
 
     testImplementation project(':airbyte-commons-cli')
     testImplementation project(':airbyte-config-oss:config-models-oss')

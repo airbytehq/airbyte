@@ -27,15 +27,18 @@ class AirbyteJavaConnectorExtension {
         project.dependencies {
             // Import transitive (compileOnly) first party CDK dependencies.
             // TODO: Bring these into the CDK or refactor them out.
+            implementation project.project(':airbyte-api')
             implementation project.project(':airbyte-commons')
             implementation project.project(':airbyte-commons-cli')
             implementation project.project(':airbyte-config-oss:config-models-oss')
             implementation project.project(':airbyte-config-oss:init-oss')
             implementation project.project(':airbyte-json-validation')
+
             testImplementation project.project(':airbyte-api')
             testImplementation project.project(':airbyte-commons')
             testImplementation project.project(':airbyte-config-oss:config-models-oss')
             testImplementation project.project(':airbyte-test-utils')
+
             integrationTestJavaImplementation project.project(':airbyte-config-oss:config-models-oss')
             integrationTestJavaImplementation project.project(':airbyte-config-oss:init-oss')
             integrationTestJavaImplementation project.project(':airbyte-connector-test-harnesses:acceptance-test-harness')
@@ -45,19 +48,14 @@ class AirbyteJavaConnectorExtension {
                 submoduleNames.each { submoduleName ->
                     // Add the CDK module to the dependencies
                     def cdkModule = project.project(":airbyte-cdk:java:airbyte-cdk:${submoduleName}")
+                    def testFixturesRef = testFixtures(project.project(":airbyte-cdk:java:airbyte-cdk:${submoduleName}"))
                     implementation cdkModule
                     testImplementation cdkModule
+                    testImplementation testFixturesRef
                     integrationTestJavaImplementation cdkModule
+                    integrationTestJavaImplementation testFixturesRef
                     performanceTestJavaImplementation cdkModule
-
-                    // Add the test fixtures cdkModule to the dependencies.
-                    // Exclude 'core', which has no test fixtures.
-                    if (cdkModule != 'core') {
-                        def testFixturesRef = testFixtures(project.project(":airbyte-cdk:java:airbyte-cdk:${submoduleName}"))
-                        testImplementation testFixturesRef
-                        integrationTestJavaImplementation testFixturesRef
-                        performanceTestJavaImplementation testFixturesRef
-                    }
+                    performanceTestJavaImplementation testFixturesRef
                 }
             }
         } else {
@@ -65,19 +63,14 @@ class AirbyteJavaConnectorExtension {
                 submoduleNames.each { submoduleName ->
                     // Add the cdkModule to the dependencies
                     def cdkModule = "io.airbyte.cdk:airbyte-cdk-${submoduleName}:${cdkVersionRequired}"
+                    def testFixturesRef = "io.airbyte.cdk:airbyte-cdk-${submoduleName}:${cdkVersionRequired}:test-fixtures"
                     implementation cdkModule
                     testImplementation cdkModule
+                    testImplementation testFixturesRef
                     integrationTestJavaImplementation cdkModule
+                    integrationTestJavaImplementation testFixturesRef
                     performanceTestJavaImplementation cdkModule
-
-                    // Add the test fixtures cdkModule to the dependencies.
-                    // Exclude 'core', which has no test fixtures.
-                    if (cdkModule != 'core') {
-                        def testFixturesRef = "io.airbyte.cdk:airbyte-cdk-${submoduleName}-test-fixtures:${cdkVersionRequired}"
-                        testImplementation testFixturesRef
-                        integrationTestJavaImplementation testFixturesRef
-                        performanceTestJavaImplementation testFixturesRef
-                    }
+                    performanceTestJavaImplementation testFixturesRef
                 }
             }
         }

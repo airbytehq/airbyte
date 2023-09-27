@@ -23,6 +23,9 @@ repositories {
 }
 
 dependencies {
+    implementation project(':airbyte-integrations:bases:base-typing-deduping')
+    testImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
+
     implementation libs.airbyte.protocol
 
     implementation 'com.amazonaws:aws-java-sdk-s3:1.11.978'
