@@ -30,20 +30,21 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
 6. For **Secret Key**, enter the restricted key you created for the connection.
 7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
-8. (Optional) For **Lookback Window**, you may specify a number of days from the present day to reread data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments (such as tips, refunds, chargebacks, etc).
+8. (Optional) For **Lookback Window**, you may specify a number of days from the present day to reread data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments. This applies only to streams that do not support event-based incremental syncs, please see the list below.
 
-    - Leaving the **Lookback Window** at its default value of 0 means Airbyte will not re-export data after it has been synced.
-    - Setting the **Lookback Window** to 1 means Airbyte will re-export data from the past day, capturing any changes made in the last 24 hours.
-    - Setting the **Lookback Window** to 7 means Airbyte will re-export and capture any data changes within the last week.
+   - Leaving the **Lookback Window** at its default value of 0 means Airbyte will not re-export data after it has been synced.
+   - Setting the **Lookback Window** to 1 means Airbyte will re-export data from the past day, capturing any changes made in the last 24 hours.
+   - Setting the **Lookback Window** to 7 means Airbyte will re-export and capture any data changes within the last week.
 
 9. (Optional) For **Data Request Window**, you may specify the time window in days used by the connector when requesting data from the Stripe API. This window defines the span of time covered in each request, with larger values encompassing more days in a single request. Generally speaking, the lack of overhead from making fewer requests means a larger window is faster to sync. However, this also means the state of the sync will persist less frequently. If an issue occurs or the sync is interrupted, a larger window means more data will need to be resynced, potentially causing a delay in the overall process.
 
-    For example, if you are replicating three years worth of data:
+   For example, if you are replicating three years worth of data:
 
-    - A **Data Request Window** of 365 days means Airbyte makes 3 requests, each for a year. This is generally faster but risks needing to resync up to a year's data if the sync is interrupted.
-    - A **Data Request Window** of 30 days means 36 requests, each for a month. This may be slower but minimizes the amount of data that needs to be resynced if an issue occurs.
+   - A **Data Request Window** of 365 days means Airbyte makes 3 requests, each for a year. This is generally faster but risks needing to resync up to a year's data if the sync is interrupted.
+   - A **Data Request Window** of 30 days means 36 requests, each for a month. This may be slower but minimizes the amount of data that needs to be resynced if an issue occurs.
 
-    If you are unsure of which value to use, we recommend leaving this setting at its default value of 365 days.
+   If you are unsure of which value to use, we recommend leaving this setting at its default value of 365 days.
+
 10. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -53,38 +54,33 @@ The Stripe source connector supports the following [sync modes](https://docs.air
 - Full Refresh
 - Incremental
 
-:::note
-Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the `created` field to query for new data in your Stripe account.
-:::
-
 ## Supported streams
 
 The Stripe source connector supports the following streams:
 
-- [Accounts](https://stripe.com/docs/api/accounts/list) \(Incremental\)
+- [Accounts](https://stripe.com/docs/api/accounts/list)
 - [Application Fees](https://stripe.com/docs/api/application_fees) \(Incremental\)
-- [Application Fee Refunds](https://stripe.com/docs/api/fee_refunds/list)
+- [Application Fee Refunds](https://stripe.com/docs/api/fee_refunds/list) \(Incremental\)
 - [Authorizations](https://stripe.com/docs/api/issuing/authorizations/list) \(Incremental\)
 - [Balance Transactions](https://stripe.com/docs/api/balance_transactions/list) \(Incremental\)
-- [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list)
+- [Bank accounts](https://stripe.com/docs/api/customer_bank_accounts/list) \(Incremental\)
 - [Cardholders](https://stripe.com/docs/api/issuing/cardholders/list) \(Incremental\)
 - [Cards](https://stripe.com/docs/api/issuing/cards/list) \(Incremental\)
 - [Charges](https://stripe.com/docs/api/charges/list) \(Incremental\)
   :::note
   The `amount` column defaults to the smallest currency unit. Check [the Stripe docs](https://stripe.com/docs/api/charges/object) for more details.
   :::
-- [Checkout Sessions](https://stripe.com/docs/api/checkout/sessions/list)
-- [Checkout Sessions Line Items](https://stripe.com/docs/api/checkout/sessions/line_items)
+- [Checkout Sessions](https://stripe.com/docs/api/checkout/sessions/list) \(Incremental\)
+- [Checkout Sessions Line Items](https://stripe.com/docs/api/checkout/sessions/line_items) \(Incremental\)
 - [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
-- [Credit Notes](https://stripe.com/docs/api/credit_notes/list) \(Full Refresh\)
-- [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list)
+- [Credit Notes](https://stripe.com/docs/api/credit_notes/list) \(Incremental\)
+- [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list) \(Incremental\)
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
-  :::note
-  This endpoint does _not_ include deleted customers
-  :::
 - [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
 - [Early Fraud Warnings](https://stripe.com/docs/api/radar/early_fraud_warnings/list) \(Incremental\)
 - [Events](https://stripe.com/docs/api/events/list) \(Incremental\)
+- [External Account Bank Accounts](https://stripe.com/docs/api/external_account_bank_accounts/list) \(Incremental\)
+- [External Account Cards](https://stripe.com/docs/api/external_account_cards/list) \(Incremental\)
 - [File Links](https://stripe.com/docs/api/file_links/list) \(Incremental\)
 - [Files](https://stripe.com/docs/api/files/list) \(Incremental\)
 - [Invoice Items](https://stripe.com/docs/api/invoiceitems/list) \(Incremental\)
@@ -114,7 +110,75 @@ The Stripe source connector supports the following streams:
 
 :::warning
 **Stripe API Restriction on Events Data**: Access to the events endpoint is [guaranteed only for the last 30 days](https://stripe.com/docs/api/events) by Stripe. If you use the Full Refresh Overwrite sync, be aware that any events data older than 30 days will be **deleted** from your target destination and replaced with the data from the last 30 days only. Use an Append sync mode to ensure historical data is retained.
+Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 30 days.
 :::
+
+:::note
+Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
+However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
+- `BalanceTransactions`
+- `CheckoutSessionLineItems` (cursor field is `checkout_session_expires_at`)
+- `Events`
+- `FileLinks`
+- `Files`
+- `SetupAttempts`
+- `ShippingRates`
+
+On the other hand, the following streams use the `updated` field value as a cursor:
+- `Application Fees`
+- `Application Fee Refunds`
+- `Authorizations`
+- `Bank accounts`
+- `Cardholders`
+- `Cards`
+- `Charges`
+- `Checkout Sessions`
+- `Coupons`
+- `Credit Notes`
+- `Customer Balance Transactions`
+- `Customers`
+- `Disputes`
+- `Early Fraud Warnings`
+- `External Account Bank Accounts`
+- `External Account Cards`
+- `Invoice Items`
+- `Invoices`
+- `Payment Intents`
+- `Payouts`
+- `Promotion Codes`
+- `Persons`
+- `Plans`
+- `Prices`
+- `Products`
+- `Refunds`
+- `Reviews`
+- `Setup Intents`
+- `Subscription Schedule`
+- `Subscriptions`
+- `Top Ups`
+- `Transactions`
+- `Transfers`
+
+  :::
+
+:::note
+The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
+- `Bank Accounts`
+- `Coupons`
+- `Customers`
+- `External Account Bank Accounts`
+- `External Account Cards`
+- `Invoices`
+- `Invoice Items`
+- `Persons`
+- `Plans`
+- `Prices`
+- `Products`
+- `Subscriptions`
+
+Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
+
+  :::
 
 ### Data type mapping
 
@@ -128,7 +192,13 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.17.4  | 2023-08-15 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Revert 3.17.3                                                                                                                                        |
+| 4.3.0   | 2023-09-26 | [30752](https://github.com/airbytehq/airbyte/pull/30752) | Do not sync upcoming invoices, extend stream schemas                                                                                                 |
+| 4.2.0   | 2023-09-21 | [30660](https://github.com/airbytehq/airbyte/pull/30660) | Fix updated state for the incremental syncs                                                                                                          |
+| 4.1.1   | 2023-09-15 | [30494](https://github.com/airbytehq/airbyte/pull/30494) | Fix datatype of invoices.lines property                                                                                                              |
+| 4.1.0   | 2023-08-29 | [29950](https://github.com/airbytehq/airbyte/pull/29950) | Implement incremental deletes, add suggested streams                                                                                                 |
+| 4.0.1   | 2023-09-07 | [30254](https://github.com/airbytehq/airbyte/pull/30254) | Fix cursorless incremental streams                                                                                                                   |
+| 4.0.0   | 2023-08-15 | [29330](https://github.com/airbytehq/airbyte/pull/29330) | Implement incremental syncs based on date of update                                                                                                  |
+| 3.17.4  | 2023-08-15 | [29425](https://github.com/airbytehq/airbyte/pull/29425) | Revert 3.17.3                                                                                                                                        |
 | 3.17.3  | 2023-08-01 | [28911](https://github.com/airbytehq/airbyte/pull/28911) | Revert 3.17.2 and fix atm_fee property                                                                                                               |
 | 3.17.2  | 2023-08-01 | [28911](https://github.com/airbytehq/airbyte/pull/28911) | Fix stream schemas, remove custom 403 error handling                                                                                                 |
 | 3.17.1  | 2023-08-01 | [28887](https://github.com/airbytehq/airbyte/pull/28887) | Fix `Invoices` schema                                                                                                                                |

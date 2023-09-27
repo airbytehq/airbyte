@@ -15,8 +15,10 @@ from source_google_search_console.source import SourceGoogleSearchConsole
 from source_google_search_console.streams import (
     ROW_LIMIT,
     GoogleSearchConsole,
+    QueryAggregationType,
     SearchAnalyticsByCustomDimensions,
     SearchAnalyticsByDate,
+    SearchAnalyticsKeywordSiteReportBySite,
     Sites,
 )
 from utils import command_check
@@ -131,6 +133,21 @@ def test_forbidden_should_retry(requests_mock, forbidden_error_message_json):
     assert stream.raise_on_http_errors is False
 
 
+def test_bad_aggregation_type_should_retry(requests_mock, bad_aggregation_type):
+    stream = SearchAnalyticsKeywordSiteReportBySite(None, ["https://example.com"], "2021-01-01", "2021-01-02")
+    slice = list(stream.stream_slices(None))[0]
+    url = stream.url_base + stream.path(None, slice)
+    requests_mock.get(url, status_code=400, json=bad_aggregation_type)
+    test_response = requests.get(url)
+    # before should_retry, the aggregation_type should be set to `by_propety`
+    assert stream.aggregation_type == QueryAggregationType.by_property
+    # trigger should retry
+    assert stream.should_retry(test_response) is False
+    # after should_retry, the aggregation_type should be set to `auto`
+    assert stream.aggregation_type == QueryAggregationType.auto
+    assert stream.raise_on_http_errors is False
+
+
 @pytest.mark.parametrize(
     "stream_class, expected",
     [
@@ -198,13 +215,15 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
     )
 
     # test custom_reports
-    assert command_check(source, config_gen(custom_reports="")) == AirbyteConnectionStatus(
-        status=Status.FAILED,
-        message="\"Unable to check connectivity to Google Search Console API - Exception('custom_reports is not valid JSON')\"",
-    )
-    assert command_check(source, config_gen(custom_reports="{}")) == AirbyteConnectionStatus(
-        status=Status.FAILED, message="'<ValidationError: \"{} is not of type \\'array\\'\">'"
-    )
+    with pytest.raises(AirbyteTracedException):
+        assert command_check(source, config_gen(custom_reports_array="")) == AirbyteConnectionStatus(
+            status=Status.FAILED,
+            message="'<ValidationError: \"{} is not of type \\'array\\'\">'",
+        )
+    with pytest.raises(AirbyteTracedException):
+        assert command_check(source, config_gen(custom_reports_array="{}")) == AirbyteConnectionStatus(
+            status=Status.FAILED, message="'<ValidationError: \"{} is not of type \\'array\\'\">'"
+        )
 
 
 @pytest.mark.parametrize(
@@ -229,7 +248,7 @@ def test_streams(config_gen):
     source = SourceGoogleSearchConsole()
     streams = source.streams(config_gen())
     assert len(streams) == 15
-    streams = source.streams(config_gen(custom_reports=...))
+    streams = source.streams(config_gen(custom_reports_array=...))
     assert len(streams) == 14
 
 
