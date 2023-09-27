@@ -10,7 +10,6 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.partitions.types import FieldPath
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
