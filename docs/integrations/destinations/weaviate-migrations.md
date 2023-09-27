@@ -2,7 +2,7 @@
 
 ## Upgrading to 0.2.0
 
-This version adds several new features like flexible embedding options, overwrite and append+dedup sync modes , but also contains multiple changes that require a migration of existing connections. This is done to align the behavior of vector database destinations in Airbyte. The following changes are included:
+This version adds several new features like flexible embedding options, overwrite and append+dedup sync modes. When upgrading from prior versions on this connector, a one-time migration of existing connections is required. This is done to align the behavior of vector database destinations in Airbyte. The following changes are included:
 
 ### Changed configuration object structure
 
