@@ -100,6 +100,13 @@ class StreamFacade(Stream):
         logger: logging.Logger,
         slice_logger: SliceLogger,
     ) -> Iterable[StreamData]:
+        """
+        Read full refresh. Delegate to the underlying AbstractStream, ignoring all the parameters
+        :param cursor_field:
+        :param logger:
+        :param slice_logger:
+        :return: Iterable of StreamData
+        """
         for record in self._stream.read():
             yield record.data
 
