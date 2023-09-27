@@ -21,7 +21,6 @@ public class MySqlStreamingQueryConfig extends AdaptiveStreamingQueryConfig {
 
   @Override
   public void initialize(final Connection connection, final Statement preparedStatement) throws SQLException {
-    connection.setAutoCommit(false);
     preparedStatement.setFetchSize(Integer.MIN_VALUE);
     LOGGER.info("Set initial fetch size: {} rows", preparedStatement.getFetchSize());
   }
