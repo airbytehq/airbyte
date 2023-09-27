@@ -26,7 +26,7 @@ class AbstractAvailabilityStrategy(ABC):
         """
         Checks stream availability.
 
-        :param logger: source logger
+        :param logger: logger object to use
         :return: A tuple of (boolean, str). If boolean is true, then the stream
           is available, and no str is required. Otherwise, the stream is unavailable
           for some reason and the str should describe what went wrong and how to
@@ -36,6 +36,11 @@ class AbstractAvailabilityStrategy(ABC):
 
 @deprecated("This class is experimental. Use at your own risk.")
 class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
+    """
+    This class acts as an adapter between the existing AvailabilityStrategy and the new AbstractAvailabilityStrategy.
+    LegacyAvailabilityStrategy is instantiated with a Stream and a Source to allow the existing AvailabilityStrategy to be used with the new AbstractAvailabilityStrategy interface.
+    """
+
     def __init__(self, stream: Stream, source: Source):
         self._stream = stream
         self._source = source
@@ -46,6 +51,12 @@ class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
 
 @deprecated("This class is experimental. Use at your own risk.")
 class AvailabilityStrategyFacade(AvailabilityStrategy):
+    """
+    The AvailabilityStrategyFacade is a AvailabilityStrategy that wraps an AbstractAvailabilityStrategy and exposes it as a AvailabilityStrategy.
+
+    All methods delegate to the underlying AbstractAvailabilityStrategy.
+    """
+
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
 
@@ -55,9 +66,9 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
 
         Important to note that the stream and source parameters are not used by the underlying AbstractAvailabilityStrategy.
 
-        :param stream:
-        :param logger:
-        :param source:
-        :return:
+        :param stream: (unused)
+        :param logger: logger object to use
+        :param source: (unused)
+        :return: A tuple of (boolean, str). If boolean is true, then the stream
         """
         return self._abstract_availability_strategy.check_availability(logger)
