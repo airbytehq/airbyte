@@ -6,7 +6,16 @@
 from copy import deepcopy
 
 import pytest
-from airbyte_cdk.models import AirbyteConnectionStatus, ConnectorSpecification, Status
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteStream,
+    ConfiguredAirbyteCatalog,
+    ConfiguredAirbyteStream,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    Status,
+    SyncMode,
+)
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing import SourceFacebookMarketing
 from source_facebook_marketing.spec import ConnectorConfig
@@ -23,7 +32,7 @@ def config_fixture(requests_mock):
         "end_date": "2020-10-10T00:00:00Z",
     }
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users", json={"data": []})
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/",  json={"account": 123})
+    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/", json={"account": 123})
     return config
 
 
@@ -134,6 +143,26 @@ class TestSourceFacebookMarketing:
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == []
 
+    def test_read_missing_stream(self, config, api, logger_mock, fb_marketing):
+        catalog = ConfiguredAirbyteCatalog(
+            streams=[
+                ConfiguredAirbyteStream(
+                    stream=AirbyteStream(
+                        name="fake_stream",
+                        json_schema={},
+                        supported_sync_modes=[SyncMode.full_refresh],
+                    ),
+                    sync_mode=SyncMode.full_refresh,
+                    destination_sync_mode=DestinationSyncMode.overwrite,
+                )
+            ]
+        )
+
+        try:
+            list(fb_marketing.read(logger_mock, config=config, catalog=catalog))
+        except KeyError as error:
+            pytest.fail(str(error))
+
 
 def test_check_config(config_gen, requests_mock, fb_marketing):
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/", {})
@@ -154,18 +183,15 @@ def test_check_config(config_gen, requests_mock, fb_marketing):
 
 
 def test_check_connection_account_type_exception(mocker, fb_marketing, config, logger_mock, requests_mock):
-    account_id = '123'
-    ad_account_response = {
-        "json": {
-            "account_id": account_id,
-            "id": f"act_{account_id}",
-            'is_personal': 1
-        }
-    }
+    account_id = "123"
+    ad_account_response = {"json": {"account_id": account_id, "id": f"act_{account_id}", "is_personal": 1}}
     requests_mock.reset_mock()
     requests_mock.register_uri("GET", f"{FacebookSession.GRAPH}/{FacebookAdsApi.API_VERSION}/act_123/", [ad_account_response])
 
     result, error = fb_marketing.check_connection(logger=logger_mock, config=config)
 
     assert not result
-    assert error == "The personal ad account you're currently using is not eligible for this operation. Please switch to a business ad account."
+    assert (
+        error
+        == "The personal ad account you're currently using is not eligible for this operation. Please switch to a business ad account."
+    )

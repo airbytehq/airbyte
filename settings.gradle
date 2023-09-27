@@ -128,6 +128,9 @@ if (System.getenv().containsKey("SUB_BUILD")) {
             include ':tools:code-generator'
             include ':airbyte-cdk:python'
             include ':airbyte-cdk:java:airbyte-cdk'
+            include ':airbyte-cdk:java:airbyte-cdk:core'
+            include ':airbyte-cdk:java:airbyte-cdk:db-destinations'
+            include ':airbyte-cdk:java:airbyte-cdk:db-sources'
             include ':airbyte-integrations:bases:base'
             include ':airbyte-integrations:bases:base-java'
             include ':airbyte-integrations:bases:base-java-s3'
@@ -184,6 +187,9 @@ include ':airbyte-connector-test-harnesses:acceptance-test-harness'
 include ':tools:code-generator'
 include ':airbyte-cdk:python'
 include ':airbyte-cdk:java:airbyte-cdk'
+include ':airbyte-cdk:java:airbyte-cdk:core'
+include ':airbyte-cdk:java:airbyte-cdk:db-destinations'
+include ':airbyte-cdk:java:airbyte-cdk:db-sources'
 include ':airbyte-integrations:bases:base'
 include ':airbyte-integrations:bases:base-java'
 include ':airbyte-integrations:bases:base-java-s3'
@@ -201,7 +207,7 @@ include ':airbyte-integrations:bases:debezium'
 include ':airbyte-integrations:connectors-performance:source-harness'
 include ':airbyte-integrations:connectors-performance:destination-harness'
 
-// Include all java connector projects
+// Include all java connector projects.
 def integrationsPath = rootDir.toPath().resolve('airbyte-integrations/connectors')
 integrationsPath.eachDir { dir ->
     def buildFiles = file(dir).list { file, name -> name == "build.gradle" }

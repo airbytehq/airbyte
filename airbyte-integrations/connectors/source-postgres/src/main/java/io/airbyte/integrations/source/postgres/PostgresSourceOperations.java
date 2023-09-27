@@ -4,13 +4,13 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+import static io.airbyte.cdk.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import static io.airbyte.integrations.source.postgres.PostgresType.safeGetJdbcType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,12 +21,12 @@ import com.fasterxml.jackson.databind.node.BinaryNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.db.DataTypeUtils;
+import io.airbyte.cdk.db.SourceOperations;
+import io.airbyte.cdk.db.jdbc.AbstractJdbcCompatibleSourceOperations;
+import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.DataTypeUtils;
-import io.airbyte.db.SourceOperations;
-import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
-import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;

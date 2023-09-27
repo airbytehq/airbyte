@@ -75,7 +75,8 @@ jobs:
           read-only: ${{ github.ref != 'refs/heads/master' }}
           # TODO: be able to remove the skipSlowTests property
           # TODO: remove the format task ASAP
-          arguments: --scan --no-daemon --no-watch-fs format check -DskipSlowTests=true
+          # TODO: roll the CDK tasks into check
+          arguments: --scan --no-daemon --no-watch-fs format check :airbyte-cdk:java:airbyte-cdk:build :airbyte-cdk:java:airbyte-cdk:integrationTest -DskipSlowTests=true
 
   # In case of self-hosted EC2 errors, remove this block.
   stop-check-runner:
