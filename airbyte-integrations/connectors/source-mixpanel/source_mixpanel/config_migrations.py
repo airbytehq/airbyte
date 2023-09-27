@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 import logging
 from typing import Any, List, Mapping
 
@@ -14,57 +13,48 @@ from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageReposi
 logger = logging.getLogger("airbyte_logger")
 
 
-class MigrateCustomReports:
+class MigrateProjectId:
     """
-    This class stands for migrating the config at runtime,
-    while providing the backward compatibility when falling back to the previous source version.
-
-    Specifically, starting from `1.3.3`, the `custom_reports` property should be like :
-        > List([{name: my_report}, {dimensions: [a,b,c]}], [], ...)
-    instead of, in `1.3.2`:
-        > JSON STR: "{name: my_report}, {dimensions: [a,b,c]}"
+    This class stands for migrating the config at runtime.
+    Specifically, starting from `0.1.41`, "credentials" block is required and username and secret or api_secret should be inside it;
+    the property `project_id` should be inside credentials block as it is only used for Service Account.
     """
 
     message_repository: MessageRepository = InMemoryMessageRepository()
-    migrate_from_key: str = "custom_reports"
-    migrate_to_key: str = "custom_reports_array"
 
     @classmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
         """
-        This method determines whether the config should be migrated to have the new structure for the `custom_reports`,
-        based on the source spec.
+        This method determines if the config should be migrated.
         Returns:
             > True, if the transformation is necessary
             > False, otherwise.
-            > Raises the Exception if the structure could not be migrated.
         """
-        # If the config was already migrated, there is no need to do this again.
-        # but if the customer has already switched to the new version,
-        # corrected the old config and switches back to the new version,
-        # we should try to migrate the modified old custom reports.
-        if cls.migrate_to_key in config:
-            # also we need to make sure this is not a newly created connection
-            return len(config[cls.migrate_to_key]) == 0 and cls.migrate_from_key in config
+        is_project = "project_id" in config
+        is_api_secret = "api_secret" in config
+        return is_project or is_api_secret
 
-        if cls.migrate_from_key in config:
-            custom_reports = config[cls.migrate_from_key]
-            # check the old structure vs new spec
-            if isinstance(custom_reports, str):
-                return True
-        return False
+    @staticmethod
+    def transform_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
+        # add credentials dict if doesnt exist
+        if not isinstance(config.get("credentials", 0), dict):
+            config["credentials"] = dict()
 
-    @classmethod
-    def transform_to_array(cls, config: Mapping[str, Any], source: Source = None) -> Mapping[str, Any]:
-        # assign old values to new property that will be used within the new version
-        config[cls.migrate_to_key] = config[cls.migrate_from_key]
-        # transfom `json_str` to `list` of objects
-        return source._validate_custom_reports(config)
+        # move api_secret inside credentials block
+        if "api_secret" in config:
+            config["credentials"]["api_secret"] = config["api_secret"]
+            config.pop("api_secret")
+
+        if "project_id" in config:
+            config["credentials"]["project_id"] = config["project_id"]
+            config.pop("project_id")
+
+        return config
 
     @classmethod
     def modify_and_save(cls, config_path: str, source: Source, config: Mapping[str, Any]) -> Mapping[str, Any]:
         # modify the config
-        migrated_config = cls.transform_to_array(config, source)
+        migrated_config = cls.transform_config(config)
         # save the config
         source.write_config(migrated_config, config_path)
         # return modified config
