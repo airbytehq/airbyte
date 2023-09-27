@@ -40,7 +40,7 @@ def invoices_fixture(stream_args):
         return IncrementalStripeStream(
             name="invoices",
             path="invoices",
-            use_cache=True,
+            use_cache=False,
             event_types=[
                 "invoice.created",
                 "invoice.finalization_failed",
