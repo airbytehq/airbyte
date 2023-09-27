@@ -108,7 +108,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
     final List<String> pks = stream.primaryKey().stream().map(ColumnId::name).toList();
     final String columnDeclarations = stream.columns().entrySet().stream()
-        .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()) + " " + (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
+        .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()) + " "
+            + (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
         .collect(joining("\n"));
     final String forceCreateTable = force ? "OR REPLACE" : "";
 

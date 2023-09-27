@@ -229,7 +229,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   private String columnsAndTypes(final StreamConfig stream) {
     final List<String> pks = stream.primaryKey().stream().map(ColumnId::name).toList();
     return stream.columns().entrySet().stream()
-        .map(column -> String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()) + " " +  (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
+        .map(column -> String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()) + " "
+            + (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
         .collect(joining(",\n"));
   }
 
