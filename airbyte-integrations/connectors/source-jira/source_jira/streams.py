@@ -487,6 +487,7 @@ class IssueCustomFieldContexts(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get
     """
 
+    use_cache = True
     extract_field = "values"
     skip_http_status_codes = [
         # https://community.developer.atlassian.com/t/get-custom-field-contexts-not-found-returned/48408/2
@@ -506,10 +507,47 @@ class IssueCustomFieldContexts(JiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for field in read_full_refresh(self.issue_fields_stream):
             if field.get("custom", False):
-                yield from super().read_records(stream_slice={"field_id": field["id"]}, **kwargs)
+                yield from super().read_records(
+                    stream_slice={"field_id": field["id"], "field_type": field.get("schema", {}).get("type")}, **kwargs
+                )
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["fieldId"] = stream_slice["field_id"]
+        record["fieldType"] = stream_slice["field_type"]
+        return record
+
+
+class IssueCustomFieldOptions(JiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-options/#api-rest-api-3-field-fieldid-context-contextid-option-get
+    """
+
+    skip_http_status_codes = [
+        requests.codes.NOT_FOUND,
+        # Only Jira administrators can access custom field options.
+        requests.codes.FORBIDDEN,
+    ]
+
+    extract_field = "values"
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issue_custom_field_contexts_stream = IssueCustomFieldContexts(
+            authenticator=self.authenticator, domain=self._domain, projects=self._projects
+        )
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        return f"field/{stream_slice['field_id']}/context/{stream_slice['context_id']}/option"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+
+        for record in read_full_refresh(self.issue_custom_field_contexts_stream):
+            if record.get("fieldType") == "option":
+                yield from super().read_records(stream_slice={"field_id": record["fieldId"], "context_id": record["id"]}, **kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["fieldId"] = stream_slice["field_id"]
+        record["contextId"] = stream_slice["context_id"]
         return record
 
 
@@ -665,6 +703,15 @@ class IssueSecuritySchemes(JiraStream):
 
     def path(self, **kwargs) -> str:
         return "issuesecurityschemes"
+
+
+class IssueTypes(JiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-types/#api-group-issue-types
+    """
+
+    def path(self, **kwargs) -> str:
+        return "issuetype"
 
 
 class IssueTypeSchemes(JiraStream):
@@ -1011,6 +1058,21 @@ class ProjectPermissionSchemes(JiraStream):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["key"]
         return record
+
+
+class ProjectRoles(JiraStream):
+    """
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-roles#api-rest-api-3-role-get
+    """
+
+    primary_key = "id"
+    skip_http_status_codes = [
+        # Application access permissions can only be edited or viewed by administrators.
+        requests.codes.FORBIDDEN
+    ]
+
+    def path(self, **kwargs) -> str:
+        return "role"
 
 
 class ProjectTypes(JiraStream):

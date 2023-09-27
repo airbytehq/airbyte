@@ -10,10 +10,12 @@ acceptance_tests:
   spec:
     tests:
     - spec_path: "source_mixpanel/spec.json"
+      backward_compatibility_tests_config:
+        # credentials became required field; project_id changed path
+        # migration is implemented in source_mixpanel/config_migrations.py
+        disable_for_version: "0.1.40"
   connection:
     tests:
-    - config_path: "secrets/config_old.json"
-      status: "succeed"
     - config_path: "secrets/config_project_secret.json"
       status: "succeed"
     - config_path: "secrets/config.json"
@@ -47,14 +49,18 @@ acceptance_tests:
             bypass_reason: "Data changes too often"
   full_refresh:
     tests:
-    - config_path: "secrets/config_old.json"
+    - config_path: "secrets/config_project_secret.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       timeout_seconds: 9000
   incremental:
     tests:
     - config_path: "secrets/config_incremental.json"
+      # engage stream is not part of incremental catalog as it is semi incremental,
+      # so cursor filter is not inside request, but results are filtered based on cursor state
+      # also engage can produce records without cursor field, so abnormal state test will fail
       configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
       future_state:
         future_state_path: "integration_tests/abnormal_state.json"
       timeout_seconds: 9000
+      # skip incremental tests as cursor granularity is day, so records for stream state day are duplicated
       skip_comprehensive_incremental_tests: true

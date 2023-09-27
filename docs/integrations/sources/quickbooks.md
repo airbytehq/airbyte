@@ -105,6 +105,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 | Version | Date       | Pull Request                                             | Subject                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------- |
+| `2.0.5` | 2023-09-26 | [30766](https://github.com/airbytehq/airbyte/pull/30766) | Fix improperly named keyword argument
 | `2.0.4` | 2023-06-28 | [27803](https://github.com/airbytehq/airbyte/pull/27803) | Update following state breaking changes                            |
 | `2.0.3` | 2023-06-08 | [27148](https://github.com/airbytehq/airbyte/pull/27148) | Update description and example values of a Start Date in spec.json |
 | `2.0.2` | 2023-06-07 | [26722](https://github.com/airbytehq/airbyte/pull/27053) | Update CDK version and adjust authenticator configuration          |
