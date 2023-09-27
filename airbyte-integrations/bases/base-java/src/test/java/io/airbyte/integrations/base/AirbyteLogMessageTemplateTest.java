@@ -129,4 +129,5 @@ public class AirbyteLogMessageTemplateTest {
     assertFalse(connectorLogMessage.length() > 3751);
     assertTrue(logMessage.length() < 8192);
   }
+
 }
