@@ -1,77 +1,120 @@
-plugins {
-    id 'java-library'
-    id 'maven-publish'
+allprojects {
+    apply plugin: 'java-library'
+    apply plugin: 'maven-publish'
+    apply plugin: 'airbyte-docker'
+    apply plugin: 'airbyte-java-cdk'
+    apply plugin: 'airbyte-integration-test-java'
+    apply plugin: 'airbyte-performance-test-java'
+    apply plugin: 'java-test-fixtures'
+
+    group 'io.airbyte.cdk'
+    version = getCdkTargetVersion()
 }
 
-group 'io.airbyte'
+subprojects { subproject ->
+    def artifactBaseName = 'airbyte-cdk-' + subproject.name.replace('-feature', '')
+    // E.g. airbyte-cdk-core, airbyte-cdk-db-sources, airbyte-cdk-db-destinations, etc.
 
-// Version is dynamically loaded from version.properties file.
-def props = new Properties()
-file("src/main/resources/version.properties").withInputStream { props.load(it) }
-version = props.getProperty('version')
-description = "Airbyte Connector Development Kit (CDK) for Java."
-
-dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
-}
-
-publishing {
-    publications {
-        maven(MavenPublication) {
-            groupId = 'io.airbyte'
-            artifactId = 'airbyte-cdk'
-            from components.java
+    publishing {
+        publications {
+            main(MavenPublication) {
+                groupId = 'io.airbyte.cdk'
+                artifactId = artifactBaseName
+                from components.java
+            }
+            testFixtures(MavenPublication) {
+                groupId = 'io.airbyte.cdk'
+                artifactId = artifactBaseName + '-test-fixtures'
+                version = project.version
+                artifact subproject.tasks.testFixturesJar
+            }
         }
-    }
-    repositories {
-        maven {
-            name 'cloudrepo'
-            url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
-            credentials {
-                username System.getenv('CLOUDREPO_USER')
-                password System.getenv('CLOUDREPO_PASSWORD')
+        repositories {
+            maven {
+                name 'cloudrepo'
+                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+                credentials {
+                    username System.getenv('CLOUDREPO_USER')
+                    password System.getenv('CLOUDREPO_PASSWORD')
+                }
             }
         }
     }
-}
 
-// Adds publishToMavenLocal as final command in the list of 'build' tasks.
-tasks.named('build').configure {
-    dependsOn tasks.named('publishToMavenLocal')
-}
-
-publishToMavenLocal {
-    // Always re-publish the artifact to MavenLocal
-    outputs.upToDateWhen { false }
-
-    doFirst {
-        println "Running CDK publishToMavenLocal..."
-    }
-    doLast {
-        println "Finished CDK publishToMavenLocal."
+    project.configurations {
+        testImplementation.extendsFrom implementation
+        testFixturesImplementation.extendsFrom implementation
+        testFixturesRuntimeOnly.extendsFrom runtimeOnly
     }
 }
 
+description = "Airbyte Connector Development Kit (CDK) for Java."
 
-// This task will be a no-op if CDK version does not end with '-SNAPSHOT'.
-def publishSnapshotIfNeeded = tasks.register('publishSnapshotIfNeeded') {}
+def recursiveTasks = [
+    'assemble', 
+    'build', 
+    'integrationTestJava', 
+    'publish', 
+    'publishToMavenLocal',
+    'test',
+]
+recursiveTasks.each { taskName ->
+    tasks.named(taskName).configure {
+        dependsOn subprojects.collect { it.tasks.named(taskName) }
+    }
+}
+
+// The `publishSnapshotIfNeeded` task will be a no-op if CDK version does not end with '-SNAPSHOT'.
+task publishSnapshotIfNeeded {}
 
 if (version.endsWith("-SNAPSHOT")) {
     logger.lifecycle("Version ${version} ends with '-SNAPSHOT'. Enqueing 'publishToMavenLocal'...")
-    publishSnapshotIfNeeded.configure {
-        dependsOn publishToMavenLocal
-    }
+    publishSnapshotIfNeeded.dependsOn publishToMavenLocal
 } else {
-    logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
+    // Uncomment as needed for debugging:
+    // logger.lifecycle("Version ${version} does not end with '-SNAPSHOT'. Skipping task 'publishToMavenLocal'.")
 }
 
-test {
-    useJUnitPlatform()
-    testLogging {
-        exceptionFormat = 'full'
-        showExceptions = true
-        showCauses = true
-        showStackTraces = false
-        events = ['passed', 'skipped', 'failed']
+task assertCdkVersionNotPublished {
+    doLast {
+        def checkGroupId = "io.airbyte.cdk"
+        def checkArtifactId = "airbyte-cdk-core"
+        def checkVersion = getCdkTargetVersion()
+        def repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"
+        def groupIdUrl = checkGroupId.replace('.', '/')
+        def artifactUrl = "${repoUrl}/${groupIdUrl}/${checkArtifactId}/${checkVersion}/${checkArtifactId}-${checkVersion}.pom"
+
+        def connection = artifactUrl.toURL().openConnection() as HttpURLConnection
+        connection.setRequestMethod("HEAD")
+        connection.connect()
+
+        def responseCode = connection.getResponseCode()
+
+        if (responseCode == 200) {
+            throw new GradleException("Assert failed. Java CDK '${checkVersion}' already published at: ${artifactUrl}")
+        } else if (responseCode == 404) {
+            logger.lifecycle(
+                "Assert succeeded. Version ${checkVersion} of ${checkArtifactId} has not been published. " +
+                "Checked: ${artifactUrl}"
+            )
+        } else {
+            logger.error("Received unexpected HTTP response code ${responseCode}. Ensure the repository is accessible.")
+            throw new GradleException("Error during assertion. Received unexpected HTTP response code ${responseCode}.")
+        }
     }
 }
+
+task cleanLocalCache {
+    def userHome = System.getProperty("user.home")
+    doLast {
+        delete '.gradle'
+        delete '${userHome}/.m2/repository/io/airbyte/'
+        delete '${userHome}/.gradle/caches/modules-2/files-2.1/io.airbyte.cdk/'
+        delete 'build'
+        delete 'core/build'
+        delete 'db-sources/build'
+        delete 'db-destinations/build'
+    }
+}
+
+clean.dependsOn(cleanLocalCache)

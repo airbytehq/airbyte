@@ -54,9 +54,7 @@ env:
   GITREF: ${{ github.event.inputs.gitref || github.ref }}
   FORCE: "${{ github.event.inputs.force == null && 'false' || github.event.inputs.force }}"
   DRY_RUN: "${{ github.event.inputs.dry-run == null && 'true' || github.event.inputs.dry-run }}"
-  CDK_VERSION_FILE_PATH: "./airbyte-cdk/java/airbyte-cdk/src/main/resources/version.properties"
-  # Uncomment and replace above when CDK 0.1.0 is released:
-  # CDK_VERSION_FILE_PATH: "./airbyte-cdk/java/airbyte-cdk/src/main/resources/version.properties"
+  CDK_VERSION_FILE_PATH: "./airbyte-cdk/java/airbyte-cdk/core/src/main/resources/version.properties"
 
 jobs:
   # We are using these runners because they are the same as the one for `publish-command.yml`
@@ -114,27 +112,14 @@ jobs:
             exit 1
           fi
           echo "CDK_VERSION=${cdk_version}" >> $GITHUB_ENV
-      - name: Check for already-published version (${{ env.CDK_VERSION }}, FORCE=${{ env.FORCE }})
-        if: ${{ !(env.FORCE == 'true') }}
-        run: |
-          GROUP_ID="io.airbyte"
-          ARTIFACT_ID="airbyte-cdk"
-          VERSION=${CDK_VERSION}
-          REPO_URL="https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars"
-          GROUP_ID_URL=$(echo $GROUP_ID | tr '.' '/')
-          URL="${REPO_URL}/${GROUP_ID_URL}/${ARTIFACT_ID}/${VERSION}/${ARTIFACT_ID}-${VERSION}.pom"
-          echo "Checking if URL exists: ${URL}"
-          if curl --output /dev/null --silent --head --fail "$URL"; then
-            echo "Version ${VERSION} of ${ARTIFACT_ID} has already been published. Aborting."
-              exit 1
-          else
-              echo "Version ${VERSION} of ${ARTIFACT_ID} has not been published. Proceeding..."
-          fi
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: "zulu"
           java-version: "17"
+      - name: Check for already-published version (${{ env.CDK_VERSION }}, FORCE=${{ env.FORCE }})
+        if: ${{ !(env.FORCE == 'true') }}
+        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:assertCdkVersionNotPublished
       - name: Build Java CDK
         run: ./gradlew --no-daemon :airbyte-cdk:java:airbyte-cdk:build
       - name: Publish Java Modules to MavenLocal (Dry-Run)

@@ -1,8 +1,15 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.clickhouse.ClickhouseDestination'
@@ -13,8 +20,6 @@ dependencies {
     implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
 
     implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
 
@@ -22,13 +27,7 @@ dependencies {
     testImplementation libs.testcontainers.clickhouse
     testImplementation project(":airbyte-json-validation")
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-clickhouse')
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     integrationTestJavaImplementation libs.testcontainers.clickhouse
-}
-
-tasks.named("airbyteDocker").configure {
-    dependsOn project(':airbyte-integrations:bases:base-normalization').tasks.named('airbyteDockerClickhouse')
 }
