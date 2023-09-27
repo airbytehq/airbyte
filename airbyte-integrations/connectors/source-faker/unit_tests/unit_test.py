@@ -5,6 +5,7 @@
 import jsonschema
 import pytest
 from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
+
 from source_faker import SourceFaker
 
 
@@ -44,7 +45,7 @@ def test_source_streams():
     catalog = AirbyteMessage(type=Type.CATALOG, catalog=catalog).dict(exclude_unset=True)
     schemas = [stream["json_schema"] for stream in catalog["catalog"]["streams"]]
 
-    assert len(schemas) == 4
+    assert len(schemas) == 3
     assert schemas[1]["properties"] == {
         "id": {"type": "integer"},
         "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},

@@ -43,30 +43,6 @@
         "minimum": 1,
         "default": 4,
         "order": 4
-      },
-      "wide_data_set_columns": {
-        "title": "Wide Data Set Columns",
-        "description": "How many columns should be in a simulated wide data set? i.e. A value of 10 will produce a 10 column table.",
-        "type": "integer",
-        "minimum": 2,
-        "default": 14,
-        "order": 5
-      },
-      "wide_data_set_tables": {
-        "title": "Wide Data Set Tables",
-        "description": "How many copies of the Wide Dataset Stream should be created?",
-        "type": "integer",
-        "minimum": 1,
-        "default": 1,
-        "order": 6
-      },
-      "generate_errors_in_wide_columns": {
-        "title": "Typing Errors Upper Bound in Wide Column Stream",
-        "description": "The source will return the wrong type in integer columns up to this limit",
-        "type": "integer",
-        "default": 0,
-        "minimum": 0,
-        "order": 10
       }
     }
   }

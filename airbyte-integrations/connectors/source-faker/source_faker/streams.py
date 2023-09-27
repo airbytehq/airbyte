@@ -4,18 +4,13 @@
 
 import datetime
 import os
-from functools import lru_cache
-from multiprocessing import Pool
-from sys import getsizeof
-from typing import Any, Dict, Iterable, List, Mapping, Optional
-
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from multiprocessing import Pool
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
 from .utils import format_airbyte_time, generate_estimate, read_json
-from .wide_column_schema_generator import generate_wide_schema
-from .wide_columns_generator import WideColumnGenerator
 
 
 class Products(Stream, IncrementalMixin):
@@ -181,91 +176,6 @@ class Purchases(Stream, IncrementalMixin):
                     for purchase in purchases:
                         updated_at = purchase.record.data["updated_at"]
                         yield purchase
-                if records_remaining_this_loop == 0:
-                    break
-
-                self.state = {"seed": self.seed, "updated_at": updated_at}
-
-        self.state = {"seed": self.seed, "updated_at": updated_at}
-
-
-class WideColumns(Stream, IncrementalMixin):
-    primary_key = None
-    cursor_field = "updated_at"
-
-    def __init__(
-        self,
-        count: int,
-        seed: int,
-        parallelism: int,
-        records_per_slice: int,
-        always_updated: bool,
-        wide_data_set_columns: int,
-        generate_errors_in_wide_columns: int,
-        instance_count: int,
-        **kwargs,
-    ):
-        super().__init__(**kwargs)
-        self.count = count
-        self.seed = seed
-        self.records_per_slice = records_per_slice
-        self.parallelism = parallelism
-        self.always_updated = always_updated
-        self.wide_data_set_columns = wide_data_set_columns
-        self.generate_errors_in_wide_columns = generate_errors_in_wide_columns
-        # self.instance_count has to be initialized before self.name is called
-        self.instance_count = instance_count
-
-    @property
-    def name(self) -> str:
-        return "_".join([super().name, str(self.instance_count)])
-
-    @property
-    def state_checkpoint_interval(self) -> Optional[int]:
-        return self.records_per_slice
-
-    @property
-    def state(self) -> Mapping[str, Any]:
-        if hasattr(self, "_state"):
-            return self._state
-        else:
-            return {}
-
-    @state.setter
-    def state(self, value: Mapping[str, Any]):
-        self._state = value
-
-    @lru_cache(maxsize=None)
-    def get_json_schema(self) -> Mapping[str, Any]:
-        schema, record_keys = generate_wide_schema(self.wide_data_set_columns)
-        self.record_keys = record_keys
-        return schema
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        """
-        This is a multi-process implementation of read_records.
-        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
-        """
-
-        if "updated_at" in self.state and not self.always_updated:
-            return iter([])
-
-        updated_at = ""
-
-        loop_offset = 0
-        # Double check we have the schema
-        self.get_json_schema()
-        generator = WideColumnGenerator(self.name, self.seed, self.record_keys, self.generate_errors_in_wide_columns)
-        with Pool(initializer=generator.prepare, processes=self.parallelism) as pool:
-            while loop_offset < self.count:
-                records_remaining_this_loop = min(self.records_per_slice, (self.count - loop_offset))
-                wide_rows = pool.map(generator.generate, range(loop_offset, loop_offset + records_remaining_this_loop))
-                for row in wide_rows:
-                    if loop_offset == 0:
-                        yield generate_estimate(self.name, self.count, getsizeof(row))
-                    updated_at = row.record.data["updated_at"]
-                    loop_offset += 1
-                    yield row
                 if records_remaining_this_loop == 0:
                     break
 

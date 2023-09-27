@@ -76,13 +76,6 @@ CREATE TABLE "public"."purchases" (
 
 ```
 
-#### Wide Columns Dataset
-This dataset does not attempt to mimic any particular datasets, but rather is useful for performance testing. It can create streams with an arbitrary number of fields/columns. 
-For example, you could generate a stream with 500 columns, or 1000 columns to test how your destination performs. When creating columns, it will iterate through all the supported
-[Airbyte Protocol Data Types](https://docs.airbyte.com/understanding-airbyte/supported-data-types/) to ensure each data type is represented. 
-
-In addition to column width, it is sometimes useful to test the number of streams which are being synced. So you can specify how many copies of the wide columns stream you'd like in your Faker source.
-
 ### Features
 
 | Feature           | Supported?\(Yes/No\) | Notes |
@@ -103,7 +96,6 @@ None!
 
 | Version | Date       | Pull Request                                                                                                          | Subject                                                                                                         |
 |:--------|:-----------|:----------------------------------------------------------------------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------|
-| 5.1.0   | 2023-09-26 | [29213](https://github.com/airbytehq/airbyte/pull/30696)                                                              | Add the Wide Columns Stream                                                                                     |
 | 5.0.0   | 2023-08-08 | [29213](https://github.com/airbytehq/airbyte/pull/29213)                                                              | Change all `*id` fields and `products.year` to be integer                                                       |
 | 4.0.0   | 2023-07-19 | [28485](https://github.com/airbytehq/airbyte/pull/28485)                                                              | Bump to test publication                                                                                        |
 | 3.0.2   | 2023-07-07 | [27807](https://github.com/airbytehq/airbyte/pull/28060)                                                              | Bump to test publication                                                                                        |
