@@ -9,7 +9,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination Tally",
     "type": "object",
-    "required": ["auth_key"],
+    "required": ["auth_key", "version", "company_name"],
     "additionalProperties": false,
     "properties": {
       "auth_key": {
@@ -19,7 +19,8 @@
         "examples": [
           "test_b904**************************"
         ],
-        "order": 0
+        "order": 0,
+        "airbyte_secret": true
       },
       "version": {
         "type": "string",
