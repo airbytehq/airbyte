@@ -8,6 +8,7 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
@@ -90,6 +91,16 @@ class AbstractStream(ABC):
         :return: A dict of the JSON schema representing this stream.
         """
 
+    @abstractmethod
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        """
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        """
+
 
 @deprecated("This class is experimental. Use at your own risk.")
 class StreamFacade(Stream):
@@ -109,7 +120,7 @@ class StreamFacade(Stream):
         logger: logging.Logger,
         slice_logger: SliceLogger,
     ) -> Iterable[StreamData]:
-        return self._stream.read()
+        yield from self._stream.read()
 
     def read_records(
         self,
@@ -119,7 +130,7 @@ class StreamFacade(Stream):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         if sync_mode == SyncMode.full_refresh:
-            return self._stream.read()
+            yield from self._stream.read()
         else:
             # Incremental reads are not supported
             raise NotImplementedError
@@ -149,3 +160,18 @@ class StreamFacade(Stream):
     def supports_incremental(self) -> bool:
         # Only full refresh is supported
         return False
+
+    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+        return self._stream.check_availability()
+
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        """
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        """
+        return self._stream.get_error_display_message(exception)
