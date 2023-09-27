@@ -13,8 +13,7 @@ TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "pytest-mock~=3.6.1",
     "requests-mock",
-    "freezegun~=1.1",
-    "pendulum~=2.1",
+    "freezegun",
 ]
 
 setup(

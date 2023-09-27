@@ -48,17 +48,20 @@ def test_streams(mocker):
     assert len(streams) == expected_streams_number
 
 
-@pytest.mark.parametrize("config, expected_start_date", [
-    ({"start_date": "2021-09-01T00:00:00.000Z", "authenticator": "super_secret_token"}, "2021-09-01T00:00:00.000Z"),
-    ({"authenticator": "even_more_secret_token"}, '2020-09-22T00:00:00.000Z'),
-    ({"authenticator": "even_more_secret_token", "start_date": None}, '2020-09-22T00:00:00.000Z'),
-])
-@freezegun.freeze_time("2022-09-22T00:00:00.000Z")
-def test_set_start_date(config, expected_start_date):
+@pytest.mark.parametrize(
+    "config, expected_start_date, current_time",
+    [
+        ({"authenticator": "secret_token", "start_date": "2021-09-01T00:00:00.000Z"}, "2021-09-01T00:00:00.000Z", "2022-09-22T00:00:00.000Z"),
+        ({"authenticator": "super_secret_token", "start_date": None}, '2020-09-22T00:00:00.000Z', "2022-09-22T00:00:00.000Z"),
+        ({"authenticator": "even_more_secret_token"}, '2021-01-01T12:30:00.000Z', "2023-01-01T12:30:00.000Z"),
+    ]
+)
+def test_set_start_date(config, expected_start_date, current_time):
     """
     Test that start_date in config is either:
       1. set to the value provided by the user
       2. defaults to two years from the present date set by the test environment.
     """
-    SourceNotion.set_start_date(config)
-    assert config["start_date"] == expected_start_date
+    with freezegun.freeze_time(current_time):
+        SourceNotion.set_start_date(config)
+        assert config["start_date"] == expected_start_date
