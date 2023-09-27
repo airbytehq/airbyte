@@ -3,9 +3,9 @@
 #
 
 
+import logging
 from typing import Any, List, Mapping, Tuple
 
-import logging
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
@@ -34,7 +34,6 @@ class NotionAuthenticator:
 
 
 class SourceNotion(AbstractSource):
-
     @staticmethod
     def set_start_date(config: Mapping[str, Any]):
         """
@@ -74,7 +73,7 @@ class SourceNotion(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
         self.set_start_date(config)
-        logger = logging.getLogger('airbyte')
+        logger = logging.getLogger("airbyte")
         logger.info(f"Using start_date: {config['start_date']}")
 
         authenticator = NotionAuthenticator(config).get_access_token()

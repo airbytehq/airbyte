@@ -5,7 +5,6 @@
 from unittest.mock import MagicMock
 
 import freezegun
-import pendulum
 import pytest
 from source_notion.source import SourceNotion
 
