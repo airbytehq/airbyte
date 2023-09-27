@@ -7,7 +7,6 @@ from typing import Any, Dict, Mapping
 
 import requests
 from airbyte_cdk import AirbyteLogger
-from dateutil import parser
 
 
 def clear_post_data(config: Mapping[str, Any], template_key: str, logger: AirbyteLogger):
@@ -112,8 +111,8 @@ def insert_ledger_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any
         response = requests.request(
             method="POST", url=ledger_master_template_url, data=ledger_master_payload, headers=ledger_master_headers
         )
-    except:
-        logger.error(f'request for ledger : {data["Ledger Name"]} not successful...')
+    except Exception as e:
+        logger.error(f'request for ledger : {data["Ledger Name"]} not successful , {e}')
         return
 
     if response.status_code == 200:
@@ -203,14 +202,14 @@ def insert_journal_voucher_to_tally(
         response = requests.request(
             method="POST", url=journal_voucher_template_url, data=journal_voucher_payload, headers=journal_voucher_headers
         )
-    except:
-        logger.error(f"request for inserting journal was not successful...")
+    except Exception as e:
+        logger.error(f"request for inserting journal was not successful , {e}")
         return
 
     if response.status_code == 200:
-        logger.info(f"journal entry successfully inserted into Tally")
+        logger.info("journal entry successfully inserted into Tally")
     else:
-        logger.info(f"journal entry cannot be inserted into Tally")
+        logger.info("journal entry cannot be inserted into Tally")
 
     logger.info(f"result : {response.content}")
 
@@ -282,8 +281,8 @@ def insert_item_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
 
     try:
         response = requests.request(method="POST", url=item_master_template_url, data=item_master_payload, headers=item_master_headers)
-    except:
-        logger.error(f'request for item : {data["Item Name"]} not successful...')
+    except Exception as e:
+        logger.error(f'request for item : {data["Item Name"]} not successful, {e}')
         return
 
     if response.status_code == 200:
@@ -402,14 +401,14 @@ def insert_sales_order_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
 
     try:
         response = requests.request(method="POST", url=sales_order_template_url, data=sales_order_payload, headers=sales_order_headers)
-    except:
-        logger.error(f"request for sales order not successful...")
+    except Exception as e:
+        logger.error(f"request for sales order not successful, {e}")
         return
 
     if response.status_code == 200:
-        logger.info(f"sales order successfully inserted into Tally")
+        logger.info("sales order successfully inserted into Tally")
     else:
-        logger.info(f"sales order cannot be inserted into Tally")
+        logger.info("sales order cannot be inserted into Tally")
 
 
 # 5. Payment Voucher Template - *** Working *** (Bill Date format : dd-mm-yyyy)
@@ -483,14 +482,14 @@ def insert_payment_voucher_to_tally(
         response = requests.request(
             method="POST", url=payment_voucher_template_url, data=payment_voucher_payload, headers=payment_voucher_headers
         )
-    except:
-        logger.error(f"request for payment voucher not successful...")
+    except Exception as e:
+        logger.error(f"request for payment voucher not successful : {e}")
         return
 
     if response.status_code == 200:
-        logger.info(f"payment voucher successfully inserted into Tally")
+        logger.info(f'payment voucher with voucher number : {payment_voucher_payload["Voucher Number"]} successfully inserted into Tally')
     else:
-        logger.info(f"payment voucher cannot be inserted into Tally")
+        logger.info(f'payment voucher with voucher number : {payment_voucher_payload["Voucher Number"]} cannot be inserted into Tally')
 
 
 # 6. Receipt Voucher Template - Date format problem
@@ -575,14 +574,14 @@ def insert_receipt_voucher_to_tally(
         response = requests.request(
             method="POST", url=receipt_voucher_template_url, data=receipt_voucher_payload, headers=receipt_voucher_headers
         )
-    except:
-        logger.error(f"request for receipt voucher not successful...")
+    except Exception as e:
+        logger.error(f"request for receipt voucher not successful, {e}")
         return
 
     if response.status_code == 200:
-        logger.info(f"receipt voucher successfully inserted into Tally")
+        logger.info("receipt voucher successfully inserted into Tally")
     else:
-        logger.info(f"receipt voucher cannot be inserted into Tally")
+        logger.info("receipt voucher cannot be inserted into Tally")
 
     logger.info(f"result : {response.content}")
 
@@ -723,14 +722,14 @@ def insert_debitnote_without_inventory_to_tally(
             data=debitnote_without_inventory_payload,
             headers=debitnote_without_inventory_headers,
         )
-    except:
-        logger.error(f"request for debit note not successful...")
+    except Exception as e:
+        logger.error(f"request for debit note not successful, {e}")
         return
 
     if response.status_code == 200:
-        logger.info(f" debit note successfully inserted into Tally")
+        logger.info("debit note successfully inserted into Tally")
     else:
-        logger.info(f" debit note cannot be inserted into Tally")
+        logger.info("debit note cannot be inserted into Tally")
 
 
 # 8. Purchase without inventory Template - Date format problem
@@ -895,14 +894,14 @@ def insert_purchase_without_inventory_to_tally(
             data=purchase_without_inventory_payload,
             headers=purchase_without_inventory_headers,
         )
-    except:
-        logger.error(f"request for purchase without inventory not successful...")
+    except Exception as e:
+        logger.error(f"request for purchase without inventory not successful, {e}")
         return
 
     if response.status_code == 200:
-        logger.info(f" purchase without inventory successfully inserted into Tally")
+        logger.info("purchase without inventory successfully inserted into Tally")
     else:
-        logger.info(f" purchase without inventory cannot be inserted into Tally")
+        logger.info("purchase without inventory cannot be inserted into Tally")
 
 
 # 9. Credit Note without inventory Template - Date format problem
@@ -1042,14 +1041,14 @@ def insert_creditnote_without_inventory_to_tally(
             data=creditnote_without_inventory_payload,
             headers=creditnote_without_inventory_headers,
         )
-    except:
-        logger.error(f"request for credit note not successful...")
+    except Exception as e:
+        logger.error(f"request for credit note not successful, {e}")
         return
 
     if response.status_code == 200:
-        logger.info(f"credit note successfully inserted into Tally")
+        logger.info("credit note successfully inserted into Tally")
     else:
-        logger.info(f"credit note cannot be inserted into Tally")
+        logger.info("credit note cannot be inserted into Tally")
 
 
 # 10. Sales without inventory Template - Date format problem
@@ -1229,11 +1228,11 @@ def insert_sales_without_inventory_to_tally(
             data=sales_without_inventory_payload,
             headers=sales_without_inventory_headers,
         )
-    except:
-        logger.error(f"request for sales without inventory not successful...")
+    except Exception as e:
+        logger.error(f"request for sales without inventory not successful, {e}")
         return
 
     if response.status_code == 200:
-        logger.info(f"sales without inventory successfully inserted into Tally")
+        logger.info("sales without inventory successfully inserted into Tally")
     else:
-        logger.info(f"sales without inventory cannot be inserted into Tally")
+        logger.info("sales without inventory cannot be inserted into Tally")

@@ -9,7 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
-from .utils import insert_item_master_to_tally, insert_payment_voucher_to_tally, insert_ledger_master_to_tally
+from .utils import insert_item_master_to_tally, insert_ledger_master_to_tally, insert_payment_voucher_to_tally
 
 
 class DestinationTally(Destination):
