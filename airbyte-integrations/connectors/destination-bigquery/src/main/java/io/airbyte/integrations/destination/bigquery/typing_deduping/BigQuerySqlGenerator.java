@@ -367,10 +367,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                                          final String finalSuffix,
                                          final boolean verifyPrimaryKeys,
                                          final boolean forceSafeCasting) {
-    String pkVarDeclaration = "";
     String validatePrimaryKeys = "";
     if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      pkVarDeclaration = "DECLARE missing_pk_count INT64;";
       validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns(), forceSafeCasting);
     }
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), forceSafeCasting);
@@ -386,7 +384,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String commitRawTable = commitRawTable(stream.id());
 
     return new StringSubstitutor(Map.of(
-        "pk_var_declaration", pkVarDeclaration,
         "validate_primary_keys", validatePrimaryKeys,
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
@@ -394,7 +391,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
             """
-            ${pk_var_declaration}
 
             BEGIN TRANSACTION;
 
@@ -417,8 +413,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
     final var unsafeUpdate = updateTableQueryBuilder(stream, finalSuffix, verifyPrimaryKeys, false);
     final var safeUpdate = updateTableQueryBuilder(stream, finalSuffix, verifyPrimaryKeys, true);
-    return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate)).replace(
+    final String pkVarDeclaration = verifyPrimaryKeys ? "DECLARE missing_pk_count INT64;" : "";
+    return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate, "pk_var_declaration", pkVarDeclaration)).replace(
         """
+        ${pk_var_declaration}
+        
         BEGIN
 
         ${unsafe_update}
