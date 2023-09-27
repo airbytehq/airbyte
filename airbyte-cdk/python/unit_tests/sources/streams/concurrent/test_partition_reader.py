@@ -4,8 +4,9 @@
 from queue import Queue
 from unittest.mock import Mock
 
-from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader, PartitionSentinel
+from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
 
 
 def test_partition_reader():
@@ -23,7 +24,7 @@ def test_partition_reader():
 
     actual_records = []
     while record := queue.get():
-        if isinstance(record, PartitionSentinel):
+        if isinstance(record, PartitionCompleteSentinel):
             break
         actual_records.append(record)
 

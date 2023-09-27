@@ -1,19 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 from queue import Queue
 
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-
-
-class PartitionSentinel:
-    def __init__(self, partition):
-        self.partition = partition
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 
 
 class PartitionReader:
-    def __init__(self, queue: Queue) -> None:
+    def __init__(self, queue: Queue[QueueItem]) -> None:
         self._output_queue = queue
 
     def process_partition(self, partition: Partition) -> None:
@@ -23,6 +18,7 @@ class PartitionReader:
         :param partition:
         :return:
         """
+        print(f"Processing partition {partition.to_slice()}")
         for record in partition.read():
             self._output_queue.put(record)
-        self._output_queue.put(PartitionSentinel(partition))
+        self._output_queue.put(PartitionCompleteSentinel(partition.to_slice()))

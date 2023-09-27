@@ -17,6 +17,3 @@ class Record:
         if not isinstance(other, Record):
             return False
         return self.stream_data == other.stream_data
-
-    def __str__(self):
-        return str(self.stream_data)
