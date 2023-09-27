@@ -14,6 +14,8 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
 
+FieldPath = Union[str, List[str]]
+
 
 @deprecated("This class is experimental. Use at your own risk.")
 class AbstractStream(ABC):
@@ -68,9 +70,10 @@ class AbstractStream(ABC):
 
     @property
     @abstractmethod
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> Optional[FieldPath]:
         """
-        :return: string if single primary key, list of strings if composite primary key, list of list of strings if composite primary key consisting of nested fields.
+        :return: string if single primary key, list of strings if composite primary key.
+          Primary keys in nested fields are not supported.
           If the stream has no primary keys, return None.
         """
 
