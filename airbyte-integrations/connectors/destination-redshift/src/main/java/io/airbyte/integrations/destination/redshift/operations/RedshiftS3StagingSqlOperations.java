@@ -65,6 +65,11 @@ public class RedshiftS3StagingSqlOperations extends RedshiftSqlOperations implem
     final String prefix = bucketPath.isEmpty() ? "" : bucketPath + (bucketPath.endsWith("/") ? "" : "/");
     return nameTransformer.applyDefaultCase(String.format("%s%s/%s_%02d_%02d_%02d_%s/",
         prefix,
+        // TODO switch this to use the raw table name. This is so that after DV2, the stage names are still
+        // unique per stream.
+        // For example, if there are two streams public1.users and public2.users, we would want their stages
+        // to be
+        // airbyte_internal.public1_raw__stream_users and airbyte_internal.public2_raw__stream_users
         getStageName(namespace, streamName),
         writeDatetime.year().get(),
         writeDatetime.monthOfYear().get(),

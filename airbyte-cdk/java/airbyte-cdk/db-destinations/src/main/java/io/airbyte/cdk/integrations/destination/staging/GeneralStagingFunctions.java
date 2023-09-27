@@ -34,7 +34,7 @@ public class GeneralStagingFunctions {
         final String schema = writeConfig.getOutputSchemaName();
         final String stream = writeConfig.getStreamName();
         final String dstTableName = writeConfig.getOutputTableName();
-        final String stageName = stagingOperations.getStageName(schema, stream);
+        final String stageName = stagingOperations.getStageName(schema, dstTableName);
         final String stagingPath =
             stagingOperations.getStagingPath(StagingConsumerFactory.RANDOM_CONNECTION_ID, schema, stream, writeConfig.getWriteDatetime());
 
@@ -123,7 +123,7 @@ public class GeneralStagingFunctions {
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();
         if (purgeStagingData) {
-          final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getStreamName());
+          final String stageName = stagingOperations.getStageName(schemaName, writeConfig.getOutputTableName());
           log.info("Cleaning stage in destination started for stream {}. schema {}, stage: {}", writeConfig.getStreamName(), schemaName,
               stageName);
           stagingOperations.dropStageIfExists(database, stageName);
