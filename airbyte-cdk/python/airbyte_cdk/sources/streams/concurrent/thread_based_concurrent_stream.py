@@ -88,38 +88,23 @@ class ThreadBasedConcurrentStream(AbstractStream):
         partitions = {}
 
         finished_partitions = False
-        num_partitions_generated = 0
-        num_partitions_processed = 0
         while record_or_partition := queue.get(block=True, timeout=TIMEOUT_SECONDS):
             if record_or_partition == PARTITIONS_GENERATED_SENTINEL:
                 finished_partitions = True
             elif isinstance(record_or_partition, PartitionCompleteSentinel):
-                num_partitions_processed += 1
-                print(f"received sentinel for {record_or_partition.partition}")
                 if _make_hash(record_or_partition.partition) not in partitions:
-                    print(f"Received sentinel for partition {record_or_partition.partition} that was not in partitions")
-                    print(_make_hash(record_or_partition.partition))
-                    print(partitions)
-                    exit()
+                    raise RuntimeError(
+                        f"Received sentinel for partition {record_or_partition.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support."
+                    )
                 partitions[_make_hash(record_or_partition.partition)] = True
             elif self._is_record(record_or_partition):
                 yield record_or_partition.stream_data
             elif self._is_partition(record_or_partition):
                 partitions[_make_hash(record_or_partition.to_slice())] = False
-                print(f"received partition {record_or_partition}")
-                num_partitions_generated += 1
                 if self._slice_logger.should_log_slice_message(self.logger):
                     yield self._slice_logger.create_slice_log_message(record_or_partition.to_slice())
                 futures.append(self._threadpool.submit(partition_reader.process_partition, record_or_partition))
-            # queue.qsize() is not reliable since it is possible for the queue to get modified, but we only check it if all futures are done
-            # an alternative would be to keep a set of partitions that have been processed and check that they were all processed
-            # the issue with this alternative solution is that connectors can (and do) modify their stream_slices
-            if finished_partitions and len([f for f in futures if not f.done()]) == 0 and queue.empty():
-                if num_partitions_generated != num_partitions_generated:
-                    raise RuntimeError(
-                        f"Expected {num_partitions_generated} partitions to be generated, but only {num_partitions_processed} were processed"
-                    )
-                print(f"partitions values: {partitions.values()}")
+            if finished_partitions and all(partitions.values()):
                 break
         self._check_for_errors(futures)
 
