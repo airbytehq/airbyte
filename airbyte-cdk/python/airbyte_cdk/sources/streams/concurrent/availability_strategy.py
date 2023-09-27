@@ -40,11 +40,17 @@ class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
     This class acts as an adapter between the existing AvailabilityStrategy and the new AbstractAvailabilityStrategy.
     LegacyAvailabilityStrategy is instantiated with a Stream and a Source to allow the existing AvailabilityStrategy to be used with the new AbstractAvailabilityStrategy interface.
 
+    A more convenient implementation would not depend on the docs URL instead of the Source itself, and would support running on an AbstractStream instead of only on a Stream.
+
     This class can be used to help enable concurrency on existing connectors without having to rewrite everything as AbstractStream and AbstractAvailabilityStrategy.
     In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
     """
 
     def __init__(self, stream: Stream, source: Source):
+        """
+        :param stream: The stream to delegate to
+        :param source: The source to delegate to
+        """
         self._stream = stream
         self._source = source
 

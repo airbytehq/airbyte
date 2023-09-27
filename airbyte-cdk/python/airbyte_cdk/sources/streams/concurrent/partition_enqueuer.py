@@ -28,8 +28,8 @@ class PartitionEnqueuer:
         When all the partitions are added to the queue, a sentinel is added to the queue to indicate that all the partitions have been generated.
 
         This method is meant to be called in a separate thread.
-        :param partition_generator:
-        :param sync_mode:
+        :param partition_generator: The partition Generator
+        :param sync_mode: The sync mode used
         :return:
         """
         for partition in partition_generator.generate(sync_mode=sync_mode):

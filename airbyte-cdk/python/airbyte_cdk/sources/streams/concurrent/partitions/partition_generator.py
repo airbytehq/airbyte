@@ -18,7 +18,7 @@ class PartitionGenerator(ABC):
         """
         Generates partitions for a given sync mode.
         :param sync_mode: SyncMode
-        :return:
+        :return: An iterable of partitions.
         """
         pass
 
@@ -34,10 +34,17 @@ class LegacyPartition(Partition):
     """
 
     def __init__(self, stream: Stream, _slice: Optional[Mapping[str, Any]]):
+        """
+        :param stream: The stream to delegate to
+        :param _slice: The partition's stream_slice
+        """
         self._stream = stream
         self._slice = _slice
 
     def read(self) -> Iterable[Record]:
+        """
+        Delegates to stream.read_records with the stream_slice
+        """
         for record_data in self._stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=copy.deepcopy(self._slice)):
             yield Record(record_data)
 
@@ -57,10 +64,19 @@ class LegacyPartition(Partition):
 
 
 class LegacyPartitionGenerator(PartitionGenerator):
+    """
+    This class acts as an adapter between the new PartitionGenerator and Stream.stream_slices
+
+    This class can be used to help enable concurrency on existing connectors without having to rewrite everything as AbstractStream.
+    In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
+    """
+
     def __init__(self, stream: Stream):
+        """
+        :param stream: The stream to delegate to
+        """
         self._stream = stream
 
     def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
-        # return [LegacyPartition(self._stream, _slice) for _slice in self._stream.stream_slices(sync_mode=sync_mode)]
         for s in self._stream.stream_slices(sync_mode=sync_mode):
             yield LegacyPartition(self._stream, copy.deepcopy(s))

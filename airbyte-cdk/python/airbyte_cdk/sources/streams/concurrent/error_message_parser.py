@@ -32,6 +32,9 @@ class LegacyErrorMessageParser(ErrorMessageParser):
     """
 
     def __init__(self, stream: Stream):
+        """
+        :param stream: The stream to delegate to
+        """
         self._stream = stream
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
