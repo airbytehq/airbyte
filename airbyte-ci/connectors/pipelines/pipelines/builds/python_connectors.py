@@ -55,25 +55,12 @@ class BuildConnectorImage(BuildConnectorImageBase):
             Container: The builder container, with installed dependencies.
         """
         ONLY_PYTHON_BUILD_FILES = ["setup.py", "requirements.txt", "pyproject.toml", "poetry.lock"]
-        builder = (
-            # TODO move to hacks
-            # This env var is used in the setup.py to know if it is run in a container or not
-            # When run in a container, we need to mount the local dependencies to ./local_dependencies
-            # The setup.py reacts to this env var and use the /local_dependencies path instead of the normal local path
-            base_container.with_env_variable("DAGGER_BUILD", "1")
-        )
-
         builder = await with_installed_python_package(
             self.context,
-            builder,
+            base_container,
             str(self.context.connector.code_directory),
             include=ONLY_PYTHON_BUILD_FILES,
         )
-
-        # TODO remove
-        # for dependency_path in setup_dependencies_to_mount:
-        #     in_container_dependency_path = f"/local_dependencies/{Path(dependency_path).name}"
-        #     builder = builder.with_mounted_directory(in_container_dependency_path, self.context.get_repo_dir(dependency_path))
 
         return builder
 

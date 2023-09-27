@@ -10,10 +10,7 @@ from setuptools import find_packages, setup
 
 def local_dependency(name: str) -> str:
     """Returns a path to a local package."""
-    if os.environ.get("DAGGER_BUILD"):
-        return f"{name} @ file:///local_dependencies/{name}"
-    else:
-        return f"{name} @ file://{Path.cwd().parent / name}"
+    return f"{name} @ file://{Path.cwd().parent / name}"
 
 
 MAIN_REQUIREMENTS = [
