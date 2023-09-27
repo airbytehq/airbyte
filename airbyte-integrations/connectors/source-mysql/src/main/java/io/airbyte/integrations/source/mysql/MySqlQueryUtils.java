@@ -146,6 +146,7 @@ public class MySqlQueryUtils {
     return tableSizeInfoMap;
   }
 
+
   /**
    * Iterates through each stream and find the max cursor value and the record count which has that
    * value based on each cursor field provided by the customer per stream This information is saved in
