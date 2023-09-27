@@ -4,7 +4,6 @@ connectionSpecification:
   title: Lago Spec
   type: object
   required:
-    - api_url
     - api_key
   additionalProperties: true
   properties:
