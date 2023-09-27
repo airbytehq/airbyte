@@ -6,9 +6,10 @@ import concurrent
 from concurrent.futures import Future
 from functools import lru_cache
 from queue import Queue
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, FieldPath
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
@@ -18,7 +19,6 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, PartitionCompleteSentinel, QueueItem
-from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 
@@ -34,9 +34,10 @@ class ThreadBasedConcurrentStream(AbstractStream):
         json_schema: Mapping[str, Any],
         availability_strategy: AbstractAvailabilityStrategy,
         primary_key: Optional[FieldPath],
-        cursor_field: Union[str, List[str]],
+        cursor_field: Optional[str],
         error_display_message_parser: ErrorMessageParser,
         slice_logger: SliceLogger,
+        message_repository: MessageRepository,
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -48,8 +49,9 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._cursor_field = cursor_field
         self._error_message_parser = error_display_message_parser
         self._slice_logger = slice_logger
+        self._message_repository = message_repository
 
-    def read(self) -> Iterable[StreamData]:
+    def read(self) -> Iterable[Record]:
         """
         Read all data from the stream (only full-refresh is supported at the moment)
 
@@ -95,12 +97,12 @@ class ThreadBasedConcurrentStream(AbstractStream):
                 partitions_to_done[record_or_partition.partition] = True
             elif isinstance(record_or_partition, Record):
                 # Emit records
-                yield record_or_partition.stream_data
+                yield record_or_partition
             elif isinstance(record_or_partition, Partition):
                 # A new partition was generated and must be processed
                 partitions_to_done[record_or_partition] = False
                 if self._slice_logger.should_log_slice_message(self.logger):
-                    yield self._slice_logger.create_slice_log_message(record_or_partition.to_slice())
+                    self._message_repository.emit_message(self._slice_logger.create_slice_log_message(record_or_partition.to_slice()))
                 futures.append(self._threadpool.submit(partition_reader.process_partition, record_or_partition))
             if finished_partitions and all(partitions_to_done.values()):
                 # All partitions were generated and process. We're done here
@@ -127,7 +129,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         return self._primary_key
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Optional[str]:
         return self._cursor_field
 
     @lru_cache(maxsize=None)

@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, FieldPath
@@ -46,22 +47,40 @@ class StreamFacade(Stream):
         :return:
         """
         pk = cls._get_primary_key_from_stream(stream.primary_key)
+
+        if isinstance(stream.cursor_field, list):
+            if len(stream.cursor_field) > 1:
+                raise ValueError(f"Nested cursor fields are not supported. Got {stream.cursor_field} for {stream.name}")
+            elif len(stream.cursor_field) == 0:
+                cursor_field = None
+            else:
+                cursor_field = stream.cursor_field[0]
+        else:
+            cursor_field = stream.cursor_field
+
+        if not source.message_repository:
+            raise ValueError(
+                "A message repository is required to emit non-record messages. Please set the message repository on the source."
+            )
+
+        message_repository = source.message_repository
         return StreamFacade(
             ThreadBasedConcurrentStream(
-                partition_generator=LegacyPartitionGenerator(stream),
+                partition_generator=LegacyPartitionGenerator(stream, message_repository),
                 max_workers=max_workers,
                 name=stream.name,
                 json_schema=stream.get_json_schema(),
                 availability_strategy=LegacyAvailabilityStrategy(stream, source),
                 primary_key=pk,
-                cursor_field=stream.cursor_field,
+                cursor_field=cursor_field,
                 error_display_message_parser=LegacyErrorMessageParser(stream),
                 slice_logger=source._slice_logger,
+                message_repository=message_repository,
             )
         )
 
     @classmethod
-    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> FieldPath:
+    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> Optional[FieldPath]:
         if stream_primary_key is None or isinstance(stream_primary_key, str):
             return stream_primary_key
         elif isinstance(stream_primary_key, list):
@@ -81,7 +100,8 @@ class StreamFacade(Stream):
         logger: logging.Logger,
         slice_logger: SliceLogger,
     ) -> Iterable[StreamData]:
-        yield from self._stream.read()
+        for record in self._stream.read():
+            yield record.stream_data
 
     def read_records(
         self,
@@ -106,7 +126,10 @@ class StreamFacade(Stream):
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
-        return self._stream.cursor_field
+        if self._stream.cursor_field is None:
+            return []
+        else:
+            return self._stream.cursor_field
 
     @property
     def source_defined_cursor(self) -> bool:
@@ -148,20 +171,27 @@ class LegacyPartition(Partition):
     In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
     """
 
-    def __init__(self, stream: Stream, _slice: Optional[Mapping[str, Any]]):
+    def __init__(self, stream: Stream, _slice: Optional[Mapping[str, Any]], message_repository: MessageRepository):
         """
         :param stream: The stream to delegate to
         :param _slice: The partition's stream_slice
+        :param message_repository: The message repository to use to emit non-record messages
         """
         self._stream = stream
         self._slice = _slice
+        self._message_repository = message_repository
 
     def read(self) -> Iterable[Record]:
         """
-        Delegates to stream.read_records with the stream_slice
+        Read messages from the stream.
+        If the StreamData is a Mapping, it will be converted to a Record.
+        Otherwise, the message will be emitted on the message repository.
         """
         for record_data in self._stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=copy.deepcopy(self._slice)):
-            yield Record(record_data)
+            if isinstance(record_data, Mapping):
+                yield Record(record_data)
+            else:
+                self._message_repository.emit_message(record_data)
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         return self._slice
@@ -186,15 +216,17 @@ class LegacyPartitionGenerator(PartitionGenerator):
     In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
     """
 
-    def __init__(self, stream: Stream):
+    def __init__(self, stream: Stream, message_repository: MessageRepository):
         """
         :param stream: The stream to delegate to
+        :param message_repository: The message repository to use to emit non-record messages
         """
+        self.message_repository = message_repository
         self._stream = stream
 
     def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
         for s in self._stream.stream_slices(sync_mode=sync_mode):
-            yield LegacyPartition(self._stream, copy.deepcopy(s))
+            yield LegacyPartition(self._stream, copy.deepcopy(s), self.message_repository)
 
 
 @deprecated("This class is experimental. Use at your own risk.")

@@ -19,7 +19,8 @@ def test_partition_generator(slices):
     partition_generator = PartitionEnqueuer(queue, PARTITIONS_GENERATED_SENTINEL)
 
     stream = Mock()
-    partitions = [LegacyPartition(stream, s) for s in slices]
+    message_repository = Mock()
+    partitions = [LegacyPartition(stream, s, message_repository) for s in slices]
     stream.generate.return_value = iter(partitions)
 
     sync_mode = SyncMode.full_refresh

@@ -6,8 +6,10 @@ from typing import Any, List, Mapping, MutableMapping, Tuple
 import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.legacy import StreamFacade
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -30,6 +32,9 @@ from source_stripe.streams import (
 
 
 class SourceStripe(AbstractSource):
+
+    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
+
     @staticmethod
     def validate_and_fill_with_defaults(config: MutableMapping) -> MutableMapping:
         start_date, lookback_window_days, slice_range = (

@@ -9,6 +9,7 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
+from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.legacy import StreamFacade
 from airbyte_cdk.sources.streams.core import StreamData
@@ -47,14 +48,15 @@ class _MockStream(Stream):
         return {}
 
 
-def _legacy_stream(slice_to_partition_mapping, slice_logger, logger):
+def _legacy_stream(slice_to_partition_mapping, slice_logger, logger, message_repository):
     return _MockStream(slice_to_partition_mapping)
 
 
-def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger):
-    legacy_stream = _legacy_stream(slice_to_partition_mapping, slice_logger, logger)
+def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message_repository):
+    legacy_stream = _legacy_stream(slice_to_partition_mapping, slice_logger, logger, message_repository)
     source = Mock()
     source._slice_logger = slice_logger
+    source.message_repository = message_repository
     stream = StreamFacade.create_from_legacy_stream(legacy_stream, source, 1)
     stream.logger.setLevel(logger.level)
     return stream
@@ -77,7 +79,8 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
     slice_to_partition = {1: records}
     slice_logger = DebugSliceLogger()
     logger = _mock_logger(True)
-    stream = constructor(slice_to_partition, slice_logger, logger)
+    message_repository = InMemoryMessageRepository(Level.DEBUG)
+    stream = constructor(slice_to_partition, slice_logger, logger, message_repository)
 
     expected_records = [
         AirbyteMessage(
@@ -90,7 +93,7 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
         *records,
     ]
 
-    actual_records = list(stream.read_full_refresh(_A_CURSOR_FIELD, logger, slice_logger))
+    actual_records = _read(stream, logger, slice_logger, message_repository)
 
     assert expected_records == actual_records
 
@@ -107,17 +110,18 @@ def test_full_refresh_read_a_single_slice(constructor):
     # It is done by running the same test cases on both streams
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
+    message_repository = InMemoryMessageRepository(Level.INFO)
 
     records = [
         {"id": 1, "partition": 1},
         {"id": 2, "partition": 1},
     ]
     slice_to_partition = {1: records}
-    stream = constructor(slice_to_partition, slice_logger, logger)
+    stream = constructor(slice_to_partition, slice_logger, logger, message_repository)
 
     expected_records = [*records]
 
-    actual_records = list(stream.read_full_refresh(_A_CURSOR_FIELD, logger, slice_logger))
+    actual_records = _read(stream, logger, slice_logger, message_repository)
 
     assert expected_records == actual_records
 
@@ -134,6 +138,7 @@ def test_full_refresh_read_a_two_slices(constructor):
     # It is done by running the same test cases on both streams
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
+    message_repository = InMemoryMessageRepository(Level.INFO)
 
     records_partition_1 = [
         {"id": 1, "partition": 1},
@@ -144,18 +149,27 @@ def test_full_refresh_read_a_two_slices(constructor):
         {"id": 4, "partition": 2},
     ]
     slice_to_partition = {1: records_partition_1, 2: records_partition_2}
-    stream = constructor(slice_to_partition, slice_logger, logger)
+    stream = constructor(slice_to_partition, slice_logger, logger, message_repository)
 
     expected_records = [
         *records_partition_1,
         *records_partition_2,
     ]
 
-    actual_records = list(stream.read_full_refresh(_A_CURSOR_FIELD, logger, slice_logger))
+    actual_records = _read(stream, logger, slice_logger, message_repository)
 
     for record in expected_records:
         assert record in actual_records
     assert len(expected_records) == len(actual_records)
+
+
+def _read(stream, logger, slice_logger, message_repository):
+    records = []
+    for record in stream.read_full_refresh(_A_CURSOR_FIELD, logger, slice_logger):
+        for message in message_repository.consume_queue():
+            records.append(message)
+        records.append(record)
+    return records
 
 
 def _mock_partition_generator(name: str, slices, records_per_partition, *, available=True, debug_log=False):

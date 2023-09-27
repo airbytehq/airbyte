@@ -6,7 +6,7 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from deprecated.classic import deprecated
 
 FieldPath = Union[str, List[str]]
@@ -38,7 +38,7 @@ class AbstractStream(ABC):
     """
 
     @abstractmethod
-    def read(self) -> Iterable[StreamData]:
+    def read(self) -> Iterable[Record]:
         """
         Read a stream in full refresh mode
         :return: The stream's records
