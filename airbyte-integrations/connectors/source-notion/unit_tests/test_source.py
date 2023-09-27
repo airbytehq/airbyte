@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import re
 from unittest.mock import MagicMock
 
-import re
 import pytest
 from source_notion.source import SourceNotion
 
