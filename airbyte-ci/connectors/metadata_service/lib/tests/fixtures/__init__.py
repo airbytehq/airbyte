@@ -32,11 +32,6 @@ def invalid_metadata_upload_files() -> List[str]:
 
 
 @pytest.fixture(scope="session")
-def valid_doc_file() -> str:
-    return os.path.join(os.path.dirname(__file__), DOC_FILE_NAME)
-
-
-@pytest.fixture(scope="session")
 def get_fixture_path() -> Callable[[str], str]:
     def _get_fixture_path(fixture_name: str) -> str:
         return os.path.join(os.path.dirname(__file__), fixture_name)

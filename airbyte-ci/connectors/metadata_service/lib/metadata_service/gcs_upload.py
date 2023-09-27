@@ -6,6 +6,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Tuple, List
@@ -68,6 +69,14 @@ def get_doc_remote_file_path(dockerRepository: str, version: str, inapp: bool) -
         str: Path to the icon file.
     """
     return f"{METADATA_FOLDER}/{dockerRepository}/{version}/{DOC_INAPP_FILE_NAME if inapp else DOC_FILE_NAME}"
+
+def get_doc_local_file_path(metadata: ConnectorMetadataDefinitionV0, docs_path: Path, inapp:bool) -> Path:
+    pattern = re.compile(r'^https://docs\.airbyte\.com/(.+)$')
+    match = pattern.search(metadata.data.documentationUrl)
+    if match:
+        extension = ".inapp.md" if inapp else ".md"
+        return (docs_path / match.group(1)).with_suffix(extension)
+    return None
 
 def compute_gcs_md5(file_name: str) -> str:
     hash_md5 = hashlib.md5()
@@ -132,15 +141,18 @@ def _icon_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket
         return False, f"No Icon found at {local_icon_path}"
     return upload_file_if_changed(local_icon_path, bucket, latest_icon_path)
 
-def _doc_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, doc_path: Path, latest: bool, inapp: bool) -> Tuple[bool, str]:
-    local_doc_path = doc_path if not inapp else Path(str(doc_path).replace('.md', '.inapp.md'))
+def _doc_upload(metadata: ConnectorMetadataDefinitionV0, bucket: storage.bucket.Bucket, docs_path: Path, latest: bool, inapp: bool) -> Tuple[bool, str]:
+    local_doc_path = get_doc_local_file_path(metadata, docs_path, inapp)
+    if not local_doc_path:
+        return False, f"Metadata does not contain a valid Airbyte documentation url, skipping doc upload."
+    
     remote_doc_path = get_doc_remote_file_path(metadata.data.dockerRepository, "latest" if latest else metadata.data.dockerImageTag, inapp)
     
     if local_doc_path.exists():
         doc_uploaded, doc_blob_id = upload_file_if_changed(local_doc_path, bucket, remote_doc_path)
     else:
         if inapp:
-            doc_uploaded, doc_blob_id = False, f"No doc found at {local_doc_path}"
+            doc_uploaded, doc_blob_id = False, f"No inapp doc found at {local_doc_path}, skipping inapp doc upload."
         else:
             raise FileNotFoundError(f"Expected to find connector doc file at {local_doc_path}, but none was found.")
     
@@ -197,19 +209,19 @@ def upload_metadata_to_gcs(
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
     storage_client = storage.Client(credentials=credentials)
     bucket = storage_client.bucket(bucket_name)
-    doc_path = Path(validator_opts.doc_path)
+    docs_path = Path(validator_opts.docs_path)
 
     icon_uploaded, icon_blob_id = _icon_upload(metadata, bucket, metadata_file_path)
 
     version_uploaded, version_blob_id = _version_upload(metadata, bucket, metadata_file_path)
 
-    doc_version_uploaded, doc_version_blob_id = _doc_upload(metadata, bucket, doc_path, False, False)
-    doc_inapp_version_uploaded, doc_inapp_version_blob_id = _doc_upload(metadata, bucket, doc_path, False, True)
+    doc_version_uploaded, doc_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, False)
+    doc_inapp_version_uploaded, doc_inapp_version_blob_id = _doc_upload(metadata, bucket, docs_path, False, True)
     
     if not validator_opts.prerelease_tag:
         latest_uploaded, latest_blob_id = _latest_upload(metadata, bucket, metadata_file_path)
-        doc_latest_uploaded, doc_latest_blob_id = _doc_upload(metadata, bucket, doc_path, True, False)
-        doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = _doc_upload(metadata, bucket, doc_path, True, True)
+        doc_latest_uploaded, doc_latest_blob_id = _doc_upload(metadata, bucket, docs_path, True, False)
+        doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = _doc_upload(metadata, bucket, docs_path, True, True)
     else:
         latest_uploaded, latest_blob_id = False, None
         doc_latest_uploaded, doc_latest_blob_id = doc_inapp_latest_uploaded, doc_inapp_latest_blob_id = False, None
