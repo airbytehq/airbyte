@@ -15,7 +15,8 @@ Please browse the sections below for more details on each option and how to set 
 
 :::info
 Monitoring your Airbyte instance using Datadog is an early preview feature and still in development.
-Expect changes to this feature and the configuration to happen in the future.
+Expect changes to this feature and the configuration to happen in the future. This feature will be
+only for Airbyte Enterprise customers in the future.
 :::
 
 ![Datadog's Airbyte Integration Dashboard](assets/DatadogAirbyteIntegration_OutOfTheBox_Dashboard.png)
