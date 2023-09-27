@@ -749,6 +749,7 @@ class PullRequestStats(SemiIncrementalMixin, GitHubGraphQLStream):
     API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
     """
 
+    large_stream = True
     is_sorted = "asc"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
