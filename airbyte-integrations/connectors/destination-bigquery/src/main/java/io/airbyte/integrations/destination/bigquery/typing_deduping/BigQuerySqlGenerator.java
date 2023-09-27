@@ -313,16 +313,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
               ||
 
-              // Is this column a primary key without a unique index?
+          // Is this column a primary key without a unique index?
               matchingKey(existingSchema.keySet(), name)
-                  .map(key ->
-                      pks.contains(key)
-                        && (long) existingTable.getSchema().getFields().stream().filter(s -> Objects.equals(
+                  .map(key -> pks.contains(key)
+                      && (long) existingTable.getSchema().getFields().stream().filter(s -> Objects.equals(
                           s.getName(), key)).toList().size() == 1
-                        && existingTable.getSchema().getFields().stream().filter(s -> Objects.equals(
-                      s.getName(), key)).toList().get(0).getMode() != Mode.REQUIRED)
-                  .orElse(false)
-              ;
+                      && existingTable.getSchema().getFields().stream().filter(s -> Objects.equals(
+                          s.getName(), key)).toList().get(0).getMode() != Mode.REQUIRED)
+                  .orElse(false);
         })
         .collect(Collectors.toSet());
 
