@@ -19,15 +19,9 @@ dependencies {
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-    testImplementation libs.connectors.testcontainers.mssqlserver
+    testImplementation libs.testcontainers.mssqlserver
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mssql')
 
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
-}
-
-tasks.named("airbyteDocker") {
-    dependsOn project(':airbyte-integrations:bases:base-normalization').airbyteDockerMSSql
 }

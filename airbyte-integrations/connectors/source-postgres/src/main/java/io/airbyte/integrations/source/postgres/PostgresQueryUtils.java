@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableList;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.CtidStreams;
+import io.airbyte.integrations.source.postgres.ctid.FileNodeHandler;
 import io.airbyte.integrations.source.postgres.internal.models.CursorBasedStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
@@ -106,6 +107,15 @@ public class PostgresQueryUtils {
       """;
 
   /**
+   * Query estimates the max tuple in a page. We are estimating in two ways and selecting the greatest
+   * value.
+   */
+  public static final String CTID_ESTIMATE_MAX_TUPLE =
+      """
+      SELECT COALESCE(MAX((ctid::text::point)[1]::int), 0) AS max_tuple FROM "%s"."%s"
+      """;
+
+  /**
    * Logs the current xmin status : 1. The number of wraparounds the source DB has undergone. (These
    * are the epoch bits in the xmin snapshot). 2. The 32-bit xmin value associated with the xmin
    * snapshot. This is the value that is ultimately written and recorded on every row. 3. The raw
@@ -188,28 +198,30 @@ public class PostgresQueryUtils {
     return cursorBasedStatusMap;
   }
 
-  public static ResultWithFailed<Map<AirbyteStreamNameNamespacePair, Long>> fileNodeForStreams(final JdbcDatabase database,
-                                                                                               final List<ConfiguredAirbyteStream> streams,
-                                                                                               final String quoteString) {
-    final Map<AirbyteStreamNameNamespacePair, Long> fileNodes = new HashMap<>();
-    final List<io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair> failedToQuery = new ArrayList<>();
+  public static FileNodeHandler fileNodeForStreams(final JdbcDatabase database,
+                                                   final List<ConfiguredAirbyteStream> streams,
+                                                   final String quoteString) {
+    final FileNodeHandler fileNodeHandler = new FileNodeHandler();
     streams.forEach(stream -> {
       try {
         final AirbyteStreamNameNamespacePair namespacePair =
             new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
-        final Optional<Long> fileNode = fileNodeForStreams(database, namespacePair, quoteString);
+        final Optional<Long> fileNode = fileNodeForIndividualStream(database, namespacePair, quoteString);
         fileNode.ifPresentOrElse(
-            l -> fileNodes.put(namespacePair, l),
-            () -> failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)));
+            l -> fileNodeHandler.updateFileNode(namespacePair, l),
+            () -> fileNodeHandler
+                .updateFailedToQuery(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream)));
       } catch (final Exception e) {
         LOGGER.warn("Failed to fetch relation node for {}.{} .", stream.getStream().getNamespace(), stream.getStream().getName(), e);
-        failedToQuery.add(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
+        fileNodeHandler.updateFailedToQuery(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(stream));
       }
     });
-    return new ResultWithFailed<>(fileNodes, failedToQuery);
+    return fileNodeHandler;
   }
 
-  public static Optional<Long> fileNodeForStreams(final JdbcDatabase database, final AirbyteStreamNameNamespacePair stream, final String quoteString)
+  public static Optional<Long> fileNodeForIndividualStream(final JdbcDatabase database,
+                                                           final AirbyteStreamNameNamespacePair stream,
+                                                           final String quoteString)
       throws SQLException {
     final String streamName = stream.getName();
     final String schemaName = stream.getNamespace();
@@ -243,7 +255,7 @@ public class PostgresQueryUtils {
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
             conn -> conn.prepareStatement(CTID_FULL_VACUUM_IN_PROGRESS_QUERY.formatted(fullTableName)).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
-        if (jsonNodes.size() != 0) {
+        if (!jsonNodes.isEmpty()) {
           Preconditions.checkState(jsonNodes.size() == 1);
           LOGGER.warn("Full Vacuum currently in progress for table {} in {} phase, the table will be skipped from syncing data", fullTableName,
               jsonNodes.get(0).get("phase"));
@@ -306,6 +318,40 @@ public class PostgresQueryUtils {
         : ctidStreams.streamsForCtidSync().stream()
             .filter(c -> !streamsUnderVacuum.contains(io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair.fromConfiguredAirbyteSteam(c)))
             .toList();
+  }
+
+  public static Map<AirbyteStreamNameNamespacePair, Integer> getTableMaxTupleForStreams(final JdbcDatabase database,
+                                                                                        final List<ConfiguredAirbyteStream> streams,
+                                                                                        final String quoteString) {
+    final Map<AirbyteStreamNameNamespacePair, Integer> tableMaxTupleEstimates = new HashMap<>();
+    streams.forEach(stream -> {
+      final AirbyteStreamNameNamespacePair namespacePair =
+          new AirbyteStreamNameNamespacePair(stream.getStream().getName(), stream.getStream().getNamespace());
+      final int maxTuple = getTableMaxTupleForStream(database, namespacePair, quoteString);
+      tableMaxTupleEstimates.put(namespacePair, maxTuple);
+    });
+    return tableMaxTupleEstimates;
+  }
+
+  public static int getTableMaxTupleForStream(final JdbcDatabase database,
+                                              final AirbyteStreamNameNamespacePair stream,
+                                              final String quoteString) {
+    try {
+      final String streamName = stream.getName();
+      final String schemaName = stream.getNamespace();
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(schemaName, streamName, quoteString);
+      LOGGER.debug("running {}", CTID_ESTIMATE_MAX_TUPLE.formatted(schemaName, streamName));
+      final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
+          conn -> conn.prepareStatement(CTID_ESTIMATE_MAX_TUPLE.formatted(schemaName, streamName)).executeQuery(),
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+      Preconditions.checkState(jsonNodes.size() == 1);
+      final int maxTuple = jsonNodes.get(0).get("max_tuple").asInt();
+      LOGGER.info("Stream {} max tuple is {}", fullTableName, maxTuple);
+      return maxTuple;
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

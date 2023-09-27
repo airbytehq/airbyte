@@ -8,14 +8,10 @@ from typing import List, Optional
 
 import anyio
 from dagger import File, QueryError
-
 from pipelines.actions import environments, secrets
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds import LOCAL_BUILD_PLATFORM
-from pipelines.builds.java_connectors import (
-    BuildConnectorDistributionTar,
-    BuildConnectorImage,
-)
+from pipelines.builds.java_connectors import BuildConnectorDistributionTar, BuildConnectorImage
 from pipelines.builds.normalization import BuildOrPullNormalization
 from pipelines.contexts import ConnectorContext
 from pipelines.gradle import GradleTask
@@ -26,9 +22,10 @@ from pipelines.utils import export_container_to_tarball
 class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
-    gradle_task_name = "integrationTest"
-    DEFAULT_TASKS_TO_EXCLUDE = ["airbyteDocker"]
     title = "Java Connector Integration Tests"
+    gradle_task_name = "integrationTestJava -x airbyteDocker -x assemble"
+    mount_connector_secrets = True
+    bind_to_docker_host = True
 
     async def _load_normalization_image(self, normalization_tar_file: File):
         normalization_image_tag = f"{self.context.connector.normalization_repository}:dev"
@@ -48,25 +45,18 @@ class IntegrationTests(GradleTask):
                 if normalization_tar_file:
                     tg.start_soon(self._load_normalization_image, normalization_tar_file)
                 tg.start_soon(self._load_connector_image, connector_tar_file)
-            return await super()._run()
         except QueryError as e:
             return StepResult(self, StepStatus.FAILURE, stderr=str(e))
+        # Run the gradle integration test task now that the required docker images have been loaded.
+        return await super()._run()
 
 
 class UnitTests(GradleTask):
     """A step to run unit tests for Java connectors."""
 
     title = "Java Connector Unit Tests"
-    gradle_task_name = "test"
-    context: ConnectorContext
-
-    @property
-    def gradle_task_options(self) -> tuple[str, ...]:
-        """Return the Gradle task options to use when running unit tests."""
-        if self.context.fail_fast:
-            return ("--fail-fast",)
-
-        return ()
+    gradle_task_name = "check"
+    bind_to_docker_host = True
 
 
 async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
@@ -86,12 +76,6 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     context.connector_secrets = await secrets.get_connector_secrets(context)
     step_results = []
 
-    unit_tests_results = await UnitTests(context).run()
-    step_results.append(unit_tests_results)
-
-    if context.fail_fast and unit_tests_results.status is StepStatus.FAILURE:
-        return step_results
-
     build_distribution_tar_results = await BuildConnectorDistributionTar(context).run()
     step_results.append(build_distribution_tar_results)
     if build_distribution_tar_results.status is StepStatus.FAILURE:
@@ -102,6 +86,11 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     )
     step_results.append(build_connector_image_results)
     if build_connector_image_results.status is StepStatus.FAILURE:
+        return step_results
+
+    unit_tests_results = await UnitTests(context).run()
+    step_results.append(unit_tests_results)
+    if context.fail_fast and unit_tests_results.status is StepStatus.FAILURE:
         return step_results
 
     if context.connector.supports_normalization:

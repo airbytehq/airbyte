@@ -13,6 +13,7 @@
       "client_id": {
         "title": "Client ID",
         "description": "The client ID of your Amazon Ads developer application. See the <a href=\"https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret\">docs</a> for more information.",
+        "airbyte_secret": true,
         "order": 1,
         "type": "string"
       },
@@ -43,15 +44,26 @@
         "description": "The Start date for collecting reports, should not be more than 60 days in the past. In YYYY-MM-DD format",
         "examples": ["2022-10-10", "2022-10-22"],
         "order": 5,
-        "type": "string"
+        "type": "string",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "format": "date"
       },
       "profiles": {
         "title": "Profile IDs",
-        "description": "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">docs</a> for more details.",
+        "description": "Profile IDs you want to fetch data for. See <a href=\"https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles\">docs</a> for more details. Note: If Marketplace IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.",
         "order": 6,
         "type": "array",
         "items": {
           "type": "integer"
+        }
+      },
+      "marketplace_ids": {
+        "title": "Marketplace IDs",
+        "description": "Marketplace IDs you want to fetch data for. Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID OR the Marketplace ID.",
+        "order": 7,
+        "type": "array",
+        "items": {
+          "type": "string"
         }
       },
       "state_filter": {
@@ -63,14 +75,14 @@
         },
         "type": "array",
         "uniqueItems": true,
-        "order": 7
+        "order": 8
       },
       "look_back_window": {
         "title": "Look Back Window",
         "description": "The amount of days to go back in time to get the updated data from Amazon Ads",
         "default": 3,
         "examples": [3, 10],
-        "order": 8,
+        "order": 9,
         "type": "integer"
       },
       "report_record_types": {
@@ -91,7 +103,7 @@
         },
         "type": "array",
         "uniqueItems": true,
-        "order": 9
+        "order": 10
       }
     },
     "required": ["client_id", "client_secret", "refresh_token"],

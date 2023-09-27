@@ -36,6 +36,7 @@ This connector has been tested for the Airbyte organization, which has 266 repos
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.0 | 2023-08-24 | [29320](https://github.com/airbytehq/airbyte/pull/29320) | Migrate to Low Code |
 | 0.1.1 | 2023-08-16 | [13007](https://github.com/airbytehq/airbyte/pull/13007) | Fix schema and tests |
 | 0.1.0 | 2022-05-20 | [13007](https://github.com/airbytehq/airbyte/pull/13007) | New source |
 

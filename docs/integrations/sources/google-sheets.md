@@ -8,15 +8,15 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 
 ### Prerequisites
 - Spreadsheet Link - The link to the Google spreadsheet you want to sync.
-<env:cloud>
+<!-- env:cloud -->
 - **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet  
-</env:cloud>
-<env:oss>
+<!-- /env:cloud -->
+<!-- env:oss -->
 -  **For Airbyte Open Source:** 
   - A GCP project
   - Enable the Google Sheets API in your GCP project
   - Service Account Key with access to the Spreadsheet you want to replicate
-</env:oss>
+<!-- /env:oss -->
 
 ## Setup guide
 
@@ -95,8 +95,7 @@ To set up Google Sheets as a source in Airbyte Cloud:
 
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
 7. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
-8. (Optional) For **Row Batch Size**, you may specify the number of records you want to fetch per request to the Google API. By adjusting this value, you can balance the efficiency of the data retrieval process with [Google's request quotas](#performance-consideration). The default value of 200 should suffice for most use cases.
-9. Click **Set up source** and wait for the tests to complete.
+8. Click **Set up source** and wait for the tests to complete.
 
 ### Output schema
 
@@ -133,6 +132,9 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 |---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.3.9   | 2023-09-25 | [30749](https://github.com/airbytehq/airbyte/pull/30749) | Performance testing - include socat binary in docker image                        |
+| 0.3.8   | 2023-09-25 | [30747](https://github.com/airbytehq/airbyte/pull/30747) | Performance testing - include socat binary in docker image                        |
+| 0.3.7   | 2023-08-25 | [29826](https://github.com/airbytehq/airbyte/pull/29826) | Remove row batch size from spec, add auto increase this value when rate limits    |
 | 0.3.6   | 2023-08-16 | [29491](https://github.com/airbytehq/airbyte/pull/29491) | Update to latest CDK                                                              |
 | 0.3.5   | 2023-08-16 | [29427](https://github.com/airbytehq/airbyte/pull/29427) | Add stop reading in case of 429 error                                             |
 | 0.3.4   | 2023-05-15 | [29453](https://github.com/airbytehq/airbyte/pull/29453) | Update spec descriptions                                                          |

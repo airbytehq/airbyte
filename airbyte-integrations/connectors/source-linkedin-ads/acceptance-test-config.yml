@@ -31,23 +31,6 @@ acceptance_tests:
         campaign_groups:
           - name: "lastModified"
             bypass_reason: "Volatile data"
-      empty_streams:
-        - name: ad_member_company_size_analytics
-          bypass_reason: "Empty stream; Retention period is 2y"
-        - name: ad_member_country_analytics
-          bypass_reason: "Empty stream; Retention period is 2y"
-        - name: ad_member_job_function_analytics
-          bypass_reason: "Empty stream; Retention period is 2y"
-        - name: ad_member_job_title_analytics
-          bypass_reason: "Empty stream; Retention period is 2y"
-        - name: ad_member_industry_analytics
-          bypass_reason: "Empty stream; Retention period is 2y"
-        - name: ad_member_seniority_analytics
-          bypass_reason: "Empty stream; Retention period is 2y"
-        - name: ad_member_region_analytics
-          bypass_reason: "Empty stream; Retention period is 2y"
-        - name: ad_member_company_analytics
-          bypass_reason: "Empty stream; Retention period is 2y"
   incremental:
     tests:
     - config_path: "secrets/config_oauth.json"

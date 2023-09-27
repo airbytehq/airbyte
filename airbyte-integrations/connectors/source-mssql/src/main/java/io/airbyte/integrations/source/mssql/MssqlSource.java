@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
+import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
@@ -32,6 +32,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
 import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.debezium.internals.mssql.MssqlCdcTargetPosition;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -448,7 +449,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
-    if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
+    if (MssqlCdcHelper.isCdc(sourceConfig) && isAnyStreamIncrementalSyncMode(catalog)) {
       LOGGER.info("using CDC: {}", true);
       final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
       final AirbyteDebeziumHandler<Lsn> handler =
@@ -463,6 +464,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           new MssqlCdcStateHandler(stateManager),
           mssqlCdcConnectorMetadataInjector,
           MssqlCdcHelper.getDebeziumProperties(database, catalog),
+          DebeziumPropertiesManager.DebeziumConnectorType.RELATIONALDB,
           emittedAt, true);
 
       return Collections.singletonList(incrementalIteratorSupplier.get());
