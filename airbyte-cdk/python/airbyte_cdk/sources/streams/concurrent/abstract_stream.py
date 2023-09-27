@@ -60,12 +60,11 @@ class AbstractStream(ABC):
 
     @property
     @abstractmethod
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Optional[str]:
         """
         Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
-        :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
+        :return: The name of the field used as a cursor. Nested cursor fields are not supported.
         """
-        pass
 
     @property
     @abstractmethod
