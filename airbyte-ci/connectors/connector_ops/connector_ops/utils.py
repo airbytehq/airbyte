@@ -276,6 +276,11 @@ class Connector:
         return self.documentation_directory / readme_file_name
 
     @property
+    def inapp_documentation_file_path(self) -> Path:
+        readme_file_name = f"{self.name}.inapp.md"
+        return self.documentation_directory / readme_file_name
+
+    @property
     def migration_guide_file_name(self) -> str:
         return f"{self.name}-migrations.md"
 
