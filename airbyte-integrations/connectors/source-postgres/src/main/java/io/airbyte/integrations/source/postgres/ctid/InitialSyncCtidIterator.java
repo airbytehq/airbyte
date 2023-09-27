@@ -283,13 +283,13 @@ public class InitialSyncCtidIterator extends AbstractIterator<RowDataWithCtid> i
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setObject(1, lowerBound.toString());
         preparedStatement.setObject(2, upperBound.toString());
-        LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+        LOGGER.info("Executing query for table {}: {} with bindings {} and {}", tableName, sql, lowerBound, upperBound);
         return preparedStatement;
       } else {
         final String sql = "SELECT ctid::text, %s FROM %s WHERE ctid > ?::tid".formatted(wrappedColumnNames, fullTableName);
         final PreparedStatement preparedStatement = connection.prepareStatement(sql);
         preparedStatement.setObject(1, lowerBound.toString());
-        LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
+        LOGGER.info("Executing query for table {}: {} with binding {}", tableName, sql, lowerBound);
         return preparedStatement;
       }
     } catch (final SQLException e) {
