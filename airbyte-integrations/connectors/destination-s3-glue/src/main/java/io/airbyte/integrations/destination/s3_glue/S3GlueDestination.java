@@ -15,7 +15,7 @@ import io.airbyte.cdk.integrations.destination.s3.SerializedBufferFactory;
 import io.airbyte.cdk.integrations.destination.s3.StorageProvider;
 import io.airbyte.cdk.integrations.destination.s3.util.S3NameTransformer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.s3.BaseS3Destination;
+import io.airbyte.cdk.integrations.destination.s3.BaseS3Destination;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;

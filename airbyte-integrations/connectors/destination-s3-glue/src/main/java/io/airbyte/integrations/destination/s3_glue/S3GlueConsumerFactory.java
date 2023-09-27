@@ -18,8 +18,8 @@ import io.airbyte.cdk.integrations.destination.record_buffer.FlushBufferFunction
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.destination.s3.BlobStorageOperations;
-import io.airbyte.integrations.destination.s3.WriteConfig;
+import io.airbyte.cdk.integrations.destination.s3.BlobStorageOperations;
+import io.airbyte.cdk.integrations.destination.s3.WriteConfig;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;

@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.r2;
 
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.destination.s3.StorageProvider;
-import io.airbyte.integrations.destination.s3.BaseS3Destination;
+import io.airbyte.cdk.integrations.destination.s3.BaseS3Destination;
 
 public class R2Destination extends BaseS3Destination {
 

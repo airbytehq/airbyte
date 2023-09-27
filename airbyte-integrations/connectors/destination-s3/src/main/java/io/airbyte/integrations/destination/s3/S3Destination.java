@@ -6,6 +6,8 @@ package io.airbyte.integrations.destination.s3;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.destination.s3.BaseS3Destination;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfigFactory;
 
 public class S3Destination extends BaseS3Destination {
 

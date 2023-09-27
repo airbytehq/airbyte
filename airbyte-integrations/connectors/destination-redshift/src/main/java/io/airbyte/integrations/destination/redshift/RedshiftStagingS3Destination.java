@@ -35,10 +35,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
-import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
-import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
-import io.airbyte.integrations.destination.s3.EncryptionConfig;
-import io.airbyte.integrations.destination.s3.NoEncryption;
+import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption;
+import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
+import io.airbyte.cdk.integrations.destination.s3.EncryptionConfig;
+import io.airbyte.cdk.integrations.destination.s3.NoEncryption;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
