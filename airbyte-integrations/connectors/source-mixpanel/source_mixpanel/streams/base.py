@@ -5,7 +5,7 @@
 import time
 from abc import ABC
 from datetime import timedelta
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from pendulum import Date
+from source_mixpanel.utils import fix_date_time
 
 
 class MixpanelStream(HttpStream, ABC):
@@ -24,6 +25,13 @@ class MixpanelStream(HttpStream, ABC):
     """
 
     DEFAULT_REQS_PER_HOUR_LIMIT = 60
+
+    @property
+    def state_checkpoint_interval(self) -> int:
+        # to meet the requirement of emitting state at least once per 15 minutes,
+        # we assume there's at least 1 record per request returned. Given that each request is followed by a 60 seconds sleep
+        # we'll have to emit state every 15 records
+        return 15
 
     @property
     def url_base(self):
@@ -84,6 +92,7 @@ class MixpanelStream(HttpStream, ABC):
             data = [json_response]
 
         for record in data:
+            fix_date_time(record)
             yield record
 
     def parse_response(
@@ -101,10 +110,14 @@ class MixpanelStream(HttpStream, ABC):
             self.logger.info(f"Sleep for {3600 / self.reqs_per_hour_limit} seconds to match API limitations after reading from {self.name}")
             time.sleep(3600 / self.reqs_per_hour_limit)
 
+    @property
+    def max_retries(self) -> Union[int, None]:
+        # we want to limit the max sleeping time by 2^3 * 60 = 8 minutes
+        return 3
+
     def backoff_time(self, response: requests.Response) -> float:
         """
         Some API endpoints do not return "Retry-After" header.
-        https://developer.mixpanel.com/reference/import-events#rate-limits (exponential backoff)
         """
 
         retry_after = response.headers.get("Retry-After")

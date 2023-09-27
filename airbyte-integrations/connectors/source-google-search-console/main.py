@@ -11,7 +11,7 @@ from source_google_search_console.config_migrations import MigrateCustomReports
 
 if __name__ == "__main__":
     source = SourceGoogleSearchConsole()
-    # migarte config at runtime
+    # migrate config at runtime
     MigrateCustomReports.migrate(sys.argv[1:], source)
     # run the connector
     launch(source, sys.argv[1:])

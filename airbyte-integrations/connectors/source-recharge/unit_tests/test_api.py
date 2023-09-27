@@ -281,12 +281,7 @@ class TestIncrementalStreams:
                 {"cursor": "123"},
                 {"updated_at": "2030-01-01"},
                 {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
-                {
-                    "limit": 250,
-                    "cursor": "123",
-                    "updated_at_min": "2020-01-01T00:00:00Z",
-                    "updated_at_max": "2020-02-01T00:00:00Z"
-                }
+                {"limit": 250, "cursor": "123"}
             ),
             (
                 Customers,
@@ -307,12 +302,7 @@ class TestIncrementalStreams:
                 {"cursor": "123"},
                 {"updated_at": "2030-01-01"},
                 {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
-                {
-                    "limit": 250,
-                    "cursor": "123",
-                    "updated_at_min": "2020-01-01T00:00:00Z",
-                    "updated_at_max": "2020-02-01T00:00:00Z"
-                }
+                {"limit": 250, "cursor": "123"}
             ),
             (
                 Orders,
