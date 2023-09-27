@@ -146,6 +146,12 @@ class StreamFacade(Stream):
         return False
 
     def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+        """
+        Verifies the stream is available. Delegates to the underlying AbstractStream and ignores the parameters
+        :param logger: (ignored)
+        :param source:  (ignored)
+        :return:
+        """
         return self._stream.check_availability()
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
