@@ -9,60 +9,22 @@ from queue import Queue
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, FieldPath, StreamFacade
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, LegacyAvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser, LegacyErrorMessageParser
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, FieldPath
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import LegacyPartitionGenerator, PartitionGenerator
+from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, PartitionCompleteSentinel, QueueItem
-from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 
 class ThreadBasedConcurrentStream(AbstractStream):
 
     TIMEOUT_SECONDS = 300
-
-    @classmethod
-    def create_from_legacy_stream(cls, stream: Stream, source: AbstractSource, max_workers: int, slice_logger: SliceLogger) -> Stream:
-        """
-        Create a ConcurrentStream from a legacy Stream.
-        :param slice_logger:
-        :param source:
-        :param stream:
-        :param max_workers:
-        :return:
-        """
-        pk = cls._get_primary_key_from_stream(stream.primary_key)
-        return StreamFacade(
-            ThreadBasedConcurrentStream(
-                partition_generator=LegacyPartitionGenerator(stream),
-                max_workers=max_workers,
-                name=stream.name,
-                json_schema=stream.get_json_schema(),
-                availability_strategy=LegacyAvailabilityStrategy(stream, source),
-                primary_key=pk,
-                cursor_field=stream.cursor_field,
-                error_display_message_parser=LegacyErrorMessageParser(stream),
-                slice_logger=slice_logger,
-            )
-        )
-
-    @classmethod
-    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> FieldPath:
-        if stream_primary_key is None or isinstance(stream_primary_key, str):
-            return stream_primary_key
-        elif isinstance(stream_primary_key, list):
-            if len(stream_primary_key) > 0 and all(isinstance(k, str) for k in stream_primary_key):
-                return stream_primary_key  # type: ignore # We verified all items in the list are strings
-            else:
-                raise ValueError(f"Nested primary keys are not supported. Found {stream_primary_key}")
-        else:
-            raise ValueError(f"Invalid type for primary key: {stream_primary_key}")
 
     def __init__(
         self,

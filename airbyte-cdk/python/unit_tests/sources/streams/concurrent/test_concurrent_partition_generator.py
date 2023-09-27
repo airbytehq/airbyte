@@ -6,8 +6,8 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.concurrent.legacy import LegacyPartition
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
-from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import LegacyPartition
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL
 
 

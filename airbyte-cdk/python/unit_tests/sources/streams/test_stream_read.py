@@ -10,7 +10,7 @@ import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
+from airbyte_cdk.sources.streams.concurrent.legacy import StreamFacade
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
@@ -54,7 +54,7 @@ def _legacy_stream(slice_to_partition_mapping, slice_logger, logger):
 def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger):
     legacy_stream = _legacy_stream(slice_to_partition_mapping, slice_logger, logger)
     source = Mock()
-    stream = ThreadBasedConcurrentStream.create_from_legacy_stream(legacy_stream, source, 1, slice_logger)
+    stream = StreamFacade.create_from_legacy_stream(legacy_stream, source, 1, slice_logger)
     stream.logger.setLevel(logger.level)
     return stream
 
