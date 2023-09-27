@@ -15,6 +15,8 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
 
+FieldPath = Union[str, List[str]]
+
 
 @deprecated("This class is experimental. Use at your own risk.")
 class AbstractStream(ABC):
