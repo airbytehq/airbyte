@@ -55,26 +55,6 @@ class LegacyPartition(Partition):
         return f"LegacyPartition({self._stream.name}, {self._slice})"
 
 
-def _make_hash(o: Any) -> int:
-    """
-    Makes a hash from a dictionary, list, tuple or set to any level, that contains
-    only other hashable types (including any lists, tuples, sets, and
-    dictionaries).
-    """
-    # str and dict are iterables but they are hashed differently from other iterables
-    if isinstance(o, str):
-        return hash(o)
-    if isinstance(o, dict):
-        new_o = copy.deepcopy(o)
-        for k, v in new_o.items():
-            new_o[k] = _make_hash(v)
-        return hash(tuple(frozenset(sorted(new_o.items()))))
-    elif isinstance(o, Iterable):
-        return hash(tuple([_make_hash(e) for e in o]))
-    else:
-        return hash(o)
-
-
 class LegacyPartitionGenerator(PartitionGenerator):
     def __init__(self, stream: Stream):
         self._stream = stream
