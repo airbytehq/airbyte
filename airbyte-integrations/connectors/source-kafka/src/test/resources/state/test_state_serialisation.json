@@ -1,0 +1,1 @@
+[{"type":"STREAM","stream":{"stream_descriptor":{"name":"topic-0"},"stream_state":{"partitions":{"0":24}}}},{"type":"STREAM","stream":{"stream_descriptor":{"name":"topic-1"},"stream_state":{"partitions":{"0":42,"1":66}}}}]
