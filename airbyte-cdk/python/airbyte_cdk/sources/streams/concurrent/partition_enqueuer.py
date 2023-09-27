@@ -9,8 +9,16 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator impor
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, QueueItem
 
 
-class ConcurrentPartitionGenerator:
+class PartitionEnqueuer:
+    """
+    Generates partitions from a partition generator and puts them in a queue.
+    """
+
     def __init__(self, queue: Queue[QueueItem], sentinel: PARTITIONS_GENERATED_SENTINEL) -> None:
+        """
+        :param queue:  The queue to put the partitions in.
+        :param sentinel: The sentinel to put in the queue when all the partitions have been generated.
+        """
         self._queue = queue
         self._sentinel = sentinel
 

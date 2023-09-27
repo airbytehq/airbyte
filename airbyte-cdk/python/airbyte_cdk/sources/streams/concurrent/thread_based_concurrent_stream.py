@@ -12,8 +12,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, FieldPath, StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, LegacyAvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser, LegacyErrorMessageParser
+from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import LegacyPartitionGenerator, PartitionGenerator
@@ -88,7 +88,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self.logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
         futures = []
         queue: Queue[QueueItem] = Queue()
-        partition_generator = ConcurrentPartitionGenerator(queue, PARTITIONS_GENERATED_SENTINEL)
+        partition_generator = PartitionEnqueuer(queue, PARTITIONS_GENERATED_SENTINEL)
         partition_reader = PartitionReader(queue)
 
         # Submit partition generation tasks

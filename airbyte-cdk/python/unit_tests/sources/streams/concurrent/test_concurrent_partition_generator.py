@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
+from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import LegacyPartition
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL
 
@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_G
 )
 def test_partition_generator(slices):
     queue = Queue()
-    partition_generator = ConcurrentPartitionGenerator(queue, PARTITIONS_GENERATED_SENTINEL)
+    partition_generator = PartitionEnqueuer(queue, PARTITIONS_GENERATED_SENTINEL)
 
     stream = Mock()
     partitions = [LegacyPartition(stream, s) for s in slices]
