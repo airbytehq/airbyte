@@ -103,3 +103,18 @@ task assertCdkVersionNotPublished {
         }
     }
 }
+
+task cleanLocalCache {
+    def userHome = System.getProperty("user.home")
+    doLast {
+        delete '.gradle'
+        delete '${userHome}/.m2/repository/io/airbyte/'
+        delete '${userHome}/.gradle/caches/modules-2/files-2.1/io.airbyte.cdk/'
+        delete 'build'
+        delete 'core/build'
+        delete 'db-sources/build'
+        delete 'db-destinations/build'
+    }
+}
+
+clean.dependsOn(cleanLocalCache)
