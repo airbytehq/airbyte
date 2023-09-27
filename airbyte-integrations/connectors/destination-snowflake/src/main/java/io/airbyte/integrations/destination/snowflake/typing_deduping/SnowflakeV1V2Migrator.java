@@ -102,7 +102,8 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
   }
 
   /**
-   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't know how to use
+   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't
+   * know how to use
    */
   private boolean fromSnowflakeBoolean(String input) {
     return input.equalsIgnoreCase("yes");

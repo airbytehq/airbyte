@@ -102,7 +102,8 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
   }
 
   /**
-   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't know how to use
+   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't
+   * know how to use
    */
   private boolean fromSnowflakeBoolean(String input) {
     return input.equalsIgnoreCase("yes");

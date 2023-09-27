@@ -116,7 +116,8 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
   }
 
   /**
-   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't know how to use
+   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't
+   * know how to use
    */
   private boolean fromSnowflakeBoolean(String input) {
     return input.equalsIgnoreCase("yes");
