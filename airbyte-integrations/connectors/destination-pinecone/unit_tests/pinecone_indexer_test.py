@@ -6,13 +6,13 @@ from unittest.mock import ANY, MagicMock, Mock, call, patch
 
 import pytest
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
-from destination_pinecone.config import PineconeIndexingModel
+from destination_pinecone.config import NamespaceModel, PineconeIndexingModel
 from destination_pinecone.indexer import PineconeIndexer
 from pinecone import IndexDescription
 
 
-def create_pinecone_indexer():
-    config = PineconeIndexingModel(mode="pinecone", pinecone_environment="myenv", pinecone_key="mykey", index="myindex")
+def create_pinecone_indexer(namespace=None):
+    config = PineconeIndexingModel(mode="pinecone", pinecone_environment="myenv", pinecone_key="mykey", index="myindex", namespace=NamespaceModel(mode="constant", value=namespace) if namespace is not None else None)
     indexer = PineconeIndexer(config, 3)
 
     indexer.pinecone_index.delete = MagicMock()
@@ -43,8 +43,16 @@ def mock_describe_index():
         yield mock
 
 
-def test_pinecone_index_upsert_and_delete(mock_describe_index):
-    indexer = create_pinecone_indexer()
+@pytest.mark.parametrize(
+    "namespace, called_with",
+    [
+        (None, None),
+        ("", None),
+        ("my_namespace", "my_namespace"),
+    ]
+)
+def test_pinecone_index_upsert_and_delete(mock_describe_index, namespace, called_with):
+    indexer = create_pinecone_indexer(namespace)
     indexer._pod_type = "p1"
     indexer.index(
         [
@@ -53,7 +61,7 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
         ],
         ["delete_id1", "delete_id2"],
     )
-    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}})
+    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, namespace=called_with)
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
             (ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test"}),
@@ -61,6 +69,7 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
         ),
         async_req=True,
         show_progress=False,
+        namespace=called_with,
     )
 
 
@@ -86,6 +95,7 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
         ),
         async_req=True,
         show_progress=False,
+        namespace=None,
     )
 
 
@@ -164,10 +174,18 @@ def generate_catalog():
     )
 
 
-def test_pinecone_pre_sync(mock_describe_index):
-    indexer = create_pinecone_indexer()
+@pytest.mark.parametrize(
+    "namespace, called_with",
+    [
+        (None, None),
+        ("", None),
+        ("my_namespace", "my_namespace"),
+    ]
+)
+def test_pinecone_pre_sync(mock_describe_index, namespace, called_with):
+    indexer = create_pinecone_indexer(namespace)
     indexer.pre_sync(generate_catalog())
-    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_stream": "example_stream2"})
+    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_stream": "example_stream2"}, namespace=called_with)
 
 
 def test_pinecone_pre_sync_starter(mock_describe_index):
@@ -180,21 +198,24 @@ def test_pinecone_pre_sync_starter(mock_describe_index):
 
 
 @pytest.mark.parametrize(
-    "describe_throws,reported_dimensions,check_succeeds",
+    "describe_throws,reported_dimensions,pod_type,namespace,check_succeeds",
     [
-        (False, 3, True),
-        (False, 4, False),
-        (True, 3, False),
-        (True, 4, False),
+        (False, 3, "p1", None, True),
+        (False, 4, "p1", None, False),
+        (True, 3, "p1", None, False),
+        (True, 4, "p1", None, False),
+        (False, 3, "starter", None, True),
+        (False, 3, "starter", "", True),
+        (False, 3, "starter", "my_namespace", False),
     ],
 )
 @patch("pinecone.describe_index")
-def test_pinecone_check(describe_mock, describe_throws, reported_dimensions, check_succeeds):
-    indexer = create_pinecone_indexer()
+def test_pinecone_check(describe_mock, describe_throws, reported_dimensions, pod_type, namespace, check_succeeds):
+    indexer = create_pinecone_indexer(namespace)
     indexer.embedding_dimensions = 3
     if describe_throws:
         describe_mock.side_effect = Exception("describe failed")
-    describe_mock.return_value = create_index_description(dimensions=reported_dimensions)
+    describe_mock.return_value = create_index_description(dimensions=reported_dimensions, pod_type=pod_type)
     result = indexer.check()
     if check_succeeds:
         assert result is None
@@ -226,4 +247,5 @@ def test_metadata_normalization():
         vectors=((ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test", "small": "a", "id": 1}),),
         async_req=True,
         show_progress=False,
+        namespace=None
     )

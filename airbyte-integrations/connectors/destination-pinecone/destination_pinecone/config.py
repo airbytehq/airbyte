@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Union
+from typing import Literal, Optional, Union
 
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import (
@@ -16,6 +16,15 @@ from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
 
 
+class NamespaceModel(BaseModel):
+    mode: Literal["constant"] = Field("constant", const=True)
+    value: Optional[str] = Field(
+        title="Namespace",
+        default="",
+        description="Namespace to use for all records. This is not supported on starter pods",
+    )
+
+
 class PineconeIndexingModel(BaseModel):
     pinecone_key: str = Field(
         ...,
@@ -27,6 +36,7 @@ class PineconeIndexingModel(BaseModel):
         ..., title="Pinecone Environment", description="Pinecone Cloud environment to use", examples=["us-west1-gcp", "gcp-starter"]
     )
     index: str = Field(..., title="Index", description="Pinecone index in your project to load data into")
+    namespace: Optional[NamespaceModel]
 
     class Config:
         title = "Indexing"

@@ -32,6 +32,7 @@ class PineconeIndexer(Indexer):
 
         self.pinecone_index = pinecone.GRPCIndex(config.index)
         self.embedding_dimensions = embedding_dimensions
+        self._namespace = config.namespace.value if config.namespace and config.namespace.value != "" else None
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog):
         index_description = pinecone.describe_index(self.config.index)
@@ -49,7 +50,7 @@ class PineconeIndexer(Indexer):
             top_k = 10000
             self.delete_by_metadata(filter, top_k)
         else:
-            self.pinecone_index.delete(filter=filter)
+            self.pinecone_index.delete(filter=filter, namespace=self._namespace)
 
     def delete_by_metadata(self, filter, top_k):
         zero_vector = [0.0] * self.embedding_dimensions
@@ -94,7 +95,7 @@ class PineconeIndexer(Indexer):
         serial_batches = create_chunks(pinecone_docs, batch_size=PINECONE_BATCH_SIZE * PARALLELISM_LIMIT)
         for batch in serial_batches:
             async_results = [
-                self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False)
+                self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False, namespace=self._namespace)
                 for ids_vectors_chunk in create_chunks(batch, batch_size=PINECONE_BATCH_SIZE)
             ]
             # Wait for and retrieve responses (this raises in case of error)
@@ -106,6 +107,8 @@ class PineconeIndexer(Indexer):
             actual_dimension = int(description.dimension)
             if actual_dimension != self.embedding_dimensions:
                 return f"Your embedding configuration will produce vectors with dimension {self.embedding_dimensions:d}, but your index is configured with dimension {actual_dimension:d}. Make sure embedding and indexing configurations match."
+            if description.pod_type == "starter" and self._namespace is not None:
+                return "Namespaces are not supported for starter pods."
         except Exception as e:
             return format_exception(e)
         return None

@@ -24,6 +24,25 @@
             "title": "Index",
             "description": "Pinecone index in your project to load data into",
             "type": "string"
+          },
+          "namespace": {
+            "title": "NamespaceModel",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "constant",
+                "const": "constant",
+                "enum": ["constant"],
+                "type": "string"
+              },
+              "value": {
+                "title": "Namespace",
+                "description": "Namespace to use for all records. This is not supported on starter pods",
+                "default": "",
+                "type": "string"
+              }
+            }
           }
         },
         "required": ["pinecone_key", "pinecone_environment", "index"],
