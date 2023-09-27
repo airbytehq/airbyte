@@ -1,13 +1,26 @@
 data:
+  allowedHosts:
+    hosts:
+      - "${indexing.host}"
+      - api.openai.com
+      - api.cohere.ai
+      - "${embedding.api_base}"
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        # TODO: Remove once https://github.com/airbytehq/airbyte/issues/30611 is resolved
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
   connectorSubtype: database
   connectorType: destination
   definitionId: 65de8962-48c9-11ee-be56-0242ac120002
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/destination-milvus
   githubIssueLabel: destination-milvus
   icon: milvus.svg
@@ -19,7 +32,7 @@ data:
   tags:
     - language:python
   ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+    sl: 200
+    ql: 300
+  supportLevel: certified
 metadataSpecVersion: "1.0"

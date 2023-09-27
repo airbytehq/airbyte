@@ -158,6 +158,108 @@
             "examples": ["age", "user", "user.name"],
             "type": "array",
             "items": { "type": "string" }
+          },
+          "text_splitter": {
+            "title": "Text splitter",
+            "description": "Split text fields into chunks based on the specified method.",
+            "type": "object",
+            "discriminator": {
+              "propertyName": "mode",
+              "mapping": {
+                "separator": "#/definitions/SeparatorSplitterConfigModel",
+                "markdown": "#/definitions/MarkdownHeaderSplitterConfigModel",
+                "code": "#/definitions/CodeSplitterConfigModel"
+              }
+            },
+            "oneOf": [
+              {
+                "title": "By Separator",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "separator",
+                    "const": "separator",
+                    "enum": ["separator"],
+                    "type": "string"
+                  },
+                  "separators": {
+                    "title": "Separators",
+                    "description": "List of separator strings to split text fields by. The separator itself needs to be wrapped in double quotes, e.g. to split by the dot character, use \".\". To split by a newline, use \"\\n\".",
+                    "default": ["\"\\n\\n\"", "\"\\n\"", "\" \"", "\"\""],
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "keep_separator": {
+                    "title": "Keep separator",
+                    "description": "Whether to keep the separator in the resulting chunks",
+                    "default": false,
+                    "type": "boolean"
+                  }
+                },
+                "description": "Split the text by the list of separators until the chunk size is reached, using the earlier mentioned separators where possible. This is useful for splitting text fields by paragraphs, sentences, words, etc."
+              },
+              {
+                "title": "By Markdown header",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "markdown",
+                    "const": "markdown",
+                    "enum": ["markdown"],
+                    "type": "string"
+                  },
+                  "split_level": {
+                    "title": "Split level",
+                    "description": "Level of markdown headers to split text fields by. Headings down to the specified level will be used as split points",
+                    "default": 1,
+                    "minimum": 1,
+                    "maximum": 6,
+                    "type": "integer"
+                  }
+                },
+                "description": "Split the text by Markdown headers down to the specified header level. If the chunk size fits multiple sections, they will be combined into a single chunk."
+              },
+              {
+                "title": "By Programming Language",
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "title": "Mode",
+                    "default": "code",
+                    "const": "code",
+                    "enum": ["code"],
+                    "type": "string"
+                  },
+                  "language": {
+                    "title": "Language",
+                    "description": "Split code in suitable places based on the programming language",
+                    "enum": [
+                      "cpp",
+                      "go",
+                      "java",
+                      "js",
+                      "php",
+                      "proto",
+                      "python",
+                      "rst",
+                      "ruby",
+                      "rust",
+                      "scala",
+                      "swift",
+                      "markdown",
+                      "latex",
+                      "html",
+                      "sol"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": ["language"],
+                "description": "Split the text by suitable delimiters based on the programming language. This is useful for splitting code into chunks."
+              }
+            ]
           }
         },
         "required": ["chunk_size"],

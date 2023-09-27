@@ -76,7 +76,7 @@ class SourceStripe(AbstractSource):
         stripe.api_key = config["client_secret"]
         try:
             stripe.Account.retrieve(config["account_id"])
-        except stripe.error.AuthenticationError as e:
+        except (stripe.error.AuthenticationError, stripe.error.PermissionError) as e:
             return False, str(e)
         return True, None
 
@@ -152,7 +152,6 @@ class SourceStripe(AbstractSource):
                 "invoice.payment_failed",
                 "invoice.payment_succeeded",
                 "invoice.sent",
-                "invoice.upcoming",
                 "invoice.updated",
                 "invoice.voided",
                 "invoice.deleted",
