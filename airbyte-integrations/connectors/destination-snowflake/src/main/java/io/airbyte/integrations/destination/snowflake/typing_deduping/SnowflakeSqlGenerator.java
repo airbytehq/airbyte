@@ -8,7 +8,7 @@ import static java.util.stream.Collectors.joining;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.Array;
@@ -49,7 +49,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public StreamId buildStreamId(final String namespace, final String name, final String rawNamespaceOverride) {
-    // No escaping needed, as far as I can tell. We quote all our identifier names.
     return new StreamId(
         escapeSqlIdentifier(namespace).toUpperCase(),
         escapeSqlIdentifier(name).toUpperCase(),
@@ -61,11 +60,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public ColumnId buildColumnId(final String name, final String suffix) {
-    // No escaping needed, as far as I can tell. We quote all our identifier names.
-    final String nameWithSuffix = name + suffix;
-    return new ColumnId(prefixReservedColumnName(escapeSqlIdentifier(name).toUpperCase()) + suffix,
-        nameWithSuffix,
-        nameWithSuffix.toUpperCase());
+    final String escapedName = prefixReservedColumnName(escapeSqlIdentifier(name).toUpperCase()) + suffix.toUpperCase();
+    return new ColumnId(escapedName, name, escapedName);
   }
 
   public String toDialectType(final AirbyteType type) {

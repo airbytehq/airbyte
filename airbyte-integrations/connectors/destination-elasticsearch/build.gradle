@@ -1,8 +1,15 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.elasticsearch.ElasticsearchDestination'
@@ -10,10 +17,8 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
 
     implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
@@ -31,9 +36,6 @@ dependencies {
     // https://www.testcontainers.org/
     testImplementation libs.testcontainers.elasticsearch
     integrationTestJavaImplementation libs.testcontainers.elasticsearch
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-elasticsearch')
 }
 
 repositories {

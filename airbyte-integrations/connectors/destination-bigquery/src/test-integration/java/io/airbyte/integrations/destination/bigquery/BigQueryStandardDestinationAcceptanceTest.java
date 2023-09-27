@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.bigquery;
 
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.util.HashSet;
 import org.junit.jupiter.api.Disabled;
