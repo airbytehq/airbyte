@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.22
+Vector DB CDK: Adjust batch size for Azure embedder to current limits
+
 ## 0.51.21
 Change Error message if Stream is not found
 
