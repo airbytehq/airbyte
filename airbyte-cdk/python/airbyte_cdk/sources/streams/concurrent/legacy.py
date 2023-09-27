@@ -37,13 +37,12 @@ class StreamFacade(Stream):
     """
 
     @classmethod
-    def create_from_legacy_stream(cls, stream: Stream, source: AbstractSource, max_workers: int, slice_logger: SliceLogger) -> Stream:
+    def create_from_legacy_stream(cls, stream: Stream, source: AbstractSource, max_workers: int) -> Stream:
         """
         Create a ConcurrentStream from a legacy Stream.
-        :param slice_logger:
-        :param source:
-        :param stream:
-        :param max_workers:
+        :param source: The source
+        :param stream: The stream
+        :param max_workers: The maximum number of worker thread to use
         :return:
         """
         pk = cls._get_primary_key_from_stream(stream.primary_key)
@@ -57,7 +56,7 @@ class StreamFacade(Stream):
                 primary_key=pk,
                 cursor_field=stream.cursor_field,
                 error_display_message_parser=LegacyErrorMessageParser(stream),
-                slice_logger=slice_logger,
+                slice_logger=source._slice_logger,
             )
         )
 
