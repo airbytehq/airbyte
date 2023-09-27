@@ -112,6 +112,60 @@
         }
       }
     },
+    "associations_contactIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_contentIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_companyIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_dealIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_marketingEventIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_ownerIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_quoteIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_workflowIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "associations_ticketIds": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
     "attachments": {
       "type": ["null", "array"],
       "items": {
@@ -329,6 +383,208 @@
           "type": ["null", "boolean"]
         }
       }
+    },
+    "metadata_body": {
+      "type": ["null", "string"]
+    },
+    "metadata_from": {
+      "type": ["null", "object"],
+      "properties": {
+        "email": {
+          "type": ["null", "string"]
+        },
+        "firstName": {
+          "type": ["null", "string"]
+        },
+        "lastName": {
+          "type": ["null", "string"]
+        },
+        "raw": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "metadata_sender": {
+      "type": ["null", "object"],
+      "properties": {
+        "email": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "metadata_to": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "email": {
+            "type": ["null", "string"]
+          },
+          "firstName": {
+            "type": ["null", "string"]
+          },
+          "lastName": {
+            "type": ["null", "string"]
+          },
+          "raw": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "metadata_cc": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "email": {
+            "type": ["null", "string"]
+          },
+          "firstName": {
+            "type": ["null", "string"]
+          },
+          "lastName": {
+            "type": ["null", "string"]
+          },
+          "raw": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "metadata_bcc": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "email": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "metadata_subject": {
+      "type": ["null", "string"]
+    },
+    "metadata_html": {
+      "type": ["null", "string"]
+    },
+    "metadata_text": {
+      "type": ["null", "string"]
+    },
+    "metadata_status": {
+      "type": ["null", "string"]
+    },
+    "metadata_forObjectType": {
+      "type": ["null", "string"]
+    },
+    "metadata_startTime": {
+      "type": ["null", "integer"]
+    },
+    "metadata_endTime": {
+      "type": ["null", "integer"]
+    },
+    "metadata_title": {
+      "type": ["null", "string"]
+    },
+    "metadata_toNumber": {
+      "type": ["null", "string"]
+    },
+    "metadata_fromNumber": {
+      "type": ["null", "string"]
+    },
+    "metadata_externalId": {
+      "type": ["null", "string"]
+    },
+    "metadata_durationMilliseconds": {
+      "type": ["null", "integer"]
+    },
+    "metadata_externalAccountId": {
+      "type": ["null", "string"]
+    },
+    "metadata_recordingUrl": {
+      "type": ["null", "string"]
+    },
+    "metadata_disposition": {
+      "type": ["null", "string"]
+    },
+    "metadata_completionDate": {
+      "type": ["null", "integer"]
+    },
+    "metadata_taskType": {
+      "type": ["null", "string"]
+    },
+    "metadata_reminders": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "integer"]
+      }
+    },
+    "metadata_threadId": {
+      "type": ["null", "string"]
+    },
+    "metadata_messageId": {
+      "type": ["null", "string"]
+    },
+    "metadata_loggedFrom": {
+      "type": ["null", "string"]
+    },
+    "metadata_attachedVideoOpened": {
+      "type": ["null", "boolean"]
+    },
+    "metadata_attachedVideoWatched": {
+      "type": ["null", "boolean"]
+    },
+    "metadata_trackerKey": {
+      "type": ["null", "string"]
+    },
+    "metadata_sendDefaultReminder": {
+      "type": ["null", "boolean"]
+    },
+    "metadata_source": {
+      "type": ["null", "string"]
+    },
+    "metadata_unknownVisitorConversation": {
+      "type": ["null", "boolean"]
+    },
+    "metadata_facsimileSendId": {
+      "type": ["null", "string"]
+    },
+    "metadata_sentVia": {
+      "type": ["null", "string"]
+    },
+    "metadata_sequenceStepOrder": {
+      "type": ["null", "integer"]
+    },
+    "metadata_externalUrl": {
+      "type": ["null", "string"]
+    },
+    "metadata_postSendStatus": {
+      "type": ["null", "string"]
+    },
+    "metadata_errorMessage": {
+      "type": ["null", "string"]
+    },
+    "metadata_recipientDropReasons": {
+      "type": ["null", "string"]
+    },
+    "metadata_calleeObjectId": {
+      "type": ["null", "integer"]
+    },
+    "metadata_calleeObjectType": {
+      "type": ["null", "string"]
+    },
+    "metadata_mediaProcessingStatus": {
+      "type": ["null", "string"]
+    },
+    "metadata_sourceId": {
+      "type": ["null", "string"]
+    },
+    "metadata_priority": {
+      "type": ["null", "string"]
+    },
+    "metadata_isAllDay": {
+      "type": ["null", "boolean"]
     }
   }
 }
