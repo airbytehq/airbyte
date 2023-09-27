@@ -54,12 +54,14 @@ class PineconeIndexer(Indexer):
     def delete_by_metadata(self, filter, top_k):
         zero_vector = [0.0] * self.embedding_dimensions
         query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k)
-        vector_ids = [doc.id for doc in query_result.matches]
-        if len(vector_ids) > 0:
-            # split into chunks of 1000 ids to avoid id limit
-            batches = create_chunks(vector_ids, batch_size=MAX_IDS_PER_DELETE)
-            for batch in batches:
-                self.pinecone_index.delete(ids=list(batch))
+        while len(query_result.matches) > 0:
+            vector_ids = [doc.id for doc in query_result.matches]
+            if len(vector_ids) > 0:
+                # split into chunks of 1000 ids to avoid id limit
+                batches = create_chunks(vector_ids, batch_size=MAX_IDS_PER_DELETE)
+                for batch in batches:
+                    self.pinecone_index.delete(ids=list(batch))
+            query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k)
 
     def _truncate_metadata(self, metadata: dict) -> dict:
         """
