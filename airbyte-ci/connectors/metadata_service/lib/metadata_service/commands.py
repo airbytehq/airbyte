@@ -15,8 +15,7 @@ def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
     for file in metadata_upload_info.uploaded_files:
         if file.uploaded:
             click.secho(
-                f"The {file.description} file for {metadata_upload_info.metadata_file_path} was uploaded to {file.blob_id}.",
-                color="green"
+                f"The {file.description} file for {metadata_upload_info.metadata_file_path} was uploaded to {file.blob_id}.", color="green"
             )
 
 

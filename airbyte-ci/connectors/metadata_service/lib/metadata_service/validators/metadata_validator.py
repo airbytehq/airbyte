@@ -138,9 +138,7 @@ def validate_major_version_bump_has_breaking_change_entry(
     return True, None
 
 
-def validate_docs_path_exists(
-    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
-) -> ValidationResult:
+def validate_docs_path_exists(metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions) -> ValidationResult:
     """Ensure that the doc_path exists."""
     if not pathlib.Path(validator_opts.docs_path).exists():
         return False, f"Could not find {validator_opts.docs_path}."
@@ -152,7 +150,7 @@ PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
     validate_major_version_bump_has_breaking_change_entry,
-    validate_docs_path_exists
+    validate_docs_path_exists,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [

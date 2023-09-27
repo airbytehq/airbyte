@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 import yaml
 from metadata_service import gcs_upload
-from metadata_service.constants import METADATA_FILE_NAME, DOC_FILE_NAME
+from metadata_service.constants import DOC_FILE_NAME, METADATA_FILE_NAME
 from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 from metadata_service.models.transform import to_json_sanitized_dict
 from metadata_service.validators.metadata_validator import ValidatorOptions
@@ -19,6 +19,7 @@ MOCK_VERSIONS_THAT_DO_NOT_EXIST = ["6.6.6", "6.0.0"]
 DOCS_PATH = "/docs"
 MOCK_DOC_URL_PATH = "integrations/sources/alloydb.md"
 VALID_DOC_FILE_PATH = Path(DOCS_PATH) / MOCK_DOC_URL_PATH
+
 
 def stub_is_image_on_docker_hub(image_name: str, version: str) -> bool:
     return "exists" in image_name and version not in MOCK_VERSIONS_THAT_DO_NOT_EXIST
@@ -33,10 +34,21 @@ def mock_local_doc_path_exists(monkeypatch):
         if self == Path(DOCS_PATH) or self == mocked_doc_path:
             return True
         return original_exists(self)
-    monkeypatch.setattr(Path, 'exists', fake_exists)
+
+    monkeypatch.setattr(Path, "exists", fake_exists)
 
 
-def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash, doc_local_file_md5_hash, doc_version_blob_md5_hash, doc_latest_blob_md5_hash, metadata_file_path, doc_file_path):
+def setup_upload_mocks(
+    mocker,
+    version_blob_md5_hash,
+    latest_blob_md5_hash,
+    local_file_md5_hash,
+    doc_local_file_md5_hash,
+    doc_version_blob_md5_hash,
+    doc_latest_blob_md5_hash,
+    metadata_file_path,
+    doc_file_path,
+):
     # Mock dockerhub
     mocker.patch("metadata_service.validators.metadata_validator.is_image_on_docker_hub", side_effect=stub_is_image_on_docker_hub)
 
@@ -87,11 +99,41 @@ def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, loca
 @pytest.mark.parametrize(
     "version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash, local_doc_file_md5_hash, doc_version_blob_md5_hash, doc_latest_blob_md5_hash",
     [
-        pytest.param(None, "same_md5_hash", "same_md5_hash", "same_doc_md5_hash", "same_doc_md5_hash", "same_doc_md5_hash", id="Version blob does not exist: Version blob should be uploaded."),
-        pytest.param("same_md5_hash", None, "same_md5_hash", "same_doc_md5_hash", "same_doc_md5_hash", "same_doc_md5_hash", id="Latest blob does not exist: Latest blob should be uploaded."),
-        pytest.param(None, None, "same_md5_hash", "same_doc_md5_hash", "same_doc_md5_hash", "same_doc_md5_hash", id="Latest blob and Version blob does not exist: both should be uploaded."),
         pytest.param(
-            "different_md5_hash", "same_md5_hash", "same_md5_hash", "same_doc_md5_hash", "same_doc_md5_hash", "same_doc_md5_hash", id="Version blob does not match: Version blob should be uploaded."
+            None,
+            "same_md5_hash",
+            "same_md5_hash",
+            "same_doc_md5_hash",
+            "same_doc_md5_hash",
+            "same_doc_md5_hash",
+            id="Version blob does not exist: Version blob should be uploaded.",
+        ),
+        pytest.param(
+            "same_md5_hash",
+            None,
+            "same_md5_hash",
+            "same_doc_md5_hash",
+            "same_doc_md5_hash",
+            "same_doc_md5_hash",
+            id="Latest blob does not exist: Latest blob should be uploaded.",
+        ),
+        pytest.param(
+            None,
+            None,
+            "same_md5_hash",
+            "same_doc_md5_hash",
+            "same_doc_md5_hash",
+            "same_doc_md5_hash",
+            id="Latest blob and Version blob does not exist: both should be uploaded.",
+        ),
+        pytest.param(
+            "different_md5_hash",
+            "same_md5_hash",
+            "same_md5_hash",
+            "same_doc_md5_hash",
+            "same_doc_md5_hash",
+            "same_doc_md5_hash",
+            id="Version blob does not match: Version blob should be uploaded.",
         ),
         pytest.param(
             "same_md5_hash",
@@ -103,7 +145,13 @@ def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, loca
             id="Version blob and Latest blob match, and version and latest doc blobs match: no upload should happen.",
         ),
         pytest.param(
-            "same_md5_hash", "different_md5_hash", "same_md5_hash", "same_doc_md5_hash", "same_doc_md5_hash", "same_doc_md5_hash", id="Latest blob does not match: Latest blob should be uploaded."
+            "same_md5_hash",
+            "different_md5_hash",
+            "same_md5_hash",
+            "same_doc_md5_hash",
+            "same_doc_md5_hash",
+            "same_doc_md5_hash",
+            id="Latest blob does not match: Latest blob should be uploaded.",
         ),
         pytest.param(
             "same_md5_hash",
@@ -153,7 +201,14 @@ def setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, loca
     ],
 )
 def test_upload_metadata_to_gcs_valid_metadata(
-    mocker, valid_metadata_upload_files, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash, local_doc_file_md5_hash, doc_version_blob_md5_hash, doc_latest_blob_md5_hash
+    mocker,
+    valid_metadata_upload_files,
+    version_blob_md5_hash,
+    latest_blob_md5_hash,
+    local_file_md5_hash,
+    local_doc_file_md5_hash,
+    doc_version_blob_md5_hash,
+    doc_latest_blob_md5_hash,
 ):
     mocker.spy(gcs_upload, "_version_upload")
     mocker.spy(gcs_upload, "_latest_upload")
@@ -163,7 +218,17 @@ def test_upload_metadata_to_gcs_valid_metadata(
         metadata_file_path = Path(valid_metadata_upload_file)
         metadata = ConnectorMetadataDefinitionV0.parse_obj(yaml.safe_load(metadata_file_path.read_text()))
 
-        mocks = setup_upload_mocks(mocker, version_blob_md5_hash, latest_blob_md5_hash, local_file_md5_hash, local_doc_file_md5_hash, doc_version_blob_md5_hash, doc_latest_blob_md5_hash, metadata_file_path, VALID_DOC_FILE_PATH)
+        mocks = setup_upload_mocks(
+            mocker,
+            version_blob_md5_hash,
+            latest_blob_md5_hash,
+            local_file_md5_hash,
+            local_doc_file_md5_hash,
+            doc_version_blob_md5_hash,
+            doc_latest_blob_md5_hash,
+            metadata_file_path,
+            VALID_DOC_FILE_PATH,
+        )
 
         expected_version_key = f"metadata/{metadata.data.dockerRepository}/{metadata.data.dockerImageTag}/{METADATA_FILE_NAME}"
         expected_latest_key = f"metadata/{metadata.data.dockerRepository}/latest/{METADATA_FILE_NAME}"
@@ -178,9 +243,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
         # Call function under tests
 
         upload_info = gcs_upload.upload_metadata_to_gcs(
-            "my_bucket",
-            metadata_file_path,
-            validator_opts=ValidatorOptions(docs_path=DOCS_PATH)
+            "my_bucket", metadata_file_path, validator_opts=ValidatorOptions(docs_path=DOCS_PATH)
         )
 
         # Assertions
@@ -191,7 +254,14 @@ def test_upload_metadata_to_gcs_valid_metadata(
 
         gcs_upload.service_account.Credentials.from_service_account_info.assert_called_with(json.loads(mocks["service_account_json"]))
         mocks["mock_storage_client"].bucket.assert_called_with("my_bucket")
-        mocks["mock_bucket"].blob.assert_has_calls([mocker.call(expected_version_key), mocker.call(expected_version_doc_key), mocker.call(expected_latest_key), mocker.call(expected_latest_doc_key)])
+        mocks["mock_bucket"].blob.assert_has_calls(
+            [
+                mocker.call(expected_version_key),
+                mocker.call(expected_version_doc_key),
+                mocker.call(expected_latest_key),
+                mocker.call(expected_latest_doc_key),
+            ]
+        )
 
         version_metadata_uploaded_file = next((file for file in upload_info.uploaded_files if file.id == "version_metadata"), None)
         assert version_metadata_uploaded_file, "version_metadata not found in uploaded files."
@@ -212,7 +282,7 @@ def test_upload_metadata_to_gcs_valid_metadata(
         if not latest_blob_exists:
             mocks["mock_latest_blob"].upload_from_filename.assert_called_with(metadata_file_path)
             assert upload_info.metadata_uploaded
-        
+
         if not doc_version_blob_exists:
             mocks["mock_doc_version_blob"].upload_from_filename.assert_called_with(VALID_DOC_FILE_PATH)
             assert doc_version_uploaded_file.uploaded

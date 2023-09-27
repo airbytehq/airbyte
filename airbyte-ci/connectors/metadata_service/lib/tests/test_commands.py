@@ -13,6 +13,7 @@ from pydantic import BaseModel, ValidationError, error_wrappers
 
 DOCS_PATH = pathlib.Path("/docs")
 
+
 @pytest.fixture(autouse=True)
 def mock_local_doc_path_exists(monkeypatch):
     original_exists = pathlib.Path.exists
@@ -21,7 +22,9 @@ def mock_local_doc_path_exists(monkeypatch):
         if self == DOCS_PATH:
             return True
         return original_exists(self)
-    monkeypatch.setattr(pathlib.Path, 'exists', fake_exists)
+
+    monkeypatch.setattr(pathlib.Path, "exists", fake_exists)
+
 
 # TEST VALIDATE COMMAND
 def test_valid_metadata_yaml_files(valid_metadata_yaml_files):
@@ -52,7 +55,14 @@ def test_file_not_found_fails():
 
 
 def mock_metadata_upload_info(
-    latest_uploaded: bool, version_uploaded: bool, icon_uploaded: bool, doc_version_uploaded: bool, doc_inapp_version_uploaded: bool, doc_latest_uploaded: bool, doc_inapp_latest_uploaded: bool, metadata_file_path: str
+    latest_uploaded: bool,
+    version_uploaded: bool,
+    icon_uploaded: bool,
+    doc_version_uploaded: bool,
+    doc_inapp_version_uploaded: bool,
+    doc_latest_uploaded: bool,
+    doc_inapp_latest_uploaded: bool,
+    metadata_file_path: str,
 ) -> MetadataUploadInfo:
     return MetadataUploadInfo(
         metadata_uploaded=(latest_uploaded or version_uploaded),
@@ -100,7 +110,7 @@ def mock_metadata_upload_info(
                 description="latest inapp doc",
                 blob_id="doc_inapp_latest_blob_id" if doc_inapp_latest_uploaded else None,
             ),
-        ]
+        ],
     )
 
 
@@ -119,12 +129,31 @@ def mock_metadata_upload_info(
         (True, True, True, True, True, True, True),
     ],
 )
-def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uploaded, icon_uploaded, doc_version_uploaded, doc_inapp_version_uploaded, doc_latest_uploaded, doc_inapp_latest_uploaded):
+def test_upload(
+    mocker,
+    valid_metadata_yaml_files,
+    latest_uploaded,
+    version_uploaded,
+    icon_uploaded,
+    doc_version_uploaded,
+    doc_inapp_version_uploaded,
+    doc_latest_uploaded,
+    doc_inapp_latest_uploaded,
+):
     runner = CliRunner()
     mocker.patch.object(commands.click, "secho")
     mocker.patch.object(commands, "upload_metadata_to_gcs")
     metadata_file_path = valid_metadata_yaml_files[0]
-    upload_info = mock_metadata_upload_info(latest_uploaded, version_uploaded, icon_uploaded, doc_version_uploaded, doc_inapp_version_uploaded, doc_latest_uploaded, doc_inapp_latest_uploaded, metadata_file_path)
+    upload_info = mock_metadata_upload_info(
+        latest_uploaded,
+        version_uploaded,
+        icon_uploaded,
+        doc_version_uploaded,
+        doc_inapp_version_uploaded,
+        doc_latest_uploaded,
+        doc_inapp_latest_uploaded,
+        metadata_file_path,
+    )
     commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
         commands.upload, [metadata_file_path, DOCS_PATH, "my-bucket"]
@@ -146,7 +175,7 @@ def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uplo
         commands.click.secho.assert_has_calls(
             [mocker.call(f"The icon file for {metadata_file_path} was uploaded to icon_blob_id.", color="green")]
         )
-    
+
     if doc_version_uploaded:
         commands.click.secho.assert_has_calls(
             [mocker.call(f"The versioned doc file for {metadata_file_path} was uploaded to doc_version_blob_id.", color="green")]
@@ -154,7 +183,11 @@ def test_upload(mocker, valid_metadata_yaml_files, latest_uploaded, version_uplo
 
     if doc_inapp_version_uploaded:
         commands.click.secho.assert_has_calls(
-            [mocker.call(f"The versioned inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", color="green")]
+            [
+                mocker.call(
+                    f"The versioned inapp doc file for {metadata_file_path} was uploaded to doc_inapp_version_blob_id.", color="green"
+                )
+            ]
         )
 
     if doc_latest_uploaded:
