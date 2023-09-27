@@ -7,7 +7,7 @@ allprojects {
     apply plugin: 'airbyte-performance-test-java'
     apply plugin: 'java-test-fixtures'
 
-    group 'io.airbyte'
+    group 'io.airbyte.cdk'
     version = getCdkTargetVersion()
 }
 
@@ -18,12 +18,12 @@ subprojects { subproject ->
     publishing {
         publications {
             main(MavenPublication) {
-                groupId = 'io.airbyte'
+                groupId = 'io.airbyte.cdk'
                 artifactId = artifactBaseName
                 from components.java
             }
             testFixtures(MavenPublication) {
-                groupId = 'io.airbyte'
+                groupId = 'io.airbyte.cdk'
                 artifactId = artifactBaseName + '-test-fixtures'
                 version = project.version
                 artifact subproject.tasks.testFixturesJar
@@ -77,7 +77,7 @@ if (version.endsWith("-SNAPSHOT")) {
 
 task assertCdkVersionNotPublished {
     doLast {
-        def checkGroupId = "io.airbyte"
+        def checkGroupId = "io.airbyte.cdk"
         def checkArtifactId = "airbyte-cdk-core"
         def checkVersion = getCdkTargetVersion()
         def repoUrl = "https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars"

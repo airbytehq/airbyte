@@ -21,10 +21,10 @@ class AirbyteJavaConnectorExtension {
     void addCdkDependencies() {
         // Create a list of CDK submodules to import
         def submoduleNames = ['core']
-        features.each { feature ->
-            submoduleNames.add("${feature}-feature")
-        }
         if (useLocalCdk) {
+            features.each { feature ->
+                submoduleNames.add("${feature}-feature")
+            }
             project.dependencies {
                 submoduleNames.each { submoduleName ->
                     // Add the CDK module to the dependencies
@@ -45,10 +45,13 @@ class AirbyteJavaConnectorExtension {
                 }
             }
         } else {
+            features.each { feature ->
+                submoduleNames.add(feature)
+            }
             project.dependencies {
                 submoduleNames.each { submoduleName ->
                     // Add the cdkModule to the dependencies
-                    def cdkModule = "io.airbyte:airbyte-cdk-${submoduleName}:${cdkVersionRequired}"
+                    def cdkModule = "io.airbyte.cdk:airbyte-cdk-${submoduleName}:${cdkVersionRequired}"
                     implementation cdkModule
                     testImplementation cdkModule
                     integrationTestJavaImplementation cdkModule
@@ -57,7 +60,7 @@ class AirbyteJavaConnectorExtension {
                     // Add the test fixtures cdkModule to the dependencies.
                     // Exclude 'core', which has no test fixtures.
                     if (cdkModule != 'core') {
-                        def testFixturesRef = "io.airbyte:airbyte-cdk-${submoduleName}-test-fixtures:${cdkVersionRequired}"
+                        def testFixturesRef = "io.airbyte.cdk:airbyte-cdk-${submoduleName}-test-fixtures:${cdkVersionRequired}"
                         testImplementation testFixturesRef
                         integrationTestJavaImplementation testFixturesRef
                         performanceTestJavaImplementation testFixturesRef

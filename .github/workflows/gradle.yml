@@ -245,7 +245,10 @@ jobs:
       - name: Build
         run: ./gradlew :airbyte-cdk:java:airbyte-cdk:build --scan
 
-  # Connectors Base
+      - name: Run Integration Tests
+        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:integrationTest --scan
+  
+      # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
   start-connectors-base-build-runner:
     name: "Connectors Base: Start Build EC2 Runner"
