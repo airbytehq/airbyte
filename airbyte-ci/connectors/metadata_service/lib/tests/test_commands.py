@@ -11,47 +11,41 @@ from metadata_service.gcs_upload import MetadataUploadInfo, UploadedFile
 from metadata_service.validators.metadata_validator import ValidatorOptions
 from pydantic import BaseModel, ValidationError, error_wrappers
 
-DOCS_PATH = pathlib.Path("/docs")
-
-
-@pytest.fixture(autouse=True)
-def mock_local_doc_path_exists(monkeypatch):
-    original_exists = pathlib.Path.exists
-
-    def fake_exists(self):
-        if self == DOCS_PATH:
-            return True
-        return original_exists(self)
-
-    monkeypatch.setattr(pathlib.Path, "exists", fake_exists)
-
 
 # TEST VALIDATE COMMAND
-def test_valid_metadata_yaml_files(valid_metadata_yaml_files):
+def test_valid_metadata_yaml_files(valid_metadata_yaml_files, tmp_path):
     runner = CliRunner()
 
     assert len(valid_metadata_yaml_files) > 0, "No files found"
 
     for file_path in valid_metadata_yaml_files:
-        result = runner.invoke(commands.validate, [file_path, DOCS_PATH])
-        print(f"~~~~~~~~result: {result}")
+        result = runner.invoke(commands.validate, [file_path, str(tmp_path)])
         assert result.exit_code == 0, f"Validation failed for {file_path} with error: {result.output}"
 
 
-def test_invalid_metadata_yaml_files(invalid_metadata_yaml_files):
+def test_invalid_metadata_yaml_files(invalid_metadata_yaml_files, tmp_path):
     runner = CliRunner()
 
     assert len(invalid_metadata_yaml_files) > 0, "No files found"
 
     for file_path in invalid_metadata_yaml_files:
-        result = runner.invoke(commands.validate, [file_path, DOCS_PATH])
+        result = runner.invoke(commands.validate, [file_path, str(tmp_path)])
         assert result.exit_code != 0, f"Validation succeeded (when it shouldve failed) for {file_path}"
 
 
-def test_file_not_found_fails():
+def test_metadata_file_not_found_fails(tmp_path):
     runner = CliRunner()
-    result = runner.invoke(commands.validate, ["non_existent_file.yaml", DOCS_PATH])
+    result = runner.invoke(commands.validate, ["non_existent_file.yaml", str(tmp_path)])
     assert result.exit_code != 0, "Validation succeeded (when it shouldve failed) for non_existent_file.yaml"
+
+
+def test_docs_path_not_found_fails(valid_metadata_yaml_files):
+    runner = CliRunner()
+
+    assert len(valid_metadata_yaml_files) > 0, "No files found"
+    
+    result = runner.invoke(commands.validate, [valid_metadata_yaml_files[0], "non_existent_docs_path"])
+    assert result.exit_code != 0, "Validation succeeded (when it shouldve failed) for non_existent_docs_path"
 
 
 def mock_metadata_upload_info(
@@ -131,6 +125,7 @@ def mock_metadata_upload_info(
 )
 def test_upload(
     mocker,
+    tmp_path,
     valid_metadata_yaml_files,
     latest_uploaded,
     version_uploaded,
@@ -156,7 +151,7 @@ def test_upload(
     )
     commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
-        commands.upload, [metadata_file_path, DOCS_PATH, "my-bucket"]
+        commands.upload, [metadata_file_path, str(tmp_path), "my-bucket"]
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
 
     if latest_uploaded:
@@ -206,7 +201,7 @@ def test_upload(
         assert result.exit_code == 5
 
 
-def test_upload_prerelease(mocker, valid_metadata_yaml_files):
+def test_upload_prerelease(mocker, valid_metadata_yaml_files, tmp_path):
     runner = CliRunner()
     mocker.patch.object(commands.click, "secho")
     mocker.patch.object(commands, "upload_metadata_to_gcs")
@@ -214,12 +209,12 @@ def test_upload_prerelease(mocker, valid_metadata_yaml_files):
     prerelease_tag = "0.3.0-dev.6d33165120"
     bucket = "my-bucket"
     metadata_file_path = valid_metadata_yaml_files[0]
-    validator_opts = ValidatorOptions(docs_path=DOCS_PATH, prerelease_tag=prerelease_tag)
+    validator_opts = ValidatorOptions(docs_path=str(tmp_path), prerelease_tag=prerelease_tag)
 
     upload_info = mock_metadata_upload_info(False, True, False, True, False, False, False, metadata_file_path)
     commands.upload_metadata_to_gcs.return_value = upload_info
     result = runner.invoke(
-        commands.upload, [metadata_file_path, DOCS_PATH, bucket, "--prerelease", prerelease_tag]
+        commands.upload, [metadata_file_path, str(tmp_path), bucket, "--prerelease", prerelease_tag]
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
 
     commands.upload_metadata_to_gcs.assert_has_calls([mocker.call(bucket, pathlib.Path(metadata_file_path), validator_opts)])
@@ -234,13 +229,13 @@ def test_upload_prerelease(mocker, valid_metadata_yaml_files):
         (ValueError("Boom!"), False),
     ],
 )
-def test_upload_with_errors(mocker, valid_metadata_yaml_files, error, handled):
+def test_upload_with_errors(mocker, valid_metadata_yaml_files, tmp_path, error, handled):
     runner = CliRunner()
     mocker.patch.object(commands.click, "secho")
     mocker.patch.object(commands, "upload_metadata_to_gcs")
     commands.upload_metadata_to_gcs.side_effect = error
     result = runner.invoke(
-        commands.upload, [valid_metadata_yaml_files[0], DOCS_PATH, "my-bucket"]
+        commands.upload, [valid_metadata_yaml_files[0], str(tmp_path), "my-bucket"]
     )  # Using valid_metadata_yaml_files[0] as SA because it exists...
     assert result.exit_code == 1
     if handled:
