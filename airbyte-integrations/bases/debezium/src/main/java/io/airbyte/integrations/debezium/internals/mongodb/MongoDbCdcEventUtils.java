@@ -158,15 +158,15 @@ public class MongoDbCdcEventUtils {
     final var elements = Lists.newArrayList();
 
     while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
-      final var arrayFieldType = reader.getCurrentBsonType();
-      if (DOCUMENT.equals(arrayFieldType)) {
+      final var currentBsonType = reader.getCurrentBsonType();
+      if (DOCUMENT.equals(currentBsonType)) {
         // recursion is used to read inner doc
         elements.add(readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames));
-      } else if (ARRAY.equals(arrayFieldType)) {
+      } else if (ARRAY.equals(currentBsonType)) {
         // recursion is used to read inner array
         elements.add(readArray(reader, columnNames, fieldName));
       } else {
-        final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, fieldName, arrayFieldType);
+        final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, fieldName, currentBsonType);
         elements.add(element.get(fieldName));
       }
     }
