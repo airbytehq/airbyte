@@ -119,6 +119,8 @@ public class MongoUtil {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
     return authorizedCollections.parallelStream()
         .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName))
+        .filter(stream -> stream.isPresent())
+        .map(stream -> stream.get())
         .collect(Collectors.toList());
   }
 
@@ -208,16 +210,18 @@ public class MongoUtil {
    * @param collectionName The name of the collection associated with the stream (stream name).
    * @param mongoClient The {@link MongoClient} used to access the fields.
    * @param databaseName The name of the database associated with the stream (stream namespace).
-   * @return The {@link AirbyteStream} that contains the discovered fields.
+   * @return The {@link AirbyteStream} that contains the discovered fields or an empty
+   *         {@link Optional} if the underlying collection is empty.
    */
-  private static AirbyteStream discoverFields(final String collectionName, final MongoClient mongoClient, final String databaseName) {
+  private static Optional<AirbyteStream> discoverFields(final String collectionName, final MongoClient mongoClient, final String databaseName) {
     /*
      * Fetch the keys/types from the first N documents and the last N documents from the collection.
      * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
      */
     final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
     final Set<Field> discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection));
-    return createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields));
+    return Optional
+        .ofNullable(!discoveredFields.isEmpty() ? createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields)) : null);
   }
 
   private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection) {

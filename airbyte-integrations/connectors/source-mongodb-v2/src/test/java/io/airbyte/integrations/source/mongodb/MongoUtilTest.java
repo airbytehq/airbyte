@@ -92,6 +92,28 @@ public class MongoUtilTest {
   }
 
   @Test
+  void testGetAirbyteStreamsEmptyCollection() throws IOException {
+    final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
+    final MongoCursor<Document> cursor = mock(MongoCursor.class);
+    final String databaseName = "database";
+    final Document authorizedCollectionsResponse = Document.parse(MoreResources.readResource("authorized_collections_response.json"));
+    final MongoClient mongoClient = mock(MongoClient.class);
+    final MongoCollection mongoCollection = mock(MongoCollection.class);
+    final MongoDatabase mongoDatabase = mock(MongoDatabase.class);
+
+    when(cursor.hasNext()).thenReturn(false);
+    when(aggregateIterable.cursor()).thenReturn(cursor);
+    when(mongoCollection.aggregate(any())).thenReturn(aggregateIterable);
+    when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
+    when(mongoDatabase.runCommand(any())).thenReturn(authorizedCollectionsResponse);
+    when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
+
+    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName);
+    assertNotNull(streams);
+    assertEquals(0, streams.size());
+  }
+
+  @Test
   void testGetAirbyteStreamsDifferentDataTypes() throws IOException {
     final AggregateIterable<Document> aggregateIterable = mock(AggregateIterable.class);
     final MongoCursor<Document> cursor = mock(MongoCursor.class);

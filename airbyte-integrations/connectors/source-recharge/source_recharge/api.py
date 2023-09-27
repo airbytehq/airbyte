@@ -47,22 +47,15 @@ class RechargeStream(HttpStream, ABC):
     ) -> str:
         return self.name
 
+    @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pass
 
+    @abstractmethod
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
-        params = {
-            "limit": self.limit,
-            "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
-            "updated_at_max": (stream_slice or {}).get("end_date", self._start_date),
-        }
-
-        if next_page_token:
-            params.update(next_page_token)
-
-        return params
+        pass
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_data = response.json()
@@ -109,6 +102,23 @@ class RechargeStreamModernAPI(RechargeStream):
         if cursor:
             return {"cursor": cursor}
 
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": self.limit}
+
+        # if a cursor value is passed, only limit can be passed with it!
+        if next_page_token:
+            params.update(next_page_token)
+        else:
+            params.update(
+                {
+                    "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
+                    "updated_at_max": (stream_slice or {}).get("end_date", self._start_date),
+                }
+            )
+        return params
+
 
 class RechargeStreamDeprecatedAPI(RechargeStream):
     api_version = "2021-01"
@@ -118,6 +128,20 @@ class RechargeStreamDeprecatedAPI(RechargeStream):
         if len(stream_data) == self.limit:
             self.page_num += 1
             return {"page": self.page_num}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {
+            "limit": self.limit,
+            "updated_at_min": (stream_slice or {}).get("start_date", self._start_date),
+            "updated_at_max": (stream_slice or {}).get("end_date", self._start_date),
+        }
+
+        if next_page_token:
+            params.update(next_page_token)
+
+        return params
 
 
 class IncrementalRechargeStream(RechargeStream, ABC):
