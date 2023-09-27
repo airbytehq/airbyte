@@ -51,11 +51,12 @@ class MilvusIndexer(Indexer):
 
         self._collection = Collection(self.config.collection)
         self._collection.load()
+        self._primary_key = next((field["name"] for field in self._collection.describe()["fields"] if field["is_primary"]), None)
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
-        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self._uses_https():
-            return "Host must start with https://"
+        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self._uses_safe_config():
+            return "Host must start with https:// and authentication must be enabled on cloud deployment."
         try:
             self._create_client()
 
@@ -75,8 +76,8 @@ class MilvusIndexer(Indexer):
             return format_exception(e)
         return None
 
-    def _uses_https(self) -> bool:
-        return self.config.host.startswith("https://")
+    def _uses_safe_config(self) -> bool:
+        return self.config.host.startswith("https://") and not self.config.auth.mode == "no_auth"
 
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
@@ -94,6 +95,18 @@ class MilvusIndexer(Indexer):
             self._collection.delete(expr=f"{id_field} in [{id_list_expr}]")
             page = iterator.next()
 
+    def _normalize(self, metadata: dict) -> dict:
+        result = {}
+
+        for key, value in metadata.items():
+            normalized_key = key
+            # the primary key can't be set directly with auto_id, so we prefix it with an underscore
+            if key == self._primary_key:
+                normalized_key = f"_{key}"
+            result[normalized_key] = value
+
+        return result
+
     def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
         if len(delete_ids) > 0:
             id_list_expr = ", ".join([f'"{id}"' for id in delete_ids])
@@ -102,5 +115,7 @@ class MilvusIndexer(Indexer):
         entities = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
-            entities.append({**chunk.metadata, self.config.vector_field: chunk.embedding, self.config.text_field: chunk.page_content})
+            entities.append(
+                {**self._normalize(chunk.metadata), self.config.vector_field: chunk.embedding, self.config.text_field: chunk.page_content}
+            )
         self._collection.insert(entities)
