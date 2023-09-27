@@ -47,11 +47,14 @@ class AbstractStream(ABC):
     @abstractmethod
     def name(self) -> str:
         """
-        :return: Stream name. By default, this is the implementing class name, but it can be overridden as needed.
+        :return: The stream name
         """
 
     @property
     def logger(self) -> logging.Logger:
+        """
+        :return: The logger object
+        """
         return logging.getLogger(f"airbyte.streams.{self.name}")
 
     @property
@@ -67,7 +70,7 @@ class AbstractStream(ABC):
     @abstractmethod
     def primary_key(self) -> Optional[FieldPath]:
         """
-        :return: string if single primary key, list of strings if composite primary key.
+        :return: A string if single primary key, list of strings if composite primary key.
           Primary keys in nested fields are not supported.
           If the stream has no primary keys, return None.
         """
