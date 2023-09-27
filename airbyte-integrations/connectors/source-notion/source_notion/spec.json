@@ -14,8 +14,8 @@
         "format": "date-time"
       },
       "credentials": {
-        "title": "Authenticate using",
-        "description": "Pick an authentication method.",
+        "title": "Authentication Method",
+        "description": "Choose either OAuth (recommended for Airbyte Cloud) or Access Token. See our <a href='https://docs.airbyte.com/integrations/sources/notion#setup-guide'>docs</a> for more information.",
         "type": "object",
         "order": 1,
         "oneOf": [

@@ -49,9 +49,8 @@ class SourceNotion(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
             self.set_start_date(config)
-            print("Start Date: ", config["start_date"])
             authenticator = NotionAuthenticator(config).get_access_token()
-            stream = Users(authenticator=authenticator, config=config)
+            stream = Pages(authenticator=authenticator, config=config)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
