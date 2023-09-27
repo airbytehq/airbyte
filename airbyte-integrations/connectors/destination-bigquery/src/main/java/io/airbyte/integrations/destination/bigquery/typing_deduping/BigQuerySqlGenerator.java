@@ -417,7 +417,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate, "pk_var_declaration", pkVarDeclaration)).replace(
         """
         ${pk_var_declaration}
-        
+
         BEGIN
 
         ${unsafe_update}
