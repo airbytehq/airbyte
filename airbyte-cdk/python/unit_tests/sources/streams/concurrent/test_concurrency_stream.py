@@ -2,14 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from typing import Any, Iterable, List, Mapping, Optional, Union
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteRecordMessage, Level, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.concurrent_stream import ConcurrentStream
+from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
@@ -46,13 +47,16 @@ class _MockStream(Stream):
         return {}
 
 
-def _legacy_stream(slice_to_partition_mapping):
+def _legacy_stream(slice_to_partition_mapping, slice_logger, logger):
     return _MockStream(slice_to_partition_mapping)
 
 
-def _concurrent_stream(slice_to_partition_mapping):
-    legacy_stream = _legacy_stream(slice_to_partition_mapping)
-    return ConcurrentStream.create_from_legacy_stream(legacy_stream, 1)
+def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger):
+    legacy_stream = _legacy_stream(slice_to_partition_mapping, slice_logger, logger)
+    source = Mock()
+    stream = ThreadBasedConcurrentStream.create_from_legacy_stream(legacy_stream, source, 1, slice_logger)
+    stream.logger.setLevel(logger.level)
+    return stream
 
 
 @pytest.mark.parametrize(
@@ -70,9 +74,9 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
         {"id": 2, "partition": 1},
     ]
     slice_to_partition = {1: records}
-    stream = constructor(slice_to_partition)
-    logger = _mock_logger(True)
     slice_logger = DebugSliceLogger()
+    logger = _mock_logger(True)
+    stream = constructor(slice_to_partition, slice_logger, logger)
 
     expected_records = [
         AirbyteMessage(
@@ -85,7 +89,7 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
         *records,
     ]
 
-    actual_records = list(stream.read(_A_CURSOR_FIELD, logger, slice_logger, _DEFAULT_INTERNAL_CONFIG))
+    actual_records = list(stream.read_full_refresh(_A_CURSOR_FIELD, logger, slice_logger))
 
     assert expected_records == actual_records
 
@@ -108,11 +112,11 @@ def test_full_refresh_read_a_single_slice(constructor):
         {"id": 2, "partition": 1},
     ]
     slice_to_partition = {1: records}
-    stream = constructor(slice_to_partition)
+    stream = constructor(slice_to_partition, slice_logger, logger)
 
     expected_records = [*records]
 
-    actual_records = list(stream.read(_A_CURSOR_FIELD, logger, slice_logger, _DEFAULT_INTERNAL_CONFIG))
+    actual_records = list(stream.read_full_refresh(_A_CURSOR_FIELD, logger, slice_logger))
 
     assert expected_records == actual_records
 
@@ -139,98 +143,18 @@ def test_full_refresh_read_a_two_slices(constructor):
         {"id": 4, "partition": 2},
     ]
     slice_to_partition = {1: records_partition_1, 2: records_partition_2}
-    stream = constructor(slice_to_partition)
+    stream = constructor(slice_to_partition, slice_logger, logger)
 
     expected_records = [
         *records_partition_1,
         *records_partition_2,
     ]
 
-    actual_records = list(stream.read(_A_CURSOR_FIELD, logger, slice_logger, _DEFAULT_INTERNAL_CONFIG))
+    actual_records = list(stream.read_full_refresh(_A_CURSOR_FIELD, logger, slice_logger))
 
     for record in expected_records:
         assert record in actual_records
     assert len(expected_records) == len(actual_records)
-
-
-@pytest.mark.parametrize(
-    "constructor",
-    [
-        pytest.param(_legacy_stream, id="synchronous_reader"),
-        pytest.param(_concurrent_stream, id="concurrent_reader"),
-    ],
-)
-def test_only_read_up_to_limit(constructor):
-    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
-    # It is done by running the same test cases on both streams
-    logger = _mock_logger()
-    slice_logger = DebugSliceLogger()
-
-    internal_config = InternalConfig(_limit=1)
-
-    records = [
-        {"id": 1, "partition": 1},
-        {"id": 2, "partition": 1},
-    ]
-    slice_to_partition = {1: records}
-    stream = constructor(slice_to_partition)
-
-    expected_records = records[:-1]
-
-    actual_records = list(stream.read(_A_CURSOR_FIELD, logger, slice_logger, internal_config))
-
-    assert expected_records == actual_records
-
-
-@pytest.mark.parametrize(
-    "constructor",
-    [
-        pytest.param(_legacy_stream, id="synchronous_reader"),
-        pytest.param(_concurrent_stream, id="concurrent_reader"),
-    ],
-)
-def test_limit_only_considers_data(constructor):
-    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
-    # It is done by running the same test cases on both streams
-    logger = _mock_logger()
-    slice_logger = DebugSliceLogger()
-
-    internal_config = InternalConfig(_limit=2)
-
-    records = [
-        AirbyteMessage(
-            type=MessageType.LOG,
-            log=AirbyteLogMessage(
-                level=Level.INFO,
-                message="A_LOG_MESSAGE",
-            ),
-        ),
-        {"id": 1, "partition": 1},
-        AirbyteMessage(
-            type=MessageType.LOG,
-            log=AirbyteLogMessage(
-                level=Level.INFO,
-                message="ANOTHER_LOG_MESSAGE",
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.RECORD,
-            record=AirbyteRecordMessage(
-                data={"id": 2, "partition": 1},
-                stream=_STREAM_NAME,
-                emitted_at=1,
-            ),
-        ),
-        {"id": 2, "partition": 1},
-    ]
-
-    slice_to_partition = {1: records}
-    stream = constructor(slice_to_partition)
-    expected_records = records[:-1]
-
-    actual_records = list(stream.read(_A_CURSOR_FIELD, logger, slice_logger, internal_config))
-
-    assert expected_records == actual_records
 
 
 def _mock_partition_generator(name: str, slices, records_per_partition, *, available=True, debug_log=False):
@@ -250,4 +174,5 @@ def _mock_partition_generator(name: str, slices, records_per_partition, *, avail
 def _mock_logger(enabled_for_debug=False):
     logger = Mock()
     logger.isEnabledFor.return_value = enabled_for_debug
+    logger.level = logging.DEBUG if enabled_for_debug else logging.INFO
     return logger

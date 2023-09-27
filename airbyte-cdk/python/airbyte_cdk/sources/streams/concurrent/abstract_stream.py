@@ -120,7 +120,7 @@ class StreamFacade(Stream):
         logger: logging.Logger,
         slice_logger: SliceLogger,
     ) -> Iterable[StreamData]:
-        return self._stream.read()
+        yield from self._stream.read()
 
     def read_records(
         self,
@@ -130,7 +130,7 @@ class StreamFacade(Stream):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         if sync_mode == SyncMode.full_refresh:
-            return self._stream.read()
+            yield from self._stream.read()
         else:
             # Incremental reads are not supported
             raise NotImplementedError

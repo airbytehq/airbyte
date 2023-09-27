@@ -9,18 +9,45 @@ from queue import Queue
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, StreamFacade
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, LegacyAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
-from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
+from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser, LegacyErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader, PartitionSentinel
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import LegacyPartitionGenerator, PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.core import Stream, StreamData
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 
 class ThreadBasedConcurrentStream(AbstractStream):
+    PARTITION_SENTINEL = object()
+
+    @classmethod
+    def create_from_legacy_stream(cls, stream: Stream, source: AbstractSource, max_workers: int, slice_logger: SliceLogger) -> Stream:
+        """
+        Create a ConcurrentStream from a legacy Stream.
+        :param source:
+        :param stream:
+        :param max_workers:
+        :return:
+        """
+        return StreamFacade(
+            ThreadBasedConcurrentStream(
+                partition_generator=LegacyPartitionGenerator(stream),
+                max_workers=max_workers,
+                name=stream.name,
+                json_schema=stream.get_json_schema(),
+                availability_strategy=LegacyAvailabilityStrategy(stream, source),
+                primary_key=stream.primary_key,
+                cursor_field=stream.cursor_field,
+                error_display_message_parser=LegacyErrorMessageParser(stream),
+                slice_logger=slice_logger,
+            )
+        )
+
     def __init__(
         self,
         partition_generator: PartitionGenerator,
@@ -31,6 +58,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         primary_key: Optional[Union[str, List[str], List[List[str]]]],
         cursor_field: Union[str, List[str]],
         error_display_message_parser: ErrorMessageParser,
+        slice_logger: SliceLogger,
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -41,13 +69,13 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._primary_key = primary_key
         self._cursor_field = cursor_field
         self._error_message_parser = error_display_message_parser
+        self._slice_logger = slice_logger
 
     def read(self) -> Iterable[StreamData]:
         self.logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
         futures = []
         queue = Queue()
-        partition_sentinel = object()
-        partition_generator = ConcurrentPartitionGenerator(queue, partition_sentinel)
+        partition_generator = ConcurrentPartitionGenerator(queue, self.PARTITION_SENTINEL)
         partition_reader = PartitionReader(queue)
 
         # Submit partition generation tasks
@@ -61,7 +89,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
 
         finished_partitions = False
         while record_or_partition := queue.get(block=True, timeout=TIMEOUT_SECONDS):
-            if record_or_partition == partition_sentinel:
+            if record_or_partition == self.PARTITION_SENTINEL:
                 finished_partitions = True
             elif isinstance(record_or_partition, PartitionSentinel):
                 partitions[record_or_partition.partition] = True
@@ -69,6 +97,8 @@ class ThreadBasedConcurrentStream(AbstractStream):
                 yield record_or_partition.stream_data
             elif self._is_partition(record_or_partition):
                 partitions[record_or_partition] = False
+                if self._slice_logger.should_log_slice_message(self.logger):
+                    yield self._slice_logger.create_slice_log_message(record_or_partition.to_slice())
                 futures.append(self._threadpool.submit(partition_reader.process_partition, record_or_partition))
             # queue.qsize() is not reliable since it is possible for the queue to get modified, but we only check it if all futures are done
             if finished_partitions and all(p for p in partitions.values()):
