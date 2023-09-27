@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 from typing import Union
 
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
