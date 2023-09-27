@@ -15,6 +15,7 @@ from source_wildberries_ads.streams import (
     SeaCatStatStream,
     check_ads_stream_connection,
     AdsCampaignStream,
+    AdsCostHistoryStream,
 )
 from source_wildberries_ads.types import IsSuccess, Message, StartDate, EndDate, WildberriesCredentials
 
@@ -31,6 +32,7 @@ class SourceWildberriesAds(AbstractSource):
             AutoStatStream(credentials=credentials, campaign_id=campaign_id),
             SeaCatStatStream(credentials=credentials, campaign_id=campaign_id),
             AdsCampaignStream(credentials=credentials),
+            AdsCostHistoryStream(credentials=credentials, date_from=date_from, date_to=date_to),
         ]
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[IsSuccess, Message | None]:

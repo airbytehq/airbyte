@@ -47,21 +47,21 @@ connectionSpecification:
     date_from:
       title: Date from
       type: string
-      description: Start replication date in format YYYY-MM-DD. Is used only in FullStatStream.
+      description: "Start replication date in format YYYY-MM-DD. Is used in FullStatStream and AdsCostHistoryStream. ВАЖНО: период дат (1-31 день) обязательно должен быть указан для AdsCostHistoryStream!"
       pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - 2023-08-01
     date_to:
       title: Date to
       type: string
-      description: End replication date in format YYYY-MM-DD. Is used only in FullStatStream.
+      description: "End replication date in format YYYY-MM-DD. Is used in FullStatStream and AdsCostHistoryStream. ВАЖНО: период дат (1-31 день) обязательно должен быть указан для AdsCostHistoryStream!"
       pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - 2023-08-01
     last_days:
       title: Load last N days
       type: integer
-      description: Is used only in FullStatStream
+      description: "Is used in FullStatStream and AdsCostHistoryStream. ВАЖНО: период дат (1-31 день) обязательно должен быть указан для AdsCostHistoryStream!"
       minimum: 1
       examples:
         - 7

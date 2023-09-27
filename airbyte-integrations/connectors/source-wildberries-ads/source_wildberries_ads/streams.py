@@ -12,6 +12,7 @@ from requests.exceptions import ChunkedEncodingError, JSONDecodeError
 
 from source_wildberries_ads.schemas.autostat import AdsAutoStat
 from source_wildberries_ads.schemas.campaigns import AdsCampaign
+from source_wildberries_ads.schemas.cost_history import AdsCostHistoryStat
 from source_wildberries_ads.schemas.fullstat import AdsFullStat
 from source_wildberries_ads.schemas.seacatstat import AdsSeaCatStat
 from source_wildberries_ads.schemas.words import AdsWordsStat
@@ -247,6 +248,67 @@ class AdsCampaignStream(Stream):
                 if records := response.json():
                     for record in records:
                         yield self.SCHEMA(**record).dict()
+                return
+            elif response.status_code == 204:
+                return
+            elif response.status_code > 500:
+                time.sleep(60)
+                continue
+            elif response.status_code in (408, 429):
+                attempts_count += 1
+                if attempts_count < 3:
+                    time.sleep(60)  # Wait for Wildberries rate limits
+                else:
+                    raise Exception(f"Failed to load data from Wildberries API after 3 attempts due to rate limits")
+            else:
+                raise Exception(f"Status code: {response.status_code}. Body: {response.text}")
+
+
+class AdsCostHistoryStream(Stream):
+    SCHEMA: Type[AdsCostHistoryStat] = AdsCostHistoryStat
+    URL: str = "https://advert-api.wb.ru/adv/v1/upd"
+
+    def __init__(self, credentials: WildberriesCredentials, date_from: date, date_to: date):
+        self.credentials = credentials
+        self.date_from = date_from
+        self.date_to = date_to
+
+    @property
+    def primary_key(self) -> None:
+        return None
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return self.SCHEMA.schema()
+
+    @property
+    def url(self) -> str:
+        return self.URL + f"?from={self.date_from.strftime('%Y-%m-%d')}&to={self.date_to.strftime('%Y-%m-%d')}"
+
+    @property
+    def headers(self) -> Dict:
+        return {"Authorization": self.credentials["api_key"]}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        attempts_count = 0
+        while attempts_count < 3:
+            try:
+                response = requests.get(self.url, headers=self.headers)
+            except ChunkedEncodingError:
+                time.sleep(60)
+                continue
+            if response.status_code == 200:
+                try:
+                    if records := response.json():
+                        for record in records:
+                            yield self.SCHEMA(**record).dict()
+                except JSONDecodeError:
+                    pass
                 return
             elif response.status_code == 204:
                 return
