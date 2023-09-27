@@ -9,7 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
+from airbyte_cdk.sources.streams.concurrent.legacy import StreamFacade
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from source_stripe.streams import (
@@ -415,4 +415,4 @@ class SourceStripe(AbstractSource):
             ),
         ]
         # return legacy_streams
-        return [ThreadBasedConcurrentStream.create_from_legacy_stream(stream, self, 4, self._slice_logger) for stream in legacy_streams]
+        return [StreamFacade.create_from_legacy_stream(stream, self, 4) for stream in legacy_streams]
