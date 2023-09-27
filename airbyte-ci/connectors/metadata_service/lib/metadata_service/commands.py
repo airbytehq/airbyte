@@ -5,11 +5,11 @@
 import pathlib
 
 import click
+from connector_ops.utils import get_all_connectors_in_repo
 from metadata_service.constants import METADATA_FILE_NAME
 from metadata_service.gcs_upload import MetadataUploadInfo, upload_metadata_to_gcs
 from metadata_service.validators.metadata_validator import PRE_UPLOAD_VALIDATORS, ValidatorOptions, validate_and_load
 from pydantic import ValidationError
-from connector_ops.utils import get_all_connectors_in_repo
 
 
 def log_metadata_upload_info(metadata_upload_info: MetadataUploadInfo):
@@ -61,6 +61,7 @@ def upload(metadata_file_path: pathlib.Path, docs_path: pathlib.Path, bucket_nam
     else:
         click.secho(f"The metadata file {metadata_file_path} was not uploaded.", color="yellow")
         exit(5)
+
 
 @metadata_service.command(help="Upload docs for all connectors to a GCS bucket.")
 @click.argument("airbyte-repo-path", type=click.Path(exists=True, path_type=pathlib.Path))
