@@ -126,7 +126,7 @@ class OpenAIEmbeddingConfigModel(BaseModel):
 
 class OpenAICompatibleEmbeddingConfigModel(BaseModel):
     mode: Literal["openai_compatible"] = Field("openai_compatible", const=True)
-    api_key: str = Field(..., title="API key", default="", airbyte_secret=True)
+    api_key: str = Field(title="API key", default="", airbyte_secret=True)
     base_url: str = Field(
         ..., title="Base URL", description="The base URL for your OpenAI-compatible service", examples=["https://your-service-name.com"]
     )
@@ -143,6 +143,7 @@ class OpenAICompatibleEmbeddingConfigModel(BaseModel):
     class Config:
         title = "OpenAI-compatible"
         schema_extra = {"description": "Use a service that's compatible with the OpenAI API to embed text."}
+
 
 class AzureOpenAIEmbeddingConfigModel(BaseModel):
     mode: Literal["azure_openai"] = Field("azure_openai", const=True)

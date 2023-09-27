@@ -4,15 +4,16 @@
 
 import os
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
     FromFieldEmbeddingConfigModel,
-    OpenAIEmbeddingConfigModel,
     OpenAICompatibleEmbeddingConfigModel,
+    OpenAIEmbeddingConfigModel,
+    ProcessingConfigModel,
 )
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
 from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, format_exception
@@ -170,13 +171,15 @@ class OpenAICompatibleEmbedder(Embedder):
             return format_exception(e)
         return None
 
-    def embed_texts(self, texts: List[str]) -> List[List[float]]:
-        return self.embeddings.embed_documents(texts)
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
+        return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
 
     @property
     def embedding_dimensions(self) -> int:
         # vector size produced by the model
         return self.config.dimensions
+
+
 class FromFieldEmbedder(Embedder):
     def __init__(self, config: FromFieldEmbeddingConfigModel):
         super().__init__()
@@ -219,3 +222,30 @@ class FromFieldEmbedder(Embedder):
     @property
     def embedding_dimensions(self) -> int:
         return self.config.dimensions
+
+
+embedder_map = {
+    "openai": OpenAIEmbedder,
+    "cohere": CohereEmbedder,
+    "fake": FakeEmbedder,
+    "azure_openai": AzureOpenAIEmbedder,
+    "from_field": FromFieldEmbedder,
+    "openai_compatible": OpenAICompatibleEmbedder,
+}
+
+
+def create_from_config(
+    embedding_config: Union[
+        AzureOpenAIEmbeddingConfigModel,
+        CohereEmbeddingConfigModel,
+        FakeEmbeddingConfigModel,
+        FromFieldEmbeddingConfigModel,
+        OpenAIEmbeddingConfigModel,
+        OpenAICompatibleEmbeddingConfigModel,
+    ],
+    processing_config: ProcessingConfigModel,
+):
+    if embedding_config.mode == "azure_openai" or embedding_config.mode == "openai":
+        return embedder_map[embedding_config.mode](embedding_config, processing_config.chunk_size)
+    else:
+        return embedder_map[embedding_config.mode](embedding_config)
