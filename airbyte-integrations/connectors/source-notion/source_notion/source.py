@@ -42,7 +42,7 @@ class SourceNotion(AbstractSource):
         """
         start_date = config.get("start_date")
         if not start_date:
-            two_years_ago = pendulum.now().subtract(years=2).in_timezone("UTC").to_iso8601_string()
+            two_years_ago = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
             config["start_date"] = two_years_ago
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:

@@ -48,14 +48,27 @@ def test_streams(mocker):
     assert len(streams) == expected_streams_number
 
 
-def test_set_start_date():
-    config_with_start_date = {"start_date": "2021-09-01T00:00:00Z"}
-    config_without_start_date = {}
+@pytest.mark.parametrize("config, expected_start_date", [
+    ({"start_date": "2021-09-01T00:00:00Z", "authenticator": "super_secret_token"}, "2021-09-01T00:00:00Z"),
+    ({"authenticator": "even_more_secret_token"}, None),
+    ({"authenticator": "even_more_secret_token", "start_date": None}, None),
+])
+def test_set_start_date(config, expected_start_date):
+    """
+    Test the behavior of the set_start_date method in the SourceNotion class.
 
-    # Test start_date is handled when already set by user
-    SourceNotion.set_start_date(config_with_start_date)
-    assert config_with_start_date["start_date"] == "2021-09-01T00:00:00Z"
+    Parameters:
+        config (dict): The configuration dictionary that may or may not contain a 'start_date' key.
+        expected_start_date (str | None): The expected 'start_date' after calling set_start_date. 
+                                          If None, the test will check against a regular expression for a valid timestamp.
 
-    # Test start_date matches a timestamp regex when not set by user
-    SourceNotion.set_start_date(config_without_start_date)
-    assert re.match(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z?", config_without_start_date["start_date"]) is not None
+    Asserts:
+        - If 'expected_start_date' is provided, checks if 'start_date' in the config matches it.
+        - If 'expected_start_date' is None, checks if 'start_date' in the config matches the regular expression for a valid timestamp.
+    """
+    SourceNotion.set_start_date(config)
+
+    if expected_start_date:
+        assert config["start_date"] == expected_start_date
+    else:
+        assert re.match(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z", config["start_date"]) is not None
