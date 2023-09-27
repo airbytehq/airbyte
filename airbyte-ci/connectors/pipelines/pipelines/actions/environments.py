@@ -403,7 +403,7 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         path_to_cdk = "airbyte-cdk/python/"
         directory_to_mount = context.get_repo_dir(path_to_cdk)
 
-        context.logger.info(f"Mounting {directory_to_mount}")
+        context.logger.info(f"Mounting CDK from {directory_to_mount}")
 
         # Install the airbyte-cdk package from the local directory
         # We use --no-deps to avoid conflicts with the airbyte-cdk version required by the connector
@@ -413,8 +413,30 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
 
     return connector_container
 
+async def with_python_connector_installed(
+    context: PipelineContext,
+    python_container: Container,
+    connector_source_path: str,
+    additional_dependency_groups: Optional[List] = None,
+    exclude: Optional[List] = None,
+    include: Optional[List] = None,
+) -> Container:
+    """Install an airbyte python connectors  dependencies."""
+    container = await with_installed_python_package(
+        context,
+        python_container,
+        connector_source_path,
+        additional_dependency_groups=additional_dependency_groups,
+        exclude=exclude,
+        include=include,
+    )
 
-async def with_python_connector_installed(context: ConnectorContext) -> Container:
+    container = await apply_python_development_overrides(context, container)
+
+    return container
+
+
+async def with_test_python_connector_installed(context: ConnectorContext) -> Container:
     """Install an airbyte connector python package in a testing environment.
 
     Args:
@@ -439,11 +461,9 @@ async def with_python_connector_installed(context: ConnectorContext) -> Containe
             ".dockerignore",
         ]
     ]
-    container = await with_installed_python_package(
+    container = await with_python_connector_installed(
         context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=exclude
     )
-
-    container = await apply_python_development_overrides(context, container)
 
     return container
 
@@ -907,19 +927,6 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
         .with_entrypoint(entrypoint)
     )
     return await finalize_build(context, connector_container)
-
-
-async def get_cdk_version_from_python_connector(python_connector: Container) -> Optional[str]:
-    pip_freeze_stdout = await python_connector.with_entrypoint("pip").with_exec(["freeze"]).stdout()
-    cdk_dependency_line = next((line for line in pip_freeze_stdout.split("\n") if "airbyte-cdk" in line), None)
-    if not cdk_dependency_line:
-        return None
-
-    if "file://" in cdk_dependency_line:
-        return "LOCAL"
-
-    _, cdk_version = cdk_dependency_line.split("==")
-    return cdk_version
 
 
 async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:

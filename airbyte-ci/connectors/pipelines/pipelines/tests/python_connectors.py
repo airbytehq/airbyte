@@ -68,7 +68,7 @@ class ConnectorPackageInstall(Step):
         Returns:
             StepResult: Failure or success of the package installation and the connector under test container (with the connector package installed).
         """
-        connector_under_test = await environments.with_python_connector_installed(self.context)
+        connector_under_test = await environments.with_test_python_connector_installed(self.context)
         return await self.get_step_result(connector_under_test)
 
 

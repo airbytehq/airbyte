@@ -5,7 +5,7 @@
 from pathlib import Path
 
 from dagger import Container, QueryError
-from pipelines.actions.environments import apply_python_development_overrides, with_installed_python_package
+from pipelines.actions.environments import apply_python_development_overrides, with_python_connector_installed
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
 from pipelines.contexts import ConnectorContext
@@ -32,7 +32,6 @@ class BuildConnectorImage(BuildConnectorImageBase):
 
     async def _run(self) -> StepResult:
         connector: Container = await self._build_connector()
-        connector = await apply_python_development_overrides(self.context, connector)
         try:
             return await self.get_step_result(connector.with_exec(["spec"]))
         except QueryError as e:
@@ -55,7 +54,7 @@ class BuildConnectorImage(BuildConnectorImageBase):
             Container: The builder container, with installed dependencies.
         """
         ONLY_PYTHON_BUILD_FILES = ["setup.py", "requirements.txt", "pyproject.toml", "poetry.lock"]
-        builder = await with_installed_python_package(
+        builder = await with_python_connector_installed(
             self.context,
             base_container,
             str(self.context.connector.code_directory),
@@ -103,7 +102,9 @@ class BuildConnectorImage(BuildConnectorImageBase):
         self.logger.warn(
             "This connector is built from its Dockerfile. This is now deprecated. Please set connectorBuildOptions.baseImage metadata field to use or new build process."
         )
-        return self.dagger_client.container(platform=self.build_platform).build(await self.context.get_connector_dir())
+        container = self.dagger_client.container(platform=self.build_platform).build(await self.context.get_connector_dir())
+        container = await apply_python_development_overrides(self.context, container)
+        return container
 
 
 class BuildConnectorImageForAllPlatforms(BuildConnectorImageForAllPlatformsBase):
