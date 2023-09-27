@@ -46,7 +46,8 @@ class LegacyPartition(Partition):
 
     def __hash__(self) -> int:
         if self._slice:
-            s = json.dumps(self._slice, sort_keys=True, separators=(",", ":"))
+            # Convert the slice to a string so that it can be hashed
+            s = json.dumps(self._slice, sort_keys=True)
             return hash((self._stream.name, s))
         else:
             return hash(self._stream.name)

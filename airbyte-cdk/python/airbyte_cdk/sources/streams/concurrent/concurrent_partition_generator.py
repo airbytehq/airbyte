@@ -17,6 +17,8 @@ class ConcurrentPartitionGenerator:
     def generate_partitions(self, partition_generator: PartitionGenerator, sync_mode: SyncMode) -> None:
         """
         Generate partitions from a partition generator and put them in a queue.
+        When all the partitions are added to the queue, a sentinel is added to the queue to indicate that all the partitions have been generated.
+
         This method is meant to be called in a separate thread.
         :param partition_generator:
         :param sync_mode:
