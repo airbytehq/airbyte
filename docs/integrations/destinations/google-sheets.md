@@ -118,6 +118,10 @@ In case you already have the 10 million limit reached in fewer columns, it will 
 
 At max, you can have 18,278 columns in Google Sheets in a worksheet.
 
+- **Maximum of 50,000 Characters in a Cell**
+
+The maximum number of characters in a single cell is 50,000.
+
 - **Up to 200 Worksheets in a Spreadsheet**
 
 You cannot create more than 200 worksheets within single spreadsheet.
