@@ -251,7 +251,7 @@ class Connector:
     def language(self) -> ConnectorLanguage:
         if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
             return ConnectorLanguage.LOW_CODE
-        if Path(self.code_directory / "setup.py").is_file():
+        if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
             return ConnectorLanguage.PYTHON
         try:
             with open(self.code_directory / "Dockerfile") as dockerfile:

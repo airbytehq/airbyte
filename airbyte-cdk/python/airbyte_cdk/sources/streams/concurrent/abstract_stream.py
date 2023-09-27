@@ -34,6 +34,7 @@ class AbstractStream(ABC):
     - Streams cannot return user-friendly messages by overriding Stream.get_error_display_message. This will be addressed in the future.
     - The Stream's behavior cannot depend on a namespace
     - TypeTransformer is not supported. This will be addressed in the future.
+    - Nested cursor and primary keys are not supported
     """
 
     @abstractmethod
@@ -47,27 +48,29 @@ class AbstractStream(ABC):
     @abstractmethod
     def name(self) -> str:
         """
-        :return: Stream name. By default, this is the implementing class name, but it can be overridden as needed.
+        :return: The stream name
         """
 
     @property
     def logger(self) -> logging.Logger:
+        """
+        :return: The logger object
+        """
         return logging.getLogger(f"airbyte.streams.{self.name}")
 
     @property
     @abstractmethod
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Optional[str]:
         """
         Override to return the default cursor field used by this stream e.g: an API entity might always use created_at as the cursor field.
-        :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
+        :return: The name of the field used as a cursor. Nested cursor fields are not supported.
         """
-        pass
 
     @property
     @abstractmethod
     def primary_key(self) -> Optional[FieldPath]:
         """
-        :return: string if single primary key, list of strings if composite primary key.
+        :return: A string if single primary key, list of strings if composite primary key.
           Primary keys in nested fields are not supported.
           If the stream has no primary keys, return None.
         """

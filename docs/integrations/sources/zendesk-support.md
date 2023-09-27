@@ -86,7 +86,6 @@ The Zendesk Support source connector supports the following streams:
 - [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs)\(Incremental\) (Only available for enterprise accounts)
 - [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
 - [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Incremental\)
-- [Deleted Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#list-deleted-tickets) \(Incremental\)
 - [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
 - [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
 - [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
@@ -113,6 +112,18 @@ The Zendesk Support source connector supports the following streams:
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 
+### Deleted Records Support
+The Zendesk Support connector fetches deleted records in the following streams:
+
+| Stream                   | Deletion indicator field |
+|:-------------------------|:-------------------------|
+| **Brands**               | `is_deleted`             |
+| **Groups**               | `deleted`                |
+| **Organizations**        | `deleted_at`             |
+| **Ticket Metric Events** | `deleted`                |
+| **Tickets**              | `status`==`deleted`      |
+
+
 ## Performance considerations
 
 The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/support/usage_limits).
@@ -123,6 +134,7 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `2.0.0`  | 2023-09-15 | [30440](https://github.com/airbytehq/airbyte/pull/30440) | Remove stream `Deleted Tickets`                                                                                                                                                                                                    |
 | `1.7.0`  | 2023-09-11 | [30259](https://github.com/airbytehq/airbyte/pull/30259) | Add stream `Deleted Tickets`                                                                                                                                                                                                       |
 | `1.6.0`  | 2023-09-09 | [30168](https://github.com/airbytehq/airbyte/pull/30168) | Make `start_date` field optional                                                                                                                                                                                                   |
 | `1.5.1`  | 2023-09-05 | [30142](https://github.com/airbytehq/airbyte/pull/30142) | Handle non-JSON Response                                                                                                                                                                                                           |

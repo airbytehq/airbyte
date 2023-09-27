@@ -33,6 +33,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolT
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
@@ -60,17 +61,22 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
 
   private static BigQuery bq;
+  private static String projectId;
+  private static String datasetLocation;
 
   @BeforeAll
   public static void setupBigquery() throws Exception {
     final String rawConfig = Files.readString(Path.of("secrets/credentials-gcs-staging.json"));
     final JsonNode config = Jsons.deserialize(rawConfig);
     bq = BigQueryDestination.getBigQuery(config);
+
+    projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+    datasetLocation = config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText();
   }
 
   @Override
   protected BigQuerySqlGenerator getSqlGenerator() {
-    return new BigQuerySqlGenerator("US");
+    return new BigQuerySqlGenerator(projectId, datasetLocation);
   }
 
   @Override
@@ -363,7 +369,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
     bq.getDataset(namespace).delete();
 
-    destinationHandler.execute(new BigQuerySqlGenerator("asia-east1").createTable(incrementalDedupStream, "", false));
+    destinationHandler.execute(new BigQuerySqlGenerator(projectId, "asia-east1").createTable(incrementalDedupStream, "", false));
 
     // Empirically, it sometimes takes Bigquery nearly 30 seconds to propagate the dataset's existence.
     // Give ourselves 2 minutes just in case.
