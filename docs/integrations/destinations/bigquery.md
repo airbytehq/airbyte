@@ -132,7 +132,8 @@ Now that you have set up the BigQuery destination connector, check out the follo
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0.17  | 2023-09-26 | [\#30779](https://github.com/airbytehq/airbyte/pull/30779) | Final table PK columns become non-null and skip check for null PKs in raw records (performance)                                                                 |
 | 2.0.16  | 2023-09-22 | [\#30697](https://github.com/airbytehq/airbyte/pull/30697) | Improve resiliency to unclean exit during schema change                                                                                                         |
 | 2.0.15  | 2023-09-21 | [\#30640](https://github.com/airbytehq/airbyte/pull/30640) | Handle streams with identical name and namespace                                                                                                                |
 | 2.0.14  | 2023-09-20 | [\#30069](https://github.com/airbytehq/airbyte/pull/30069) | Staging destination async                                                                                                                                       |

@@ -270,7 +270,8 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 ## Changelog
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-|:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :-------------- | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.1.13          | 2023-09-26 | [\#30779](https://github.com/airbytehq/airbyte/pull/30779) | Final table PK columns become non-null and skip check for null PKs in raw records (performance)                                                                 |
 | 3.1.12          | 2023-09-21 | [\#30671](https://github.com/airbytehq/airbyte/pull/30671) | Reduce async buffer size                                                                                                                                        |
 | 3.1.11          | 2023-09-19 | [\#30592](https://github.com/airbytehq/airbyte/pull/30592) | Internal code changes                                                                                                                                           |
 | 3.1.10          | 2023-09-18 | [\#30546](https://github.com/airbytehq/airbyte/pull/30546) | Make sure that the async buffer are flush every 5 minutes                                                                                                       |
