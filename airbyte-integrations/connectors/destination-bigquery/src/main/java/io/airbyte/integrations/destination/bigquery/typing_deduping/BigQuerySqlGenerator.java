@@ -31,6 +31,7 @@ import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -227,7 +228,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String columnsAndTypes(final StreamConfig stream) {
-    final List<String> pks = stream.primaryKey().stream().map(ColumnId::name).toList();
+    final List<String> pks = stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).toList() : Collections.emptyList();
     return stream.columns().entrySet().stream()
         .map(column -> String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()) + " "
             + (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
@@ -386,17 +387,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "commit_raw_table", commitRawTable)).replace(
             """
             BEGIN TRANSACTION;
-
             ${insert_new_records}
-
             ${dedup_final_table}
-
             ${dedupe_raw_table}
-
             ${cdc_deletes}
-
             ${commit_raw_table}
-
             COMMIT TRANSACTION;
             """);
   }

@@ -578,7 +578,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         {
           "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
           "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-          "_airbyte_meta": {}
+          "_airbyte_meta": {},
+          "id1": 1,
+          "id2": 2
         }
         """));
     insertFinalTableRecords(
