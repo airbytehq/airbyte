@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from pipelines.actions.environments import with_poetry_module
 from pipelines.bases import Step, StepResult
 from pipelines.contexts import PipelineContext

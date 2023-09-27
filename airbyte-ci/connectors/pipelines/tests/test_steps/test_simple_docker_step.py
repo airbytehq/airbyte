@@ -1,14 +1,18 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from pathlib import Path
 
 import pytest
-
 from pipelines.contexts import PipelineContext
-from pipelines.steps.simple_docker_step import SimpleDockerStep, MountPath
+from pipelines.steps.simple_docker_step import MountPath, SimpleDockerStep
 from pipelines.utils import get_exec_result
 
 pytestmark = [
     pytest.mark.anyio,
 ]
+
 
 @pytest.fixture
 def context(dagger_client):
@@ -20,6 +24,7 @@ def context(dagger_client):
     )
     context.dagger_client = dagger_client
     return context
+
 
 class TestSimpleDockerStep:
     async def test_env_variables_set(self, context):
@@ -57,9 +62,7 @@ class TestSimpleDockerStep:
         container = await step.init_container()
 
         for path_to_mount in paths_to_mount:
-            exit_code, _stdout, _stderr  = await get_exec_result(
-                container.with_exec(["test", "-f", f"{str(path_to_mount)}"])
-            )
+            exit_code, _stdout, _stderr = await get_exec_result(container.with_exec(["test", "-f", f"{str(path_to_mount)}"]))
 
             expected_exit_code = 1 if path_to_mount.optional else 0
             assert exit_code == expected_exit_code

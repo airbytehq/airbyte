@@ -4,17 +4,17 @@
 
 import uuid
 from typing import Optional
+
 import dagger
 from pipelines.actions.environments import with_pip_packages, with_python_base
 from pipelines.bases import Report, Step, StepResult
-from pipelines.contexts import PipelineContext, ConnectorContext
 from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH
+from pipelines.contexts import ConnectorContext, PipelineContext
 from pipelines.helpers.steps import run_steps
 from pipelines.steps.poetry_run_step import PoetryRunStep
-from pipelines.steps.simple_docker_step import SimpleDockerStep, MountPath
+from pipelines.steps.simple_docker_step import MountPath, SimpleDockerStep
 from pipelines.tools.internal import INTERNAL_TOOL_PATHS
 from pipelines.utils import DAGGER_CONFIG, get_secret_host_variable
-
 
 # STEPS
 
