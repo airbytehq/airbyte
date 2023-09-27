@@ -15,7 +15,7 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteType;
 import io.airbyte.integrations.base.destination.typing_deduping.AlterTableReport;
@@ -83,10 +83,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public ColumnId buildColumnId(final String name, final String suffix) {
-    // Bigquery columns are case-insensitive, so do all our validation on the lowercased name
     final String nameWithSuffix = name + suffix;
-    final String canonicalized = nameWithSuffix.toLowerCase();
-    return new ColumnId(nameTransformer.getIdentifier(nameWithSuffix), nameWithSuffix, canonicalized);
+    return new ColumnId(
+        nameTransformer.getIdentifier(nameWithSuffix),
+        name,
+        // Bigquery columns are case-insensitive, so do all our validation on the lowercased name
+        nameTransformer.getIdentifier(nameWithSuffix.toLowerCase()));
   }
 
   public StandardSQLTypeName toDialectType(final AirbyteType type) {
@@ -114,11 +116,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     throw new IllegalArgumentException("Unsupported AirbyteType: " + type);
   }
 
-  private String extractAndCast(final ColumnId column, final AirbyteType airbyteType) {
+  private String extractAndCast(final ColumnId column, final AirbyteType airbyteType, final boolean forceSafeCast) {
     if (airbyteType instanceof final Union u) {
       // This is guaranteed to not be a Union, so we won't recurse infinitely
       final AirbyteType chosenType = u.chooseType();
-      return extractAndCast(column, chosenType);
+      return extractAndCast(column, chosenType, forceSafeCast);
     } else if (airbyteType instanceof Struct) {
       // We need to validate that the struct is actually a struct.
       // Note that struct columns are actually nullable in two ways. For a column `foo`:
@@ -156,13 +158,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           """);
     } else {
       final StandardSQLTypeName dialectType = toDialectType(airbyteType);
+      final var baseTyping = "JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"')";
       if (dialectType == StandardSQLTypeName.STRING) {
         // json_value implicitly returns a string, so we don't need to cast it.
-        // SAFE_CAST is actually a massive performance hit, so we should skip it if we can.
-        return "JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"')";
+        return baseTyping;
       } else {
-        return "SAFE_CAST(JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"') as " + dialectType.name()
-            + ")";
+        // SAFE_CAST is actually a massive performance hit, so we should skip it if we can.
+        return cast(baseTyping, dialectType.name(), forceSafeCast);
       }
     }
   }
@@ -381,8 +383,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return updateTable(stream, finalSuffix, true);
   }
 
-  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
+  private String updateTableQueryBuilder(final StreamConfig stream,
+                                         final String finalSuffix,
+                                         final boolean verifyPrimaryKeys,
+                                         final boolean forceSafeCasting) {
+    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), forceSafeCasting);
     String dedupFinalTable = "";
     String cdcDeletes = "";
     String dedupRawTable = "";
@@ -390,7 +395,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
       // If we're in dedup mode, then we must have a cursor
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
-      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
+      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns(), forceSafeCasting);
     }
     final String commitRawTable = commitRawTable(stream.id());
 
@@ -411,27 +416,59 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             """);
   }
 
+  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
+    final var unsafeUpdate = updateTableQueryBuilder(stream, finalSuffix, verifyPrimaryKeys, false);
+    final var safeUpdate = updateTableQueryBuilder(stream, finalSuffix, verifyPrimaryKeys, true);
+    final String pkVarDeclaration = verifyPrimaryKeys ? "DECLARE missing_pk_count INT64;" : "";
+    return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate, "pk_var_declaration", pkVarDeclaration)).replace(
+        """
+        ${pk_var_declaration}
+
+        BEGIN
+
+        ${unsafe_update}
+
+        EXCEPTION WHEN ERROR THEN
+        ROLLBACK TRANSACTION;
+
+        ${safe_update}
+
+        END;
+
+        """);
+  }
+
   @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  String insertNewRecords(final StreamConfig stream,
+                          final String finalSuffix,
+                          final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
+                          final boolean forceSafeCasting) {
     final String columnCasts = streamColumns.entrySet().stream().map(
-        col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
+        col -> extractAndCast(col.getKey(), col.getValue(), forceSafeCasting) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
-    final String columnErrors = "[" + streamColumns.entrySet().stream().map(
-        col -> new StringSubstitutor(Map.of(
-            "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
-            "col_type", toDialectType(col.getValue()).name(),
-            "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
-                // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
-                // and necessary because json_query
-                """
-                CASE
-                  WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
-                    AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
-                    AND (${json_extract} IS NULL)
-                    THEN 'Problem with `${raw_col_name}`'
-                  ELSE NULL
-                END"""))
-        .collect(joining(",\n")) + "]";
+    final String columnErrors;
+    if (forceSafeCasting) {
+      columnErrors = "[" + streamColumns.entrySet().stream().map(
+          col -> new StringSubstitutor(Map.of(
+              "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
+              "col_type", toDialectType(col.getValue()).name(),
+              "json_extract", extractAndCast(col.getKey(), col.getValue(), true))).replace(
+                  // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
+                  // and necessary because json_query
+                  """
+                  CASE
+                    WHEN (JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"') IS NOT NULL)
+                      AND (JSON_TYPE(JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${raw_col_name}"')) != 'null')
+                      AND (${json_extract} IS NULL)
+                      THEN 'Problem with `${raw_col_name}`'
+                    ELSE NULL
+                  END"""))
+          .collect(joining(",\n")) + "]";
+    } else {
+      // We're not safe casting, so any error should throw an exception and trigger the safe cast logic
+      columnErrors = "[]";
+    }
+
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
@@ -511,7 +548,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @VisibleForTesting
   String cdcDeletes(final StreamConfig stream,
                     final String finalSuffix,
-                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
+                    final boolean forceSafeCasting) {
 
     if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
@@ -522,7 +560,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
 
     final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    final String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
+    final String pkCasts =
+        stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk), forceSafeCasting)).collect(joining(",\n"));
 
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
     // out-of-order record insertions after the delete has been registered
@@ -656,6 +695,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   private static List<String> getPks(StreamConfig stream) {
     return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).toList() : Collections.emptyList();
+  }
+      
+  private static String cast(final String content, final String asType, boolean useSafeCast) {
+    final var open = useSafeCast ? "SAFE_CAST(" : "CAST(";
+    return wrap(open, content + " as " + asType, ")");
+  }
+
+  private static String wrap(final String open, final String content, final String close) {
+    return open + content + close;
   }
 
 }

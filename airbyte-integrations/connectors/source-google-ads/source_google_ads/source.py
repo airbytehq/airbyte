@@ -58,6 +58,10 @@ FULL_REFRESH_CUSTOM_TABLE = [
 
 
 class SourceGoogleAds(AbstractSource):
+
+    # Skip exceptions on missing streams
+    raise_exception_on_missing_stream = False
+
     @staticmethod
     def _validate_and_transform(config: Mapping[str, Any]):
         if config.get("end_date") == "":

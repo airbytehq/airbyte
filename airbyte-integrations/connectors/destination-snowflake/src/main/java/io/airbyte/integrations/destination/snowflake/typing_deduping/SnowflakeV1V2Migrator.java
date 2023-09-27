@@ -4,7 +4,8 @@
 
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV1V2Migrator;
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName;

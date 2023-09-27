@@ -192,6 +192,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.3.1   | 2023-09-27 | [30800](https://github.com/airbytehq/airbyte/pull/30800) | Handle permission issues a non breaking                                                                                                              |
 | 4.3.0   | 2023-09-26 | [30752](https://github.com/airbytehq/airbyte/pull/30752) | Do not sync upcoming invoices, extend stream schemas                                                                                                 |
 | 4.2.0   | 2023-09-21 | [30660](https://github.com/airbytehq/airbyte/pull/30660) | Fix updated state for the incremental syncs                                                                                                          |
 | 4.1.1   | 2023-09-15 | [30494](https://github.com/airbytehq/airbyte/pull/30494) | Fix datatype of invoices.lines property                                                                                                              |
