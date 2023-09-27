@@ -146,6 +146,9 @@
           }
         }
       }
+    },
+    "untranslatedName": {
+      "type": ["null", "string"]
     }
   }
 }
