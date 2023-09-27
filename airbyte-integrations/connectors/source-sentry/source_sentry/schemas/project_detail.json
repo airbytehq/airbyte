@@ -399,49 +399,49 @@
       "type": "boolean"
     },
     "access": {
-      "type" : ["null", "array"],
-      "items" : {
-        "type" : ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
       }
     },
     "builtinSymbolSources": {
-      "type" : ["null", "array"],
-      "items" : {
-        "type" : ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
       }
     },
     "dynamicSamplingBiases": {
-      "type" : ["null", "array"],
-      "items" : {
-        "type" : ["null", "object"],
-        "properties" : {
-          "id": {"type" : ["null", "string"]},
-          "active": {"type" : ["null", "boolean"]}
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": { "type": ["null", "string"] },
+          "active": { "type": ["null", "boolean"] }
         }
       }
     },
     "eventProcessing": {
-      "type" : ["null", "object"],
-      "properties" : {
+      "type": ["null", "object"],
+      "properties": {
         "symbolicationDegraded": {
-          "type" : ["null", "boolean"]
+          "type": ["null", "boolean"]
         }
       }
     },
-    "fingerprintingRules": {"type" : ["null", "string"]},
-    "firstTransactionEvent": {"type" : ["null", "boolean"]},
-    "groupingAutoUpdate": {"type" : ["null", "boolean"]},
-    "groupingConfig": {"type" : ["null", "string"]},
-    "groupingEnhancements": {"type" : ["null", "string"]},
-    "groupingEnhancementsBase": {"type" : ["null", "string"]},
-    "hasMinifiedStackTrace": {"type" : ["null", "boolean"]},
-    "hasMonitors": {"type" : ["null", "boolean"]},
-    "hasProfiles": {"type" : ["null", "boolean"]},
-    "hasReplays": {"type" : ["null", "boolean"]},
-    "hasSessions": {"type" : ["null", "boolean"]},
-    "recapServerUrl": {"type" : ["null", "string"]},
-    "secondaryGroupingConfig": {"type" : ["null", "string"]},
-    "secondaryGroupingExpiry": {"type" : ["null", "integer"]},
-    "symbolSources": {"type" : ["null", "string"]}
+    "fingerprintingRules": { "type": ["null", "string"] },
+    "firstTransactionEvent": { "type": ["null", "boolean"] },
+    "groupingAutoUpdate": { "type": ["null", "boolean"] },
+    "groupingConfig": { "type": ["null", "string"] },
+    "groupingEnhancements": { "type": ["null", "string"] },
+    "groupingEnhancementsBase": { "type": ["null", "string"] },
+    "hasMinifiedStackTrace": { "type": ["null", "boolean"] },
+    "hasMonitors": { "type": ["null", "boolean"] },
+    "hasProfiles": { "type": ["null", "boolean"] },
+    "hasReplays": { "type": ["null", "boolean"] },
+    "hasSessions": { "type": ["null", "boolean"] },
+    "recapServerUrl": { "type": ["null", "string"] },
+    "secondaryGroupingConfig": { "type": ["null", "string"] },
+    "secondaryGroupingExpiry": { "type": ["null", "integer"] },
+    "symbolSources": { "type": ["null", "string"] }
   }
 }
