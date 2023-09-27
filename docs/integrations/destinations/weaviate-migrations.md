@@ -2,7 +2,7 @@
 
 ## Upgrading to 0.2.0
 
-This version adds several new features like flexible embedding options, overwrite and append+dedup sync modes , but also contains multiple changes that require a migration of existing connections. This is done to align the behavior of vector database destinations in Airbyte. The following changes are included:
+This version adds several new features like flexible embedding options, overwrite and append+dedup sync modes. When upgrading from prior versions on this connector, a one-time migration of existing connections is required. This is done to align the behavior of vector database destinations in Airbyte. The following changes are included:
 
 ### Changed configuration object structure
 
@@ -10,7 +10,7 @@ Due to a change of the configuration structure, it's necessary to reconfigure ex
 
 ### Auto-generated ids
 
-It's not possible anymore to configure id fields in the destination. Instead, the destination will generate a UUID for each Weaviate object. The id per record is stored in the `_ab_record_id` property and can be used to identify Weaviate objects by Airbyte record.
+It's no longer possible to configure `id` fields in the destination. Instead, the destination will generate a UUID for each Weaviate object. The `id` for each record is stored in the `_ab_record_id` property and can be used to identify Weaviate objects by Airbyte record.
 
 ### Vector fields
 
