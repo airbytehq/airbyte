@@ -4,7 +4,7 @@
 import copy
 import json
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, Optional, Tuple, Union
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -24,6 +24,15 @@ class PartitionGenerator(ABC):
 
 
 class LegacyPartition(Partition):
+    """
+    This class acts as an adapter between the new Partition interface and the legacy stream_slice "interface"
+
+    LegacyPartitions are instantiated from a Stream and a stream_slice.
+
+    This class can be used to help enable concurrency on existing connectors without having to rewrite everything as AbstractStream.
+    In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
+    """
+
     def __init__(self, stream: Stream, _slice: Optional[Mapping[str, Any]]):
         self._stream = stream
         self._slice = _slice
@@ -32,48 +41,38 @@ class LegacyPartition(Partition):
         for record_data in self._stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=copy.deepcopy(self._slice)):
             yield Record(record_data)
 
-    # def __eq__(self, other: Any) -> bool:
-    #     if not isinstance(other, LegacyPartition):
-    #         return False
-    #     return _make_hash(self._slice) == _make_hash(other._slice) and self._stream.name == other._stream.name
-
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         return self._slice
 
     def __hash__(self) -> int:
-
         if self._slice:
             s = json.dumps(self._slice, sort_keys=True, separators=(",", ":"))
-            print(s)
-            print(hash(s))
             return hash((self._stream.name, s))
         else:
             return hash(self._stream.name)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"LegacyPartition({self._stream.name}, {self._slice})"
 
 
-def _make_hash(o) -> Union[Tuple[Any, ...], int]:
+def _make_hash(o: Any) -> int:
     """
     Makes a hash from a dictionary, list, tuple or set to any level, that contains
     only other hashable types (including any lists, tuples, sets, and
     dictionaries).
     """
-    # print(f"o: {o}. type: {type(o)}")
+    # str and dict are iterables but they are hashed differently from other iterables
     if isinstance(o, str):
         return hash(o)
     if isinstance(o, dict):
         new_o = copy.deepcopy(o)
         for k, v in new_o.items():
             new_o[k] = _make_hash(v)
-        h = hash(tuple(frozenset(sorted(new_o.items()))))
+        return hash(tuple(frozenset(sorted(new_o.items()))))
     elif isinstance(o, Iterable):
-        h = tuple([_make_hash(e) for e in o])
+        return hash(tuple([_make_hash(e) for e in o]))
     else:
-        h = hash(o)
-    print(f"hash: {h} for {o}")
-    return h
+        return hash(o)
 
 
 class LegacyPartitionGenerator(PartitionGenerator):

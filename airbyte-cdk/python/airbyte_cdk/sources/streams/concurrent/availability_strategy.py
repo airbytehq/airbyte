@@ -39,6 +39,9 @@ class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
     """
     This class acts as an adapter between the existing AvailabilityStrategy and the new AbstractAvailabilityStrategy.
     LegacyAvailabilityStrategy is instantiated with a Stream and a Source to allow the existing AvailabilityStrategy to be used with the new AbstractAvailabilityStrategy interface.
+
+    This class can be used to help enable concurrency on existing connectors without having to rewrite everything as AbstractStream and AbstractAvailabilityStrategy.
+    In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
     """
 
     def __init__(self, stream: Stream, source: Source):
@@ -46,7 +49,7 @@ class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
         self._source = source
 
     def check_availability(self, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
-        return self._stream.availability_strategy.check_availability(self._stream, logger, self._source)
+        return self._stream.check_availability(logger, self._source)
 
 
 @deprecated("This class is experimental. Use at your own risk.")

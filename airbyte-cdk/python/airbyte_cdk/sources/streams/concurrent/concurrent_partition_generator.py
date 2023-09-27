@@ -6,10 +6,11 @@ from queue import Queue
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, QueueItem
 
 
 class ConcurrentPartitionGenerator:
-    def __init__(self, queue: Queue, sentinel) -> None:
+    def __init__(self, queue: Queue[QueueItem], sentinel: PARTITIONS_GENERATED_SENTINEL) -> None:
         self._queue = queue
         self._sentinel = sentinel
 

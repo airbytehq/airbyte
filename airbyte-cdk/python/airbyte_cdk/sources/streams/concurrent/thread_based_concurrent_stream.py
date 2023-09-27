@@ -6,11 +6,11 @@ import concurrent
 from concurrent.futures import Future
 from functools import lru_cache
 from queue import Queue
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, StreamFacade
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, FieldPath, StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, LegacyAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser, LegacyErrorMessageParser
@@ -18,7 +18,7 @@ from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionRea
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import LegacyPartitionGenerator, PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, PartitionCompleteSentinel
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
@@ -34,6 +34,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         :param max_workers:
         :return:
         """
+        pk = cls._get_primary_key_from_stream(stream.primary_key)
         return StreamFacade(
             ThreadBasedConcurrentStream(
                 partition_generator=LegacyPartitionGenerator(stream),
@@ -41,12 +42,24 @@ class ThreadBasedConcurrentStream(AbstractStream):
                 name=stream.name,
                 json_schema=stream.get_json_schema(),
                 availability_strategy=LegacyAvailabilityStrategy(stream, source),
-                primary_key=stream.primary_key,
+                primary_key=pk,
                 cursor_field=stream.cursor_field,
                 error_display_message_parser=LegacyErrorMessageParser(stream),
                 slice_logger=slice_logger,
             )
         )
+
+    @classmethod
+    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> FieldPath:
+        if stream_primary_key is None or isinstance(stream_primary_key, str):
+            return stream_primary_key
+        elif isinstance(stream_primary_key, list):
+            if len(stream_primary_key) > 0 and all(isinstance(k, str) for k in stream_primary_key):
+                return stream_primary_key  # type: ignore # We verified all items in the list are strings
+            else:
+                raise ValueError(f"Nested primary keys are not supported. Found {stream_primary_key}")
+        else:
+            raise ValueError(f"Invalid type for primary key: {stream_primary_key}")
 
     def __init__(
         self,
@@ -54,8 +67,8 @@ class ThreadBasedConcurrentStream(AbstractStream):
         max_workers: int,
         name: str,
         json_schema: Mapping[str, Any],
-        availability_strategy: Optional[AbstractAvailabilityStrategy],
-        primary_key: Optional[Union[str, List[str], List[List[str]]]],
+        availability_strategy: AbstractAvailabilityStrategy,
+        primary_key: Optional[FieldPath],
         cursor_field: Union[str, List[str]],
         error_display_message_parser: ErrorMessageParser,
         slice_logger: SliceLogger,
@@ -74,7 +87,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
     def read(self) -> Iterable[StreamData]:
         self.logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
         futures = []
-        queue = Queue()
+        queue: Queue[QueueItem] = Queue()
         partition_generator = ConcurrentPartitionGenerator(queue, PARTITIONS_GENERATED_SENTINEL)
         partition_reader = PartitionReader(queue)
 
@@ -85,7 +98,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
 
         TIMEOUT_SECONDS = 300  # FIXME: What is a good timeout?
 
-        partitions = {}
+        partitions: Dict[Partition, bool] = {}
 
         finished_partitions = False
         while record_or_partition := queue.get(block=True, timeout=TIMEOUT_SECONDS):
@@ -97,9 +110,9 @@ class ThreadBasedConcurrentStream(AbstractStream):
                         f"Received sentinel for partition {record_or_partition.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support.partitions:\n{partitions}"
                     )
                 partitions[record_or_partition.partition] = True
-            elif self._is_record(record_or_partition):
+            elif isinstance(record_or_partition, Record):
                 yield record_or_partition.stream_data
-            elif self._is_partition(record_or_partition):
+            elif isinstance(record_or_partition, Partition):
                 partitions[record_or_partition] = False
                 if self._slice_logger.should_log_slice_message(self.logger):
                     yield self._slice_logger.create_slice_log_message(record_or_partition.to_slice())
@@ -107,12 +120,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
             if finished_partitions and all(partitions.values()):
                 break
         self._check_for_errors(futures)
-
-    def _is_record(self, record_or_partition):
-        return isinstance(record_or_partition, Record)
-
-    def _is_partition(self, record_or_partition):
-        return isinstance(record_or_partition, Partition)
 
     def _check_for_errors(self, futures: List[Future[Any]]) -> None:
         exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]
@@ -130,7 +137,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         return self._availability_strategy.check_availability(self.logger)
 
     @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> Optional[FieldPath]:
         return self._primary_key
 
     @property
