@@ -1304,3 +1304,18 @@ def test_stream_projects_v2_graphql_retry():
     with patch.object(stream, "backoff_time", return_value=0.01), pytest.raises(UserDefinedBackoffException):
         read_incremental(stream, stream_state={})
     assert resp.call_count == stream.max_retries + 1
+
+
+def test_stream_projects_v2_graphql_query():
+    repository_args_with_start_date = {
+        "start_date": "2022-01-01T00:00:00Z",
+        "page_size_for_large_streams": 20,
+        "repositories": ["airbytehq/airbyte"],
+    }
+    stream = ProjectsV2(**repository_args_with_start_date)
+    query = stream.request_body_json(stream_state={}, stream_slice={'repository': 'airbytehq/airbyte'})
+
+    f = Path(__file__).parent / "projects_v2_pull_requests_query.json"
+    expected_query = json.load(open(f))
+
+    assert query == expected_query
