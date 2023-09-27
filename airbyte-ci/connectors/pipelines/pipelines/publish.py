@@ -223,7 +223,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
         docker_hub_username_secret=context.docker_hub_username_secret,
         docker_hub_password_secret=context.docker_hub_password_secret,
         metadata_bucket_name=context.metadata_bucket_name,
-        metadata_path=context.metadata_path,
         pre_release=context.pre_release,
         pre_release_tag=context.docker_image_tag,
     )
@@ -239,7 +238,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
             results = []
 
-            metadata_validation_results = await metadata.MetadataValidation(context, context.metadata_path).run()
+            metadata_validation_results = await metadata.MetadataValidation(context).run()
             results.append(metadata_validation_results)
 
             # Exit early if the metadata file is invalid.
