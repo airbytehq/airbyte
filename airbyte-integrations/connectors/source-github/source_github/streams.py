@@ -134,6 +134,14 @@ class GithubStreamABC(HttpStream, ABC):
         if reset_time:
             return max(float(reset_time) - time.time(), min_backoff_time)
 
+    def check_graphql_rate_limited(self, response_json) -> bool:
+        errors = response_json.get("errors")
+        if errors:
+            for error in errors:
+                if error.get("type") == "RATE_LIMITED":
+                    return True
+        return False
+
     def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         # get out the stream_slice parts for later use.
         organisation = stream_slice.get("organization", "")
@@ -210,14 +218,6 @@ class GithubStream(GithubStreamABC):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         for repository in self.repositories:
             yield {"repository": repository}
-
-    def check_graphql_rate_limited(self, response_json) -> bool:
-        errors = response_json.get("errors")
-        if errors:
-            for error in errors:
-                if error.get("type") == "RATE_LIMITED":
-                    return True
-        return False
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         if (
@@ -723,12 +723,8 @@ class ReviewComments(IncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/pulls/comments"
 
 
-class PullRequestStats(SemiIncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
-    """
+class GitHubGraphQLStream(GithubStream, ABC):
 
-    is_sorted = "asc"
     http_method = "POST"
 
     def path(
@@ -736,15 +732,26 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
     ) -> str:
         return "graphql"
 
-    def raise_error_from_response(self, response_json):
-        if "errors" in response_json:
-            raise Exception(str(response_json["errors"]))
+    def should_retry(self, response: requests.Response) -> bool:
+        return True if response.json().get("errors") else super().should_retry(response)
 
-    def _get_name(self, repository):
+    def _get_repository_name(self, repository: Mapping[str, Any]) -> str:
         return repository["owner"]["login"] + "/" + repository["name"]
 
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+
+class PullRequestStats(SemiIncrementalMixin, GitHubGraphQLStream):
+    """
+    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
+    """
+
+    is_sorted = "asc"
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.raise_error_from_response(response_json=response.json())
         repository = response.json()["data"]["repository"]
         if repository:
             nodes = repository["pullRequests"]["nodes"]
@@ -752,7 +759,7 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
                 record["review_comments"] = sum([node["comments"]["totalCount"] for node in record["review_comments"]["nodes"]])
                 record["comments"] = record["comments"]["totalCount"]
                 record["commits"] = record["commits"]["totalCount"]
-                record["repository"] = self._get_name(repository)
+                record["repository"] = self._get_repository_name(repository)
                 if record["merged_by"]:
                     record["merged_by"]["type"] = record["merged_by"].pop("__typename")
                 yield record
@@ -763,11 +770,6 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
             pageInfo = repository["pullRequests"]["pageInfo"]
             if pageInfo["hasNextPage"]:
                 return {"after": pageInfo["endCursor"]}
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
 
     def request_body_json(
         self,
@@ -790,33 +792,18 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
         return {**base_headers, **headers}
 
 
-class Reviews(SemiIncrementalMixin, GithubStream):
+class Reviews(SemiIncrementalMixin, GitHubGraphQLStream):
     """
     API docs: https://docs.github.com/en/graphql/reference/objects#pullrequestreview
     """
 
     is_sorted = False
-    http_method = "POST"
     cursor_field = "updated_at"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.pull_requests_cursor = {}
         self.reviews_cursors = {}
-
-    def path(
-        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "graphql"
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
-
-    def raise_error_from_response(self, response_json):
-        if "errors" in response_json:
-            raise Exception(str(response_json["errors"]))
 
     def _get_records(self, pull_request, repository_name):
         "yield review records from pull_request"
@@ -834,14 +821,10 @@ class Reviews(SemiIncrementalMixin, GithubStream):
             }
             yield record
 
-    def _get_name(self, repository):
-        return repository["owner"]["login"] + "/" + repository["name"]
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.raise_error_from_response(response_json=response.json())
         repository = response.json()["data"]["repository"]
         if repository:
-            repository_name = self._get_name(repository)
+            repository_name = self._get_repository_name(repository)
             if "pullRequests" in repository:
                 for pull_request in repository["pullRequests"]["nodes"]:
                     yield from self._get_records(pull_request, repository_name)
@@ -851,7 +834,7 @@ class Reviews(SemiIncrementalMixin, GithubStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json()["data"]["repository"]
         if repository:
-            repository_name = self._get_name(repository)
+            repository_name = self._get_repository_name(repository)
             reviews_cursors = self.reviews_cursors.setdefault(repository_name, {})
             if "pullRequests" in repository:
                 if repository["pullRequests"]["pageInfo"]["hasNextPage"]:
@@ -916,47 +899,28 @@ class PullRequestCommits(GithubStream):
         return record
 
 
-class ProjectsV2(SemiIncrementalMixin, GithubStream):
+class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
     """
     API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
     """
 
     is_sorted = "asc"
-    http_method = "POST"
-
-    def path(
-        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "graphql"
-
-    def raise_error_from_response(self, response_json):
-        if "errors" in response_json:
-            raise Exception(str(response_json["errors"]))
-
-    def _get_name(self, repository):
-        return repository["owner"]["login"] + "/" + repository["name"]
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.raise_error_from_response(response_json=response.json())
         repository = response.json()["data"]["repository"]
         if repository:
             nodes = repository["projectsV2"]["nodes"]
             for record in nodes:
                 record["owner_id"] = record.pop("owner").get("id")
-                record["repository"] = self._get_name(repository)
+                record["repository"] = self._get_repository_name(repository)
                 yield record
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json()["data"]["repository"]
         if repository:
-            pageInfo = repository["projectsV2"]["pageInfo"]
-            if pageInfo["hasNextPage"]:
-                return {"after": pageInfo["endCursor"]}
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
+            page_info = repository["projectsV2"]["pageInfo"]
+            if page_info["hasNextPage"]:
+                return {"after": page_info["endCursor"]}
 
     def request_body_json(
         self,
@@ -1059,31 +1023,18 @@ class IssueCommentReactions(ReactionStream):
     parent_entity = Comments
 
 
-class IssueReactions(SemiIncrementalMixin, GithubStream):
+class IssueReactions(SemiIncrementalMixin, GitHubGraphQLStream):
     """
     https://docs.github.com/en/graphql/reference/objects#issue
     https://docs.github.com/en/graphql/reference/objects#reaction
     """
 
-    http_method = "POST"
     cursor_field = "created_at"
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.issues_cursor = {}
         self.reactions_cursors = {}
-
-    def path(
-        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "graphql"
-
-    def raise_error_from_response(self, response_json):
-        if "errors" in response_json:
-            raise Exception(str(response_json["errors"]))
-
-    def _get_name(self, repository):
-        return repository["owner"]["login"] + "/" + repository["name"]
 
     def _get_reactions_from_issue(self, issue, repository_name):
         for reaction in issue["reactions"]["nodes"]:
@@ -1093,10 +1044,9 @@ class IssueReactions(SemiIncrementalMixin, GithubStream):
             yield reaction
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.raise_error_from_response(response_json=response.json())
         repository = response.json()["data"]["repository"]
         if repository:
-            repository_name = self._get_name(repository)
+            repository_name = self._get_repository_name(repository)
             if "issues" in repository:
                 for issue in repository["issues"]["nodes"]:
                     yield from self._get_reactions_from_issue(issue, repository_name)
@@ -1106,7 +1056,7 @@ class IssueReactions(SemiIncrementalMixin, GithubStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         repository = response.json()["data"]["repository"]
         if repository:
-            repository_name = self._get_name(repository)
+            repository_name = self._get_repository_name(repository)
             reactions_cursors = self.reactions_cursors.setdefault(repository_name, {})
             if "issues" in repository:
                 if repository["issues"]["pageInfo"]["hasNextPage"]:
@@ -1138,14 +1088,13 @@ class IssueReactions(SemiIncrementalMixin, GithubStream):
         return {"query": query}
 
 
-class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):
+class PullRequestCommentReactions(SemiIncrementalMixin, GitHubGraphQLStream):
     """
     API docs:
     https://docs.github.com/en/graphql/reference/objects#pullrequestreviewcomment
     https://docs.github.com/en/graphql/reference/objects#reaction
     """
 
-    http_method = "POST"
     cursor_field = "created_at"
 
     def __init__(self, **kwargs):
@@ -1153,21 +1102,9 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):
         self.cursor_storage = CursorStorage(["PullRequest", "PullRequestReview", "PullRequestReviewComment", "Reaction"])
         self.query_reactions = QueryReactions()
 
-    def path(
-        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "graphql"
-
-    def raise_error_from_response(self, response_json):
-        if "errors" in response_json:
-            raise Exception(str(response_json["errors"]))
-
-    def _get_name(self, repository):
-        return repository["owner"]["login"] + "/" + repository["name"]
-
     def _get_reactions_from_comment(self, comment, repository):
         for reaction in comment["reactions"]["nodes"]:
-            reaction["repository"] = self._get_name(repository)
+            reaction["repository"] = self._get_repository_name(repository)
             reaction["comment_id"] = comment["id"]
             if reaction["user"]:
                 reaction["user"]["type"] = "User"
@@ -1186,7 +1123,6 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):
             yield from self._get_reactions_from_pull_request(pull_request, repository)
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        self.raise_error_from_response(response_json=response.json())
         data = response.json()["data"]
         repository = data.get("repository")
         if repository:
@@ -1243,11 +1179,6 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GithubStream):
             self.cursor_storage.add_cursor(
                 link_to_object[link], pageInfo["endCursor"], node[link]["totalCount"], parent_id=node.get("node_id")
             )
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
-        return {}
 
     def request_body_json(
         self,
