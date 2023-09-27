@@ -8,7 +8,9 @@ from typing import Any, Iterable, Mapping
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
+
 from .utils import *
+
 
 class DestinationTally(Destination):
     def write(
@@ -19,7 +21,7 @@ class DestinationTally(Destination):
         :param configured_catalog: The Configured Catalog describing the schema of the data being received and how it should be persisted in the
                                     destination
         :param input_messages: The stream of input messages received from the source
-        
+
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         logger = AirbyteLogger()
@@ -27,13 +29,19 @@ class DestinationTally(Destination):
             if airbyte_message.type == Type.RECORD:
                 if "ledger" in airbyte_message.record.stream:
                     ledger_url = "https://api.excel2tally.in/api/User/LedgerMaster"
-                    insert_ledger_master_to_tally(config=config, data=airbyte_message.record.data, ledger_master_template_url=ledger_url, logger=logger)
+                    insert_ledger_master_to_tally(
+                        config=config, data=airbyte_message.record.data, ledger_master_template_url=ledger_url, logger=logger
+                    )
                 elif "item" in airbyte_message.record.stream:
                     item_url = "https://api.excel2tally.in/api/User/ItemMaster"
-                    insert_item_master_to_tally(config=config, data=airbyte_message.record.data, item_master_template_url=item_url, logger=logger)
+                    insert_item_master_to_tally(
+                        config=config, data=airbyte_message.record.data, item_master_template_url=item_url, logger=logger
+                    )
                 elif "payment" in airbyte_message.record.stream:
                     payment_voucher_url = "https://api.excel2tally.in/api/User/PaymentVoucher"
-                    insert_payment_voucher_to_tally(config=config, data=airbyte_message.record.data, payment_voucher_template_url=payment_voucher_url, logger=logger)
+                    insert_payment_voucher_to_tally(
+                        config=config, data=airbyte_message.record.data, payment_voucher_template_url=payment_voucher_url, logger=logger
+                    )
             elif airbyte_message.type == Type.STATE:
                 yield airbyte_message
 
