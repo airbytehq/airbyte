@@ -41,6 +41,7 @@ class StreamUnavailable(StreamAvailability):
         return self._message
 
 
+# Singleton instances of StreamAvailability to avoid the overhead of creating new dummy objects
 STREAM_AVAILABLE = StreamAvailable()
 
 

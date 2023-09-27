@@ -4,7 +4,7 @@
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailable, StreamUnavailable
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
 from airbyte_cdk.sources.streams.concurrent.legacy import AvailabilityStrategyFacade
 
 
@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams.concurrent.legacy import AvailabilityStrategyFa
     "stream_availability, expected_available, expected_message",
     [
         pytest.param(StreamAvailable(), True, None, id="test_stream_is_available"),
+        pytest.param(STREAM_AVAILABLE, True, None, id="test_stream_is_available_using_singleton"),
         pytest.param(StreamUnavailable("message"), False, "message", id="test_stream_is_available"),
     ],
 )
