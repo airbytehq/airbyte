@@ -12,8 +12,12 @@ class PartitionGenerator(ABC):
     @abstractmethod
     def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
         """
-        Generates partitions for a given sync mode.
-        :param sync_mode: SyncMode
-        :return: An iterable of partitions.
+                Generates partitions for a given sync mode.
+                :param sync_mode: SyncMode
+        <<<<<<< HEAD
+                :return: An iterable of partitions.
+        =======
+                :return: An iterable of partitions
+        >>>>>>> alex/abstract_stream
         """
         pass

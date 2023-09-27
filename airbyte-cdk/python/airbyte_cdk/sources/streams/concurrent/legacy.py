@@ -102,9 +102,9 @@ class StreamFacade(Stream):
     ) -> Iterable[StreamData]:
         """
         Read full refresh. Delegate to the underlying AbstractStream, ignoring all the parameters
-        :param cursor_field:
-        :param logger:
-        :param slice_logger:
+        :param cursor_field: (ignored)
+        :param logger: (ignored)
+        :param slice_logger: (ignored)
         :return: Iterable of StreamData
         """
         for record in self._stream.read():
@@ -118,7 +118,8 @@ class StreamFacade(Stream):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         if sync_mode == SyncMode.full_refresh:
-            yield from self._stream.read()
+            for record in self._stream.read():
+                yield record.data
         else:
             # Incremental reads are not supported
             raise NotImplementedError
@@ -266,31 +267,6 @@ class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
         return self._stream.check_availability(logger, self._source)
 
 
-@deprecated("This class is experimental. Use at your own risk.")
-class AvailabilityStrategyFacade(AvailabilityStrategy):
-    """
-    The AvailabilityStrategyFacade is a AvailabilityStrategy that wraps an AbstractAvailabilityStrategy and exposes it as a AvailabilityStrategy.
-
-    All methods delegate to the underlying AbstractAvailabilityStrategy.
-    """
-
-    def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
-        self._abstract_availability_strategy = abstract_availability_strategy
-
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
-        """
-        Checks stream availability.
-
-        Important to note that the stream and source parameters are not used by the underlying AbstractAvailabilityStrategy.
-
-        :param stream: (unused)
-        :param logger: logger object to use
-        :param source: (unused)
-        :return: A tuple of (boolean, str). If boolean is true, then the stream
-        """
-        return self._abstract_availability_strategy.check_availability(logger)
-
-
 class LegacyErrorMessageParser(ErrorMessageParser):
     """
     This class acts as an adapter between the new ErrorMessageParser interface and the legacy Stream interface
@@ -310,3 +286,22 @@ class LegacyErrorMessageParser(ErrorMessageParser):
         Always delegate to the stream's get_error_display_message method.
         """
         return self._stream.get_error_display_message(exception)
+
+
+@deprecated("This class is experimental. Use at your own risk.")
+class AvailabilityStrategyFacade(AvailabilityStrategy):
+    def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
+        self._abstract_availability_strategy = abstract_availability_strategy
+
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
+        """
+        Checks stream availability.
+
+        Important to note that the stream and source parameters are not used by the underlying AbstractAvailabilityStrategy.
+
+        :param stream: (unused)
+        :param logger: logger object to use
+        :param source: (unused)
+        :return: A tuple of (boolean, str). If boolean is true, then the stream
+        """
+        return self._abstract_availability_strategy.check_availability(logger)
