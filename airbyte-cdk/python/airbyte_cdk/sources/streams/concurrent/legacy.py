@@ -304,4 +304,5 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
         :param source: (unused)
         :return: A tuple of (boolean, str). If boolean is true, then the stream
         """
-        return self._abstract_availability_strategy.check_availability(logger)
+        stream_availability = self._abstract_availability_strategy.check_availability(logger)
+        return stream_availability.is_available(), stream_availability.message()
