@@ -128,7 +128,7 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
         Important to note that the stream and source parameters are not used by the underlying AbstractAvailabilityStrategy.
 
         :param stream: (unused)
-        :param logger: logger object ot use
+        :param logger: logger object to use
         :param source: (unused)
         :return: A tuple of (boolean, str). If boolean is true, then the stream
         """
