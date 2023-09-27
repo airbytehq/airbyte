@@ -217,6 +217,16 @@
     },
     "addresses": {
       "type": "array"
+    },
+    "custom_fields": {
+      "properties": {}, 
+      "additionalProperties": true,
+      "type": ["null", "object"]
+    },
+    "keyed_custom_fields": {
+      "properties": {},
+      "additionalProperties": true,
+      "type": ["null", "object"]
     }
   }
 }
