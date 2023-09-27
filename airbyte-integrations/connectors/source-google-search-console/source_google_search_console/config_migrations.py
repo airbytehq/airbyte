@@ -32,10 +32,10 @@ class MigrateCustomReports:
     @classmethod
     def should_migrate(cls, config: Mapping[str, Any]) -> bool:
         """
-        This method determines wether or not the config should be migrated to have the new structure for the `custom_reports`,
+        This method determines whether the config should be migrated to have the new structure for the `custom_reports`,
         based on the source spec.
         Returns:
-            > True, if the transformation is neccessary
+            > True, if the transformation is necessary
             > False, otherwise.
             > Raises the Exception if the structure could not be migrated.
         """
@@ -44,7 +44,8 @@ class MigrateCustomReports:
         # corrected the old config and switches back to the new version,
         # we should try to migrate the modified old custom reports.
         if cls.migrate_to_key in config:
-            return not len(config[cls.migrate_to_key]) > 0
+            # also we need to make sure this is not a newly created connection
+            return len(config[cls.migrate_to_key]) == 0 and cls.migrate_from_key in config
 
         if cls.migrate_from_key in config:
             custom_reports = config[cls.migrate_from_key]
