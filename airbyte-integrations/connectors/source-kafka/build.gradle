@@ -1,8 +1,15 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.kafka.KafkaSource'
@@ -21,7 +28,6 @@ repositories {
 dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
 
     implementation 'org.apache.kafka:kafka-clients:3.2.1'
     implementation 'org.apache.kafka:connect-json:3.2.1'
@@ -29,8 +35,5 @@ dependencies {
 
     testImplementation libs.testcontainers.kafka
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-kafka')
     integrationTestJavaImplementation libs.testcontainers.kafka
-
 }

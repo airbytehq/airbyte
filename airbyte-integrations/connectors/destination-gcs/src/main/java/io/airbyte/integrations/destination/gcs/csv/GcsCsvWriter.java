@@ -4,19 +4,19 @@
 
 package io.airbyte.integrations.destination.gcs.csv;
 
-import static io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB;
+import static io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory.DEFAULT_PART_SIZE_MB;
 
 import alex.mojaki.s3upload.MultiPartOutputStream;
 import alex.mojaki.s3upload.StreamTransferManager;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.destination.s3.S3Format;
+import io.airbyte.cdk.integrations.destination.s3.csv.CsvSheetGenerator;
+import io.airbyte.cdk.integrations.destination.s3.csv.S3CsvFormatConfig;
+import io.airbyte.cdk.integrations.destination.s3.util.StreamTransferManagerFactory;
+import io.airbyte.cdk.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.writer.BaseGcsWriter;
-import io.airbyte.integrations.destination.s3.S3Format;
-import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
-import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
-import io.airbyte.integrations.destination.s3.util.StreamTransferManagerFactory;
-import io.airbyte.integrations.destination.s3.writer.DestinationFileWriter;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;

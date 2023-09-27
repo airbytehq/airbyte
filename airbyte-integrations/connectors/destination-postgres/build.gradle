@@ -1,8 +1,15 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
@@ -10,18 +17,10 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
-
-    testImplementation project(':airbyte-test-utils')
+    implementation libs.postgresql
 
     testImplementation libs.testcontainers.postgresql
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-postgres')
-
     integrationTestJavaImplementation libs.testcontainers.postgresql
-
 }

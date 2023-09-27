@@ -4,13 +4,13 @@
 
 package io.airbyte.integrations.source.mongodb.internal.cdc;
 
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.integrations.debezium.CdcMetadataInjector;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
+import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
 
