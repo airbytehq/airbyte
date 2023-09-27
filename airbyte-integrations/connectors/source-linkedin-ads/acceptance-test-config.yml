@@ -31,7 +31,6 @@ acceptance_tests:
         campaign_groups:
           - name: "lastModified"
             bypass_reason: "Volatile data"
-      empty_streams:
   incremental:
     tests:
     - config_path: "secrets/config_oauth.json"
