@@ -20,6 +20,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -926,6 +927,41 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     DIFFER.diffFinalTableRecords(
         BaseTypingDedupingTest.readRecords("sqlgenerator/reservedkeywords_expectedrecords_final.jsonl"),
         dumpFinalTableRecords(streamId, ""));
+  }
+
+  /**
+   * existingSchemaMatchesStreamConfig
+   */
+  @Test
+  public void ensurePKsAreIndexedUnique() throws Exception {
+    createRawTable(streamId);
+    insertRawTableRecords(
+        streamId,
+        List.of(Jsons.deserialize(
+            """
+            {
+              "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {
+                "id1": 1,
+                "id2": 2
+              }
+            }
+            """)));
+
+    final String createTable = generator.createTable(incrementalDedupStream, "", false);
+
+    // should be OK with new tables
+    destinationHandler.execute(createTable);
+    final Optional<DialectTableDefinition> existingTableA = destinationHandler.findExistingTable(streamId);
+    assertTrue(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableA.get()));
+    destinationHandler.execute("DROP TABLE " + streamId.finalTableId(""));
+
+    // Hack the create query to remove NOT NULLs to emulate the old behavior
+    final String createTableModified = Arrays.stream(createTable.split("\r\n")).map(line -> line.contains("id1") || line.contains("id2") ? line.replace("NOT NULL", "") : line).collect(Collectors.joining("\r\n"));
+    destinationHandler.execute(createTableModified);
+    final Optional<DialectTableDefinition> existingTableB = destinationHandler.findExistingTable(streamId);
+    assertFalse(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableB.get()));
   }
 
   /**

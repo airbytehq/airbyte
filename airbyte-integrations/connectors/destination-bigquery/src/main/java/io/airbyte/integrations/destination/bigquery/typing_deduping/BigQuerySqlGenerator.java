@@ -9,6 +9,7 @@ import static io.airbyte.integrations.base.destination.typing_deduping.Collectio
 import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey;
 import static java.util.stream.Collectors.joining;
 
+import com.google.cloud.bigquery.Field.Mode;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
@@ -36,6 +37,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -228,7 +230,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String columnsAndTypes(final StreamConfig stream) {
-    final List<String> pks = stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).toList() : Collections.emptyList();
+    final List<String> pks = getPks(stream);
     return stream.columns().entrySet().stream()
         .map(column -> String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()) + " "
             + (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
@@ -274,6 +276,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   public AlterTableReport buildAlterTableReport(final StreamConfig stream, final TableDefinition existingTable) {
+    final List<String> pks = getPks(stream);
+
     final Map<String, StandardSQLTypeName> streamSchema = stream.columns().entrySet().stream()
         .collect(Collectors.toMap(
             entry -> entry.getKey().name(),
@@ -305,7 +309,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               // is different between the stream and existing schemas
               .map(key -> !existingSchema.get(key).equals(streamSchema.get(name)))
               // if there is no matching key, then don't include it because it is probably already in columnsToAdd
-              .orElse(false);
+              .orElse(false)
+
+              ||
+
+              // Is this column a primary key without a unique index?
+              matchingKey(existingSchema.keySet(), name)
+                  .map(key ->
+                      pks.contains(key)
+                        && (long) existingTable.getSchema().getFields().stream().filter(s -> Objects.equals(
+                          s.getName(), key)).toList().size() == 1
+                        && existingTable.getSchema().getFields().stream().filter(s -> Objects.equals(
+                      s.getName(), key)).toList().get(0).getMode() != Mode.REQUIRED)
+                  .orElse(false)
+              ;
         })
         .collect(Collectors.toSet());
 
@@ -637,6 +654,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .replace("\"", "\\\\\"")
         // Here we're escaping a SQL string, so we only need a single backslash (which is 2, beacuse Java).
         .replace("'", "\\'");
+  }
+
+  private static List<String> getPks(StreamConfig stream) {
+    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).toList() : Collections.emptyList();
   }
 
 }

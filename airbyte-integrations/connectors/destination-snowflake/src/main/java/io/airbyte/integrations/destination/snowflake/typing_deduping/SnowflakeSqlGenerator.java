@@ -107,7 +107,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
-    final List<String> pks = stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).toList() : Collections.emptyList();
+    final List<String> pks = getPks(stream);
     final String columnDeclarations = stream.columns().entrySet().stream()
         .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()) + " "
             + (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
@@ -134,6 +134,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final SnowflakeTableDefinition existingTable)
       throws TableNotMigratedException {
+    final List<String> pks = getPks(stream);
 
     // Check that the columns match, with special handling for the metadata columns.
     final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
@@ -146,12 +147,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey(), column.getValue()),
             LinkedHashMap::putAll);
-    final boolean sameColumns = actualColumns.equals(intendedColumns)
+    final boolean countPksWithoutIndex = existingTable.columns().entrySet().stream()
+        .noneMatch(c -> pks.contains(c.getKey()) && !c.getValue().contains("NOT NULL"));
+
+    return actualColumns.equals(intendedColumns)
+        && countPksWithoutIndex
         && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()))
         && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()))
         && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()));
-
-    return sameColumns;
   }
 
   @Override
@@ -553,6 +556,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   private static String prefixReservedColumnName(final String columnName) {
     return RESERVED_COLUMN_NAMES.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ? "_" + columnName : columnName;
+  }
+
+  private static List<String> getPks(StreamConfig stream) {
+    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).toList() : Collections.emptyList();
   }
 
   public static String escapeSingleQuotedString(final String str) {
