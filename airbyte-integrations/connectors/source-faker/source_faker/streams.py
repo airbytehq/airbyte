@@ -4,9 +4,10 @@
 
 import datetime
 import os
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from multiprocessing import Pool
 from typing import Any, Dict, Iterable, List, Mapping, Optional
+
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 
 from .purchase_generator import PurchaseGenerator
 from .user_generator import UserGenerator
