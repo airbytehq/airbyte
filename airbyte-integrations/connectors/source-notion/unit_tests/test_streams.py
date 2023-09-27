@@ -5,7 +5,7 @@
 import logging
 import random
 from http import HTTPStatus
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 import requests
@@ -183,41 +183,34 @@ def test_user_stream_handles_pagination_correctly(requests_mock):
     assert records_length == 220
 
 
-@pytest.mark.parametrize("stream,parent,status_code,expected_availability,expected_reason_substring", [
-    (Users, None, 403, False, "This is likely due to insufficient permissions for your Notion integration. "),
-    (Blocks, Pages, 403, False, "This is likely due to insufficient permissions for your Notion integration. "),
-    (Users, None, 200, True, None)
-])
-def test_403_error_handling(stream, parent, status_code, expected_availability, expected_reason_substring):
+@pytest.mark.parametrize(
+    "stream,parent,url,status_code,response_content,expected_availability,expected_reason_substring",
+    [
+        (Users, None, "https://api.notion.com/v1/users", 403, b'{"object": "error", "status": 403, "code": "restricted_resource"}', False, "This is likely due to insufficient permissions for your Notion integration."),
+        (Blocks, Pages, "https://api.notion.com/v1/blocks/123/children", 403, b'{"object": "error", "status": 403, "code": "restricted_resource"}', False, "This is likely due to insufficient permissions for your Notion integration."),
+        (Users, None, "https://api.notion.com/v1/users", 200, b'{"object": "list", "results": [{"id": "123", "object": "user", "type": "person"}]}', True, None)
+    ]
+)
+def test_403_error_handling(requests_mock, stream, parent, url, status_code, response_content, expected_availability, expected_reason_substring):
     """
     Test that availability strategy flags streams with 403 error as unavailable
     and returns custom Notion integration message.
     """
 
-    with patch(f'source_notion.streams.{stream.__name__}._send_request') as mock_send_request:
-        mock_resp = requests.Response()
-        mock_resp.status_code = status_code
+    requests_mock.get(url=url, status_code=status_code, content=response_content)
 
-        if status_code == 403:
-            mock_resp._content = b'{"object": "error", "status": 403, "code": "restricted_resource"}'
-            mock_error = requests.HTTPError(response=mock_resp)
-            mock_send_request.side_effect = mock_error
-        else:
-            mock_resp._content = b'{"object": "list", "results": [{"id": "123", "object": "user", "type": "person"}]}'
-            mock_send_request.return_value = mock_resp
+    if parent:
+        stream = stream(parent=parent, config=MagicMock())
+        stream.parent.stream_slices = MagicMock(return_value=[{"id": "123"}])
+        stream.parent.read_records = MagicMock(return_value=[{"id": "123", "object": "page"}])
+    else:
+        stream = stream(config=MagicMock())
 
-        if parent:
-            stream = stream(parent=parent, config=MagicMock())
-            stream.parent.stream_slices = MagicMock(return_value=[{"id": "123"}])
-            stream.parent.read_records = MagicMock(return_value=[{"id": "123", "object": "page"}])
-        else:
-            stream = stream(config=MagicMock())
+    is_available, reason = stream.check_availability(logger=logging.Logger, source=MagicMock())
 
-        is_available, reason = stream.check_availability(logger=logging.Logger, source=MagicMock())
+    assert is_available is expected_availability
 
-        assert is_available is expected_availability
-
-        if expected_reason_substring:
-            assert expected_reason_substring in reason
-        else:
-            assert reason is None
+    if expected_reason_substring:
+        assert expected_reason_substring in reason
+    else:
+        assert reason is None
