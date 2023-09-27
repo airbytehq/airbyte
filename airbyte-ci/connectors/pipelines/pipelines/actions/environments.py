@@ -151,6 +151,7 @@ def with_python_package(
     python_environment: Container,
     package_source_code_path: str,
     exclude: Optional[List] = None,
+    include: Optional[List] = None,
 ) -> Container:
     """Load a python package source code to a python environment container.
 
@@ -164,7 +165,7 @@ def with_python_package(
     Returns:
         Container: A python environment container with the python package source code.
     """
-    package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude)
+    package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude, include=include)
     work_dir_path = f"/{package_source_code_path}"
     container = python_environment.with_mounted_directory(work_dir_path, package_source_code_directory).with_workdir(work_dir_path)
     return container
@@ -308,13 +309,13 @@ def _install_python_dependencies_from_setup_py(
     container: Container,
     additional_dependency_groups: Optional[List] = None,
 ) -> Container:
-    install_connector_package_cmd = ["python", "-m", "pip", "install", "."]
+    install_connector_package_cmd = ["pip", "install", "."]
     container = container.with_exec(install_connector_package_cmd)
 
     if additional_dependency_groups:
         # e.g. .[dev,tests]
         group_string = f".[{','.join(additional_dependency_groups)}]"
-        group_install_cmd = ["python", "-m", "pip", "install", group_string]
+        group_install_cmd = ["pip", "install", group_string]
 
         container = container.with_exec(group_install_cmd)
 
@@ -322,7 +323,7 @@ def _install_python_dependencies_from_setup_py(
 
 
 def _install_python_dependencies_from_requirements_txt(container: Container) -> Container:
-    install_requirements_cmd = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
+    install_requirements_cmd = ["pip", "install", "-r", "requirements.txt"]
     return container.with_exec(install_requirements_cmd)
 
 
@@ -330,7 +331,7 @@ def _install_python_dependencies_from_poetry(
     container: Container,
     additional_dependency_groups: Optional[List] = None,
 ) -> Container:
-    pip_install_poetry_cmd = ["python", "-m", "pip", "install", "poetry"]
+    pip_install_poetry_cmd = ["pip", "install", "poetry"]
     poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
     poetry_install_no_venv_cmd = ["poetry", "install", "--no-root"]
     if additional_dependency_groups:
@@ -339,13 +340,13 @@ def _install_python_dependencies_from_poetry(
 
     return container.with_exec(pip_install_poetry_cmd).with_exec(poetry_disable_virtual_env_cmd).with_exec(poetry_install_no_venv_cmd)
 
-
 async def with_installed_python_package(
     context: PipelineContext,
     python_environment: Container,
     package_source_code_path: str,
     additional_dependency_groups: Optional[List] = None,
     exclude: Optional[List] = None,
+    include: Optional[List] = None,
 ) -> Container:
     """Install a python package in a python environment container.
 
@@ -359,7 +360,7 @@ async def with_installed_python_package(
     Returns:
         Container: A python environment container with the python package installed.
     """
-    container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude)
+    container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude, include=include)
 
     local_dependencies = await find_local_python_dependencies(context, package_source_code_path)
 

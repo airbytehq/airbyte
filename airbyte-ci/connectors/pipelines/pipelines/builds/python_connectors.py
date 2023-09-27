@@ -5,7 +5,7 @@
 from pathlib import Path
 
 from dagger import Container, QueryError
-from pipelines.actions.environments import apply_python_development_overrides, find_local_python_dependencies
+from pipelines.actions.environments import apply_python_development_overrides, with_installed_python_package
 from pipelines.bases import StepResult, StepStatus
 from pipelines.builds.common import BuildConnectorImageBase, BuildConnectorImageForAllPlatformsBase
 from pipelines.contexts import ConnectorContext
@@ -54,26 +54,28 @@ class BuildConnectorImage(BuildConnectorImageBase):
         Returns:
             Container: The builder container, with installed dependencies.
         """
-        setup_dependencies_to_mount = await find_local_python_dependencies(
-            self.context,
-            str(self.context.connector.code_directory),
-            search_dependencies_in_setup_py=True,
-            search_dependencies_in_requirements_txt=False,
-        )
+        ONLY_PYTHON_BUILD_FILES = ["setup.py", "requirements.txt", "pyproject.toml", "poetry.lock"]
         builder = (
-            base_container.with_workdir(self.PATH_TO_INTEGRATION_CODE)
+            # TODO move to hacks
             # This env var is used in the setup.py to know if it is run in a container or not
             # When run in a container, we need to mount the local dependencies to ./local_dependencies
             # The setup.py reacts to this env var and use the /local_dependencies path instead of the normal local path
-            .with_env_variable("DAGGER_BUILD", "1").with_file(
-                "setup.py", (await self.context.get_connector_dir(include="setup.py")).file("setup.py")
-            )
+            base_container.with_env_variable("DAGGER_BUILD", "1")
         )
-        for dependency_path in setup_dependencies_to_mount:
-            in_container_dependency_path = f"/local_dependencies/{Path(dependency_path).name}"
-            builder = builder.with_mounted_directory(in_container_dependency_path, self.context.get_repo_dir(dependency_path))
 
-        return builder.with_exec(["pip", "install", "--prefix=/install", "."])
+        builder = await with_installed_python_package(
+            self.context,
+            builder,
+            str(self.context.connector.code_directory),
+            include=ONLY_PYTHON_BUILD_FILES,
+        )
+
+        # TODO remove
+        # for dependency_path in setup_dependencies_to_mount:
+        #     in_container_dependency_path = f"/local_dependencies/{Path(dependency_path).name}"
+        #     builder = builder.with_mounted_directory(in_container_dependency_path, self.context.get_repo_dir(dependency_path))
+
+        return builder
 
     async def _build_from_base_image(self) -> Container:
         """Build the connector container using the base image defined in the metadata, in the connectorBuildOptions.baseImage field.
@@ -81,14 +83,17 @@ class BuildConnectorImage(BuildConnectorImageBase):
         Returns:
             Container: The connector container built from the base image.
         """
+        self.logger.info("Building connector from base image in metadata")
         base = self._get_base_container()
         builder = await self._create_builder_container(base)
+
         # The snake case name of the connector corresponds to the python package name of the connector
         # We want to mount it to the container under PATH_TO_INTEGRATION_CODE/connector_snake_case_name
         connector_snake_case_name = self.context.connector.technical_name.replace("-", "_")
 
         connector_container = (
-            base.with_directory("/usr/local", builder.directory("/install"))
+            # copy python dependencies from builder to connector container
+            base.with_directory("/usr/local", builder.directory("/usr/local"))
             .with_workdir(self.PATH_TO_INTEGRATION_CODE)
             .with_file("main.py", (await self.context.get_connector_dir(include="main.py")).file("main.py"))
             .with_directory(
