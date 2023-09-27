@@ -29,6 +29,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.platform.commons.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,4 +109,24 @@ public class AirbyteLogMessageTemplateTest {
     return airbyteMessage.getLog();
   }
 
+  @ParameterizedTest
+  @ValueSource(ints = {2, 100, 9000})
+  public void testAirbyteLogMessageLength(int stringRepeatitions) throws java.io.IOException {
+    final StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < stringRepeatitions; i++) {
+      sb.append("abcd");
+    }
+    LOGGER.info(sb.toString());
+    outputContent.flush();
+    final String logMessage = outputContent.toString(StandardCharsets.UTF_8);
+
+    final AirbyteMessage airbyteMessage = validateLogIsAirbyteMessage(logMessage);
+    final AirbyteLogMessage airbyteLogMessage = validateAirbyteMessageIsLog(airbyteMessage);
+    final String connectorLogMessage = airbyteLogMessage.getMessage();
+
+    // #30781 - message length is capped at 3751 charcters.
+    int j = connectorLogMessage.length();
+    assertFalse(connectorLogMessage.length() > 3751);
+    assertTrue(logMessage.length() < 8192);
+  }
 }
