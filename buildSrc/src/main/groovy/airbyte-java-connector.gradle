@@ -21,10 +21,26 @@ class AirbyteJavaConnectorExtension {
     void addCdkDependencies() {
         // Create a list of CDK submodules to import
         def submoduleNames = ['core']
+        features.each { feature ->
+            submoduleNames.add(feature)
+        }
+        project.dependencies {
+            // Import transitive (compileOnly) first party CDK dependencies.
+            // TODO: Bring these into the CDK or refactor them out.
+            implementation project.project(':airbyte-commons')
+            implementation project.project(':airbyte-commons-cli')
+            implementation project.project(':airbyte-config-oss:config-models-oss')
+            implementation project.project(':airbyte-config-oss:init-oss')
+            implementation project.project(':airbyte-json-validation')
+            testImplementation project.project(':airbyte-api')
+            testImplementation project.project(':airbyte-commons')
+            testImplementation project.project(':airbyte-config-oss:config-models-oss')
+            testImplementation project.project(':airbyte-test-utils')
+            integrationTestJavaImplementation project.project(':airbyte-config-oss:config-models-oss')
+            integrationTestJavaImplementation project.project(':airbyte-config-oss:init-oss')
+            integrationTestJavaImplementation project.project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+        }
         if (useLocalCdk) {
-            features.each { feature ->
-                submoduleNames.add("${feature}-feature")
-            }
             project.dependencies {
                 submoduleNames.each { submoduleName ->
                     // Add the CDK module to the dependencies
@@ -45,9 +61,6 @@ class AirbyteJavaConnectorExtension {
                 }
             }
         } else {
-            features.each { feature ->
-                submoduleNames.add(feature)
-            }
             project.dependencies {
                 submoduleNames.each { submoduleName ->
                     // Add the cdkModule to the dependencies
@@ -79,7 +92,6 @@ class AirbyteJavaConnectorPlugin implements Plugin<Project> {
         // def cdkTargetVersion = project.ext.getCdkTargetVersion(project)
         def extension = project.extensions.create('airbyteJavaConnector', AirbyteJavaConnectorExtension, project)
 
-        project.plugins.apply(AirbyteJavaCdkPlugin)
         project.plugins.apply(AirbyteIntegrationTestJavaPlugin)
         project.plugins.apply(AirbytePerformanceTestJavaPlugin)
 

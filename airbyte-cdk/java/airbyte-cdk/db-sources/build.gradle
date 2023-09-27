@@ -78,19 +78,26 @@ dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
 
     // First party main dependencies
-    implementation project(':airbyte-commons-cli')
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation project(':airbyte-config-oss:init-oss')
-    implementation project(':airbyte-json-validation')
+    // TODO: Bring these into the CDK or refactor them out.
+    compileOnly project(':airbyte-commons')
+    compileOnly project(':airbyte-commons-cli')
+    compileOnly project(':airbyte-config-oss:config-models-oss')
+    compileOnly project(':airbyte-config-oss:init-oss')
+    compileOnly project(':airbyte-json-validation')
+    testImplementation project(':airbyte-commons')
+    testImplementation project(':airbyte-config-oss:config-models-oss')
+    testImplementation project(':airbyte-test-utils')
+    testFixturesCompileOnly project(':airbyte-commons')
+    testFixturesCompileOnly project(':airbyte-api')
+    testFixturesCompileOnly project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+    testFixturesCompileOnly project(':airbyte-config-oss:config-models-oss')
+    testFixturesCompileOnly project(':airbyte-config-oss:init-oss')
 
     implementation libs.airbyte.protocol
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
-    // First party test dependencies
-    testImplementation project(':airbyte-test-utils')
-    
     // TODO: Do we need this? And if yes, shouldn't it be a test dependency?
-    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+    // compileOnly project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 
@@ -157,7 +164,6 @@ dependencies {
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'
 
     // From source-jdbc
-    implementation project(':airbyte-commons')
     implementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.postgresql
     // integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
@@ -173,7 +179,6 @@ dependencies {
     testFixturesImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '4.0.0'
 
     // From `standard-source-test`:
-    testFixturesImplementation project(':airbyte-api')
     testFixturesImplementation 'org.mockito:mockito-core:4.6.1'
     testFixturesRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
@@ -181,7 +186,6 @@ dependencies {
 
     // From `airbyte-test-utils`:
     // api project(':airbyte-db:db-lib')
-    testFixturesImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     testFixturesImplementation 'io.fabric8:kubernetes-client:5.12.2'
     testFixturesImplementation libs.temporal.sdk
     testFixturesApi libs.junit.jupiter.api

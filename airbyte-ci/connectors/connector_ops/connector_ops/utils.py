@@ -195,8 +195,8 @@ def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path
     return list(
         set(
             get_all_gradle_dependencies(base_path / Path("core/build.gradle"), with_test_dependencies)
-            + get_all_gradle_dependencies(base_path / Path("db-sources-feature/build.gradle"), with_test_dependencies)
-            + get_all_gradle_dependencies(base_path / Path("db-destinations-feature/build.gradle"), with_test_dependencies)
+            + get_all_gradle_dependencies(base_path / Path("db-sources/build.gradle"), with_test_dependencies)
+            + get_all_gradle_dependencies(base_path / Path("db-destinations/build.gradle"), with_test_dependencies)
         )
     )
 

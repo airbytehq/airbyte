@@ -25,8 +25,8 @@ This page will walk through the process of developing with the Java CDK.
 The java CDK is comprised of separate modules:
 
 - `core` - Shared classes for building connectors of all types.
-- `db-sources-feature` - Shared classes for building DB sources.
-- `db-destinations-feature` - Shared classes for building DB destinations.
+- `db-sources` - Shared classes for building DB sources.
+- `db-destinations` - Shared classes for building DB destinations.
 
 Each CDK submodule may contain these elements:
 

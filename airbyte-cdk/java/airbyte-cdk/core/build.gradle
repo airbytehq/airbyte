@@ -13,19 +13,24 @@ dependencies {
     api project(':airbyte-json-validation')
 
     // First party main dependencies
-    implementation project(':airbyte-api')
-    implementation project(':airbyte-commons-cli')
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation project(':airbyte-config-oss:init-oss')
+    // TODO: Bring these into the CDK or refactor them out.
+    compileOnly project(':airbyte-api')
+    compileOnly project(':airbyte-commons')
+    compileOnly project(':airbyte-commons-cli')
+    compileOnly project(':airbyte-config-oss:config-models-oss')
+    compileOnly project(':airbyte-config-oss:init-oss')
 
+    testImplementation project(':airbyte-commons-cli')
+    testImplementation project(':airbyte-config-oss:config-models-oss')
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
     // SSH dependencies
     implementation 'net.i2p.crypto:eddsa:0.3.0'
 
     // First party test dependencies
+    testImplementation project(':airbyte-commons')
     testImplementation project(':airbyte-test-utils')
-    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-sources-feature'))
+    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-sources'))
 
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 

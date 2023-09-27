@@ -166,7 +166,7 @@ def test_get_all_gradle_dependencies(with_test_dependencies):
         expected_dependencies = [
             Path("airbyte-api"),
             Path("airbyte-cdk/java/airbyte-cdk/core"),
-            Path("airbyte-cdk/java/airbyte-cdk/db-sources-feature"),
+            Path("airbyte-cdk/java/airbyte-cdk/db-sources"),
             Path("airbyte-commons"),
             Path("airbyte-commons-cli"),
             Path("airbyte-commons-protocol"),

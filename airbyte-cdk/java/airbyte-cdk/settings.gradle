@@ -1,5 +1,5 @@
 rootProject.name = 'airbyte'
 
 include ':airbyte-cdk:java:airbyte-cdk:core'
-include ':airbyte-cdk:java:airbyte-cdk:db-sources-feature'
-include ':airbyte-cdk:java:airbyte-cdk:db-destinations-feature'
+include ':airbyte-cdk:java:airbyte-cdk:db-sources'
+include ':airbyte-cdk:java:airbyte-cdk:db-destinations'

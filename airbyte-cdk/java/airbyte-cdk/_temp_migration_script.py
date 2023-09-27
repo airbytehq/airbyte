@@ -55,8 +55,8 @@ EXCLUDE_FILES = [
     ".*\.coverage",
 ]
 CORE_FEATURE = "core"
-DB_SOURCES_FEATURE = "db-sources-feature"
-DB_DESTINATIONS_FEATURE = "db-destinations-feature"
+DB_SOURCES_FEATURE = "db-sources"
+DB_DESTINATIONS_FEATURE = "db-destinations"
 
 MAIN_PACKAGES = {
     CORE_FEATURE: [

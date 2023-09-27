@@ -1,15 +1,23 @@
 dependencies {
-    // TODO: Merge into the CDK when possible, to avoid potential of conflicting versions:
-    implementation project(':airbyte-integrations:bases:base-typing-deduping')
-
+    // Depends on core CDK classes (OK 👍)
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
 
     // First party main dependencies
-    implementation project(':airbyte-api')
-    implementation project(':airbyte-commons-cli')
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation project(':airbyte-config-oss:init-oss')
-    implementation project(':airbyte-json-validation')
+    // TODO: Bring these into the CDK or refactor them out.
+    compileOnly project(':airbyte-api')
+    compileOnly project(':airbyte-commons')
+    compileOnly project(':airbyte-commons-cli')
+    compileOnly project(':airbyte-config-oss:config-models-oss')
+    compileOnly project(':airbyte-config-oss:init-oss')
+    compileOnly project(':airbyte-json-validation')
+    testImplementation project(':airbyte-commons')
+    testImplementation project(':airbyte-integrations:bases:base-typing-deduping')
+    testFixturesCompileOnly project(':airbyte-commons')
+    testFixturesCompileOnly project(':airbyte-config-oss:config-models-oss')
+    testFixturesCompileOnly project(':airbyte-config-oss:init-oss')
+
+    // TODO: Merge into the CDK when possible, to avoid potential of conflicting versions:
+    compileOnly project(':airbyte-integrations:bases:base-typing-deduping')
 
     implementation libs.airbyte.protocol
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
@@ -18,7 +26,7 @@ dependencies {
     testImplementation project(':airbyte-test-utils')
     
     // TODO: Do we need this? And if yes, shouldn't it be a test dependency?
-    implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+    testFixturesCompileOnly project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 
