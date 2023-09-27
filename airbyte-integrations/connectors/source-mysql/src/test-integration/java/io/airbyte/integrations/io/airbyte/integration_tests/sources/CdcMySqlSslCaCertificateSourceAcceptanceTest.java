@@ -55,4 +55,5 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends CdcMySqlSource
     grantCorrectPermissions();
     createAndPopulateTables();
   }
+
 }
