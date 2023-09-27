@@ -145,16 +145,16 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase)
             .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
         .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey(), column.getValue()),
+            (map, column) -> map.put(column.getKey(), column.getValue().type()),
             LinkedHashMap::putAll);
-    final boolean countPksWithoutIndex = existingTable.columns().entrySet().stream()
-        .noneMatch(c -> pks.contains(c.getKey()) && !c.getValue().contains("NOT NULL"));
+    final boolean hasPksWithoutIndex = existingTable.columns().entrySet().stream()
+        .anyMatch(c -> pks.contains(c.getKey()) && c.getValue().isNullable());
 
     return actualColumns.equals(intendedColumns)
-        && countPksWithoutIndex
-        && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()))
-        && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()))
-        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()));
+        && !hasPksWithoutIndex
+        && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()).type())
+        && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()).type())
+        && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()).type());
   }
 
   @Override

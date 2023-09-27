@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import java.sql.SQLException;
+
 public interface DestinationV1V2Migrator<DialectTableDefinition> {
 
   /**
@@ -20,6 +22,6 @@ public interface DestinationV1V2Migrator<DialectTableDefinition> {
                           final SqlGenerator<DialectTableDefinition> sqlGenerator,
                           final DestinationHandler<DialectTableDefinition> destinationHandler,
                           final StreamConfig streamConfig)
-      throws TableNotMigratedException, UnexpectedSchemaException;
+      throws TableNotMigratedException, UnexpectedSchemaException, SQLException;
 
 }

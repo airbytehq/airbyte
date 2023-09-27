@@ -959,7 +959,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     // Hack the create query to remove NOT NULLs to emulate the old behavior
     final String createTableModified = Arrays.stream(createTable.split("\r\n"))
-        .map(line -> line.contains("id1") || line.contains("id2") ? line.replace("NOT NULL", "") : line).collect(Collectors.joining("\r\n"));
+        .map(line -> line.contains("id1") || line.contains("id2") || line.contains("ID1") || line.contains("ID2")
+            ? line.replace("NOT NULL", "") : line).collect(Collectors.joining("\r\n"));
     destinationHandler.execute(createTableModified);
     final Optional<DialectTableDefinition> existingTableB = destinationHandler.findExistingTable(streamId);
     assertFalse(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableB.get()));
