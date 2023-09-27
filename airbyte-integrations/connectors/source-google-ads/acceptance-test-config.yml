@@ -58,6 +58,12 @@ acceptance_tests:
               bypass_reason: "Value can be updated by Google Ads"
             - name: customer.optimization_score
               bypass_reason: "Value can be updated by Google Ads"
+          campaign_budget:
+            - name: campaign_budget.recommended_budget_estimated_change_weekly_interactions
+              bypass_reason: "Value can be updated by Google Ads"
+          campaigns:
+            - name: campaign.optimization_score
+              bypass_reason: "Value can be updated by Google Ads"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
