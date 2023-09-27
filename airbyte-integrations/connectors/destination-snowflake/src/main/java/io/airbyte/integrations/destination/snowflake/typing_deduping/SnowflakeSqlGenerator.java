@@ -106,8 +106,9 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
+    final List<String> pks = stream.primaryKey().stream().map(ColumnId::name).toList();
     final String columnDeclarations = stream.columns().entrySet().stream()
-        .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()))
+        .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()) + " " + (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
         .collect(joining("\n"));
     final String forceCreateTable = force ? "OR REPLACE" : "";
 
@@ -157,10 +158,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
-    String validatePrimaryKeys = "";
-    if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
-    }
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
     String dedupFinalTable = "";
     String cdcDeletes = "";
@@ -174,7 +171,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final String commitRawTable = commitRawTable(stream.id());
 
     return new StringSubstitutor(Map.of(
-        "validate_primary_keys", validatePrimaryKeys,
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
         "cdc_deletes", cdcDeletes,
@@ -182,7 +178,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "commit_raw_table", commitRawTable)).replace(
             """
             BEGIN TRANSACTION;
-            ${validate_primary_keys}
             ${insert_new_records}
             ${dedup_final_table}
             ${dedupe_raw_table}
@@ -299,48 +294,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         default -> "TRY_CAST((" + sqlExpression + ")::text as " + dialectType + ")";
       };
     }
-  }
-
-  @VisibleForTesting
-  String validatePrimaryKeys(final StreamId id,
-                             final List<ColumnId> primaryKeys,
-                             final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
-    if (primaryKeys.stream().anyMatch(c -> c.originalName().contains("`"))) {
-      // TODO why is snowflake throwing a bizarre error when we try to use a column with a backtick in it?
-      // E.g. even this trivial procedure fails: (it should return the string `'foo`bar')
-      // execute immediate 'BEGIN RETURN \'foo`bar\'; END;'
-      return "";
-    }
-
-    final String pkNullChecks = primaryKeys.stream().map(
-        pk -> {
-          final String jsonExtract = extractAndCastInsideScript(pk, streamColumns.get(pk));
-          return "AND " + jsonExtract + " IS NULL";
-        }).collect(joining("\n"));
-
-    final String script = new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "raw_table_id_for_string", escapeSingleQuotedString(id.rawTableId(QUOTE)),
-        "pk_null_checks", pkNullChecks)).replace(
-            // Wrap this inside a script block so that we can use the scripting language
-            """
-            DECLARE _ab_missing_primary_key EXCEPTION (-20001, 'Table ${raw_table_id_for_string} has rows missing a primary key');
-            BEGIN
-              LET missing_pk_count INTEGER := (
-                SELECT COUNT(1)
-                FROM ${raw_table_id}
-                WHERE
-                  "_airbyte_loaded_at" IS NULL
-                  ${pk_null_checks}
-              );
-
-              IF (missing_pk_count > 0) THEN
-                RAISE _ab_missing_primary_key;
-              END IF;
-              RETURN 'SUCCESS';
-            END;
-            """);
-    return "EXECUTE IMMEDIATE '" + escapeSingleQuotedString(script) + "';";
   }
 
   @VisibleForTesting

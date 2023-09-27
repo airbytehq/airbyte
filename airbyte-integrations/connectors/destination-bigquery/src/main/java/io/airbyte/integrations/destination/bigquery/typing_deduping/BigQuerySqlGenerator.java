@@ -227,8 +227,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String columnsAndTypes(final StreamConfig stream) {
+    final List<String> pks = stream.primaryKey().stream().map(ColumnId::name).toList();
     return stream.columns().entrySet().stream()
-        .map(column -> String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()))
+        .map(column -> String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()) + " " +  (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
         .collect(joining(",\n"));
   }
 
@@ -364,12 +365,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
-    String pkVarDeclaration = "";
-    String validatePrimaryKeys = "";
-    if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      pkVarDeclaration = "DECLARE missing_pk_count INT64;";
-      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
-    }
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
     String dedupFinalTable = "";
     String cdcDeletes = "";
@@ -383,19 +378,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String commitRawTable = commitRawTable(stream.id());
 
     return new StringSubstitutor(Map.of(
-        "pk_var_declaration", pkVarDeclaration,
-        "validate_primary_keys", validatePrimaryKeys,
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
         "cdc_deletes", cdcDeletes,
         "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
             """
-            ${pk_var_declaration}
-
             BEGIN TRANSACTION;
-
-            ${validate_primary_keys}
 
             ${insert_new_records}
 
@@ -409,35 +398,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
             COMMIT TRANSACTION;
             """);
-  }
-
-  @VisibleForTesting
-  String validatePrimaryKeys(final StreamId id,
-                             final List<ColumnId> primaryKeys,
-                             final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
-    final String pkNullChecks = primaryKeys.stream().map(
-        pk -> {
-          final String jsonExtract = extractAndCast(pk, streamColumns.get(pk));
-          return "AND " + jsonExtract + " IS NULL";
-        }).collect(joining("\n"));
-
-    return new StringSubstitutor(Map.of(
-        "project_id", '`' + projectId + '`',
-        "raw_table_id", id.rawTableId(QUOTE),
-        "pk_null_checks", pkNullChecks)).replace(
-            """
-            SET missing_pk_count = (
-              SELECT COUNT(1)
-              FROM ${project_id}.${raw_table_id}
-              WHERE
-                `_airbyte_loaded_at` IS NULL
-                ${pk_null_checks}
-              );
-
-            IF missing_pk_count > 0 THEN
-              RAISE USING message = FORMAT('Raw table has %s rows missing a primary key', CAST(missing_pk_count AS STRING));
-            END IF
-            ;""");
   }
 
   @VisibleForTesting
