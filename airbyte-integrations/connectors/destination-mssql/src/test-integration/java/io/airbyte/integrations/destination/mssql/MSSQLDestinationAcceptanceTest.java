@@ -16,7 +16,7 @@ import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
-import io.airbyte.cdk.test.utils.DatabaseConnectionHelper;
+import io.airbyte.cdk.testutils.DatabaseConnectionHelper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import java.sql.SQLException;

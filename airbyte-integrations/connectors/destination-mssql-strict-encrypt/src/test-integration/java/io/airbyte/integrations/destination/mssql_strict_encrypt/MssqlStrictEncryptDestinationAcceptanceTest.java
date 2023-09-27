@@ -17,7 +17,7 @@ import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.cdk.test.utils.DatabaseConnectionHelper;
+import io.airbyte.cdk.testutils.DatabaseConnectionHelper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
