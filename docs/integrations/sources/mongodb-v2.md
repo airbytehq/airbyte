@@ -7,7 +7,14 @@ Airbyte's certified MongoDB connector offers the following features:
 
 ## Quick Start
 
-Here is an outline of the minimum required steps to configure a MongoDB connector:
+This section provides information about configuring the MongoDB V2 source connector.  If you are upgrading from a 
+previous version of the MongoDB V2 source connector, please refer to the [upgrade](#upgrade-from-previous-version) instructions
+in this document.
+
+### New Installation/New Source Connector Configuration
+
+Here is an outline of the minimum required steps to configure a new MongoDB V2 source connector:
+
 1. Create or discover the configuration of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/), either hosted in [MongoDB Atlas](https://www.mongodb.com/atlas/database) or self-hosted.
 2. Create a new MongoDB source in the Airbyte UI
 3. (Airbyte Cloud Only) Allow inbound traffic from Airbyte IPs
@@ -52,7 +59,8 @@ access to the database.
 
 ##### Self Hosted
 
-These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/mongodb-shell/) is installed.  To install the MongoDB shell, please follow [these instructions](https://www.mongodb.com/docs/mongodb-shell/install/#std-label-mdb-shell-install).
+These instructions assume that the [MongoDB shell](https://www.mongodb.com/docs/mongodb-shell/) is installed.  To 
+install the MongoDB shell, please follow [these instructions](https://www.mongodb.com/docs/mongodb-shell/install/#std-label-mdb-shell-install).
 
 1. From a terminal window, launch the MongoDB shell:
 ```shell
@@ -113,11 +121,23 @@ on discovering a self-hosted deployment connection string.
 To configure the Airbyte MongoDB source, use the database credentials and connection string from steps 1 and 2, respectively.
 The source will test the connection to the MongoDB instance upon creation.
 
+### Upgrade From Previous Version
+
+:::caution
+
+The 1.0.0 version of the MongoDB V2 source connector contains breaking changes from previous versions of the connector.
+
+:::
+
+After upgrading to the latest version of the MongoDB V2 source connector, users will be required to manually re-configure
+existing MongoDB V2 source connector configurations.  The required [configuration parameter](#configuration-parameters) values can be discovered
+using the [quick start](#quick-start) steps in this documentation.
+
 ## Replication Methods
 
 The MongoDB source utilizes change data capture (CDC) as a reliable way to keep your data up to date.
 
-#### CDC
+### CDC
 
 Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manual/changeStreams/) of a [MongoDB replica set](https://www.mongodb.com/docs/manual/replication/) to incrementally capture inserts, updates and deletes using a replication plugin. To learn more how Airbyte implements CDC, refer to [Change Data Capture (CDC)](https://docs.airbyte.com/understanding-airbyte/cdc/).
 
@@ -130,7 +150,7 @@ Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manua
 * Collections with different data types for the values in the `_id` field among the documents in a collection are not supported.  All `_id` values within the collection must be the same data type.
 * [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/) are based on the [Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/), which has retention limitations.  Syncs that run less frequently than the retention period of the oplog may encounter issues with missing data.
 
-## Сonfiguration Parameters
+## Configuration Parameters
 
 | Parameter Name                             | Description                                                                                                                                                                                                                                                                                                                                                        |
 |:-------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
