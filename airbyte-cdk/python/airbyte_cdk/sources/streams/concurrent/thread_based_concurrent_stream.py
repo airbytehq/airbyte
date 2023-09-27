@@ -24,6 +24,9 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 
 class ThreadBasedConcurrentStream(AbstractStream):
+
+    TIMEOUT_SECONDS = 300
+
     @classmethod
     def create_from_legacy_stream(cls, stream: Stream, source: AbstractSource, max_workers: int, slice_logger: SliceLogger) -> Stream:
         """
@@ -85,6 +88,22 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._slice_logger = slice_logger
 
     def read(self) -> Iterable[StreamData]:
+        """
+        Read all data from the stream (only full-refresh is supported at the moment)
+
+        Algorithm:
+        1. Submit a future to generate the stream's partition to process.
+          - This has to be done asynchronously because we sometimes need to submit requests to the API to generate all partitions (eg for substreams).
+          - The future will add the partitions to process on a work queue
+        2. Continuously poll work from the work queue until all partitions are generated and processed
+          - If the next work item is a partition, submit a future to process it.
+            - The future will add the records to emit on the work queue
+            - Add the partitions to the partitions_to_done dict so we know it needs to complete for the sync to succeed
+          - If the next work item is a record, yield the record
+          - If the next work item is PARTITIONS_GENERATED_SENTINEL, all the partitions were generated
+          - If the next work item is a PartitionCompleteSentinel, a partition is done processing
+            - Update the value in partitions_to_done to True so we know the partition is completed
+        """
         self.logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
         futures = []
         queue: Queue[QueueItem] = Queue()
@@ -96,28 +115,33 @@ class ThreadBasedConcurrentStream(AbstractStream):
             self._threadpool.submit(partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh)
         )
 
-        TIMEOUT_SECONDS = 300  # FIXME: What is a good timeout?
-
-        partitions: Dict[Partition, bool] = {}
+        # True -> partition is done
+        # False -> partition is not done
+        partitions_to_done: Dict[Partition, bool] = {}
 
         finished_partitions = False
-        while record_or_partition := queue.get(block=True, timeout=TIMEOUT_SECONDS):
+        while record_or_partition := queue.get(block=True, timeout=self.TIMEOUT_SECONDS):
             if record_or_partition == PARTITIONS_GENERATED_SENTINEL:
+                # All partitions were generated
                 finished_partitions = True
             elif isinstance(record_or_partition, PartitionCompleteSentinel):
-                if record_or_partition.partition not in partitions:
+                # All records for a partition were generated
+                if record_or_partition.partition not in partitions_to_done:
                     raise RuntimeError(
-                        f"Received sentinel for partition {record_or_partition.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support.partitions:\n{partitions}"
+                        f"Received sentinel for partition {record_or_partition.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support.partitions:\n{partitions_to_done}"
                     )
-                partitions[record_or_partition.partition] = True
+                partitions_to_done[record_or_partition.partition] = True
             elif isinstance(record_or_partition, Record):
+                # Emit records
                 yield record_or_partition.stream_data
             elif isinstance(record_or_partition, Partition):
-                partitions[record_or_partition] = False
+                # A new partition was generated and must be processed
+                partitions_to_done[record_or_partition] = False
                 if self._slice_logger.should_log_slice_message(self.logger):
                     yield self._slice_logger.create_slice_log_message(record_or_partition.to_slice())
                 futures.append(self._threadpool.submit(partition_reader.process_partition, record_or_partition))
-            if finished_partitions and all(partitions.values()):
+            if finished_partitions and all(partitions_to_done.values()):
+                # All partitions were generated and process. We're done here
                 break
         self._check_for_errors(futures)
 
