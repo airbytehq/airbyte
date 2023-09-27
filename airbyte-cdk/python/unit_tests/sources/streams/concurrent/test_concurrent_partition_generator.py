@@ -8,7 +8,7 @@ import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator import ConcurrentPartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import LegacyPartition
-from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL
 
 
 @pytest.mark.parametrize(
@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream impor
 )
 def test_partition_generator(slices):
     queue = Queue()
-    partition_generator = ConcurrentPartitionGenerator(queue, ThreadBasedConcurrentStream.PARTITION_SENTINEL)
+    partition_generator = ConcurrentPartitionGenerator(queue, PARTITIONS_GENERATED_SENTINEL)
 
     stream = Mock()
     partitions = [LegacyPartition(stream, s) for s in slices]
@@ -28,7 +28,7 @@ def test_partition_generator(slices):
 
     actual_partitions = []
     while partition := queue.get(False):
-        if partition == ThreadBasedConcurrentStream.PARTITION_SENTINEL:
+        if partition == PARTITIONS_GENERATED_SENTINEL:
             break
         actual_partitions.append(partition)
 
