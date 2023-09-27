@@ -34,6 +34,7 @@ class AbstractStream(ABC):
     - Streams cannot return user-friendly messages by overriding Stream.get_error_display_message. This will be addressed in the future.
     - The Stream's behavior cannot depend on a namespace
     - TypeTransformer is not supported. This will be addressed in the future.
+    - Nested cursor and primary keys are not supported
     """
 
     @abstractmethod

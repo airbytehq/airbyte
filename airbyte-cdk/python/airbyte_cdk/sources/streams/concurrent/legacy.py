@@ -71,7 +71,10 @@ class StreamFacade(Stream):
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
-        return self._stream.cursor_field
+        if self._stream.cursor_field is None:
+            return []
+        else:
+            return self._stream.cursor_field
 
     @property
     def source_defined_cursor(self) -> bool:
