@@ -30,6 +30,7 @@ from source_hubspot.streams import (
     Owners,
     OwnersArchived,
     Products,
+    RecordUnnester,
     TicketPipelines,
     Tickets,
     Workflows,
@@ -402,6 +403,7 @@ def expected_custom_object_json_schema():
             "updatedAt": {"type": ["null", "string"], "format": "date-time"},
             "archived": {"type": ["null", "boolean"]},
             "properties": {"type": ["null", "object"], "properties": {"name": {"type": ["null", "string"]}}},
+            "properties_name": {"type": ["null", "string"]},
         },
     }
 
@@ -410,7 +412,7 @@ def test_custom_object_stream_doesnt_call_hubspot_to_get_json_schema_if_availabl
     requests_mock, custom_object_schema, expected_custom_object_json_schema, common_params
 ):
     stream = CustomObject(entity="animals", schema=expected_custom_object_json_schema,
-                          fully_qualified_name="p123_animals", **common_params)
+                          fully_qualified_name="p123_animals", custom_properties={"name": {"type": ["null", "string"]}}, **common_params)
 
     adapter = requests_mock.register_uri(
         "GET", "/crm/v3/schemas", [{"json": {"results": [custom_object_schema]}}])
@@ -446,7 +448,85 @@ def test_contacts_merged_audit_stream_doesnt_call_hubspot_to_get_json_schema(req
 def test_get_custom_objects_metadata_success(requests_mock, custom_object_schema, expected_custom_object_json_schema, api):
     requests_mock.register_uri(
         "GET", "/crm/v3/schemas", json={"results": [custom_object_schema]})
-    for (entity, fully_qualified_name, schema) in api.get_custom_objects_metadata():
+    for (entity, fully_qualified_name, schema, custom_properties) in api.get_custom_objects_metadata():
         assert entity == "animals"
         assert fully_qualified_name == "p19936848_Animal"
         assert schema == expected_custom_object_json_schema
+
+
+@pytest.mark.parametrize(
+    "input_data, unnest_fields, expected_output",
+    (
+        (
+            [{"id": 1, "createdAt": "2020-01-01", "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"}}],
+            [],
+            [{"id": 1, "createdAt": "2020-01-01", "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"}}]
+        ),
+        (
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"}
+                }
+            ],
+            [],
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"},
+                    "properties_phone": "+38044-111-111",
+                    "properties_address": "31, Cleveland str, Washington DC"
+                }
+            ]
+        ),
+        (
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                }
+            ],
+            ["email"],
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "email_from": "integration-test@airbyte.io",
+                    "email_to": "michael_scott@gmail.com",
+                }
+            ]
+        ),
+        (
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"}
+                }
+            ],
+            ["email"],
+            [
+                {
+                    "id": 1,
+                    "createdAt": "2020-01-01",
+                    "email": {"from": "integration-test@airbyte.io", "to": "michael_scott@gmail.com"},
+                    "email_from": "integration-test@airbyte.io",
+                    "email_to": "michael_scott@gmail.com",
+                    "properties": {"phone": "+38044-111-111", "address": "31, Cleveland str, Washington DC"},
+                    "properties_phone": "+38044-111-111",
+                    "properties_address": "31, Cleveland str, Washington DC"
+                }
+            ]
+        )
+    )
+)
+def test_records_unnester(input_data, unnest_fields, expected_output):
+    unnester = RecordUnnester(fields=unnest_fields)
+    assert list(unnester.unnest(input_data)) == expected_output
