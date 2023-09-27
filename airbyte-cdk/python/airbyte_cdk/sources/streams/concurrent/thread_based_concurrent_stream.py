@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams.concurrent.concurrent_partition_generator impor
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser, LegacyErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
-from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import LegacyPartitionGenerator, PartitionGenerator, _make_hash
+from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import LegacyPartitionGenerator, PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, PartitionCompleteSentinel
 from airbyte_cdk.sources.streams.core import Stream, StreamData
@@ -92,15 +92,15 @@ class ThreadBasedConcurrentStream(AbstractStream):
             if record_or_partition == PARTITIONS_GENERATED_SENTINEL:
                 finished_partitions = True
             elif isinstance(record_or_partition, PartitionCompleteSentinel):
-                if _make_hash(record_or_partition.partition) not in partitions:
+                if record_or_partition.partition not in partitions:
                     raise RuntimeError(
-                        f"Received sentinel for partition {record_or_partition.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support."
+                        f"Received sentinel for partition {record_or_partition.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support.partitions:\n{partitions}"
                     )
-                partitions[_make_hash(record_or_partition.partition)] = True
+                partitions[record_or_partition.partition] = True
             elif self._is_record(record_or_partition):
                 yield record_or_partition.stream_data
             elif self._is_partition(record_or_partition):
-                partitions[_make_hash(record_or_partition.to_slice())] = False
+                partitions[record_or_partition] = False
                 if self._slice_logger.should_log_slice_message(self.logger):
                     yield self._slice_logger.create_slice_log_message(record_or_partition.to_slice())
                 futures.append(self._threadpool.submit(partition_reader.process_partition, record_or_partition))

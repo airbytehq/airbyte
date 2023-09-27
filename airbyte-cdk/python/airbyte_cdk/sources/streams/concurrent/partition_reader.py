@@ -18,7 +18,6 @@ class PartitionReader:
         :param partition:
         :return:
         """
-        print(f"Processing partition {partition.to_slice()}")
         for record in partition.read():
             self._output_queue.put(record)
-        self._output_queue.put(PartitionCompleteSentinel(partition.to_slice()))
+        self._output_queue.put(PartitionCompleteSentinel(partition))
