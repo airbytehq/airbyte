@@ -188,6 +188,7 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
   }
 
+
   @Test
   void testStrictSSLUnsecuredNoTunnel() throws Exception {
     final String PASSWORD = "Passw0rd";
