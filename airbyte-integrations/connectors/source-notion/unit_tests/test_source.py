@@ -4,7 +4,8 @@
 
 from unittest.mock import MagicMock
 
-import re
+import freezegun
+import pendulum
 import pytest
 from source_notion.source import SourceNotion
 
@@ -49,26 +50,16 @@ def test_streams(mocker):
 
 
 @pytest.mark.parametrize("config, expected_start_date", [
-    ({"start_date": "2021-09-01T00:00:00Z", "authenticator": "super_secret_token"}, "2021-09-01T00:00:00Z"),
-    ({"authenticator": "even_more_secret_token"}, None),
-    ({"authenticator": "even_more_secret_token", "start_date": None}, None),
+    ({"start_date": "2021-09-01T00:00:00.000Z", "authenticator": "super_secret_token"}, "2021-09-01T00:00:00.000Z"),
+    ({"authenticator": "even_more_secret_token"}, '2020-09-22T00:00:00.000Z'),
+    ({"authenticator": "even_more_secret_token", "start_date": None}, '2020-09-22T00:00:00.000Z'),
 ])
+@freezegun.freeze_time("2022-09-22T00:00:00.000Z")
 def test_set_start_date(config, expected_start_date):
     """
-    Test the behavior of the set_start_date method in the SourceNotion class.
-
-    Parameters:
-        config (dict): The configuration dictionary that may or may not contain a 'start_date' key.
-        expected_start_date (str | None): The expected 'start_date' after calling set_start_date. 
-                                          If None, the test will check against a regular expression for a valid timestamp.
-
-    Asserts:
-        - If 'expected_start_date' is provided, checks if 'start_date' in the config matches it.
-        - If 'expected_start_date' is None, checks if 'start_date' in the config matches the regular expression for a valid timestamp.
+    Test that start_date in config is either:
+      1. set to the value provided by the user
+      2. defaults to two years from the present date set by the test environment.
     """
     SourceNotion.set_start_date(config)
-
-    if expected_start_date:
-        assert config["start_date"] == expected_start_date
-    else:
-        assert re.match(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z", config["start_date"]) is not None
+    assert config["start_date"] == expected_start_date
