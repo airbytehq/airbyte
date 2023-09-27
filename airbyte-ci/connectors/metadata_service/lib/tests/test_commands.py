@@ -43,7 +43,7 @@ def test_docs_path_not_found_fails(valid_metadata_yaml_files):
     runner = CliRunner()
 
     assert len(valid_metadata_yaml_files) > 0, "No files found"
-    
+
     result = runner.invoke(commands.validate, [valid_metadata_yaml_files[0], "non_existent_docs_path"])
     assert result.exit_code != 0, "Validation succeeded (when it shouldve failed) for non_existent_docs_path"
 
