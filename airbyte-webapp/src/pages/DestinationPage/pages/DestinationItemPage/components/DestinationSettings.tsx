@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { FormContainer } from "components/ConnectorBlocks";
+
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationRead } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
@@ -11,8 +13,6 @@ import { useGetDestinationDefinitionSpecification } from "services/connector/Des
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "views/Connector/ServiceForm";
-
-import styles from "./DestinationSettings.module.scss";
 
 interface DestinationsSettingsProps {
   currentDestination: DestinationRead;
@@ -69,7 +69,7 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
     : { ...currentDestination, serviceType: currentDestination.destinationDefinitionId };
 
   return (
-    <div className={styles.content}>
+    <FormContainer>
       <ConnectorCard
         formId={formId}
         isEditMode
@@ -84,7 +84,7 @@ const DestinationsSettings: React.FC<DestinationsSettingsProps> = ({
         selectedConnectorDefinitionSpecification={destinationSpecification}
         title={<FormattedMessage id="destination.destinationSettings" />}
       />
-    </div>
+    </FormContainer>
   );
 };
 

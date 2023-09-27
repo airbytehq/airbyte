@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import styled from "styled-components";
+// import styled from "styled-components";
 
 import { BigButton, ButtonRows } from "components/base/Button/BigButton";
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
 import DataPanel from "components/DataPanel";
 import HeadTitle from "components/HeadTitle";
+import { MainPageWithScroll } from "components/MainPageWithScroll";
 
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import useRouter from "hooks/useRouter";
@@ -23,11 +24,11 @@ interface State {
   currentStep?: string;
 }
 
-const Container = styled.div`
-  max-width: 758px;
-  margin: 0 auto 40px auto;
-  flex: 1;
-`;
+// const Container = styled.div`
+//   max-width: 900px;
+//   margin: 0 auto 108px auto;
+//   flex: 1;
+// `;
 
 const hasSourceId = (state: unknown): state is { sourceId: string } => {
   return typeof state === "object" && state !== null && typeof (state as { sourceId?: string }).sourceId === "string";
@@ -202,11 +203,14 @@ const SelectNewConnectionCard: React.FC<{
       setDestinationId(id);
     }
   };
+
   return (
     <>
-      <HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />
-      <ConnectionStep lightMode type="connection" activeStep={currentStep} />
-      <Container>
+      <MainPageWithScroll
+        headTitle={<HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />}
+        pageTitle={<ConnectionStep lightMode type="connection" activeStep={currentStep} />}
+      >
+        {/* <Container> */}
         {currentStep === CreateStepTypes.CREATE_SOURCE && (
           <>
             <ExistingEntityForm
@@ -250,18 +254,18 @@ const SelectNewConnectionCard: React.FC<{
             />
           </>
         )}
-
-        <ButtonRows full>
-          {(currentStep === CreateStepTypes.CREATE_DESTINATION || backtrack) && (
-            <BigButton onClick={clickCancel} secondary>
-              <FormattedMessage id="form.button.back" />
-            </BigButton>
-          )}
-          <BigButton onClick={clickSelect} disabled={disabled}>
-            <FormattedMessage id="form.button.selectContinue" />{" "}
+        {/* </Container> */}
+      </MainPageWithScroll>
+      <ButtonRows top="0" position="absolute">
+        {(currentStep === CreateStepTypes.CREATE_DESTINATION || backtrack) && (
+          <BigButton onClick={clickCancel} secondary>
+            <FormattedMessage id="form.button.back" />
           </BigButton>
-        </ButtonRows>
-      </Container>
+        )}
+        <BigButton onClick={clickSelect} disabled={disabled}>
+          <FormattedMessage id="form.button.selectContinue" />
+        </BigButton>
+      </ButtonRows>
     </>
   );
 };

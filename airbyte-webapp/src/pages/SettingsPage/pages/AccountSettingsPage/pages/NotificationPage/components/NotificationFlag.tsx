@@ -9,27 +9,30 @@ interface IProps {
   isActive: boolean;
   onClick?: () => void;
   isLoading?: boolean;
+  isDisabled?: boolean;
 }
 
 const IconContainer = styled.div<{
   isLoading?: boolean;
+  isDisabled?: boolean;
 }>`
   width: 25px;
   height: 25px;
   background-color: transparent;
-  cursor: ${({ isLoading }) => (isLoading ? "default" : "pointer")};
+  cursor: ${({ isLoading, isDisabled }) => (isDisabled ? "not-allowed" : isLoading ? "default" : "pointer")};
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
 `;
 
-export const NotificationFlag: React.FC<IProps> = React.memo(({ isActive, onClick, isLoading }) => {
+export const NotificationFlag: React.FC<IProps> = React.memo(({ isActive, onClick, isLoading, isDisabled }) => {
   return (
     <Tooltip
       control={
         <IconContainer
           isLoading={isLoading}
+          isDisabled={isDisabled}
           onClick={() => {
             if (!isLoading) {
               onClick?.();

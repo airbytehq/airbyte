@@ -1,8 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components";
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
-import { FormPageContent } from "components/ConnectorBlocks";
+import { ConnectionFormPageContent, FormPageContent } from "components/ConnectorBlocks";
 import CreateConnectionContent from "components/CreateConnectionContent";
 import HeadTitle from "components/HeadTitle";
 
@@ -15,14 +16,14 @@ import { RoutePaths } from "pages/routePaths";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 
+import { ConnectionCreateDestinationForm } from "./components/DestinationForm";
+import { ConnectionCreateSourceForm } from "./components/SourceForm";
 import {
   DestinationDefinitionRead,
   DestinationRead,
   SourceDefinitionRead,
   SourceRead,
 } from "../../../../core/request/AirbyteClient";
-import { ConnectionCreateDestinationForm } from "./components/DestinationForm";
-import { ConnectionCreateSourceForm } from "./components/SourceForm";
 
 export enum EntityStepsTypes {
   SOURCE = "source",
@@ -71,7 +72,7 @@ export const CreationFormPage: React.FC<{
   const [currentStep, setCurrentStep] = useState(
     hasCurrentStep(location.state) ? location.state.currentStep : CreateStepTypes.CREATE_SOURCE
   );
-
+  const navigate = useNavigate();
   const [currentEntityStep, setCurrentEntityStep] = useState(
     currentStep === CreateStepTypes.CREATE_SOURCE
       ? EntityStepsTypes.SOURCE
@@ -259,22 +260,25 @@ export const CreationFormPage: React.FC<{
     }
 
     return (
-      <FormPageContent big={currentStep === CreateStepTypes.CREATE_CONNECTION}>
+      <ConnectionFormPageContent big={currentStep === CreateStepTypes.CREATE_CONNECTION}>
         <CreateConnectionContent
+          // onBack={() => {
+          //   push(`../${RoutePaths.SelectConnection}`, {
+          //     state: {
+          //       ...(location.state as Record<string, unknown>),
+          //       currentStep: CreateStepTypes.CREATE_DESTINATION,
+          //     },
+          //   });
+          // }}
           onBack={() => {
-            push(`../${RoutePaths.SelectConnection}`, {
-              state: {
-                ...(location.state as Record<string, unknown>),
-                currentStep: CreateStepTypes.CREATE_DESTINATION,
-              },
-            });
+            navigate(`/${RoutePaths.Source}`);
           }}
           source={source}
           destination={destination}
           afterSubmitConnection={afterSubmitConnection}
           onListenAfterSubmit={onListenAfterSubmit}
         />
-      </FormPageContent>
+      </ConnectionFormPageContent>
     );
   };
   return (

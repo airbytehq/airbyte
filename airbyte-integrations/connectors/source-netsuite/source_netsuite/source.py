@@ -62,15 +62,16 @@ class SourceNetsuite(AbstractSource):
                 except requests.exceptions.HTTPError as e:
                     return False, e
         else:
+            return False
             # if `object_types` are not provided, use `Contact` object
             # there should be at least 1 contact available in every NetSuite account by default.
-            url = base_url + RECORD_PATH + "contact"
-            try:
-                response = session.get(url=url, params={"limit": 1})
-                response.raise_for_status()
-                return True, None
-            except requests.exceptions.HTTPError as e:
-                return False, e
+            # url = base_url + RECORD_PATH + "contact"
+            # try:
+            #     response = session.get(url=url, params={"limit": 1})
+            #     response.raise_for_status()
+            #     return True, None
+            # except requests.exceptions.HTTPError as e:
+            #     return False, e
 
     def get_schemas(self, object_names: Union[List[str], str], session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
         """
@@ -143,36 +144,42 @@ class SourceNetsuite(AbstractSource):
                     return self.generate_stream(**input_args)
                 retry_attempt += 1
             self.logger.warn(f"Object `{object_name}` schema is not available. Skipping this stream.")
+            self.logger.error(f"Object_types `{object_name}` is not a valid field.")
             return None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = self.auth(config)
-        session = self.get_session(auth)
-        base_url = self.base_url(config)
-        metadata_url = base_url + META_PATH
-        object_names = config.get("object_types")
+        try:
+            auth = self.auth(config)
+            session = self.get_session(auth)
+            base_url = self.base_url(config)
+            metadata_url = base_url + META_PATH
+            object_names = config.get("object_types")
 
-        # retrieve all record types if `object_types` config field is not specified
-        if not object_names:
-            objects_metadata = session.get(metadata_url).json().get("items")
-            object_names = [object["name"] for object in objects_metadata]
+            # retrieve all record types if `object_types` config field is not specified
+            if not object_names:
+                return False
+                # objects_metadata = session.get(metadata_url).json().get("items")
+                # object_names = [object["name"] for object in objects_metadata]
 
-        input_args = {"session": session, "metadata_url": metadata_url}
-        schemas = self.get_schemas(object_names, **input_args)
-        input_args.update(
-            **{
-                "auth": auth,
-                "base_url": base_url,
-                "start_datetime": config["start_datetime"],
-                "window_in_days": config["window_in_days"],
-                "schemas": schemas,
-                "language": config["language"]
-            }
-        )
-        # build streams
-        streams: list = []
-        for name in object_names:
-            stream = self.generate_stream(object_name=name.lower(), **input_args)
-            if stream:
-                streams.append(stream)
-        return streams
+            input_args = {"session": session, "metadata_url": metadata_url}
+            schemas = self.get_schemas(object_names, **input_args)
+            input_args.update(
+                **{
+                    "auth": auth,
+                    "base_url": base_url,
+                    "start_datetime": config["start_datetime"],
+                    "window_in_days": config["window_in_days"],
+                    "schemas": schemas,
+                    "language": config["language"]
+                }
+            )
+            # build streams
+            streams: list = []
+            for name in object_names:
+                stream = self.generate_stream(object_name=name.lower(), **input_args)
+                if stream:
+                    streams.append(stream)
+            return streams
+        except KeyError:
+            self.logger.error(f"Object_types you provided is not a valid field.")
+        

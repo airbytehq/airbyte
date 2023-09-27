@@ -2,22 +2,19 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "partnerId": {
+    "app_token": {
       "type": ["null", "string"]
     },
-    "SKU": {
+    "table_id": {
       "type": ["null", "string"]
     },
-    "Keep It": {
+    "record_id": {
       "type": ["null", "string"]
     },
-    "Return Restricted": {
+    "id": {
       "type": ["null", "string"]
     },
-    "Restriction Reason": {
-      "type": ["null", "string"]
-    },
-    "Return Center (Alias)": {
+    "fields": {
       "type": ["null", "string"]
     }
   }

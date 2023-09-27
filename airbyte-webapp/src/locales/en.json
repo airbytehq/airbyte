@@ -783,6 +783,7 @@
   "verifyEmail.clickHereText": "Click here",
   "verifyEmail.info": "info@daspire.com",
   "verifyEmail.pageTitle": "Verify Email",
+  "verifyEmail.resend.success.message": "Email has been resent!",
   "resetPassword.pageTitle": "Reset Password",
   "resetPassword.forgot.title": "Forgot your password?",
   "resetPassword.forgot.explain": "Please enter the email address you used to register your Daspire account. ",
@@ -818,5 +819,7 @@
   "settings.support.select.option.accountRelated": "Account Related",
   "settings.support.select.option.other": "Other",
   "settings.support.submit.success.title": "Thank you!",
-  "settings.support.submit.success.text": "Your message has been received. \nWe will get back to you as soon as we can."
+  "settings.support.submit.success.text": "Your message has been received. \nWe will get back to you as soon as we can.",
+  "table.name.open.newTab": "Open in new tab",
+  "table.page.size.label": "Items per page"
 }

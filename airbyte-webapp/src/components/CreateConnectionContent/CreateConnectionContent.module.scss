@@ -1,4 +1,18 @@
+.errorContainer {
+  display: flex;
+  flex-direction: column;
+  height: 80%;
+}
+
 .tryArrowIcon {
   margin: 0 10px -1px 0;
   font-size: 14px;
+}
+
+.backButton {
+  margin: 0 auto;
+  flex: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
 }

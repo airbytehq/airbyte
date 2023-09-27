@@ -2,6 +2,7 @@ import queryString from "query-string";
 import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
+import styled from "styled-components";
 
 import Table from "components/Table";
 
@@ -15,6 +16,7 @@ import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import ConnectorCell from "./components/ConnectorCell";
 import LastSyncCell from "./components/LastSyncCell";
 import NameCell from "./components/NameCell";
+import NewTabIconButton from "./components/NewTabIconButton";
 import SortButton from "./components/SortButton";
 import styles from "./ImplementationTable.module.scss";
 import { EntityTableDataItem, SortOrderEnum } from "./types";
@@ -24,6 +26,11 @@ interface IProps {
   entity: "source" | "destination";
   onClickRow?: (data: EntityTableDataItem) => void;
 }
+
+const NameColums = styled.div`
+  display: flex;
+  aligin-items: center;
+`;
 
 const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
   const { query, push } = useRouter();
@@ -91,7 +98,14 @@ const ImplementationTable: React.FC<IProps> = ({ data, entity }) => {
         accessor: "entityName",
         customWidth: 22,
         Cell: ({ cell, row }: CellProps<EntityTableDataItem>) => (
-          <NameCell value={cell.value} enabled={row.original.enabled} />
+          <NameColums>
+            <NameCell
+              value={cell.value}
+              enabled={row.original.enabled}
+              onClickRow={() => clickEditRow(row.original.entityId)}
+            />
+            <NewTabIconButton id={row.original.entityId} type={entity === "destination" ? "Destination" : "Source"} />
+          </NameColums>
         ),
       },
       {

@@ -5,6 +5,7 @@ import useStateCallback from "hooks/useStateCallback";
 import { RoutePaths } from "pages/routePaths";
 
 import { IAuthUser, MyAuthUser } from "./authenticatedUser";
+import { RegisterUserDetails } from "../../services/auth/AuthService";
 
 interface IUserContext {
   user: IAuthUser;
@@ -16,6 +17,17 @@ interface IUserContext {
 }
 
 const AUTH_USER_KEY = "daspire-user";
+
+const REGISTER_USER_KEY = "register-user-token";
+
+export const getRegisterUserToken = (): string | undefined => {
+  const registerUserDetails: RegisterUserDetails | null = JSON.parse(localStorage.getItem(REGISTER_USER_KEY) as string);
+  return registerUserDetails?.verificationToken;
+};
+
+export const setRegisterUserDetails = (res: RegisterUserDetails): void => {
+  localStorage.setItem(REGISTER_USER_KEY, JSON.stringify(res));
+};
 
 export const getUser = (): IAuthUser => {
   const user: IAuthUser | null = JSON.parse(localStorage.getItem(AUTH_USER_KEY) as string);
@@ -37,7 +49,9 @@ export const AuthContextProvider: React.FC = ({ children }) => {
 
   const setUser = (user: IAuthUser) => {
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-    setAuthenticatedUser(user, () => navigate(`/${RoutePaths.Connections}`));
+    if (user.workspaceId && user.token) {
+      setAuthenticatedUser(user, () => navigate(`/${user.workspaceId ? RoutePaths.Connections : RoutePaths.Payment}`));
+    }
   };
 
   const updateUserStatus = (status: number) => {

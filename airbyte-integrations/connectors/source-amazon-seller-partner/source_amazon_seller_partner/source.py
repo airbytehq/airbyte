@@ -57,6 +57,8 @@ from source_amazon_seller_partner.streams import (
     SellerFeedbackReports,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
+    FBALongTermStorageFeeChargesReport,
+    FBAReimbursementsReport
 )
 
 
@@ -161,6 +163,8 @@ class SourceAmazonSellerPartner(AbstractSource):
             MerchantListingsReports(**stream_kwargs),
             VendorDirectFulfillmentShipping(**stream_kwargs),
             VendorInventoryHealthReports(**stream_kwargs),
+            FBALongTermStorageFeeChargesReport(**stream_kwargs),
+            FBAReimbursementsReport(**stream_kwargs),
             Orders(**stream_kwargs),
             SellerFeedbackReports(**stream_kwargs),
             BrandAnalyticsMarketBasketReports(**stream_kwargs),

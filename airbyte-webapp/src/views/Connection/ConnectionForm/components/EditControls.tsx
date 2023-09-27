@@ -16,6 +16,8 @@ interface EditControlProps {
   withLine?: boolean;
 }
 
+// const Container = styled.div``;
+
 const Success = styled.span`
   color: ${({ theme }) => theme.successColor};
   font-size: 14px;
@@ -56,21 +58,19 @@ const EditControls: React.FC<EditControlProps> = ({
   return (
     <>
       {withLine && <Line />}
-      <div>
-        <div>{showStatusMessage()}</div>
-        <ButtonRows top="40" bottom="40">
-          <BigButton type="button" secondary onClick={onBack}>
-            <FormattedMessage id="form.button.back" />
-          </BigButton>
-          <BigButton
-            type="submit"
-            isLoading={isSubmitting}
-            disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
-          >
-            <FormattedMessage id="form.saveChanges" />
-          </BigButton>
-        </ButtonRows>
-      </div>
+      {showStatusMessage() ? <div>showStatusMessage()</div> : null}
+      <ButtonRows top="0" bottom="0" position="fixed" width="calc(100% - 240px)">
+        <BigButton type="button" secondary onClick={onBack}>
+          <FormattedMessage id="form.button.back" />
+        </BigButton>
+        <BigButton
+          type="submit"
+          isLoading={isSubmitting}
+          disabled={submitDisabled || isSubmitting || (!dirty && !enableControls)}
+        >
+          <FormattedMessage id="form.saveChanges" />
+        </BigButton>
+      </ButtonRows>
     </>
   );
 };

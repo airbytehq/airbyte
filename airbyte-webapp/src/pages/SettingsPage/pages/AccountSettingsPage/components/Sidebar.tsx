@@ -13,9 +13,10 @@ import { useUser } from "core/AuthContext";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
+import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 
-import { AccountSettingsRoute } from "../AccountSettingsPage";
 import { SignOutIcon } from "./SignOutIcon";
+import { AccountSettingsRoute } from "../AccountSettingsPage";
 
 interface IProps {
   menuItems: SideMenuItem[];
@@ -102,21 +103,29 @@ const SidebarItemIcon = (path: string, color: string) => {
 export const Sidebar: React.FC<IProps> = ({ menuItems, onSelectItem }) => {
   const { pathname, push } = useRouter();
   const { removeUser } = useUser();
+  const authService = useAuthenticationService();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
 
   const toggleSignOutConfirmModal = () => {
+    debugger;
     openConfirmationModal({
       title: "settings.logout.modal.title",
       text: "settings.logout.modal.content",
       submitButtonText: "settings.logout.modal.confirmText",
       onSubmit: () => {
-        closeConfirmationModal();
         if (removeUser) {
           removeUser();
         }
-        push(`/${RoutePaths.Signin}`);
+        localStorage.clear();
+        onLogOut();
+        closeConfirmationModal();
+        push(`/${RoutePaths.LoginNew}`);
       },
     });
+  };
+
+  const onLogOut = () => {
+    authService.logout().then().catch();
   };
 
   return (

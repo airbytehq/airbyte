@@ -1,3 +1,5 @@
+import { WebBackendConnectionRead } from "./AirbyteClient";
+import { apiOverride } from "./apiOverride";
 import { UserInfo } from "../AuthContext/authenticatedUser";
 import {
   UserPlanDetail,
@@ -9,8 +11,6 @@ import {
 import { ProductItemsList, PackagesDetail } from "../domain/product";
 import { RolesList, UpdateRoleRequestBody } from "../domain/role";
 import { UsersList, NewUser, NewUserRegisterBody } from "../domain/user";
-import { WebBackendConnectionRead } from "./AirbyteClient";
-import { apiOverride } from "./apiOverride";
 
 export interface FilterConnectionRequestBody {
   workspaceId: string;
@@ -35,7 +35,7 @@ export const NotificationType = {
   PAYMENT_FAIL: "PAYMENT_FAIL",
 } as const;
 
-export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 
 export interface NotificationItem {
   id: string;
@@ -92,7 +92,10 @@ export interface IgnoreNotificationRead {
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never;
 
 export const userInfo = (options?: SecondParameter<typeof apiOverride>) => {
-  return apiOverride<UserInfo>({ url: `/user/info`, method: "get" }, options);
+  return apiOverride<UserInfo>(
+    { url: `/user/info`, method: "get", headers: { "Content-Type": "application/json", ...options?.headers } },
+    options
+  );
 };
 
 export const listProducts = (options?: SecondParameter<typeof apiOverride>) => {

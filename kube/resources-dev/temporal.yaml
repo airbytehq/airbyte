@@ -101,7 +101,16 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: DATABASE_HOST
-
+            - name: VISIBILITY_DBNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: TEMPORAL_VISIBILITY_DBNAME
+            - name: DBNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: TEMPORAL_DBNAME
           ports:
             - containerPort: 7233
           volumeMounts:

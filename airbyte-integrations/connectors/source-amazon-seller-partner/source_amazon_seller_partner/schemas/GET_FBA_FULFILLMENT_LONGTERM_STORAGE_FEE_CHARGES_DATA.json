@@ -1,47 +1,52 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "FBA Long Term Storage Fee Charges Report",
+  "description": "FBA Long Term Storage Fee Charges Report",
   "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "Partner ID": {
+    "source_name": {
       "type": ["null", "string"]
     },
-    "SKU": {
+    "snapshot-date": {
       "type": ["null", "string"]
     },
-    "Item ID": {
+    "sku": {
       "type": ["null", "string"]
     },
-    "Product Name": {
+    "fnsku": {
       "type": ["null", "string"]
     },
-    "Product Category": {
+    "asin": {
       "type": ["null", "string"]
     },
-    "Promo ID": {
+    "product-name": {
       "type": ["null", "string"]
     },
-    "Promo Effective Date": {
+    "condition": {
       "type": ["null", "string"]
     },
-    "Promo Expiration Date": {
+    "per-unit-volume": {
       "type": ["null", "string"]
     },
-    "Current Price": {
+    "currency": {
       "type": ["null", "string"]
     },
-    "Current Price Currency": {
+    "volume-unit": {
       "type": ["null", "string"]
     },
-    "Comparison Price": {
+    "country": {
       "type": ["null", "string"]
     },
-    "Comparison Price Currency": {
+    "qty-charged": {
       "type": ["null", "string"]
     },
-    "Promo Type": {
+    "amount-charged": {
       "type": ["null", "string"]
     },
-    "Promo Status": {
+    "surcharge-age-tier": {
+      "type": ["null", "string"]
+    },
+    "rate-surcharge": {
       "type": ["null", "string"]
     }
   }

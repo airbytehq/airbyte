@@ -2,10 +2,10 @@ import { merge } from "lodash";
 
 import { getUser } from "core/AuthContext";
 
-import { Config } from "../../config";
 import { CommonRequestError } from "./CommonRequestError";
 import { RequestMiddleware } from "./RequestMiddleware";
 import { VersionError } from "./VersionError";
+import { Config } from "../../config";
 
 export interface ApiOverrideRequestOptions {
   config: Pick<Config, "apiUrl">;
@@ -21,7 +21,7 @@ function getRequestBody<U>(data: U) {
   if (nonJsonObject) {
     // The app tries to stringify blobs which results in broken functionality.
     // There may be some edge cases where we pass in an empty object.
-    // @ts-expect-error There may be a better way to do this, but for now it solves the problem.
+
     return data as BodyInit;
   }
   return stringifiedData;
@@ -64,7 +64,7 @@ export const apiOverride = async <T, U = unknown>(
   const response = await fetch(`${requestUrl}${new URLSearchParams(params)}`, {
     method,
     ...(data ? { body: getRequestBody(data) } : {}),
-    headers: merge({ "Accept-Language": user?.lang }, headers, { Authorization: user?.token }),
+    headers: merge({ "Accept-Language": user?.lang }, { Authorization: user?.token }, headers),
     signal: signal ?? options.signal,
   });
 

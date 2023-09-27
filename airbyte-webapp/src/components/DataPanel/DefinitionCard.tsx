@@ -13,8 +13,8 @@ interface SourcePanelProps {
 }
 
 export const Container = styled.div`
-  max-width: 758px;
-  margin: 60px auto 0 auto;
+  max-width: 900px;
+  margin: 60px auto 120px auto;
 `;
 
 export const Title = styled.div`
@@ -27,7 +27,10 @@ export const Title = styled.div`
 
 export const DataCardList = styled.div`
   display: flex;
-  flex-wrap: wrap;
+  // flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 44px 94px;
 `;
 
 const DefinitionCard: React.FC<SourcePanelProps> = ({ data, onSelect, value, title, type }) => {

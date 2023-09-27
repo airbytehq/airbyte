@@ -14,6 +14,7 @@ interface Props {
   status?: string | null;
   icon?: boolean;
   img?: string;
+  onClickRow?: () => void;
 }
 
 const Content = styled.div`
@@ -29,6 +30,10 @@ const Name = styled.div<{ enabled?: boolean }>`
   max-width: 280px;
   // color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
   color: inherit;
+  &:hover {
+    color: ${({ theme }) => theme.primaryColor};
+    cursor: pointer;
+  }
 `;
 
 // const Image = styled(ConnectorIcon)`
@@ -38,6 +43,7 @@ const Name = styled.div<{ enabled?: boolean }>`
 const NameCell: React.FC<Props> = ({
   value,
   enabled, // status, icon, img
+  onClickRow,
 }) => {
   // const { formatMessage } = useIntl();
   // const statusIconStatus = useMemo<StatusIconStatus | undefined>(
@@ -75,7 +81,7 @@ const NameCell: React.FC<Props> = ({
   //       });
 
   return (
-    <Content>
+    <Content onClick={() => onClickRow?.()}>
       {/* {status && <StatusIcon title={title} status={statusIconStatus} />}
       {icon && <Image icon={img} />} */}
       <Name enabled={enabled}>{value}</Name>

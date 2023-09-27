@@ -783,6 +783,7 @@
   "verifyEmail.clickHereText": "点击这里",
   "verifyEmail.info": "info@daspire.com",
   "verifyEmail.pageTitle": "验证邮箱",
+  "verifyEmail.resend.success.message": "邮件已重新发送！",
   "resetPassword.pageTitle": "重置密码",
   "resetPassword.forgot.title": "忘记密码？",
   "resetPassword.forgot.explain": "请输入您用于注册Daspire账号的邮箱地址。 ",
@@ -818,5 +819,7 @@
   "settings.support.select.option.accountRelated": "账号相关",
   "settings.support.select.option.other": "其他",
   "settings.support.submit.success.title": "谢谢！",
-  "settings.support.submit.success.text": "您的消息已成功发送。 \n我们将尽快回复您。"
+  "settings.support.submit.success.text": "您的消息已成功发送。 \n我们将尽快回复您。",
+  "table.name.open.newTab": "在新标签页中打开链接",
+  "table.page.size.label": "每页展示条数"
 }

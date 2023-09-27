@@ -5,19 +5,29 @@ import { Button } from "components";
 
 import { ButtonProps } from "./types";
 
-export const ButtonRows = styled.div<{
+interface ButtonRowsProps {
   top?: string;
   bottom?: string;
-  full?: boolean;
-}>`
+  width?: string;
+  position?: "fixed" | "absolute" | "static";
+  background?: string;
+}
+
+export const ButtonRows = styled.div<ButtonRowsProps>`
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
-  width: ${({ full }) => (full ? "100%" : "40%")};
+  width: ${({ width }) => (width ? width : "100%")};
   margin-left: auto;
   margin-right: auto;
   margin-top: ${({ top }) => (top ? top : 100)}px;
   margin-bottom: ${({ bottom }) => (bottom ? bottom : 0)}px;
+  padding: 15px 0;
+  background: ${({ background, theme }) => background || theme.white};
+  position: ${({ position }) => position || "static"};
+  bottom: 0;
+  z-index: 1;
+  gap: 120px;
 `;
 
 export const BtnText = styled.div`

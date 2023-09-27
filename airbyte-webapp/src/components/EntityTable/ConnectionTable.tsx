@@ -13,7 +13,8 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "../../pages/routePaths";
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import LastSyncCell from "./components/LastSyncCell";
-
+import NameCell from "./components/NameCell";
+import NewTabIconButton from "./components/NewTabIconButton";
 import { ITableDataItem, SortOrderEnum } from "./types";
 
 const SwitchContent = styled.div`
@@ -25,6 +26,11 @@ const HeaderColumns = styled.div`
   display: flex;
   flex-wrap: nowrap;
   min-width: 100px;
+`;
+
+const NameColums = styled.div`
+  display: flex;
+  aligin-items: center;
 `;
 
 interface IProps {
@@ -93,6 +99,14 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
         headerHighlighted: true,
         accessor: "name",
         customWidth: 30,
+        Cell: ({ cell }: CellProps<ITableDataItem>) => {
+          return (
+            <NameColums>
+              <NameCell value={cell.value} onClickRow={() => onClickRows(cell.row.original.connectionId)} />
+              <NewTabIconButton id={cell.row.original.connectionId} type="Connections" />
+            </NameColums>
+          );
+        },
       },
       {
         Header: <FormattedMessage id="tables.status" />,

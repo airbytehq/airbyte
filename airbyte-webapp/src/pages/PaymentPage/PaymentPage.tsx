@@ -150,7 +150,7 @@ const PaymentPage: React.FC = () => {
             />
           )}
         </MainView>
-        <ButtonRows top="40">
+        <ButtonRows top="40" background="transparent">
           <BigButton secondary white onClick={onBack}>
             <FormattedMessage id="form.button.back" />
           </BigButton>

@@ -1,6 +1,8 @@
 import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 
+import { FormContainer } from "components/ConnectorBlocks";
+
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationRead } from "core/request/AirbyteClient";
 import { DestinationCloneRequestBody } from "core/request/AirbyteClient";
@@ -13,8 +15,6 @@ import { useGetDestinationDefinitionSpecification } from "services/connector/Des
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { useDocumentationPanelContext } from "views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ServiceFormValues } from "views/Connector/ServiceForm";
-
-import styles from "./DestinationCopy.module.scss";
 
 interface DestinationSettingsProps {
   currentDestination: DestinationRead;
@@ -82,7 +82,7 @@ const DestinationCopy: React.FC<DestinationSettingsProps> = ({
       };
 
   return (
-    <div className={styles.content}>
+    <FormContainer>
       <ConnectorCard
         formId={formId}
         title={<FormattedMessage id="destination.destinationSettings" />}
@@ -97,7 +97,7 @@ const DestinationCopy: React.FC<DestinationSettingsProps> = ({
         onShowLoading={onShowLoading}
         errorMessage={errorMessage}
       />
-    </div>
+    </FormContainer>
   );
 };
 

@@ -9,6 +9,7 @@ import { Button, LoadingPage, MainPageWithScroll, PageTitle, DropDown, DropDownR
 import MessageBox from "components/base/MessageBox";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
+import { PageSize } from "components/PageSize";
 import { Pagination } from "components/Pagination";
 import { Separator } from "components/Separator";
 
@@ -16,6 +17,7 @@ import { FilterConnectionRequestBody } from "core/request/DaspireClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useFilteredConnectionList, useConnectionFilterOptions } from "hooks/services/useConnectionHook";
+import { usePageConfig } from "hooks/services/usePageConfig";
 import useRouter from "hooks/useRouter";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
@@ -65,9 +67,11 @@ const Footer = styled.div`
 `;
 
 const AllConnectionsPage: React.FC = () => {
-  const CONNECTION_PAGE_SIZE = 10;
+  // const CONNECTION_PAGE_SIZE = 10;
   const { push, pathname, query } = useRouter();
   const [messageId, setMessageId] = useState<string | undefined>("");
+  const [pageConfig, updatePageSize] = usePageConfig();
+  const [currentPageSize, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const workspace = useCurrentWorkspace();
@@ -75,7 +79,7 @@ const AllConnectionsPage: React.FC = () => {
 
   const initialFiltersState = {
     workspaceId: workspace.workspaceId,
-    pageSize: CONNECTION_PAGE_SIZE,
+    pageSize: currentPageSize,
     pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
     status: statusOptions[0].value,
     sourceDefinitionId: sourceOptions[0].value,
@@ -88,10 +92,15 @@ const AllConnectionsPage: React.FC = () => {
 
   const onSelectFilter = useCallback(
     (
-      filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId",
+      filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId" | "pageSize",
       filterValue: number | string
     ) => {
-      if (filterType === "status" || filterType === "sourceDefinitionId" || filterType === "destinationDefinitionId") {
+      if (
+        filterType === "status" ||
+        filterType === "sourceDefinitionId" ||
+        filterType === "destinationDefinitionId" ||
+        filterType === "pageSize"
+      ) {
         setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
       } else if (filterType === "pageCurrent") {
         setFilters({ ...filters, [filterType]: filterValue as number });
@@ -106,6 +115,15 @@ const AllConnectionsPage: React.FC = () => {
     }
     return true;
   }, [filters, total]);
+
+  const onChangePageSize = useCallback(
+    (size: number) => {
+      setCurrentPageSize(size);
+      updatePageSize("connection", size);
+      onSelectFilter("pageSize", size);
+    },
+    [onSelectFilter]
+  );
 
   useEffect(() => {
     if (hasConnections()) {
@@ -177,7 +195,9 @@ const AllConnectionsPage: React.FC = () => {
                 />
               </DDContainer>
             </DDsContainer>
-            <Separator height="24px" />
+            <Separator height="10px" />
+            <PageSize currentPageSize={currentPageSize} totalPage={total / pageSize} onChange={onChangePageSize} />
+            <Separator height="10px" />
             <ConnectionsTable connections={connections} onSetMessageId={onSetMessageId} />
             <Separator height="24px" />
             <Footer>

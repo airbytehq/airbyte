@@ -63,8 +63,9 @@ class AmazonSPStream(HttpStream, ABC):
         self._session.auth = aws_signature
         
         # added by Jerry 2023.6.20, if replication_start_date is none, set the replication_start_date to the previous day
-        if self._replication_start_date is None:
-            self._replication_start_date = pendulum.now("utc").subtract(days=1).strftime(DATE_TIME_FORMAT)
+        if self._replication_start_date is None or len(replication_start_date.strip())<=0:
+            self._replication_start_date = pendulum.yesterday("utc").strftime(DATE_TIME_FORMAT)
+            self._replication_end_date = pendulum.today("utc").subtract(seconds=1).strftime(DATE_TIME_FORMAT)
 
 
     @property
@@ -196,7 +197,8 @@ class ReportsAmazonSPStream(Stream, ABC):
         
         # added by Jerry 2023.6.15, if replication_start_date is none, set the replication_start_date to the previous day
         if self._replication_start_date is None:
-            self._replication_start_date = pendulum.now("utc").subtract(days=1).strftime(DATE_TIME_FORMAT)
+            self._replication_start_date = pendulum.yesterday("utc").strftime(DATE_TIME_FORMAT)
+            self._replication_end_date = pendulum.today("utc").subtract(seconds=1).strftime(DATE_TIME_FORMAT)
 
     @property
     def url_base(self) -> str:
@@ -598,6 +600,29 @@ class BrandAnalyticsItemComparisonReports(BrandAnalyticsStream):
 
 class SalesAndTrafficReports(ReportsAmazonSPStream):
     name = "GET_SALES_AND_TRAFFIC_REPORT"
+    
+    def __init__(
+        self,
+        url_base: str,
+        aws_signature: AWSSignature,
+        replication_start_date: Optional[str],
+        marketplace_id: str,
+        period_in_days: Optional[int],
+        report_options: Optional[str],
+        max_wait_seconds: Optional[int],
+        replication_end_date: Optional[str],
+        source_name: str,
+        authenticator: HttpAuthenticator = None,
+    ):
+        super().__init__(url_base=url_base, aws_signature=aws_signature, replication_start_date=replication_start_date, 
+                         marketplace_id=marketplace_id, period_in_days=period_in_days, report_options=report_options, 
+                         max_wait_seconds=max_wait_seconds, replication_end_date=replication_end_date, source_name=source_name, 
+                         authenticator=authenticator)
+        
+        # added by Jerry 2023.6.29, if replication_start_date is none, set the replication_start_date to the previous day
+        if replication_start_date is None or len(replication_start_date.strip())<=0:
+            self._replication_start_date = pendulum.yesterday("utc").subtract(days=1).strftime(DATE_TIME_FORMAT)
+            self._replication_end_date = pendulum.yesterday("utc").subtract(seconds=1).strftime(DATE_TIME_FORMAT)
     
     def parse_document(self, document):
         results = []
@@ -1027,3 +1052,10 @@ class FlatFileSettlementV2Reports(ReportsAmazonSPStream):
             params = {"nextToken": next_value}
             if not next_value:
                 complete = True
+
+
+class FBALongTermStorageFeeChargesReport(ReportsAmazonSPStream):
+    name = "GET_FBA_FULFILLMENT_LONGTERM_STORAGE_FEE_CHARGES_DATA"
+    
+class FBAReimbursementsReport(ReportsAmazonSPStream):
+    name = "GET_FBA_REIMBURSEMENTS_DATA"

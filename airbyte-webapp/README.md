@@ -33,6 +33,17 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2023.08.25
+1. remove comment "// @ts-expect-error"
+#### 2023.08.21
+1. FE: show more items per page on connections page
+#### 2023.08.16
+1. Remove signup and signin page on airbyte-webapp
+#### 2023.08.15
+1. Open connection/source/destination in a new tab
+#### 2023.06.26
+1. Add source/destination/connection pages UI updates
+2. Update payment on payment fail add loading indicator
 #### 2023.04.20
 1. Fixed inviteUserModal
 #### 2023.04.19

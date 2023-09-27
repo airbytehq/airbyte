@@ -5,7 +5,7 @@ import { Separator } from "components/Separator";
 
 import { EditNotificationRead, NotificationItem } from "core/request/DaspireClient";
 import { useAppNotification } from "hooks/services/AppNotification";
-import { useNotificationSetting, useAsyncActions } from "services/notificationSetting/NotificationSettingService";
+import { useAsyncActions, useNotificationSetting } from "services/notificationSetting/NotificationSettingService";
 
 import { PaymentTable } from "./components/PaymentTable";
 import { SyncTable } from "./components/SyncTable";
@@ -111,11 +111,7 @@ const NotificationPage: React.FC = () => {
         updateNotificationSetting={updateNotificationSetting}
       />
       <Separator height="30px" />
-      <PaymentTable
-        paymentFail={paymentFail}
-        updateLoading={updateLoading}
-        updateNotificationSetting={updateNotificationSetting}
-      />
+      <PaymentTable paymentFail={paymentFail} />
     </PageContainer>
   );
 };

@@ -1234,3 +1234,10 @@
   icon: shipstation.svg
   sourceType: api
   releaseStage: alpha
+- name: Feishu
+  sourceDefinitionId: 62dc537e-93ca-46f8-9c35-4e417ec336d8
+  dockerRepository: yuanrui2014/source-feishu
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docsurl.com
+  sourceType: api
+  releaseStage: alpha

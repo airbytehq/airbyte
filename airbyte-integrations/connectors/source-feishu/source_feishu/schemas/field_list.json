@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "app_token": {
+      "type": ["null", "string"]
+    },
+    "table_id": {
+      "type": ["null", "string"]
+    },
+    "field_id": {
+      "type": ["null", "string"]
+    },
+    "field_name": {
+      "type": ["null", "string"]
+    },
+    "is_primary": {
+      "type": ["null", "string"]
+    },
+    "property": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "ui_type": {
+      "type": ["null", "string"]
+    }
+  }
+}

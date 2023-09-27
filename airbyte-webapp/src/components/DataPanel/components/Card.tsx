@@ -16,25 +16,25 @@ export const Box = styled.div<{
   checked: boolean;
 }>`
   box-sizing: border-box;
-  width: 174px;
-  height: 160px;
-  border: 2px solid ${({ checked, theme }) => (checked ? theme.primaryColor : "#eff0f5")};
-  border-radius: 8px;
+  width: 144px;
+  height: 144px;
+  box-shadow: 0px 10px 12px rgba(74, 74, 87, 0.1);
+  border: 2px solid ${({ checked, theme }) => (checked ? theme.primaryColor : theme.whiteColor)};
+  border-radius: 18px;
   display: flex;
   align-items: center;
   flex-direction: column;
-  margin-right: 114px;
-  margin-bottom: 44px;
+  // margin-right: 94px;
+  // margin-bottom: 44px;
   font-size: 16px;
   text-align: center;
   background: #fff;
   padding: 10px;
   &:hover {
     cursor: pointer;
-    box-shadow: 1px 1px 1px #ccc;
   }
-  &:nth-child(3n) {
-    margin-right: 0;
+  &:nth-child(4n) {
+    //  margin-right: 0;
   }
 `;
 

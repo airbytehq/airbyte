@@ -18,7 +18,9 @@ import { RoutePaths } from "pages/routePaths";
 import { useAuthenticationService } from "services/auth/AuthSpecificationService";
 import { useUserPlanDetail, useAsyncAction } from "services/payments/PaymentsService";
 
+import { IAuthUser } from "../../../../core/AuthContext/authenticatedUser";
 import { useHealth } from "../../../../hooks/services/Health";
+import { SettingsRoute } from "../../SettingsPage";
 import { PlanClause } from "./components/PlanClause";
 import styles from "./style.module.scss";
 
@@ -51,7 +53,7 @@ export const convert_M_To_Million = (string: string): string | React.ReactElemen
 const PlansBillingPage: React.FC = () => {
   const { setNotification } = useAppNotification();
   const { push } = useRouter();
-  const { user, updateUserStatus } = useUser();
+  const { user, updateUserStatus, setUser } = useUser();
   const { onPauseSubscription } = useAsyncAction();
   const authService = useAuthenticationService();
   const { healthData } = useHealth();
@@ -66,6 +68,24 @@ const PlansBillingPage: React.FC = () => {
       }
     }
   }, [prevUserPlanDetail, userPlanDetail]);
+
+  useEffect(() => {
+    if (!user.workspaceId) {
+      reAuthenticateUser(user.token as string);
+    }
+  }, [user.workspaceId]);
+
+  const reAuthenticateUser = useCallback(async (token: string) => {
+    authService
+      .reAuthenticateUser(token)
+      .then((res: IAuthUser) => {
+        setUser?.(res);
+        push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
+      })
+      .catch((err: Error) => {
+        setNotification({ message: err.message, type: "error" });
+      });
+  }, []);
 
   const [toggleCancel, setToggleCancel] = useState<boolean>(false);
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);

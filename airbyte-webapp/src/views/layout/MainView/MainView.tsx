@@ -39,6 +39,7 @@ const Content = styled.div<{
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 `;
 
 const hasCurrentStep = (state: unknown): state is { currentStep: string } => {

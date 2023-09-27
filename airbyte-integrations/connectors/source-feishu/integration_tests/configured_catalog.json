@@ -1,0 +1,76 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "8CC763CF-0323-4434-86E3-341F0272F772",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "record_list",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh","incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "field_list",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh","incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "view_list",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh","incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "table_list",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh","incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "member_list",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh","incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "role_list",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh","incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dashboard_list",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh","incremental"]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

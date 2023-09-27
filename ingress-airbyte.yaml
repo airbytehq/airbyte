@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress-01
+  namespace: airbyte-01
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    #nginx.ingress.kubernetes.io/rewrite-target: "/$1"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:673574066875:certificate/86854e71-13b8-46f8-ab1f-c38ff88c125a
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite /airbyte01/(.*)  /$1 break;
+spec:
+  rules:
+  - host: airbyte01.daspire.com
+    http:
+      paths:
+      - path: /airbyte01
+        pathType: Prefix
+        backend:
+          service:
+            name: airbyte-server-svc
+            port:
+              number: 8001
+
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: airbyte-webapp-svc
+            port: 
+              number: 80
