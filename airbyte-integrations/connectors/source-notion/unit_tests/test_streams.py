@@ -190,7 +190,8 @@ def test_user_stream_handles_pagination_correctly(requests_mock):
 ])
 def test_403_error_handling(stream, parent, status_code, expected_availability, expected_reason_substring):
     """
-    Test that availability strategy handles 403 errors as expected.
+    Test that availability strategy flags streams with 403 error as unavailable 
+    and returns custom Notion integration message.
     """
 
     with patch(f'source_notion.streams.{stream.__name__}._send_request') as mock_send_request:
