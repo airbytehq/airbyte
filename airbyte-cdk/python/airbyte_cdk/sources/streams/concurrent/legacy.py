@@ -101,7 +101,7 @@ class StreamFacade(Stream):
         slice_logger: SliceLogger,
     ) -> Iterable[StreamData]:
         for record in self._stream.read():
-            yield record.stream_data
+            yield record.data
 
     def read_records(
         self,
