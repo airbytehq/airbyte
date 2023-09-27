@@ -84,8 +84,8 @@ export const SnowflakeMigrationGenerator = () => {
     let v2RawTableName = '"' + concatenateRawTableName(new_namespace, name) + '"';
     let v1namespace = snowflakeConvertStreamName(og_namespace);
     let v1name = snowflakeConvertStreamName("_airbyte_raw_" + name);
-    return `CREATE SCHEMA IF NOT EXISTS "${raw_schema.toUpperCase()}";
-CREATE OR REPLACE TABLE "${raw_schema.toUpperCase()}".${v2RawTableName.toUpperCase()} (
+    return `CREATE SCHEMA IF NOT EXISTS "${raw_schema}";
+CREATE OR REPLACE TABLE "${raw_schema}".${v2RawTableName} (
   "_airbyte_raw_id" STRING NOT NULL PRIMARY KEY,
   "_airbyte_extracted_at" TIMESTAMP_TZ DEFAULT CURRENT_TIMESTAMP(),
   "_airbyte_loaded_at" TIMESTAMP_TZ,
@@ -96,7 +96,7 @@ AS (
         _airbyte_emitted_at AS "_airbyte_extracted_at",
         CAST(NULL AS TIMESTAMP_TZ) AS "_airbyte_loaded_at",
         _airbyte_data AS "_airbyte_data"
-    FROM ${v1namespace.toUpperCase()}.${v1name.toUpperCase()}
+    FROM ${v1namespace}.${v1name}
 )`;
   }
   return (
