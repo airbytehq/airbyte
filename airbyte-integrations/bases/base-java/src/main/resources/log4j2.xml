@@ -6,7 +6,7 @@
       <!--#30781 - log4j's ConsoleAppender uses a buffer of 8KB. In order to ensure that the log write out is atomic-->
       <!-- We cap both the log message and the printed stacktrace to 3750 bytes each. combined with other json character-->
       <!-- this will ensure that we stay below 8192-->
-      <JsonTemplateLayout eventTemplateUri="classpath:AirbyteLogMessageTemplate.json" maxStringLength="3750"/>/>
+      <JsonTemplateLayout eventTemplateUri="classpath:AirbyteLogMessageTemplate.json" maxStringLength="3750"/>
     </Console>
   </Appenders>
   <Loggers>

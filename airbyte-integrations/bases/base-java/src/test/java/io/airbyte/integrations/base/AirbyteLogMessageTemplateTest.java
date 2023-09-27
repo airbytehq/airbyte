@@ -116,7 +116,7 @@ public class AirbyteLogMessageTemplateTest {
     for (int i = 0; i < stringRepeatitions; i++) {
       sb.append("abcd");
     }
-    LOGGER.info(sb.toString());
+    LOGGER.info(sb.toString(), new RuntimeException("aaaaa bbbbbb ccccccc dddddd"));
     outputContent.flush();
     final String logMessage = outputContent.toString(StandardCharsets.UTF_8);
 
