@@ -21,12 +21,12 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["time"],
-        "source_defined_primary_key": [["distinct_id"]]
+        "source_defined_primary_key": [["distinct_id"], ["event"], ["time"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append",
       "cursor_field": ["time"],
-      "primary_key": [["distinct_id"]]
+      "primary_key": [["distinct_id"], ["event"], ["time"]]
     },
     {
       "stream": {
