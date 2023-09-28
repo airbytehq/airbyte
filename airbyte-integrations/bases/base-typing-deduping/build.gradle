@@ -4,5 +4,7 @@ plugins {
 
 dependencies {
     implementation libs.airbyte.protocol
-    implementation project(path: ':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+
+    testImplementation project(':airbyte-commons')
 }

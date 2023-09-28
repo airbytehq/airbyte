@@ -591,7 +591,7 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
         f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
         f"Unable to read {http_stream.name} stream.",
         "This is most likely due to insufficient permissions on the credentials in use.",
-        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more."
+        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more.",
     ]
     for message in expected_logs:
         assert message in caplog.text
@@ -674,7 +674,7 @@ def test_read_default_http_availability_strategy_parent_stream_unavailable(catal
         f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
         f"Unable to get slices for {http_stream.name} stream, because of error in parent stream",
         "This is most likely due to insufficient permissions on the credentials in use.",
-        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more."
+        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more.",
     ]
     for message in expected_logs:
         assert message in caplog.text

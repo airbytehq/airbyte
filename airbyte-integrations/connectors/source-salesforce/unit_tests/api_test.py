@@ -33,15 +33,34 @@ from source_salesforce.streams import (
 @pytest.mark.parametrize(
     "login_status_code, login_json_resp, expected_error_msg, is_config_error",
     [
-        (400, {"error": "invalid_grant", "error_description": "expired access/refresh token"}, AUTHENTICATION_ERROR_MESSAGE_MAPPING.get("expired access/refresh token"), True),
-        (400, {"error": "invalid_grant", "error_description": "Authentication failure."}, 'An error occurred: {"error": "invalid_grant", "error_description": "Authentication failure."}', False),
-        (401, {"error": "Unauthorized", "error_description": "Unautorized"}, 'An error occurred: {"error": "Unauthorized", "error_description": "Unautorized"}', False),
-    ]
+        (
+            400,
+            {"error": "invalid_grant", "error_description": "expired access/refresh token"},
+            AUTHENTICATION_ERROR_MESSAGE_MAPPING.get("expired access/refresh token"),
+            True,
+        ),
+        (
+            400,
+            {"error": "invalid_grant", "error_description": "Authentication failure."},
+            'An error occurred: {"error": "invalid_grant", "error_description": "Authentication failure."}',
+            False,
+        ),
+        (
+            401,
+            {"error": "Unauthorized", "error_description": "Unautorized"},
+            'An error occurred: {"error": "Unauthorized", "error_description": "Unautorized"}',
+            False,
+        ),
+    ],
 )
-def test_login_authentication_error_handler(stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error):
+def test_login_authentication_error_handler(
+    stream_config, requests_mock, login_status_code, login_json_resp, expected_error_msg, is_config_error
+):
     source = SourceSalesforce()
     logger = logging.getLogger("airbyte")
-    requests_mock.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code)
+    requests_mock.register_uri(
+        "POST", "https://login.salesforce.com/services/oauth2/token", json=login_json_resp, status_code=login_status_code
+    )
 
     if is_config_error:
         with pytest.raises(AirbyteTracedException) as err:
@@ -113,12 +132,15 @@ def test_bulk_sync_pagination(stream_config, stream_api, requests_mock):
     requests_mock.register_uri("POST", stream.path(), json={"id": job_id})
     requests_mock.register_uri("GET", stream.path() + f"/{job_id}", json={"state": "JobComplete"})
     resp_text = ["Field1,LastModifiedDate,ID"] + [f"test,2021-11-16,{i}" for i in range(5)]
-    result_uri = requests_mock.register_uri("GET", stream.path() + f"/{job_id}/results",
-                                            [{"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_1"}},
-                                             {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_2"}},
-                                             {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "null"}}
-                                             ]
-                                            )
+    result_uri = requests_mock.register_uri(
+        "GET",
+        stream.path() + f"/{job_id}/results",
+        [
+            {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_1"}},
+            {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "somelocator_2"}},
+            {"text": "\n".join(resp_text), "headers": {"Sforce-Locator": "null"}},
+        ],
+    )
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id}")
 
     stream_slices = next(iter(stream.stream_slices(sync_mode=SyncMode.incremental)))
@@ -341,7 +363,7 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
     While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
     Next streams should not be executed.
     """
-    stream_config.update({'start_date': '2021-10-01'})
+    stream_config.update({"start_date": "2021-10-01"})
     stream_1: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config, stream_api)
     stream_2: BulkIncrementalSalesforceStream = generate_stream("Asset", stream_config, stream_api)
     streams = [stream_1, stream_2]
@@ -398,7 +420,7 @@ def test_rate_limit_rest(stream_config, stream_api, rest_catalog, state):
     While reading `stream_1` if 403 (Rate Limit) is received, it should finish that stream with success and stop the sync process.
     Next streams should not be executed.
     """
-    stream_config.update({'start_date': '2021-11-01'})
+    stream_config.update({"start_date": "2021-11-01"})
 
     stream_1: IncrementalRestSalesforceStream = generate_stream("KnowledgeArticle", stream_config, stream_api)
     stream_2: IncrementalRestSalesforceStream = generate_stream("AcceptedEventRelation", stream_config, stream_api)
@@ -698,15 +720,22 @@ def test_stream_with_no_records_in_response(stream_config, stream_api_v2_pk_too_
 @pytest.mark.parametrize(
     "status_code,response_json,log_message",
     [
-        (400, [{"errorCode": "INVALIDENTITY", "message": "Account is not supported by the Bulk API"}], "Account is not supported by the Bulk API"),
+        (
+            400,
+            [{"errorCode": "INVALIDENTITY", "message": "Account is not supported by the Bulk API"}],
+            "Account is not supported by the Bulk API",
+        ),
         (403, [{"errorCode": "REQUEST_LIMIT_EXCEEDED", "message": "API limit reached"}], "API limit reached"),
         (400, [{"errorCode": "API_ERROR", "message": "API does not support query"}], "The stream 'Account' is not queryable,"),
-        (400, [{"errorCode": "LIMIT_EXCEEDED", "message": "Max bulk v2 query jobs (10000) per 24 hrs has been reached (10021)"}], "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed.")
-    ]
+        (
+            400,
+            [{"errorCode": "LIMIT_EXCEEDED", "message": "Max bulk v2 query jobs (10000) per 24 hrs has been reached (10021)"}],
+            "Your API key for Salesforce has reached its limit for the 24-hour period. We will resume replication once the limit has elapsed.",
+        ),
+    ],
 )
 def test_bulk_stream_error_in_logs_on_create_job(requests_mock, stream_config, stream_api, status_code, response_json, log_message, caplog):
-    """
-    """
+    """ """
     stream = generate_stream("Account", stream_config, stream_api)
     url = f"{stream.sf_api.instance_url}/services/data/{stream.sf_api.version}/jobs/query"
     requests_mock.register_uri(
@@ -726,8 +755,17 @@ def test_bulk_stream_error_in_logs_on_create_job(requests_mock, stream_config, s
 @pytest.mark.parametrize(
     "status_code,response_json,error_message",
     [
-        (400, [{"errorCode": "TXN_SECURITY_METERING_ERROR", "message": "We can't complete the action because enabled transaction security policies took too long to complete."}], 'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.'),
-    ]
+        (
+            400,
+            [
+                {
+                    "errorCode": "TXN_SECURITY_METERING_ERROR",
+                    "message": "We can't complete the action because enabled transaction security policies took too long to complete.",
+                }
+            ],
+            'A transient authentication error occurred. To prevent future syncs from failing, assign the "Exempt from Transaction Security" user permission to the authenticated user.',
+        ),
+    ],
 )
 def test_bulk_stream_error_on_wait_for_job(requests_mock, stream_config, stream_api, status_code, response_json, error_message):
 
@@ -752,10 +790,12 @@ def test_bulk_stream_slices(stream_config_date_format, stream_api):
     today = pendulum.today(tz="UTC")
     start_date = pendulum.parse(stream.start_date, tz="UTC")
     while start_date < today:
-        expected_slices.append({
-            'start_date': start_date.isoformat(timespec="milliseconds"),
-            'end_date': min(today, start_date.add(days=stream.STREAM_SLICE_STEP)).isoformat(timespec="milliseconds")
-        })
+        expected_slices.append(
+            {
+                "start_date": start_date.isoformat(timespec="milliseconds"),
+                "end_date": min(today, start_date.add(days=stream.STREAM_SLICE_STEP)).isoformat(timespec="milliseconds"),
+            }
+        )
         start_date = start_date.add(days=stream.STREAM_SLICE_STEP)
     assert expected_slices == stream_slices
 
@@ -779,13 +819,15 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     job_id_2 = "fake_job_2"
     requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}", [{"json": {"state": "JobComplete"}}])
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_2}")
-    requests_mock.register_uri("GET", stream.path() + f"/{job_id_2}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,2\ntest,2023-02-20,22")
+    requests_mock.register_uri(
+        "GET", stream.path() + f"/{job_id_2}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,2\ntest,2023-02-20,22"
+    )
     requests_mock.register_uri("PATCH", stream.path() + f"/{job_id_2}")
 
     job_id_3 = "fake_job_3"
-    queries_history = requests_mock.register_uri("POST", stream.path(), [{"json": {"id": job_id_1}},
-                                                                         {"json": {"id": job_id_2}},
-                                                                         {"json": {"id": job_id_3}}])
+    queries_history = requests_mock.register_uri(
+        "POST", stream.path(), [{"json": {"id": job_id_1}}, {"json": {"id": job_id_2}}, {"json": {"id": job_id_3}}]
+    )
     requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}", [{"json": {"state": "JobComplete"}}])
     requests_mock.register_uri("DELETE", stream.path() + f"/{job_id_3}")
     requests_mock.register_uri("GET", stream.path() + f"/{job_id_3}/results", text="Field1,LastModifiedDate,ID\ntest,2023-04-01,3")
@@ -798,9 +840,18 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
 
     actual_state_values = [item.state.data.get("Account").get(stream.cursor_field) for item in result if item.type == Type.STATE]
     # assert request params
-    assert "LastModifiedDate >= 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate < 2023-01-31T10:10:10.000+00:00" in queries_history.request_history[0].text
-    assert "LastModifiedDate >= 2023-01-31T10:10:10.000+00:00 AND LastModifiedDate < 2023-03-02T10:10:10.000+00:00" in queries_history.request_history[1].text
-    assert "LastModifiedDate >= 2023-03-02T10:10:10.000+00:00 AND LastModifiedDate < 2023-04-01T00:00:00.000+00:00" in queries_history.request_history[2].text
+    assert (
+        "LastModifiedDate >= 2023-01-01T10:10:10.000+00:00 AND LastModifiedDate < 2023-01-31T10:10:10.000+00:00"
+        in queries_history.request_history[0].text
+    )
+    assert (
+        "LastModifiedDate >= 2023-01-31T10:10:10.000+00:00 AND LastModifiedDate < 2023-03-02T10:10:10.000+00:00"
+        in queries_history.request_history[1].text
+    )
+    assert (
+        "LastModifiedDate >= 2023-03-02T10:10:10.000+00:00 AND LastModifiedDate < 2023-04-01T00:00:00.000+00:00"
+        in queries_history.request_history[2].text
+    )
 
     # assert states
     # if connector meets record with cursor `2023-04-01` out of current slice range 2023-01-31 <> 2023-03-02, we ignore all other values and set state to slice end_date

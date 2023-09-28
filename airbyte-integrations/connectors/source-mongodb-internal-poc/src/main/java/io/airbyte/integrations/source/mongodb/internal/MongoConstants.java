@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
 
 public class MongoConstants {
 

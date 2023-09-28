@@ -17,10 +17,7 @@ class TestDestinationChroma(unittest.TestCase):
             "processing": {"text_fields": ["str_col"], "metadata_fields": [], "chunk_size": 1000},
             "embedding": {"mode": "openai", "openai_key": "mykey"},
             "indexing": {
-                "auth_method": {
-                    "mode": "persistent_client",
-                    "path": "./path"
-                },
+                "auth_method": {"mode": "persistent_client", "path": "./path"},
                 "collection_name": "test2",
             },
         }

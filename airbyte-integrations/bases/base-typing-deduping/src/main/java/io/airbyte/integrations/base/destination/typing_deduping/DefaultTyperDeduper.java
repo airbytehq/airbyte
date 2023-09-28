@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static io.airbyte.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
+import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.countOfTypingDedupingThreads;
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 import static java.util.Collections.singleton;

@@ -14,7 +14,7 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: 
+      empty_streams:
         - "time_series_daily"
         - "time_series_monthly"
         - "quote"
