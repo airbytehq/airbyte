@@ -1340,14 +1340,10 @@ def test_issues_timeline_events():
     }
     response_file = Path(__file__).parent / "responses/issue_timeline_events.json"
     response_json = json.load(open(response_file))
-    responses.add(
-        responses.GET,
-        "https://api.github.com/repos/airbytehq/airbyte/issues/1/timeline?per_page=100",
-        json=response_json
-    )
+    responses.add(responses.GET, "https://api.github.com/repos/airbytehq/airbyte/issues/1/timeline?per_page=100", json=response_json)
     expected_file = Path(__file__).parent / "responses/issue_timeline_events_response.json"
     expected_records = json.load(open(expected_file))
 
     stream = IssueTimelineEvents(**repository_args)
-    records = list(stream.read_records(sync_mode=SyncMode.full_refresh , stream_slice={'repository': 'airbytehq/airbyte', "number": 1}))
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"repository": "airbytehq/airbyte", "number": 1}))
     assert expected_records == records
