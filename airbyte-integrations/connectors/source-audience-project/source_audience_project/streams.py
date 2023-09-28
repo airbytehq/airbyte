@@ -1,30 +1,13 @@
-import logging
 import pendulum
 import requests
 import datetime
-import time
-from abc import ABC
 from dataclasses import InitVar, dataclass
-from datetime import datetime, timezone
-from airbyte_cdk.sources.declarative.types import Config, Record
+from airbyte_cdk.sources.declarative.types import Config
 from typing import Any, Iterable, Mapping, Optional, Union, List, Tuple, MutableMapping
-from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_token import AbstractHeaderAuthenticator
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
-from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler
 from json.decoder import JSONDecodeError
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
-from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
-from airbyte_cdk.sources.declarative.auth.token import BearerAuthenticator, BasicHttpAuthenticator
-from airbyte_cdk.sources.declarative.incremental import DatetimeBasedCursor
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 
 DEFAULT_END_DATE = pendulum.yesterday().date()
