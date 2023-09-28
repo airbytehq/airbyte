@@ -1,3 +1,4 @@
+
 connector_image: airbyte/source-punk-api:dev
 acceptance_tests:
   spec:

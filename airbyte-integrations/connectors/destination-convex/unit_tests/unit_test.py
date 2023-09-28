@@ -94,12 +94,7 @@ def setup_good_responses(config):
 
 
 def setup_bad_response(config):
-    responses.add(
-        responses.PUT,
-        f"{config['deployment_url']}/api/streaming_import/clear_tables",
-        status=400,
-        json={"code": "ErrorCode", "message": "error message"},
-    )
+    responses.add(responses.PUT, f"{config['deployment_url']}/api/streaming_import/clear_tables", status=400, json={"code": "ErrorCode", "message": "error message"})
 
 
 @responses.activate

@@ -80,7 +80,11 @@ def test_record_filter(test_name, field_path, filter_template, body, expected_da
     else:
         record_filter = RecordFilter(config=config, condition=filter_template, parameters=parameters)
     record_selector = RecordSelector(
-        extractor=extractor, record_filter=record_filter, transformations=transformations, config=config, parameters=parameters
+        extractor=extractor,
+        record_filter=record_filter,
+        transformations=transformations,
+        config=config,
+        parameters=parameters
     )
 
     actual_records = record_selector.select_records(

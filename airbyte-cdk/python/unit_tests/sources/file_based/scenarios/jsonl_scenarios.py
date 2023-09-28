@@ -66,24 +66,10 @@ single_jsonl_scenario = (
     )
     .set_expected_records(
         [
-            {
-                "data": {
-                    "col1": "val11",
-                    "col2": "val12",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val21",
-                    "col2": "val22",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
+            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
         ]
     )
 ).build()
@@ -146,7 +132,7 @@ multi_jsonl_with_different_keys_scenario = (
                             "_ab_source_file_url": {
                                 "type": "string",
                             },
-                        },
+                        }
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -157,43 +143,14 @@ multi_jsonl_with_different_keys_scenario = (
     )
     .set_expected_records(
         [
-            {
-                "data": {
-                    "col1": "val11a",
-                    "col2": "val12a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val21a",
-                    "col2": "val22a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val11b",
-                    "col2": "val12b",
-                    "col3": "val13b",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "b.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val21b",
-                    "col3": "val23b",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "b.jsonl",
-                },
-                "stream": "stream1",
-            },
+            {"data": {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": "val21b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
         ]
     )
 ).build()
@@ -243,8 +200,7 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
                         "properties": {
                             "col1": {
                                 "type": ["null", "string"],
-                            },
-                            "col2": {
+                            }, "col2": {
                                 "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
@@ -253,7 +209,7 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
                             "_ab_source_file_url": {
                                 "type": "string",
                             },
-                        },
+                        }
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -264,43 +220,14 @@ multi_jsonl_stream_n_file_exceeds_limit_for_inference = (
     )
     .set_expected_records(
         [
-            {
-                "data": {
-                    "col1": "val11a",
-                    "col2": "val12a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val21a",
-                    "col2": "val22a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val11b",
-                    "col2": "val12b",
-                    "col3": "val13b",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "b.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val21b",
-                    "col3": "val23b",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "b.jsonl",
-                },
-                "stream": "stream1",
-            },
+            {"data": {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": "val21b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
         ]
     )
     .set_discovery_policy(LowInferenceLimitDiscoveryPolicy())
@@ -351,8 +278,7 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
                         "properties": {
                             "col1": {
                                 "type": ["null", "string"],
-                            },
-                            "col2": {
+                            }, "col2": {
                                 "type": ["null", "string"],
                             },
                             "_ab_source_file_last_modified": {
@@ -361,7 +287,7 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
                             "_ab_source_file_url": {
                                 "type": "string",
                             },
-                        },
+                        }
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -372,43 +298,14 @@ multi_jsonl_stream_n_bytes_exceeds_limit_for_inference = (
     )
     .set_expected_records(
         [
-            {
-                "data": {
-                    "col1": "val11a",
-                    "col2": "val12a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val21a",
-                    "col2": "val22a",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val11b",
-                    "col2": "val12b",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "b.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": "val21b",
-                    "col2": "val22b",
-                    "col3": "val23b",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "b.jsonl",
-                },
-                "stream": "stream1",
-            },
+            {"data": {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": "val11b", "col2": "val12b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
         ]
     )
     .set_parsers({JsonlFormat: LowInferenceBytesJsonlParser()})
@@ -459,7 +356,7 @@ invalid_jsonl_scenario = (
                             "_ab_source_file_url": {
                                 "type": "string",
                             },
-                        },
+                        }
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -468,14 +365,10 @@ invalid_jsonl_scenario = (
             ]
         }
     )
-    .set_expected_records(
-        [
-            {
-                "data": {"col1": "val1", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.jsonl"},
-                "stream": "stream1",
-            },
-        ]
-    )
+    .set_expected_records([
+        {"data": {"col1": "val1", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                  "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+    ])
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
     .set_expected_logs(
         {
@@ -507,7 +400,7 @@ jsonl_multi_stream_scenario = (
                     "format": {"filetype": "jsonl"},
                     "globs": ["b.jsonl"],
                     "validation_policy": "Emit Record",
-                },
+                }
             ]
         }
     )
@@ -537,11 +430,15 @@ jsonl_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": ["null", "integer"]},
+                            "col1": {
+                                "type": ["null", "integer"]
+                            },
                             "col2": {
                                 "type": ["null", "string"],
                             },
-                            "col3": {"type": ["null", "number"]},
+                            "col3": {
+                                "type": ["null", "number"]
+                            },
                             "_ab_source_file_last_modified": {
                                 "type": "string",
                             },
@@ -559,7 +456,9 @@ jsonl_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {"type": ["null", "number"]},
+                            "col3": {
+                                "type": ["null", "number"]
+                            },
                             "_ab_source_file_last_modified": {
                                 "type": "string",
                             },
@@ -578,40 +477,18 @@ jsonl_multi_stream_scenario = (
     )
     .set_expected_records(
         [
-            {
-                "data": {
-                    "col1": 1,
-                    "col2": "record1",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": 2,
-                    "col2": "record2",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {"col3": 1.1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
-                "stream": "stream1",
-            },
-            {
-                "data": {"col3": 2.2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
-                "stream": "stream1",
-            },
-            {
-                "data": {"col3": 1.1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
-                "stream": "stream2",
-            },
-            {
-                "data": {"col3": 2.2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
-                "stream": "stream2",
-            },
+            {"data": {"col1": 1, "col2": "record1", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": 2, "col2": "record2", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col3": 1.1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
+             "stream": "stream1"},
+            {"data": {"col3": 2.2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
+             "stream": "stream1"},
+            {"data": {"col3": 1.1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
+             "stream": "stream2"},
+            {"data": {"col3": 2.2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
+             "stream": "stream2"},
         ]
     )
 ).build()
@@ -660,14 +537,16 @@ schemaless_jsonl_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "data": {"type": "object"},
+                            "data": {
+                                "type": "object"
+                            },
                             "_ab_source_file_last_modified": {
                                 "type": "string",
                             },
                             "_ab_source_file_url": {
                                 "type": "string",
                             },
-                        },
+                        }
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -678,38 +557,14 @@ schemaless_jsonl_scenario = (
     )
     .set_expected_records(
         [
-            {
-                "data": {
-                    "data": {"col1": 1, "col2": "record1"},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "data": {"col1": 2, "col2": "record2"},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "data": {"col1": 3, "col2": "record3", "col3": 1.1},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "b.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "data": {"col1": 4, "col2": "record4", "col3": 1.1},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "b.jsonl",
-                },
-                "stream": "stream1",
-            },
+            {"data": {"data": {"col1": 1, "col2": "record1"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"data": {"col1": 2, "col2": "record2"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"data": {"col1": 3, "col2": "record3", "col3": 1.1}, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
+            {"data": {"data": {"col1": 4, "col2": "record4", "col3": 1.1}, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "b.jsonl"}, "stream": "stream1"},
         ]
     )
 ).build()
@@ -733,7 +588,7 @@ schemaless_jsonl_multi_stream_scenario = (
                     "format": {"filetype": "jsonl"},
                     "globs": ["b.jsonl"],
                     "validation_policy": "Skip Record",
-                },
+                }
             ]
         }
     )
@@ -763,7 +618,9 @@ schemaless_jsonl_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "data": {"type": "object"},
+                            "data": {
+                                "type": "object"
+                            },
                             "_ab_source_file_last_modified": {
                                 "type": "string",
                             },
@@ -781,7 +638,9 @@ schemaless_jsonl_multi_stream_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col3": {"type": ["null", "number"]},
+                            "col3": {
+                                "type": ["null", "number"]
+                            },
                             "_ab_source_file_last_modified": {
                                 "type": "string",
                             },
@@ -800,30 +659,14 @@ schemaless_jsonl_multi_stream_scenario = (
     )
     .set_expected_records(
         [
-            {
-                "data": {
-                    "data": {"col1": 1, "col2": "record1"},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "data": {"col1": 2, "col2": "record2"},
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {"col3": 1.1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
-                "stream": "stream2",
-            },
-            {
-                "data": {"col3": 2.2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
-                "stream": "stream2",
-            },
+            {"data": {"data": {"col1": 1, "col2": "record1"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"data": {"col1": 2, "col2": "record2"}, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col3": 1.1, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
+             "stream": "stream2"},
+            {"data": {"col3": 2.2, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "b.jsonl"},
+             "stream": "stream2"},
         ]
     )
 ).build()
@@ -839,7 +682,7 @@ jsonl_user_input_schema_scenario = (
                     "format": {"filetype": "jsonl"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                    "input_schema": '{"col1": "integer", "col2": "string"}',
+                    "input_schema": '{"col1": "integer", "col2": "string"}'
                 }
             ]
         }
@@ -864,7 +707,9 @@ jsonl_user_input_schema_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {"type": "integer"},
+                            "col1": {
+                                "type": "integer"
+                            },
                             "col2": {
                                 "type": "string",
                             },
@@ -885,24 +730,10 @@ jsonl_user_input_schema_scenario = (
     )
     .set_expected_records(
         [
-            {
-                "data": {
-                    "col1": 1,
-                    "col2": "val12",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
-            {
-                "data": {
-                    "col1": 2,
-                    "col2": "val22",
-                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                    "_ab_source_file_url": "a.jsonl",
-                },
-                "stream": "stream1",
-            },
+            {"data": {"col1": 1, "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
+            {"data": {"col1": 2, "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                      "_ab_source_file_url": "a.jsonl"}, "stream": "stream1"},
         ]
     )
 ).build()

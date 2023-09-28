@@ -31,7 +31,9 @@ from airbyte_cdk.models import (
 from destination_duckdb import DestinationDuckdb
 
 CONFIG_PATH = "integration_tests/config.json"
-SECRETS_CONFIG_PATH = "secrets/config.json"  # Should contain a valid MotherDuck API token
+SECRETS_CONFIG_PATH = (
+    "secrets/config.json"  # Should contain a valid MotherDuck API token
+)
 
 
 def pytest_generate_tests(metafunc):
@@ -42,7 +44,9 @@ def pytest_generate_tests(metafunc):
     if Path(SECRETS_CONFIG_PATH).is_file():
         configs.append("motherduck_config")
     else:
-        print(f"Skipping MotherDuck tests because config file not found at: {SECRETS_CONFIG_PATH}")
+        print(
+            f"Skipping MotherDuck tests because config file not found at: {SECRETS_CONFIG_PATH}"
+        )
 
     # for test_name in ["test_check_succeeds", "test_write"]:
     metafunc.parametrize("config", configs, indirect=True)
@@ -98,7 +102,9 @@ def table_schema() -> str:
 
 
 @pytest.fixture
-def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
+def configured_catalogue(
+    test_table_name: str, table_schema: str
+) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(
             name=test_table_name,
@@ -137,7 +143,9 @@ def airbyte_message2(test_table_name: str):
 
 @pytest.fixture
 def airbyte_message3():
-    return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data={"state": "1"}))
+    return AirbyteMessage(
+        type=Type.STATE, state=AirbyteStateMessage(data={"state": "1"})
+    )
 
 
 @pytest.mark.disable_autouse

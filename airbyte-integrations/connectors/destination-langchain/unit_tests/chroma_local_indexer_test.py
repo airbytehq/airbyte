@@ -51,11 +51,9 @@ def test_chroma_local_normalize_metadata():
         docs,
         [],
     )
-    indexer.vectorstore.add_documents.assert_called_with(
-        [
-            Document(page_content="test", metadata={"_airbyte_stream": "abc", "a_boolean_value": "True"}),
-        ]
-    )
+    indexer.vectorstore.add_documents.assert_called_with([
+        Document(page_content="test", metadata={"_airbyte_stream": "abc", "a_boolean_value": "True"}),
+    ])
 
 
 def test_chroma_local_index_empty_batch():

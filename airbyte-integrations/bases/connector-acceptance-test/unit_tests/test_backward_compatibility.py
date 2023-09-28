@@ -613,7 +613,7 @@ FAILING_SPEC_TRANSITIONS = [
         name="Changing an 'airbyte_type' field value should fail.",
         should_fail=True,
         is_valid_json_schema=False,
-    ),
+    )
 ]
 
 VALID_SPEC_TRANSITIONS = [
@@ -1175,9 +1175,7 @@ FAILING_CATALOG_TRANSITIONS = [
             "test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "test_stream",
-                    "json_schema": {
-                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date"}}}}
-                    },
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )
@@ -1208,9 +1206,7 @@ FAILING_CATALOG_TRANSITIONS = [
             "test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "test_stream",
-                    "json_schema": {
-                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date"}}}}
-                    },
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )
@@ -1223,9 +1219,7 @@ FAILING_CATALOG_TRANSITIONS = [
             "test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "test_stream",
-                    "json_schema": {
-                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date-time"}}}}
-                    },
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date-time"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )
@@ -1235,8 +1229,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {
-                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date"}}}}
-                    },
+                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "date"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )
@@ -1249,14 +1242,7 @@ FAILING_CATALOG_TRANSITIONS = [
             "test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "test_stream",
-                    "json_schema": {
-                        "properties": {
-                            "user": {
-                                "type": "object",
-                                "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "type_with_timezone"}},
-                            }
-                        }
-                    },
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "type_with_timezone"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )
@@ -1265,9 +1251,7 @@ FAILING_CATALOG_TRANSITIONS = [
             "test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "test_stream",
-                    "json_schema": {
-                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "time"}}}}
-                    },
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "time"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )
@@ -1280,9 +1264,7 @@ FAILING_CATALOG_TRANSITIONS = [
             "test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "test_stream",
-                    "json_schema": {
-                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "time"}}}}
-                    },
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "time"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )
@@ -1291,14 +1273,7 @@ FAILING_CATALOG_TRANSITIONS = [
             "test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "test_stream",
-                    "json_schema": {
-                        "properties": {
-                            "user": {
-                                "type": "object",
-                                "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "time_with_timezone"}},
-                            }
-                        }
-                    },
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "time_with_timezone"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )
@@ -1312,13 +1287,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {
-                        "properties": {
-                            "user": {
-                                "type": "object",
-                                "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "time_with_timezone"}},
-                            }
-                        }
-                    },
+                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "time_with_timezone"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )
@@ -1328,13 +1297,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {
-                        "properties": {
-                            "user": {
-                                "type": "object",
-                                "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "time_without_timezone"}},
-                            }
-                        }
-                    },
+                        "properties": {"user": {"type": "object", "properties": {"created": {"type": "string", "format": "time", "airbyte_type": "time_without_timezone"}}}}},
                     "supported_sync_modes": ["full_refresh"],
                 }
             )

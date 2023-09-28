@@ -11,7 +11,9 @@ list_order_items_payload_data = {
     "payload": {
         "OrderItems": [
             {
-                "ProductInfo": {"NumberOfItems": "1"},
+                "ProductInfo": {
+                    "NumberOfItems": "1"
+                },
                 "IsGift": "false",
                 "BuyerInfo": {},
                 "QuantityShipped": 0,
@@ -20,10 +22,10 @@ list_order_items_payload_data = {
                 "ASIN": "AKDDKDKD",
                 "SellerSKU": "AAA-VPx3-AMZ",
                 "Title": "Example product",
-                "OrderItemId": "88888888888",
+                "OrderItemId": "88888888888"
             }
         ],
-        "AmazonOrderId": "111-0000000-2222222",
+        "AmazonOrderId": "111-0000000-2222222"
     }
 }
 
@@ -80,9 +82,7 @@ def test_order_items_stream_parse_response(mocker, order_items_stream):
 
     stream = order_items_stream()
     stream.cached_state["LastUpdateDate"] = "2023-08-07T00:00:00Z"
-    parsed = stream.parse_response(
-        response, stream_slice={"AmazonOrderId": "111-0000000-2222222", "LastUpdateDate": "2023-08-08T00:00:00Z"}
-    )
+    parsed = stream.parse_response(response, stream_slice={"AmazonOrderId": "111-0000000-2222222", "LastUpdateDate": "2023-08-08T00:00:00Z"})
 
     for record in parsed:
         assert record["AmazonOrderId"] == "111-0000000-2222222"

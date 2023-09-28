@@ -36,9 +36,8 @@ def config_fixture() -> Mapping[str, Any]:
         return json.loads(f.read())
 
 
-def create_catalog(
-    stream_name: str, stream_schema: Mapping[str, Any], sync_mode: DestinationSyncMode = DestinationSyncMode.append
-) -> ConfiguredAirbyteCatalog:
+def create_catalog(stream_name: str, stream_schema: Mapping[str, Any],
+                   sync_mode: DestinationSyncMode = DestinationSyncMode.append) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name=stream_name, json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
@@ -86,7 +85,7 @@ def setup_teardown(config: Mapping):
         "AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED": "true",
         "DEFAULT_VECTORIZER_MODULE": "none",
         "CLUSTER_HOSTNAME": "node1",
-        "PERSISTENCE_DATA_PATH": "./data",
+        "PERSISTENCE_DATA_PATH": "./data"
     }
     name = "weaviate-test-container-will-get-deleted"
     docker_client = docker.from_env()
@@ -96,7 +95,8 @@ def setup_teardown(config: Mapping):
         pass
 
     docker_client.containers.run(
-        "semitechnologies/weaviate:1.17.3", detach=True, environment=env_vars, name=name, ports={8080: ("127.0.0.1", 8081)}
+        "semitechnologies/weaviate:1.17.3", detach=True, environment=env_vars, name=name,
+        ports={8080: ('127.0.0.1', 8081)}
     )
     time.sleep(0.5)
 
@@ -134,7 +134,9 @@ def _state(data: Dict[str, Any]) -> AirbyteMessage:
 
 
 def _record(stream: str, data: Mapping[str, Any]) -> AirbyteMessage:
-    return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=0))
+    return AirbyteMessage(
+        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=0)
+    )
 
 
 def _article_record(stream: str, title: str, word_count: int) -> AirbyteMessage:
@@ -150,15 +152,17 @@ def _pikachu_record():
 
 def _record_with_id(stream: str, title: str, word_count: int, id: int) -> AirbyteMessage:
     return AirbyteMessage(
-        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"title": title, "wordCount": word_count, "id": id}, emitted_at=0)
+        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={
+            "title": title,
+            "wordCount": word_count,
+            "id": id
+        }, emitted_at=0)
     )
 
 
 def retrieve_all_articles(client: Client) -> List[AirbyteRecordMessage]:
     """retrieves and formats all Articles as Airbyte messages"""
-    all_records = client.client.data_object.get(
-        class_name="Article",
-    )
+    all_records = client.client.data_object.get(class_name="Article", )
     out = []
     for record in all_records.get("objects"):
         props = record["properties"]
@@ -174,7 +178,9 @@ def get_objects(client: Client, class_name: str) -> List[Mapping[str, Any]]:
 
 
 def count_objects(client: Client, class_name: str) -> int:
-    result = client.client.query.aggregate(class_name).with_fields("meta { count }").do()
+    result = client.client.query.aggregate(class_name) \
+        .with_fields('meta { count }') \
+        .do()
     return result["data"]["Aggregate"][class_name][0]["meta"]["count"]
 
 
@@ -186,7 +192,11 @@ def test_write(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, clien
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, article_catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, article_catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     expected_records = [_article_record(append_stream, str(i), i) for i in range(5)]
@@ -202,7 +212,11 @@ def test_write_large_batch(config: Mapping, article_catalog: ConfiguredAirbyteCa
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, article_catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, article_catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
     assert count_objects(client, "Article") == 400, "There should be 400 records in weaviate"
 
@@ -217,7 +231,9 @@ def test_write_second_sync(config: Mapping, article_catalog: ConfiguredAirbyteCa
 
     expected_states = [first_state_message, second_state_message]
     output_states = list(
-        destination.write(config, article_catalog, [*first_record_chunk, first_state_message, *first_record_chunk, second_state_message])
+        destination.write(
+            config, article_catalog, [*first_record_chunk, first_state_message, *first_record_chunk, second_state_message]
+        )
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
     assert count_objects(client, "Article") == 10, "First and second state should have flushed a total of 10 articles"
@@ -234,7 +250,11 @@ def test_line_break_characters(config: Mapping, client: Client):
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
     assert count_objects(client, "Currency") == 1, "There should be only 1 object of class currency in Weaviate"
     actual = get_objects(client, "Currency")[0]
@@ -255,7 +275,11 @@ def test_write_id(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, cl
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, article_catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, article_catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     records_in_destination = retrieve_all_articles(client)
@@ -272,7 +296,11 @@ def test_write_pokemon_source_pikachu(config: Mapping, pokemon_catalog: Configur
 
     first_state_message = _state({"state": "1"})
     pikachu = _pikachu_record()
-    output_states = list(destination.write(config, pokemon_catalog, [pikachu, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, pokemon_catalog, [pikachu, first_state_message]
+        )
+    )
 
     expected_states = [first_state_message]
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
@@ -286,10 +314,10 @@ def test_write_pokemon_source_pikachu(config: Mapping, pokemon_catalog: Configur
 
 def test_upload_vector(config: Mapping, client: Client):
     stream_name = "article_with_vector"
-    stream_schema = {
-        "type": "object",
-        "properties": {"title": {"type": "string"}, "vector": {"type": "array", "items": {"type": "number}"}}},
-    }
+    stream_schema = {"type": "object", "properties": {
+        "title": {"type": "string"},
+        "vector": {"type": "array", "items": {"type": "number}"}}
+    }}
     catalog = create_catalog(stream_name, stream_schema)
     first_state_message = _state({"state": "1"})
     data = {"title": "test1", "vector": [0.1, 0.2]}
@@ -299,7 +327,11 @@ def test_upload_vector(config: Mapping, client: Client):
     config["vectors"] = "article_with_vector.vector"
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     class_name = stream_to_class_name(stream_name)
@@ -309,10 +341,19 @@ def test_upload_vector(config: Mapping, client: Client):
 
 
 def test_weaviate_existing_class(config: Mapping, client: Client):
-    class_obj = {"class": "Article", "properties": [{"dataType": ["string"], "name": "title"}, {"dataType": ["text"], "name": "content"}]}
+    class_obj = {
+        "class": "Article",
+        "properties": [
+            {"dataType": ["string"], "name": "title"},
+            {"dataType": ["text"], "name": "content"}
+        ]
+    }
     client.client.schema.create_class(class_obj)
     stream_name = "article"
-    stream_schema = {"type": "object", "properties": {"title": {"type": "string"}, "text": {"type": "string"}}}
+    stream_schema = {"type": "object", "properties": {
+        "title": {"type": "string"},
+        "text": {"type": "string"}
+    }}
     catalog = create_catalog(stream_name, stream_schema)
     first_state_message = _state({"state": "1"})
     data = {"title": "test1", "content": "test 1 content"}
@@ -320,7 +361,11 @@ def test_weaviate_existing_class(config: Mapping, client: Client):
 
     destination = DestinationWeaviate()
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     class_name = stream_to_class_name(stream_name)
@@ -333,7 +378,10 @@ def test_weaviate_existing_class(config: Mapping, client: Client):
 def test_id_starting_with_underscore(config: Mapping, client: Client):
     # This is common scenario from mongoDB
     stream_name = "article"
-    stream_schema = {"type": "object", "properties": {"_id": {"type": "integer"}, "title": {"type": "string"}}}
+    stream_schema = {"type": "object", "properties": {
+        "_id": {"type": "integer"},
+        "title": {"type": "string"}
+    }}
     catalog = create_catalog(stream_name, stream_schema)
     first_state_message = _state({"state": "1"})
     data = {"_id": "507f191e810c19729de860ea", "title": "test1"}
@@ -342,7 +390,11 @@ def test_id_starting_with_underscore(config: Mapping, client: Client):
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     class_name = stream_to_class_name(stream_name)
@@ -353,7 +405,10 @@ def test_id_starting_with_underscore(config: Mapping, client: Client):
 
 def test_id_with_text_string(config: Mapping, client: Client):
     stream_name = "article"
-    stream_schema = {"type": "object", "properties": {"title": {"type": "string"}, "id": {"type": "string"}}}
+    stream_schema = {"type": "object", "properties": {
+        "title": {"type": "string"},
+        "id": {"type": "string"}
+    }}
     catalog = create_catalog(stream_name, stream_schema)
     first_state_message = _state({"state": "1"})
     data = {"title": "test1", "id": "not a real id"}
@@ -362,7 +417,11 @@ def test_id_with_text_string(config: Mapping, client: Client):
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     class_name = stream_to_class_name(stream_name)
@@ -373,12 +432,9 @@ def test_id_with_text_string(config: Mapping, client: Client):
 
 def test_array_no_item_type(config: Mapping, client: Client):
     stream_name = "article"
-    stream_schema = {
-        "type": "object",
-        "properties": {
-            "arr": {"type": "array", "items": {}},
-        },
-    }
+    stream_schema = {"type": "object", "properties": {
+        "arr": {"type": "array", "items": {}},
+    }}
     catalog = create_catalog(stream_name, stream_schema)
     first_state_message = _state({"state": "1"})
     data = {"arr": {"test1": "test"}}
@@ -387,7 +443,11 @@ def test_array_no_item_type(config: Mapping, client: Client):
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     class_name = stream_to_class_name(stream_name)
@@ -398,12 +458,13 @@ def test_array_no_item_type(config: Mapping, client: Client):
 
 def test_array_of_objects_empty(config: Mapping, client: Client):
     stream_name = "article"
-    stream_schema = {
-        "type": "object",
-        "properties": {
-            "arr": {"type": ["null", "array"], "items": {"type": ["null", "object"], "properties": {"name": {"type": ["null", "string"]}}}},
-        },
-    }
+    stream_schema = {"type": "object", "properties": {
+        "arr": {"type": ["null", "array"],
+                "items": {
+                    "type": ["null", "object"],
+                    "properties": {"name": {"type": ["null", "string"]}}}
+                },
+    }}
     catalog = create_catalog(stream_name, stream_schema)
     first_state_message = _state({"state": "1"})
     data = {"arr": [{}]}
@@ -412,24 +473,29 @@ def test_array_of_objects_empty(config: Mapping, client: Client):
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     class_name = stream_to_class_name(stream_name)
     assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
     actual = get_objects(client, class_name)[0]
-    assert actual["properties"].get("arr") == "[{}]"
+    assert actual["properties"].get("arr") == '[{}]'
 
 
 def test_missing_fields(config: Mapping, client: Client):
     stream_name = "article"
-    stream_schema = {
-        "type": "object",
-        "properties": {
-            "title": {"type": "string"},
-            "arr": {"type": ["null", "array"], "items": {"type": ["null", "object"], "properties": {"name": {"type": ["null", "string"]}}}},
-        },
-    }
+    stream_schema = {"type": "object", "properties": {
+        "title": {"type": "string"},
+        "arr": {"type": ["null", "array"],
+                "items": {
+                    "type": ["null", "object"],
+                    "properties": {"name": {"type": ["null", "string"]}}}
+                },
+    }}
     catalog = create_catalog(stream_name, stream_schema)
     first_state_message = _state({"state": "1"})
     data = {"title": "test-missing-array"}
@@ -438,7 +504,11 @@ def test_missing_fields(config: Mapping, client: Client):
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     class_name = stream_to_class_name(stream_name)
@@ -449,7 +519,10 @@ def test_missing_fields(config: Mapping, client: Client):
 
 def test_record_additional_properties(config: Mapping, client: Client):
     stream_name = "article"
-    stream_schema = {"type": "object", "additionalProperties": True, "properties": {"title": {"type": "string"}}}
+    stream_schema = {
+        "type": "object", "additionalProperties": True,
+        "properties": {"title": {"type": "string"}}
+    }
     catalog = create_catalog(stream_name, stream_schema)
     first_state_message = _state({"state": "1"})
     first_record_chunk = [_record(stream_name, {"title": "a-first-record"})]
@@ -457,16 +530,25 @@ def test_record_additional_properties(config: Mapping, client: Client):
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
     class_name = stream_to_class_name(stream_name)
     assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
 
-    data = {"title": "with-add-props", "add_prop": "test", "add_prop2": ["test"], "objArray": [{"title": "sam"}], "obj": {"title": "sam"}}
+    data = {"title": "with-add-props", "add_prop": "test", "add_prop2": ["test"],
+            "objArray": [{"title": "sam"}], "obj": {"title": "sam"}}
     second_record_chunk = [_record(stream_name, data)]
     second_state_message = _state({"state": 2})
     expected_states = [second_state_message]
-    output_states = list(destination.write(config, catalog, [*second_record_chunk, second_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*second_record_chunk, second_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     assert count_objects(client, class_name) == 2
@@ -478,7 +560,10 @@ def test_record_additional_properties(config: Mapping, client: Client):
 def test_id_custom_field_name(config: Mapping, client: Client):
     # This is common scenario from mongoDB
     stream_name = "article"
-    stream_schema = {"type": "object", "properties": {"my_id": {"type": "integer"}, "title": {"type": "string"}}}
+    stream_schema = {"type": "object", "properties": {
+        "my_id": {"type": "integer"},
+        "title": {"type": "string"}
+    }}
     catalog = create_catalog(stream_name, stream_schema)
     first_state_message = _state({"state": "1"})
     data = {"my_id": "507f191e810c19729de860ea", "title": "test_id_schema"}
@@ -488,7 +573,11 @@ def test_id_custom_field_name(config: Mapping, client: Client):
     config["id_schema"] = "article.my_id"
 
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     class_name = stream_to_class_name(stream_name)
@@ -499,7 +588,10 @@ def test_id_custom_field_name(config: Mapping, client: Client):
 
 def test_write_overwrite(config: Mapping, client: Client):
     stream_name = "article"
-    stream_schema = {"type": "object", "properties": {"title": {"type": "string"}, "text": {"type": "string"}}}
+    stream_schema = {"type": "object", "properties": {
+        "title": {"type": "string"},
+        "text": {"type": "string"}
+    }}
     catalog = create_catalog(stream_name, stream_schema, sync_mode=DestinationSyncMode.overwrite)
     first_state_message = _state({"state": "1"})
     data = {"title": "test1", "content": "test 1 content"}
@@ -507,7 +599,11 @@ def test_write_overwrite(config: Mapping, client: Client):
 
     destination = DestinationWeaviate()
     expected_states = [first_state_message]
-    output_states = list(destination.write(config, catalog, [*first_record_chunk, first_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
     class_name = stream_to_class_name(stream_name)
     assert count_objects(client, class_name) == 2
@@ -516,7 +612,11 @@ def test_write_overwrite(config: Mapping, client: Client):
     second_state_message = _state({"state": "2"})
     second_record_chunk = [_record(stream_name, data)]
     expected_states = [second_state_message]
-    output_states = list(destination.write(config, catalog, [*second_record_chunk, second_state_message]))
+    output_states = list(
+        destination.write(
+            config, catalog, [*second_record_chunk, second_state_message]
+        )
+    )
 
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
     assert count_objects(client, class_name) == 1
@@ -529,9 +629,13 @@ def test_client_delete_stream_entries(caplog, client: Client):
     class_obj = {
         "class": "Article",
         "properties": [
-            {"dataType": ["string"], "name": "title", "moduleConfig": {"text2vec-contextionary": {"vectorizePropertyName": True}}},
-            {"dataType": ["text"], "name": "content"},
-        ],
+            {"dataType": ["string"], "name": "title", "moduleConfig": {
+                "text2vec-contextionary": {
+                    "vectorizePropertyName": True
+                }
+            }},
+            {"dataType": ["text"], "name": "content"}
+        ]
     }
     client.client.schema.create_class(class_obj)
     client.client.data_object.create({"title": "test-deleted", "content": "test-deleted"}, "Article")
@@ -544,13 +648,10 @@ def test_client_delete_stream_entries(caplog, client: Client):
 
 def test_client_flush_partial_error(client: Client):
     stream_name = "article"
-    stream_schema = {
-        "type": "object",
-        "properties": {
-            "id": {"type": "string"},
-            "title": {"type": "string"},
-        },
-    }
+    stream_schema = {"type": "object", "properties": {
+        "id": {"type": "string"},
+        "title": {"type": "string"},
+    }}
     catalog = create_catalog(stream_name, stream_schema, sync_mode=DestinationSyncMode.overwrite)
     client.schema = get_schema_from_catalog(catalog)
     partial_error_result = load_json_file("create_objects_partial_error.json")

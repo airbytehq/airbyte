@@ -68,8 +68,7 @@ def test_streams_full_refresh(mock_get_auth, mock_request):
 
 @mock.patch("source_microsoft_dataverse.source.do_request")
 def test_discover_incremental(mock_request):
-    result_json = json.loads(
-        """
+    result_json = json.loads('''
         {
             "value": [
                 {
@@ -92,8 +91,7 @@ def test_discover_incremental(mock_request):
                 }
             ]
         }
-    """
-    )
+    ''')
 
     mock_request.return_value.status.return_value = 200
     mock_request.return_value.json.return_value = result_json
@@ -103,16 +101,15 @@ def test_discover_incremental(mock_request):
 
     catalog = source.discover(logger_mock, config_mock)
 
-    assert not {"modifiedon"} ^ set(catalog.streams[0].default_cursor_field)
+    assert not {'modifiedon'} ^ set(catalog.streams[0].default_cursor_field)
     assert not {SyncMode.full_refresh, SyncMode.incremental} ^ set(catalog.streams[0].supported_sync_modes)
-    assert not {"primary"} ^ set(catalog.streams[0].source_defined_primary_key[0])
+    assert not {'primary'} ^ set(catalog.streams[0].source_defined_primary_key[0])
     assert catalog.streams[0].json_schema["properties"]["test"] == AirbyteType.String.value
 
 
 @mock.patch("source_microsoft_dataverse.source.do_request")
 def test_discover_full_refresh(mock_request):
-    result_json = json.loads(
-        """
+    result_json = json.loads('''
         {
             "value": [
                 {
@@ -131,8 +128,7 @@ def test_discover_full_refresh(mock_request):
                 }
             ]
         }
-    """
-    )
+    ''')
 
     mock_request.return_value.status.return_value = 200
     mock_request.return_value.json.return_value = result_json
@@ -144,5 +140,5 @@ def test_discover_full_refresh(mock_request):
 
     assert catalog.streams[0].default_cursor_field is None or len(catalog.streams[0].default_cursor_field) == 0
     assert not {SyncMode.full_refresh} ^ set(catalog.streams[0].supported_sync_modes)
-    assert not {"primary"} ^ set(catalog.streams[0].source_defined_primary_key[0])
+    assert not {'primary'} ^ set(catalog.streams[0].source_defined_primary_key[0])
     assert catalog.streams[0].json_schema["properties"]["test"] == AirbyteType.String.value

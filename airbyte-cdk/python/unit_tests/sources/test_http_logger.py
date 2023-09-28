@@ -58,17 +58,7 @@ EMPTY_RESPONSE = {"body": {"content": ""}, "headers": {}, "status_code": 100}
             {},
             {},
             {},
-            {
-                "airbyte_cdk": {"stream": {"name": A_STREAM_NAME}},
-                "http": {
-                    "title": A_TITLE,
-                    "description": A_DESCRIPTION,
-                    "request": {"method": "GET", "body": {"content": None}, "headers": {}},
-                    "response": EMPTY_RESPONSE,
-                },
-                "log": {"level": "debug"},
-                "url": {"full": "https://airbyte.io/"},
-            },
+            {"airbyte_cdk": {"stream": {"name": A_STREAM_NAME}}, "http": {"title": A_TITLE, "description": A_DESCRIPTION, "request": {"method": "GET", "body": {"content": None}, "headers": {}}, "response": EMPTY_RESPONSE}, "log": {"level": "debug"}, "url": {"full": "https://airbyte.io/"}},
         ),
         (
             "test_get_request_with_headers",
@@ -78,17 +68,7 @@ EMPTY_RESPONSE = {"body": {"content": ""}, "headers": {}, "status_code": 100}
             {},
             {},
             {},
-            {
-                "airbyte_cdk": {"stream": {"name": A_STREAM_NAME}},
-                "http": {
-                    "title": A_TITLE,
-                    "description": A_DESCRIPTION,
-                    "request": {"method": "GET", "body": {"content": None}, "headers": {"h1": "v1", "h2": "v2"}},
-                    "response": EMPTY_RESPONSE,
-                },
-                "log": {"level": "debug"},
-                "url": {"full": "https://airbyte.io/"},
-            },
+            {"airbyte_cdk": {"stream": {"name": A_STREAM_NAME}}, "http": {"title": A_TITLE, "description": A_DESCRIPTION, "request": {"method": "GET", "body": {"content": None}, "headers": {"h1": "v1", "h2": "v2"}}, "response": EMPTY_RESPONSE}, "log": {"level": "debug"}, "url": {"full": "https://airbyte.io/"}},
         ),
         (
             "test_get_request_with_request_params",
@@ -98,17 +78,7 @@ EMPTY_RESPONSE = {"body": {"content": ""}, "headers": {}, "status_code": 100}
             {"p1": "v1", "p2": "v2"},
             {},
             {},
-            {
-                "airbyte_cdk": {"stream": {"name": A_STREAM_NAME}},
-                "http": {
-                    "title": A_TITLE,
-                    "description": A_DESCRIPTION,
-                    "request": {"method": "GET", "body": {"content": None}, "headers": {}},
-                    "response": EMPTY_RESPONSE,
-                },
-                "log": {"level": "debug"},
-                "url": {"full": "https://airbyte.io/?p1=v1&p2=v2"},
-            },
+            {"airbyte_cdk": {"stream": {"name": A_STREAM_NAME}}, "http": {"title": A_TITLE, "description": A_DESCRIPTION, "request": {"method": "GET", "body": {"content": None}, "headers": {}}, "response": EMPTY_RESPONSE}, "log": {"level": "debug"}, "url": {"full": "https://airbyte.io/?p1=v1&p2=v2"}},
         ),
         (
             "test_get_request_with_request_body_json",
@@ -118,21 +88,7 @@ EMPTY_RESPONSE = {"body": {"content": ""}, "headers": {}, "status_code": 100}
             {},
             {"b1": "v1", "b2": "v2"},
             {},
-            {
-                "airbyte_cdk": {"stream": {"name": A_STREAM_NAME}},
-                "http": {
-                    "title": A_TITLE,
-                    "description": A_DESCRIPTION,
-                    "request": {
-                        "method": "GET",
-                        "body": {"content": '{"b1": "v1", "b2": "v2"}'},
-                        "headers": {"Content-Type": "application/json", "Content-Length": "24"},
-                    },
-                    "response": EMPTY_RESPONSE,
-                },
-                "log": {"level": "debug"},
-                "url": {"full": "https://airbyte.io/"},
-            },
+            {"airbyte_cdk": {"stream": {"name": A_STREAM_NAME}}, "http": {"title": A_TITLE, "description": A_DESCRIPTION, "request": {"method": "GET", "body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {"Content-Type": "application/json", "Content-Length": "24"}}, "response": EMPTY_RESPONSE}, "log": {"level": "debug"}, "url": {"full": "https://airbyte.io/"}}
         ),
         (
             "test_get_request_with_headers_params_and_body",
@@ -142,21 +98,7 @@ EMPTY_RESPONSE = {"body": {"content": ""}, "headers": {}, "status_code": 100}
             {"p1": "v1", "p2": "v2"},
             {"b1": "v1", "b2": "v2"},
             {},
-            {
-                "airbyte_cdk": {"stream": {"name": A_STREAM_NAME}},
-                "http": {
-                    "title": A_TITLE,
-                    "description": A_DESCRIPTION,
-                    "request": {
-                        "method": "GET",
-                        "body": {"content": '{"b1": "v1", "b2": "v2"}'},
-                        "headers": {"Content-Type": "application/json", "Content-Length": "24", "h1": "v1"},
-                    },
-                    "response": EMPTY_RESPONSE,
-                },
-                "log": {"level": "debug"},
-                "url": {"full": "https://airbyte.io/?p1=v1&p2=v2"},
-            },
+            {"airbyte_cdk": {"stream": {"name": A_STREAM_NAME}}, "http": {"title": A_TITLE, "description": A_DESCRIPTION, "request": {"method": "GET", "body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {"Content-Type": "application/json", "Content-Length": "24", "h1": "v1"}}, "response": EMPTY_RESPONSE}, "log": {"level": "debug"}, "url": {"full": "https://airbyte.io/?p1=v1&p2=v2"}},
         ),
         (
             "test_get_request_with_request_body_data",
@@ -166,21 +108,7 @@ EMPTY_RESPONSE = {"body": {"content": ""}, "headers": {}, "status_code": 100}
             {},
             {},
             {"b1": "v1", "b2": "v2"},
-            {
-                "airbyte_cdk": {"stream": {"name": A_STREAM_NAME}},
-                "http": {
-                    "title": A_TITLE,
-                    "description": A_DESCRIPTION,
-                    "request": {
-                        "method": "GET",
-                        "body": {"content": "b1=v1&b2=v2"},
-                        "headers": {"Content-Type": "application/x-www-form-urlencoded", "Content-Length": "11"},
-                    },
-                    "response": EMPTY_RESPONSE,
-                },
-                "log": {"level": "debug"},
-                "url": {"full": "https://airbyte.io/"},
-            },
+            {"airbyte_cdk": {"stream": {"name": A_STREAM_NAME}}, "http": {"title": A_TITLE, "description": A_DESCRIPTION, "request": {"method": "GET", "body": {"content": "b1=v1&b2=v2"}, "headers": {"Content-Type": "application/x-www-form-urlencoded", "Content-Length": "11"}}, "response": EMPTY_RESPONSE}, "log": {"level": "debug"}, "url": {"full": "https://airbyte.io/"}},
         ),
         (
             "test_basic_post_request",
@@ -190,17 +118,7 @@ EMPTY_RESPONSE = {"body": {"content": ""}, "headers": {}, "status_code": 100}
             {},
             {},
             {},
-            {
-                "airbyte_cdk": {"stream": {"name": A_STREAM_NAME}},
-                "http": {
-                    "title": A_TITLE,
-                    "description": A_DESCRIPTION,
-                    "request": {"method": "POST", "body": {"content": None}, "headers": {"Content-Length": "0"}},
-                    "response": EMPTY_RESPONSE,
-                },
-                "log": {"level": "debug"},
-                "url": {"full": "https://airbyte.io/"},
-            },
+            {"airbyte_cdk": {"stream": {"name": A_STREAM_NAME}}, "http": {"title": A_TITLE, "description": A_DESCRIPTION, "request": {"method": "POST", "body": {"content": None}, "headers": {"Content-Length": "0"}}, "response": EMPTY_RESPONSE}, "log": {"level": "debug"}, "url": {"full": "https://airbyte.io/"}}
         ),
     ],
 )
@@ -220,27 +138,33 @@ def test_prepared_request_to_airbyte_message(test_name, http_method, url, header
 @pytest.mark.parametrize(
     "test_name, response_body, response_headers, status_code, expected_airbyte_message",
     [
-        ("test_response_no_body_no_headers", b"", {}, 200, {"body": {"content": ""}, "headers": {}, "status_code": 200}),
+        (
+            "test_response_no_body_no_headers",
+            b"",
+            {},
+            200,
+            {"body": {"content": ""}, "headers": {}, "status_code": 200}
+        ),
         (
             "test_response_no_body_with_headers",
             b"",
             {"h1": "v1", "h2": "v2"},
             200,
-            {"body": {"content": ""}, "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200},
+            {"body": {"content": ""}, "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200}
         ),
         (
             "test_response_with_body_no_headers",
             b'{"b1": "v1", "b2": "v2"}',
             {},
             200,
-            {"body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {}, "status_code": 200},
+            {"body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {}, "status_code": 200}
         ),
         (
             "test_response_with_body_and_headers",
             b'{"b1": "v1", "b2": "v2"}',
             {"h1": "v1", "h2": "v2"},
             200,
-            {"body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200},
+            {"body": {"content": '{"b1": "v1", "b2": "v2"}'}, "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200}
         ),
     ],
 )

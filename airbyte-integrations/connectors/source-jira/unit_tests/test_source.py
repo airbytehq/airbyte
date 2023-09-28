@@ -41,9 +41,13 @@ def test_check_connection_config_error(config, caplog):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
-        status=401,
+        status=401
     )
-    responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/label?maxResults=50", status=401)
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/label?maxResults=50",
+        status=401
+    )
     source = SourceJira()
     logger_mock = MagicMock()
     with pytest.raises(AirbyteTracedException):
@@ -57,9 +61,13 @@ def test_check_connection_404_error(config):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
-        status=404,
+        status=404
     )
-    responses.add(responses.GET, f"https://{config['domain']}/rest/api/3/label?maxResults=50", status=404)
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/label?maxResults=50",
+        status=404
+    )
     source = SourceJira()
     logger_mock = MagicMock()
     with pytest.raises(AirbyteTracedException) as e:
@@ -72,4 +80,4 @@ def test_get_authenticator(config):
     source = SourceJira()
     authenticator = source.get_authenticator(config=config)
 
-    assert authenticator.get_auth_header() == {"Authorization": "Basic ZW1haWxAZW1haWwuY29tOnRva2Vu"}
+    assert authenticator.get_auth_header() == {'Authorization': 'Basic ZW1haWxAZW1haWwuY29tOnRva2Vu'}
