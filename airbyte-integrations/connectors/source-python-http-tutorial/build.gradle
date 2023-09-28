@@ -4,10 +4,6 @@ plugins {
     id 'airbyte-standard-source-test-file'
 }
 
-airbytePython {
-    moduleDirectory 'source_python_http_tutorial'
-}
-
 airbyteStandardSourceTestFile {
     // For more information on standard source tests, see https://docs.airbyte.com/connector-development/testing-connectors
 

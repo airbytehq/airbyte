@@ -197,7 +197,7 @@ dependencies {
 }
 
 def getFullPath(String className) {
-    def matchingFiles = project.fileTree("src/main/java")
+    def matchingFiles = project.fileTree("src/testFixtures/java")
             .filter { file -> file.getName().equals("${className}.java".toString()) }.asCollection()
     if (matchingFiles.size() == 0) {
         throw new IllegalArgumentException("Ambiguous class name ${className}: no file found.")
@@ -206,16 +206,16 @@ def getFullPath(String className) {
         throw new IllegalArgumentException("Ambiguous class name ${className}: more than one matching file was found. Files found: ${matchingFiles}")
     }
     def absoluteFilePath = matchingFiles[0].toString()
-    def pathInPackage = project.relativePath(absoluteFilePath.toString()).replaceAll("src/main/java/", "").replaceAll("\\.java", "")
+    def pathInPackage = project.relativePath(absoluteFilePath.toString()).replaceAll("src/testFixtures/java/", "").replaceAll("\\.java", "")
     return pathInPackage
 }
 
 def generateSourceTestDocs = tasks.register('generateSourceTestDocs', Javadoc) {
-    def javadocOutputDir = project.file("${project.buildDir}/docs/javadoc")
+    def javadocOutputDir = project.file("${project.buildDir}/docs/testFixturesJavadoc")
 
     options.addStringOption('Xdoclint:none', '-quiet')
-    classpath = sourceSets.main.runtimeClasspath
-    source = sourceSets.main.allJava
+    classpath = sourceSets.testFixtures.compileClasspath
+    source = sourceSets.testFixtures.allJava
     destinationDir = javadocOutputDir
 
     doLast {

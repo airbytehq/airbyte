@@ -26,7 +26,7 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
             "AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED": "true",
             "DEFAULT_VECTORIZER_MODULE": "none",
             "CLUSTER_HOSTNAME": "node1",
-            "PERSISTENCE_DATA_PATH": "./data"
+            "PERSISTENCE_DATA_PATH": "./data",
         }
         self.docker_client = docker.from_env()
         try:
@@ -35,8 +35,11 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
             pass
 
         self.docker_client.containers.run(
-            "semitechnologies/weaviate:1.21.2", detach=True, environment=env_vars, name=WEAVIATE_CONTAINER_NAME,
-            ports={8080: ('0.0.0.0', 8081)}
+            "semitechnologies/weaviate:1.21.2",
+            detach=True,
+            environment=env_vars,
+            name=WEAVIATE_CONTAINER_NAME,
+            ports={8080: ("0.0.0.0", 8081)},
         )
         time.sleep(0.5)
         docker_ip = get_docker_ip()
@@ -72,9 +75,7 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         assert outcome.status == Status.FAILED
 
     def count_objects(self, class_name: str) -> int:
-        result = self.client.query.aggregate(class_name) \
-            .with_fields('meta { count }') \
-            .do()
+        result = self.client.query.aggregate(class_name).with_fields("meta { count }").do()
         return result["data"]["Aggregate"][class_name][0]["meta"]["count"]
 
     def test_write_overwrite(self):
@@ -103,13 +104,12 @@ class WeaviateIntegrationTest(BaseIntegrationTest):
         # incrementalally update a doc
         incremental_catalog = self._get_configured_catalog(DestinationSyncMode.append_dedup)
         list(destination.write(self.config, incremental_catalog, [self._record("mystream", "Cats are nice", 2), first_state_message]))
-        result = self.client.query.get("Mystream", ["text"]).with_near_vector({
-                "vector": [0] * OPEN_AI_VECTOR_SIZE
-            }).with_where({
-                "path": ["_ab_record_id"],
-                "operator": "Equal",
-                "valueText": "mystream_2"
-            }).do()
+        result = (
+            self.client.query.get("Mystream", ["text"])
+            .with_near_vector({"vector": [0] * OPEN_AI_VECTOR_SIZE})
+            .with_where({"path": ["_ab_record_id"], "operator": "Equal", "valueText": "mystream_2"})
+            .do()
+        )
 
         assert len(result["data"]["Get"]["Mystream"]) == 1
         assert self.count_objects("Mystream") == 5

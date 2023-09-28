@@ -3,16 +3,11 @@ plugins {
     id 'airbyte-docker'
 }
 
-repositories {
-    maven {
-        url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
-    }
-}
-
 application {
     mainClass = 'io.airbyte.integrations.source_performance.Main'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
+
 dependencies {
     implementation project(':airbyte-commons')
 

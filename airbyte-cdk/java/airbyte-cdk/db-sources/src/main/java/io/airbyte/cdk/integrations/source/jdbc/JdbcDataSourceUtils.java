@@ -12,7 +12,7 @@ import java.util.Objects;
 
 public class JdbcDataSourceUtils {
 
-  public static String DEFAULT_JDBC_PARAMETERS_DELIMITER = "&";
+  public static final String DEFAULT_JDBC_PARAMETERS_DELIMITER = "&";
 
   /**
    * Validates for duplication parameters

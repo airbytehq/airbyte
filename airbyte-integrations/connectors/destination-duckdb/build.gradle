@@ -1,4 +1,3 @@
 plugins {
-    id 'airbyte-python'
     id 'airbyte-docker'
 }

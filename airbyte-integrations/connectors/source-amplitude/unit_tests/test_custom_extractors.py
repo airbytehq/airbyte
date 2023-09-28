@@ -20,48 +20,48 @@ from source_amplitude.streams import Events
     "custom_extractor, data, expected",
     [
         (
-                ActiveUsersRecordExtractor,
-                {
-                    "xValues": ["2021-01-01", "2021-01-02"],
-                    "series": [[1, 5]],
-                    "seriesCollapsed": [[0]],
-                    "seriesLabels": [0],
-                    "seriesMeta": [{"segmentIndex": 0}],
-                },
-                [{"date": "2021-01-01", "statistics": {0: 1}}, {"date": "2021-01-02", "statistics": {0: 5}}],
+            ActiveUsersRecordExtractor,
+            {
+                "xValues": ["2021-01-01", "2021-01-02"],
+                "series": [[1, 5]],
+                "seriesCollapsed": [[0]],
+                "seriesLabels": [0],
+                "seriesMeta": [{"segmentIndex": 0}],
+            },
+            [{"date": "2021-01-01", "statistics": {0: 1}}, {"date": "2021-01-02", "statistics": {0: 5}}],
         ),
         (
-                ActiveUsersRecordExtractor,
-                {
-                    "xValues": ["2021-01-01", "2021-01-02"],
-                    "series": [],
-                    "seriesCollapsed": [[0]],
-                    "seriesLabels": [0],
-                    "seriesMeta": [{"segmentIndex": 0}],
-                },
-                [],
+            ActiveUsersRecordExtractor,
+            {
+                "xValues": ["2021-01-01", "2021-01-02"],
+                "series": [],
+                "seriesCollapsed": [[0]],
+                "seriesLabels": [0],
+                "seriesMeta": [{"segmentIndex": 0}],
+            },
+            [],
         ),
         (
-                AverageSessionLengthRecordExtractor,
-                {
-                    "xValues": ["2019-05-23", "2019-05-24"],
-                    "series": [[2, 6]],
-                    "seriesCollapsed": [[0]],
-                    "seriesLabels": [0],
-                    "seriesMeta": [{"segmentIndex": 0}],
-                },
-                [{"date": "2019-05-23", "length": 2}, {"date": "2019-05-24", "length": 6}],
+            AverageSessionLengthRecordExtractor,
+            {
+                "xValues": ["2019-05-23", "2019-05-24"],
+                "series": [[2, 6]],
+                "seriesCollapsed": [[0]],
+                "seriesLabels": [0],
+                "seriesMeta": [{"segmentIndex": 0}],
+            },
+            [{"date": "2019-05-23", "length": 2}, {"date": "2019-05-24", "length": 6}],
         ),
         (
-                AverageSessionLengthRecordExtractor,
-                {
-                    "xValues": ["2019-05-23", "2019-05-24"],
-                    "series": [],
-                    "seriesCollapsed": [[0]],
-                    "seriesLabels": [0],
-                    "seriesMeta": [{"segmentIndex": 0}],
-                },
-                [],
+            AverageSessionLengthRecordExtractor,
+            {
+                "xValues": ["2019-05-23", "2019-05-24"],
+                "series": [],
+                "seriesCollapsed": [[0]],
+                "seriesLabels": [0],
+                "seriesMeta": [{"segmentIndex": 0}],
+            },
+            [],
         ),
     ],
     ids=["ActiveUsers", "EmptyActiveUsers", "AverageSessionLength", "EmptyAverageSessionLength"],
@@ -128,15 +128,10 @@ class TestEventsExtractor:
         )
 
         with open(f"{os.path.dirname(__file__)}/events_request_content.zip", "rb") as zipped:
-            requests_mock.get(
-                "https://amplitude.com/api/2/export",
-                content=zipped.read()
-            )
+            requests_mock.get("https://amplitude.com/api/2/export", content=zipped.read())
 
         records = stream.read_records(
-            sync_mode=SyncMode.incremental,
-            cursor_field="server_upload_time",
-            stream_slice={"start": "20230701T00", "end": "20230701T23"}
+            sync_mode=SyncMode.incremental, cursor_field="server_upload_time", stream_slice={"start": "20230701T00", "end": "20230701T23"}
         )
 
         assert len(list(records)) == 4
@@ -148,7 +143,7 @@ class TestEventsExtractor:
             (404, does_not_raise()),
             (504, does_not_raise()),
             (500, pytest.raises(requests.exceptions.HTTPError)),
-        ]
+        ],
     )
     def test_event_errors_read(self, mocker, requests_mock, error_code, expectation):
         stream = Events(
@@ -158,10 +153,7 @@ class TestEventsExtractor:
             event_time_interval={"size_unit": "hours", "size": 24},
         )
 
-        requests_mock.get(
-            "https://amplitude.com/api/2/export",
-            status_code=error_code
-        )
+        requests_mock.get("https://amplitude.com/api/2/export", status_code=error_code)
 
         mocker.patch("time.sleep", lambda x: None)
 
@@ -169,7 +161,7 @@ class TestEventsExtractor:
             records = stream.read_records(
                 sync_mode=SyncMode.incremental,
                 cursor_field="server_upload_time",
-                stream_slice={"start": "20230701T00", "end": "20230701T23"}
+                stream_slice={"start": "20230701T00", "end": "20230701T23"},
             )
 
             assert list(records) == []
@@ -179,7 +171,7 @@ class TestEventsExtractor:
         [
             ("events_request_content.zip", True, 4),
             ("zipped.json.gz", False, 0),
-        ]
+        ],
     )
     def test_events_parse_response(self, file_name, content_is_valid, records_count):
         stream = Events(
@@ -227,14 +219,10 @@ class TestEventsExtractor:
                     {"start": "20230803T00", "end": "20230803T23"},
                     {"start": "20230804T00", "end": "20230804T23"},
                     {"start": "20230805T00", "end": "20230805T23"},
-                ]
+                ],
             ),
-            (
-                "2023-08-05T00:00:00Z",
-                "2023-08-01T00:00:00Z",
-                []
-            ),
-        ]
+            ("2023-08-05T00:00:00Z", "2023-08-01T00:00:00Z", []),
+        ],
     )
     @patch("source_amplitude.streams.pendulum.now")
     def test_event_stream_slices(self, pendulum_now_mock, start_date, end_date, expected_slices):

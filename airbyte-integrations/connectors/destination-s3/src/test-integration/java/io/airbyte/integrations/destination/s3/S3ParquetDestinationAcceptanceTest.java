@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.destination.s3.S3BaseParquetDestinationAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion;
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;

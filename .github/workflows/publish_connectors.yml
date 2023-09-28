@@ -69,9 +69,8 @@ jobs:
       - name: Call Instatus Webhook
         uses: joelwmale/webhook-action@master
         with:
-            url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
-            body: '{ "trigger": "down" }'
-
+          url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
+          body: '{ "trigger": "down" }'
 
   set-instatus-incident-on-success:
     name: Create Instatus Incident on Success
@@ -83,8 +82,8 @@ jobs:
       - name: Call Instatus Webhook
         uses: joelwmale/webhook-action@master
         with:
-            url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
-            body: '{ "trigger": "up" }'
+          url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
+          body: '{ "trigger": "up" }'
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
