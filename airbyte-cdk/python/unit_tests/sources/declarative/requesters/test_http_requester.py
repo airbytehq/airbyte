@@ -124,7 +124,14 @@ def test_path(test_name, path, expected_path):
     assert requester.get_path(stream_state={}, stream_slice={}, next_page_token={}) == expected_path
 
 
-def create_requester(url_base: Optional[str] = None, parameters: Optional[Mapping[str, Any]] = {}, config: Optional[Config] = None, path: Optional[str] = None, authenticator: Optional[DeclarativeAuthenticator] = None, error_handler: Optional[ErrorHandler] = None) -> HttpRequester:
+def create_requester(
+    url_base: Optional[str] = None,
+    parameters: Optional[Mapping[str, Any]] = {},
+    config: Optional[Config] = None,
+    path: Optional[str] = None,
+    authenticator: Optional[DeclarativeAuthenticator] = None,
+    error_handler: Optional[ErrorHandler] = None,
+) -> HttpRequester:
     requester = HttpRequester(
         name="name",
         url_base=url_base or "https://example.com",
@@ -169,7 +176,16 @@ def test_basic_send_request():
         # merging json params from the three sources
         (None, {"field": "value"}, None, None, None, None, None, '{"field": "value"}'),
         (None, {"field": "value"}, None, {"field2": "value"}, None, None, None, '{"field": "value", "field2": "value"}'),
-        (None, {"field": "value"}, None, {"field2": "value"}, None, {"authfield": "val"}, None, '{"field": "value", "field2": "value", "authfield": "val"}'),
+        (
+            None,
+            {"field": "value"},
+            None,
+            {"field2": "value"},
+            None,
+            {"authfield": "val"},
+            None,
+            '{"field": "value", "field2": "value", "authfield": "val"}',
+        ),
         (None, {"field": "value"}, None, {"field": "value"}, None, None, ValueError, None),
         (None, {"field": "value"}, None, None, None, {"field": "value"}, ValueError, None),
         # raise on mixed data and json params
@@ -178,9 +194,11 @@ def test_basic_send_request():
         (None, None, {"field": "value"}, {"field": "value"}, None, None, RequestBodyException, None),
         (None, None, None, None, {"field": "value"}, {"field": "value"}, RequestBodyException, None),
         ({"field": "value"}, None, None, None, None, {"field": "value"}, RequestBodyException, None),
-
-    ])
-def test_send_request_data_json(provider_data, provider_json, param_data, param_json, authenticator_data, authenticator_json, expected_exception, expected_body):
+    ],
+)
+def test_send_request_data_json(
+    provider_data, provider_json, param_data, param_json, authenticator_data, authenticator_json, expected_exception, expected_body
+):
     options_provider = MagicMock()
     options_provider.get_request_body_data.return_value = provider_data
     options_provider.get_request_body_json.return_value = provider_json
@@ -196,7 +214,7 @@ def test_send_request_data_json(provider_data, provider_json, param_data, param_
         requester.send_request(request_body_data=param_data, request_body_json=param_json)
         sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
         if expected_body is not None:
-            assert sent_request.body == expected_body.decode('UTF-8') if not isinstance(expected_body, str) else expected_body
+            assert sent_request.body == expected_body.decode("UTF-8") if not isinstance(expected_body, str) else expected_body
 
 
 @pytest.mark.parametrize(
@@ -215,7 +233,7 @@ def test_send_request_data_json(provider_data, provider_json, param_data, param_
         ("field=value", {"abc": "def"}, None, ValueError, None),
         ({"abc": "def"}, "field=value", None, ValueError, None),
         ("field=value", None, {"abc": "def"}, ValueError, None),
-    ]
+    ],
 )
 def test_send_request_string_data(provider_data, param_data, authenticator_data, expected_exception, expected_body):
     options_provider = MagicMock()
@@ -240,15 +258,22 @@ def test_send_request_string_data(provider_data, param_data, authenticator_data,
         # merging headers from the three sources
         ({"header": "value"}, None, None, None, {"header": "value"}),
         ({"header": "value"}, {"header2": "value"}, None, None, {"header": "value", "header2": "value"}),
-        ({"header": "value"}, {"header2": "value"}, {"authheader": "val"}, None, {"header": "value", "header2": "value", "authheader": "val"}),
+        (
+            {"header": "value"},
+            {"header2": "value"},
+            {"authheader": "val"},
+            None,
+            {"header": "value", "header2": "value", "authheader": "val"},
+        ),
         # raise on conflicting headers
         ({"header": "value"}, {"header": "value"}, None, ValueError, None),
         ({"header": "value"}, None, {"header": "value"}, ValueError, None),
         ({"header": "value"}, {"header2": "value"}, {"header": "value"}, ValueError, None),
-    ])
+    ],
+)
 def test_send_request_headers(provider_headers, param_headers, authenticator_headers, expected_exception, expected_headers):
     # headers set by the requests framework, do not validate
-    default_headers = {'User-Agent': mock.ANY, 'Accept-Encoding': mock.ANY, 'Accept': mock.ANY, 'Connection': mock.ANY}
+    default_headers = {"User-Agent": mock.ANY, "Accept-Encoding": mock.ANY, "Accept": mock.ANY, "Connection": mock.ANY}
     options_provider = MagicMock()
     options_provider.get_request_headers.return_value = provider_headers
     authenticator = MagicMock()
@@ -275,7 +300,8 @@ def test_send_request_headers(provider_headers, param_headers, authenticator_hea
         ({"param": "value"}, {"param": "value"}, None, ValueError, None),
         ({"param": "value"}, None, {"param": "value"}, ValueError, None),
         ({"param": "value"}, {"param2": "value"}, {"param": "value"}, ValueError, None),
-    ])
+    ],
+)
 def test_send_request_params(provider_params, param_params, authenticator_params, expected_exception, expected_params):
     options_provider = MagicMock()
     options_provider.get_request_params.return_value = provider_params
@@ -300,18 +326,27 @@ def test_send_request_params(provider_params, param_params, authenticator_params
         ("deals", None, "/deals"),
         ("deals", "deals2", "/deals2"),
         ("deals", "/deals2", "/deals2"),
-        ("deals/{{ stream_slice.start }}/{{ next_page_token.next_page_token }}/{{ config.config_key }}/{{ parameters.param_key }}", None, "/deals/2012/pagetoken/config_value/param_value"),
-    ])
+        (
+            "deals/{{ stream_slice.start }}/{{ next_page_token.next_page_token }}/{{ config.config_key }}/{{ parameters.param_key }}",
+            None,
+            "/deals/2012/pagetoken/config_value/param_value",
+        ),
+    ],
+)
 def test_send_request_path(requester_path, param_path, expected_path):
     requester = create_requester(config={"config_key": "config_value"}, path=requester_path, parameters={"param_key": "param_value"})
-    requester.send_request(stream_slice={"start": "2012"}, next_page_token={"next_page_token": "pagetoken"},path=param_path)
+    requester.send_request(stream_slice={"start": "2012"}, next_page_token={"next_page_token": "pagetoken"}, path=param_path)
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
     parsed_url = urlparse(sent_request.url)
     assert parsed_url.path == expected_path
 
 
 def test_send_request_url_base():
-    requester = create_requester(url_base="https://example.org/{{ config.config_key }}/{{ parameters.param_key }}", config={"config_key": "config_value"}, parameters={"param_key": "param_value"})
+    requester = create_requester(
+        url_base="https://example.org/{{ config.config_key }}/{{ parameters.param_key }}",
+        config={"config_key": "config_value"},
+        parameters={"param_key": "param_value"},
+    )
     requester.send_request()
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
     assert sent_request.url == "https://example.org/config_value/param_value/deals"
@@ -324,10 +359,18 @@ def test_send_request_stream_slice_next_page_token():
     stream_slice = {"id": "1234"}
     next_page_token = {"next_page_token": "next_page_token"}
     requester.send_request(stream_slice=stream_slice, next_page_token=next_page_token)
-    options_provider.get_request_params.assert_called_once_with(stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token)
-    options_provider.get_request_body_data.assert_called_once_with(stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token)
-    options_provider.get_request_body_json.assert_called_once_with(stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token)
-    options_provider.get_request_headers.assert_called_once_with(stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token)
+    options_provider.get_request_params.assert_called_once_with(
+        stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token
+    )
+    options_provider.get_request_body_data.assert_called_once_with(
+        stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token
+    )
+    options_provider.get_request_body_json.assert_called_once_with(
+        stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token
+    )
+    options_provider.get_request_headers.assert_called_once_with(
+        stream_state=None, stream_slice=stream_slice, next_page_token=next_page_token
+    )
 
 
 def test_default_authenticator():
@@ -503,15 +546,21 @@ def test_default_parse_response_error_message_not_json(requests_mock):
 
 
 @pytest.mark.parametrize(
-    "test_name, base_url, path, expected_full_url",[
+    "test_name, base_url, path, expected_full_url",
+    [
         ("test_no_slashes", "https://airbyte.io", "my_endpoint", "https://airbyte.io/my_endpoint"),
         ("test_trailing_slash_on_base_url", "https://airbyte.io/", "my_endpoint", "https://airbyte.io/my_endpoint"),
-        ("test_trailing_slash_on_base_url_and_leading_slash_on_path", "https://airbyte.io/", "/my_endpoint", "https://airbyte.io/my_endpoint"),
+        (
+            "test_trailing_slash_on_base_url_and_leading_slash_on_path",
+            "https://airbyte.io/",
+            "/my_endpoint",
+            "https://airbyte.io/my_endpoint",
+        ),
         ("test_leading_slash_on_path", "https://airbyte.io", "/my_endpoint", "https://airbyte.io/my_endpoint"),
         ("test_trailing_slash_on_path", "https://airbyte.io", "/my_endpoint/", "https://airbyte.io/my_endpoint/"),
         ("test_nested_path_no_leading_slash", "https://airbyte.io", "v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
         ("test_nested_path_with_leading_slash", "https://airbyte.io", "/v1/my_endpoint", "https://airbyte.io/v1/my_endpoint"),
-    ]
+    ],
 )
 def test_join_url(test_name, base_url, path, expected_full_url):
     requester = HttpRequester(
@@ -533,16 +582,44 @@ def test_join_url(test_name, base_url, path, expected_full_url):
 
 
 @pytest.mark.parametrize(
-    "path, params, expected_url", [
+    "path, params, expected_url",
+    [
         pytest.param("v1/endpoint?param1=value1", {}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
-        pytest.param("v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"),
+        pytest.param(
+            "v1/endpoint", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_only_in_path"
+        ),
         pytest.param("v1/endpoint", None, "https://test_base_url.com/v1/endpoint", id="test_params_is_none_and_no_params_in_path"),
-        pytest.param("v1/endpoint?param1=value1", None, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_params_is_none_and_no_params_in_path"),
-        pytest.param("v1/endpoint?param1=value1", {"param2": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param2=value2", id="test_no_duplicate_params"),
-        pytest.param("v1/endpoint?param1=value1", {"param1": "value1"}, "https://test_base_url.com/v1/endpoint?param1=value1", id="test_duplicate_params_same_value"),
-        pytest.param("v1/endpoint?param1=1", {"param1": 1}, "https://test_base_url.com/v1/endpoint?param1=1", id="test_duplicate_params_same_value_not_string"),
-        pytest.param("v1/endpoint?param1=value1", {"param1": "value2"}, "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2", id="test_duplicate_params_different_value"),
-    ]
+        pytest.param(
+            "v1/endpoint?param1=value1",
+            None,
+            "https://test_base_url.com/v1/endpoint?param1=value1",
+            id="test_params_is_none_and_no_params_in_path",
+        ),
+        pytest.param(
+            "v1/endpoint?param1=value1",
+            {"param2": "value2"},
+            "https://test_base_url.com/v1/endpoint?param1=value1&param2=value2",
+            id="test_no_duplicate_params",
+        ),
+        pytest.param(
+            "v1/endpoint?param1=value1",
+            {"param1": "value1"},
+            "https://test_base_url.com/v1/endpoint?param1=value1",
+            id="test_duplicate_params_same_value",
+        ),
+        pytest.param(
+            "v1/endpoint?param1=1",
+            {"param1": 1},
+            "https://test_base_url.com/v1/endpoint?param1=1",
+            id="test_duplicate_params_same_value_not_string",
+        ),
+        pytest.param(
+            "v1/endpoint?param1=value1",
+            {"param1": "value2"},
+            "https://test_base_url.com/v1/endpoint?param1=value1&param1=value2",
+            id="test_duplicate_params_different_value",
+        ),
+    ],
 )
 def test_duplicate_request_params_are_deduped(path, params, expected_url):
     requester = HttpRequester(
@@ -564,14 +641,15 @@ def test_duplicate_request_params_are_deduped(path, params, expected_url):
 
 
 @pytest.mark.parametrize(
-    "should_log, status_code, should_throw", [
+    "should_log, status_code, should_throw",
+    [
         (True, 200, False),
         (True, 400, False),
         (True, 500, True),
         (False, 200, False),
         (False, 400, False),
         (False, 500, True),
-    ]
+    ],
 )
 def test_log_requests(should_log, status_code, should_throw):
     repository = MagicMock()
@@ -584,7 +662,7 @@ def test_log_requests(should_log, status_code, should_throw):
         config={},
         parameters={},
         message_repository=repository,
-        disable_retries=True
+        disable_retries=True,
     )
     requester._session.send = MagicMock()
     response = requests.Response()
