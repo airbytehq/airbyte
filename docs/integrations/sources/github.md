@@ -101,6 +101,7 @@ This connector outputs the following incremental streams:
 - [Project cards](https://docs.github.com/en/rest/reference/projects#list-project-cards)
 - [Project columns](https://docs.github.com/en/rest/reference/projects#list-project-columns)
 - [Projects](https://docs.github.com/en/rest/reference/projects#list-repository-projects)
+- [ProjectsV2](https://docs.github.com/en/graphql/reference/objects#projectv2)
 - [Pull request comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment)
 - [Pull request stats](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request)
 - [Pull requests](https://docs.github.com/en/rest/reference/pulls#list-pull-requests)
@@ -164,6 +165,7 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.0   | 2023-08-25 | [30731](https://github.com/airbytehq/airbyte/pull/30731)                                                          | Add new stream `ProjectsV2`                                                                                                                                         |
 | 1.2.1   | 2023-08-22 | [30693](https://github.com/airbytehq/airbyte/pull/30693)                                                          | Handle 404 error in `TeamMemberShips`                                                                                                                               |
 | 1.2.0   | 2023-08-22 | [30647](https://github.com/airbytehq/airbyte/pull/30647)                                                          | Add support for self-hosted GitHub instances                                                                                                                        |
 | 1.1.1   | 2023-09-21 | [30654](https://github.com/airbytehq/airbyte/pull/30654)                                                          | Rewrite source connection error messages                                                                                                                            |
