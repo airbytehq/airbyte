@@ -202,6 +202,7 @@ class LegacyPartition(Partition):
         Otherwise, the message will be emitted on the message repository.
         """
         for record_data in self._stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=copy.deepcopy(self._slice)):
+            print(f"record_data: {record_data}")
             if isinstance(record_data, Mapping):
                 yield Record(record_data)
             else:
@@ -244,29 +245,6 @@ class LegacyPartitionGenerator(PartitionGenerator):
 
 
 @deprecated("This class is experimental. Use at your own risk.")
-class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
-    """
-    This class acts as an adapter between the existing AvailabilityStrategy and the new AbstractAvailabilityStrategy.
-    LegacyAvailabilityStrategy is instantiated with a Stream and a Source to allow the existing AvailabilityStrategy to be used with the new AbstractAvailabilityStrategy interface.
-
-    A more convenient implementation would not depend on the docs URL instead of the Source itself, and would support running on an AbstractStream instead of only on a Stream.
-
-    This class can be used to help enable concurrency on existing connectors without having to rewrite everything as AbstractStream and AbstractAvailabilityStrategy.
-    In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
-    """
-
-    def __init__(self, stream: Stream, source: Source):
-        """
-        :param stream: The stream to delegate to
-        :param source: The source to delegate to
-        """
-        self._stream = stream
-        self._source = source
-
-    def check_availability(self, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
-        return self._stream.check_availability(logger, self._source)
-
-
 class LegacyErrorMessageParser(ErrorMessageParser):
     """
     This class acts as an adapter between the new ErrorMessageParser interface and the legacy Stream interface
@@ -306,3 +284,26 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
         """
         stream_availability = self._abstract_availability_strategy.check_availability(logger)
         return stream_availability.is_available(), stream_availability.message()
+
+
+class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
+    """
+    This class acts as an adapter between the existing AvailabilityStrategy and the new AbstractAvailabilityStrategy.
+    LegacyAvailabilityStrategy is instantiated with a Stream and a Source to allow the existing AvailabilityStrategy to be used with the new AbstractAvailabilityStrategy interface.
+
+    A more convenient implementation would not depend on the docs URL instead of the Source itself, and would support running on an AbstractStream instead of only on a Stream.
+
+    This class can be used to help enable concurrency on existing connectors without having to rewrite everything as AbstractStream and AbstractAvailabilityStrategy.
+    In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
+    """
+
+    def __init__(self, stream: Stream, source: Source):
+        """
+        :param stream: The stream to delegate to
+        :param source: The source to delegate to
+        """
+        self._stream = stream
+        self._source = source
+
+    def check_availability(self, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
+        return self._stream.check_availability(logger, self._source)
