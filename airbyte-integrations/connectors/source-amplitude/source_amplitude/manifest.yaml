@@ -46,6 +46,9 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
     datetime_format: "%Y-%m-%d"
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+      - "%Y-%m-%dT%H:%M:%S"
     cursor_granularity: P1D
     step: P15D
     cursor_field: "{{ parameters['stream_cursor_field'] }}"
