@@ -6,11 +6,11 @@ package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion;
+import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
-import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.CatalogHelpers;

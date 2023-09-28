@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
-import static io.airbyte.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
 import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.USE_TEST_CHUNK_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,26 +24,27 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.PgLsn;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
+import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicationConnection;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.Database;
-import io.airbyte.db.PgLsn;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.debezium.CdcSourceTest;
-import io.airbyte.integrations.debezium.CdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.postgres.PostgresReplicationConnection;
-import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -60,7 +61,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
-import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -74,7 +74,6 @@ import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -116,7 +115,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @BeforeEach
   protected void setup() throws SQLException {
-    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    final DockerImageName myImage = DockerImageName.parse(getServerImageName()).asCompatibleSubstituteFor("postgres");
     container = new PostgreSQLContainer<>(myImage)
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
@@ -994,13 +993,22 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   @Override
-  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(final CdcTargetPosition targetPosition, final AirbyteRecordMessage record) {
-    // The LSN from records should be either equal or grater than the position value before the sync started.
-    // The current Write-Ahead Log (WAL) position can move ahead even without any data modifications (INSERT, UPDATE, DELETE)
-    // The start and end of transactions, even read-only ones, are recorded in the WAL. So, simply starting and committing a transaction can cause the WAL location to move forward.
-    // Periodic checkpoints, which write dirty pages from memory to disk to ensure database consistency, generate WAL records. Checkpoints happen even if there are no active data modifications
+  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(final CdcTargetPosition targetPosition,
+                                                                                         final AirbyteRecordMessage record) {
+    // The LSN from records should be either equal or grater than the position value before the sync
+    // started.
+    // The current Write-Ahead Log (WAL) position can move ahead even without any data modifications
+    // (INSERT, UPDATE, DELETE)
+    // The start and end of transactions, even read-only ones, are recorded in the WAL. So, simply
+    // starting and committing a transaction can cause the WAL location to move forward.
+    // Periodic checkpoints, which write dirty pages from memory to disk to ensure database consistency,
+    // generate WAL records. Checkpoints happen even if there are no active data modifications
     assert targetPosition instanceof PostgresCdcTargetPosition;
     assertTrue(extractPosition(record.getData()).targetLsn.compareTo(((PostgresCdcTargetPosition) targetPosition).targetLsn) >= 0);
+  }
+
+  protected String getServerImageName() {
+    return "debezium/postgres:15-alpine";
   }
 
 }

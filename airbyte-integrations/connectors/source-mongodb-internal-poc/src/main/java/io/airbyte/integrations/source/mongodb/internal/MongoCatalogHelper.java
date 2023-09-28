@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.internal;
 
-import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;

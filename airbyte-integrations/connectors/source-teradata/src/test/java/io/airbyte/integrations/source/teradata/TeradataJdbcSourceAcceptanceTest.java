@@ -6,10 +6,10 @@ package io.airbyte.integrations.source.teradata;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.teradata.envclient.TeradataHttpClient;
 import io.airbyte.integrations.source.teradata.envclient.dto.CreateEnvironmentRequest;
 import io.airbyte.integrations.source.teradata.envclient.dto.DeleteEnvironmentRequest;

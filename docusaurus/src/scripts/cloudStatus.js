@@ -8,7 +8,7 @@ if (ExecutionEnvironment.canUseDOM) {
       .then((resp) => resp.json())
       .then((summary) => {
         const status = summary.page.status;
-        const el = document.getElementById("cloudStatusLink");
+        const el = document.querySelector(".cloudStatusLink");
         el.classList.forEach((className) => {
           if (className.startsWith("status-")) {
             el.classList.remove(className);

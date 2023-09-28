@@ -7,9 +7,11 @@ from typing import Any, List, Mapping, Optional, Tuple
 import pendulum
 import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pydantic.error_wrappers import ValidationError
 
 from .streams import (
@@ -23,6 +25,7 @@ from .streams import (
     Groups,
     IssueComments,
     IssueCustomFieldContexts,
+    IssueCustomFieldOptions,
     IssueFieldConfigurations,
     IssueFields,
     IssueLinkTypes,
@@ -35,6 +38,7 @@ from .streams import (
     Issues,
     IssueSecuritySchemes,
     IssueTransitions,
+    IssueTypes,
     IssueTypeSchemes,
     IssueTypeScreenSchemes,
     IssueVotes,
@@ -49,6 +53,7 @@ from .streams import (
     ProjectComponents,
     ProjectEmail,
     ProjectPermissionSchemes,
+    ProjectRoles,
     Projects,
     ProjectTypes,
     ProjectVersions,
@@ -100,7 +105,16 @@ class SourceJira(AbstractSource):
         except ValidationError as validation_error:
             return False, validation_error
         except requests.exceptions.RequestException as request_error:
-            message = " ".join(map(str, request_error.response.json().get("errorMessages", "")))
+            if request_error.response.status_code == requests.codes.not_found:
+                raise AirbyteTracedException(
+                    message="Config validation error: please validate your domain.",
+                    internal_message=str(request_error),
+                    failure_type=FailureType.config_error,
+                ) from None
+            # sometimes jira returns non json response
+            message = ""
+            if request_error.response.headers.get("content-type") == "application/json":
+                message = " ".join(map(str, request_error.response.json().get("errorMessages", "")))
             return False, f"{message} {request_error}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -129,6 +143,7 @@ class SourceJira(AbstractSource):
             issue_fields_stream,
             IssueFieldConfigurations(**args),
             IssueCustomFieldContexts(**args),
+            IssueCustomFieldOptions(**args),
             IssueLinkTypes(**args),
             IssueNavigatorSettings(**args),
             IssueNotificationSchemes(**args),
@@ -139,6 +154,7 @@ class SourceJira(AbstractSource):
             IssueSecuritySchemes(**args),
             IssueTransitions(**args),
             IssueTypeSchemes(**args),
+            IssueTypes(**args),
             IssueTypeScreenSchemes(**args),
             IssueVotes(**incremental_args),
             IssueWatchers(**incremental_args),
@@ -148,6 +164,7 @@ class SourceJira(AbstractSource):
             Permissions(**args),
             PermissionSchemes(**args),
             Projects(**args),
+            ProjectRoles(**args),
             ProjectAvatars(**args),
             ProjectCategories(**args),
             ProjectComponents(**args),
