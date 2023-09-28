@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Iterable, Optional, Set, Tuple
 
-from connector_ops.utils import Connector
+from connector_ops.utils import Connector, ConnectorLanguage
 from pydash.objects import get
 
 
@@ -235,7 +235,11 @@ def check_connector_has_no_critical_vulnerabilities(connector: Connector) -> boo
 
 
 def check_metadata_version_matches_dockerfile_label(connector: Connector) -> bool:
-    return connector.version_in_dockerfile_label == connector.version
+    version_in_dockerfile = connector.version_in_dockerfile_label
+    if version_in_dockerfile is None:
+        # Java connectors don't have Dockerfiles.
+        return connector.language == ConnectorLanguage.JAVA
+    return version_in_dockerfile == connector.version
 
 
 QA_CHECKS = [

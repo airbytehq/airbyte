@@ -1,7 +1,7 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
 plugins {
-    id 'airbyte-docker'
+    id 'airbyte-docker-legacy'
     id 'airbyte-python'
 }
 

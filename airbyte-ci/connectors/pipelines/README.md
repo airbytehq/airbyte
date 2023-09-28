@@ -378,21 +378,22 @@ This command runs the Python tests for a airbyte-ci poetry package.
 `airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --test-directory=unit_tests`
 
 ## Changelog
-| Version | PR                                                        | Description                                                                                               |
-|---------| --------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
-| 1.4.1   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Load base migration guide into QA Test container for strict encrypt variants                              |
-| 1.4.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330) | Add support for pyproject.toml as the prefered entry point for a connector package                        |
-| 1.3.0   | [#30461](https://github.com/airbytehq/airbyte/pull/30461) | Add `--use-local-cdk` flag to all connectors commands                                                      |
-| 1.2.3   | [#30477](https://github.com/airbytehq/airbyte/pull/30477) | Fix a test regression introduced the previous version.                                            |
-| 1.2.2   | [#30438](https://github.com/airbytehq/airbyte/pull/30438) | Add workaround to always stream logs properly with --is-local.                                            |
-| 1.2.1   | [#30384](https://github.com/airbytehq/airbyte/pull/30384) | Java connector test performance fixes.                                                                    |
-| 1.2.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330) | Add `--metadata-query` option to connectors command                                                       |
-| 1.1.3   | [#30314](https://github.com/airbytehq/airbyte/pull/30314) | Stop patching gradle files to make them work with airbyte-ci.                                             |
-| 1.1.2   | [#30279](https://github.com/airbytehq/airbyte/pull/30279) | Fix correctness issues in layer caching by making atomic execution groupings                              |
-| 1.1.1   | [#30252](https://github.com/airbytehq/airbyte/pull/30252) | Fix redundancies and broken logic in GradleTask, to speed up the CI runs.                                 |
-| 1.1.0   | [#29509](https://github.com/airbytehq/airbyte/pull/29509) | Refactor the airbyte-ci test command to run tests on any poetry package.                                  |
-| 1.0.0   | [#28000](https://github.com/airbytehq/airbyte/pull/29232) | Remove release stages in favor of support level from airbyte-ci.                                          |
-| 0.5.0   | [#28000](https://github.com/airbytehq/airbyte/pull/28000) | Run connector acceptance tests with dagger-in-dagger.                                                     |
+| Version | PR                                                        | Description                                                                                        |
+|---------| --------------------------------------------------------- |----------------------------------------------------------------------------------------------------|
+| 1.4.2   | [#30743](https://github.com/airbytehq/airbyte/pull/30743) | Add `--disable-report-auto-open` and `--use-host-gradle-dist-tar` to allow gradle integration.     |
+| 1.4.1   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Load base migration guide into QA Test container for strict encrypt variants                       |
+| 1.4.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330) | Add support for pyproject.toml as the prefered entry point for a connector package                 |
+| 1.3.0   | [#30461](https://github.com/airbytehq/airbyte/pull/30461) | Add `--use-local-cdk` flag to all connectors commands                                              |
+| 1.2.3   | [#30477](https://github.com/airbytehq/airbyte/pull/30477) | Fix a test regression introduced the previous version.                                             |
+| 1.2.2   | [#30438](https://github.com/airbytehq/airbyte/pull/30438) | Add workaround to always stream logs properly with --is-local.                                     |
+| 1.2.1   | [#30384](https://github.com/airbytehq/airbyte/pull/30384) | Java connector test performance fixes.                                                             |
+| 1.2.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330) | Add `--metadata-query` option to connectors command                                                |
+| 1.1.3   | [#30314](https://github.com/airbytehq/airbyte/pull/30314) | Stop patching gradle files to make them work with airbyte-ci.                                      |
+| 1.1.2   | [#30279](https://github.com/airbytehq/airbyte/pull/30279) | Fix correctness issues in layer caching by making atomic execution groupings                       |
+| 1.1.1   | [#30252](https://github.com/airbytehq/airbyte/pull/30252) | Fix redundancies and broken logic in GradleTask, to speed up the CI runs.                          |
+| 1.1.0   | [#29509](https://github.com/airbytehq/airbyte/pull/29509) | Refactor the airbyte-ci test command to run tests on any poetry package.                           |
+| 1.0.0   | [#28000](https://github.com/airbytehq/airbyte/pull/29232) | Remove release stages in favor of support level from airbyte-ci.                                   |
+| 0.5.0   | [#28000](https://github.com/airbytehq/airbyte/pull/28000) | Run connector acceptance tests with dagger-in-dagger.                                              |
 | 0.4.7   | [#29156](https://github.com/airbytehq/airbyte/pull/29156) | Improve how we check existence of requirement.txt or setup.py file to not raise early pip install errors. |
 | 0.4.6   | [#28729](https://github.com/airbytehq/airbyte/pull/28729) | Use keyword args instead of positional argument for optional  paramater in Dagger's API                   |
 | 0.4.5   | [#29034](https://github.com/airbytehq/airbyte/pull/29034) | Disable Dagger terminal UI when running publish.                                                          |
@@ -414,3 +415,4 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## More info
 This project is owned by the Connectors Operations team.
 We share project updates and remaining stories before its release to production in this [EPIC](https://github.com/airbytehq/airbyte/issues/24403).
+

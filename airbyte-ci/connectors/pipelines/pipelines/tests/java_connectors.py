@@ -23,7 +23,7 @@ class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
     title = "Java Connector Integration Tests"
-    gradle_task_name = "integrationTestJava -x airbyteDocker -x assemble"
+    gradle_task_name = "integrationTestJava -x buildConnectorImage -x assemble"
     mount_connector_secrets = True
     bind_to_docker_host = True
 
@@ -82,7 +82,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         return step_results
 
     build_connector_image_results = await BuildConnectorImage(context, LOCAL_BUILD_PLATFORM).run(
-        build_distribution_tar_results.output_artifact
+        build_distribution_tar_results.output_artifact.directory(f"{context.connector.code_directory}/build/distributions")
     )
     step_results.append(build_connector_image_results)
     if build_connector_image_results.status is StepStatus.FAILURE:

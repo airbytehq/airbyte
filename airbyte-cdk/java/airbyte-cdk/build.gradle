@@ -1,7 +1,6 @@
 allprojects {
     apply plugin: 'java-library'
     apply plugin: 'maven-publish'
-    apply plugin: 'airbyte-docker'
     apply plugin: 'airbyte-java-cdk'
     apply plugin: 'airbyte-integration-test-java'
     apply plugin: 'airbyte-performance-test-java'
