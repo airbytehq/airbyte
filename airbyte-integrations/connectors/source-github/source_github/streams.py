@@ -1572,3 +1572,44 @@ class ContributorActivity(GithubStream):
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         return 10 if response.status_code == requests.codes.ACCEPTED else super().backoff_time(response)
+
+
+class IssueTimelineEvents(GithubStream):
+    """
+    API docs https://docs.github.com/en/rest/issues/timeline?apiVersion=2022-11-28
+    """
+
+    primary_key = ["repository", "issue_number"]
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = Issues(**kwargs)
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/issues/{stream_slice['number']}/timeline"
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        parent_stream_slices = self.parent.stream_slices(
+            sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_state=stream_state
+        )
+        for stream_slice in parent_stream_slices:
+            parent_records = self.parent.read_records(
+                sync_mode=SyncMode.full_refresh, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+            for record in parent_records:
+                yield {"repository": record["repository"], "number": record["number"]}
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        events_list = response.json()
+        record = {"repository": stream_slice["repository"], "issue_number": stream_slice["number"]}
+        for event in events_list:
+            record[event["event"]] = event
+        yield record
