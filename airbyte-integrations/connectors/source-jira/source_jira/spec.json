@@ -78,8 +78,8 @@
           "enum": ["renderedFields", "transitions", "changelog"]
         },
         "title": "Expand Issues stream",
+        "airbyte_hidden": true,
         "description": "Select fields to Expand the `Issues` stream when replicating with: ",
-        "order": 5,
         "default": []
       },
       "enable_experimental_streams": {
@@ -87,7 +87,7 @@
         "title": "Enable Experimental Streams",
         "description": "Allow the use of experimental streams which rely on undocumented Jira API endpoints. See https://docs.airbyte.com/integrations/sources/jira#experimental-tables for more info.",
         "default": false,
-        "order": 6
+        "order": 5
       }
     }
   }
