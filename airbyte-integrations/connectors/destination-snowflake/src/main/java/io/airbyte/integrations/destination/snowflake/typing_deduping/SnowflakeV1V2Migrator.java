@@ -10,7 +10,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.BaseDestinationV
 import io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils;
 import io.airbyte.integrations.base.destination.typing_deduping.NamespacedTableName;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
