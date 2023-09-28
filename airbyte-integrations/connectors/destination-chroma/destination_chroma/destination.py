@@ -7,7 +7,14 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.embedder import CohereEmbedder, Embedder, FakeEmbedder, FromFieldEmbedder, OpenAIEmbedder, AzureOpenAIEmbedder
+from airbyte_cdk.destinations.vector_db_based.embedder import (
+    AzureOpenAIEmbedder,
+    CohereEmbedder,
+    Embedder,
+    FakeEmbedder,
+    FromFieldEmbedder,
+    OpenAIEmbedder,
+)
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import (
