@@ -3,7 +3,7 @@ data:
     hosts:
       - "*.googleapis.com"
   connectorBuildOptions:
-    baseImage: airbyte/airbyte-python-connectors-base:0.1.0
+    baseImage: airbyte/python-connector-base:1.0.0
   connectorSubtype: file
   connectorType: source
   definitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
