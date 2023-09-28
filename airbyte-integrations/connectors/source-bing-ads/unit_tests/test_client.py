@@ -116,12 +116,12 @@ def test_get_access_token(requests_mock):
         status_code=400,
         json={
             "error": "invalid_grant",
-            "error_description": "AADSTS70000: The user could not be authenticated as the grant is expired. The user must sign in again."
-        }
+            "error_description": "AADSTS70000: The user could not be authenticated as the grant is expired. The user must sign in again.",
+        },
     )
     with pytest.raises(
         AirbyteTracedException,
         match="Failed to get OAuth access token by refresh token. The user could not be authenticated as the grant is expired. "
-              "The user must sign in again."
+        "The user must sign in again.",
     ):
         source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
