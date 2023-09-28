@@ -104,7 +104,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
         // Add a task that allows cleaning up venvs to every python project
         def cleanPythonVenv = project.tasks.register('cleanPythonVenv', Exec) {
             commandLine 'rm'
-            args '-rf', "$project.projectDir.absolutePath/$venvDirectoryName"
+            args '-rf', "${project.projectDir.absolutePath}/${venvDirectoryName}", "${project.projectDir.absolutePath}/.pytest_cache"
         }
         project.tasks.named('clean').configure {
             dependsOn cleanPythonVenv
