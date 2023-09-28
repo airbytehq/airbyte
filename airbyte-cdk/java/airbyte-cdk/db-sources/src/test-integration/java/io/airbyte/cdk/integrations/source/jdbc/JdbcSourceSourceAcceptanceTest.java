@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
@@ -30,6 +31,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
  * JdbcSourceAcceptanceTest} This class is running { @link SourceAcceptanceTest } for the { @link
  * JdbcSource }. { @link JdbcSourceAcceptanceTest} is the base class for JDBC sources.
  */
+@Disabled("Relies on `airbyte-docker` and `source-jdbc`, which are both deprecated.")
 public class JdbcSourceSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String SCHEMA_NAME = "public";
