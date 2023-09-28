@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.51.23
+Fix request_cache clearing and move it to tmp folder
+
+## 0.51.22
+Vector DB CDK: Adjust batch size for Azure embedder to current limits
+
 ## 0.51.21
 Change Error message if Stream is not found
 

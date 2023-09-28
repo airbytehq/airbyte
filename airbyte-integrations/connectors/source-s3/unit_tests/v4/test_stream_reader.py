@@ -106,11 +106,10 @@ for original_case, endpoint_value in product(_get_matching_files_cases, endpoint
     get_matching_files_cases.append(test_case)
 
 
-@pytest.mark.parametrize(
-    "globs,mocked_response,multiple_pages,expected_uris,endpoint",
-    get_matching_files_cases
-)
-def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, Any]], multiple_pages: bool, expected_uris: Set[str], endpoint: Optional[str]):
+@pytest.mark.parametrize("globs,mocked_response,multiple_pages,expected_uris,endpoint", get_matching_files_cases)
+def test_get_matching_files(
+    globs: List[str], mocked_response: List[Dict[str, Any]], multiple_pages: bool, expected_uris: Set[str], endpoint: Optional[str]
+):
     reader = SourceS3StreamReader()
     try:
         aws_access_key_id = aws_secret_access_key = None if endpoint else "test"
@@ -133,7 +132,11 @@ def test_get_matching_files(globs: List[str], mocked_response: List[Dict[str, An
 @patch("boto3.client")
 def test_given_multiple_pages_when_get_matching_files_then_pass_continuation_token(boto3_client_mock) -> None:
     boto3_client_mock.return_value.list_objects_v2.side_effect = [
-        {"Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}], "KeyCount": 2, "NextContinuationToken": "a key"},
+        {
+            "Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}],
+            "KeyCount": 2,
+            "NextContinuationToken": "a key",
+        },
         {"Contents": [{"Key": "1", "LastModified": datetime.now()}, {"Key": "2", "LastModified": datetime.now()}], "KeyCount": 2},
     ]
     reader = SourceS3StreamReader()
@@ -192,7 +195,9 @@ def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
     with reader.open_file(RemoteFile(uri="", last_modified=datetime.now()), FileReadMode.READ, encoding, logger) as fp:
         fp.read()
 
-    smart_open_mock.assert_called_once_with('s3://test/', transport_params={"client": reader.s3_client}, mode=FileReadMode.READ.value, encoding=encoding)
+    smart_open_mock.assert_called_once_with(
+        "s3://test/", transport_params={"client": reader.s3_client}, mode=FileReadMode.READ.value, encoding=encoding
+    )
 
 
 def test_get_s3_client_without_config_raises_exception():

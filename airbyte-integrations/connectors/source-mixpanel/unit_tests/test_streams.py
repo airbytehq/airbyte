@@ -444,8 +444,10 @@ def test_handle_time_zone_mismatch(requests_mock, config, caplog):
     for slice_ in stream.stream_slices(sync_mode=SyncMode.full_refresh):
         records.extend(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice_))
     assert list(records) == []
-    assert "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings. " \
-           "Stopping current stream sync." in caplog.text
+    assert (
+        "Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings. "
+        "Stopping current stream sync." in caplog.text
+    )
 
 
 def test_export_stream_request_params(config):
@@ -509,5 +511,7 @@ def test_raise_config_error_on_creds_expiration(config, caplog, requests_mock):
             for slice_ in stream.stream_slices(sync_mode="full_refresh"):
                 records.extend(stream.read_records("full_refresh", stream_slice=slice_))
         assert records == []
-        assert str(e.value) == "Your credentials might have expired. Please update your config with valid credentials. " \
-                               "See more details: Unable to authenticate request"
+        assert (
+            str(e.value) == "Your credentials might have expired. Please update your config with valid credentials. "
+            "See more details: Unable to authenticate request"
+        )

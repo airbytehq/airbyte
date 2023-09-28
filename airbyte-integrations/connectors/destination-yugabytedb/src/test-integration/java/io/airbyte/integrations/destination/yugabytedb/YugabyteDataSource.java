@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.yugabytedb;
 
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
 import java.util.Collections;
 import javax.sql.DataSource;
 

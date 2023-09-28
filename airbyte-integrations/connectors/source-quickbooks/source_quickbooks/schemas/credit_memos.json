@@ -28,7 +28,7 @@
       "type": ["null", "string"]
     },
     "Balance": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "CustomerMemo": {
       "properties": {
@@ -81,7 +81,7 @@
                 "type": ["null", "object"]
               },
               "UnitPrice": {
-                "type": ["null", "integer"]
+                "type": ["null", "number"]
               },
               "TaxCodeRef": {
                 "properties": {
@@ -224,7 +224,7 @@
       "type": ["null", "object"]
     },
     "RemainingCredit": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "ExchangeRate": {
       "type": ["null", "number"]

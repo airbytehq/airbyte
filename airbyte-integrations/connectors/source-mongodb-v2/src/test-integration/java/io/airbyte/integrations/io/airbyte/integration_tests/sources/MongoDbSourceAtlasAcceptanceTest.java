@@ -9,11 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.client.MongoCollection;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.mongodb.MongoDatabase;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.source.mongodb.MongoDbSource;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;

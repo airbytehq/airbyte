@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.gcs.credential;
 
-import io.airbyte.integrations.destination.s3.credential.BlobStorageCredentialConfig;
-import io.airbyte.integrations.destination.s3.credential.S3CredentialConfig;
+import io.airbyte.cdk.integrations.destination.s3.credential.BlobStorageCredentialConfig;
+import io.airbyte.cdk.integrations.destination.s3.credential.S3CredentialConfig;
 import java.util.Optional;
 
 public interface GcsCredentialConfig extends BlobStorageCredentialConfig<GcsCredentialType> {

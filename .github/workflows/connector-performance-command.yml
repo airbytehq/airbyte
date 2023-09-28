@@ -92,9 +92,10 @@ jobs:
         if: steps.regex.outputs.first_match != github.event.inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Filter supported connectors
-        if: "${{ github.event.inputs.connector != 'connectors/source-postgres' &&
-              github.event.inputs.connector != 'connectors/source-mysql' &&
-              github.event.inputs.connector != 'connectors/destination-snowflake' }}"
+        if:
+          "${{ github.event.inputs.connector != 'connectors/source-postgres' &&
+          github.event.inputs.connector != 'connectors/source-mysql' &&
+          github.event.inputs.connector != 'connectors/destination-snowflake' }}"
         run: echo "Only connectors/source-postgres, source-mysql and destination-snowflake currently supported by harness" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -181,7 +182,7 @@ jobs:
       - name: Link comment to workflow run
         uses: peter-evans/create-or-update-comment@v2
         with:
-          reactions: '+1'
+          reactions: "+1"
           comment-id: ${{ github.event.inputs.comment-id }}
           body: |
             ## Performance test Result:

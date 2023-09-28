@@ -34,9 +34,9 @@ def test_slicer():
     "last_record, expected, records",
     [
         (
-                {"first_stream_cursor": 1662459010},
-                {'parent_stream_name': {'parent_cursor_field': 1662459010}, 'first_stream_cursor': 1662459010},
-                [{"first_stream_cursor": 1662459010}],
+            {"first_stream_cursor": 1662459010},
+            {"parent_stream_name": {"parent_cursor_field": 1662459010}, "first_stream_cursor": 1662459010},
+            [{"first_stream_cursor": 1662459010}],
         ),
         (None, {}, []),
     ],
@@ -71,8 +71,8 @@ def test_null_records(caplog):
         parameters={},
     )
     content = {
-        "data":
-            {"boards": [
+        "data": {
+            "boards": [
                 {"board_kind": "private", "id": "1234561", "updated_at": "2023-08-15T10:30:49Z"},
                 {"board_kind": "private", "id": "1234562", "updated_at": "2023-08-15T10:30:50Z"},
                 {"board_kind": "private", "id": "1234563", "updated_at": "2023-08-15T10:30:51Z"},
@@ -80,10 +80,12 @@ def test_null_records(caplog):
                 {"board_kind": "private", "id": "1234565", "updated_at": "2023-08-15T10:30:43Z"},
                 {"board_kind": "private", "id": "1234566", "updated_at": "2023-08-15T10:30:54Z"},
                 None,
-                None
-            ]},
+                None,
+            ]
+        },
         "errors": [{"message": "Cannot return null for non-nullable field Board.creator"}],
-        "account_id": 123456}
+        "account_id": 123456,
+    }
     response = _create_response(content)
     records = extractor.extract_records(response)
     warning_message = "Record with null value received; errors: [{'message': 'Cannot return null for non-nullable field Board.creator'}]"
@@ -94,6 +96,6 @@ def test_null_records(caplog):
         {"board_kind": "private", "id": "1234563", "updated_at": "2023-08-15T10:30:51Z", "updated_at_int": 1692095451},
         {"board_kind": "private", "id": "1234564", "updated_at": "2023-08-15T10:30:52Z", "updated_at_int": 1692095452},
         {"board_kind": "private", "id": "1234565", "updated_at": "2023-08-15T10:30:43Z", "updated_at_int": 1692095443},
-        {"board_kind": "private", "id": "1234566", "updated_at": "2023-08-15T10:30:54Z", "updated_at_int": 1692095454}
+        {"board_kind": "private", "id": "1234566", "updated_at": "2023-08-15T10:30:54Z", "updated_at_int": 1692095454},
     ]
     assert records == expected_records

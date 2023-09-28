@@ -34,7 +34,44 @@ class DocArrayIndexerTest(unittest.TestCase):
 
     def test_docarray_pre_sync_fail(self):
         try:
-            self.indexer.pre_sync(ConfiguredAirbyteCatalog.parse_obj(
+            self.indexer.pre_sync(
+                ConfiguredAirbyteCatalog.parse_obj(
+                    {
+                        "streams": [
+                            {
+                                "stream": {
+                                    "name": "example_stream",
+                                    "json_schema": {
+                                        "$schema": "http://json-schema.org/draft-07/schema#",
+                                        "type": "object",
+                                        "properties": {},
+                                    },
+                                    "supported_sync_modes": ["full_refresh", "incremental"],
+                                    "source_defined_cursor": False,
+                                    "default_cursor_field": ["column_name"],
+                                },
+                                "primary_key": [["id"]],
+                                "sync_mode": "incremental",
+                                "destination_sync_mode": "append_dedup",
+                            },
+                        ]
+                    }
+                )
+            )
+            assert False, "Expected exception"
+        except Exception as e:
+            assert (
+                str(e)
+                == "DocArrayHnswSearchIndexer only supports overwrite mode, got DestinationSyncMode.append_dedup for stream example_stream"
+            )
+
+    @patch("os.listdir")
+    @patch("os.remove")
+    def test_docarray_pre_sync_succeed(self, remove_mock, listdir_mock):
+        listdir_mock.return_value = ["file1", "file2"]
+        self.indexer._init_vectorstore = MagicMock()
+        self.indexer.pre_sync(
+            ConfiguredAirbyteCatalog.parse_obj(
                 {
                     "streams": [
                         {
@@ -46,50 +83,24 @@ class DocArrayIndexerTest(unittest.TestCase):
                                 "default_cursor_field": ["column_name"],
                             },
                             "primary_key": [["id"]],
-                            "sync_mode": "incremental",
-                            "destination_sync_mode": "append_dedup",
+                            "sync_mode": "full_refresh",
+                            "destination_sync_mode": "overwrite",
+                        },
+                        {
+                            "stream": {
+                                "name": "example_stream2",
+                                "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
+                                "supported_sync_modes": ["full_refresh", "incremental"],
+                                "source_defined_cursor": False,
+                                "default_cursor_field": ["column_name"],
+                            },
+                            "primary_key": [["id"]],
+                            "sync_mode": "full_refresh",
+                            "destination_sync_mode": "overwrite",
                         },
                     ]
                 }
-            ))
-            assert False, "Expected exception"
-        except Exception as e:
-            assert str(e) == "DocArrayHnswSearchIndexer only supports overwrite mode, got DestinationSyncMode.append_dedup for stream example_stream"
-
-    @patch('os.listdir')
-    @patch('os.remove')
-    def test_docarray_pre_sync_succeed(self, remove_mock, listdir_mock):
-        listdir_mock.return_value = ["file1", "file2"]
-        self.indexer._init_vectorstore = MagicMock()
-        self.indexer.pre_sync(ConfiguredAirbyteCatalog.parse_obj(
-            {
-                "streams": [
-                    {
-                        "stream": {
-                            "name": "example_stream",
-                            "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
-                            "supported_sync_modes": ["full_refresh", "incremental"],
-                            "source_defined_cursor": False,
-                            "default_cursor_field": ["column_name"],
-                        },
-                        "primary_key": [["id"]],
-                        "sync_mode": "full_refresh",
-                        "destination_sync_mode": "overwrite",
-                    },
-                    {
-                        "stream": {
-                            "name": "example_stream2",
-                            "json_schema": {"$schema": "http://json-schema.org/draft-07/schema#", "type": "object", "properties": {}},
-                            "supported_sync_modes": ["full_refresh", "incremental"],
-                            "source_defined_cursor": False,
-                            "default_cursor_field": ["column_name"],
-                        },
-                        "primary_key": [["id"]],
-                        "sync_mode": "full_refresh",
-                        "destination_sync_mode": "overwrite",
-                    },
-                ]
-            }
-        ))
+            )
+        )
         assert remove_mock.call_count == 2
         assert self.indexer._init_vectorstore.call_count == 1

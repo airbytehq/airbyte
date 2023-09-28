@@ -6,15 +6,15 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
-import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
