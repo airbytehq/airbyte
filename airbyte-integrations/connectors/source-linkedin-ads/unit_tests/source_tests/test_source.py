@@ -41,26 +41,18 @@ TEST_CONFIG: dict = {
 }
 
 TEST_CONFIG_DUPLICATE_CUSTOM_AD_ANALYTICS_REPORTS: dict = {
-  "start_date": "2021-01-01",
-  "account_ids": [],
-  "credentials": {
-    "auth_method": "oAuth2.0",
-    "client_id": "client_id",
-    "client_secret": "client_secret",
-    "refresh_token": "refresh_token"
-  },
-  "ad_analytics_reports": [
-    {
-      "name": "ShareAdByMonth",
-      "pivot_by": "COMPANY",
-      "time_granularity": "MONTHLY"
+    "start_date": "2021-01-01",
+    "account_ids": [],
+    "credentials": {
+        "auth_method": "oAuth2.0",
+        "client_id": "client_id",
+        "client_secret": "client_secret",
+        "refresh_token": "refresh_token",
     },
-    {
-      "name": "ShareAdByMonth",
-      "pivot_by": "COMPANY",
-      "time_granularity": "MONTHLY"
-    }
-  ]
+    "ad_analytics_reports": [
+        {"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"},
+        {"name": "ShareAdByMonth", "pivot_by": "COMPANY", "time_granularity": "MONTHLY"},
+    ],
 }
 
 
@@ -195,25 +187,25 @@ class TestLinkedInAdsStreamSlicing:
         "stream_cls, slice, expected",
         [
             (
-                    AccountUsers,
-                    {"account_id": 123},
-                    "count=500&q=accounts&accounts=urn:li:sponsoredAccount:123",
+                AccountUsers,
+                {"account_id": 123},
+                "count=500&q=accounts&accounts=urn:li:sponsoredAccount:123",
             ),
             (
-                    CampaignGroups,
-                    {"account_id": 123},
-                    "count=500&q=search&search=(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))",
+                CampaignGroups,
+                {"account_id": 123},
+                "count=500&q=search&search=(status:(values:List(ACTIVE,ARCHIVED,CANCELED,DRAFT,PAUSED,PENDING_DELETION,REMOVED)))",
             ),
             (
-                    Campaigns,
-                    {"account_id": 123},
-                    "count=500&q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
+                Campaigns,
+                {"account_id": 123},
+                "count=500&q=search&search=(status:(values:List(ACTIVE,PAUSED,ARCHIVED,COMPLETED,CANCELED,DRAFT,PENDING_DELETION,REMOVED)))",
             ),
             (
-                    Creatives,
-                    {"campaign_id": 123},
-                    "count=100&q=criteria",
-            )
+                Creatives,
+                {"campaign_id": 123},
+                "count=100&q=criteria",
+            ),
         ],
         ids=["AccountUsers", "CampaignGroups", "Campaigns", "Creatives"],
     )
@@ -264,31 +256,31 @@ class TestLinkedInAdsAnalyticsStream:
         "stream_cls, slice, expected",
         [
             (
-                    AdCampaignAnalytics,
-                    {
-                        "dateRange": {"start.day": 1, "start.month": 1, "start.year": 1, "end.day": 2, "end.month": 2, "end.year": 2},
-                        "fields": ["field1", "field2"],
-                    },
-                    "q=analytics&pivot=(value:CAMPAIGN)&timeGranularity=(value:DAILY)&dateRange=(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))&fields=%5B%27field1%27,+%27field2%27%5D&campaigns=List(urn%3Ali%3AsponsoredCampaign%3ANone)",
+                AdCampaignAnalytics,
+                {
+                    "dateRange": {"start.day": 1, "start.month": 1, "start.year": 1, "end.day": 2, "end.month": 2, "end.year": 2},
+                    "fields": ["field1", "field2"],
+                },
+                "q=analytics&pivot=(value:CAMPAIGN)&timeGranularity=(value:DAILY)&dateRange=(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))&fields=%5B%27field1%27,+%27field2%27%5D&campaigns=List(urn%3Ali%3AsponsoredCampaign%3ANone)",
             ),
             (
-                    AdCreativeAnalytics,
-                    {
-                        "dateRange": {
-                            "start.day": 1,
-                            "start.month": 1,
-                            "start.year": 1,
-                            "end.day": 2,
-                            "end.month": 2,
-                            "end.year": 2,
-                        },
-                        "fields": [
-                            "field1",
-                            "field2",
-                        ],
-                        "creative_id": "urn:li:sponsoredCreative:1234"
+                AdCreativeAnalytics,
+                {
+                    "dateRange": {
+                        "start.day": 1,
+                        "start.month": 1,
+                        "start.year": 1,
+                        "end.day": 2,
+                        "end.month": 2,
+                        "end.year": 2,
                     },
-                    "q=analytics&pivot=(value:CREATIVE)&timeGranularity=(value:DAILY)&dateRange=(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))&fields=%5B%27field1%27,+%27field2%27%5D&creatives=List(urn%3Ali%3AsponsoredCreative%3A1234)",
+                    "fields": [
+                        "field1",
+                        "field2",
+                    ],
+                    "creative_id": "urn:li:sponsoredCreative:1234",
+                },
+                "q=analytics&pivot=(value:CREATIVE)&timeGranularity=(value:DAILY)&dateRange=(start:(year:1,month:1,day:1),end:(year:2,month:2,day:2))&fields=%5B%27field1%27,+%27field2%27%5D&creatives=List(urn%3Ali%3AsponsoredCreative%3A1234)",
             ),
         ],
         ids=[

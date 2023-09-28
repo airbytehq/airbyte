@@ -396,7 +396,12 @@ def test_when_read_records_then_cursor_close_slice_with_greater_record(test_name
     )
     stream_slice = {"repository": "airbyte"}
 
-    with patch.object(SimpleRetriever, "_read_pages", return_value=iter([first_record, second_record]), side_effect=lambda _, __, ___: retriever._parse_records(response=MagicMock(), stream_state=None, stream_slice=stream_slice)):
+    with patch.object(
+        SimpleRetriever,
+        "_read_pages",
+        return_value=iter([first_record, second_record]),
+        side_effect=lambda _, __, ___: retriever._parse_records(response=MagicMock(), stream_state=None, stream_slice=stream_slice),
+    ):
         list(retriever.read_records(stream_slice=stream_slice))
         cursor.close_slice.assert_called_once_with(stream_slice, first_record if first_greater_than_second else second_record)
 
@@ -420,7 +425,12 @@ def test_given_stream_data_is_not_record_when_read_records_then_update_slice_wit
     )
     stream_slice = {"repository": "airbyte"}
 
-    with patch.object(SimpleRetriever, "_read_pages", return_value=iter(stream_data), side_effect=lambda _, __, ___: retriever._parse_records(response=MagicMock(), stream_state=None, stream_slice=stream_slice)):
+    with patch.object(
+        SimpleRetriever,
+        "_read_pages",
+        return_value=iter(stream_data),
+        side_effect=lambda _, __, ___: retriever._parse_records(response=MagicMock(), stream_state=None, stream_slice=stream_slice),
+    ):
         list(retriever.read_records(stream_slice=stream_slice))
         cursor.close_slice.assert_called_once_with(stream_slice, None)
 

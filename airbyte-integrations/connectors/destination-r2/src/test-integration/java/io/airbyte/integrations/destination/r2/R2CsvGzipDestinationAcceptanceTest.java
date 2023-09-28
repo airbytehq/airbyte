@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.r2;
 
+import io.airbyte.cdk.integrations.destination.s3.S3BaseCsvGzipDestinationAcceptanceTest;
 import io.airbyte.cdk.integrations.destination.s3.StorageProvider;
-import io.airbyte.integrations.destination.s3.S3BaseCsvGzipDestinationAcceptanceTest;
 
 public class R2CsvGzipDestinationAcceptanceTest extends S3BaseCsvGzipDestinationAcceptanceTest {
 

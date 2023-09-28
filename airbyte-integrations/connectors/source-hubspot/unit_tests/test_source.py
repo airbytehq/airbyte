@@ -557,7 +557,7 @@ def test_engagements_stream_since_old_date(requests_mock, common_params, fake_pr
                 "results": [{"engagement": {"id": f"{y}", "lastUpdated": old_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
-                "total": 100
+                "total": 100,
             },
             "status_code": 200,
         }
@@ -586,7 +586,7 @@ def test_engagements_stream_since_recent_date(requests_mock, common_params, fake
                 "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
-                "total": 100
+                "total": 100,
             },
             "status_code": 200,
         }
@@ -617,7 +617,7 @@ def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, commo
                 "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
-                "total": 10001
+                "total": 10001,
             },
             "status_code": 200,
         }

@@ -68,8 +68,8 @@ def test_backoff_time(patch_base_class):
 
 
 def test_path_activities(config):
-    assert Activities(authenticator=None, after=config["start_date"]).path() == 'athlete/activities'
+    assert Activities(authenticator=None, after=config["start_date"]).path() == "athlete/activities"
 
 
 def test_path_athlete_stats(config):
-    assert AthleteStats(authenticator=None, athlete_id=config["athlete_id"]).path() == 'athletes/12345678/stats'
+    assert AthleteStats(authenticator=None, athlete_id=config["athlete_id"]).path() == "athletes/12345678/stats"

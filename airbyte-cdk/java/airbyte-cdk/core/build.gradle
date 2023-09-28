@@ -21,6 +21,7 @@ dependencies {
     compileOnly project(':airbyte-config-oss:config-models-oss')
     compileOnly project(':airbyte-config-oss:init-oss')
     compileOnly project(':airbyte-json-validation')
+    testCompileOnly project(':airbyte-json-validation')
 
     testImplementation project(':airbyte-commons-cli')
     testImplementation project(':airbyte-config-oss:config-models-oss')

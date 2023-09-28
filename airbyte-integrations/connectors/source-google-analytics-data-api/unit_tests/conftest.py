@@ -49,11 +49,15 @@ def config(one_year_ago):
             "screenPageViewsPerSession",
             "bounceRate",
         ],
-        "custom_reports": json.dumps([{
-            "name": "report1",
-            "dimensions": ["date", "browser"],
-            "metrics": ["totalUsers", "sessions", "screenPageViews"],
-        }]),
+        "custom_reports": json.dumps(
+            [
+                {
+                    "name": "report1",
+                    "dimensions": ["date", "browser"],
+                    "metrics": ["totalUsers", "sessions", "screenPageViews"],
+                }
+            ]
+        ),
     }
 
 
