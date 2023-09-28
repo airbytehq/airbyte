@@ -54,6 +54,16 @@ ext {
     version = System.getenv("VERSION") ?: env.VERSION
     image_tag = System.getenv("VERSION") ?: 'dev'
     skipSlowTests = (System.getProperty('skipSlowTests', 'false') != 'false')
+
+}
+// Pyenv support.
+try {
+    def pyenvRoot = "pyenv root".execute()
+    if (pyenvRoot.waitFor() == 0) {
+        ext.pyenvRoot = pyenvRoot.text.trim()
+    }
+} catch (IOException _) {
+    // Swallow exception if pyenv is not installed.
 }
 
 def isConnectorProject = { Project project ->
@@ -147,17 +157,32 @@ node {
 // python is required by the root project to apply python formatters like isort or black.
 python {
     envPath = '.venv'
-    minPythonVersion = '3.9'
+    minPythonVersion = '3.10'
+
+    // Pyenv support.
+    try {
+        def pyenvRoot = "pyenv root".execute()
+        def pyenvLatest = "pyenv latest ${minPythonVersion}".execute()
+        // Pyenv definitely exists at this point: use 'python' instead of 'python3' in all cases.
+        pythonBinary "python"
+        if (pyenvRoot.waitFor() == 0 && pyenvLatest.waitFor() == 0) {
+            pythonPath "${pyenvRoot.text.trim()}/versions/${pyenvLatest.text.trim()}/bin"
+        }
+    } catch (IOException _) {
+        // Swallow exception if pyenv is not installed.
+    }
+
     scope = 'VIRTUALENV'
     installVirtualenv = true
-    pip 'pip:21.3.1'
     pip 'black:22.3.0'
-    pip 'mypy:1.4.1'
     pip 'isort:5.6.4'
-    pip 'flake8:4.0.1'
-    // flake8 doesn't support pyproject.toml files
-    // and thus there is the wrapper "pyproject-flake8" for this
-    pip 'pyproject-flake8:0.0.1a2'
+}
+def cleanPythonVenv = rootProject.tasks.register('cleanPythonVenv', Exec) {
+    commandLine 'rm'
+    args '-rf', "${rootProject.projectDir.absolutePath}/.venv"
+}
+rootProject.tasks.named('clean').configure {
+    dependsOn cleanPythonVenv
 }
 
 // format tasks per project
@@ -340,13 +365,6 @@ allprojects {
             dependsOn licensePythonFormat
             dependsOn isortPythonFormat
         }
-
-        def flakePythonCheck = registerPythonFormatTask('flakePythonCheck', 'pflake8', '--config')
-        flakePythonCheck.configure {
-            dependsOn licensePythonCheck
-            dependsOn isortPythonCheck
-            dependsOn blackPythonCheck
-        }
     }
 
     tasks.register('format') {
@@ -358,8 +376,6 @@ allprojects {
         dependsOn tasks.matching { it.name == 'licensePythonCheck' }
         dependsOn tasks.matching { it.name == 'isortPythonCheck' }
         dependsOn tasks.matching { it.name == 'blackPythonCheck' }
-        // TODO: address flake issues then re-enable flakePythonCheck dependency
-        // dependsOn tasks.matching { it.name == 'flakePythonCheck' }
     }
 }
 
@@ -617,7 +633,7 @@ allprojects {
         dependsOn tasks.matching {
             [
                     'integrationTestJava',
-                    'customIntegrationTests', // python integration tests
+                    'integrationTestPython',
                     'standardSourceTestFile',
             ].contains(it.name)
         }
