@@ -151,13 +151,11 @@ class TestOauth2Authenticator:
             TestOauth2Authenticator.refresh_endpoint,
             TestOauth2Authenticator.client_id,
             TestOauth2Authenticator.client_secret,
-            TestOauth2Authenticator.refresh_token
+            TestOauth2Authenticator.refresh_token,
         )
         requests_mock.post(
             TestOauth2Authenticator.refresh_endpoint,
-            [
-                {"status_code": error_code}, {"status_code": error_code}, {"json": {"access_token": "token", "expires_in": 10}}
-            ]
+            [{"status_code": error_code}, {"status_code": error_code}, {"json": {"access_token": "token", "expires_in": 10}}],
         )
         token, expires_in = oauth.refresh_access_token()
         assert (token, expires_in) == ("token", 10)

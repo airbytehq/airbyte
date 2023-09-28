@@ -40,4 +40,3 @@ jobs:
           status: ${{ steps.get-mandatory-reviewers.outputs.MANDATORY_REVIEWERS  }}
           token: ${{ secrets.OCTAVIA_4_ROOT_ACCESS }}
           requirements-file: .github/connector_org_review_requirements.yaml
-

@@ -5,7 +5,8 @@
 package io.airbyte.integrations.destination.s3;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
+import io.airbyte.cdk.integrations.destination.s3.S3BaseCsvDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion;
 
 public class S3CsvDestinationAcceptanceTest extends S3BaseCsvDestinationAcceptanceTest {
 

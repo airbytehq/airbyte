@@ -59,12 +59,16 @@ MANIFEST = {
                 "page_size": _page_size,
                 "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
                 "page_token_option": {"inject_into": "path", "type": "RequestPath"},
-                "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}", "page_size": _page_size},
+                "pagination_strategy": {
+                    "type": "CursorPagination",
+                    "cursor_value": "{{ response._metadata.next }}",
+                    "page_size": _page_size,
+                },
             },
             "partition_router": {
                 "type": "ListPartitionRouter",
                 "values": ["0", "1", "2", "3", "4", "5", "6", "7"],
-                "cursor_field": "item_id"
+                "cursor_field": "item_id",
             },
             ""
             "requester": {
@@ -89,10 +93,10 @@ MANIFEST = {
             "type": "object",
             "required": [],
             "properties": {},
-            "additionalProperties": True
+            "additionalProperties": True,
         },
-        "type": "Spec"
-    }
+        "type": "Spec",
+    },
 }
 
 OAUTH_MANIFEST = {
@@ -104,20 +108,21 @@ OAUTH_MANIFEST = {
                 "page_size": _page_size,
                 "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
                 "page_token_option": {"inject_into": "path", "type": "RequestPath"},
-                "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}", "page_size": _page_size},
+                "pagination_strategy": {
+                    "type": "CursorPagination",
+                    "cursor_value": "{{ response._metadata.next }}",
+                    "page_size": _page_size,
+                },
             },
             "partition_router": {
                 "type": "ListPartitionRouter",
                 "values": ["0", "1", "2", "3", "4", "5", "6", "7"],
-                "cursor_field": "item_id"
+                "cursor_field": "item_id",
             },
             ""
             "requester": {
                 "path": "/v3/marketing/lists",
-                "authenticator": {
-                    "type": "OAuthAuthenticator",
-                    "api_token": "{{ config.apikey }}"
-                },
+                "authenticator": {"type": "OAuthAuthenticator", "api_token": "{{ config.apikey }}"},
                 "request_parameters": {"a_param": "10"},
             },
             "record_selector": {"extractor": {"field_path": ["result"]}},
@@ -137,10 +142,10 @@ OAUTH_MANIFEST = {
             "type": "object",
             "required": [],
             "properties": {},
-            "additionalProperties": True
+            "additionalProperties": True,
         },
-        "type": "Spec"
-    }
+        "type": "Spec",
+    },
 }
 
 RESOLVE_MANIFEST_CONFIG = {
@@ -273,7 +278,11 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
                     "page_size": _page_size,
                     "page_size_option": {"inject_into": "request_parameter", "field_name": "page_size"},
                     "page_token_option": {"inject_into": "path", "type": "RequestPath"},
-                    "pagination_strategy": {"type": "CursorPagination", "cursor_value": "{{ response._metadata.next }}", "page_size": _page_size},
+                    "pagination_strategy": {
+                        "type": "CursorPagination",
+                        "cursor_value": "{{ response._metadata.next }}",
+                        "page_size": _page_size,
+                    },
                 },
                 "partition_router": {
                     "type": "ListPartitionRouter",
@@ -386,10 +395,10 @@ def test_resolve_manifest(valid_resolve_manifest_config_file):
                 "type": "object",
                 "required": [],
                 "properties": {},
-                "additionalProperties": True
+                "additionalProperties": True,
             },
-            "type": "Spec"
-        }
+            "type": "Spec",
+        },
     }
     assert resolved_manifest.record.data["manifest"] == expected_resolved_manifest
     assert resolved_manifest.record.stream == "resolve_manifest"
@@ -424,7 +433,7 @@ def test_read():
         test_read_limit_reached=False,
         inferred_schema=None,
         inferred_datetime_formats=None,
-        latest_config_update={}
+        latest_config_update={},
     )
 
     expected_airbyte_message = AirbyteMessage(
@@ -440,7 +449,7 @@ def test_read():
                 "auxiliary_requests": [],
                 "inferred_schema": None,
                 "inferred_datetime_formats": None,
-                "latest_config_update": {}
+                "latest_config_update": {},
             },
             emitted_at=1,
         ),
@@ -462,7 +471,7 @@ def test_config_update():
         "client_id": "{{ config['credentials']['client_id'] }}",
         "client_secret": "{{ config['credentials']['client_secret'] }}",
         "refresh_token": "{{ config['credentials']['refresh_token'] }}",
-        "refresh_token_updater": {}
+        "refresh_token_updater": {},
     }
     config = copy.deepcopy(TEST_READ_CONFIG)
     config["__injected_declarative_manifest"] = manifest
@@ -478,7 +487,10 @@ def test_config_update():
         "refresh_token": "an updated refresh token",
         "expires_in": 3600,
     }
-    with patch("airbyte_cdk.sources.streams.http.requests_native_auth.SingleUseRefreshTokenOauth2Authenticator._get_refresh_access_token_response", return_value=refresh_request_response):
+    with patch(
+        "airbyte_cdk.sources.streams.http.requests_native_auth.SingleUseRefreshTokenOauth2Authenticator._get_refresh_access_token_response",
+        return_value=refresh_request_response,
+    ):
         output = handle_connector_builder_request(
             source, "test_read", config, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), TestReadLimits()
         )
@@ -507,13 +519,15 @@ def test_read_returns_error_response(mock_from_exception):
     limits = TestReadLimits()
     response = read_stream(source, TEST_READ_CONFIG, ConfiguredAirbyteCatalog.parse_obj(CONFIGURED_CATALOG), limits)
 
-    expected_stream_read = StreamRead(logs=[LogMessage("error_message - a stack trace", "ERROR")],
-                                      slices=[],
-                                      test_read_limit_reached=False,
-                                      auxiliary_requests=[],
-                                      inferred_schema=None,
-                                      inferred_datetime_formats={},
-                                      latest_config_update=None)
+    expected_stream_read = StreamRead(
+        logs=[LogMessage("error_message - a stack trace", "ERROR")],
+        slices=[],
+        test_read_limit_reached=False,
+        auxiliary_requests=[],
+        inferred_schema=None,
+        inferred_datetime_formats={},
+        latest_config_update=None,
+    )
 
     expected_message = AirbyteMessage(
         type=MessageType.RECORD,
@@ -584,8 +598,20 @@ def create_mock_declarative_stream(http_stream):
 @pytest.mark.parametrize(
     "test_name, config, expected_max_records, expected_max_slices, expected_max_pages_per_slice",
     [
-        ("test_no_test_read_config", {}, DEFAULT_MAXIMUM_RECORDS, DEFAULT_MAXIMUM_NUMBER_OF_SLICES, DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE),
-        ("test_no_values_set", {"__test_read_config": {}}, DEFAULT_MAXIMUM_RECORDS, DEFAULT_MAXIMUM_NUMBER_OF_SLICES, DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE),
+        (
+            "test_no_test_read_config",
+            {},
+            DEFAULT_MAXIMUM_RECORDS,
+            DEFAULT_MAXIMUM_NUMBER_OF_SLICES,
+            DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE,
+        ),
+        (
+            "test_no_values_set",
+            {"__test_read_config": {}},
+            DEFAULT_MAXIMUM_RECORDS,
+            DEFAULT_MAXIMUM_NUMBER_OF_SLICES,
+            DEFAULT_MAXIMUM_NUMBER_OF_PAGES_PER_SLICE,
+        ),
         ("test_values_are_set", {"__test_read_config": {"max_slices": 1, "max_pages_per_slice": 2, "max_records": 3}}, 3, 1, 2),
     ],
 )
@@ -622,8 +648,8 @@ def response_log_message(response: dict) -> AirbyteMessage:
 
 def _create_request():
     url = "https://example.com/api"
-    headers = {'Content-Type': 'application/json'}
-    return requests.Request('POST', url, headers=headers, json={"key": "value"}).prepare()
+    headers = {"Content-Type": "application/json"}
+    return requests.Request("POST", url, headers=headers, json={"key": "value"}).prepare()
 
 
 def _create_response(body, request):
@@ -640,7 +666,15 @@ def _create_page_response(response_body):
     return _create_response(response_body, request)
 
 
-@patch.object(requests.Session, "send", side_effect=(_create_page_response({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page_response({"result": [{"id": 2}],"_metadata": {"next": "next"}})) * 10)
+@patch.object(
+    requests.Session,
+    "send",
+    side_effect=(
+        _create_page_response({"result": [{"id": 0}, {"id": 1}], "_metadata": {"next": "next"}}),
+        _create_page_response({"result": [{"id": 2}], "_metadata": {"next": "next"}}),
+    )
+    * 10,
+)
 def test_read_source(mock_http_stream):
     """
     This test sort of acts as an integration test for the connector builder.
@@ -656,9 +690,15 @@ def test_read_source(mock_http_stream):
     max_slices = 3
     limits = TestReadLimits(max_records, max_pages_per_slice, max_slices)
 
-    catalog = ConfiguredAirbyteCatalog(streams=[
-        ConfiguredAirbyteStream(stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
-    ])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
 
     config = {"__injected_declarative_manifest": MANIFEST}
 
@@ -681,16 +721,29 @@ def test_read_source(mock_http_stream):
         assert isinstance(s.retriever, SimpleRetrieverTestReadDecorator)
 
 
-@patch.object(requests.Session, "send", side_effect=(_create_page_response({"result": [{"id": 0}, {"id": 1}],"_metadata": {"next": "next"}}), _create_page_response({"result": [{"id": 2}],"_metadata": {"next": "next"}})))
+@patch.object(
+    requests.Session,
+    "send",
+    side_effect=(
+        _create_page_response({"result": [{"id": 0}, {"id": 1}], "_metadata": {"next": "next"}}),
+        _create_page_response({"result": [{"id": 2}], "_metadata": {"next": "next"}}),
+    ),
+)
 def test_read_source_single_page_single_slice(mock_http_stream):
     max_records = 100
     max_pages_per_slice = 1
     max_slices = 1
     limits = TestReadLimits(max_records, max_pages_per_slice, max_slices)
 
-    catalog = ConfiguredAirbyteCatalog(streams=[
-        ConfiguredAirbyteStream(stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]), sync_mode=SyncMode.full_refresh, destination_sync_mode=DestinationSyncMode.append)
-    ])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
 
     config = {"__injected_declarative_manifest": MANIFEST}
 
@@ -722,7 +775,7 @@ def test_read_source_single_page_single_slice(mock_http_stream):
         pytest.param("CLOUD", "https://domainwithoutextension", "Invalid URL", id="test_cloud_read_with_invalid_url_endpoint"),
         pytest.param("OSS", "https://airbyte.com/api/v1/", None, id="test_oss_read_with_public_endpoint"),
         pytest.param("OSS", "https://10.0.27.27/api/v1/", None, id="test_oss_read_with_private_endpoint"),
-    ]
+    ],
 )
 @patch.object(requests.Session, "send", _mocked_send)
 def test_handle_read_external_requests(deployment_mode, url_base, expected_error):
@@ -735,16 +788,15 @@ def test_handle_read_external_requests(deployment_mode, url_base, expected_error
 
     limits = TestReadLimits(max_records=100, max_pages_per_slice=1, max_slices=1)
 
-    catalog = ConfiguredAirbyteCatalog(streams=[
-        ConfiguredAirbyteStream(
-            stream=AirbyteStream(
-                name=_stream_name,
-                json_schema={},
-                supported_sync_modes=[SyncMode.full_refresh]),
-            sync_mode=SyncMode.full_refresh,
-            destination_sync_mode=DestinationSyncMode.append,
-        )
-    ])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
 
     test_manifest = MANIFEST
     test_manifest["streams"][0]["$parameters"]["url_base"] = url_base
@@ -773,7 +825,7 @@ def test_handle_read_external_requests(deployment_mode, url_base, expected_error
         pytest.param("CLOUD", "https://domainwithoutextension", "Invalid URL", id="test_cloud_read_with_invalid_url_endpoint"),
         pytest.param("OSS", "https://airbyte.com/tokens/bearer", None, id="test_oss_read_with_public_endpoint"),
         pytest.param("OSS", "https://10.0.27.27/tokens/bearer", None, id="test_oss_read_with_private_endpoint"),
-    ]
+    ],
 )
 @patch.object(requests.Session, "send", _mocked_send)
 def test_handle_read_external_oauth_request(deployment_mode, token_url, expected_error):
@@ -786,16 +838,15 @@ def test_handle_read_external_oauth_request(deployment_mode, token_url, expected
 
     limits = TestReadLimits(max_records=100, max_pages_per_slice=1, max_slices=1)
 
-    catalog = ConfiguredAirbyteCatalog(streams=[
-        ConfiguredAirbyteStream(
-            stream=AirbyteStream(
-                name=_stream_name,
-                json_schema={},
-                supported_sync_modes=[SyncMode.full_refresh]),
-            sync_mode=SyncMode.full_refresh,
-            destination_sync_mode=DestinationSyncMode.append,
-        )
-    ])
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=_stream_name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.append,
+            )
+        ]
+    )
 
     oauth_authenticator_config: dict[str, str] = {
         "type": "OAuthAuthenticator",

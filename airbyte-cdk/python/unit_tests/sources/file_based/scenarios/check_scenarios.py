@@ -41,10 +41,7 @@ _base_success_scenario = (
 )
 
 
-success_csv_scenario = (
-    _base_success_scenario.copy()
-    .set_name("success_csv_scenario")
-).build()
+success_csv_scenario = (_base_success_scenario.copy().set_name("success_csv_scenario")).build()
 
 
 success_multi_stream_scenario = (
@@ -64,7 +61,7 @@ success_multi_stream_scenario = (
                     "format": {"filetype": "csv"},
                     "globs": ["*.csv", "*.gz"],
                     "validation_policy": "Emit Record",
-                }
+                },
             ]
         }
     )
@@ -120,10 +117,7 @@ success_user_provided_schema_scenario = (
 ).build()
 
 
-_base_failure_scenario = (
-    _base_success_scenario.copy()
-    .set_expected_check_status("FAILED")
-)
+_base_failure_scenario = _base_success_scenario.copy().set_expected_check_status("FAILED")
 
 
 error_empty_stream_scenario = (
@@ -166,7 +160,7 @@ error_record_validation_user_provided_schema_scenario = (
             ],
         }
     )
-    .set_validation_policies({FailingSchemaValidationPolicy.ALWAYS_FAIL:  FailingSchemaValidationPolicy()})
+    .set_validation_policies({FailingSchemaValidationPolicy.ALWAYS_FAIL: FailingSchemaValidationPolicy()})
     .set_expected_check_error(None, FileBasedSourceError.ERROR_VALIDATING_RECORD.value)
 ).build()
 
@@ -188,7 +182,7 @@ error_multi_stream_scenario = (
                     "format": {"filetype": "jsonl"},
                     "globs": ["*.csv"],
                     "validation_policy": "Emit Record",
-                }
+                },
             ],
         }
     )

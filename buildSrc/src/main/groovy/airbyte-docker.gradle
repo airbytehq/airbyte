@@ -303,20 +303,23 @@ class AirbyteDockerPlugin implements Plugin<Project> {
         AirbyteDockerTaskFactory.build(project, 'airbyteDocker', 'Dockerfile')
 
         // Used only for source-mongodb. Consider removing entirely.
-        AirbyteDockerTaskFactory.build(project, 'airbyteDockerTest', 'Dockerfile.test')
-
-        // Used for base-normalization.
-        [ 'airbyteDockerMSSql': 'mssql',
-          'airbyteDockerMySql': 'mysql',
-          'airbyteDockerOracle': 'oracle',
-          'airbyteDockerClickhouse': 'clickhouse',
-          'airbyteDockerSnowflake': 'snowflake',
-          'airbyteDockerRedshift': 'redshift',
-          'airbyteDockerTiDB': 'tidb',
-          'airbyteDockerDuckDB': 'duckdb'
-        ].forEach {taskName, customConnector ->
-            AirbyteDockerTaskFactory.build(project, taskName, "${customConnector}.Dockerfile")
+        if (project.name.endsWith('source-mongodb')) {
+            AirbyteDockerTaskFactory.build(project, 'airbyteDockerTest', 'Dockerfile.test')
         }
 
+        // Used for base-normalization.
+        if (project.name.endsWith('base-normalization')) {
+            ['airbyteDockerMSSql'     : 'mssql',
+             'airbyteDockerMySql'     : 'mysql',
+             'airbyteDockerOracle'    : 'oracle',
+             'airbyteDockerClickhouse': 'clickhouse',
+             'airbyteDockerSnowflake' : 'snowflake',
+             'airbyteDockerRedshift'  : 'redshift',
+             'airbyteDockerTiDB'      : 'tidb',
+             'airbyteDockerDuckDB'    : 'duckdb'
+            ].forEach {taskName, customConnector ->
+                AirbyteDockerTaskFactory.build(project, taskName, "${customConnector}.Dockerfile")
+            }
+        }
     }
 }

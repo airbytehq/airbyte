@@ -42,7 +42,11 @@ def get_config_and_catalog_from_args(args: List[str]) -> Tuple[str, Mapping[str,
 
 
 def handle_connector_builder_request(
-    source: ManifestDeclarativeSource, command: str, config: Mapping[str, Any], catalog: Optional[ConfiguredAirbyteCatalog], limits: TestReadLimits
+    source: ManifestDeclarativeSource,
+    command: str,
+    config: Mapping[str, Any],
+    catalog: Optional[ConfiguredAirbyteCatalog],
+    limits: TestReadLimits,
 ) -> AirbyteMessage:
     if command == "resolve_manifest":
         return resolve_manifest(source)

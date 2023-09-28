@@ -61,7 +61,11 @@ def test_interpolated_request_params(test_name, input_request_params, expected_r
         ("test_none_value", {"none_value": "{{ None }}"}, {}),
         ("test_string", """{"nested": { "key": "{{ config['option'] }}" }}""", {"nested": {"key": "OPTION"}}),
         ("test_nested_objects", {"nested": {"key": "{{ config['option'] }}"}}, {"nested": {"key": "OPTION"}}),
-        ("test_nested_objects_interpolated keys", {"nested": {"{{ stream_state['date'] }}": "{{ config['option'] }}"}}, {"nested": {"2021-01-01": "OPTION"}}),
+        (
+            "test_nested_objects_interpolated keys",
+            {"nested": {"{{ stream_state['date'] }}": "{{ config['option'] }}"}},
+            {"nested": {"2021-01-01": "OPTION"}},
+        ),
     ],
 )
 def test_interpolated_request_json(test_name, input_request_json, expected_request_json):
