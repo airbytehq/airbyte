@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 import freezegun
 import pytest
-from source_notion.source import SourceNotion
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from source_notion.source import SourceNotion
 
 UNAUTHORIZED_ERROR_MESSAGE = "The provided API access token is invalid. Please double-check that you input the correct token and have granted the necessary permissions to your Notion integration."
 RESTRICTED_RESOURCE_ERROR_MESSAGE = "The provided API access token does not have the correct permissions configured. Please double-check that you have granted all the necessary permissions to your Notion integration."
