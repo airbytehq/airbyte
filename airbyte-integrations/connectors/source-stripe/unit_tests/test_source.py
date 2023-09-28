@@ -35,8 +35,8 @@ def test_streams_are_unique(config):
         ({"lookback_window_days": "month"}, "Invalid lookback window month. Please use only positive integer values or 0."),
         ({"start_date": "January First, 2022"}, "Invalid start date January First, 2022. Please use YYYY-MM-DDTHH:MM:SSZ format."),
         ({"slice_range": -10}, "Invalid slice range value -10. Please use positive integer values only."),
-        (_a_valid_config(), None)
-    )
+        (_a_valid_config(), None),
+    ),
 )
 @patch.object(source_stripe.source.stripe, "Account")
 def test_config_validation(mocked_client, input_config, expected_error_msg):
@@ -50,7 +50,7 @@ def test_config_validation(mocked_client, input_config, expected_error_msg):
     (
         stripe.error.AuthenticationError,
         stripe.error.PermissionError,
-    )
+    ),
 )
 @patch.object(source_stripe.source.stripe, "Account")
 def test_given_stripe_error_when_check_connection_then_connection_not_available(mocked_client, exception):

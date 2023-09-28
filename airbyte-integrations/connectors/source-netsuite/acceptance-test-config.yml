@@ -17,13 +17,8 @@ tests:
     - config_path: "secrets/config.json"
       # NetSuite has lots of streams available, we test the portion of them only.
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: [
-        "customrecord01",
-        "billingaccount",
-        "charge",
-        "message",
-        "salesorder",
-      ]
+      empty_streams:
+        ["customrecord01", "billingaccount", "charge", "message", "salesorder"]
       timeout_seconds: 3600
   full_refresh:
     - config_path: "secrets/config.json"
