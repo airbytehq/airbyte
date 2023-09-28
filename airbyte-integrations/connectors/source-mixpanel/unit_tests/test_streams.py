@@ -511,5 +511,7 @@ def test_raise_config_error_on_creds_expiration(config, caplog, requests_mock):
             for slice_ in stream.stream_slices(sync_mode="full_refresh"):
                 records.extend(stream.read_records("full_refresh", stream_slice=slice_))
         assert records == []
-        assert str(e.value) == "Your credentials might have expired. Please update your config with valid credentials. " \
-                               "See more details: Unable to authenticate request"
+        assert (
+            str(e.value) == "Your credentials might have expired. Please update your config with valid credentials. "
+            "See more details: Unable to authenticate request"
+        )

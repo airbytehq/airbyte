@@ -1,4 +1,4 @@
-name: Airbyte Connectors & Octavia CI
+name: Airbyte CI - Repository Health Check
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -9,254 +9,20 @@ env:
   S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
 
 on:
-  #ability to start task manually in Web UI
   workflow_dispatch:
-    inputs:
-      debug_mode:
-        description: "Enable or disable tmate session for debug during helm ac tests"
-        type: choice
-        default: "false"
-        options:
-          - "true"
-          - "false"
-        required: false
   push:
     branches:
       - master
   pull_request:
-
-permissions: write-all
+    types:
+      - opened
+      - reopened
+      - synchronize
 
 jobs:
-  # The output of this job is used to trigger the following builds.
-  changes:
-    name: "Detect Modified Files"
-    # The filtering action does not deal with well scheduled events so skip to avoid errors.
-    # See https://github.com/dorny/paths-filter/issues/100 for more info.
-    # This is okay this workflow is only scheduled on master, where we want to build everything
-    # so filtering is not required. Use always() in each start block to force the start task.
-    if: github.event_name != 'schedule'
-    runs-on: ubuntu-latest
-    outputs:
-      build: ${{ steps.filter.outputs.build }}
-      java_cdk: ${{ steps.filter.outputs.java_cdk }}
-      python_cdk: ${{ steps.filter.outputs.python_cdk }}
-      cli: ${{ steps.filter.outputs.cli }}
-      connectors_base: ${{ steps.filter.outputs.connectors_base }}
-      db: ${{ steps.filter.outputs.db }}
-      any_change: ${{ steps.filter.outputs.any_change }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          # Note: The following glob expression within a filters are ORs.
-          # Note: If no filters match, the steps are all skipped WITHOUT reported their status check back to github.
-          #       This can cause required checks to go unreported blocking PRs from being merged
-          #       and this is why we have the any_change filter.
-          filters: |
-            build:
-              - '.github/**'
-              - 'buildSrc/**'
-              - 'tools/**'
-              - '*.gradle'
-              - 'deps.toml'
-              - 'airbyte-config-oss/**'
-            python_cdk:
-              - 'airbyte-cdk/python/**'
-            java_cdk:
-              - 'airbyte-cdk/java/**'
-            cli:
-              - 'airbyte-api/**'
-              - 'octavia-cli/**'
-            connectors_base:
-              - 'airbyte-integrations/bases/**'
-              - 'airbyte-integrations/connectors-templates/**'
-              - 'airbyte-connector-test-harnesses/acceptance-test-harness/**'
-            db:
-              - 'airbyte-db/**'
-            any_change:
-              - '**/*'
-
-  # Uncomment to debug.
-  #  changes-output:
-  #    name: "Debug Change Detection Logic"
-  #    needs: changes
-  #    runs-on: ubuntu-latest
-  #    steps:
-  #      - uses: actions/checkout@v3
-  #      - run: |
-  #          echo '${{ toJSON(needs) }}'
-
-  ## BUILDS
-  octavia-cli-build:
-    needs:
-      - changes
-    runs-on: ubuntu-latest
-    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    if: needs.changes.outputs.cli == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
-    name: "Octavia CLI: Build"
-    timeout-minutes: 90
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
-
-      # - name: Cache Build Artifacts
-      #   uses: ./.github/actions/cache-build-artifacts
-      #   with:
-      #     cache-key: ${{ secrets.CACHE_VERSION }}
-      #     cache-python: "false"
-
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m \
-            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Build
-        uses: Wandalen/wretry.action@v1.0.42
-        with:
-          command: SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:build javadoc --scan
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-      - name: Run integration tests
-        uses: Wandalen/wretry.action@v1.0.42
-        with:
-          command: ./tools/bin/integration_tests_octavia.sh
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-  python-cdk-build:
-    needs:
-      - changes
-    runs-on: ubuntu-latest
-    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    if: needs.changes.outputs.python_cdk == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
-    name: "Airbyte Python CDK: Build"
-    timeout-minutes: 90
-    steps:
-      - name: Checkout master
-        uses: actions/checkout@v3
-        # We checkout master to run mypy the CDK files that were modified in the PR.
-        # An alternative would be to use a GH action to detect the files and pass them as argument to the build command
-        # But the additional complexity of detecting the files and passing them to the script through the gradle command doesn't seem worth worth it.
-        with:
-          ref: master
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}-python-cdk
-
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m \
-            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Build
-        uses: Wandalen/wretry.action@v1.0.42
-        with:
-          command: SUB_BUILD=CDK ./gradlew build --scan
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-  java-cdk-build:
-    needs:
-      - changes
-    runs-on: ubuntu-latest
-    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    if: needs.changes.outputs.java_cdk == 'true' || needs.changes.outputs.build == 'true' || (always() && github.ref == 'refs/heads/master')
-    name: "Airbyte Java CDK: Build"
-    timeout-minutes: 90
-    steps:
-      - name: Checkout master
-        uses: actions/checkout@v3
-        with:
-          ref: master
-      - name: Checkout Airbyte
-        uses: actions/checkout@v3
-
-      - name: Cache Build Artifacts
-        uses: ./.github/actions/cache-build-artifacts
-        with:
-          cache-key: ${{ secrets.CACHE_VERSION }}-java-cdk
-
-      - uses: actions/setup-java@v3
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m \
-            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Build
-        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:build --scan
-
-      - name: Run Integration Tests
-        run: ./gradlew :airbyte-cdk:java:airbyte-cdk:integrationTest --scan
-  
-      # Connectors Base
   # In case of self-hosted EC2 errors, remove this block.
-  start-connectors-base-build-runner:
-    name: "Connectors Base: Start Build EC2 Runner"
-    needs:
-      - changes
-    # Because scheduled builds on master require us to skip the changes job. Use always() to force this to run on master.
-    if: |
-      needs.changes.outputs.build == 'true' || needs.changes.outputs.connectors_base == 'true' || needs.changes.outputs.db == 'true' || (always() && github.ref == 'refs/heads/master')
+  start-check-runner:
+    name: Start EC2 Runner
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -276,142 +42,53 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          # Use a beefier instance type than the default c5.2xlarge, but with the same per-core cost.
+          # When gradle runs on this instance, it will use up all the available cores anyway.
+          # There should be little to no difference in total cost, however the job latency will be improved.
+          # At the time of this writing, the latency doesn't improve much beyond this instance size (approx 5 minutes).
+          # This is largely thanks to the gradle cache.
+          ec2-instance-type: "c5.4xlarge"
           github-token: ${{ env.PAT }}
 
-  build-connectors-base:
+  run-check:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
-    needs: start-connectors-base-build-runner # required to start the main job when the runner is ready
-    runs-on: ${{ needs.start-connectors-base-build-runner.outputs.label }} # run the job on the newly created runner
-    name: "Connectors Base: Build"
-    timeout-minutes: 90
+    needs: start-check-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-check-runner.outputs.label }} # run the job on the newly created runner
+    name: Gradle Check
+    timeout-minutes: 30
     steps:
-      - name: Checkout master
-        uses: actions/checkout@v3
-        # We checkout master to run mypy the CDK files that were modified in the PR.
-        # An alternative would be to use a GH action to detect the files and pass them as argument to the build command
-        # But the additional complexity of detecting the files and passing them to the script through the gradle command doesn't seem worth worth it.
-        with:
-          ref: master
       - name: Checkout Airbyte
         uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
-
-      # - name: Cache Build Artifacts
-      #   uses: ./.github/actions/cache-build-artifacts
-      #   with:
-      #     cache-key: ${{ secrets.CACHE_VERSION }}-connectors-gradle-build
-
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
           java-version: "17"
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/*"
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.9"
-
+      - name: Install Pip
+        run: curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3
       - name: Install Pyenv
         run: python3 -m pip install virtualenv --user
-
-      - name: Install automake
-        run: apt-get update && apt-get install -y automake build-essential libtool libtool-bin autoconf
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m \
-            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Generate Template scaffold
-        uses: Wandalen/wretry.action@v1.0.42
+      - name: Run Gradle Check
+        uses: burrunan/gradle-cache-action@v1
+        env:
+          CI: true
         with:
-          command: CI=true ./gradlew :airbyte-integrations:connector-templates:generator:generateScaffolds --scan
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-      # Verify that the the scaffold generation did not change any files. Meaning that the generated files are up to date.
-      - name: Ensure no file change from scaffold generation
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
-
-      - name: Build
-        uses: Wandalen/wretry.action@v1.0.42
-        with:
-          command: SUB_BUILD=CONNECTORS_BASE ./gradlew build --scan
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-      - name: Process Resources
-        uses: Wandalen/wretry.action@v1.0.42
-        with:
-          command: SUB_BUILD=CONNECTORS_BASE ./gradlew :airbyte-config-oss:init-oss:processResources --scan
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-      - name: Publish Connectors Base Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        id: connectors-test-results
-        if: always()
-        with:
-          junit_files: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml\n/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          comment_mode: failures
-          json_file: connectors_base_results.json
-          json_test_case_results: true
-          check_name: "Connectors Base Test Results"
-
-      - name: Setup Google Cloud SDK
-        if: always()
-        uses: google-github-actions/setup-gcloud@v0
-        with:
-          service_account_key: ${{ secrets.GKE_TEST_SA_KEY }}
-          export_default_credentials: true
-
-      - name: Prep Test Results For GCS
-        if: always()
-        run: |
-          python tools/bin/prep_test_results_for_gcs.py --json connectors_base_results.json  --jobid $GITHUB_JOB --runid $GITHUB_RUN_ID
-
-      - name: Upload Test Results to GCS
-        if: always()
-        run: |
-          gcs_bucket_name="dev-ab-ci-run-results"
-          filename=$(echo "${{ fromJSON( steps.connectors-test-results.outputs.json ).check_url }}" | sed 's@.*/@@')
-          echo "$filename"
-          gsutil -h "Cache-Control:public" cp connectors_base_results.jsonl "gs://$gcs_bucket_name/oss/$filename.jsonl"
-
-      - name: Generate Test Report
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Connectors Base Test Report
-          # Specify top-level and second-level modules. Note there cannot be a space between the comma.
-          path: "/actions-runner/_work/airbyte/airbyte/*/build/test-results/*/*.xml,/actions-runner/_work/airbyte/airbyte/*/*/build/test-results/*/*.xml"
-          reporter: java-junit
-          fail-on-error: "false"
+          read-only: ${{ github.ref != 'refs/heads/master' }}
+          # TODO: be able to remove the skipSlowTests property
+          # TODO: remove the format task ASAP
+          # TODO: roll the CDK tasks into check
+          arguments: --scan --no-daemon --no-watch-fs format check :airbyte-cdk:java:airbyte-cdk:build :airbyte-cdk:java:airbyte-cdk:integrationTest -DskipSlowTests=true
 
   # In case of self-hosted EC2 errors, remove this block.
-  stop-connectors-base-build-runner:
-    name: "Connectors Base: Stop Build EC2 Runner"
+  stop-check-runner:
+    name: Stop EC2 Runner
     timeout-minutes: 10
     needs:
-      - start-connectors-base-build-runner # required to get output from the start-runner job
-      - build-connectors-base # required to wait when the main job is done
+      - start-check-runner # required to get output from the start-runner job
+      - run-check # required to wait when the main job is done
     runs-on: ubuntu-latest
     # Always is required to stop the runner even if the previous job has errors. However always() runs even if the previous step is skipped.
     # Thus, we check for skipped here.
-    if: ${{ always() && needs.start-connectors-base-build-runner.result != 'skipped'}}
+    if: ${{ always() && needs.start-check-runner.result != 'skipped'}}
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -431,8 +108,8 @@ jobs:
         with:
           mode: stop
           github-token: ${{ env.PAT }}
-          label: ${{ needs.start-connectors-base-build-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-connectors-base-build-runner.outputs.ec2-instance-id }}
+          label: ${{ needs.start-check-runner.outputs.label }}
+          ec2-instance-id: ${{ needs.start-check-runner.outputs.ec2-instance-id }}
 
   set-instatus-incident-on-failure:
     name: Create Instatus Incident on Failure
@@ -445,8 +122,8 @@ jobs:
       - name: Call Instatus Webhook
         uses: joelwmale/webhook-action@master
         with:
-            url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
-            body: '{ "trigger": "down" }'
+          url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
+          body: '{ "trigger": "down" }'
 
   set-instatus-incident-on-success:
     name: Create Instatus Incident on Success
@@ -459,15 +136,14 @@ jobs:
       - name: Call Instatus Webhook
         uses: joelwmale/webhook-action@master
         with:
-            url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
-            body: '{ "trigger": "up" }'
+          url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
+          body: '{ "trigger": "up" }'
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
     runs-on: ubuntu-latest
     needs:
-      - build-connectors-base
-      - octavia-cli-build
+      - run-check
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
@@ -496,8 +172,7 @@ jobs:
     name: "Notify Slack Channel on Build Fixes"
     runs-on: ubuntu-latest
     needs:
-      - build-connectors-base
-      - octavia-cli-build
+      - run-check
     if: success()
     steps:
       - name: Get Previous Workflow Status

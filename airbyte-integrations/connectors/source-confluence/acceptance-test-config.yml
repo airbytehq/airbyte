@@ -4,31 +4,31 @@ connector_image: airbyte/source-confluence:dev
 acceptance_tests:
   spec:
     tests:
-    - spec_path: "source_confluence/spec.yaml"
+      - spec_path: "source_confluence/spec.yaml"
   connection:
     tests:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-      fail_on_extra_columns: false
-      ignored_fields:
-        pages:
-          - name: body/view/value
-            bypass_reason: "Different class order"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        fail_on_extra_columns: false
+        ignored_fields:
+          pages:
+            - name: body/view/value
+              bypass_reason: "Different class order"
   full_refresh:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      ignored_fields:
-        pages:
-          - name: "body/view"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        ignored_fields:
+          pages:
+            - name: "body/view"
