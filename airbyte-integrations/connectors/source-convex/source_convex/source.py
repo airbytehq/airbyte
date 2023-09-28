@@ -33,6 +33,7 @@ ConvexConfig = TypedDict(
     {
         "deployment_url": str,
         "access_key": str,
+        "fmt": str,
     },
 )
 
@@ -45,7 +46,21 @@ ConvexState = TypedDict(
     },
 )
 
-CONVEX_CLIENT_VERSION = "0.2.0"
+CONVEX_CLIENT_VERSION = "0.3.0"
+
+
+def parse_config(config: Mapping[str, Any]) -> ConvexConfig:
+    deployment_url = config["deployment_url"]
+    access_key = config["access_key"]
+    fmt = config.get("fmt", "json")
+    assert isinstance(deployment_url, str)
+    assert isinstance(access_key, str)
+    assert isinstance(fmt, str)
+    return ConvexConfig(
+        deployment_url=deployment_url,
+        access_key=access_key,
+        fmt=fmt,
+    )
 
 
 # Source
@@ -53,7 +68,8 @@ class SourceConvex(AbstractSource):
     def _json_schemas(self, config: ConvexConfig) -> requests.Response:
         deployment_url = config["deployment_url"]
         access_key = config["access_key"]
-        url = f"{deployment_url}/api/json_schemas?deltaSchema=true&format=convex_json"
+        fmt = config["fmt"]
+        url = f"{deployment_url}/api/json_schemas?deltaSchema=true&format={fmt}"
         headers = {
             "Authorization": f"Convex {access_key}",
             "Convex-Client": f"airbyte-export-{CONVEX_CLIENT_VERSION}",
@@ -70,7 +86,7 @@ class SourceConvex(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        config = cast(ConvexConfig, config)
+        config = parse_config(config)
         resp = self._json_schemas(config)
         if resp.status_code == 200:
             return True, None
@@ -83,7 +99,7 @@ class SourceConvex(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        config = cast(ConvexConfig, config)
+        config = parse_config(config)
         resp = self._json_schemas(config)
         if resp.status_code != 200:
             raise Exception(format_http_error("Failed request to json_schemas", resp))
@@ -93,6 +109,7 @@ class SourceConvex(AbstractSource):
             ConvexStream(
                 config["deployment_url"],
                 config["access_key"],
+                config["fmt"],
                 table_name,
                 json_schemas[table_name],
             )
@@ -105,10 +122,12 @@ class ConvexStream(HttpStream, IncrementalMixin):
         self,
         deployment_url: str,
         access_key: str,
+        fmt: str,
         table_name: str,
         json_schema: Dict[str, Any],
     ):
         self.deployment_url = deployment_url
+        self.fmt = fmt
         self.table_name = table_name
         if json_schema:
             json_schema["additionalProperties"] = True
@@ -202,7 +221,7 @@ class ConvexStream(HttpStream, IncrementalMixin):
         stream_slice: Optional[Mapping[str, Any]] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        params: Dict[str, Any] = {"tableName": self.table_name, "format": "convex_json"}
+        params: Dict[str, Any] = {"tableName": self.table_name, "format": self.fmt}
         if self._snapshot_has_more:
             if self._snapshot_cursor_value:
                 params["cursor"] = self._snapshot_cursor_value
