@@ -116,12 +116,12 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
     dynamodbConfig.reservedAttributeNames().forEach(copyAttributes::remove);
     dynamodbConfig.reservedAttributeNames().stream()
         .filter(attributes::contains)
-        .map(str -> str.replaceAll("[-.]", ""))
+        .map(str -> str.replaceAll("[-.:]", ""))
         .forEach(attr -> copyAttributes.add("#" + prefix + "_" + attr));
 
     Map<String, String> mappingAttributes = dynamodbConfig.reservedAttributeNames().stream()
         .filter(attributes::contains)
-        .collect(Collectors.toUnmodifiableMap(k -> "#" + prefix + "_" + k.replaceAll("[-.]", ""), k -> k));
+        .collect(Collectors.toUnmodifiableMap(k -> "#" + prefix + "_" + k.replaceAll("[-.:]", ""), k -> k));
 
     var projectionAttributes = String.join(", ", copyAttributes);
 
@@ -158,7 +158,7 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
       }
 
       String filterPlaceholder =
-          dynamodbConfig.reservedAttributeNames().contains(filterName) ? "#" + prefix + "_" + filterName.replaceAll("[-.]", "") : filterName;
+          dynamodbConfig.reservedAttributeNames().contains(filterName) ? "#" + prefix + "_" + filterName.replaceAll("[-.:]", "") : filterName;
       scanRequestBuilder
           .filterExpression(filterPlaceholder + " " + comparator + " :timestamp")
           .expressionAttributeValues(Map.of(":timestamp", attributeValue));
