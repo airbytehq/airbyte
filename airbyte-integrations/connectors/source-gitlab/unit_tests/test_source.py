@@ -26,12 +26,10 @@ def test_streams(config, requests_mock):
         (
             {"url": "/api/v4/groups", "json": [{"id": "g1"}]},
             {"url": "/api/v4/groups/g1", "json": [{"id": "g1", "projects": [{"id": "p1", "path_with_namespace": "p1"}]}]},
-            {"url": "/api/v4/projects/p1", "json": {"id": "p1"}}
+            {"url": "/api/v4/projects/p1", "json": {"id": "p1"}},
         ),
-        (
-            {"url": "/api/v4/groups", "json": []},
-        ),
-    )
+        ({"url": "/api/v4/groups", "json": []},),
+    ),
 )
 def test_connection_success(config, requests_mock, url_mocks):
     for url_mock in url_mocks:
@@ -53,8 +51,8 @@ def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
     "api_url, deployment_env, expected_message",
     (
         ("http://gitlab.my.company.org", "CLOUD", "Http scheme is not allowed in this environment. Please use `https` instead."),
-        ("https://gitlab.com/api/v4", "CLOUD", "Invalid API resource locator.")
-    )
+        ("https://gitlab.com/api/v4", "CLOUD", "Invalid API resource locator."),
+    ),
 )
 def test_connection_fail_due_to_config_error(mocker, api_url, deployment_env, expected_message):
     mocker.patch("os.environ", {"DEPLOYMENT_MODE": deployment_env})
@@ -62,10 +60,7 @@ def test_connection_fail_due_to_config_error(mocker, api_url, deployment_env, ex
     config = {
         "start_date": "2021-01-01T00:00:00Z",
         "api_url": api_url,
-        "credentials": {
-            "auth_type": "access_token",
-            "access_token": "token"
-        }
+        "credentials": {"auth_type": "access_token", "access_token": "token"},
     }
     status, msg = source.check_connection(logging.getLogger(), config)
     assert (status, msg) == (False, expected_message)

@@ -19,7 +19,9 @@ from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSt
 
 
 class EmptySchemaParser(CsvParser):
-    async def infer_schema(self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader, logger: logging.Logger) -> Dict[str, Any]:
+    async def infer_schema(
+        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader, logger: logging.Logger
+    ) -> Dict[str, Any]:
         return {}
 
 
@@ -60,7 +62,4 @@ class LowHistoryLimitCursor(DefaultFileBasedCursor):
 
 
 def make_remote_files(files: List[str]) -> List[RemoteFile]:
-    return [
-        RemoteFile(uri=f, last_modified=datetime.strptime("2023-06-05T03:54:07.000Z", "%Y-%m-%dT%H:%M:%S.%fZ"))
-        for f in files
-    ]
+    return [RemoteFile(uri=f, last_modified=datetime.strptime("2023-06-05T03:54:07.000Z", "%Y-%m-%dT%H:%M:%S.%fZ")) for f in files]
