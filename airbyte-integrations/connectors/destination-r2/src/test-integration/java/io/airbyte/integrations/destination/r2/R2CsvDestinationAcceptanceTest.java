@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.r2;
 
 import io.airbyte.cdk.integrations.destination.s3.StorageProvider;
-import io.airbyte.integrations.destination.s3.S3BaseCsvDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.destination.s3.S3BaseCsvDestinationAcceptanceTest;
 
 public class R2CsvDestinationAcceptanceTest extends S3BaseCsvDestinationAcceptanceTest {
 
