@@ -94,6 +94,7 @@ class AirbyteEntrypoint(object):
         source_spec: ConnectorSpecification = self.source.spec(self.logger)
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
+                os.environ["TMPDIR"] = temp_dir  # set this as default temp directory (used by requests_cache to store *.sqlite files)
                 if cmd == "spec":
                     message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
                     yield from [

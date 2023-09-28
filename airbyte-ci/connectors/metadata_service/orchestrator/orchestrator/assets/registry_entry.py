@@ -17,7 +17,7 @@ from google.cloud import storage
 from metadata_service.constants import ICON_FILE_NAME, METADATA_FILE_NAME
 from metadata_service.models.generated.ConnectorRegistryDestinationDefinition import ConnectorRegistryDestinationDefinition
 from metadata_service.models.generated.ConnectorRegistrySourceDefinition import ConnectorRegistrySourceDefinition
-from metadata_service.spec_cache import get_cached_spec, list_cached_specs
+from metadata_service.spec_cache import SpecCache
 from orchestrator.config import MAX_METADATA_PARTITION_RUN_REQUEST, VALID_REGISTRIES, get_public_url_for_gcs_file
 from orchestrator.logging import sentry
 from orchestrator.logging.publish_connector_lifecycle import PublishConnectorLifecycle, PublishConnectorLifecycleStage, StageStatus
@@ -45,19 +45,16 @@ class MissingCachedSpecError(Exception):
 
 
 @sentry_sdk.trace
-def apply_spec_to_registry_entry(registry_entry: dict, cached_specs: OutputDataFrame) -> dict:
-    cached_connector_version = {
-        (cached_spec["docker_repository"], cached_spec["docker_image_tag"]): cached_spec["spec_cache_path"]
-        for cached_spec in cached_specs.to_dict(orient="records")
-    }
-
-    try:
-        spec_path = cached_connector_version[(registry_entry["dockerRepository"], registry_entry["dockerImageTag"])]
-        entry_with_spec = copy.deepcopy(registry_entry)
-        entry_with_spec["spec"] = get_cached_spec(spec_path)
-        return entry_with_spec
-    except KeyError:
+def apply_spec_to_registry_entry(registry_entry: dict, spec_cache: SpecCache, registry_name: str) -> dict:
+    cached_spec = spec_cache.find_spec_cache_with_fallback(
+        registry_entry["dockerRepository"], registry_entry["dockerImageTag"], registry_name
+    )
+    if cached_spec is None:
         raise MissingCachedSpecError(f"No cached spec found for {registry_entry['dockerRepository']}:{registry_entry['dockerImageTag']}")
+
+    entry_with_spec = copy.deepcopy(registry_entry)
+    entry_with_spec["spec"] = spec_cache.download_spec(cached_spec)
+    return entry_with_spec
 
 
 def calculate_migration_documentation_url(releases_or_breaking_change: dict, documentation_url: str, version: Optional[str] = None) -> str:
@@ -254,7 +251,7 @@ def persist_registry_entry_to_json(
 @sentry_sdk.trace
 def generate_and_persist_registry_entry(
     metadata_entry: LatestMetadataEntry,
-    cached_specs: OutputDataFrame,
+    spec_cache: SpecCache,
     metadata_directory_manager: GCSFileManager,
     registry_name: str,
 ) -> str:
@@ -269,7 +266,7 @@ def generate_and_persist_registry_entry(
         Output[ConnectorRegistryV0]: The registry.
     """
     raw_entry_dict = metadata_to_registry_entry(metadata_entry, registry_name)
-    registry_entry_with_spec = apply_spec_to_registry_entry(raw_entry_dict, cached_specs)
+    registry_entry_with_spec = apply_spec_to_registry_entry(raw_entry_dict, spec_cache, registry_name)
 
     _, ConnectorModel = get_connector_type_from_registry_entry(registry_entry_with_spec)
 
@@ -436,13 +433,13 @@ def registry_entry(context: OpExecutionContext, metadata_entry: Optional[LatestM
         f"Generating registry entry for {metadata_entry.file_path}",
     )
 
-    cached_specs = pd.DataFrame(list_cached_specs())
+    spec_cache = SpecCache()
 
     root_metadata_directory_manager = context.resources.root_metadata_directory_manager
     enabled_registries, disabled_registries = get_registry_status_lists(metadata_entry)
 
     persisted_registry_entries = {
-        registry_name: generate_and_persist_registry_entry(metadata_entry, cached_specs, root_metadata_directory_manager, registry_name)
+        registry_name: generate_and_persist_registry_entry(metadata_entry, spec_cache, root_metadata_directory_manager, registry_name)
         for registry_name in enabled_registries
     }
 
