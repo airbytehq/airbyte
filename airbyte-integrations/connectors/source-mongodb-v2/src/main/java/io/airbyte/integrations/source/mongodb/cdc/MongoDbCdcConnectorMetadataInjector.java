@@ -4,16 +4,15 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.debezium.CdcMetadataInjector;
-import io.airbyte.integrations.debezium.internals.DebeziumEventUtils;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
+import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -55,8 +54,8 @@ public class MongoDbCdcConnectorMetadataInjector implements CdcMetadataInjector<
   public static ObjectNode addCdcMetadataColumns(final ObjectNode properties) {
     final JsonNode stringType = Jsons.jsonNode(ImmutableMap.of("type", "string"));
     final JsonNode airbyteIntegerType = Jsons.jsonNode(ImmutableMap.of("type", "number", "airbyte_type", "integer"));
-    properties.set(DebeziumEventUtils.CDC_UPDATED_AT, stringType);
-    properties.set(DebeziumEventUtils.CDC_DELETED_AT, stringType);
+    properties.set(CDC_UPDATED_AT, stringType);
+    properties.set(CDC_DELETED_AT, stringType);
     properties.set(CDC_DEFAULT_CURSOR, airbyteIntegerType);
     return properties;
   }

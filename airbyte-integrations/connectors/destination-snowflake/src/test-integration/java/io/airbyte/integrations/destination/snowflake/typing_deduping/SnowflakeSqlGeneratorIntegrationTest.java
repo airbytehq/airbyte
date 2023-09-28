@@ -16,12 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;

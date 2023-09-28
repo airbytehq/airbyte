@@ -4,12 +4,12 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
-import static io.airbyte.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
+import static io.airbyte.cdk.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
 
 import com.google.common.collect.Sets;
 import com.mongodb.client.MongoClient;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;

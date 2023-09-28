@@ -14,12 +14,12 @@ import com.mongodb.client.MongoClient;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
+import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.integrations.source.mongodb.InitialSnapshotHandler;
 import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.ExcludedField;
@@ -123,7 +123,7 @@ public class MongoDbCdcInitializer {
 
     if (!savedOffsetIsValid) {
       LOGGER.debug("Saved offset is not valid. Airbyte will trigger a full refresh.");
-      // If the offset in the state is invalid, reset the state to the initial state
+      // If the offset in the state is invalid, reset the state to the initial STATE
       stateManager.resetState(new MongoDbCdcState(initialDebeziumState));
     } else {
       LOGGER.debug("Valid offset state discovered.  Updating state manager with retrieved CDC state {}...", cdcState);

@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.mongodb.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
-import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
+import io.airbyte.cdk.integrations.debezium.CdcSavedInfoFetcher;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import java.util.Optional;
 
 /**

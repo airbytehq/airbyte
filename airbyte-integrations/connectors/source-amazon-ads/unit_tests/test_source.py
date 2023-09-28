@@ -33,8 +33,7 @@ def ensure_additional_property_is_boolean(root):
             ensure_additional_property_is_boolean(prop)
     if "additionalProperties" in root:
         assert type(root["additionalProperties"]) == bool, (
-            f"`additionalProperties` expected to be of 'bool' type. "
-            f"Got: {type(root['additionalProperties']).__name__}"
+            f"`additionalProperties` expected to be of 'bool' type. " f"Got: {type(root['additionalProperties']).__name__}"
         )
 
 
@@ -117,7 +116,7 @@ def test_source_streams(config):
             "attribution_report_performance_campaign",
             "attribution_report_performance_creative",
             "attribution_report_products",
-            "sponsored_display_budget_rules"
+            "sponsored_display_budget_rules",
         ]
     )
     assert not expected_stream_names - actual_stream_names
@@ -126,33 +125,9 @@ def test_source_streams(config):
 def test_filter_profiles_exist():
     source = SourceAmazonAds()
     mock_objs = [
-        {
-            "profileId": 111,
-            "timezone": "gtm",
-            "accountInfo": {
-                "marketplaceStringId": "mkt_id_1",
-                "id": "111",
-                "type": "vendor"
-            }
-        },
-        {
-            "profileId": 222,
-            "timezone": "gtm",
-            "accountInfo": {
-                "marketplaceStringId": "mkt_id_2",
-                "id": "222",
-                "type": "vendor"
-            }
-        },
-        {
-            "profileId": 333,
-            "timezone": "gtm",
-            "accountInfo": {
-                "marketplaceStringId": "mkt_id_3",
-                "id": "333",
-                "type": "vendor"
-            }
-        }
+        {"profileId": 111, "timezone": "gtm", "accountInfo": {"marketplaceStringId": "mkt_id_1", "id": "111", "type": "vendor"}},
+        {"profileId": 222, "timezone": "gtm", "accountInfo": {"marketplaceStringId": "mkt_id_2", "id": "222", "type": "vendor"}},
+        {"profileId": 333, "timezone": "gtm", "accountInfo": {"marketplaceStringId": "mkt_id_3", "id": "333", "type": "vendor"}},
     ]
 
     mock_profiles = [Profile.parse_obj(profile) for profile in mock_objs]

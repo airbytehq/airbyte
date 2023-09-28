@@ -8,12 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.destination.s3.S3FormatConfig;
+import io.airbyte.cdk.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.destination.gcs.credential.GcsCredentialConfig;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
-import io.airbyte.integrations.destination.s3.S3FormatConfig;
-import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 

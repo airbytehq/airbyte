@@ -9,7 +9,6 @@ from xata.helpers import BulkProcessor
 
 
 class DestinationConnectorXataTestCase(unittest.TestCase):
-
     def test_request(self):
         xata = XataClient(db_url="https://unit_tests-mock.results-store.xata.sh/db/mock-db", api_key="mock-key")
         bp = BulkProcessor(xata, thread_pool_size=1, batch_size=2, flush_interval=1)
@@ -25,5 +24,5 @@ class DestinationConnectorXataTestCase(unittest.TestCase):
         assert stats["failed_batches"] == 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

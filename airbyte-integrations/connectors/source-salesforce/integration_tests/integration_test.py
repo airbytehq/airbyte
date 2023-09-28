@@ -86,7 +86,7 @@ def test_update_for_deleted_record(stream):
         now = pendulum.now(tz="UTC")
         stream_slice = {
             "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-            "end_date": now.isoformat(timespec="milliseconds")
+            "end_date": now.isoformat(timespec="milliseconds"),
         }
         notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
         try:
@@ -110,7 +110,7 @@ def test_update_for_deleted_record(stream):
         now = pendulum.now(tz="UTC")
         stream_slice = {
             "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-            "end_date": now.isoformat(timespec="milliseconds")
+            "end_date": now.isoformat(timespec="milliseconds"),
         }
         for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state, stream_slice=stream_slice):
             if created_note_id == record["Id"]:
@@ -147,7 +147,7 @@ def test_deleted_record(stream):
         now = pendulum.now(tz="UTC")
         stream_slice = {
             "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-            "end_date": now.isoformat(timespec="milliseconds")
+            "end_date": now.isoformat(timespec="milliseconds"),
         }
         notes = set(record["Id"] for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
         try:
@@ -173,7 +173,7 @@ def test_deleted_record(stream):
         now = pendulum.now(tz="UTC")
         stream_slice = {
             "start_date": now.add(days=-1).isoformat(timespec="milliseconds"),
-            "end_date": now.isoformat(timespec="milliseconds")
+            "end_date": now.isoformat(timespec="milliseconds"),
         }
         record = None
         for record in stream.read_records(sync_mode=SyncMode.incremental, stream_state=stream_state, stream_slice=stream_slice):

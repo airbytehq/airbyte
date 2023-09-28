@@ -20,10 +20,7 @@ PARTITION = {
     "partition_key int": 1,
     "partition_key list str": ["list item 1", "list item 2"],
     "partition_key list dict": [
-        {
-            "dict within list key 1-1": "dict within list value 1-1",
-            "dict within list key 1-2": "dict within list value 1-2"
-        },
+        {"dict within list key 1-1": "dict within list value 1-1", "dict within list key 1-2": "dict within list value 1-2"},
         {"dict within list key 2": "dict within list value 2"},
     ],
     "partition_key nested dict": {
@@ -43,18 +40,14 @@ STATE = {
                 "partition_router_field_1": "X1",
                 "partition_router_field_2": "Y1",
             },
-            "cursor": {
-                "cursor state field": 1
-            }
+            "cursor": {"cursor state field": 1},
         },
         {
             "partition": {
                 "partition_router_field_1": "X2",
                 "partition_router_field_2": "Y2",
             },
-            "cursor": {
-                "cursor state field": 2
-            }
+            "cursor": {"cursor state field": 2},
         },
     ]
 }
@@ -135,8 +128,9 @@ def test_given_no_partition_when_stream_slices_then_no_slices(mocked_cursor_fact
     assert not next(slices, None)
 
 
-def test_given_partition_router_without_state_has_one_partition_then_return_one_slice_per_cursor_slice(mocked_cursor_factory,
-                                                                                                       mocked_partition_router):
+def test_given_partition_router_without_state_has_one_partition_then_return_one_slice_per_cursor_slice(
+    mocked_cursor_factory, mocked_partition_router
+):
     partition = {"partition_field_1": "a value", "partition_field_2": "another value"}
     mocked_partition_router.stream_slices.return_value = [partition]
     cursor_slices = [{"start_datetime": 1}, {"start_datetime": 2}]
@@ -148,20 +142,16 @@ def test_given_partition_router_without_state_has_one_partition_then_return_one_
     assert list(slices) == [PerPartitionStreamSlice(partition, cursor_slice) for cursor_slice in cursor_slices]
 
 
-def test_given_partition_associated_with_state_when_stream_slices_then_do_not_recreate_cursor(mocked_cursor_factory,
-                                                                                              mocked_partition_router):
+def test_given_partition_associated_with_state_when_stream_slices_then_do_not_recreate_cursor(
+    mocked_cursor_factory, mocked_partition_router
+):
     partition = {"partition_field_1": "a value", "partition_field_2": "another value"}
     mocked_partition_router.stream_slices.return_value = [partition]
     cursor_slices = [{"start_datetime": 1}]
     mocked_cursor_factory.create.return_value = MockedCursorBuilder().with_stream_slices(cursor_slices).build()
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
 
-    cursor.set_initial_state({
-        "states": [{
-            "partition": partition,
-            "cursor": CURSOR_STATE
-        }]
-    })
+    cursor.set_initial_state({"states": [{"partition": partition, "cursor": CURSOR_STATE}]})
     mocked_cursor_factory.create.assert_called_once()
     slices = list(cursor.stream_slices())
 
@@ -171,33 +161,23 @@ def test_given_partition_associated_with_state_when_stream_slices_then_do_not_re
 
 def test_given_multiple_partitions_then_each_have_their_state(mocked_cursor_factory, mocked_partition_router):
     first_partition = {"first_partition_key": "first_partition_value"}
-    mocked_partition_router.stream_slices.return_value = [
-        first_partition,
-        {"second_partition_key": "second_partition_value"}
-    ]
+    mocked_partition_router.stream_slices.return_value = [first_partition, {"second_partition_key": "second_partition_value"}]
     first_cursor = MockedCursorBuilder().with_stream_slices([{CURSOR_SLICE_FIELD: "first slice cursor value"}]).build()
     second_cursor = MockedCursorBuilder().with_stream_slices([{CURSOR_SLICE_FIELD: "second slice cursor value"}]).build()
     mocked_cursor_factory.create.side_effect = [first_cursor, second_cursor]
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
 
-    cursor.set_initial_state({
-        "states": [{
-            "partition": first_partition,
-            "cursor": CURSOR_STATE
-        }]
-    })
+    cursor.set_initial_state({"states": [{"partition": first_partition, "cursor": CURSOR_STATE}]})
     slices = list(cursor.stream_slices())
 
     first_cursor.stream_slices.assert_called_once()
     second_cursor.stream_slices.assert_called_once()
     assert slices == [
         PerPartitionStreamSlice(
-            partition={"first_partition_key": "first_partition_value"},
-            cursor_slice={CURSOR_SLICE_FIELD: "first slice cursor value"}
+            partition={"first_partition_key": "first_partition_value"}, cursor_slice={CURSOR_SLICE_FIELD: "first slice cursor value"}
         ),
         PerPartitionStreamSlice(
-            partition={"second_partition_key": "second_partition_value"},
-            cursor_slice={CURSOR_SLICE_FIELD: "second slice cursor value"}
+            partition={"second_partition_key": "second_partition_value"}, cursor_slice={CURSOR_SLICE_FIELD: "second slice cursor value"}
         ),
     ]
 
@@ -205,21 +185,15 @@ def test_given_multiple_partitions_then_each_have_their_state(mocked_cursor_fact
 def test_given_stream_slices_when_get_stream_state_then_return_updated_state(mocked_cursor_factory, mocked_partition_router):
     mocked_cursor_factory.create.side_effect = [
         MockedCursorBuilder().with_stream_state({CURSOR_STATE_KEY: "first slice cursor value"}).build(),
-        MockedCursorBuilder().with_stream_state({CURSOR_STATE_KEY: "second slice cursor value"}).build()
+        MockedCursorBuilder().with_stream_state({CURSOR_STATE_KEY: "second slice cursor value"}).build(),
     ]
     mocked_partition_router.stream_slices.return_value = [{"partition key": "first partition"}, {"partition key": "second partition"}]
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
     list(cursor.stream_slices())
     assert cursor.get_stream_state() == {
         "states": [
-            {
-                "partition": {"partition key": "first partition"},
-                "cursor": {CURSOR_STATE_KEY: "first slice cursor value"}
-            },
-            {
-                "partition": {"partition key": "second partition"},
-                "cursor": {CURSOR_STATE_KEY: "second slice cursor value"}
-            }
+            {"partition": {"partition key": "first partition"}, "cursor": {CURSOR_STATE_KEY: "first slice cursor value"}},
+            {"partition": {"partition key": "second partition"}, "cursor": {CURSOR_STATE_KEY: "second slice cursor value"}},
         ]
     }
 
@@ -231,19 +205,9 @@ def test_when_get_stream_state_then_delegate_to_underlying_cursor(mocked_cursor_
     cursor = PerPartitionCursor(mocked_cursor_factory, mocked_partition_router)
     first_slice = list(cursor.stream_slices())[0]
 
-    cursor.should_be_synced(
-        Record(
-            {},
-            first_slice
-        )
-    )
+    cursor.should_be_synced(Record({}, first_slice))
 
-    underlying_cursor.should_be_synced.assert_called_once_with(
-        Record(
-            {},
-            first_slice.cursor_slice
-        )
-    )
+    underlying_cursor.should_be_synced.assert_called_once_with(Record({}, first_slice.cursor_slice))
 
 
 def test_close_slice(mocked_cursor_factory, mocked_partition_router):
@@ -279,10 +243,7 @@ def test_given_unknown_partition_when_close_slice_then_raise_error():
     cursor = PerPartitionCursor(any_cursor_factory, any_partition_router)
     stream_slice = PerPartitionStreamSlice(partition={"unknown_partition": "unknown"}, cursor_slice={})
     with pytest.raises(ValueError):
-        cursor.close_slice(
-            stream_slice,
-            Record({}, stream_slice)
-        )
+        cursor.close_slice(stream_slice, Record({}, stream_slice))
 
 
 def test_given_unknown_partition_when_should_be_synced_then_raise_error():
@@ -290,15 +251,7 @@ def test_given_unknown_partition_when_should_be_synced_then_raise_error():
     any_partition_router = Mock()
     cursor = PerPartitionCursor(any_cursor_factory, any_partition_router)
     with pytest.raises(ValueError):
-        cursor.should_be_synced(
-            Record(
-                {},
-                PerPartitionStreamSlice(
-                    partition={"unknown_partition": "unknown"},
-                    cursor_slice={}
-                )
-            )
-        )
+        cursor.should_be_synced(Record({}, PerPartitionStreamSlice(partition={"unknown_partition": "unknown"}, cursor_slice={})))
 
 
 def test_given_records_with_different_slice_when_is_greater_than_or_equal_then_raise_error():
@@ -308,7 +261,7 @@ def test_given_records_with_different_slice_when_is_greater_than_or_equal_then_r
     with pytest.raises(ValueError):
         cursor.is_greater_than_or_equal(
             Record({}, PerPartitionStreamSlice(partition={"a slice": "value"}, cursor_slice={})),
-            Record({}, PerPartitionStreamSlice(partition={"another slice": "value"}, cursor_slice={}))
+            Record({}, PerPartitionStreamSlice(partition={"another slice": "value"}, cursor_slice={})),
         )
 
 
@@ -319,7 +272,7 @@ def test_given_slice_is_unknown_when_is_greater_than_or_equal_then_raise_error()
     with pytest.raises(ValueError):
         cursor.is_greater_than_or_equal(
             Record({}, PerPartitionStreamSlice(partition={"a slice": "value"}, cursor_slice={})),
-            Record({}, PerPartitionStreamSlice(partition={"a slice": "value"}, cursor_slice={}))
+            Record({}, PerPartitionStreamSlice(partition={"a slice": "value"}, cursor_slice={})),
         )
 
 
