@@ -696,7 +696,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   private static List<String> getPks(StreamConfig stream) {
     return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).toList() : Collections.emptyList();
   }
-      
+
   private static String cast(final String content, final String asType, boolean useSafeCast) {
     final var open = useSafeCast ? "SAFE_CAST(" : "CAST(";
     return wrap(open, content + " as " + asType, ")");
