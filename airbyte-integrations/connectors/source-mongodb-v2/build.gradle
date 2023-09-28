@@ -51,11 +51,14 @@ dependencies {
     dataGeneratorImplementation libs.mongo.driver.sync
     dataGeneratorImplementation libs.kotlin.logging
     dataGeneratorImplementation libs.kotlinx.cli
-    dataGeneratorImplementation libs.java.faker
+    dataGeneratorImplementation (libs.java.faker) {
+        exclude module: 'snakeyaml'
+    }
     dataGeneratorImplementation libs.jackson.databind
     dataGeneratorImplementation libs.bundles.slf4j
     dataGeneratorImplementation libs.slf4j.simple
     dataGeneratorImplementation libs.kotlinx.cli.jvm
+    dataGeneratorImplementation 'org.yaml:snakeyaml:2.2'
 
     debeziumTestImplementation libs.bundles.debezium.bundle
     debeziumTestImplementation libs.bundles.slf4j
