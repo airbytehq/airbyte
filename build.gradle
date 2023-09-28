@@ -137,8 +137,8 @@ def createJavaLicenseWith = { license ->
 // node is required by the root project to apply the prettier formatter repo-wide.
 node {
     download = true
-    version = '18.16.1'
-    npmVersion = '9.5.1'
+    version = '18.18.0'
+    npmVersion = '10.1.0'
     // when setting both these directories, npm and node will be in separate directories
     workDir = file("${buildDir}/nodejs")
     npmWorkDir = file("${buildDir}/npm")
