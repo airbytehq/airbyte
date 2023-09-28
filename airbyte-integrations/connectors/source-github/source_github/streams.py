@@ -1572,3 +1572,15 @@ class ContributorActivity(GithubStream):
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         return 10 if response.status_code == requests.codes.ACCEPTED else super().backoff_time(response)
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        if response.status_code == requests.codes.NO_CONTENT:
+            self.logger.warning(f"Empty response received for {self.name} stats in repository {stream_slice.get('repository')}")
+        else:
+            yield from super().parse_response(response)
