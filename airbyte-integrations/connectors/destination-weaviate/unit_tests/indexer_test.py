@@ -108,7 +108,7 @@ class TestWeaviateIndexer(unittest.TestCase):
         mock_chunk2 = Chunk(page_content="some_other_content", embedding=[4,5,6], metadata={"someField": "some_value2"}, record=AirbyteRecordMessage(stream="test", data={"someField": "some_value2"}, emitted_at=0))
         mock_chunk3 = Chunk(page_content="third", embedding=[7,8,9], metadata={"someField": "some_value3"}, record=AirbyteRecordMessage(stream="test", data={"someField": "some_value3"}, emitted_at=0))
         self.indexer.index([mock_chunk1, mock_chunk2, mock_chunk3], [])
-        assert mock_client.batch.create_objects.call_count == 2  
+        assert mock_client.batch.create_objects.call_count == 2
 
     @patch("destination_weaviate.indexer.uuid.uuid4")
     @patch('time.sleep', return_value=None)
