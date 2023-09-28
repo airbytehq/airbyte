@@ -13,9 +13,18 @@ PROD_SPEC_CACHE_BUCKET_NAME = "io-airbyte-cloud-spec-cache"
 CACHE_FOLDER = "specs"
 
 
-class Registries(Enum):
+class Registries(str, Enum):
     OSS = "oss"
     CLOUD = "cloud"
+
+    @classmethod
+    def _missing_(cls, value):
+        """Returns the registry from the string value. (case insensitive)"""
+        value = value.lower()
+        for member in cls:
+            if member.lower() == value:
+                return member
+        return None
 
 
 SPEC_FILE_NAMES = {Registries.OSS: "spec.json", Registries.CLOUD: "spec.cloud.json"}
