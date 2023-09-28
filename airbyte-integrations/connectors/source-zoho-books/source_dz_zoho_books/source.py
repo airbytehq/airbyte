@@ -32,11 +32,13 @@ class DzZohoBooksStream(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         next_page = response.json().get("page_context")
-        if not next_page:
+        if (next_page is None) or (not next_page["has_more_page"]):
             return None
-        elif next_page["has_more_page"] == False:
-            return None
-        return {"page": next_page["page"] + 1, "per_page": next_page["per_page"]}
+        else:
+            return {
+                "page": next_page["page"] + 1, 
+                "per_page": next_page["per_page"]
+            }
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -45,8 +47,8 @@ class DzZohoBooksStream(HttpStream, ABC):
             return {}
         else:
             return {
+                "page": next_page_token["page"],
                 "per_page": next_page_token["per_page"],
-                "page": next_page_token["page"]
             }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
