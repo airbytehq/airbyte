@@ -191,7 +191,7 @@ class StreamFacadeTest(unittest.TestCase):
         records = [Record(data) for data in expected_stream_data]
         self._stream.read.return_value = records
 
-        actual_stream_data = list(self._facade.read_records(SyncMode.full_refresh, None, None, None))
+        actual_stream_data = list(self._facade.read_full_refresh(None, None, None))
 
         assert actual_stream_data == expected_stream_data
 
@@ -256,6 +256,16 @@ class StreamFacadeTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
 
+    def test_create_from_legacy_stream_raises_exception_if_primary_key_has_invalid_type(self):
+        legacy_stream = Mock()
+        legacy_stream.name = "stream"
+        legacy_stream.primary_key = 123
+        source = Mock()
+        max_workers = 10
+
+        with self.assertRaises(ValueError):
+            StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+
     def test_create_from_legacy_stream_raises_exception_if_cursor_field_is_nested(self):
         legacy_stream = Mock()
         legacy_stream.name = "stream"
@@ -266,6 +276,17 @@ class StreamFacadeTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+
+    def test_create_from_legacy_stream_with_cursor_field_as_list(self):
+        legacy_stream = Mock()
+        legacy_stream.name = "stream"
+        legacy_stream.primary_key = "id"
+        legacy_stream.cursor_field = ["cursor"]
+        source = Mock()
+        max_workers = 10
+
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+        assert facade.cursor_field == "cursor"
 
     def test_create_from_legacy_stream_none_message_repository(self):
         legacy_stream = Mock()

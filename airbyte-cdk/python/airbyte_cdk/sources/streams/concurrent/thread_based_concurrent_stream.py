@@ -6,12 +6,12 @@ import concurrent
 from concurrent.futures import Future
 from functools import lru_cache
 from queue import Queue
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, FieldPath
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
@@ -121,7 +121,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
     def name(self) -> str:
         return self._name
 
-    def check_availability(self) -> Tuple[bool, Optional[str]]:
+    def check_availability(self) -> StreamAvailability:
         return self._availability_strategy.check_availability(self.logger)
 
     @property
@@ -135,10 +135,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._json_schema
-
-    @property
-    def source_defined_cursor(self) -> bool:
-        return True
 
     @property
     def supports_incremental(self) -> bool:
