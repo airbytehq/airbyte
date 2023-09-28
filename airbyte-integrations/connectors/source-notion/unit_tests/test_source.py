@@ -7,6 +7,7 @@ from unittest.mock import MagicMock
 import freezegun
 import pytest
 from source_notion.source import SourceNotion
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 UNAUTHORIZED_ERROR_MESSAGE = "The provided API access token is invalid. Please double-check that you input the correct token and have granted the necessary permissions to your Notion integration."
 RESTRICTED_RESOURCE_ERROR_MESSAGE = "The provided API access token does not have the correct permissions configured. Please double-check that you have granted all the necessary permissions to your Notion integration."
@@ -46,3 +47,22 @@ def test_streams(mocker):
     streams = source.streams(config_mock)
     expected_streams_number = 4
     assert len(streams) == expected_streams_number
+
+
+@pytest.mark.parametrize(
+    "config, expected_token",
+    [
+        ({"credentials": {"auth_type": "OAuth2.0", "access_token": "oauth_token"}}, "Bearer oauth_token"),
+        ({"credentials": {"auth_type": "token", "token": "other_token"}}, "Bearer other_token"),
+        ({}, None),
+    ],
+)
+def test_get_authenticator(config, expected_token):
+    source = SourceNotion()
+    authenticator = source._get_authenticator(config)  # Fixed line
+
+    if expected_token:
+        assert isinstance(authenticator, TokenAuthenticator)
+        assert authenticator.token == expected_token  # Replace with the actual way to access the token from the authenticator
+    else:
+        assert authenticator is None

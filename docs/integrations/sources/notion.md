@@ -72,7 +72,7 @@ If you are authenticating via OAuth2.0 for Airbyte Open Source, you will need to
 - **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your Notion integration's page.
 - **OAuth2.0**: Copy and paste the Client ID, Client Secret and Access Token you acquired.
 
-6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. All data generated after this date will be replicated. If left blank, Airbyte will set the start date two years from the current date by default.
+6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. When using incremental syncs, only data generated after this date will be replicated. If left blank, Airbyte will set the start date two years from the current date by default.
 7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes

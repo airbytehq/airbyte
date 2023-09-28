@@ -4,6 +4,7 @@
 
 
 import logging
+from itertools import islice
 from typing import Any, List, Mapping, Tuple
 
 import requests
@@ -15,31 +16,22 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthentic
 from .streams import Blocks, Databases, Pages, Users
 
 
-class NotionAuthenticator:
-    def __init__(self, config: Mapping[str, Any]):
-        self.config = config
-
-    def get_access_token(self):
-        credentials = self.config.get("credentials")
-        if credentials:
-            auth_type = credentials.get("auth_type")
-            if auth_type == "OAuth2.0":
-                return TokenAuthenticator(credentials.get("access_token"))
-            return TokenAuthenticator(credentials.get("token"))
-
-        # support the old config
-        if "access_token" in self.config:
-            return TokenAuthenticator(self.config.get("access_token"))
-
-
 class SourceNotion(AbstractSource):
+
+    def _get_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
+        credentials = config.get("credentials", {})
+        auth_type = credentials.get("auth_type")
+        token = credentials.get("access_token") if auth_type == "OAuth2.0" else credentials.get("token")
+
+        if credentials and token:
+            return TokenAuthenticator(token)                
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
-            authenticator = NotionAuthenticator(config).get_access_token()
+            authenticator = self._get_authenticator(config)
             stream = Pages(authenticator=authenticator, config=config)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
-            next(records)
+            next(islice(records, 5)) # Read the first 5 records to ensure that the connection is valid.
             return True, None
         except requests.exceptions.RequestException as e:
             # The most likely user error will be incorrectly configured credentials. We can provide a specific error message for those cases. Otherwise, the stock Notion API message should suffice.
@@ -61,7 +53,7 @@ class SourceNotion(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
-        authenticator = NotionAuthenticator(config).get_access_token()
+        authenticator = self._get_authenticator(config)
         args = {"authenticator": authenticator, "config": config}
         pages = Pages(**args)
         blocks = Blocks(parent=pages, **args)
