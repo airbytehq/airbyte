@@ -46,7 +46,7 @@ class DzZohoBooksStream(HttpStream, ABC):
         else:
             return {
                 "per_page": next_page_token["per_page"],
-                **(next_page_token["page"] or {})
+                "page": next_page_token["page"]
             }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
