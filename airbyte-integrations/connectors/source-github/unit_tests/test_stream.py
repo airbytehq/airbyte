@@ -21,6 +21,7 @@ from source_github.streams import (
     CommitCommentReactions,
     CommitComments,
     Commits,
+    ContributorActivity,
     Deployments,
     IssueEvents,
     IssueLabels,
@@ -1328,3 +1329,23 @@ def test_stream_projects_v2_graphql_query():
     expected_query = json.load(open(f))
 
     assert query == expected_query
+
+
+@responses.activate
+def test_stream_contributor_activity_parse_empty_response(caplog):
+    repository_args = {
+        "page_size_for_large_streams": 20,
+        "repositories": ["airbytehq/airbyte"],
+    }
+    stream = ContributorActivity(**repository_args)
+    resp = responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/airbyte/stats/contributors",
+        body="",
+        status=204,
+    )
+    records = list(read_full_refresh(stream))
+    expected_message = "Empty response received for contributor_activity stats in repository airbytehq/airbyte"
+    assert resp.call_count == 1
+    assert records == []
+    assert expected_message in caplog.messages
