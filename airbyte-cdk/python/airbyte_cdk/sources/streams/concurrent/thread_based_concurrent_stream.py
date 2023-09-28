@@ -3,9 +3,10 @@
 #
 
 from functools import lru_cache
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Any, Iterable, Mapping, Optional
 
-from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, FieldPath
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability
 from airbyte_cdk.sources.streams.core import StreamData
 
 
@@ -17,29 +18,20 @@ class ThreadBasedConcurrentStream(AbstractStream):
     def name(self) -> str:
         raise NotImplementedError
 
-    def check_availability(self) -> Tuple[bool, Optional[str]]:
+    def check_availability(self) -> StreamAvailability:
         raise NotImplementedError
 
     @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> Optional[FieldPath]:
         raise NotImplementedError
 
     @property
-    def cursor_field(self) -> Union[str, List[str]]:
+    def cursor_field(self) -> Optional[str]:
         raise NotImplementedError
 
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         raise NotImplementedError
 
-    @property
-    def source_defined_cursor(self) -> bool:
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         raise NotImplementedError
-
-    @property
-    def supports_incremental(self) -> bool:
-        """
-        :return: True if this stream supports incrementally reading data
-        """
-        # Incremental reads are not supported yet. This override should be deleted when incremental reads are supported.
-        return False
