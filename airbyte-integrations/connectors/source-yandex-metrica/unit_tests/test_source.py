@@ -19,16 +19,16 @@ def test_streams(config):
 
 def test_check_connection_invalid_api_key(config, requests_mock):
     config["auth_token"] = "invalid_token"
-    requests_mock.register_uri("GET",
-                               "https://api-metrica.yandex.net/management/v1/counter/00000000/logrequests/evaluate",
-                               [{"status_code": 400}])
+    requests_mock.register_uri(
+        "GET", "https://api-metrica.yandex.net/management/v1/counter/00000000/logrequests/evaluate", [{"status_code": 400}]
+    )
     ok, error_msg = SourceYandexMetrica().check_connection(logger, config=config)
     assert not ok and error_msg
 
 
 @freezegun.freeze_time("2023-01-02")
 def test_check_connection_no_end_date(config):
-    config.pop('end_date')
+    config.pop("end_date")
     assert SourceYandexMetrica().get_end_date(config=config) == "2023-01-01"
 
 

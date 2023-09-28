@@ -78,7 +78,9 @@ def test_list_partition_router(test_name, partition_values, cursor_field, expect
     ],
 )
 def test_request_option(test_name, request_option, expected_req_params, expected_headers, expected_body_json, expected_body_data):
-    partition_router = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
+    partition_router = ListPartitionRouter(
+        values=partition_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={}
+    )
     stream_slice = {cursor_field: "customer"}
 
     assert expected_req_params == partition_router.get_request_params(stream_slice=stream_slice)
@@ -89,7 +91,9 @@ def test_request_option(test_name, request_option, expected_req_params, expected
 
 def test_request_option_before_updating_cursor():
     request_option = RequestOption(inject_into=RequestOptionType.request_parameter, parameters={}, field_name="owner_resource")
-    partition_router = ListPartitionRouter(values=partition_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={})
+    partition_router = ListPartitionRouter(
+        values=partition_values, cursor_field=cursor_field, config={}, request_option=request_option, parameters={}
+    )
     stream_slice = {cursor_field: "customer"}
 
     assert {} == partition_router.get_request_params(stream_slice)

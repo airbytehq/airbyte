@@ -10,6 +10,7 @@ import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -148,7 +149,8 @@ public class SftpSource extends BaseConnector implements Source {
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
-    });
+    },
+        AirbyteStreamUtils.convertFromNameAndNamespace(stream.getName(), stream.getNamespace()));
   }
 
 }

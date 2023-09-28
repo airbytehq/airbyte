@@ -194,9 +194,11 @@ def test_recursive_read(blocks, requests_mock):
 def test_invalid_start_cursor(parent, requests_mock, caplog):
     stream = parent
     error_message = "The start_cursor provided is invalid: wrong_start_cursor"
-    search_endpoint = requests_mock.post("https://api.notion.com/v1/search", status_code=400,
-                                         json={"object": "error", "status": 400, "code": "validation_error",
-                                               "message": error_message})
+    search_endpoint = requests_mock.post(
+        "https://api.notion.com/v1/search",
+        status_code=400,
+        json={"object": "error", "status": 400, "code": "validation_error", "message": error_message},
+    )
 
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     with patch.object(stream, "backoff_time", return_value=0.1):
