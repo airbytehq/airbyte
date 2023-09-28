@@ -1,0 +1,3 @@
+{"type": "RECORD", "record": {"stream": "stream_endusers", "emitted_at": 1664705198575, "data": { "sourceId": "ABC-4795472", "externalId": "ABC", "email": "test@test.com", "companyId": "extid-4795472", "firstName": "Test"}}}
+{"type": "RECORD", "record": {"stream": "stream_endusers", "emitted_at": 1664705198575, "data": { "sourceId": "0036900003hNHs7AAG", "externalId": "XXXX", "email": "data@test.com", "companyId": "extid-4795472", "firstName": "Data"}}}
+
