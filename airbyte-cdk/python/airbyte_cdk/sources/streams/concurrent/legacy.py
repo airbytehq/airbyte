@@ -47,16 +47,7 @@ class StreamFacade(Stream):
         :return:
         """
         pk = cls._get_primary_key_from_stream(stream.primary_key)
-
-        if isinstance(stream.cursor_field, list):
-            if len(stream.cursor_field) > 1:
-                raise ValueError(f"Nested cursor fields are not supported. Got {stream.cursor_field} for {stream.name}")
-            elif len(stream.cursor_field) == 0:
-                cursor_field = None
-            else:
-                cursor_field = stream.cursor_field[0]
-        else:
-            cursor_field = stream.cursor_field
+        cursor_field = cls._get_cursor_field_from_stream(stream)
 
         if not source.message_repository:
             raise ValueError(
@@ -90,6 +81,18 @@ class StreamFacade(Stream):
                 raise ValueError(f"Nested primary keys are not supported. Found {stream_primary_key}")
         else:
             raise ValueError(f"Invalid type for primary key: {stream_primary_key}")
+
+    @classmethod
+    def _get_cursor_field_from_stream(cls, stream: Stream) -> Optional[FieldPath]:
+        if isinstance(stream.cursor_field, list):
+            if len(stream.cursor_field) > 1:
+                raise ValueError(f"Nested cursor fields are not supported. Got {stream.cursor_field} for {stream.name}")
+            elif len(stream.cursor_field) == 0:
+                return None
+            else:
+                return stream.cursor_field[0]
+        else:
+            return stream.cursor_field
 
     def __init__(self, stream: AbstractStream):
         self._stream = stream

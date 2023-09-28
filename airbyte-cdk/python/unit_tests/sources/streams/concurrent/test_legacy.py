@@ -198,3 +198,83 @@ class StreamFacadeTest(unittest.TestCase):
     def test_read_records_incremental(self):
         with self.assertRaises(NotImplementedError):
             list(self._facade.read_records(SyncMode.incremental, None, None, None))
+
+    def test_create_from_legacy_stream(self):
+        legacy_stream = Mock()
+        legacy_stream.name = "stream"
+        legacy_stream.primary_key = "id"
+        legacy_stream.cursor_field = "cursor"
+        source = Mock()
+        max_workers = 10
+
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+
+        assert facade.name == "stream"
+        assert facade.primary_key == "id"
+        assert facade.cursor_field == "cursor"
+
+    def test_create_from_legacy_stream_with_none_primary_key(self):
+        legacy_stream = Mock()
+        legacy_stream.primary_key = None
+        legacy_stream.cursor_field = []
+        source = Mock()
+        max_workers = 10
+
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+
+        assert facade.primary_key is None
+
+    def test_create_from_legacy_stream_with_composite_primary_key(self):
+        legacy_stream = Mock()
+        legacy_stream.primary_key = ["id", "name"]
+        legacy_stream.cursor_field = []
+        source = Mock()
+        max_workers = 10
+
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+
+        assert facade.primary_key == ["id", "name"]
+
+    def test_create_from_legacy_stream_with_empty_list_cursor(self):
+        legacy_stream = Mock()
+        legacy_stream.primary_key = "id"
+        legacy_stream.cursor_field = []
+        source = Mock()
+        max_workers = 10
+
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+
+        assert facade.cursor_field == []
+
+    def test_create_from_legacy_stream_raises_exception_if_primary_key_is_nested(self):
+        legacy_stream = Mock()
+        legacy_stream.name = "stream"
+        legacy_stream.primary_key = [["field", "id"]]
+        source = Mock()
+        max_workers = 10
+
+        with self.assertRaises(ValueError):
+            StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+
+    def test_create_from_legacy_stream_raises_exception_if_cursor_field_is_nested(self):
+        legacy_stream = Mock()
+        legacy_stream.name = "stream"
+        legacy_stream.primary_key = "id"
+        legacy_stream.cursor_field = ["field", "cursor"]
+        source = Mock()
+        max_workers = 10
+
+        with self.assertRaises(ValueError):
+            StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+
+    def test_create_from_legacy_stream_none_message_repository(self):
+        legacy_stream = Mock()
+        legacy_stream.name = "stream"
+        legacy_stream.primary_key = "id"
+        legacy_stream.cursor_field = "cursor"
+        source = Mock()
+        source.message_repository = None
+        max_workers = 10
+
+        with self.assertRaises(ValueError):
+            StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
