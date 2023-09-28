@@ -7,7 +7,7 @@ import typing
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple
 
-from airbyte_cdk.sources.streams.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams import Stream
 
 if typing.TYPE_CHECKING:
     from airbyte_cdk.sources import Source
@@ -19,7 +19,7 @@ class AvailabilityStrategy(ABC):
     """
 
     @abstractmethod
-    def check_availability(self, stream: AbstractStream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, Optional[str]]:
         """
         Checks stream availability.
 

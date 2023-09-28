@@ -103,9 +103,11 @@ class AbstractSource(Source, ABC):
             for configured_stream in catalog.streams:
                 stream_instance = stream_instances.get(configured_stream.stream.name)
                 if not stream_instance:
+                    if not self.raise_exception_on_missing_stream:
+                        continue
                     raise KeyError(
-                        f"The requested stream {configured_stream.stream.name} was not found in the source."
-                        f" Available streams: {stream_instances.keys()}"
+                        f"The stream {configured_stream.stream.name} no longer exists in the configuration. "
+                        f"Refresh the schema in replication settings and remove this stream from future sync attempts."
                     )
 
                 try:
@@ -143,6 +145,10 @@ class AbstractSource(Source, ABC):
                     logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
+
+    @property
+    def raise_exception_on_missing_stream(self) -> bool:
+        return True
 
     @property
     def per_stream_state_enabled(self) -> bool:
@@ -288,26 +294,14 @@ class AbstractSource(Source, ABC):
         configured_stream: ConfiguredAirbyteStream,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
-        logger.debug(
-            f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices}
-        )
         total_records_counter = 0
-        for _slice in slices:
-            if self._slice_logger.should_log_slice_message(logger):
-                yield self._slice_logger.create_slice_log_message(_slice)
-            record_data_or_messages = stream_instance.read_records(
-                stream_slice=_slice,
-                sync_mode=SyncMode.full_refresh,
-                cursor_field=configured_stream.cursor_field,
-            )
-            for record_data_or_message in record_data_or_messages:
-                message = self._get_message(record_data_or_message, stream_instance)
-                yield message
-                if message.type == MessageType.RECORD:
-                    total_records_counter += 1
-                    if internal_config.is_limit_reached(total_records_counter):
-                        return
+        for record_data_or_message in stream_instance.read_full_refresh(configured_stream.cursor_field, logger, self._slice_logger):
+            message = self._get_message(record_data_or_message, stream_instance)
+            yield message
+            if message.type == MessageType.RECORD:
+                total_records_counter += 1
+                if internal_config.is_limit_reached(total_records_counter):
+                    return
 
     def _checkpoint_state(self, stream: Stream, stream_state: Mapping[str, Any], state_manager: ConnectorStateManager) -> AirbyteMessage:
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state

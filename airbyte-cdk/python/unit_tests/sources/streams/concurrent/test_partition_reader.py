@@ -1,20 +1,17 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from queue import Queue
 from unittest.mock import Mock
 
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
-from airbyte_cdk.sources.streams.record import Record
-
-
-def test_partition_reader_initially_has_no_output():
-    partition_reader = PartitionReader()
-    assert partition_reader.is_done()
+from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel
 
 
 def test_partition_reader():
-    partition_reader = PartitionReader()
+    queue = Queue()
+    partition_reader = PartitionReader(queue)
 
     stream_partition = Mock()
     records = [
@@ -23,16 +20,12 @@ def test_partition_reader():
     ]
     stream_partition.read.return_value = iter(records)
 
-    assert partition_reader.is_done()
-
     partition_reader.process_partition(stream_partition)
 
-    assert not partition_reader.is_done()
-
     actual_records = []
-    while partition_reader.has_record_ready():
-        actual_records.append(partition_reader.get_next())
-
-    assert partition_reader.is_done()
+    while record := queue.get():
+        if isinstance(record, PartitionCompleteSentinel):
+            break
+        actual_records.append(record)
 
     assert records == actual_records
