@@ -276,12 +276,12 @@ def mock_issues_responses(config, issues_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/search",
-        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (1)"})],
+        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (1)", "expand": "renderedFields,transitions,changelog"})],
         json=issues_response,
     )
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/search",
-        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (2)"})],
+        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (2)", "expand": "renderedFields,transitions,changelog"})],
         json={},
     )
