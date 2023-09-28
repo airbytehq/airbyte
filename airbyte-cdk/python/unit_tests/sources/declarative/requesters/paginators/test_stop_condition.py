@@ -55,13 +55,14 @@ def test_given_stop_condition_is_met_when_next_page_token_then_return_none(mocke
     mocked_stop_condition.is_met.assert_has_calls([call(last_record), call(first_record)])
 
 
-def test_given_last_record_meets_condition_when_next_page_token_then_do_not_check_for_other_records(mocked_pagination_strategy, mocked_stop_condition):
+def test_given_last_record_meets_condition_when_next_page_token_then_do_not_check_for_other_records(
+    mocked_pagination_strategy, mocked_stop_condition
+):
     mocked_stop_condition.is_met.return_value = True
     last_record = Mock(spec=Record)
 
     StopConditionPaginationStrategyDecorator(mocked_pagination_strategy, mocked_stop_condition).next_page_token(
-        ANY_RESPONSE,
-        [Mock(spec=Record), last_record]
+        ANY_RESPONSE, [Mock(spec=Record), last_record]
     )
 
     mocked_stop_condition.is_met.assert_called_once_with(last_record)

@@ -69,15 +69,13 @@ def advertiser_ids_fixture():
     ],
 )
 def test_get_time_interval(pendulum_now_mock, granularity, intervals_len):
-    intervals = BasicReports._get_time_interval(
-        start_date="2020-01-01", ending_date="2020-03-01", granularity=granularity)
+    intervals = BasicReports._get_time_interval(start_date="2020-01-01", ending_date="2020-03-01", granularity=granularity)
     assert len(list(intervals)) == intervals_len
 
 
 @patch.object(pendulum, "now", return_value=pendulum.parse("2018-12-25"))
 def test_get_time_interval_past(pendulum_now_mock_past):
-    intervals = BasicReports._get_time_interval(
-        start_date="2020-01-01", ending_date="2020-01-01", granularity=ReportGranularity.DAY)
+    intervals = BasicReports._get_time_interval(start_date="2020-01-01", ending_date="2020-01-01", granularity=ReportGranularity.DAY)
     assert len(list(intervals)) == 1
 
 
@@ -112,25 +110,18 @@ def test_stream_slices_basic_sandbox(advertiser_ids, config_name, slices_expecte
         (
             Daily,
             [
-                {"advertiser_id": 1, "end_date": "2020-01-30",
-                    "start_date": "2020-01-01"},
-                {"advertiser_id": 1, "end_date": "2020-02-29",
-                    "start_date": "2020-01-31"},
-                {"advertiser_id": 1, "end_date": "2020-03-01",
-                    "start_date": "2020-03-01"},
-                {"advertiser_id": 2, "end_date": "2020-01-30",
-                    "start_date": "2020-01-01"},
-                {"advertiser_id": 2, "end_date": "2020-02-29",
-                    "start_date": "2020-01-31"},
-                {"advertiser_id": 2, "end_date": "2020-03-01",
-                    "start_date": "2020-03-01"},
+                {"advertiser_id": 1, "end_date": "2020-01-30", "start_date": "2020-01-01"},
+                {"advertiser_id": 1, "end_date": "2020-02-29", "start_date": "2020-01-31"},
+                {"advertiser_id": 1, "end_date": "2020-03-01", "start_date": "2020-03-01"},
+                {"advertiser_id": 2, "end_date": "2020-01-30", "start_date": "2020-01-01"},
+                {"advertiser_id": 2, "end_date": "2020-02-29", "start_date": "2020-01-31"},
+                {"advertiser_id": 2, "end_date": "2020-03-01", "start_date": "2020-03-01"},
             ],
         ),
     ],
 )
 def test_stream_slices_report(advertiser_ids, granularity, slices_expected, pendulum_now_mock):
-    slices = get_report_stream(AdsReports, granularity)(
-        **CONFIG).stream_slices()
+    slices = get_report_stream(AdsReports, granularity)(**CONFIG).stream_slices()
     assert list(slices) == slices_expected
 
 
@@ -176,8 +167,7 @@ def test_basic_reports_get_metrics_lifetime(stream, metrics_number):
     ],
 )
 def test_basic_reports_get_reporting_dimensions_lifetime(stream, dimensions_expected):
-    dimensions = get_report_stream(stream, Lifetime)(
-        **CONFIG)._get_reporting_dimensions()
+    dimensions = get_report_stream(stream, Lifetime)(**CONFIG)._get_reporting_dimensions()
     assert dimensions == dimensions_expected
 
 
@@ -188,13 +178,11 @@ def test_basic_reports_get_reporting_dimensions_lifetime(stream, dimensions_expe
         (AdGroupsReports, ["adgroup_id", "stat_time_day"]),
         (AdvertisersReports, ["advertiser_id", "stat_time_day"]),
         (CampaignsReports, ["campaign_id", "stat_time_day"]),
-        (AdvertisersAudienceReports, [
-         "advertiser_id", "stat_time_day", "gender", "age"]),
+        (AdvertisersAudienceReports, ["advertiser_id", "stat_time_day", "gender", "age"]),
     ],
 )
 def test_basic_reports_get_reporting_dimensions_day(stream, dimensions_expected):
-    dimensions = get_report_stream(stream, Daily)(
-        **CONFIG)._get_reporting_dimensions()
+    dimensions = get_report_stream(stream, Daily)(**CONFIG)._get_reporting_dimensions()
     assert dimensions == dimensions_expected
 
 
@@ -213,10 +201,8 @@ def test_basic_reports_cursor_field(granularity, cursor_field_expected):
 
 
 def test_request_params():
-    stream_slice = {"advertiser_id": 1,
-                    "start_date": "2020", "end_date": "2021"}
-    params = get_report_stream(AdvertisersAudienceReports, Daily)(
-        **CONFIG).request_params(stream_slice=stream_slice)
+    stream_slice = {"advertiser_id": 1, "start_date": "2020", "end_date": "2021"}
+    params = get_report_stream(AdvertisersAudienceReports, Daily)(**CONFIG).request_params(stream_slice=stream_slice)
     assert params == {
         "advertiser_id": 1,
         "data_level": "AUCTION_ADVERTISER",
@@ -242,14 +228,12 @@ def test_get_updated_state():
         # state should be empty while stream is reading records
         ads.max_cursor_date = "2020-01-08 00:00:00"
         is_finished.return_value = False
-        state1 = ads.get_updated_state(
-            current_stream_state=state, latest_record={})
+        state1 = ads.get_updated_state(current_stream_state=state, latest_record={})
         assert state1 == {"modify_time": ""}
 
         # state should be updated only when all records have been read (is_finished = True)
         is_finished.return_value = True
-        state2 = ads.get_updated_state(
-            current_stream_state=state, latest_record={})
+        state2 = ads.get_updated_state(current_stream_state=state, latest_record={})
         # state2_modify_time is JsonUpdatedState object
         state2_modify_time = state2["modify_time"]
         assert state2_modify_time.dict() == "2020-01-08 00:00:00"

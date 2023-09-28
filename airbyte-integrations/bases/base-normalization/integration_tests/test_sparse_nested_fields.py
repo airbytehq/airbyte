@@ -68,7 +68,7 @@ def test_sparse_nested_fields(destination_type: DestinationType):
     # TODO extract these conditions?
     if destination_type.value not in dbt_test_utils.get_test_targets():
         pytest.skip(f"Destinations {destination_type} is not in NORMALIZATION_TEST_TARGET env variable")
-    if (destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value)):
+    if destination_type.value in (DestinationType.ORACLE.value, DestinationType.CLICKHOUSE.value):
         pytest.skip(f"Destinations {destination_type} does not support nested streams")
     if destination_type.value in [DestinationType.MYSQL.value, DestinationType.ORACLE.value]:
         pytest.skip(f"{destination_type} does not support incremental yet")

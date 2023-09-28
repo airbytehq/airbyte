@@ -31,7 +31,11 @@ def check_source(repo_line: str) -> AirbyteConnectionStatus:
     "api_url, deployment_env, expected_message",
     (
         ("github.my.company.org", "CLOUD", "Please enter a full URL starting with http..."),
-        ("http://github.my.company.org", "CLOUD", "HTTP connection is insecure and is not allowed in this environment. Please use `https` instead."),
+        (
+            "http://github.my.company.org",
+            "CLOUD",
+            "HTTP connection is insecure and is not allowed in this environment. Please use `https` instead.",
+        ),
         ("http:/github.my.company.org", "NOT_CLOUD", "Please provide a correct URL"),
         ("https:/github.my.company.org", "CLOUD", "Please provide a correct URL"),
     ),
@@ -164,7 +168,11 @@ def test_organization_or_repo_available(monkeypatch):
 
 def tests_get_and_prepare_repositories_config():
     config = {"repository": "airbytehq/airbyte airbytehq/airbyte.test  airbytehq/integration-test"}
-    assert SourceGithub._get_and_prepare_repositories_config(config) == {"airbytehq/airbyte", "airbytehq/airbyte.test", "airbytehq/integration-test"}
+    assert SourceGithub._get_and_prepare_repositories_config(config) == {
+        "airbytehq/airbyte",
+        "airbytehq/airbyte.test",
+        "airbytehq/integration-test",
+    }
 
 
 def test_check_config_repository():
@@ -221,7 +229,7 @@ def test_check_config_repository():
         assert command_check(source, config)
 
     for repos in repos_fail:
-        config["repository"] = " ".join(repos_ok[:len(repos_ok)//2] + [repos] + repos_ok[len(repos_ok)//2:])
+        config["repository"] = " ".join(repos_ok[: len(repos_ok) // 2] + [repos] + repos_ok[len(repos_ok) // 2 :])
         with pytest.raises(AirbyteTracedException):
             assert command_check(source, config)
 
@@ -241,7 +249,7 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch):
         frozen_time.tick(delta=datetime.timedelta(seconds=seconds))
         called_args.append(seconds)
 
-    monkeypatch.setattr(time, 'sleep', sleep_mock)
+    monkeypatch.setattr(time, "sleep", sleep_mock)
 
     with freeze_time("2021-01-01 12:00:00") as frozen_time:
 
