@@ -95,6 +95,9 @@ class StreamFacade(Stream):
             return stream.cursor_field
 
     def __init__(self, stream: AbstractStream):
+        """
+        :param stream: The underlying AbstractStream
+        """
         self._stream = stream
 
     def read_full_refresh(
