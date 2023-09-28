@@ -99,6 +99,17 @@ class TestWeaviateIndexer(unittest.TestCase):
         chunk2_call = call({"someField": "some_value2", "text": "some_other_content"}, "Test", ANY, vector=[4,5,6])
         mock_client.batch.add_data_object.assert_has_calls([chunk1_call, chunk2_call], any_order=False)
 
+    def test_index_splits_batch(self):
+        mock_client = Mock()
+        self.indexer.client = mock_client
+        mock_client.batch.create_objects.return_value = []
+        self.indexer.config.batch_size = 2
+        mock_chunk1 = Chunk(page_content="some_content", embedding=[1, 2, 3], metadata={"someField": "some_value"}, record=AirbyteRecordMessage(stream="test", data={"someField": "some_value"}, emitted_at=0))
+        mock_chunk2 = Chunk(page_content="some_other_content", embedding=[4,5,6], metadata={"someField": "some_value2"}, record=AirbyteRecordMessage(stream="test", data={"someField": "some_value2"}, emitted_at=0))
+        mock_chunk3 = Chunk(page_content="third", embedding=[7,8,9], metadata={"someField": "some_value3"}, record=AirbyteRecordMessage(stream="test", data={"someField": "some_value3"}, emitted_at=0))
+        self.indexer.index([mock_chunk1, mock_chunk2, mock_chunk3], [])
+        assert mock_client.batch.create_objects.call_count == 2  
+
     @patch("destination_weaviate.indexer.uuid.uuid4")
     @patch('time.sleep', return_value=None)
     def test_index_flushes_batch_and_retries(self, MockTime, MockUUID):
