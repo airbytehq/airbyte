@@ -88,7 +88,7 @@ public class MongoUtilTest {
     final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName);
     assertNotNull(streams);
     assertEquals(1, streams.size());
-    assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
+    assertEquals(12, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
   }
 
   @Test

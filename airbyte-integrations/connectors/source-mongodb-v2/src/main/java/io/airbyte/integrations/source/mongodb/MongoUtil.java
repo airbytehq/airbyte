@@ -263,6 +263,7 @@ public class MongoUtil {
       case "int", "long", "double", "decimal" -> JsonSchemaType.NUMBER;
       case "array" -> JsonSchemaType.ARRAY;
       case "object", "javascriptWithScope" -> JsonSchemaType.OBJECT;
+      case "null" -> JsonSchemaType.NULL;
       default -> JsonSchemaType.STRING;
     };
   }
