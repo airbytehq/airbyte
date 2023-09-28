@@ -262,10 +262,46 @@ def test_get_start_date():
     assert date == str(state_date)
 
 
-def test_custom_streams():
-    dimensions = ["date", "country"]
+@pytest.mark.parametrize(
+    "dimensions, expected_status, schema_props, primary_key",
+    (
+        (["impressions"], Status.FAILED, None, None),
+        (
+            [],
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type"],
+            ["date", "site_url", "search_type"]
+        ),
+        (
+            ["date"],
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type"],
+            ["date", "site_url", "search_type"]
+        ),
+        (
+            ["country", "device", "page", "query"],
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type", "country", "device", "page", "query"],
+            ["date", "country", "device", "page", "query", "site_url", "search_type"]
+        ),
+        (
+            ["country", "device", "page", "query", "date"],
+            Status.SUCCEEDED,
+            ["clicks", "ctr", "impressions", "position", "date", "site_url", "search_type", "country", "device", "page", "query"],
+            ["date", "country", "device", "page", "query", "site_url", "search_type"]
+        ),
+    )
+)
+def test_custom_streams(config_gen, requests_mock, dimensions, expected_status, schema_props, primary_key):
+    requests_mock.get("https://www.googleapis.com/webmasters/v3/sites/https%3A%2F%2Fexample.com%2F", json={})
+    requests_mock.get("https://www.googleapis.com/webmasters/v3/sites", json={"siteEntry": [{"siteUrl": "https://example.com/"}]})
+    requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": "token", "expires_in": 10})
+    custom_reports = [{"name": "custom", "dimensions": dimensions}]
+    status = SourceGoogleSearchConsole().check(config=config_gen(custom_reports_array=custom_reports), logger=None).status
+    assert status is expected_status
+    if status is Status.FAILED:
+        return
     stream = SearchAnalyticsByCustomDimensions(dimensions, None, ["https://domain1.com", "https://domain2.com"], "2021-09-01", "2021-09-07")
     schema = stream.get_json_schema()
-
-    for d in ["clicks", "ctr", "date", "impressions", "position", "search_type", "site_url", "country"]:
-        assert d in schema["properties"]
+    assert set(schema["properties"]) == set(schema_props)
+    assert set(stream.primary_key) == set(primary_key)
