@@ -137,6 +137,7 @@ It is recommended to sync required channels only, this can be done by specifying
 
 | Version | Date       | Pull Request                                             | Subject                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------|
+| 0.3.3   | 2023-09-28 | [30580](https://github.com/airbytehq/airbyte/pull/30580) | Add `bot_id` field to threads schema                               |
 | 0.3.2   | 2023-09-20 | [30613](https://github.com/airbytehq/airbyte/pull/30613) | Set default value for channel_filters during discover                               |
 | 0.3.1   | 2023-09-19 | [30570](https://github.com/airbytehq/airbyte/pull/30570) | Use default availability strategy                                                   |
 | 0.3.0   | 2023-09-18 | [30521](https://github.com/airbytehq/airbyte/pull/30521) | Add unexpected fields to streams `channel_messages`, `channels`, `threads`, `users` |
