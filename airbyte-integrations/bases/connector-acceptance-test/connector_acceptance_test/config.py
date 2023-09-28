@@ -7,7 +7,7 @@ import logging
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import Generic, List, Mapping, Optional, Set, TypeVar, Union
+from typing import Generic, List, Mapping, Optional, Set, TypeVar
 
 from pydantic import BaseModel, Field, root_validator, validator
 from pydantic.generics import GenericModel
@@ -45,6 +45,7 @@ class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
     config_path: str = config_path
     timeout_seconds: int = timeout_seconds
+    deployment_mode: Optional[str]
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
         description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
     )
