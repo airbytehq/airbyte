@@ -10,23 +10,20 @@ import org.junit.jupiter.api.Test;
 
 public class GlobalMemoryManagerTest {
 
-  private static final long BYTES_10_MB = 10 * 1024 * 1024;
-  private static final long BYTES_35_MB = 35 * 1024 * 1024;
-  private static final long BYTES_5_MB = 5 * 1024 * 1024;
+  private static final long BYTES_MB = 1024 * 1024;
 
   @Test
   void test() {
-    final GlobalMemoryManager mgr = new GlobalMemoryManager(BYTES_35_MB);
+    final GlobalMemoryManager mgr = new GlobalMemoryManager(35 * BYTES_MB);
 
-    assertEquals(BYTES_10_MB, mgr.requestMemory());
-    assertEquals(BYTES_10_MB, mgr.requestMemory());
-    assertEquals(BYTES_10_MB, mgr.requestMemory());
-    assertEquals(BYTES_5_MB, mgr.requestMemory());
+    assertEquals(30 * BYTES_MB, mgr.requestMemory());
+    assertEquals(5 * BYTES_MB, mgr.requestMemory());
     assertEquals(0, mgr.requestMemory());
 
-    mgr.free(BYTES_10_MB);
-
-    assertEquals(BYTES_10_MB, mgr.requestMemory());
+    mgr.free(10 * BYTES_MB);
+    assertEquals(10 * BYTES_MB, mgr.requestMemory());
+    mgr.free(31 * BYTES_MB);
+    assertEquals(30 * BYTES_MB, mgr.requestMemory());
   }
 
 }
