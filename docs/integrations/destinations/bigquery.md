@@ -133,6 +133,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.19  | 2023-09-26 | [\#30775](https://github.com/airbytehq/airbyte/pull/30775  | Increase async block size                                                                                                                                       |
 | 2.0.18  | 2023-09-27 | [\#30739](https://github.com/airbytehq/airbyte/pull/30739) | Fix column name collision detection                                                                                                                             |
 | 2.0.17  | 2023-09-26 | [\#30696](https://github.com/airbytehq/airbyte/pull/30696) | Attempt unsafe typing operations with an exception clause                                                                                                       |
 | 2.0.16  | 2023-09-22 | [\#30697](https://github.com/airbytehq/airbyte/pull/30697) | Improve resiliency to unclean exit during schema change                                                                                                         |
