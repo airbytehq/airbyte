@@ -85,7 +85,6 @@ dependencies {
     testImplementation project(':airbyte-commons')
     testImplementation project(':airbyte-config-oss:config-models-oss')
     testImplementation project(':airbyte-test-utils')
-    integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     testFixturesCompileOnly project(':airbyte-commons')
     testFixturesCompileOnly project(':airbyte-api')
     testFixturesCompileOnly project(':airbyte-connector-test-harnesses:acceptance-test-harness')
