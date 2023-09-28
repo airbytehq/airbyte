@@ -340,6 +340,7 @@ def _install_python_dependencies_from_poetry(
 
     return container.with_exec(pip_install_poetry_cmd).with_exec(poetry_disable_virtual_env_cmd).with_exec(poetry_install_no_venv_cmd)
 
+
 async def with_installed_python_package(
     context: PipelineContext,
     python_environment: Container,
@@ -412,6 +413,7 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         )
 
     return connector_container
+
 
 async def with_python_connector_installed(
     context: PipelineContext,
