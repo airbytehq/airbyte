@@ -28,3 +28,10 @@ class Partition(ABC):
         :return: A mapping representing a slice
         """
         pass
+
+    @abstractmethod
+    def __hash__(self) -> int:
+        """
+        Returns a hash of the partition.
+        Partitions must be hashable so that they can be used as keys in a dictionary.
+        """
