@@ -33,14 +33,38 @@ class TestChromaIndexer(unittest.TestCase):
 
         test_configs = [
             ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, None),
-            ({"collection_name": "du", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The length of the collection name must be between 3 and 63 characters'),
-            ({"collection_name": "dummy-collectionxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The length of the collection name must be between 3 and 63 characters'),
-            ({"collection_name": "1dummy-colle..ction4", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The collection name must not contain two consecutive dots'),
-            ({"collection_name": "Dummy-coll...ectioN", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The collection name must start and end with a lowercase letter or a digit'),
-            ({"collection_name": "-dum?my-collection-", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The collection name must start and end with a lowercase letter or a digit'),
-            ({"collection_name": "dummy?collection", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The collection name can only contain lower case alphanumerics, dots, dashes, and underscores'),
-            ({"collection_name": "345.4.23.12", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, 'The collection name must not be a valid IP address.')
-            ]
+            (
+                {"collection_name": "du", "auth_method": {"mode": "persistent_client", "path": "/local/path"}},
+                "The length of the collection name must be between 3 and 63 characters",
+            ),
+            (
+                {
+                    "collection_name": "dummy-collectionxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                    "auth_method": {"mode": "persistent_client", "path": "/local/path"},
+                },
+                "The length of the collection name must be between 3 and 63 characters",
+            ),
+            (
+                {"collection_name": "1dummy-colle..ction4", "auth_method": {"mode": "persistent_client", "path": "/local/path"}},
+                "The collection name must not contain two consecutive dots",
+            ),
+            (
+                {"collection_name": "Dummy-coll...ectioN", "auth_method": {"mode": "persistent_client", "path": "/local/path"}},
+                "The collection name must start and end with a lowercase letter or a digit",
+            ),
+            (
+                {"collection_name": "-dum?my-collection-", "auth_method": {"mode": "persistent_client", "path": "/local/path"}},
+                "The collection name must start and end with a lowercase letter or a digit",
+            ),
+            (
+                {"collection_name": "dummy?collection", "auth_method": {"mode": "persistent_client", "path": "/local/path"}},
+                "The collection name can only contain lower case alphanumerics, dots, dashes, and underscores",
+            ),
+            (
+                {"collection_name": "345.4.23.12", "auth_method": {"mode": "persistent_client", "path": "/local/path"}},
+                "The collection name must not be a valid IP address.",
+            ),
+        ]
 
         for config, expected_error in test_configs:
             mock_config = ChromaIndexingConfigModel(**config)
@@ -53,10 +77,19 @@ class TestChromaIndexer(unittest.TestCase):
     def test_valid_path(self):
         test_configs = [
             ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "/local/path"}}, None),
-            ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "local/path"}}, 'Path must be prefixed with /local'),
-            ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "/localpath"}}, 'Path must be prefixed with /local'),
-            ({"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "./path"}}, 'Path must be prefixed with /local'),
-            ]
+            (
+                {"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "local/path"}},
+                "Path must be prefixed with /local",
+            ),
+            (
+                {"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "/localpath"}},
+                "Path must be prefixed with /local",
+            ),
+            (
+                {"collection_name": "dummy-collection", "auth_method": {"mode": "persistent_client", "path": "./path"}},
+                "Path must be prefixed with /local",
+            ),
+        ]
 
         for config, expected_error in test_configs:
             mock_config = ChromaIndexingConfigModel(**config)
@@ -106,7 +139,7 @@ class TestChromaIndexer(unittest.TestCase):
             )
         )
 
-        self.mock_client.get_collection().delete.assert_called_with(where={'_ab_stream': {"$in": ['some_stream']}})
+        self.mock_client.get_collection().delete.assert_called_with(where={"_ab_stream": {"$in": ["some_stream"]}})
 
     def test_pre_sync_does_not_call_delete(self):
         self.chroma_indexer.pre_sync(
@@ -116,13 +149,11 @@ class TestChromaIndexer(unittest.TestCase):
         self.mock_client.get_collection().delete.assert_not_called()
 
     def test_index_calls_insert(self):
-        self.chroma_indexer.index(
-            [Mock(metadata={"key": "value"}, page_content="some content", embedding=[1,2,3])], []
-            )
+        self.chroma_indexer.index([Mock(metadata={"key": "value"}, page_content="some content", embedding=[1, 2, 3])], [])
 
         self.mock_client.get_collection().add.assert_called_once()
 
     def test_index_calls_delete(self):
         self.chroma_indexer.index([], ["some_id"])
 
-        self.mock_client.get_collection().delete.assert_called_with(where={'_ab_record_id': {"$in": ['some_id']}})
+        self.mock_client.get_collection().delete.assert_called_with(where={"_ab_record_id": {"$in": ["some_id"]}})

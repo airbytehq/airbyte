@@ -34,6 +34,7 @@ class MockHttpStream(HttpStream):
         stub_resp = {"data": self.resp_counter}
         self.resp_counter += 1
         yield stub_resp
+
     pass
 
     def retry_factor(self) -> float:
@@ -43,20 +44,28 @@ class MockHttpStream(HttpStream):
 @pytest.mark.parametrize(
     ("status_code", "json_contents", "expected_is_available", "expected_messages"),
     [
-        (403, {"error": "Something went wrong"}, False, [
-            "This is most likely due to insufficient permissions on the credentials in use.",
-            "Something went wrong",
-        ]),
-        (200, {}, True, [])
-    ]
+        (
+            403,
+            {"error": "Something went wrong"},
+            False,
+            [
+                "This is most likely due to insufficient permissions on the credentials in use.",
+                "Something went wrong",
+            ],
+        ),
+        (200, {}, True, []),
+    ],
 )
 @pytest.mark.parametrize(
-    ("include_source", "expected_docs_url_messages"), [
+    ("include_source", "expected_docs_url_messages"),
+    [
         (True, ["Please visit https://docs.airbyte.com/integrations/sources/MockSource to learn more."]),
         (False, ["Please visit the connector's documentation to learn more."]),
-    ]
+    ],
 )
-def test_default_http_availability_strategy(mocker, status_code, json_contents, expected_is_available, expected_messages, include_source, expected_docs_url_messages):
+def test_default_http_availability_strategy(
+    mocker, status_code, json_contents, expected_is_available, expected_messages, include_source, expected_docs_url_messages
+):
     http_stream = MockHttpStream()
     assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
 
@@ -132,7 +141,6 @@ def test_send_handles_retries_when_checking_availability(mocker, caplog):
 
 
 def test_http_availability_strategy_on_empty_stream(mocker):
-
     class MockEmptyHttpStream(mocker.MagicMock, MockHttpStream):
         def __init__(self, *args, **kvargs):
             mocker.MagicMock.__init__(self)

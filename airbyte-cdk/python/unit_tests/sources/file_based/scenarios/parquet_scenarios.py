@@ -35,12 +35,14 @@ _single_partitioned_parquet_file = {
 _parquet_file_with_decimal = {
     "a.parquet": {
         "contents": [
-            ("col1", ),
+            ("col1",),
             (decimal.Decimal("13.00"),),
         ],
-        "schema": pa.schema([
-            pa.field("col1", pa.decimal128(5, 2)),
-        ]),
+        "schema": pa.schema(
+            [
+                pa.field("col1", pa.decimal128(5, 2)),
+            ]
+        ),
         "last_modified": "2023-06-05T03:54:07.000Z",
     }
 }
@@ -67,98 +69,81 @@ _multiple_parquet_file = {
 _parquet_file_with_various_types = {
     "a.parquet": {
         "contents": [
-            ("col_bool",
-
-             "col_int8",
-             "col_int16",
-             "col_int32",
-
-             "col_uint8",
-             "col_uint16",
-             "col_uint32",
-             "col_uint64",
-
-             "col_float32",
-             "col_float64",
-
-             "col_string",
-
-             "col_date32",
-             "col_date64",
-
-             "col_timestamp_without_tz",
-             "col_timestamp_with_tz",
-
-             "col_time32s",
-             "col_time32ms",
-             "col_time64us",
-
-             "col_struct",
-             "col_list",
-             "col_duration",
-             "col_binary",
-             ),
-            (True,
-
-             -1,
-             1,
-             2,
-
-             2,
-             3,
-             4,
-             5,
-
-             3.14,
-             5.0,
-
-             "2020-01-01",
-
-             datetime.date(2021, 1, 1),
-             datetime.date(2022, 1, 1),
-             datetime.datetime(2023, 1, 1, 1, 2, 3),
-             datetime.datetime(2024, 3, 4, 5, 6, 7, tzinfo=datetime.timezone.utc),
-
-             datetime.time(1, 2, 3),
-             datetime.time(2, 3, 4),
-             datetime.time(1, 2, 3, 4),
-             {"struct_key": "struct_value"},
-             [1, 2, 3, 4],
-             12345,
-             b"binary string. Hello world!",
-             ),
+            (
+                "col_bool",
+                "col_int8",
+                "col_int16",
+                "col_int32",
+                "col_uint8",
+                "col_uint16",
+                "col_uint32",
+                "col_uint64",
+                "col_float32",
+                "col_float64",
+                "col_string",
+                "col_date32",
+                "col_date64",
+                "col_timestamp_without_tz",
+                "col_timestamp_with_tz",
+                "col_time32s",
+                "col_time32ms",
+                "col_time64us",
+                "col_struct",
+                "col_list",
+                "col_duration",
+                "col_binary",
+            ),
+            (
+                True,
+                -1,
+                1,
+                2,
+                2,
+                3,
+                4,
+                5,
+                3.14,
+                5.0,
+                "2020-01-01",
+                datetime.date(2021, 1, 1),
+                datetime.date(2022, 1, 1),
+                datetime.datetime(2023, 1, 1, 1, 2, 3),
+                datetime.datetime(2024, 3, 4, 5, 6, 7, tzinfo=datetime.timezone.utc),
+                datetime.time(1, 2, 3),
+                datetime.time(2, 3, 4),
+                datetime.time(1, 2, 3, 4),
+                {"struct_key": "struct_value"},
+                [1, 2, 3, 4],
+                12345,
+                b"binary string. Hello world!",
+            ),
         ],
-        "schema": pa.schema([
-            pa.field("col_bool", pa.bool_()),
-
-            pa.field("col_int8", pa.int8()),
-            pa.field("col_int16", pa.int16()),
-            pa.field("col_int32", pa.int32()),
-
-            pa.field("col_uint8", pa.uint8()),
-            pa.field("col_uint16", pa.uint16()),
-            pa.field("col_uint32", pa.uint32()),
-            pa.field("col_uint64", pa.uint64()),
-
-            pa.field("col_float32", pa.float32()),
-            pa.field("col_float64", pa.float64()),
-
-            pa.field("col_string", pa.string()),
-
-            pa.field("col_date32", pa.date32()),
-            pa.field("col_date64", pa.date64()),
-            pa.field("col_timestamp_without_tz", pa.timestamp("s")),
-            pa.field("col_timestamp_with_tz", pa.timestamp("s", tz="UTC")),
-
-            pa.field("col_time32s", pa.time32("s")),
-            pa.field("col_time32ms", pa.time32("ms")),
-            pa.field("col_time64us", pa.time64("us")),
-
-            pa.field("col_struct", pa.struct([pa.field("struct_key", pa.string())])),
-            pa.field("col_list", pa.list_(pa.int32())),
-            pa.field("col_duration", pa.duration("s")),
-            pa.field("col_binary", pa.binary())
-        ]),
+        "schema": pa.schema(
+            [
+                pa.field("col_bool", pa.bool_()),
+                pa.field("col_int8", pa.int8()),
+                pa.field("col_int16", pa.int16()),
+                pa.field("col_int32", pa.int32()),
+                pa.field("col_uint8", pa.uint8()),
+                pa.field("col_uint16", pa.uint16()),
+                pa.field("col_uint32", pa.uint32()),
+                pa.field("col_uint64", pa.uint64()),
+                pa.field("col_float32", pa.float32()),
+                pa.field("col_float64", pa.float64()),
+                pa.field("col_string", pa.string()),
+                pa.field("col_date32", pa.date32()),
+                pa.field("col_date64", pa.date64()),
+                pa.field("col_timestamp_without_tz", pa.timestamp("s")),
+                pa.field("col_timestamp_with_tz", pa.timestamp("s", tz="UTC")),
+                pa.field("col_time32s", pa.time32("s")),
+                pa.field("col_time32ms", pa.time32("ms")),
+                pa.field("col_time64us", pa.time64("us")),
+                pa.field("col_struct", pa.struct([pa.field("struct_key", pa.string())])),
+                pa.field("col_list", pa.list_(pa.int32())),
+                pa.field("col_duration", pa.duration("s")),
+                pa.field("col_binary", pa.binary()),
+            ]
+        ),
         "last_modified": "2023-06-05T03:54:07.000Z",
     }
 }
@@ -182,10 +167,24 @@ single_parquet_scenario = (
     .set_file_type("parquet")
     .set_expected_records(
         [
-            {"data": {"col1": "val11", "col2": "val12", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
-            {"data": {"col1": "val21", "col2": "val22", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "val11",
+                    "col2": "val12",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.parquet",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21",
+                    "col2": "val22",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.parquet",
+                },
+                "stream": "stream1",
+            },
         ]
     )
     .set_expected_catalog(
@@ -196,19 +195,11 @@ single_parquet_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": ["null", "string"]
-                            },
-                            "col2": {
-                                "type": ["null", "string"]
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -238,10 +229,28 @@ single_partitioned_parquet_scenario = (
     .set_file_type("parquet")
     .set_expected_records(
         [
-            {"data": {"col1": "val11", "col2": "val12", "partition1": "1", "partition2": "2","_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "path_prefix/partition1=1/partition2=2/a.parquet"}, "stream": "stream1"},
-            {"data": {"col1": "val21", "col2": "val22", "partition1": "1", "partition2": "2", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "path_prefix/partition1=1/partition2=2/a.parquet"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "val11",
+                    "col2": "val12",
+                    "partition1": "1",
+                    "partition2": "2",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "path_prefix/partition1=1/partition2=2/a.parquet",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21",
+                    "col2": "val22",
+                    "partition1": "1",
+                    "partition2": "2",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "path_prefix/partition1=1/partition2=2/a.parquet",
+                },
+                "stream": "stream1",
+            },
         ]
     )
     .set_expected_catalog(
@@ -252,25 +261,13 @@ single_partitioned_parquet_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": ["null", "string"]
-                            },
-                            "col2": {
-                                "type": ["null", "string"]
-                            },
-                            "partition1": {
-                                "type": ["null", "string"]
-                            },
-                            "partition2": {
-                                "type": ["null", "string"]
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "partition1": {"type": ["null", "string"]},
+                            "partition2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -306,22 +303,12 @@ multi_parquet_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": ["null", "string"]
-                            },
-                            "col2": {
-                                "type": ["null", "string"]
-                            },
-                            "col3": {
-                                "type": ["null", "string"]
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "col3": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -332,14 +319,44 @@ multi_parquet_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col1": "val11a", "col2": "val12a", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
-            {"data": {"col1": "val21a", "col2": "val22a", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
-            {"data": {"col1": "val11b", "col2": "val12b", "col3": "val13b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "b.parquet"}, "stream": "stream1"},
-            {"data": {"col1": "val21b", "col2": "val22b", "col3": "val23b", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "b.parquet"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "val11a",
+                    "col2": "val12a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.parquet",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21a",
+                    "col2": "val22a",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.parquet",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val11b",
+                    "col2": "val12b",
+                    "col3": "val13b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.parquet",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "col1": "val21b",
+                    "col2": "val22b",
+                    "col3": "val23b",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "b.parquet",
+                },
+                "stream": "stream1",
+            },
         ]
     )
 ).build()
@@ -402,22 +419,10 @@ parquet_various_types_scenario = (
                             "col_string": {
                                 "type": ["null", "string"],
                             },
-                            "col_date32": {
-                                "type": ["null", "string"],
-                                "format": "date"
-                            },
-                            "col_date64": {
-                                "type": ["null", "string"],
-                                "format": "date"
-                            },
-                            "col_timestamp_without_tz": {
-                                "type": ["null", "string"],
-                                "format": "date-time"
-                            },
-                            "col_timestamp_with_tz": {
-                                "type": ["null", "string"],
-                                "format": "date-time"
-                            },
+                            "col_date32": {"type": ["null", "string"], "format": "date"},
+                            "col_date64": {"type": ["null", "string"], "format": "date"},
+                            "col_timestamp_without_tz": {"type": ["null", "string"], "format": "date-time"},
+                            "col_timestamp_with_tz": {"type": ["null", "string"], "format": "date-time"},
                             "col_time32s": {
                                 "type": ["null", "string"],
                             },
@@ -456,31 +461,35 @@ parquet_various_types_scenario = (
     )
     .set_expected_records(
         [
-            {"data": {"col_bool": True,
-                      "col_int8": -1,
-                      "col_int16": 1,
-                      "col_int32": 2,
-                      "col_uint8": 2,
-                      "col_uint16": 3,
-                      "col_uint32": 4,
-                      "col_uint64": 5,
-                      "col_float32": 3.14,
-                      "col_float64": 5.0,
-                      "col_string": "2020-01-01",
-                      "col_date32": "2021-01-01",
-                      "col_date64": "2022-01-01",
-                      "col_timestamp_without_tz": "2023-01-01T01:02:03",
-                      "col_timestamp_with_tz": "2024-03-04T05:06:07+00:00",
-                      "col_time32s": "01:02:03",
-                      "col_time32ms": "02:03:04",
-                      "col_time64us": "01:02:03.000004",
-                      "col_struct": {"struct_key": "struct_value"},
-                      "col_list": [1, 2, 3, 4],
-                      "col_duration": 12345,
-                      "col_binary": "binary string. Hello world!",
-                      "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"
-             },
+            {
+                "data": {
+                    "col_bool": True,
+                    "col_int8": -1,
+                    "col_int16": 1,
+                    "col_int32": 2,
+                    "col_uint8": 2,
+                    "col_uint16": 3,
+                    "col_uint32": 4,
+                    "col_uint64": 5,
+                    "col_float32": 3.14,
+                    "col_float64": 5.0,
+                    "col_string": "2020-01-01",
+                    "col_date32": "2021-01-01",
+                    "col_date64": "2022-01-01",
+                    "col_timestamp_without_tz": "2023-01-01T01:02:03",
+                    "col_timestamp_with_tz": "2024-03-04T05:06:07+00:00",
+                    "col_time32s": "01:02:03",
+                    "col_time32ms": "02:03:04",
+                    "col_time64us": "01:02:03.000004",
+                    "col_struct": {"struct_key": "struct_value"},
+                    "col_list": [1, 2, 3, 4],
+                    "col_duration": 12345,
+                    "col_binary": "binary string. Hello world!",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.parquet",
+                },
+                "stream": "stream1",
+            },
         ]
     )
 ).build()
@@ -504,8 +513,14 @@ parquet_file_with_decimal_no_config_scenario = (
     .set_file_type("parquet")
     .set_expected_records(
         [
-            {"data": {"col1": "13.00", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "13.00",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.parquet",
+                },
+                "stream": "stream1",
+            },
         ]
     )
     .set_expected_catalog(
@@ -516,16 +531,10 @@ parquet_file_with_decimal_no_config_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": ["null", "string"]
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "col1": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -546,10 +555,7 @@ parquet_file_with_decimal_as_string_scenario = (
                     "name": "stream1",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                    "format": {
-                        "filetype": "parquet",
-                        "decimal_as_float": False
-                    }
+                    "format": {"filetype": "parquet", "decimal_as_float": False},
                 }
             ]
         }
@@ -558,8 +564,14 @@ parquet_file_with_decimal_as_string_scenario = (
     .set_file_type("parquet")
     .set_expected_records(
         [
-            {"data": {"col1": "13.00", "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
+            {
+                "data": {
+                    "col1": "13.00",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "a.parquet",
+                },
+                "stream": "stream1",
+            },
         ]
     )
     .set_expected_catalog(
@@ -570,16 +582,10 @@ parquet_file_with_decimal_as_string_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": ["null", "string"]
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "col1": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -600,10 +606,7 @@ parquet_file_with_decimal_as_float_scenario = (
                     "name": "stream1",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                    "format": {
-                        "filetype": "parquet",
-                        "decimal_as_float": True
-                    }
+                    "format": {"filetype": "parquet", "decimal_as_float": True},
                 }
             ]
         }
@@ -612,8 +615,10 @@ parquet_file_with_decimal_as_float_scenario = (
     .set_file_type("parquet")
     .set_expected_records(
         [
-            {"data": {"col1": 13.00, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
+            {
+                "data": {"col1": 13.00, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.parquet"},
+                "stream": "stream1",
+            },
         ]
     )
     .set_expected_catalog(
@@ -624,16 +629,10 @@ parquet_file_with_decimal_as_float_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": ["null", "number"]
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "col1": {"type": ["null", "number"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -665,8 +664,10 @@ parquet_file_with_decimal_legacy_config_scenario = (
     .set_file_type("parquet")
     .set_expected_records(
         [
-            {"data": {"col1": 13.00, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
-                      "_ab_source_file_url": "a.parquet"}, "stream": "stream1"},
+            {
+                "data": {"col1": 13.00, "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z", "_ab_source_file_url": "a.parquet"},
+                "stream": "stream1",
+            },
         ]
     )
     .set_expected_catalog(
@@ -677,16 +678,10 @@ parquet_file_with_decimal_legacy_config_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": ["null", "number"]
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "col1": {"type": ["null", "number"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,
@@ -700,32 +695,11 @@ parquet_file_with_decimal_legacy_config_scenario = (
 parquet_with_invalid_config_scenario = (
     TestScenarioBuilder()
     .set_name("parquet_with_invalid_config")
-    .set_config(
-        {
-            "streams": [
-                {
-                    "name": "stream1",
-                    "globs": ["*"],
-                    "validation_policy": "Emit Record",
-                    "format": {
-                        "filetype": "csv"
-                    }
-                }
-            ]
-        }
-    )
+    .set_config({"streams": [{"name": "stream1", "globs": ["*"], "validation_policy": "Emit Record", "format": {"filetype": "csv"}}]})
     .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
     .set_file_type("parquet")
-    .set_expected_records(
-        [
-        ]
-    )
-    .set_expected_logs({"read": [
-        {
-            "level": "ERROR",
-            "message": "Error parsing record"
-        }
-    ]})
+    .set_expected_records([])
+    .set_expected_logs({"read": [{"level": "ERROR", "message": "Error parsing record"}]})
     .set_expected_discover_error(AirbyteTracedException, "Error inferring schema from files")
     .set_expected_catalog(
         {
@@ -735,19 +709,11 @@ parquet_with_invalid_config_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "col1": {
-                                "type": ["null", "string"]
-                            },
-                            "col2": {
-                                "type": ["null", "string"]
-                            },
-                            "_ab_source_file_last_modified": {
-                                "type": "string"
-                            },
-                            "_ab_source_file_url": {
-                                "type": "string"
-                            },
-                        }
+                            "col1": {"type": ["null", "string"]},
+                            "col2": {"type": ["null", "string"]},
+                            "_ab_source_file_last_modified": {"type": "string"},
+                            "_ab_source_file_url": {"type": "string"},
+                        },
                     },
                     "name": "stream1",
                     "source_defined_cursor": True,

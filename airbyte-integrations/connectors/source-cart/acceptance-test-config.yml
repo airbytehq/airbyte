@@ -5,7 +5,7 @@ tests:
   spec:
     - spec_path: "source_cart/spec.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.1.6" 
+        disable_for_version: "0.1.6"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -15,7 +15,7 @@ tests:
   discovery:
     - config_path: "secrets/config.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.1.6" 
+        disable_for_version: "0.1.6"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
@@ -36,4 +36,3 @@ tests:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       timeout_seconds: 1800
-

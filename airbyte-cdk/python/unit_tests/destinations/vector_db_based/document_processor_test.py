@@ -40,12 +40,21 @@ def initialize_processor(config=ProcessingConfigModel(chunk_size=48, chunk_overl
 @pytest.mark.parametrize(
     "metadata_fields, expected_metadata",
     [
-        (None, {"_ab_stream": "namespace1_stream1", "id": 1, "text": "This is the text", "complex": {"test": "abc"}, "arr": [{"test": "abc"}, {"test": "def"}]}),
+        (
+            None,
+            {
+                "_ab_stream": "namespace1_stream1",
+                "id": 1,
+                "text": "This is the text",
+                "complex": {"test": "abc"},
+                "arr": [{"test": "abc"}, {"test": "def"}],
+            },
+        ),
         (["id"], {"_ab_stream": "namespace1_stream1", "id": 1}),
         (["id", "non_existing"], {"_ab_stream": "namespace1_stream1", "id": 1}),
         (["id", "complex.test"], {"_ab_stream": "namespace1_stream1", "id": 1, "complex.test": "abc"}),
         (["id", "arr.*.test"], {"_ab_stream": "namespace1_stream1", "id": 1, "arr.*.test": ["abc", "def"]}),
-    ]
+    ],
 )
 def test_process_single_chunk_with_metadata(metadata_fields, expected_metadata):
     processor = initialize_processor()
@@ -140,12 +149,7 @@ def test_complex_text_fields():
             "non_text": "a",
             "non_text_2": 1,
             "text": "This is the regular text",
-            "other_nested": {
-                "non_text": {
-                    "a": "xyz",
-                    "b": "abc"
-                }
-            }
+            "other_nested": {"non_text": {"a": "xyz", "b": "abc"}},
         },
         emitted_at=1234,
     )
@@ -156,17 +160,15 @@ def test_complex_text_fields():
     chunks, _ = processor.process(record)
 
     assert len(chunks) == 1
-    assert chunks[0].page_content == """nested.texts.*.text: This is the text
+    assert (
+        chunks[0].page_content
+        == """nested.texts.*.text: This is the text
 And another
 text: This is the regular text
 other_nested.non_text: \na: xyz
 b: abc"""
-    assert chunks[0].metadata == {
-        "id": 1,
-        "non_text": "a",
-        "non_text_2": 1,
-        "_ab_stream": "namespace1_stream1"
-    }
+    )
+    assert chunks[0].metadata == {"id": 1, "non_text": "a", "non_text_2": 1, "_ab_stream": "namespace1_stream1"}
 
 
 def test_no_text_fields():
@@ -225,11 +227,7 @@ def test_process_multiple_chunks_with_relevant_fields():
             10,
             0,
             None,
-            [
-                "text: By default, splits are done",
-                "on multi newlines,",
-                "then single newlines, then spaces"
-            ],
+            ["text: By default, splits are done", "on multi newlines,", "then single newlines, then spaces"],
         ),
         (
             "Overlap splitting",
@@ -342,10 +340,14 @@ def test_process_multiple_chunks_with_relevant_fields():
                 "this is the first class */ }\nclass B {}",
             ],
         ),
-    ]
+    ],
 )
 def test_text_splitters(label, text, chunk_size, chunk_overlap, splitter_config, expected_chunks):
-    processor = initialize_processor(ProcessingConfigModel(chunk_size=chunk_size, chunk_overlap=chunk_overlap, text_fields=["text"], metadata_fields=None, text_splitter=splitter_config))
+    processor = initialize_processor(
+        ProcessingConfigModel(
+            chunk_size=chunk_size, chunk_overlap=chunk_overlap, text_fields=["text"], metadata_fields=None, text_splitter=splitter_config
+        )
+    )
 
     record = AirbyteRecordMessage(
         stream="stream1",
@@ -375,35 +377,17 @@ def test_text_splitters(label, text, chunk_size, chunk_overlap, splitter_config,
 @pytest.mark.parametrize(
     "label, split_config, has_error_message",
     [
-        (
-            "Invalid separator",
-            SeparatorSplitterConfigModel(mode="separator", separators=['"xxx']),
-            True
-        ),
-        (
-            "Missing quotes",
-            SeparatorSplitterConfigModel(mode="separator", separators=['xxx']),
-            True
-        ),
-        (
-            "Non-string separator",
-            SeparatorSplitterConfigModel(mode="separator", separators=['123']),
-            True
-        ),
-        (
-            "Object separator",
-            SeparatorSplitterConfigModel(mode="separator", separators=['{}']),
-            True
-        ),
-        (
-            "Proper separator",
-            SeparatorSplitterConfigModel(mode="separator", separators=['"xxx"', '"\\n\\n"']),
-            False
-        ),
-    ]
+        ("Invalid separator", SeparatorSplitterConfigModel(mode="separator", separators=['"xxx']), True),
+        ("Missing quotes", SeparatorSplitterConfigModel(mode="separator", separators=["xxx"]), True),
+        ("Non-string separator", SeparatorSplitterConfigModel(mode="separator", separators=["123"]), True),
+        ("Object separator", SeparatorSplitterConfigModel(mode="separator", separators=["{}"]), True),
+        ("Proper separator", SeparatorSplitterConfigModel(mode="separator", separators=['"xxx"', '"\\n\\n"']), False),
+    ],
 )
 def test_text_splitter_check(label, split_config, has_error_message):
-    error = DocumentProcessor.check_config(ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None, text_splitter=split_config))
+    error = DocumentProcessor.check_config(
+        ProcessingConfigModel(chunk_size=48, chunk_overlap=0, text_fields=None, metadata_fields=None, text_splitter=split_config)
+    )
     if has_error_message:
         assert error is not None
     else:
@@ -418,9 +402,11 @@ def test_text_splitter_check(label, split_config, has_error_message):
         ({"id": 99, "name": "John Doe", "age": 25}, "namespace1_stream1_99_John Doe_25", [["id"], ["name"], ["age"]]),
         ({"nested": {"id": "abc"}, "name": "John Doe"}, "namespace1_stream1_abc_John Doe", [["nested", "id"], ["name"]]),
         ({"nested": {"id": "abc"}}, "namespace1_stream1_abc___not_found__", [["nested", "id"], ["name"]]),
-    ]
+    ],
 )
-def test_process_multiple_chunks_with_dedupe_mode(primary_key_value: Mapping[str, Any], stringified_primary_key: str, primary_key: List[List[str]]):
+def test_process_multiple_chunks_with_dedupe_mode(
+    primary_key_value: Mapping[str, Any], stringified_primary_key: str, primary_key: List[List[str]]
+):
     processor = initialize_processor()
 
     record = AirbyteRecordMessage(
@@ -429,7 +415,7 @@ def test_process_multiple_chunks_with_dedupe_mode(primary_key_value: Mapping[str
         data={
             "text": "This is the text and it is long enough to be split into multiple chunks. This is the text and it is long enough to be split into multiple chunks. This is the text and it is long enough to be split into multiple chunks",
             "age": 25,
-            **primary_key_value
+            **primary_key_value,
         },
         emitted_at=1234,
     )

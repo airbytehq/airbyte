@@ -16,14 +16,11 @@ def test_migration(ab_entrypoint_extract_config_mock, source_write_config_mock, 
     source = SourceGoogleAnalyticsDataApi()
 
     source_read_config_mock.return_value = {
-        "credentials": {
-            "auth_type": "Service",
-            "credentials_json": "<credentials string ...>"
-        },
+        "credentials": {"auth_type": "Service", "credentials_json": "<credentials string ...>"},
         "custom_reports": "<custom reports out of current test>",
         "date_ranges_start_date": "2023-09-01",
         "window_in_days": 30,
-        "property_id": "111111111"
+        "property_id": "111111111",
     }
     ab_entrypoint_extract_config_mock.return_value = "/path/to/config.json"
 

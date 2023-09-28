@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import responses
-from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException
+from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException, UserDefinedBackoffException
 from requests import HTTPError
 from responses import matchers
 from source_github import constants
@@ -29,6 +29,7 @@ from source_github.streams import (
     ProjectCards,
     ProjectColumns,
     Projects,
+    ProjectsV2,
     PullRequestCommentReactions,
     PullRequestCommits,
     PullRequests,
@@ -431,7 +432,11 @@ def test_stream_commits_incremental_read():
         "GET",
         api_url,
         json=data[5:7],
-        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:06Z", "sha": "branch", "per_page": "2", "page": "2"}, strict_match=False)],
+        match=[
+            matchers.query_param_matcher(
+                {"since": "2022-02-02T10:10:06Z", "sha": "branch", "per_page": "2", "page": "2"}, strict_match=False
+            )
+        ],
     )
 
     stream_state = {}
@@ -925,7 +930,7 @@ def test_stream_team_members_full_refresh(caplog):
         {"login": "login1", "organization": "org1", "team_slug": "team1"},
         {"login": "login2", "organization": "org1", "team_slug": "team1"},
         {"login": "login2", "organization": "org1", "team_slug": "team2"},
-        {"login": "login3", "organization": "org1", "team_slug": "team2"}
+        {"login": "login3", "organization": "org1", "team_slug": "team2"},
     ]
 
     stream = TeamMemberships(parent=stream, **repository_args)
@@ -1288,3 +1293,38 @@ def test_stream_pull_request_comment_reactions_read():
     ]
 
     assert stream_state == {"airbytehq/airbyte": {"created_at": "2022-01-02T00:00:01Z"}}
+
+
+@responses.activate
+def test_stream_projects_v2_graphql_retry():
+    repository_args_with_start_date = {
+        "start_date": "2022-01-01T00:00:00Z",
+        "page_size_for_large_streams": 20,
+        "repositories": ["airbytehq/airbyte"],
+    }
+    stream = ProjectsV2(**repository_args_with_start_date)
+    resp = responses.add(
+        responses.POST,
+        "https://api.github.com/graphql",
+        json={"errors": "not found"},
+        status=200,
+    )
+
+    with patch.object(stream, "backoff_time", return_value=0.01), pytest.raises(UserDefinedBackoffException):
+        read_incremental(stream, stream_state={})
+    assert resp.call_count == stream.max_retries + 1
+
+
+def test_stream_projects_v2_graphql_query():
+    repository_args_with_start_date = {
+        "start_date": "2022-01-01T00:00:00Z",
+        "page_size_for_large_streams": 20,
+        "repositories": ["airbytehq/airbyte"],
+    }
+    stream = ProjectsV2(**repository_args_with_start_date)
+    query = stream.request_body_json(stream_state={}, stream_slice={"repository": "airbytehq/airbyte"})
+
+    f = Path(__file__).parent / "projects_v2_pull_requests_query.json"
+    expected_query = json.load(open(f))
+
+    assert query == expected_query
