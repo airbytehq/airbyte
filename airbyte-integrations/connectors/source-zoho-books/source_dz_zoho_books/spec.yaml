@@ -36,6 +36,7 @@ connectionSpecification:
       title: DC Region
       type: string
       description: Data Center region represents a geographical location where one or more data centers are located. 
+      enum: ["IN", "US", "AU", "JP", "EU"]
     start_date:
       title: Date-From Filter
       type: string
