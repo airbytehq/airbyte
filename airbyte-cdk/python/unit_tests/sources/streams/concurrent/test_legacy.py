@@ -117,6 +117,22 @@ def test_legacy_partition():
     assert messages == [a_log_message]
 
 
+@pytest.mark.parametrize(
+    "_slice, expected_hash",
+    [
+        pytest.param({"partition": 1, "k": "v"}, hash(("stream", '{"k": "v", "partition": 1}')), id="test_hash_with_slice"),
+        pytest.param(None, hash("stream"), id="test_hash_no_slice"),
+    ],
+)
+def test_legacy_partition_hash(_slice, expected_hash):
+    stream = Mock()
+    stream.name = "stream"
+    partition = LegacyPartition(stream, _slice, Mock())
+
+    _hash = partition.__hash__()
+    assert _hash == expected_hash
+
+
 class StreamFacadeTest(unittest.TestCase):
     def setUp(self):
         self._stream = Mock()
@@ -160,3 +176,25 @@ class StreamFacadeTest(unittest.TestCase):
         self._stream.get_error_display_message.return_value = display_message
         assert self._facade.get_error_display_message(exception) == display_message
         self._stream.get_error_display_message.assert_called_once_with(exception)
+
+    def test_full_refresh(self):
+        expected_stream_data = [{"data": 1}, {"data": 2}]
+        records = [Record(data) for data in expected_stream_data]
+        self._stream.read.return_value = records
+
+        actual_stream_data = list(self._facade.read_records(SyncMode.full_refresh, None, None, None))
+
+        assert actual_stream_data == expected_stream_data
+
+    def test_read_records_full_refresh(self):
+        expected_stream_data = [{"data": 1}, {"data": 2}]
+        records = [Record(data) for data in expected_stream_data]
+        self._stream.read.return_value = records
+
+        actual_stream_data = list(self._facade.read_records(SyncMode.full_refresh, None, None, None))
+
+        assert actual_stream_data == expected_stream_data
+
+    def test_read_records_incremental(self):
+        with self.assertRaises(NotImplementedError):
+            list(self._facade.read_records(SyncMode.incremental, None, None, None))
