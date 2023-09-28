@@ -17,7 +17,7 @@ import com.mongodb.MongoDriverInformation;
 import com.mongodb.ReadPreference;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumPropertiesManager;
 
 /**
  * Helper utility for building a {@link MongoClient}.

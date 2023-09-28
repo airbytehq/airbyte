@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import org.junit.jupiter.api.Test;
 
 class MongoDbCdcSavedInfoFetcherTest {

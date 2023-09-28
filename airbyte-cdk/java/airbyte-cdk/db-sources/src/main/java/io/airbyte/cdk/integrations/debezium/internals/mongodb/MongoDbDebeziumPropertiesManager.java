@@ -4,29 +4,16 @@
 
 package io.airbyte.cdk.integrations.debezium.internals.mongodb;
 
-<<<<<<< HEAD:airbyte-integrations/bases/debezium/src/main/java/io/airbyte/integrations/debezium/internals/mongodb/MongoDbDebeziumPropertiesManager.java
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.AUTH_SOURCE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CREDENTIALS_PLACEHOLDER;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
-=======
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.AUTH_SOURCE_CONFIGURATION_KEY;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY;
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.CREDENTIALS_PLACEHOLDER;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USER_CONFIGURATION_KEY;
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.Configuration.USERNAME_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
-import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
->>>>>>> master:airbyte-cdk/java/airbyte-cdk/db-sources/src/main/java/io/airbyte/cdk/integrations/debezium/internals/mongodb/MongoDbDebeziumPropertiesManager.java
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.List;

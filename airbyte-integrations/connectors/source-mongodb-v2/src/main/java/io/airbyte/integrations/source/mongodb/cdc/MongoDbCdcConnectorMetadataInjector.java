@@ -10,9 +10,9 @@ import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
+import io.airbyte.commons.json.Jsons;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
 
