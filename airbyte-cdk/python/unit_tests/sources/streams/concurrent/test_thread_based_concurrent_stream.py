@@ -5,6 +5,8 @@ import unittest
 from unittest.mock import Mock
 
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
+from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
+from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 
 
@@ -31,6 +33,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._error_display_message_parser,
             self._slice_logger,
             self._message_repository,
+            1,
         )
 
     def test_get_error_display_message_delegates_to_error_message_parser(self):
@@ -75,3 +78,31 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
 
         with self.assertRaises(Exception):
             self._stream._check_for_errors(futures)
+
+    def test_read_no_slice_message(self):
+        partition = Mock(spec=Partition)
+        expected_records = [Record({"id": 1}), Record({"id": "2"})]
+        partition.read.return_value = expected_records
+        partition.to_slice.return_value = {"slice": "slice"}
+        self._slice_logger.should_log_slice_message.return_value = False
+
+        self._partition_generator.generate.return_value = [partition]
+        actual_records = list(self._stream.read())
+
+        assert expected_records == actual_records
+
+        self._message_repository.emit_message.assert_not_called()
+
+    def test_read_log_slice_message(self):
+        partition = Mock(spec=Partition)
+        expected_records = [Record({"id": 1}), Record({"id": "2"})]
+        partition.read.return_value = expected_records
+        partition.to_slice.return_value = {"slice": "slice"}
+        self._slice_logger.should_log_slice_message.return_value = True
+        slice_log_message = Mock()
+        self._slice_logger.create_slice_log_message.return_value = slice_log_message
+
+        self._partition_generator.generate.return_value = [partition]
+        list(self._stream.read())
+
+        self._message_repository.emit_message.assert_called_once_with(slice_log_message)

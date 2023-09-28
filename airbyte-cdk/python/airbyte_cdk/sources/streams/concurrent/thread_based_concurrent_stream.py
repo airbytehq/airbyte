@@ -24,7 +24,7 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 class ThreadBasedConcurrentStream(AbstractStream):
 
-    TIMEOUT_SECONDS = 300
+    DEFAULT_TIMEOUT_SECONDS = 300
 
     def __init__(
         self,
@@ -38,6 +38,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         error_display_message_parser: ErrorMessageParser,
         slice_logger: SliceLogger,
         message_repository: MessageRepository,
+        timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -50,6 +51,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._error_message_parser = error_display_message_parser
         self._slice_logger = slice_logger
         self._message_repository = message_repository
+        self._timeout_seconds = timeout_seconds
 
     def read(self) -> Iterable[Record]:
         """
@@ -84,7 +86,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         partitions_to_done: Dict[Partition, bool] = {}
 
         finished_partitions = False
-        while record_or_partition := queue.get(block=True, timeout=self.TIMEOUT_SECONDS):
+        while record_or_partition := queue.get(block=True, timeout=self._timeout_seconds):
             if record_or_partition == PARTITIONS_GENERATED_SENTINEL:
                 # All partitions were generated
                 finished_partitions = True
@@ -107,6 +109,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
             if finished_partitions and all(partitions_to_done.values()):
                 # All partitions were generated and process. We're done here
                 break
+            self._check_for_errors(futures)
         self._check_for_errors(futures)
 
     def _check_for_errors(self, futures: List[Future[Any]]) -> None:
@@ -135,14 +138,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._json_schema
-
-    @property
-    def supports_incremental(self) -> bool:
-        """
-        :return: True if this stream supports incrementally reading data
-        """
-        # Incremental reads are not supported yet. This override should be deleted when incremental reads are supported.
-        return False
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         return self._error_message_parser.get_error_display_message(exception)
