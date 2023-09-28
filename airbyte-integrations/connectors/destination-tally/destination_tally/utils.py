@@ -45,12 +45,12 @@ def prepare_ledger_master_payload(data: Dict[str, Any], logger: AirbyteLogger):
     Args : data to insert into tally
     Returns : ledger payload
     """
-    if ("Ledger Name" not in data) or (data["Ledger Name"] == ""):
-        logger.error("Please provide Ledger Name as it is required field.")
-        return
-    if ("Group Name" not in data) or (data["Group Name"] == ""):
-        logger.error("Please provide Group Name of ledger as it is required field.")
-        return
+    required_fields = ["Ledger Name", "Group Name"]
+
+    for field in required_fields:
+        if (field not in data) or (data[field] == ""):
+            logger.error(f"Please provide {field} as it is required field.")
+            return
 
     ledger_fields = [
         "Ledger Name",
@@ -130,24 +130,12 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
     4. Unit [UOM]
     5. Voucher Type
     """
-    if ("Date" not in data) or (data["Date"] == ""):
-        logger.error("Please provide date as it is required field.")
-        return
-    if ("Voucher Number" not in data) or (data["Voucher Number"] == ""):
-        logger.error("Please provide voucher number as it is required field.")
-        return
-    if ("Voucher Type" not in data) or (data["Voucher Type"] == ""):
-        logger.error("Please provide voucher type as it is required field.")
-        return
-    if ("Ledger Name" not in data) or (data["Ledger Name"] == ""):
-        logger.error("Please provide Ledger name as it is required field.")
-        return
-    if ("Debit / Credit" not in data) or (data["Debit / Credit"] == ""):
-        logger.error("Please provide Debit / Credit as it is required field.")
-        return
-    if ("Amount" not in data) or (data["Amount"] == ""):
-        logger.error("Please provide Amount as it is required field.")
-        return
+    required_fields = ["Date", "Voucher Number", "Voucher Type", "Ledger Name", "Debit / Credit", "Amount"]
+
+    for field in required_fields:
+        if (field not in data) or (data[field] == ""):
+            logger.error(f"Please provide {field} as it is required field.")
+            return
 
     journal_voucher_fields = [
         "Date",
@@ -225,13 +213,12 @@ def prepare_item_master_payload(data: Dict[str, Any], logger: AirbyteLogger):
     2. Stock Category ["Category Name"]
     3. unit ["UOM]
     """
+    required_fields = ["Item Name", "UOM"]
 
-    if ("Item Name" not in data) or (data["Item Name"] == ""):
-        logger.error("Please provide item name as it is required field.")
-        return
-    if ("UOM" not in data) or (data["UOM"] == ""):
-        logger.error("Please provide UOM as it is required field.")
-        return
+    for field in required_fields:
+        if (field not in data) or (data[field] == ""):
+            logger.error(f"Please provide {field} as it is required field.")
+            return
 
     item_master_fields = [
         "Item Name",
@@ -303,42 +290,25 @@ def prepare_sales_order_payload(data: Dict[str, Any], logger: AirbyteLogger):
     7. IGST Ledger
     8. Cost Center
     """
-    if ("Date" not in data) or (data["Date"] == ""):
-        logger.error("Please provide Date as it is required field.")
-        return
-    if ("Voucher Number" not in data) or (data["Voucher Number"] == ""):
-        logger.error("Please provide voucher number as it is required field.")
-        return
-    if ("Voucher Type" not in data) or (data["Voucher Type"] == ""):
-        logger.error("Please provide voucher type as it is required field.")
-        return
-    if ("Customer Name" not in data) or (data["Customer Name"] == ""):
-        logger.error("Please provide customer name as it is required field.")
-        return
-    if ("Order No" not in data) or (data["Order No"] == ""):
-        logger.error("Please provide order no. as it is required field.")
-        return
-    if ("Due On" not in data) or (data["Due On"] == ""):
-        logger.error("Please provide due date as it is required field.")
-        return
-    if ("Item Name" not in data) or (data["Item Name"] == ""):
-        logger.error("Please provide item name as it is required field.")
-        return
-    if ("Tax Rate" not in data) or (data["Tax Rate"] == ""):
-        logger.error("Please provide tax rate as it is required field.")
-        return
-    if ("QTY" not in data) or (data["QTY"] == ""):
-        logger.error("Please provide quantity as it is required field.")
-        return
-    if ("UOM" not in data) or (data["UOM"] == ""):
-        logger.error("Please provide unit of measure as it is required field.")
-        return
-    if ("Rate" not in data) or (data["Rate"] == ""):
-        logger.error("Please provide rate as it is required field.")
-        return
-    if ("Amount" not in data) or (data["Amount"] == ""):
-        logger.error("Please provide amount as it is required field.")
-        return
+    required_fields = [
+        "Date",
+        "Voucher Number",
+        "Voucher Type",
+        "Customer Name",
+        "Order No",
+        "Due On",
+        "Item Name",
+        "Tax Rate",
+        "QTY",
+        "UOM",
+        "Rate",
+        "Amount",
+    ]
+
+    for field in required_fields:
+        if (field not in data) or (data[field] == ""):
+            logger.error(f"Please provide {field} as it is required field.")
+            return
 
     sales_order_fields = [
         "Date",
@@ -422,27 +392,12 @@ def prepare_payment_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
     2. Cash/Bank Ledger [Ledger]
     3. Cost Centre
     """
-    if ("Voucher Date" not in data) or (data["Voucher Date"] == ""):
-        logger.error("Please provide voucher date as it is required field.")
-        return
-    if ("Voucher Number" not in data) or (data["Voucher Number"] == ""):
-        logger.error("Please provide voucher number as it is required field.")
-        return
-    if ("Voucher Type" not in data) or (data["Voucher Type"] == ""):
-        logger.error("Please provide voucher type as it is required field.")
-        return
-    if ("Cash/Bank Ledger" not in data) or (data["Cash/Bank Ledger"] == ""):
-        logger.error("Please provide Cash/Bank Ledger as it is required field.")
-        return
-    if ("Debit Ledgers" not in data) or (data["Debit Ledgers"] == ""):
-        logger.error("Please provide debit ledgers as it is required field.")
-        return
-    if ("Amount" not in data) or (data["Amount"] == ""):
-        logger.error("Please provide amount as it is required field.")
-        return
-    if ("Instrument Type" not in data) or (data["Instrument Type"] == ""):
-        logger.error("Please provide Instrument Type as it is required field.")
-        return
+    required_fields = ["Voucher Date", "Voucher Number", "Voucher Type", "Cash/Bank Ledger", "Debit Ledgers", "Amount", "Instrument Type"]
+
+    for field in required_fields:
+        if (field not in data) or (data[field] == ""):
+            logger.error(f"Please provide {field} as it is required field.")
+            return
 
     payment_voucher_fields = [
         "Voucher Date",
@@ -501,24 +456,12 @@ def prepare_receipt_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
     4. Cost Center
     5. Voucher Type
     """
-    if ("Voucher Date" not in data) or (data["Voucher Date"] == ""):
-        logger.error("Please provide voucher date as it is required field.")
-        return
-    if ("Voucher Number" not in data) or (data["Voucher Number"] == ""):
-        logger.error("Please provide voucher number as it is required field.")
-        return
-    if ("Voucher Type" not in data) or (data["Voucher Type"] == ""):
-        logger.error("Please provide voucher type as it is required field.")
-        return
-    if ("Credit Ledgers" not in data) or (data["Credit Ledgers"] == ""):
-        logger.error("Please provide credit ledgers as it is required field.")
-        return
-    if ("Cash / Bank Ledger" not in data) or (data["Cash / Bank Ledger"] == ""):
-        logger.error("Please provide Cash / Bank Ledger as it is required field.")
-        return
-    if ("Amount" not in data) or (data["Amount"] == ""):
-        logger.error("Please provide Amount as it is required field.")
-        return
+    required_fields = ["Voucher Date", "Voucher Number", "Voucher Type", "Credit Ledgers", "Cash / Bank Ledger", "Amount"]
+
+    for field in required_fields:
+        if (field not in data) or (data[field] == ""):
+            logger.error(f"Please provide {field} as it is required field.")
+            return
 
     receipt_voucher_fields = [
         "Voucher Date",
@@ -593,27 +536,20 @@ def prepare_debitnote_without_inventory_payload(data: Dict[str, Any], logger: Ai
     2. Credit Ledger 1 , 2 , and so on
     3. Cost Center
     """
-    if ("Date" not in data) or (data["Date"] == ""):
-        logger.error("Please provide date as it is required field.")
-        return
-    if ("Voucher No" not in data) or (data["Voucher No"] == ""):
-        logger.error("Please provide voucher no as it is required field.")
-        return
-    if ("Voucher Type" not in data) or (data["Voucher Type"] == ""):
-        logger.error("Please provide voucher type as it is required field.")
-        return
-    if ("Reason Code" not in data) or (data["Reason Code"] == ""):
-        logger.error("Please provide reason code as it is required field.")
-        return
-    if ("Debit / Party Ledger" not in data) or (data["Debit / Party Ledger"] == ""):
-        logger.error("Please provide Debit / Party Ledger as it is required field.")
-        return
-    if ("Credit Ledger 1" not in data) or (data["Credit Ledger 1"] == ""):
-        logger.error("Please provide Credit Ledger 1 as it is required field.")
-        return
-    if ("Credit Ledger 1 Amount" not in data) or (data["Credit Ledger 1 Amount"] == ""):
-        logger.error("Please provide Credit Ledger 1 Amount as it is required field.")
-        return
+    required_fields = [
+        "Date",
+        "Voucher No",
+        "Voucher Type",
+        "Reason Code",
+        "Debit / Party Ledger",
+        "Credit Ledger 1",
+        "Credit Ledger 1 Amount",
+    ]
+
+    for field in required_fields:
+        if (field not in data) or (data[field] == ""):
+            logger.error(f"Please provide {field} as it is required field.")
+            return
 
     debitnote_without_inventory_fields = [
         "Date",
@@ -739,24 +675,19 @@ def prepare_purchase_without_inventory_payload(data: Dict[str, Any], logger: Air
     2. Debit Ledger 1 , 2 , and so on
     3. Cost Center
     """
-    if ("Date" not in data) or (data["Date"] == ""):
-        logger.error("Please provide date as it is required field.")
-        return
-    if ("Voucher No" not in data) or (data["Voucher No"] == ""):
-        logger.error("Please provide voucher no as it is required field.")
-        return
-    if ("Voucher Type" not in data) or (data["Voucher Type"] == ""):
-        logger.error("Please provide voucher type as it is required field.")
-        return
-    if ("Credit / Party Ledger" not in data) or (data["Credit / Party Ledger"] == ""):
-        logger.error("Please provide Credit / Party Ledger as it is required field.")
-        return
-    if ("Debit Ledger 1" not in data) or (data["Debit Ledger 1"] == ""):
-        logger.error("Please provide Debit Ledger 1 as it is required field.")
-        return
-    if ("Debit Ledger 1 Amount" not in data) or (data["Debit Ledger 1 Amount"] == ""):
-        logger.error("Please provide Debit Ledger 1 Amount as it is required field.")
-        return
+    required_fields = [
+        "Date",
+        "Voucher No",
+        "Voucher Type",
+        "Credit / Party Ledger",
+        "Debit Ledger 1",
+        "Debit Ledger 1 Amount",
+    ]
+
+    for field in required_fields:
+        if (field not in data) or (data[field] == ""):
+            logger.error(f"Please provide {field} as it is required field.")
+            return
 
     purchase_without_inventory_fields = [
         "Date",
@@ -911,27 +842,19 @@ def prepare_creditnote_without_inventory_payload(data: Dict[str, Any], logger: A
     2. Debit Ledger 1 , 2 , and so on
     3. Cost Center
     """
-    if ("Date" not in data) or (data["Date"] == ""):
-        logger.error("Please provide Date as it is required field.")
-        return
-    if ("Voucher No" not in data) or (data["Voucher No"] == ""):
-        logger.error("Please provide Voucher No as it is required field.")
-        return
-    if ("Voucher Type" not in data) or (data["Voucher Type"] == ""):
-        logger.error("Please provide Voucher Type as it is required field.")
-        return
-    if ("Reason Code" not in data) or (data["Reason Code"] == ""):
-        logger.error("Please provide Reason Code as it is required field.")
-        return
-    if ("Credit / Party Ledger" not in data) or (data["Credit / Party Ledger"] == ""):
-        logger.error("Please provide Credit / Party Ledger as it is required field.")
-        return
-    if ("Debit Ledger 1" not in data) or (data["Debit Ledger 1"] == ""):
-        logger.error("Please provide Debit Ledger 1 as it is required field.")
-        return
-    if ("Debit Ledger 1 Amount" not in data) or (data["Debit Ledger 1 Amount"] == ""):
-        logger.error("Please provide Debit Ledger 1 Amount as it is required field.")
-        return
+    required_fields = [
+        "Date",
+        "Voucher No",
+        "Voucher Type",
+        "Reason Code" "Credit / Party Ledger",
+        "Debit Ledger 1",
+        "Debit Ledger 1 Amount",
+    ]
+
+    for field in required_fields:
+        if (field not in data) or (data[field] == ""):
+            logger.error(f"Please provide {field} as it is required field.")
+            return
 
     debitnote_without_inventory_fields = [
         "Date",
@@ -1058,24 +981,19 @@ def prepare_sales_without_inventory_payload(data: Dict[str, Any], logger: Airbyt
     2. Credit Ledger 1 , 2 , and so on
     3. Cost Center
     """
-    if ("Date" not in data) or (data["Date"] == ""):
-        logger.error("Please provide Date as it is required field.")
-        return
-    if ("Voucher No" not in data) or (data["Voucher No"] == ""):
-        logger.error("Please provide Voucher No as it is required field.")
-        return
-    if ("Voucher Type" not in data) or (data["Voucher Type"] == ""):
-        logger.error("Please provide Voucher Type as it is required field.")
-        return
-    if ("Debit / Party Ledger" not in data) or (data["Debit / Party Ledger"] == ""):
-        logger.error("Please provide Debit / Party Ledger as it is required field.")
-        return
-    if ("Credit Ledger 1" not in data) or (data["Credit Ledger 1"] == ""):
-        logger.error("Please provide Credit Ledger 1 as it is required field.")
-        return
-    if ("Credit Ledger 1 Amount" not in data) or (data["Credit Ledger 1 Amount"] == ""):
-        logger.error("Please provide Credit Ledger 1 Amount as it is required field.")
-        return
+    required_fields = [
+        "Date",
+        "Voucher No",
+        "Voucher Type",
+        "Debit / Party Ledger",
+        "Credit Ledger 1",
+        "Credit Ledger 1 Amount",
+    ]
+
+    for field in required_fields:
+        if (field not in data) or (data[field] == ""):
+            logger.error(f"Please provide {field} as it is required field.")
+            return
 
     sales_without_inventory_fields = [
         "Date",
