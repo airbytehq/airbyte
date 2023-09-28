@@ -7,8 +7,8 @@
 1. Enter a name for your connector
 2. Select `Authenticate your Slack account` (preferred) and authorize into the Slack account. To use an API token instead, see the instructions below on creating one.
 3. Toggle on **Join all channels** (recommended) to join all channels the user has access to or to sync data only from channels the app (if using API token) is already in. If false, you'll need to manually add all the channels from which you'd like to sync messages.
-4. (Optional) Enter a **Threads Lookback Window (Days)** to set how far back to look for messages in threads from when each sync start.
-5. (Optional) Enter a **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Data created on and after this date will be replicated.
+4. Enter a **Threads Lookback Window (Days)** to set how far back to look for messages in threads from when each sync start.
+5. Enter a **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. Data created on and after this date will be replicated.
 8. (Optional) Enter your `Channel name filter` to filter the list of channels Airbyte can access. If none are entered, Airbyte will sync all channels. It can be helpful to only sync required channels to avoid Slack's [requests limits](https://api.slack.com/docs/rate-limits).
 
 
