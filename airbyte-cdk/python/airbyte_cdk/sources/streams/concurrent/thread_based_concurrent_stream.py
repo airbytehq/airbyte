@@ -7,11 +7,11 @@ from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, PrimaryKey
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability
-from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 
 
 class ThreadBasedConcurrentStream(AbstractStream):
-    def read(self) -> Iterable[StreamData]:
+    def read(self) -> Iterable[Record]:
         raise NotImplementedError
 
     @property
