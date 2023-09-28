@@ -20,6 +20,9 @@ definitions:
         - http_codes: [400]
           action: FAIL
           error_message: The file size of the exported data is too large. Shorten the time ranges and try again. The limit size is 4GB.
+        - http_codes: [403]
+          action: FAIL
+          error_message: Access denied due to lack of permission or invalid API/Secret key or wrong data region.
         - http_codes: [404]
           action: IGNORE
           error_message: No data collected
