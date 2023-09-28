@@ -13,7 +13,10 @@ from urllib.error import URLError
 import backoff
 import pendulum
 from airbyte_cdk.logger import AirbyteLogger
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.utils import AirbyteTracedException
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
+from bingads.exceptions import OAuthTokenRequestException
 from bingads.service_client import ServiceClient
 from bingads.util import errorcode_of_exception
 from bingads.v13.reporting.exceptions import ReportingDownloadException
@@ -90,7 +93,16 @@ class Client:
         # clear caches to be able to use new access token
         self.get_service.cache_clear()
         self._get_auth_data.cache_clear()
-        return self.authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
+        try:
+            tokens = self.authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
+        except OAuthTokenRequestException as e:
+            raise AirbyteTracedException(
+                message=str(e),
+                internal_message="Failed to get OAuth access token by refresh token. "
+                "The user could not be authenticated as the grant is expired. The user must sign in again.",
+                failure_type=FailureType.config_error,
+            )
+        return tokens
 
     def is_token_expiring(self) -> bool:
         """
