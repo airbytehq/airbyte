@@ -121,7 +121,7 @@
                 "type": ["null", "string"]
               },
               "UnitPrice": {
-                "type": ["null", "integer"]
+                "type": ["null", "number"]
               }
             },
             "type": ["null", "object"]

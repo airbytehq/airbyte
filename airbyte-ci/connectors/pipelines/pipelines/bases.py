@@ -213,7 +213,7 @@ class Step(ABC):
         Returns:
             StepResult: The result of the step run.
         """
-        ...
+        raise NotImplementedError("Steps must define a '_run' attribute.")
 
     def skip(self, reason: str = None) -> StepResult:
         """Declare a step as skipped.

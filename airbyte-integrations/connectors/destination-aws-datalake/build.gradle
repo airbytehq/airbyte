@@ -2,7 +2,6 @@ plugins {
     id 'application'
     id 'airbyte-python'
     id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
 }
 
 airbytePython {
@@ -18,8 +17,4 @@ dependencies {
 
     // https://mvnrepository.com/artifact/software.amazon.awssdk/glue
     implementation 'software.amazon.awssdk:glue:2.17.42'
-
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-aws-datalake')
 }
