@@ -14,7 +14,6 @@ from functools import wraps
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.parse import urlparse
 
-import requests
 from airbyte_cdk.connector import TConfig
 from airbyte_cdk.exception_handler import init_uncaught_exception_handler
 from airbyte_cdk.logger import init_logger
@@ -213,13 +212,13 @@ def _init_internal_request_filter() -> None:
         parsed_url = urlparse(request.url)
 
         if parsed_url.scheme not in VALID_URL_SCHEMES:
-            raise requests.exceptions.InvalidSchema(
+            raise ValueError(
                 "Invalid Protocol Scheme: The endpoint that data is being requested from is using an invalid or insecure "
                 + f"protocol {parsed_url.scheme!r}. Valid protocol schemes: {','.join(VALID_URL_SCHEMES)}"
             )
 
         if not parsed_url.hostname:
-            raise requests.exceptions.InvalidURL("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
+            raise ValueError("Invalid URL specified: The endpoint that data is being requested from is not a valid URL")
 
         try:
             is_private = _is_private_url(parsed_url.hostname, parsed_url.port)  # type: ignore [arg-type]
@@ -228,11 +227,10 @@ def _init_internal_request_filter() -> None:
                     "Invalid URL endpoint: The endpoint that data is being requested from belongs to a private network. Source "
                     + "connectors only support requesting data from public API endpoints."
                 )
-        except socket.gaierror as exception:
+        except socket.gaierror:
             # This is a special case where the developer specifies an IP address string that is not formatted correctly like trailing
             # whitespace which will fail the socket IP lookup. This only happens when using IP addresses and not text hostnames.
-            # Knowing that this is a request using the requests library, we will mock the exception without calling the lib
-            raise requests.exceptions.InvalidURL(f"Invalid URL {parsed_url}: {exception}")
+            raise ValueError(f"Invalid hostname or IP address '{parsed_url.hostname!r}' specified.")
 
         return wrapped_fn(self, request, **kwargs)
 
