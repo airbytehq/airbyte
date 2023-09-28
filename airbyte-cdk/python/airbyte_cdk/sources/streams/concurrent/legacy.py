@@ -12,7 +12,7 @@ from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, FieldPath
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, PrimaryKey
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -71,7 +71,7 @@ class StreamFacade(Stream):
         )
 
     @classmethod
-    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> Optional[FieldPath]:
+    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> Optional[PrimaryKey]:
         if stream_primary_key is None or isinstance(stream_primary_key, str):
             return stream_primary_key
         elif isinstance(stream_primary_key, list):
@@ -83,7 +83,7 @@ class StreamFacade(Stream):
             raise ValueError(f"Invalid type for primary key: {stream_primary_key}")
 
     @classmethod
-    def _get_cursor_field_from_stream(cls, stream: Stream) -> Optional[FieldPath]:
+    def _get_cursor_field_from_stream(cls, stream: Stream) -> Optional[PrimaryKey]:
         if isinstance(stream.cursor_field, list):
             if len(stream.cursor_field) > 1:
                 raise ValueError(f"Nested cursor fields are not supported. Got {stream.cursor_field} for {stream.name}")

@@ -10,7 +10,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, FieldPath
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, PrimaryKey
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
@@ -33,7 +33,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         name: str,
         json_schema: Mapping[str, Any],
         availability_strategy: AbstractAvailabilityStrategy,
-        primary_key: Optional[FieldPath],
+        primary_key: Optional[PrimaryKey],
         cursor_field: Optional[str],
         error_display_message_parser: ErrorMessageParser,
         slice_logger: SliceLogger,
@@ -128,7 +128,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         return self._availability_strategy.check_availability(self.logger)
 
     @property
-    def primary_key(self) -> Optional[FieldPath]:
+    def primary_key(self) -> Optional[PrimaryKey]:
         return self._primary_key
 
     @property
