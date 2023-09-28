@@ -309,7 +309,11 @@ def test_interpolate_config():
 
 
 def test_single_use_oauth_branch():
-    single_use_input_config = {"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"], "credentials": {"access_token": "access_token", "token_expiry_date": "1970-01-01"}}
+    single_use_input_config = {
+        "apikey": "verysecrettoken",
+        "repos": ["airbyte", "airbyte-cloud"],
+        "credentials": {"access_token": "access_token", "token_expiry_date": "1970-01-01"},
+    }
 
     content = """
     authenticator:
@@ -684,9 +688,7 @@ incremental_sync:
 
     with pytest.raises(ValueError):
         factory.create_component(
-            model_type=DatetimeBasedCursorModel,
-            component_definition=datetime_based_cursor_definition,
-            config=input_config
+            model_type=DatetimeBasedCursorModel, component_definition=datetime_based_cursor_definition, config=input_config
         )
 
 
@@ -713,7 +715,9 @@ def test_create_record_selector(test_name, record_selector, expected_runtime_sel
     resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
     selector_manifest = transformer.propagate_types_and_parameters("", resolved_manifest["selector"], {})
 
-    selector = factory.create_component(model_type=RecordSelectorModel, component_definition=selector_manifest, transformations=[], config=input_config)
+    selector = factory.create_component(
+        model_type=RecordSelectorModel, component_definition=selector_manifest, transformations=[], config=input_config
+    )
 
     assert isinstance(selector, RecordSelector)
     assert isinstance(selector.extractor, DpathExtractor)
@@ -898,7 +902,10 @@ requester:
     assert isinstance(selector.authenticator.token_provider.login_requester, HttpRequester)
     assert selector.authenticator.token_provider.session_token_path == ["id"]
     assert selector.authenticator.token_provider.login_requester._url_base.eval(input_config) == "https://api.sendgrid.com"
-    assert selector.authenticator.token_provider.login_requester.get_request_body_json() == {"username": "lists", "password": "verysecrettoken"}
+    assert selector.authenticator.token_provider.login_requester.get_request_body_json() == {
+        "username": "lists",
+        "password": "verysecrettoken",
+    }
 
 
 def test_create_composite_error_handler():
@@ -1542,7 +1549,10 @@ def test_simple_retriever_emit_log_messages():
 
 def test_ignore_retry():
     requester_model = {
-        "type": "HttpRequester", "name": "list", "url_base": "orange.com", "path": "/v1/api",
+        "type": "HttpRequester",
+        "name": "list",
+        "url_base": "orange.com",
+        "path": "/v1/api",
     }
 
     connector_builder_factory = ModelToComponentFactory(disable_retries=True)

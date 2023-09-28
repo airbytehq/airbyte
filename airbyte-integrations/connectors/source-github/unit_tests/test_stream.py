@@ -431,7 +431,11 @@ def test_stream_commits_incremental_read():
         "GET",
         api_url,
         json=data[5:7],
-        match=[matchers.query_param_matcher({"since": "2022-02-02T10:10:06Z", "sha": "branch", "per_page": "2", "page": "2"}, strict_match=False)],
+        match=[
+            matchers.query_param_matcher(
+                {"since": "2022-02-02T10:10:06Z", "sha": "branch", "per_page": "2", "page": "2"}, strict_match=False
+            )
+        ],
     )
 
     stream_state = {}
@@ -925,7 +929,7 @@ def test_stream_team_members_full_refresh(caplog):
         {"login": "login1", "organization": "org1", "team_slug": "team1"},
         {"login": "login2", "organization": "org1", "team_slug": "team1"},
         {"login": "login2", "organization": "org1", "team_slug": "team2"},
-        {"login": "login3", "organization": "org1", "team_slug": "team2"}
+        {"login": "login3", "organization": "org1", "team_slug": "team2"},
     ]
 
     stream = TeamMemberships(parent=stream, **repository_args)

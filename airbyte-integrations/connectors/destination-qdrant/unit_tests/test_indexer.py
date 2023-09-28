@@ -17,14 +17,11 @@ class TestQdrantIndexer(unittest.TestCase):
         self.mock_config = QdrantIndexingConfigModel(
             **{
                 "url": "https://client-url.io",
-                "auth_method": {
-                    "mode": "api_key_auth",
-                    "api_key": "api_key"
-                },
+                "auth_method": {"mode": "api_key_auth", "api_key": "api_key"},
                 "prefer_grpc": False,
                 "collection": "dummy-collection",
                 "distance_metric": "dot",
-                "text_field": "text"
+                "text_field": "text",
             }
         )
         self.qdrant_indexer = QdrantIndexer(self.mock_config, 100)
@@ -36,7 +33,9 @@ class TestQdrantIndexer(unittest.TestCase):
         mock_collections.collections[0].name = "dummy-collection"
         self.qdrant_indexer._client.get_collections.return_value = mock_collections
 
-        self.qdrant_indexer._client.get_collection.return_value = Mock(config=Mock(params=Mock(vectors=Mock(size=100, distance=models.Distance.DOT))))
+        self.qdrant_indexer._client.get_collection.return_value = Mock(
+            config=Mock(params=Mock(vectors=Mock(size=100, distance=models.Distance.DOT)))
+        )
 
         check_result = self.qdrant_indexer.check()
 
@@ -82,13 +81,17 @@ class TestQdrantIndexer(unittest.TestCase):
 
         self.qdrant_indexer._client = Mock()
         self.qdrant_indexer._client.get_collections.return_value = mock_collections
-        self.qdrant_indexer._client.get_collection.return_value = Mock(config=Mock(params=Mock(vectors=Mock(size=10, distance=models.Distance.DOT))))
+        self.qdrant_indexer._client.get_collection.return_value = Mock(
+            config=Mock(params=Mock(vectors=Mock(size=10, distance=models.Distance.DOT)))
+        )
 
         result = self.qdrant_indexer.check()
         self.assertTrue("The collection's vector's size must match the embedding dimensions" in result)
 
         # Test 5: Test distance metric does not match
-        self.qdrant_indexer._client.get_collection.return_value = Mock(config=Mock(params=Mock(vectors=Mock(size=100, distance=models.Distance.COSINE))))
+        self.qdrant_indexer._client.get_collection.return_value = Mock(
+            config=Mock(params=Mock(vectors=Mock(size=100, distance=models.Distance.COSINE)))
+        )
         result = self.qdrant_indexer.check()
         self.assertTrue("The colection's vector's distance metric must match the selected distance metric option" in result)
 
@@ -107,7 +110,7 @@ class TestQdrantIndexer(unittest.TestCase):
                     Mock(
                         destination_sync_mode=DestinationSyncMode.append,
                         stream=AirbyteStream(name="incremental_stream", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
-                    )
+                    ),
                 ]
             )
         )
@@ -118,10 +121,11 @@ class TestQdrantIndexer(unittest.TestCase):
                 filter=models.Filter(
                     should=[
                         models.FieldCondition(key="_ab_stream", match=models.MatchValue(value="some_stream")),
-                        models.FieldCondition(key="_ab_stream", match=models.MatchValue(value="another_stream"))
-                        ]
-                    )
-                ))
+                        models.FieldCondition(key="_ab_stream", match=models.MatchValue(value="another_stream")),
+                    ]
+                )
+            ),
+        )
 
     def test_pre_sync_does_not_call_delete(self):
         self.qdrant_indexer.pre_sync(
@@ -135,18 +139,19 @@ class TestQdrantIndexer(unittest.TestCase):
 
         calls = [
             call(collection_name=self.mock_config.collection, field_name="_ab_record_id", field_schema="keyword"),
-            call(collection_name=self.mock_config.collection, field_name="_ab_stream", field_schema="keyword")
-            ]
+            call(collection_name=self.mock_config.collection, field_name="_ab_stream", field_schema="keyword"),
+        ]
 
         self.qdrant_indexer._client.create_payload_index.assert_has_calls(calls)
 
     def test_index_calls_insert(self):
-        self.qdrant_indexer.index([
-            Mock(metadata={"key": "value1"}, page_content="some content", embedding=[1.,2.,3.]),
-            Mock(metadata={"key": "value2"}, page_content="some other content", embedding=[4.,5.,6.])
+        self.qdrant_indexer.index(
+            [
+                Mock(metadata={"key": "value1"}, page_content="some content", embedding=[1.0, 2.0, 3.0]),
+                Mock(metadata={"key": "value2"}, page_content="some other content", embedding=[4.0, 5.0, 6.0]),
             ],
-            []
-            )
+            [],
+        )
 
         self.qdrant_indexer._client.upload_records.assert_called_once()
 
@@ -159,15 +164,23 @@ class TestQdrantIndexer(unittest.TestCase):
                 filter=models.Filter(
                     should=[
                         models.FieldCondition(key="_ab_record_id", match=models.MatchValue(value="some_id")),
-                        models.FieldCondition(key="_ab_record_id", match=models.MatchValue(value="another_id"))
-                        ]
-                    )
-                ))
+                        models.FieldCondition(key="_ab_record_id", match=models.MatchValue(value="another_id")),
+                    ]
+                )
+            ),
+        )
 
     def test_post_sync_calls_close(self):
         result = self.qdrant_indexer.post_sync()
         self.qdrant_indexer._client.close.assert_called_once()
-        self.assertEqual(result, [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully"))])
+        self.assertEqual(
+            result,
+            [
+                AirbyteMessage(
+                    type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="Qdrant Database Client has been closed successfully")
+                )
+            ],
+        )
 
     def test_post_sync_handles_failure(self):
         exception = Exception("Random exception")
@@ -175,4 +188,6 @@ class TestQdrantIndexer(unittest.TestCase):
         result = self.qdrant_indexer.post_sync()
 
         self.qdrant_indexer._client.close.assert_called_once()
-        self.assertEqual(result, [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(exception)))])
+        self.assertEqual(
+            result, [AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=format_exception(exception)))]
+        )

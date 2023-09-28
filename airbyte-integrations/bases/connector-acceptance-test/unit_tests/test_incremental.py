@@ -66,12 +66,7 @@ def build_per_stream_state_message(
 @pytest.mark.parametrize(
     "records1, records2, latest_state, expected_error",
     [
-        (
-            [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
-            [],
-            "2020-01-01",
-            does_not_raise()
-        ),
+        ([{"date": "2020-01-01"}, {"date": "2020-01-02"}], [], "2020-01-01", does_not_raise()),
         (
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
             [],
@@ -123,9 +118,7 @@ def build_per_stream_state_message(
         pytest.param(True, id="test_two_sequential_reads_using_a_mock_connector_emitting_per_stream_state"),
     ],
 )
-async def test_incremental_two_sequential_reads(
-    mocker, records1, records2, latest_state, cursor_type, expected_error, run_per_stream_test
-):
+async def test_incremental_two_sequential_reads(mocker, records1, records2, latest_state, cursor_type, expected_error, run_per_stream_test):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -566,6 +559,7 @@ async def test_config_skip_test(mocker):
 
     # This is guaranteed to fail when the test gets executed
     docker_runner_mock.call_read.assert_not_called()
+
 
 async def test_state_skip_test(mocker):
     docker_runner_mock = MagicMock()

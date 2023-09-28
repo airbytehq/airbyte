@@ -51,9 +51,7 @@ def test_pagination(count, expected):
 
 @pytest.mark.parametrize(
     "site_urls",
-    [
-        ["https://example1.com", "https://example2.com"], ["https://example.com"]
-    ],
+    [["https://example1.com", "https://example2.com"], ["https://example.com"]],
 )
 @pytest.mark.parametrize("sync_mode", [SyncMode.full_refresh, SyncMode.incremental])
 @pytest.mark.parametrize("data_state", ["all", "final"])
@@ -231,10 +229,18 @@ def test_check_connection(config_gen, config, mocker, requests_mock):
     [
         (
             lazy_fixture("config"),
-            (False, "UnauthorizedOauthError('Unable to connect with privided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')")),
+            (
+                False,
+                "UnauthorizedOauthError('Unable to connect with privided OAuth credentials. The `access token` or `refresh token` is expired. Please re-authrenticate using valid account credenials.')",
+            ),
+        ),
         (
             lazy_fixture("service_account_config"),
-            (False, "UnauthorizedServiceAccountError('Unable to connect with privided Service Account credentials. Make sure the `sevice account crdentials` povided is valid.')"))
+            (
+                False,
+                "UnauthorizedServiceAccountError('Unable to connect with privided Service Account credentials. Make sure the `sevice account crdentials` povided is valid.')",
+            ),
+        ),
     ],
 )
 def test_unauthorized_creds_exceptions(test_config, expected, requests_mock):

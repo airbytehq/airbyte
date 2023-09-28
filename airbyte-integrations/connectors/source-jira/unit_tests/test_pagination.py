@@ -36,9 +36,42 @@ def test_pagination_projects():
 def test_pagination_issues():
     domain = "domain.com"
     responses_json = [
-        (HTTPStatus.OK, {}, json.dumps({"startAt": 0, "maxResults": 2, "total": 6, "issues": [{"id": "1", "updated": "2022-01-01"}, {"id": "2", "updated": "2022-01-01"}]})),
-        (HTTPStatus.OK, {}, json.dumps({"startAt": 2, "maxResults": 2, "total": 6, "issues": [{"id": "3", "updated": "2022-01-01"}, {"id": "4", "updated": "2022-01-01"}]})),
-        (HTTPStatus.OK, {}, json.dumps({"startAt": 4, "maxResults": 2, "total": 6, "issues": [{"id": "5", "updated": "2022-01-01"}, {"id": "6", "updated": "2022-01-01"}]})),
+        (
+            HTTPStatus.OK,
+            {},
+            json.dumps(
+                {
+                    "startAt": 0,
+                    "maxResults": 2,
+                    "total": 6,
+                    "issues": [{"id": "1", "updated": "2022-01-01"}, {"id": "2", "updated": "2022-01-01"}],
+                }
+            ),
+        ),
+        (
+            HTTPStatus.OK,
+            {},
+            json.dumps(
+                {
+                    "startAt": 2,
+                    "maxResults": 2,
+                    "total": 6,
+                    "issues": [{"id": "3", "updated": "2022-01-01"}, {"id": "4", "updated": "2022-01-01"}],
+                }
+            ),
+        ),
+        (
+            HTTPStatus.OK,
+            {},
+            json.dumps(
+                {
+                    "startAt": 4,
+                    "maxResults": 2,
+                    "total": 6,
+                    "issues": [{"id": "5", "updated": "2022-01-01"}, {"id": "6", "updated": "2022-01-01"}],
+                }
+            ),
+        ),
     ]
 
     responses.add_callback(
@@ -57,7 +90,7 @@ def test_pagination_issues():
         {"id": "3", "updated": "2022-01-01"},
         {"id": "4", "updated": "2022-01-01"},
         {"id": "5", "updated": "2022-01-01"},
-        {"id": "6", "updated": "2022-01-01"}
+        {"id": "6", "updated": "2022-01-01"},
     ]
 
 

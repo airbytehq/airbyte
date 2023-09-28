@@ -43,8 +43,8 @@ def setup_responses():
     responses.add(
         responses.GET,
         "https://curious-giraffe-964.convex.cloud/api/json_schemas?deltaSchema=true&format=convex_json",
-        json={'code': "Error code", "message": "Error message"},
-        status=400
+        json={"code": "Error code", "message": "Error message"},
+        status=400,
     )
 
 
