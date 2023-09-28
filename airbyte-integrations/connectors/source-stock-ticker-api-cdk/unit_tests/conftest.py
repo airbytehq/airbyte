@@ -20,7 +20,16 @@ def config() -> dict:
 
 
 @pytest.fixture
-def patch_base_class(mocker):
+def response_object() -> dict:
+    return {
+        "results": [{"c": 111.11, "t": 1695614400000}],
+        "resultsCount": 1,
+        "ticker": "TCKR",
+    }
+
+
+@pytest.fixture
+def patch_base_class(mocker) -> None:
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(StockPrices, "path", "v0/example_endpoint")
     mocker.patch.object(StockPrices, "primary_key", "test_primary_key")

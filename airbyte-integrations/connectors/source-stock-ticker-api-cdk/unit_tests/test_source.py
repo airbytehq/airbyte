@@ -4,13 +4,15 @@
 
 from unittest.mock import MagicMock
 
-from source_stock_ticker_api_cdk.source import SourceStockTickerApiCDK
+from source_stock_ticker_api_cdk.source import SourceStockTickerApiCDK, StockPrices
 
 
-def test_check_connection(mocker):
+def test_check_connection(requests_mock, response_object, config):
     source = SourceStockTickerApiCDK()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    assert source.check_connection(logger_mock, config_mock) == (True, None)
+    stream = StockPrices(config)
+    requests_mock.get(f"{stream.url_base}{stream.path()}", json=response_object)
+    logger_mock = MagicMock()
+    assert source.check_connection(logger_mock, config) == (True, None)
 
 
 def test_streams():

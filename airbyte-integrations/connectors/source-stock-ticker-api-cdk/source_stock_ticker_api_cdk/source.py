@@ -2,15 +2,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime, timedelta, date, timezone
+from datetime import datetime, timezone
 from http import HTTPStatus
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
-import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
+from requests import Response
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -35,20 +36,22 @@ class StockPrices(HttpStream, IncrementalMixin):
     def raise_on_http_errors(self) -> bool:
         return self._raise_on_http_errors
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: Response) -> Optional[Mapping[str, Any]]:
         return None
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
-        return f"aggs/ticker/{self.stock_ticker}/range/{self.multiplier}/{self.timespan}/{stream_slice['date']}/{self.end_date}"
+        stream_state = stream_state or {}
+        start_date = stream_state.get(self.cursor_field, self.start_date)
+        return f"aggs/ticker/{self.stock_ticker}/range/{self.multiplier}/{self.timespan}/{start_date}/{self.end_date}"
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return {"sort": "asc", "apiKey": self.api_key}
 
-    def parse_response(self, response: requests.Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping]:
+    def parse_response(self, response: Response, **kwargs: Mapping[str, Any]) -> Iterable[Mapping]:
         content = response.json() or {}
         if content and content.get("resultsCount", 0) > 0:
             for result in content["results"]:
@@ -73,58 +76,35 @@ class StockPrices(HttpStream, IncrementalMixin):
             current_value = value.get(self.cursor_field) or self.start_date
             self._cursor_value = max(current_value, latest_record_date)
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
+    def backoff_time(self, response: Response) -> Optional[float]:
         # In basic subscription, only 5 requests per minute allowed
         return 61
 
-    def _chunk_date_range(self, start_date: datetime) -> List[Mapping[str, Any]]:
-        """
-        Returns a list of each day between the start date and end date.
-        The return value is a list of dicts {'date': date_string}.
-        """
-        dates = []
-        while start_date <= datetime.strptime(self.end_date, DATE_FORMAT):
-            dates.append({self.cursor_field: start_date.strftime(DATE_FORMAT)})
-            start_date += timedelta(days=1)
-        return dates
-
-    def stream_slices(
-        self, sync_mode: str, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        if stream_state and self.cursor_field in stream_state:
-            start_date = datetime.strptime(stream_state[self.cursor_field], DATE_FORMAT)
-        else:
-            start_date = datetime.strptime(self.start_date, DATE_FORMAT)
-        return self._chunk_date_range(start_date)
-
-    def should_retry(self, response: requests.Response) -> bool:
-        if response.status_code in (HTTPStatus.FORBIDDEN, HTTPStatus.UNPROCESSABLE_ENTITY):
+    def should_retry(self, response: Response) -> bool:
+        if response.status_code in (HTTPStatus.FORBIDDEN, HTTPStatus.UNPROCESSABLE_ENTITY, HTTPStatus.BAD_REQUEST):
             self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
             self._raise_on_http_errors = False
             return False
         return super().should_retry(response)
 
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            self.cursor_field: max(
+                current_stream_state.get(self.cursor_field, self.start_date),
+                latest_record.get(self.cursor_field, self.start_date),
+            )
+        }
+
 
 class SourceStockTickerApiCDK(AbstractSource):
     def check_connection(self, logger: Any, config: Mapping[str, Any]) -> Tuple[bool, Any]:
-        response = self._call_api(
-            ticker=config["stock_ticker"],
-            token=config["api_key"],
-            from_day=datetime.now().date() - timedelta(days=1),
-            to_day=datetime.now().date(),
-        )
-
-        if response.status_code == HTTPStatus.OK:
+        try:
+            stream = StockPrices(config=config)
+            next(stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
-
-        return False, "Input configuration is incorrect. Please verify the input stock ticker and API key."
+        except Exception as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = NoAuth()
         return [StockPrices(config=config, authenticator=auth)]
-
-    @staticmethod
-    def _call_api(ticker: str, token: str, from_day: Union[str, date], to_day: Union[str, date]) -> requests.Response:
-        return requests.get(
-            f"https://api.polygon.io/v2/aggs/ticker/{ticker}/range/1/day/{from_day}/{to_day}?sort=asc&limit=1&apiKey={token}"
-        )
