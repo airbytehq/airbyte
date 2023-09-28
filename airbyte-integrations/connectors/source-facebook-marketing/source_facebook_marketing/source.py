@@ -61,6 +61,10 @@ UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
 
 
 class SourceFacebookMarketing(AbstractSource):
+
+    # Skip exceptions on missing streams
+    raise_exception_on_missing_stream = False
+
     def _validate_and_transform(self, config: Mapping[str, Any]):
         config.setdefault("action_breakdowns_allow_empty", False)
         if config.get("end_date") == "":
@@ -143,7 +147,6 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             Ads(
                 api=api,
@@ -151,53 +154,48 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             AdCreatives(
                 api=api,
                 fetch_thumbnail_images=config.fetch_thumbnail_images,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
-            AdsInsights(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsAgeAndGender(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsCountry(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsRegion(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDma(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsPlatformAndDevice(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionType(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionCarouselCard(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionConversionDevice(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionProductID(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionReaction(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionVideoSound(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsActionVideoType(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDeliveryDevice(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDeliveryPlatform(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDeliveryPlatformAndDevicePlatform(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDemographicsAge(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDemographicsCountry(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDemographicsDMARegion(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
-            AdsInsightsDemographicsGender(page_size=config.page_size, max_batch_size=config.max_batch_size, **insights_args),
+            AdsInsights(page_size=config.page_size, **insights_args),
+            AdsInsightsAgeAndGender(page_size=config.page_size, **insights_args),
+            AdsInsightsCountry(page_size=config.page_size, **insights_args),
+            AdsInsightsRegion(page_size=config.page_size, **insights_args),
+            AdsInsightsDma(page_size=config.page_size, **insights_args),
+            AdsInsightsPlatformAndDevice(page_size=config.page_size, **insights_args),
+            AdsInsightsActionType(page_size=config.page_size, **insights_args),
+            AdsInsightsActionCarouselCard(page_size=config.page_size, **insights_args),
+            AdsInsightsActionConversionDevice(page_size=config.page_size, **insights_args),
+            AdsInsightsActionProductID(page_size=config.page_size, **insights_args),
+            AdsInsightsActionReaction(page_size=config.page_size, **insights_args),
+            AdsInsightsActionVideoSound(page_size=config.page_size, **insights_args),
+            AdsInsightsActionVideoType(page_size=config.page_size, **insights_args),
+            AdsInsightsDeliveryDevice(page_size=config.page_size, **insights_args),
+            AdsInsightsDeliveryPlatform(page_size=config.page_size, **insights_args),
+            AdsInsightsDeliveryPlatformAndDevicePlatform(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsAge(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsCountry(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsDMARegion(page_size=config.page_size, **insights_args),
+            AdsInsightsDemographicsGender(page_size=config.page_size, **insights_args),
             Campaigns(
                 api=api,
                 start_date=config.start_date,
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             CustomConversions(
                 api=api,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             CustomAudiences(
                 api=api,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             Images(
                 api=api,
@@ -205,7 +203,6 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             Videos(
                 api=api,
@@ -213,7 +210,6 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
             Activities(
                 api=api,
@@ -221,7 +217,6 @@ class SourceFacebookMarketing(AbstractSource):
                 end_date=config.end_date,
                 include_deleted=config.include_deleted,
                 page_size=config.page_size,
-                max_batch_size=config.max_batch_size,
             ),
         ]
 
@@ -290,7 +285,7 @@ class SourceFacebookMarketing(AbstractSource):
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
                 action_report_time=insight.action_report_time,
                 time_increment=insight.time_increment,
-                start_date=insight.start_date or config.start_date,
+                start_date=insight.start_date or config.start_date or pendulum.now().add(years=-2),
                 end_date=insight.end_date or config.end_date,
                 insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
                 level=insight.level,

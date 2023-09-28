@@ -2,6 +2,7 @@ import os
 from typing import Callable, List
 
 import pytest
+from metadata_service.constants import DOC_FILE_NAME
 
 
 def list_all_paths_in_fixture_directory(folder_name: str) -> List[str]:

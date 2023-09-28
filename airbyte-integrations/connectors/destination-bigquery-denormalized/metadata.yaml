@@ -10,9 +10,9 @@ data:
   name: BigQuery (denormalized typed struct)
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releases:
     breakingChanges:
       2.0.0:

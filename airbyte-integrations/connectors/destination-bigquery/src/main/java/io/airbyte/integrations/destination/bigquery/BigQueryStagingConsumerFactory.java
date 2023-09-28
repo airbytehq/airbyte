@@ -4,21 +4,21 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Functions;
 import com.google.common.base.Preconditions;
-import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnCloseFunction;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
+import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
-import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
-import io.airbyte.integrations.destination.buffered_stream_consumer.OnCloseFunction;
-import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
-import io.airbyte.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class mimics the same functionality as
- * {@link io.airbyte.integrations.destination.staging.StagingConsumerFactory} which likely should be
- * placed into a commons package to be utilized across all ConsumerFactories
+ * {@link io.airbyte.cdk.integrations.destination.staging.StagingConsumerFactory} which likely
+ * should be placed into a commons package to be utilized across all ConsumerFactories
  */
 public class BigQueryStagingConsumerFactory {
 
@@ -69,8 +69,8 @@ public class BigQueryStagingConsumerFactory {
   }
 
   /**
-   * Out BigQuery's uploader threads use a fair amount of memory. We believe this is largely
-   * due to the sdk client we use.
+   * Out BigQuery's uploader threads use a fair amount of memory. We believe this is largely due to
+   * the sdk client we use.
    *
    * @return number of bytes to make available for message buffering.
    */
@@ -79,10 +79,10 @@ public class BigQueryStagingConsumerFactory {
   }
 
   private Map<StreamDescriptor, BigQueryWriteConfig> createWriteConfigs(final JsonNode config,
-                                                                                      final ConfiguredAirbyteCatalog catalog,
-                                                                                      final ParsedCatalog parsedCatalog,
-                                                                                      final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
-                                                                                      final Function<String, String> tmpTableNameTransformer) {
+                                                                        final ConfiguredAirbyteCatalog catalog,
+                                                                        final ParsedCatalog parsedCatalog,
+                                                                        final Function<JsonNode, BigQueryRecordFormatter> recordFormatterCreator,
+                                                                        final Function<String, String> tmpTableNameTransformer) {
     return catalog.getStreams().stream()
         .map(configuredStream -> {
           Preconditions.checkNotNull(configuredStream.getDestinationSyncMode(), "Undefined destination sync mode");

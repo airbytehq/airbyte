@@ -412,7 +412,7 @@ def test_filter_sharing_stream(config, filter_sharing_response):
 def test_projects_stream(config, projects_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead",
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
         json=projects_response,
     )
 
@@ -420,11 +420,16 @@ def test_projects_stream(config, projects_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = Projects(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
-    assert len(records) == 2
+    assert len(records) == 1
 
 
 @responses.activate
-def test_projects_avatars_stream(config, projects_avatars_response):
+def test_projects_avatars_stream(config, projects_response, projects_avatars_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
+        json=projects_response,
+    )
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/project/Project1/avatars?maxResults=50",
@@ -435,8 +440,8 @@ def test_projects_avatars_stream(config, projects_avatars_response):
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectAvatars(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
-    assert len(records) == 4
-    assert len(responses.calls) == 2
+    assert len(records) == 2
+    assert len(responses.calls) == 1
 
 
 @responses.activate
@@ -696,7 +701,7 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/search",
-        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (3)"})],
+        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (3)", "expand": "renderedFields,transitions,changelog"})],
         json={"errorMessages": ["The value '3' does not exist for the field 'project'."]},
         status=400
     )
@@ -705,7 +710,7 @@ def test_issues_stream(config, projects_response, mock_issues_responses, issues_
     stream = Issues(**args)
     records = list(read_full_refresh(stream))
     assert len(records) == 1
-    assert len(responses.calls) == 4
+    assert len(responses.calls) == 3
     error_message = "Stream `issues`. An error occurred, details: [\"The value '3' does not exist for the field 'project'.\"].Check permissions for this project. Skipping for now. The user doesn't have permission to the project. Please grant the user to the project."
     assert error_message in caplog.messages
 
@@ -792,8 +797,21 @@ def test_project_permissions_stream(config, mock_projects_responses, project_per
     args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
     stream = ProjectPermissionSchemes(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
-                                              stream_slice={"key": "TESTKEY13-1"})]
-    assert len(records) == 4
+                                              stream_slice={"key": "Project1"})]
+    expected_records = [
+        {'description': 'Only the reporter and internal staff can see this issue.',
+         'id': '100000',
+         'name': 'Reporter Only',
+         'projectId': 'Project1',
+         'self': 'https://your-domain.atlassian.net/rest/api/3/securitylevel/100000'},
+        {'description': 'Only internal staff can see this issue.',
+         'id': '100001',
+         'name': 'Staff Only',
+         'projectId': 'Project1',
+         'self': 'https://your-domain.atlassian.net/rest/api/3/securitylevel/100001'},
+    ]
+    assert len(records) == 2
+    assert records == expected_records
 
 
 @responses.activate
@@ -814,8 +832,8 @@ def test_project_email_stream(config, mock_projects_responses, project_email_res
     stream = ProjectEmail(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
                                               stream_slice={"key": "TESTKEY13-1"})]
-    assert len(records) == 4
-    assert len(responses.calls) == 3
+    assert len(records) == 2
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -831,8 +849,8 @@ def test_project_components_stream(config, mock_projects_responses, project_comp
     stream = ProjectComponents(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh,
                                               stream_slice={"key": "Project1"})]
-    assert len(records) == 4
-    assert len(responses.calls) == 3
+    assert len(records) == 2
+    assert len(responses.calls) == 2
 
 
 @responses.activate
@@ -951,5 +969,5 @@ def test_project_versions_stream(config, mock_projects_responses, projects_versi
     stream = ProjectVersions(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"key": "Project1"})]
 
-    assert len(records) == 4
-    assert len(responses.calls) == 3
+    assert len(records) == 2
+    assert len(responses.calls) == 2

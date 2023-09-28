@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.gcs.util;
 
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.s3.avro.AvroConstants;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.s3.avro.AvroConstants;
 import javax.annotation.Nullable;
 import org.apache.avro.LogicalTypes;
 import org.apache.avro.Schema;

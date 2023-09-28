@@ -1,9 +1,16 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
     id 'org.jetbrains.kotlin.jvm' version '1.9.0'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.mongodb.internal.MongoDbSource'
@@ -13,18 +20,11 @@ application {
 dependencies {
     implementation libs.slf4j.api
     implementation libs.jackson.databind
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium')
     implementation libs.airbyte.protocol
 
     implementation 'org.mongodb:mongodb-driver-sync:4.10.2'
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
     testImplementation "org.jetbrains.kotlinx:kotlinx-cli:0.3.5"
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-internal-poc')
 }
 
 /*

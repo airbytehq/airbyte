@@ -1,19 +1,25 @@
 # Monitoring Airbyte
 
+
 Airbyte offers you various ways to monitor your ELT pipelines. These options range from using open-source tools to integrating with enterprise-grade SaaS platforms.
 
 Here's a quick overview:
 * Connection Logging: All Airbyte instances provide extensive logs for each connector, giving detailed reports on the data synchronization process. This is available across all Airbyte offerings.
-* [Airbyte Datadog Integration](#airbyte-datadog-integration): Airbyte Enterprise customers can leverage our integration with Datadog. This lets you monitor and analyze your data pipelines right within your Datadog dashboards at no additional cost.
+* [Airbyte Datadog Integration](#airbyte-datadog-integration): Airbyte customers can leverage our integration with Datadog. This lets you monitor and analyze your data pipelines right within your Datadog dashboards at no additional cost.
 * Airbyte OpenTelemetry (OTEL) Integration: Coming soon, this will allow you to push metrics to your self-hosted monitoring solution using OpenTelemetry.
 
 Please browse the sections below for more details on each option and how to set it up.
 
 ## Airbyte Datadog Integration
 
-![Datadog's Airbyte Integration Dashboard](assets/DatadogAirbyteIntegration_OutOfTheBox_Dashboard.png)
 
-<AppliesTo selfManagedEnterprise />
+:::info
+Monitoring your Airbyte instance using Datadog is an early preview feature and still in development.
+Expect changes to this feature and the configuration to happen in the future. This feature will be
+only for Airbyte Enterprise customers in the future.
+:::
+
+![Datadog's Airbyte Integration Dashboard](assets/DatadogAirbyteIntegration_OutOfTheBox_Dashboard.png)
 
 Airbyte's new integration with Datadog brings the convenience of monitoring and analyzing your Airbyte data pipelines directly within your Datadog dashboards. 
 This integration brings forth new `airbyte.*` metrics along with new dashboards. The list of metrics is found [here](https://docs.datadoghq.com/integrations/airbyte/#data-collected).

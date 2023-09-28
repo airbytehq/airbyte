@@ -4,21 +4,21 @@
 
 package io.airbyte.integrations.destination.postgres;
 
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
+import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.DISABLE;
+import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_MODE;
+import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL;
+import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
+import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.obtainConnectionOptions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.ssh.SshWrappedDestination;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.HashMap;

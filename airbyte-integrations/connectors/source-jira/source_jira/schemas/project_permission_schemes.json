@@ -7,8 +7,8 @@
       "description": "The URL of the issue level security item."
     },
     "projectId": {
-      "type" : ["null", "string"],
-      "description" : "Id of the related project."
+      "type": ["null", "string"],
+      "description": "Id of the related project."
     },
     "id": {
       "type": ["null", "string"],

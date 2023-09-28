@@ -5,14 +5,13 @@
 package io.airbyte.integrations.source.postgres.ctid;
 
 import com.google.common.collect.Sets;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -61,8 +60,9 @@ public class CtidUtils {
   }
 
   /**
-   * Postgres servers version 14 and above are capable of running a tid range scan.
-   * Used by ctid queries
+   * Postgres servers version 14 and above are capable of running a tid range scan. Used by ctid
+   * queries
+   *
    * @param database database
    * @return true for Tid scan capable server
    */

@@ -97,7 +97,8 @@ class OpenAIEmbedder(BaseOpenAIEmbedder):
 
 class AzureOpenAIEmbedder(BaseOpenAIEmbedder):
     def __init__(self, config: AzureOpenAIEmbeddingConfigModel, chunk_size: int):
-        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base, deployment=config.deployment), chunk_size)  # type: ignore
+        # Azure OpenAI API has — as of 20230927 — a limit of 16 documents per request
+        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=16, max_retries=15, openai_api_type="azure", openai_api_version="2023-05-15", openai_api_base=config.api_base, deployment=config.deployment), chunk_size)  # type: ignore
 
 
 COHERE_VECTOR_SIZE = 1024
