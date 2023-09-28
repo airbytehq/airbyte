@@ -16,8 +16,8 @@ NO_ERROR_MESSAGE = "An unexpected error occured while connecting to Notion. Plea
 
 def test_check_connection(mocker, requests_mock):
     source = SourceNotion()
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"id": "aaa"}], "next_cursor": None})
+    logger_mock, config_mock = MagicMock(), {"access_token": "test_token", "start_date": "2021-01-01T00:00:00.000Z"}
+    requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"id": "aaa", "last_edited_time": "2022-01-01T00:00:00.000Z"}], "next_cursor": None})
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 
@@ -46,22 +46,3 @@ def test_streams(mocker):
     streams = source.streams(config_mock)
     expected_streams_number = 4
     assert len(streams) == expected_streams_number
-
-
-@pytest.mark.parametrize(
-    "config, expected_start_date, current_time",
-    [
-        ({"authenticator": "secret_token", "start_date": "2021-09-01T00:00:00.000Z"}, "2021-09-01T00:00:00.000Z", "2022-09-22T00:00:00.000Z"),
-        ({"authenticator": "super_secret_token", "start_date": None}, '2020-09-22T00:00:00.000Z', "2022-09-22T00:00:00.000Z"),
-        ({"authenticator": "even_more_secret_token"}, '2021-01-01T12:30:00.000Z', "2023-01-01T12:30:00.000Z"),
-    ]
-)
-def test_set_start_date(config, expected_start_date, current_time):
-    """
-    Test that start_date in config is either:
-      1. set to the value provided by the user
-      2. defaults to two years from the present date set by the test environment.
-    """
-    with freezegun.freeze_time(current_time):
-        SourceNotion.set_start_date(config)
-        assert config["start_date"] == expected_start_date

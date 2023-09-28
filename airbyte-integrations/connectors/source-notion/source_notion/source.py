@@ -6,7 +6,6 @@
 import logging
 from typing import Any, List, Mapping, Tuple
 
-import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -34,19 +33,9 @@ class NotionAuthenticator:
 
 
 class SourceNotion(AbstractSource):
-    @staticmethod
-    def set_start_date(config: Mapping[str, Any]):
-        """
-        Sets the start date to two years ago if it is not already set by the user.
-        """
-        start_date = config.get("start_date")
-        if not start_date:
-            two_years_ago = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
-            config["start_date"] = two_years_ago
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
-            self.set_start_date(config)
             authenticator = NotionAuthenticator(config).get_access_token()
             stream = Pages(authenticator=authenticator, config=config)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
@@ -71,10 +60,6 @@ class SourceNotion(AbstractSource):
             )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
-        self.set_start_date(config)
-        logger = logging.getLogger("airbyte")
-        logger.info(f"Using start_date: {config['start_date']}")
 
         authenticator = NotionAuthenticator(config).get_access_token()
         args = {"authenticator": authenticator, "config": config}
