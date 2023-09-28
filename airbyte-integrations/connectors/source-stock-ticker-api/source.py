@@ -1,13 +1,16 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import argparse
 import json
+import os
+import sys
+from datetime import date, datetime, timedelta, timezone
+from http import HTTPStatus
 from typing import Optional, Union
 
 import requests
-import sys
-import os
-
-from datetime import date, datetime, timedelta, timezone
-from http import HTTPStatus
 
 
 def _call_api(ticker: str, token: str, from_day: Union[str, date], to_day: Union[str, date]) -> requests.Response:
@@ -71,25 +74,17 @@ def check(config: dict) -> None:
 
 def discover() -> None:
     catalog = {
-        "streams": [{
-            "name": "stock_prices",
-            "supported_sync_modes": ["full_refresh", "incremental"],
-            "source_defined_cursor": True,
-            "default_cursor_field": ["date"],
-            "json_schema": {
-                "properties": {
-                    "date": {
-                        "type": "string"
-                    },
-                    "price": {
-                        "type": "number"
-                    },
-                    "stock_ticker": {
-                        "type": "string"
-                    }
-                }
+        "streams": [
+            {
+                "name": "stock_prices",
+                "supported_sync_modes": ["full_refresh", "incremental"],
+                "source_defined_cursor": True,
+                "default_cursor_field": ["date"],
+                "json_schema": {
+                    "properties": {"date": {"type": "string"}, "price": {"type": "number"}, "stock_ticker": {"type": "string"}}
+                },
             }
-        }]
+        ]
     }
     airbyte_message = {"type": "CATALOG", "catalog": catalog}
     print(json.dumps(airbyte_message))
@@ -138,7 +133,7 @@ def read(config: dict, catalog: dict, state: Optional[dict] = None) -> None:
                 results = response_json["results"]
                 for result in results:
                     data = {
-                        "date": datetime.fromtimestamp(result["t"]/1000, tz=timezone.utc).strftime("%Y-%m-%d"),
+                        "date": datetime.fromtimestamp(result["t"] / 1000, tz=timezone.utc).strftime("%Y-%m-%d"),
                         "stock_ticker": config["stock_ticker"],
                         "price": result["c"],
                     }
@@ -148,7 +143,7 @@ def read(config: dict, catalog: dict, state: Optional[dict] = None) -> None:
 
                     # We update the cursor as we print out the data, so that next time sync starts where we stopped printing out results
                     if stock_prices_stream["sync_mode"] == "incremental":
-                        cursor_value = datetime.fromtimestamp(results[len(results)-1]["t"]/1000, tz=timezone.utc).strftime("%Y-%m-%d")
+                        cursor_value = datetime.fromtimestamp(results[len(results) - 1]["t"] / 1000, tz=timezone.utc).strftime("%Y-%m-%d")
 
     # Emit new state message.
     if stock_prices_stream["sync_mode"] == "incremental":
@@ -170,9 +165,7 @@ def run(args: list) -> None:
     required_check_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
 
     # Accept the discover command
-    discover_parser = subparsers.add_parser(
-        "discover", help="outputs a catalog describing the source's schema", parents=[parent_parser]
-    )
+    discover_parser = subparsers.add_parser("discover", help="outputs a catalog describing the source's schema", parents=[parent_parser])
     required_discover_parser = discover_parser.add_argument_group("required named arguments")
     required_discover_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
 
@@ -181,9 +174,7 @@ def run(args: list) -> None:
     read_parser.add_argument("--state", type=str, required=False, help="path to the json-encoded state file")
     required_read_parser = read_parser.add_argument_group("required named arguments")
     required_read_parser.add_argument("--config", type=str, required=True, help="path to the json configuration file")
-    required_read_parser.add_argument(
-        "--catalog", type=str, required=True, help="path to the catalog used to determine which data to read"
-    )
+    required_read_parser.add_argument("--catalog", type=str, required=True, help="path to the catalog used to determine which data to read")
 
     parsed_args = main_parser.parse_args(args)
     command = parsed_args.command

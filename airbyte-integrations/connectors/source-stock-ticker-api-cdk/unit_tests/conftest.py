@@ -3,7 +3,6 @@
 #
 
 import pytest
-
 from source_stock_ticker_api_cdk.source import StockPrices
 
 

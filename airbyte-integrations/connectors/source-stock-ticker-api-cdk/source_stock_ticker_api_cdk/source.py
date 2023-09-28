@@ -56,7 +56,7 @@ class StockPrices(HttpStream, IncrementalMixin):
         if content and content.get("resultsCount", 0) > 0:
             for result in content["results"]:
                 record = {
-                    "date": datetime.fromtimestamp(result["t"]/1000, tz=timezone.utc).strftime(DATE_FORMAT),
+                    "date": datetime.fromtimestamp(result["t"] / 1000, tz=timezone.utc).strftime(DATE_FORMAT),
                     "stock_ticker": content["ticker"],
                     "price": result["c"],
                 }

@@ -5,12 +5,11 @@
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
-from requests import Response, Session
-
 import pytest
-from source_stock_ticker_api_cdk.source import StockPrices, SourceStockTickerApiCDK
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
+from requests import Response, Session
+from source_stock_ticker_api_cdk.source import SourceStockTickerApiCDK, StockPrices
 
 
 def test_request_params(patch_base_class, config):
