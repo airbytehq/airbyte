@@ -124,10 +124,10 @@ public class AirbyteLogMessageTemplateTest {
     final AirbyteLogMessage airbyteLogMessage = validateAirbyteMessageIsLog(airbyteMessage);
     final String connectorLogMessage = airbyteLogMessage.getMessage();
 
-    // #30781 - message length is capped at 3751 charcters.
+    // #30781 - message length is capped at 16,000 charcters.
     int j = connectorLogMessage.length();
-    assertFalse(connectorLogMessage.length() > 3751);
-    assertTrue(logMessage.length() < 8192);
+    assertFalse(connectorLogMessage.length() > 16_000);
+    assertTrue(logMessage.length() < 32768);
   }
 
 }
