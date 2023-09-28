@@ -5,7 +5,7 @@
 from functools import lru_cache
 from typing import Any, Iterable, Mapping, Optional
 
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, FieldPath
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, PrimaryKey
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability
 from airbyte_cdk.sources.streams.core import StreamData
 
@@ -22,7 +22,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         raise NotImplementedError
 
     @property
-    def primary_key(self) -> Optional[FieldPath]:
+    def primary_key(self) -> Optional[PrimaryKey]:
         raise NotImplementedError
 
     @property

@@ -9,7 +9,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from deprecated.classic import deprecated
 
-FieldPath = Union[str, List[str]]
+PrimaryKey = Union[str, List[str]]
 
 
 @deprecated("This class is experimental. Use at your own risk.")
@@ -68,7 +68,7 @@ class AbstractStream(ABC):
 
     @property
     @abstractmethod
-    def primary_key(self) -> Optional[FieldPath]:
+    def primary_key(self) -> Optional[PrimaryKey]:
         """
         :return: A string if single primary key, list of strings if composite primary key.
           Primary keys in nested fields are not supported.
