@@ -1338,7 +1338,12 @@ def test_stream_contributor_activity_parse_empty_response(caplog):
         "repositories": ["airbytehq/airbyte"],
     }
     stream = ContributorActivity(**repository_args)
-    resp = responses.add(responses.GET, "https://api.github.com/repos/airbytehq/airbyte/stats/contributors", body='', status=204, )
+    resp = responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbytehq/airbyte/stats/contributors",
+        body="",
+        status=204,
+    )
     records = list(read_full_refresh(stream))
     expected_message = "Empty response received for contributor_activity stats in repository airbytehq/airbyte"
     assert resp.call_count == 1
