@@ -115,8 +115,7 @@ jobs:
     name: Create Instatus Incident on Failure
     runs-on: ubuntu-latest
     needs:
-      - build-connectors-base
-      - octavia-cli-build
+      - run-check
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Call Instatus Webhook
@@ -129,8 +128,7 @@ jobs:
     name: Create Instatus Incident on Success
     runs-on: ubuntu-latest
     needs:
-      - build-connectors-base
-      - octavia-cli-build
+      - run-check
     if: ${{ success() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Call Instatus Webhook
