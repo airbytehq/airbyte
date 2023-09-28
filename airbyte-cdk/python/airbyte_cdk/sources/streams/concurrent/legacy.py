@@ -205,7 +205,6 @@ class LegacyPartition(Partition):
         Otherwise, the message will be emitted on the message repository.
         """
         for record_data in self._stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=copy.deepcopy(self._slice)):
-            print(f"record_data: {record_data}")
             if isinstance(record_data, Mapping):
                 yield Record(record_data)
             else:
