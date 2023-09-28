@@ -4,7 +4,10 @@
 
 package io.airbyte.cdk.integrations.debezium;
 
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.ID_FIELD;
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils.OBJECT_ID_FIELD;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -12,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager.DebeziumConnectorType;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -20,21 +24,23 @@ import io.debezium.engine.ChangeEvent;
 import java.io.IOException;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
-
 class DebeziumEventUtilsTest {
 
   @Test
-  public void testConvertChangeEvent() throws IOException {
+  void testConvertRelationalDbChangeEvent() throws IOException {
     final String stream = "names";
     final Instant emittedAt = Instant.now();
-    final CdcMetadataInjector cdcMetadataInjector = new DummyMetadataInjector();
-    final ChangeEventWithMetadata insertChangeEvent = mockChangeEvent("insert_change_event.json");
-    final ChangeEventWithMetadata updateChangeEvent = mockChangeEvent("update_change_event.json");
-    final ChangeEventWithMetadata deleteChangeEvent = mockChangeEvent("delete_change_event.json");
+    final CdcMetadataInjector<Long> cdcMetadataInjector = new DummyMetadataInjector();
+    final ChangeEventWithMetadata insertChangeEvent = mockChangeEvent("insert_change_event.json", "");
+    final ChangeEventWithMetadata updateChangeEvent = mockChangeEvent("update_change_event.json", "");
+    final ChangeEventWithMetadata deleteChangeEvent = mockChangeEvent("delete_change_event.json", "");
 
-    final AirbyteMessage actualInsert = DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, emittedAt);
-    final AirbyteMessage actualUpdate = DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcMetadataInjector, emittedAt);
-    final AirbyteMessage actualDelete = DebeziumEventUtils.toAirbyteMessage(deleteChangeEvent, cdcMetadataInjector, emittedAt);
+    final AirbyteMessage actualInsert =
+            DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, emittedAt, DebeziumConnectorType.RELATIONALDB);
+    final AirbyteMessage actualUpdate =
+            DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcMetadataInjector, emittedAt, DebeziumConnectorType.RELATIONALDB);
+    final AirbyteMessage actualDelete =
+            DebeziumEventUtils.toAirbyteMessage(deleteChangeEvent, cdcMetadataInjector, emittedAt, DebeziumConnectorType.RELATIONALDB);
 
     final AirbyteMessage expectedInsert = createAirbyteMessage(stream, emittedAt, "insert_message.json");
     final AirbyteMessage expectedUpdate = createAirbyteMessage(stream, emittedAt, "update_message.json");
@@ -45,9 +51,52 @@ class DebeziumEventUtilsTest {
     deepCompare(expectedDelete, actualDelete);
   }
 
-  private static ChangeEventWithMetadata mockChangeEvent(final String resourceName) throws IOException {
+  @Test
+  void testConvertMongoDbChangeEvent() throws IOException {
+    final String objectId = "64f24244f95155351c4185b1";
+    final String stream = "names";
+    final Instant emittedAt = Instant.now();
+    final CdcMetadataInjector<Long> cdcMetadataInjector = new DummyMetadataInjector();
+    final ChangeEventWithMetadata insertChangeEvent = mockChangeEvent("mongodb/change_event_insert.json", "");
+    final ChangeEventWithMetadata updateChangeEvent = mockChangeEvent("mongodb/change_event_update.json", "");
+    final ChangeEventWithMetadata deleteChangeEvent = mockChangeEvent("mongodb/change_event_delete.json", "");
+    final ChangeEventWithMetadata deleteChangeEventNoBefore = mockChangeEvent("mongodb/change_event_delete_no_before.json",
+            "{\\\"" + OBJECT_ID_FIELD + "\\\": \\\"" + objectId + "\\\"}");
+
+    final AirbyteMessage actualInsert =
+            DebeziumEventUtils.toAirbyteMessage(insertChangeEvent, cdcMetadataInjector, emittedAt, DebeziumConnectorType.MONGODB);
+    final AirbyteMessage actualUpdate =
+            DebeziumEventUtils.toAirbyteMessage(updateChangeEvent, cdcMetadataInjector, emittedAt, DebeziumConnectorType.MONGODB);
+    final AirbyteMessage actualDelete =
+            DebeziumEventUtils.toAirbyteMessage(deleteChangeEvent, cdcMetadataInjector, emittedAt, DebeziumConnectorType.MONGODB);
+    final AirbyteMessage actualDeleteNoBefore =
+            DebeziumEventUtils.toAirbyteMessage(deleteChangeEventNoBefore, cdcMetadataInjector, emittedAt, DebeziumConnectorType.MONGODB);
+
+    final AirbyteMessage expectedInsert = createAirbyteMessage(stream, emittedAt, "mongodb/insert_airbyte_message.json");
+    final AirbyteMessage expectedUpdate = createAirbyteMessage(stream, emittedAt, "mongodb/update_airbyte_message.json");
+    final AirbyteMessage expectedDelete = createAirbyteMessage(stream, emittedAt, "mongodb/delete_airbyte_message.json");
+    final AirbyteMessage expectedDeleteNoBefore = createAirbyteMessage(stream, emittedAt, "mongodb/delete_no_before_airbyte_message.json");
+
+    deepCompare(expectedInsert, actualInsert);
+    deepCompare(expectedUpdate, actualUpdate);
+    deepCompare(expectedDelete, actualDelete);
+    deepCompare(expectedDeleteNoBefore, actualDeleteNoBefore);
+  }
+
+  @Test
+  void testConvertMongoDbChangeEventUnsupportedOperation() throws IOException {
+    final Instant emittedAt = Instant.now();
+    final CdcMetadataInjector<Long> cdcMetadataInjector = new DummyMetadataInjector();
+    final ChangeEventWithMetadata unsupportedOperationEvent = mockChangeEvent("mongodb/change_event_unsupported.json", "");
+    assertThrows(IllegalArgumentException.class,
+            () -> DebeziumEventUtils.toAirbyteMessage(unsupportedOperationEvent, cdcMetadataInjector, emittedAt, DebeziumConnectorType.MONGODB));
+  }
+
+  private static ChangeEventWithMetadata mockChangeEvent(final String resourceName, final String idValue) throws IOException {
     final ChangeEvent<String, String> mocked = mock(ChangeEvent.class);
     final String resource = MoreResources.readResource(resourceName);
+    final String key = "{\"" + ID_FIELD + "\":\"" + idValue + "\"}";
+    when(mocked.key()).thenReturn(key);
     when(mocked.value()).thenReturn(resource);
 
     return new ChangeEventWithMetadata(mocked);
@@ -57,38 +106,39 @@ class DebeziumEventUtilsTest {
     final String data = MoreResources.readResource(resourceName);
 
     final AirbyteRecordMessage recordMessage = new AirbyteRecordMessage()
-        .withStream(stream)
-        .withNamespace("public")
-        .withData(Jsons.deserialize(data))
-        .withEmittedAt(emittedAt.toEpochMilli());
+            .withStream(stream)
+            .withNamespace("public")
+            .withData(Jsons.deserialize(data))
+            .withEmittedAt(emittedAt.toEpochMilli());
 
     return new AirbyteMessage()
-        .withType(AirbyteMessage.Type.RECORD)
-        .withRecord(recordMessage);
+            .withType(AirbyteMessage.Type.RECORD)
+            .withRecord(recordMessage);
   }
 
   private static void deepCompare(final Object expected, final Object actual) {
     assertEquals(Jsons.deserialize(Jsons.serialize(expected)), Jsons.deserialize(Jsons.serialize(actual)));
   }
 
-  public static class DummyMetadataInjector implements CdcMetadataInjector {
+  public static class DummyMetadataInjector implements CdcMetadataInjector<Long> {
 
     @Override
     public void addMetaData(final ObjectNode event, final JsonNode source) {
-      final long lsn = source.get("lsn").asLong();
-      event.put("_ab_cdc_lsn", lsn);
+      if (source.has("lsn")) {
+        final long lsn = source.get("lsn").asLong();
+        event.put("_ab_cdc_lsn", lsn);
+      }
     }
 
     @Override
     public String namespace(final JsonNode source) {
-      return source.get("schema").asText();
+      return source.has("schema") ? source.get("schema").asText() : source.get("db").asText();
     }
 
     @Override
-    public String name(JsonNode source) {
-      return source.get("table").asText();
+    public String name(final JsonNode source) {
+      return source.has("table") ? source.get("table").asText() : source.get("collection").asText();
     }
 
   }
-
 }
