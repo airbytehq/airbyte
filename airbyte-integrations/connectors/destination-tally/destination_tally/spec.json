@@ -1,0 +1,42 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/tally",
+  "supported_destination_sync_modes": [
+    "overwrite", 
+    "append"
+  ],
+  "supportsIncremental": true,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Tally",
+    "type": "object",
+    "required": ["auth_key", "version", "company_name"],
+    "additionalProperties": false,
+    "properties": {
+      "auth_key": {
+        "type": "string",
+        "title": "Auth Key",
+        "description": "Tally prime Auth Key obtained from tallyprimeapi.com",
+        "examples": [
+          "test_b904**************************"
+        ],
+        "order": 0,
+        "airbyte_secret": true
+      },
+      "version": {
+        "type": "string",
+        "title": "Version",
+        "description": "This is the version of Tally prime software. '1' or '3' (Use 3 only for TallyPrime Rel 3x and above)",
+        "order": 1
+      },
+      "company_name": {
+        "type": "string",
+        "title": "Company Name",
+        "description": "Company name in Tally",
+        "examples": [
+          "Testing Company"
+        ],
+        "order": 2
+      }
+    }
+  }
+}
