@@ -43,25 +43,20 @@ class ShortLivedTokenAuthenticator(DeclarativeAuthenticator):
     lifetime: Union[InterpolatedString, str] = ""
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        print("parameters", parameters)
         self._client_id = InterpolatedString.create(self.client_id, parameters=parameters)
         self._secret_key = InterpolatedString.create(self.secret_key, parameters=parameters)
         self._url = InterpolatedString.create(self.url, parameters=parameters)
         self._token_key = InterpolatedString.create(self.token_key, parameters=parameters)
-        print("TOKEN", self.url, parameters)
         self._token = None
         self._session = requests.Session()
 
     def check_token(self):
         if self.config.get("credentials").get("type") == "access_token":
-            print("Access-Token", self._token)
             self._token = self.config.get("credentials").get("access_token")
             if not self.validate_token(self._token):
                 raise ConnectionError("Unauthorized token.")
         if self.config.get("credentials").get("type") == "OAuth":
-            print("Token present or not", self._token)
             if not self._token or not self.validate_token(self._token):
-                print("Not present  || GENERATE ||", self._token)
                 try:
                     response = requests.post(
                         url=self._url.default,
@@ -77,7 +72,6 @@ class ShortLivedTokenAuthenticator(DeclarativeAuthenticator):
                     raise ConnectionError(response.text)
 
     def validate_token(self, access_token: str) -> bool:
-        print("Validate Token")
         validate_url_auth = "https://oauth.audiencereport.com/oauth/validate_token"
         response = requests.post(
             url=validate_url_auth,
@@ -100,7 +94,6 @@ class ShortLivedTokenAuthenticator(DeclarativeAuthenticator):
     @property
     def token(self) -> str:
         self.check_token()
-        print("NEW TOKEN:", self._token)
         return f"Bearer {self._token}"
 
     @staticmethod

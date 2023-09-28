@@ -1,5 +1,17 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "campaigns": {
+    "id": "202a22"
+  },
+  "devices": {
+    "campaign_id": "202a23"
+  },
+  "profile": {
+    "campaign_id": "2022a"
+  },
+  "reach": {
+    "campaign_id": "2022c"
+  },
+  "report": {
+    "campaign_id": "2022l"
   }
 }

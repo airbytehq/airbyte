@@ -1,5 +1,17 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
+  "campaigns": {
+    "id": "2"
+  },
+  "devices": {
+    "campaign_id": "2"
+  },
+  "profile": {
+    "campaign_id": ""
+  },
+  "reach": {
+    "campaign_id": "2"
+  },
+  "report": {
+    "campaign_id": "2"
   }
 }

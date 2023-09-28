@@ -7,7 +7,812 @@
         "supported_sync_modes": ["full_refresh"]
       },
       "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "devices",
+        "json_schema": {
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "deviceCounts": {
+      "type": "object",
+      "properties": {
+        "desktop": {
+          "type": "integer"
+        },
+        "mobile": {
+          "type": "integer"
+        },
+        "other": {
+          "type": "integer"
+        },
+        "tablet": {
+          "type": "integer"
+        },
+        "tv": {
+          "type": "integer"
+        }
+      },
+      "required": [
+        "desktop",
+        "mobile",
+        "other",
+        "tablet",
+        "tv"
+      ]
+    },
+    "subdeviceCounts": {
+      "type": "object",
+      "properties": {
+        "desktop": {
+          "type": "object",
+          "properties": {
+            "windows": {
+              "type": "integer"
+            },
+            "macosx": {
+              "type": "integer"
+            },
+            "linux": {
+              "type": "integer"
+            },
+            "chromeos": {
+
+              "type": "integer"
+            },
+            "other": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "chromeos",
+            "linux",
+            "macosx",
+            "other",
+            "windows"
+          ]
+        },
+        "mobile": {
+          "type": "object",
+          "properties": {
+            "android": {
+              "type": "integer"
+            },
+            "iphone": {
+              "type": "integer"
+            },
+            "windowsPhone": {
+              "type": "integer"
+            },
+            "other": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "android",
+            "iphone",
+            "other",
+            "windowsPhone"
+          ]
+        },
+        "other": {
+          "type": "object",
+          "properties": {
+            "other": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "other"
+          ]
+        },
+        "tablet": {
+          "type": "object",
+          "properties": {
+            "windows": {
+              "type": "integer"
+            },
+            "android": {
+              "type": "integer"
+            },
+            "iPad": {
+              "type": "integer"
+            },
+            "other": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "android",
+            "iPad",
+            "other",
+            "windows"
+          ]
+        },
+        "tv": {
+          "type": "object",
+          "properties": {
+            "appleTV": {
+              "type": "integer"
+            },
+            "roku": {
+              "type": "integer"
+            },
+            "chromecast": {
+              "type": "integer"
+            },
+            "console": {
+              "type": "integer"
+            },
+            "smartTV": {
+              "type": "integer"
+            },
+            "webTV": {
+              "type": "integer"
+            },
+            "hbbTV": {
+              "type": "integer"
+            },
+            "YouView": {
+              "type": "integer"
+            },
+            "AmazonFireTV": {
+              "type": "integer"
+            },
+            "SmartHub": {
+              "type": "integer"
+            },
+            "other": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "AmazonFireTV",
+            "SmartHub",
+            "YouView",
+            "appleTV",
+            "chromecast",
+            "console",
+            "hbbTV",
+            "other",
+            "roku",
+            "smartTV",
+            "webTV"
+          ]
+        }
+      },
+      "required": [
+        "desktop",
+        "mobile",
+        "other",
+        "tablet",
+        "tv"
+      ]
+    },
+    "campaign_id":{
+      "type":"string"
+    }
+  },
+  "required": [
+    "deviceCounts",
+    "subdeviceCounts",
+    "campaign_id"
+  ]
+},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "profile",
+        "json_schema": {
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "profileAffinities": {
+      "type": "object",
+      "properties": {
+        "gender": {
+          "type": "object",
+          "properties": {
+            "male": {
+              "type": "integer"
+            },
+            "female": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "female",
+            "male"
+          ]
+        },
+        "age": {
+          "type": "object",
+          "properties": {
+            "young": {
+              "type": "integer"
+            },
+            "old": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "old",
+            "young"
+          ]
+        },
+        "reportItems": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "fusionId": {
+                "type": "string"
+              },
+              "providerId": {
+                "type": "string"
+              },
+              "sourceId": {
+                "type": "string"
+              },
+              "profileAffinities": {
+                "type": "object",
+                "properties": {
+                  "gender": {
+                    "type": "object",
+                    "properties": {
+                      "male": {
+                        "type": "integer"
+                      },
+                      "female": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "female",
+                      "male"
+                    ]
+                  },
+                  "age": {
+                    "type": "object",
+                    "properties": {
+                      "young": {
+                        "type": "integer"
+                      },
+                      "old": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "old",
+                      "young"
+                    ]
+                  }
+                },
+                "required": [
+                  "age",
+                  "gender"
+                ]
+              }
+            },
+            "required": [
+              "fusionId",
+              "name",
+              "profileAffinities",
+              "providerId",
+              "sourceId"
+            ]
+          }
+        }
+      },
+      "required": [
+        "age",
+        "gender",
+        "reportItems"
+      ]
+    },
+    "defaultSegments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "valueLabels": {
+            "type": "object",
+            "properties": {
+              "gender": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "age": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "age",
+              "gender"
+            ]
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "percents": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            },
+            "required": [
+              "percents"
+            ]
+          },
+          "reportItems": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "percents": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                },
+                "fusionId": {
+                  "type": "string"
+                },
+                "providerId": {
+                  "type": "string"
+                },
+                "sourceId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "fusionId",
+                "name",
+                "percents",
+                "providerId",
+                "sourceId"
+              ]
+            }
+          }
+        },
+        "required": [
+          "name",
+          "reportItems",
+          "totals",
+          "valueLabels"
+        ]
+      }
+    },
+    "campaign_id":{
+      "type":"string"
+    }
+  },
+  "required": [
+    "defaultSegments",
+    "profileAffinities",
+    "campaign_id"
+  ]
+},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "reach",
+        "json_schema": {
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "totals": {
+      "type": "object",
+      "properties": {
+        "reach": {
+          "type": "number"
+        },
+        "reachPersons": {
+          "type": "integer"
+        },
+        "estimatedUniqueVisitors": {
+          "type": "integer"
+        },
+        "frequency": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "estimatedUniqueVisitors",
+        "frequency",
+        "reach",
+        "reachPersons"
+      ]
+    },
+    "weekly": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "week": {
+            "type": "integer"
+          },
+          "weekISO": {
+            "type": "string"
+          },
+          "reach": {
+            "type": "number"
+          },
+          "reachPersons": {
+            "type": "integer"
+          },
+          "trp": {
+            "type": "integer"
+          },
+          "marginal": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "marginal",
+          "reach",
+          "reachPersons",
+          "trp",
+          "week",
+          "weekISO"
+        ]
+      }
+    },
+    "reportItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "reach": {
+            "type": "number"
+          },
+          "reach2": {
+            "type": "number"
+          },
+          "reachPersons": {
+            "type": "integer"
+          },
+          "reachContribution": {
+            "type": "number"
+          },
+          "estimatedUniqueVisitors": {
+            "type": "integer"
+          },
+          "frequency": {
+            "type": "number"
+          },
+          "fusionId": {
+            "type": "string"
+          },
+          "providerId": {
+            "type": "string"
+          },
+          "sourceId": {
+            "type": "string"
+          },
+          "weekly": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "week": {
+                  "type": "integer"
+                },
+                "weekISO": {
+                  "type": "string"
+                },
+                "reach": {
+                  "type": "number"
+                },
+                "reachPersons": {
+                  "type": "integer"
+                },
+                "reachContribution": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "reach",
+                "reachContribution",
+                "reachPersons",
+                "week",
+                "weekISO"
+              ]
+            }
+          }
+        },
+        "required": [
+          "estimatedUniqueVisitors",
+          "frequency",
+          "fusionId",
+          "name",
+          "providerId",
+          "reach",
+          "reach2",
+          "reachContribution",
+          "reachPersons",
+          "sourceId",
+          "weekly"
+        ]
+      }
+    },
+    "campaign_id":{
+      "type":"string"
+    }
+  },
+  "required": [
+    "reportItems",
+    "totals",
+    "weekly",
+    "campaign_id"
+  ]
+},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
+    },
+    {
+      "stream": {
+        "name": "report",
+        "json_schema": {
+  "$schema":"http://json-schema.org/schema#",
+  "type":"object",
+  "additionalProperties": true,
+  "properties":{
+    "totals":{
+      "type":"object",
+      "properties":{
+        "events":{
+          "type":"integer"
+        },
+        "targetEvents":{
+          "type":"integer"
+        },
+        "frequency":{
+          "type":"number"
+        },
+        "targetGroupSize":{
+          "type":"integer"
+        },
+        "reach":{
+          "type":"number"
+        },
+        "reachPersons":{
+          "type":"integer"
+        },
+        "estimatedUniqueVisitors":{
+          "type":"integer"
+        },
+        "affinity":{
+          "type":"integer"
+        },
+        "trp":{
+          "type":"integer"
+        },
+        "profile":{
+          "type":"object",
+          "properties":{
+            "gender":{
+              "type":"array",
+              "items":{
+                "type":"integer"
+              }
+            },
+            "age":{
+              "type":"array",
+              "items":{
+                "type":"integer"
+              }
+            }
+          },
+          "required":[
+            "age",
+            "gender"
+          ]
+        },
+        "share":{
+          "type":"integer"
+        },
+        "totalEventsPercentage":{
+          "type":"integer"
+        },
+        "targetEventsPercentage":{
+          "type":"integer"
+        }
+      },
+      "required":[
+        "affinity",
+        "estimatedUniqueVisitors",
+        "events",
+        "frequency",
+        "profile",
+        "reach",
+        "reachPersons",
+        "share",
+        "targetEvents",
+        "targetEventsPercentage",
+        "targetGroupSize",
+        "totalEventsPercentage",
+        "trp"
+      ]
+    },
+    "weekly":{
+      "type":"array",
+      "items":{
+        "type":"object",
+        "properties":{
+          "week":{
+            "type":"integer"
+          },
+          "weekISO":{
+            "type":"string"
+          },
+          "events":{
+            "type":"integer"
+          },
+          "targetEvents":{
+            "type":"integer"
+          },
+          "reach":{
+            "type":"number"
+          },
+          "reachPersons":{
+            "type":"integer"
+          },
+          "trp":{
+            "type":"integer"
+          },
+          "marginal":{
+            "type":"integer"
+          }
+        },
+        "required":[
+          "events",
+          "marginal",
+          "reach",
+          "reachPersons",
+          "targetEvents",
+          "trp",
+          "week",
+          "weekISO"
+        ]
+      }
+    },
+    "reportItems":{
+      "type":"array",
+      "items":{
+        "type":"object",
+        "properties":{
+          "fusionId":{
+            "type":"string"
+          },
+          "providerId":{
+            "type":"string"
+          },
+          "events":{
+            "type":"integer"
+          },
+          "targetEvents":{
+            "type":"integer"
+          },
+          "totalEventsPercentage":{
+            "type":"integer"
+          },
+          "targetEventsPercentage":{
+            "type":"integer"
+          },
+          "reach":{
+            "type":"number"
+          },
+          "reachPersons":{
+            "type":"integer"
+          },
+          "frequency":{
+            "type":"number"
+          },
+          "estimatedUniqueVisitors":{
+            "type":"integer"
+          },
+          "affinity":{
+            "type":"integer"
+          },
+          "affinityPercentage":{
+            "type":"integer"
+          },
+          "trp":{
+            "type":"integer"
+          },
+          "profile":{
+            "type":"object",
+            "properties":{
+              "age":{
+                "type":"array",
+                "items":{
+                  "type":"integer"
+                }
+              },
+              "gender":{
+                "type":"array",
+                "items":{
+                  "type":"integer"
+                }
+              }
+            },
+            "required":[
+              "age",
+              "gender"
+            ]
+          },
+          "share":{
+            "type":"integer"
+          }
+        },
+        "required":[
+          "affinity",
+          "affinityPercentage",
+          "estimatedUniqueVisitors",
+          "events",
+          "frequency",
+          "fusionId",
+          "profile",
+          "providerId",
+          "reach",
+          "reachPersons",
+          "share",
+          "targetEvents",
+          "targetEventsPercentage",
+          "totalEventsPercentage",
+          "trp"
+        ]
+      }
+    },
+    "campaign_id":{
+      "type":"string"
+    }
+  },
+  "required":[
+    "reportItems",
+    "totals",
+    "weekly",
+    "campaign_id"
+  ]
+},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "append_dedup"
     }
   ]
 }

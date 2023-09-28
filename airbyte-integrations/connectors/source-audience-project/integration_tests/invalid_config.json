@@ -1,3 +1,6 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+
+  "type": "access_token",
+  "access_token" : "1xy",
+  "campaign_status" : "deleted, active, archived, dirty"
 }
