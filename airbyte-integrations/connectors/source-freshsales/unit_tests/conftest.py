@@ -16,4 +16,4 @@ def config_fixture():
 
 @pytest.fixture(name="stream_args")
 def stream_args(config):
-    return SourceFreshsales().get_input_stream_args(config['api_key'], config["domain_name"])
+    return SourceFreshsales().get_input_stream_args(config["api_key"], config["domain_name"])

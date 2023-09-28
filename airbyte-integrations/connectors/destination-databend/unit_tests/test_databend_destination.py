@@ -116,14 +116,14 @@ def test_connection(config: Dict[str, str], logger: MagicMock) -> None:
 @patch("destination_databend.writer.DatabendSQLWriter")
 @patch("destination_databend.client.DatabendClient")
 def test_sql_write_append(
-        mock_connection: MagicMock,
-        mock_writer: MagicMock,
-        config: Dict[str, str],
-        configured_stream1: ConfiguredAirbyteStream,
-        configured_stream2: ConfiguredAirbyteStream,
-        airbyte_message1: AirbyteMessage,
-        airbyte_message2: AirbyteMessage,
-        airbyte_state_message: AirbyteMessage,
+    mock_connection: MagicMock,
+    mock_writer: MagicMock,
+    config: Dict[str, str],
+    configured_stream1: ConfiguredAirbyteStream,
+    configured_stream2: ConfiguredAirbyteStream,
+    airbyte_message1: AirbyteMessage,
+    airbyte_message2: AirbyteMessage,
+    airbyte_state_message: AirbyteMessage,
 ) -> None:
     catalog = ConfiguredAirbyteCatalog(streams=[configured_stream1, configured_stream2])
 
@@ -140,14 +140,14 @@ def test_sql_write_append(
 @patch("destination_databend.writer.DatabendSQLWriter")
 @patch("destination_databend.client.DatabendClient")
 def test_sql_write_overwrite(
-        mock_connection: MagicMock,
-        mock_writer: MagicMock,
-        config: Dict[str, str],
-        configured_stream1: ConfiguredAirbyteStream,
-        configured_stream2: ConfiguredAirbyteStream,
-        airbyte_message1: AirbyteMessage,
-        airbyte_message2: AirbyteMessage,
-        airbyte_state_message: AirbyteMessage,
+    mock_connection: MagicMock,
+    mock_writer: MagicMock,
+    config: Dict[str, str],
+    configured_stream1: ConfiguredAirbyteStream,
+    configured_stream2: ConfiguredAirbyteStream,
+    airbyte_message1: AirbyteMessage,
+    airbyte_message2: AirbyteMessage,
+    airbyte_state_message: AirbyteMessage,
 ):
     # Overwrite triggers a delete
     configured_stream1.destination_sync_mode = DestinationSyncMode.overwrite

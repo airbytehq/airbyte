@@ -14,8 +14,9 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 }
             }
         }
-        project.tasks.named('test').configure {
-            dependsOn project.tasks.named('compileIntegrationTestJavaJava')
+        project.tasks.named('check').configure {
+            dependsOn project.tasks.matching { it.name == 'compileIntegrationTestJavaJava' }
+            dependsOn project.tasks.matching { it.name == 'spotbugsIntegrationTestJava' }
         }
 
         project.configurations {
@@ -41,20 +42,8 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
 
             outputs.upToDateWhen { false }
 
-            maxParallelForks = Runtime.runtime.availableProcessors()
-            // This allows to set up a `gradle.properties` file inside the connector folder to reduce parallelization.
-            // This is especially useful for connectors that shares resources (like Redshift or Snowflake).
-            if (project.hasProperty('numberThreads')) {
-                int numberThreads = 0
-                String numberThreadsString = project.property('numberThreads').toString()
-                if (numberThreadsString.isInteger()) {
-                    numberThreads = numberThreadsString as int
-                }
-                 if (numberThreads > 0 && numberThreads < maxParallelForks) {
-                    maxParallelForks = numberThreads
-                }
-            }
-            maxHeapSize = '3g'
+            maxParallelForks = project.test.maxParallelForks
+            maxHeapSize = project.test.maxHeapSize
 
             systemProperties = [
                 // Allow tests to set @Execution(ExecutionMode.CONCURRENT)
@@ -62,9 +51,8 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             ]
         }
         integrationTestJava.configure {
-            mustRunAfter project.tasks.named('test')
+            mustRunAfter project.tasks.named('check')
             dependsOn project.tasks.matching { it.name == 'assemble' }
-            dependsOn project.tasks.matching { it.name == 'spotbugsMain' }
         }
     }
 }

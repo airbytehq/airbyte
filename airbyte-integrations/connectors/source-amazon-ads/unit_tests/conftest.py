@@ -16,7 +16,7 @@ def config():
         "refresh_token": "test_refresh",
         "region": "NA",
         "look_back_window": 3,
-        "report_record_types": []
+        "report_record_types": [],
     }
 
 

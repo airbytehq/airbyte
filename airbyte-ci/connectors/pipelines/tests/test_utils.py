@@ -126,7 +126,7 @@ def test_render_report_output_prefix(ctx, expected):
 
 @pytest.mark.parametrize("enable_dependency_scanning", [True, False])
 def test_get_modified_connectors_with_dependency_scanning(all_connectors, enable_dependency_scanning):
-    base_java_changed_file = Path("airbyte-integrations/bases/base-java/src/main/java/io/airbyte/integrations/BaseConnector.java")
+    base_java_changed_file = Path("airbyte-cdk/java/airbyte-cdk/core/src/main/java/io/airbyte/cdk/integrations/BaseConnector.java")
     modified_files = [base_java_changed_file]
 
     not_modified_java_connector = pick_a_random_connector(language=ConnectorLanguage.JAVA)

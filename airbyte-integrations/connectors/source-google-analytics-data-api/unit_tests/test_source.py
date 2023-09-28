@@ -20,38 +20,73 @@ from source_google_analytics_data_api.utils import NO_DIMENSIONS, NO_METRICS, NO
         ({"custom_reports_array": "invalid"}, Status.FAILED, f"'{WRONG_JSON_SYNTAX}'"),
         ({"custom_reports_array": "{}"}, Status.FAILED, f"'{WRONG_JSON_SYNTAX}'"),
         ({"custom_reports_array": "[{}]"}, Status.FAILED, f"'{NO_NAME}'"),
-        ({"custom_reports_array": "[{\"name\": \"name\"}]"}, Status.FAILED, f"'{NO_DIMENSIONS}'"),
-        ({"custom_reports_array": "[{\"name\": \"daily_active_users\", \"dimensions\": [\"date\"]}]"}, Status.FAILED, f"'{NO_METRICS}'"),
-        ({"custom_reports_array": "[{\"name\": \"daily_active_users\", \"metrics\": [\"totalUsers\"], \"dimensions\": [{\"name\": \"city\"}]}]"}, Status.FAILED, '"The custom report daily_active_users entered contains invalid dimensions: {\'name\': \'city\'} is not of type \'string\'. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/)."'),
-        ({"date_ranges_start_date": "2022-20-20"}, Status.FAILED, '"time data \'2022-20-20\' does not match format \'%Y-%m-%d\'"'),
-        ({"credentials": {"auth_type": "Service", "credentials_json": "invalid"}},
-         Status.FAILED, "'credentials.credentials_json is not valid JSON'"),
-        ({"custom_reports_array": "[{\"name\": \"name\", \"dimensions\": [], \"metrics\": []}]"}, Status.FAILED, "'The custom report name entered contains invalid dimensions: [] is too short. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).'"),
-        ({"custom_reports_array": "[{\"name\": \"daily_active_users\", \"dimensions\": [\"date\"], \"metrics\": [\"totalUsers\"]}]"}, Status.FAILED, "'Custom reports: daily_active_users already exist as a default report(s).'"),
-        ({"custom_reports_array": "[{\"name\": \"name\", \"dimensions\": [\"unknown\"], \"metrics\": [\"totalUsers\"]}]"},
-         Status.FAILED, "'The custom report name entered contains invalid dimensions: unknown. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).'"),
-        ({"custom_reports_array": "[{\"name\": \"name\", \"dimensions\": [\"date\"], \"metrics\": [\"unknown\"]}]"}, Status.FAILED, "'The custom report name entered contains invalid metrics: unknown. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).'"),
-        ({"custom_reports_array": "[{\"name\": \"pivot_report\", \"dateRanges\": [{ \"startDate\": \"2020-09-01\", \"endDate\": \"2020-09-15\" }], \"dimensions\": [\"browser\", \"country\", \"language\"], \"metrics\": [\"sessions\"], \"pivots\": {}}]"},
-         Status.FAILED,
-         "\"The custom report pivot_report entered contains invalid pivots: {} is not of type 'null', 'array'. Ensure the pivot follow the syntax described in the docs (https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).\""),
+        ({"custom_reports_array": '[{"name": "name"}]'}, Status.FAILED, f"'{NO_DIMENSIONS}'"),
+        ({"custom_reports_array": '[{"name": "daily_active_users", "dimensions": ["date"]}]'}, Status.FAILED, f"'{NO_METRICS}'"),
+        (
+            {"custom_reports_array": '[{"name": "daily_active_users", "metrics": ["totalUsers"], "dimensions": [{"name": "city"}]}]'},
+            Status.FAILED,
+            "\"The custom report daily_active_users entered contains invalid dimensions: {'name': 'city'} is not of type 'string'. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).\"",
+        ),
+        ({"date_ranges_start_date": "2022-20-20"}, Status.FAILED, "\"time data '2022-20-20' does not match format '%Y-%m-%d'\""),
+        (
+            {"credentials": {"auth_type": "Service", "credentials_json": "invalid"}},
+            Status.FAILED,
+            "'credentials.credentials_json is not valid JSON'",
+        ),
+        (
+            {"custom_reports_array": '[{"name": "name", "dimensions": [], "metrics": []}]'},
+            Status.FAILED,
+            "'The custom report name entered contains invalid dimensions: [] is too short. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).'",
+        ),
+        (
+            {"custom_reports_array": '[{"name": "daily_active_users", "dimensions": ["date"], "metrics": ["totalUsers"]}]'},
+            Status.FAILED,
+            "'Custom reports: daily_active_users already exist as a default report(s).'",
+        ),
+        (
+            {"custom_reports_array": '[{"name": "name", "dimensions": ["unknown"], "metrics": ["totalUsers"]}]'},
+            Status.FAILED,
+            "'The custom report name entered contains invalid dimensions: unknown. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).'",
+        ),
+        (
+            {"custom_reports_array": '[{"name": "name", "dimensions": ["date"], "metrics": ["unknown"]}]'},
+            Status.FAILED,
+            "'The custom report name entered contains invalid metrics: unknown. Validate your custom query with the GA 4 Query Explorer (https://ga-dev-tools.google/ga4/query-explorer/).'",
+        ),
+        (
+            {
+                "custom_reports_array": '[{"name": "pivot_report", "dateRanges": [{ "startDate": "2020-09-01", "endDate": "2020-09-15" }], "dimensions": ["browser", "country", "language"], "metrics": ["sessions"], "pivots": {}}]'
+            },
+            Status.FAILED,
+            "\"The custom report pivot_report entered contains invalid pivots: {} is not of type 'null', 'array'. Ensure the pivot follow the syntax described in the docs (https://developers.google.com/analytics/devguides/reporting/data/v1/rest/v1beta/Pivot).\"",
+        ),
     ],
 )
 def test_check(requests_mock, config_gen, config_values, is_successful, message):
-    requests_mock.register_uri("POST", "https://oauth2.googleapis.com/token",
-                               json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"})
+    requests_mock.register_uri(
+        "POST", "https://oauth2.googleapis.com/token", json={"access_token": "access_token", "expires_in": 3600, "token_type": "Bearer"}
+    )
 
-    requests_mock.register_uri("GET", "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata",
-                               json={"dimensions": [{"apiName": "date"}, {"apiName": "country"},
-                                                    {"apiName": "language"}, {"apiName": "browser"}],
-                                     "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}]})
-    requests_mock.register_uri("POST", "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
-                               json={"dimensionHeaders": [{"name": "date"}, {"name": "country"}],
-                                     "metricHeaders": [{"name": "totalUsers", "type": "s"},
-                                                       {"name": "screenPageViews", "type": "m"}],
-                                     "rows": []
-                                     })
-    requests_mock.register_uri("GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata",
-                               json={}, status_code=403)
+    requests_mock.register_uri(
+        "GET",
+        "https://analyticsdata.googleapis.com/v1beta/properties/108176369/metadata",
+        json={
+            "dimensions": [{"apiName": "date"}, {"apiName": "country"}, {"apiName": "language"}, {"apiName": "browser"}],
+            "metrics": [{"apiName": "totalUsers"}, {"apiName": "screenPageViews"}, {"apiName": "sessions"}],
+        },
+    )
+    requests_mock.register_uri(
+        "POST",
+        "https://analyticsdata.googleapis.com/v1beta/properties/108176369:runReport",
+        json={
+            "dimensionHeaders": [{"name": "date"}, {"name": "country"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "s"}, {"name": "screenPageViews", "type": "m"}],
+            "rows": [],
+        },
+    )
+    requests_mock.register_uri(
+        "GET", "https://analyticsdata.googleapis.com/v1beta/properties/UA-11111111/metadata", json={}, status_code=403
+    )
 
     source = SourceGoogleAnalyticsDataApi()
     logger = MagicMock()
