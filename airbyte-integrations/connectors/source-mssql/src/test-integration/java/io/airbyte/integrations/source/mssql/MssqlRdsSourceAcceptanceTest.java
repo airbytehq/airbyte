@@ -6,13 +6,13 @@ package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.nio.file.Path;
 import java.sql.SQLException;
 import org.apache.commons.lang3.RandomStringUtils;

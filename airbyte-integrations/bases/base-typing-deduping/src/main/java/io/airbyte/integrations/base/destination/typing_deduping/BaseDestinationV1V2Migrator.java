@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
-import static io.airbyte.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Collection;

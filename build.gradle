@@ -270,26 +270,17 @@ subprojects { subproj ->
         finalizedBy jacocoTestReportTask
     }
 
+    // TODO: These should be added to the CDK or to the individual projects that need them:
     dependencies {
-        if (subproj.name != 'airbyte-commons') {
-            implementation project(':airbyte-commons')
-        }
-
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
 
-
         // version is handled by "com.fasterxml.jackson:jackson-bom:2.10.4", so we do not explicitly set it here.
         implementation libs.bundles.jackson
-
         implementation libs.guava
-
         implementation libs.commons.io
-
         implementation libs.bundles.apache
-
         implementation libs.slf4j.api
-
 
         // SLF4J as a facade over Log4j2 required dependencies
         implementation libs.bundles.log4j

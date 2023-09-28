@@ -21,7 +21,7 @@ class CdkImportTest {
   @Test
   void cdkVersionShouldMatch() {
     // Should fail in unit test phase:
-    assertEquals("0.0.2", CDKConstants.VERSION.replace("-SNAPSHOT", ""));
+    assertEquals("0.1.0", CDKConstants.VERSION.replace("-SNAPSHOT", ""));
   }
 
 }

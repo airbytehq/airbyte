@@ -25,6 +25,21 @@
     },
     "group": {
       "type": ["null", "object"]
+    },
+    "active_subscriptions_count": {
+      "type": ["null", "integer"]
+    },
+    "draft_invoices_count": {
+      "type": ["null", "integer"]
+    },
+    "plans_count": {
+      "type": ["null", "integer"]
+    },
+    "recurring": {
+      "type": ["null", "boolean"]
+    },
+    "weighted_interval": {
+      "type": ["null", "integer"]
     }
   }
 }
