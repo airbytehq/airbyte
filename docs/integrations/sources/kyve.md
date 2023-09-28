@@ -25,5 +25,5 @@ You can fetch with one source configuration more than one pool simultaneously. Y
 
 | Version | Date     | Pull Request                                             | Subject                                         |
 | :------ | :------- | :------------------------------------------------------- | :---------------------------------------------- |
-| 0.1.0   | 25-05-29 | [26299](https://github.com/airbytehq/airbyte/pull/26299) | Initial release of KYVE source connector        |
-| 0.2.0   | TODO     | TODO                                                     | Update KYVE source to include tendermint schema |
+| 0.1.0   | 25-05-23 | [26299](https://github.com/airbytehq/airbyte/pull/26299) | Initial release of KYVE source connector        |
+| 0.2.0   | 28-09-23 | [29250](https://github.com/airbytehq/airbyte/pull/29250) | Update KYVE source to include tendermint schema and support to Mainnet and Testnet|
