@@ -1583,4 +1583,6 @@ class ContributorActivity(GithubStream):
         if response.status_code == requests.codes.NO_CONTENT:
             self.logger.warning(f"Empty response received for {self.name} stats in repository {stream_slice.get('repository')}")
         else:
-            yield from super().parse_response(response)
+            yield from super().parse_response(
+                response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            )
