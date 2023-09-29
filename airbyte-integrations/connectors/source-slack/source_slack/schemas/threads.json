@@ -5,6 +5,9 @@
     "channel_id": {
       "type": ["null", "string"]
     },
+    "bot_id": {
+      "type": ["null", "string"]
+    },
     "client_msg_id": {
       "type": ["null", "string"]
     },

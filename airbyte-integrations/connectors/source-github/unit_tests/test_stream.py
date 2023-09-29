@@ -10,6 +10,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import responses
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http.exceptions import BaseBackoffException, UserDefinedBackoffException
 from requests import HTTPError
 from responses import matchers
@@ -26,6 +27,7 @@ from source_github.streams import (
     IssueEvents,
     IssueLabels,
     IssueMilestones,
+    IssueTimelineEvents,
     Organizations,
     ProjectCards,
     ProjectColumns,
@@ -1349,3 +1351,20 @@ def test_stream_contributor_activity_parse_empty_response(caplog):
     assert resp.call_count == 1
     assert records == []
     assert expected_message in caplog.messages
+
+
+@responses.activate
+def test_issues_timeline_events():
+    repository_args = {
+        "repositories": ["airbytehq/airbyte"],
+        "page_size_for_large_streams": 20,
+    }
+    response_file = Path(__file__).parent / "responses/issue_timeline_events.json"
+    response_json = json.load(open(response_file))
+    responses.add(responses.GET, "https://api.github.com/repos/airbytehq/airbyte/issues/1/timeline?per_page=100", json=response_json)
+    expected_file = Path(__file__).parent / "responses/issue_timeline_events_response.json"
+    expected_records = json.load(open(expected_file))
+
+    stream = IssueTimelineEvents(**repository_args)
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"repository": "airbytehq/airbyte", "number": 1}))
+    assert expected_records == records
