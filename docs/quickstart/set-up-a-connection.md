@@ -1,4 +1,4 @@
-# Set up a connection
+# Set up a Connection
 
 Now that you've learned how to [deploy Airbyte locally](https://docs.airbyte.com/quickstart/deploy-airbyte) and set up your first [source](https://docs.airbyte.com/quickstart/add-a-source) and [destination](https://docs.airbyte.com/quickstart/add-a-destination), it's time to finish the job by creating your very first connection!
 
