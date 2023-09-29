@@ -18,6 +18,7 @@ import yaml
 from ci_credentials import SecretsManager
 from pydash.objects import get
 from rich.console import Console
+from simpleeval import simple_eval
 
 console = Console()
 
@@ -34,7 +35,14 @@ ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 AIRBYTE_DOCKER_REPO = "airbyte"
 AIRBYTE_REPO_DIRECTORY_NAME = "airbyte"
 GRADLE_PROJECT_RE_PATTERN = r"project\((['\"])(.+?)\1\)"
-TEST_GRADLE_DEPENDENCIES = ["testImplementation", "integrationTestJavaImplementation", "performanceTestJavaImplementation"]
+TEST_GRADLE_DEPENDENCIES = [
+    "testImplementation",
+    "testCompileOnly",
+    "integrationTestJavaImplementation",
+    "performanceTestJavaImplementation",
+    "testFixturesCompileOnly",
+    "testFixturesImplementation",
+]
 
 
 def download_catalog(catalog_url):
@@ -92,6 +100,26 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
 
 
+def has_local_cdk_ref(build_file: Path) -> bool:
+    """Return true if the build file uses the local CDK.
+
+    Args:
+        build_file (Path): Path to the build.gradle file of the project.
+
+    Returns:
+        bool: True if using local CDK.
+    """
+    contents = "\n".join(
+        [
+            # Return contents without inline code comments
+            line.split("//")[0]
+            for line in build_file.read_text().split("\n")
+        ]
+    )
+    contents = contents.replace(" ", "")
+    return "useLocalCdk=true" in contents
+
+
 def get_gradle_dependencies_block(build_file: Path) -> str:
     """Get the dependencies block of a Gradle file.
 
@@ -135,7 +163,7 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
 
     # Find all matches for test dependencies and regular dependencies
     matches = re.findall(
-        r"(testImplementation|integrationTestJavaImplementation|performanceTestJavaImplementation|implementation|api).*?project\(['\"](.*?)['\"]\)",
+        r"(compileOnly|testCompileOnly|testFixturesCompileOnly|testFixturesImplementation|testImplementation|integrationTestJavaImplementation|performanceTestJavaImplementation|implementation|api).*?project\(['\"](.*?)['\"]\)",
         dependencies_block,
     )
     if matches:
@@ -150,8 +178,31 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
             else:
                 project_dependencies.append(path)
 
-    project_dependencies.append(Path("airbyte-cdk", "java", "airbyte-cdk"))
+    # Dedupe dependencies:
+    project_dependencies = list(set(project_dependencies))
+    test_dependencies = list(set(test_dependencies))
+
     return project_dependencies, test_dependencies
+
+
+def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path]:
+    """Recursively retrieve all transitive dependencies of a Gradle project.
+
+    Args:
+        with_test_dependencies: True to include test dependencies.
+
+    Returns:
+        List[Path]: All dependencies of the project.
+    """
+    base_path = Path("airbyte-cdk/java/airbyte-cdk")
+    found: List[Path] = [base_path]
+    for submodule in ["core", "db-sources", "db-destinations"]:
+        found.append(base_path / submodule)
+        project_dependencies, test_dependencies = parse_gradle_dependencies(base_path / Path(submodule) / Path("build.gradle"))
+        found += project_dependencies
+        if with_test_dependencies:
+            found += test_dependencies
+    return list(set(found))
 
 
 def get_all_gradle_dependencies(
@@ -169,6 +220,12 @@ def get_all_gradle_dependencies(
     if found_dependencies is None:
         found_dependencies = []
     project_dependencies, test_dependencies = parse_gradle_dependencies(build_file)
+
+    # Since first party project folders are transitive (compileOnly) in the
+    # CDK, we always need to add them as the project dependencies.
+    project_dependencies += get_local_cdk_gradle_dependencies(False)
+    test_dependencies += get_local_cdk_gradle_dependencies(with_test_dependencies=True)
+
     all_dependencies = project_dependencies + test_dependencies if with_test_dependencies else project_dependencies
     for dependency_path in all_dependencies:
         if dependency_path not in found_dependencies and Path(dependency_path / "build.gradle").exists():
@@ -219,6 +276,11 @@ class Connector:
         return self.documentation_directory / readme_file_name
 
     @property
+    def inapp_documentation_file_path(self) -> Path:
+        readme_file_name = f"{self.name}.inapp.md"
+        return self.documentation_directory / readme_file_name
+
+    @property
     def migration_guide_file_name(self) -> str:
         return f"{self.name}-migrations.md"
 
@@ -250,7 +312,7 @@ class Connector:
     def language(self) -> ConnectorLanguage:
         if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
             return ConnectorLanguage.LOW_CODE
-        if Path(self.code_directory / "setup.py").is_file():
+        if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
             return ConnectorLanguage.PYTHON
         try:
             with open(self.code_directory / "Dockerfile") as dockerfile:
@@ -259,7 +321,6 @@ class Connector:
         except FileNotFoundError:
             pass
         return None
-        # raise ConnectorLanguageError(f"We could not infer {self.technical_name} connector language")
 
     @property
     def version(self) -> str:
@@ -287,6 +348,37 @@ class Connector:
     @property
     def support_level(self) -> Optional[str]:
         return self.metadata.get("supportLevel") if self.metadata else None
+
+    def metadata_query_match(self, query_string: str) -> bool:
+        """Evaluate a query string against the connector metadata.
+
+        Based on the simpleeval library:
+        https://github.com/danthedeckie/simpleeval
+
+        Examples
+        --------
+        >>> connector.metadata_query_match("'s3' in data.name")
+        True
+
+        >>> connector.metadata_query_match("data.supportLevel == 'certified'")
+        False
+
+        >>> connector.metadata_query_match("data.ab_internal.ql >= 100")
+        True
+
+        Args:
+            query_string (str): The query string to evaluate.
+
+        Returns:
+            bool: True if the query string matches the connector metadata, False otherwise.
+        """
+        try:
+            matches = simple_eval(query_string, names={"data": self.metadata})
+            return bool(matches)
+        except Exception as e:
+            # Skip on error as we not all fields are present in all connectors.
+            logging.debug(f"Failed to evaluate query string {query_string} for connector {self.technical_name}, error: {e}")
+            return False
 
     @property
     def ab_internal_sl(self) -> int:

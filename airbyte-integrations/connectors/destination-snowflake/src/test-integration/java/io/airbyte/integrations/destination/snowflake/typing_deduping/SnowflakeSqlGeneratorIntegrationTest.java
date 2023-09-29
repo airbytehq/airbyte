@@ -16,12 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
@@ -37,7 +37,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
-import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
@@ -237,6 +236,11 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
+  protected Map<String, String> getFinalMetadataColumnNames() {
+    return AbstractSnowflakeTypingDedupingTest.FINAL_METADATA_COLUMN_NAMES;
+  }
+
+  @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
     final String sql = generator.createTable(incrementalDedupStream, "", false);
@@ -327,7 +331,7 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
 
     final String sql = generator.updateTable(incrementalDedupStream, "");
     final Exception exception = assertThrows(
-        SnowflakeSQLException.class,
+        RuntimeException.class,
         () -> destinationHandler.execute(sql));
 
     assertTrue(exception.getMessage().contains("_AB_MISSING_PRIMARY_KEY"));

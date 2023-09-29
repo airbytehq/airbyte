@@ -3,6 +3,8 @@
 #
 
 import datetime
+import logging
+import os
 import time
 from unittest.mock import MagicMock
 
@@ -23,6 +25,29 @@ def check_source(repo_line: str) -> AirbyteConnectionStatus:
     config = {"access_token": "test_token", "repository": repo_line}
     logger_mock = MagicMock()
     return source.check(logger_mock, config)
+
+
+@pytest.mark.parametrize(
+    "api_url, deployment_env, expected_message",
+    (
+        ("github.my.company.org", "CLOUD", "Please enter a full URL starting with http..."),
+        (
+            "http://github.my.company.org",
+            "CLOUD",
+            "HTTP connection is insecure and is not allowed in this environment. Please use `https` instead.",
+        ),
+        ("http:/github.my.company.org", "NOT_CLOUD", "Please provide a correct URL"),
+        ("https:/github.my.company.org", "CLOUD", "Please provide a correct URL"),
+    ),
+)
+def test_connection_fail_due_to_config_error(api_url, deployment_env, expected_message):
+    os.environ["DEPLOYMENT_MODE"] = deployment_env
+    source = SourceGithub()
+    config = {"access_token": "test_token", "repository": "airbyte/test", "api_url": api_url}
+
+    with pytest.raises(AirbyteTracedException) as e:
+        source.check_connection(logging.getLogger(), config)
+    assert e.value.message == expected_message
 
 
 @responses.activate
@@ -108,9 +133,6 @@ def test_get_branches_data():
 
 @responses.activate
 def test_get_org_repositories():
-
-    source = SourceGithub()
-
     responses.add(
         "GET",
         "https://api.github.com/repos/airbytehq/integration-test",
@@ -127,6 +149,8 @@ def test_get_org_repositories():
     )
 
     config = {"repository": "airbytehq/integration-test docker/*"}
+    source = SourceGithub()
+    config = source._ensure_default_values(config)
     organisations, repositories = source._get_org_repositories(config, authenticator=None)
 
     assert set(repositories) == {"airbytehq/integration-test", "docker/docker-py", "docker/compose"}
@@ -144,7 +168,11 @@ def test_organization_or_repo_available(monkeypatch):
 
 def tests_get_and_prepare_repositories_config():
     config = {"repository": "airbytehq/airbyte airbytehq/airbyte.test  airbytehq/integration-test"}
-    assert SourceGithub._get_and_prepare_repositories_config(config) == {"airbytehq/airbyte", "airbytehq/airbyte.test", "airbytehq/integration-test"}
+    assert SourceGithub._get_and_prepare_repositories_config(config) == {
+        "airbytehq/airbyte",
+        "airbytehq/airbyte.test",
+        "airbytehq/integration-test",
+    }
 
 
 def test_check_config_repository():
@@ -201,7 +229,7 @@ def test_check_config_repository():
         assert command_check(source, config)
 
     for repos in repos_fail:
-        config["repository"] = " ".join(repos_ok[:len(repos_ok)//2] + [repos] + repos_ok[len(repos_ok)//2:])
+        config["repository"] = " ".join(repos_ok[: len(repos_ok) // 2] + [repos] + repos_ok[len(repos_ok) // 2 :])
         with pytest.raises(AirbyteTracedException):
             assert command_check(source, config)
 
@@ -221,7 +249,7 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch):
         frozen_time.tick(delta=datetime.timedelta(seconds=seconds))
         called_args.append(seconds)
 
-    monkeypatch.setattr(time, 'sleep', sleep_mock)
+    monkeypatch.setattr(time, "sleep", sleep_mock)
 
     with freeze_time("2021-01-01 12:00:00") as frozen_time:
 

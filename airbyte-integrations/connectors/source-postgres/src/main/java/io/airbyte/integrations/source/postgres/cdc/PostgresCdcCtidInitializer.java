@@ -8,15 +8,18 @@ import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.streams
 import static io.airbyte.integrations.source.postgres.PostgresUtils.prettyPrintConfiguredAirbyteStreamList;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresDebeziumStateUtil;
+import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.postgres.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.PostgresType;
@@ -26,11 +29,9 @@ import io.airbyte.integrations.source.postgres.ctid.CtidGlobalStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations.CdcMetadataInjector;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
+import io.airbyte.integrations.source.postgres.ctid.CtidUtils;
 import io.airbyte.integrations.source.postgres.ctid.FileNodeHandler;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
@@ -134,17 +135,23 @@ public class PostgresCdcCtidInitializer {
         final CtidStateManager ctidStateManager = new CtidGlobalStateManager(ctidStreams, fileNodeHandler, stateToBeUsed, catalog);
         final CtidPostgresSourceOperations ctidPostgresSourceOperations = new CtidPostgresSourceOperations(
             Optional.of(new CdcMetadataInjector(
-                emittedAt.toString(), io.airbyte.db.PostgresUtils.getLsn(database).asLong(), new PostgresCdcConnectorMetadataInjector())));
+                emittedAt.toString(), io.airbyte.cdk.db.PostgresUtils.getLsn(database).asLong(), new PostgresCdcConnectorMetadataInjector())));
         final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, TableBlockSize> tableBlockSizes =
             PostgresQueryUtils.getTableBlockSizeForStreams(
                 database,
                 finalListOfStreamsToBeSyncedViaCtid,
                 quoteString);
+
+        final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple =
+            CtidUtils.isTidRangeScanCapableDBServer(database) ? null
+                : PostgresQueryUtils.getTableMaxTupleForStreams(database, finalListOfStreamsToBeSyncedViaCtid, quoteString);
+
         final PostgresCtidHandler ctidHandler = new PostgresCtidHandler(sourceConfig, database,
             ctidPostgresSourceOperations,
             quoteString,
             fileNodeHandler,
             tableBlockSizes,
+            tablesMaxTuple,
             ctidStateManager,
             namespacePair -> Jsons.emptyObject());
 

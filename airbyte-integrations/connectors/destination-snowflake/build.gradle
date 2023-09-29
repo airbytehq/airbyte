@@ -1,8 +1,15 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestinationRunner'
@@ -10,18 +17,21 @@ application {
     applicationDefaultJvmArgs = [
             '-XX:+ExitOnOutOfMemoryError',
             '-XX:MaxRAMPercentage=75.0',
-//            '-Xmx2000m',
 //            '-XX:NativeMemoryTracking=detail',
 //            '-Djava.rmi.server.hostname=localhost',
 //            '-Dcom.sun.management.jmxremote=true',
 //            '-Dcom.sun.management.jmxremote.port=6000',
 //            '-Dcom.sun.management.jmxremote.rmi.port=6000',
-//            '-Dcom.sun.management.jmxremote.local.only=false',
+//            '-Dcom.sun.management.jmxremote.local.only=false'
 //            '-Dcom.sun.management.jmxremote.authenticate=false',
 //            '-Dcom.sun.management.jmxremote.ssl=false',
-//            '-agentpath:/usr/local/YourKit-JavaProfiler-2021.3/bin/linux-x86-64/libyjpagent.so=port=10001,listen=all'
     ]
 
+}
+
+integrationTestJava {
+    // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
+    jvmArgs = ["--add-opens=java.base/java.nio=ALL-UNNAMED"]
 }
 
 dependencies {
@@ -40,31 +50,17 @@ dependencies {
     implementation "io.aesy:datasize:1.0.0"
     implementation 'com.zaxxer:HikariCP:5.0.1'
 
-    implementation project(':airbyte-config-oss:config-models-oss')
-    implementation project(':airbyte-db:db-lib')
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
-    implementation project(':airbyte-integrations:connectors:destination-gcs')
-    implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation project(':airbyte-integrations:bases:base-typing-deduping')
+    testImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
+
+    implementation project(':airbyte-config-oss:config-models-oss')
+    implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation libs.airbyte.protocol
 
 //    this is a configuration to make mockito work with final classes
     testImplementation 'org.mockito:mockito-inline:2.13.0'
 
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-snowflake')
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
-
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
-    integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)
-}
-
-tasks.named('airbyteDocker').configure {
-    // this is really inefficent (because base-normalization:assemble builds 9 docker images)
-    // but it's also just simple to implement.
-    // this also goes away once airbyte-ci becomes a reality.
-    dependsOn project(':airbyte-integrations:bases:base-normalization').tasks.named('assemble')
 }

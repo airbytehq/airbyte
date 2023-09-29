@@ -4,19 +4,21 @@
 
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.UUID;
+import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SnowflakeDestinationHandler implements DestinationHandler<SnowflakeTableDefinition> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestinationHandler.class);
+  public static final String EXCEPTION_COMMON_PREFIX = "JavaScript execution error: Uncaught Execution of multiple statements failed on statement";
 
   private final String databaseName;
   private final JdbcDatabase database;
@@ -79,7 +81,21 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
     LOGGER.info("Executing sql {}: {}", queryId, sql);
     final long startTime = System.currentTimeMillis();
 
-    database.execute(sql);
+    try {
+      database.execute(sql);
+    } catch (final SnowflakeSQLException e) {
+      LOGGER.error("Sql {} failed", queryId, e);
+      // Snowflake SQL exceptions by default may not be super helpful, so we try to extract the relevant
+      // part of the message.
+      final String trimmedMessage;
+      if (e.getMessage().startsWith(EXCEPTION_COMMON_PREFIX)) {
+        // The first line is a pretty generic message, so just remove it
+        trimmedMessage = e.getMessage().substring(e.getMessage().indexOf("\n") + 1);
+      } else {
+        trimmedMessage = e.getMessage();
+      }
+      throw new RuntimeException(trimmedMessage, e);
+    }
 
     LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
   }

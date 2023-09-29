@@ -29,7 +29,6 @@ class LegacyConfigTransformer:
             "streams": [
                 {
                     "name": legacy_config.dataset,
-                    "file_type": legacy_config.format.filetype,
                     "globs": cls._create_globs(legacy_config.path_pattern),
                     "legacy_prefix": legacy_config.provider.path_prefix,
                     "validation_policy": "Emit Record",

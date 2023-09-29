@@ -623,6 +623,11 @@ def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentia
     return gcs_uri, public_url
 
 
+def sh_dash_c(lines: List[str]) -> List[str]:
+    """Wrap sequence of commands in shell for safe usage of dagger Container's with_exec method."""
+    return ["sh", "-c", " && ".join(["set -o xtrace"] + lines)]
+
+
 def transform_strs_to_paths(str_paths: List[str]) -> List[Path]:
     """Transform a list of string paths to a list of Path objects.
 
