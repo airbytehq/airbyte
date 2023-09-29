@@ -85,3 +85,9 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 - Documentation which references the generator is updated as needed
 
 </details>
+
+<details><summary><strong>CDK Update</summary>
+
+### Airbyter
+
+</details>
