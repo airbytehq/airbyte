@@ -100,7 +100,7 @@ Before merging:
 - [ ] PR is reviewed and approved
       
 After merging:
-- [ ] [Publish the CDK](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml
+- [ ] [Publish the CDK](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)
    - The CDK does not follow proper semantic versioning. Choose minor if this the change has significant user impact or is a breaking change. Choose patch otherwise.
    - Write a thoughtful changelog message so we know what was updated.
 - [ ] (Optionally) Merge the platform PR created for the Connector Builder
