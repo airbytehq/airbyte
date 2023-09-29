@@ -42,6 +42,7 @@ class CursorPaginationStrategy(PaginationStrategy):
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
+        print(f"decoded_response: {decoded_response}")
 
         # The default way that link is presented in requests.Response is a string of various links (last, next, etc). This
         # is not indexable or useful for parsing the cursor, so we replace it with the link dictionary from response.links
@@ -50,6 +51,7 @@ class CursorPaginationStrategy(PaginationStrategy):
 
         if self.stop_condition:
             should_stop = self.stop_condition.eval(self.config, response=decoded_response, headers=headers, last_records=last_records)
+            print(f"should_stop: {should_stop}")
             if should_stop:
                 return None
         token = self.cursor_value.eval(config=self.config, last_records=last_records, response=decoded_response, headers=headers)

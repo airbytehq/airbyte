@@ -30,6 +30,27 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeLazySubStream,
     UpdatedCursorIncrementalStripeStream,
 )
+from airbyte_cdk.sources.declarative.extractors import RecordSelector, DpathExtractor
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.models import CursorPagination
+from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
+from airbyte_cdk.sources.declarative.requesters.paginators import Paginator, DefaultPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.streams.concurrent.partitions.stripe_partition import StripeLegacyPartitionGenerator
+from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
+from airbyte_cdk.sources.streams.concurrent.legacy import LegacyAvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.legacy import LegacyErrorMessageParser
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.extractors import RecordSelector, DpathExtractor
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
+from airbyte_cdk.sources.declarative.requesters import HttpRequester
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.streams.concurrent.partitions.stripe_partition import PaginatedRequester
 
 
 class SourceStripe(AbstractSource):
@@ -136,13 +157,49 @@ class SourceStripe(AbstractSource):
             event_types=["application_fee.created", "application_fee.refunded"],
             **args,
         )
-        customers = IncrementalStripeStream(
+        customers= IncrementalStripeStream(
             name="customers",
             path="customers",
             use_cache=True,
             event_types=["customer.created", "customer.updated", "customer.deleted"],
             **args,
         )
+        http_requester = HttpRequester(
+            url_base="https://api.stripe.com/v1/",
+            request_options_provider=InterpolatedRequestOptionsProvider(
+                request_headers={**{"Stripe-Version": "",
+                                    "Stripe-Account": ""}, **customers._authenticator.get_auth_header()},
+                parameters={}
+            ),
+            path="customers",
+            name="customers",
+            config={},
+            parameters={},
+            message_repository=self.message_repository,
+        )
+        paginator = DefaultPaginator(CursorPaginationStrategy(cursor_value="{{ last_records[-1]['id'] if last_records else None }}", config={}, parameters={}, page_size=1000, stop_condition="{{ not response.has_more }}"),
+                                           config={}, url_base="", parameters={}, page_size_option=RequestOption(field_name="limit", inject_into=RequestOptionType.request_parameter, parameters={}),
+                                     page_token_option=RequestOption(field_name="starting_after", inject_into=RequestOptionType.request_parameter, parameters={})
+                                     )
+
+        record_extractor = DpathExtractor(field_path=["data"], config={}, parameters={})
+        record_selector = RecordSelector(record_extractor, {}, {})
+        paginated_requester = PaginatedRequester(http_requester, record_selector, paginator)
+
+        customers_concurrent = StreamFacade(
+                ThreadBasedConcurrentStream(
+                    partition_generator=StripeLegacyPartitionGenerator(customers, self.message_repository, paginated_requester),
+                    max_workers=1,
+                    name=customers.name,
+                    json_schema=customers.get_json_schema(),
+                    availability_strategy=LegacyAvailabilityStrategy(customers, self),
+                    primary_key=customers.primary_key,
+                    cursor_field=customers.cursor_field,
+                    error_display_message_parser=LegacyErrorMessageParser(customers),
+                    slice_logger=self._slice_logger,
+                    message_repository=self.message_repository,
+                )
+            )
         invoices = IncrementalStripeStream(
             name="invoices",
             path="invoices",
@@ -234,7 +291,7 @@ class SourceStripe(AbstractSource):
                 event_types=["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"],
                 **args,
             ),
-            customers,
+            #customers_concurrent,
             IncrementalStripeStream(
                 name="cardholders",
                 path="issuing/cardholders",
@@ -420,4 +477,4 @@ class SourceStripe(AbstractSource):
             ),
         ]
         # return legacy_streams
-        return [StreamFacade.create_from_legacy_stream(stream, self, 4) for stream in legacy_streams]
+        return [customers_concurrent]#[StreamFacade.create_from_legacy_stream(stream, self, 10) for stream in legacy_streams]

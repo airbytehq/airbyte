@@ -229,6 +229,7 @@ class HttpRequester(Requester):
         Raise a ValueError if there's a key collision
         Returned merged mapping otherwise
         """
+        print(f"_get request options {next_page_token}")
         return combine_mappings(
             [
                 requester_method(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
@@ -272,11 +273,13 @@ class HttpRequester(Requester):
 
         E.g: you might want to define query parameters for paging if next_page_token is not None.
         """
+        print(f"request params next_page_token: {next_page_token}")
         options = self._get_request_options(
             stream_state, stream_slice, next_page_token, self.get_request_params, self.get_authenticator().get_request_params, extra_params
         )
         if isinstance(options, str):
             raise ValueError("Request params cannot be a string")
+        print(f"request_params: {options}")
         return options
 
     def _request_body_data(
@@ -385,6 +388,7 @@ class HttpRequester(Requester):
         request_body_json: Optional[Mapping[str, Any]] = None,
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> Optional[requests.Response]:
+        print(f"send_request: next_page_token: {next_page_token}")
         request = self._create_prepared_request(
             path=path
             if path is not None
@@ -458,6 +462,7 @@ class HttpRequester(Requester):
         Unexpected transient exceptions use the default backoff parameters.
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
+        self.logger.setLevel(logging.DEBUG)
         self.logger.debug(
             "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
         )
