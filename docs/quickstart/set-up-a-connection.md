@@ -33,10 +33,10 @@ Here's a basic overview of the tabs and their use:
 
 ### Check the data from your first sync
 
-If you followed along and created your own connection using a `Local JSON` destination, you can use this command to check the file's contents to make sure the replication worked as intended (be sure to replace YOUR_STREAM_NAME with the name of an actual stream you replicated):
+If you followed along and created your own connection using a `Local JSON` destination, you can use this command to check the file's contents to make sure the replication worked as intended (be sure to replace YOUR_PATH with the path you chose in your destination setup, and YOUR_STREAM_NAME with the name of an actual stream you replicated):
 
 ```bash
-cat /tmp/airbyte_local/json_data/_airbyte_raw_YOUR_STREAM_NAME.jsonl
+cat /tmp/airbyte_local/YOUR_PATH/_airbyte_raw_YOUR_STREAM_NAME.jsonl
 ```
 
 You should see a list of JSON objects, each containing a unique `airbyte_ab_id`, an `emitted_at` timestamp, and `airbyte_data` containing the extracted record.
