@@ -22,17 +22,33 @@ This project requires Python 3.10 and pipx.
 
 The recommended way to install `airbyte-ci` is using pipx. This ensures the tool and its dependencies are isolated from your other Python projects.
 
+If you havent installed pyenv, you can do it with brew:
+
+```bash
+brew update
+brew install pyenv
+```
+
 If you haven't installed pipx, you can do it with pip:
 
 ```bash
+cd airbyte-ci/connectors/pipelines/
+pyenv install # ensure you have the correct python version
 python -m pip install --user pipx
 python -m pipx ensurepath
 ```
 
-Once pipx is installed, navigate to the root directory of the project, then run:
+Once pyenv and pipx is installed then run the following:
 
 ```bash
-pipx install airbyte-ci/connectors/pipelines/ --force
+# ensure you are in the correct directory
+cd airbyte-ci/connectors/pipelines/
+
+# ensure you have the correct python version
+pyenv install
+
+# install airbyte-ci
+pipx install --editable --force .
 ```
 
 This command installs `airbyte-ci` and makes it globally available in your terminal.
