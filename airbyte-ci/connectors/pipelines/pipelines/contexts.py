@@ -526,6 +526,7 @@ class PublishConnectorContext(ConnectorContext):
         ci_context: Optional[str] = None,
         ci_gcs_credentials: str = None,
         pull_request: PullRequest = None,
+        use_local_cdk: bool = False,
     ):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
@@ -537,6 +538,9 @@ class PublishConnectorContext(ConnectorContext):
 
         pipeline_name = f"Publish {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
+
+        if use_local_cdk and not pre_release:
+            raise ValueError("Cannot use local CDK for non-pre-release connector")
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -554,6 +558,7 @@ class PublishConnectorContext(ConnectorContext):
             reporting_slack_channel=reporting_slack_channel,
             ci_gcs_credentials=ci_gcs_credentials,
             should_save_report=True,
+            use_local_cdk=use_local_cdk,
         )
 
     @property

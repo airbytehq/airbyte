@@ -388,6 +388,13 @@ def build(ctx: click.Context) -> bool:
     envvar="SLACK_CHANNEL",
     default="#publish-on-merge-updates",
 )
+@click.option(
+    "--use-local-cdk",
+    is_flag=True,
+    help=("Build with the airbyte-cdk from the local repository. " "This is useful for testing changes to the CDK."),
+    default=False,
+    type=bool,
+)
 @click.pass_context
 def publish(
     ctx: click.Context,
@@ -400,6 +407,7 @@ def publish(
     docker_hub_password: str,
     slack_webhook: str,
     slack_channel: str,
+    use_local_cdk: bool,
 ):
     ctx.obj["spec_cache_gcs_credentials"] = spec_cache_gcs_credentials
     ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
@@ -435,6 +443,7 @@ def publish(
                 ci_context=ctx.obj.get("ci_context"),
                 ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
                 pull_request=ctx.obj.get("pull_request"),
+                use_local_cdk=use_local_cdk,
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
