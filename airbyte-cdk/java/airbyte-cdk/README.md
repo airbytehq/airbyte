@@ -156,6 +156,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                               |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------ |
+| 0.1.1   | 2023-09-28 | [\#30835](https://github.com/airbytehq/airbyte/pull/30835) | JDBC destinations now avoid staging area name collisions by using the raw table name as the stage name. (previously we used the stream name as the stage name) |
 | 0.1.0   | 2023-09-27 | [\#30445](https://github.com/airbytehq/airbyte/pull/30445) | First launch, including shared classes for all connectors. |
 | 0.0.2   | 2023-08-21 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Version bump only (no other changes). |
 | 0.0.1   | 2023-08-08 | [\#28687](https://github.com/airbytehq/airbyte/pull/28687) | Initial release for testing.          |
