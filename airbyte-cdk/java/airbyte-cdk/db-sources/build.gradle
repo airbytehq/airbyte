@@ -11,9 +11,7 @@ buildscript {
 plugins {
     id "com.github.eirnym.js2p" version "1.0"
 
-    // source-jdbc
     id 'application'
-    id 'airbyte-docker'
     id 'airbyte-integration-test-java'
     id "java-library"
     id "java-test-fixtures"  // https://docs.gradle.org/current/userguide/java_testing.html#sec:java_test_fixtures
