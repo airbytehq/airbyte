@@ -1,21 +1,9 @@
----
-description: >-
-  Shopify is a proprietary e-commerce platform for online stores and retail point-of-sale systems.
----
-
-::: note
-
-If you are already a Cloud user but still use the `API PASSWORD` authentication method (option), please make sure you've switched to the `OAuth2.0`, as far as the `API PASSWORD` is going to be deprecated soon for Cloud Users, but this option remains for `OSS` users.
-
-:::
-
 # Shopify
-
 This page contains the setup guide and reference information for the Shopify source connector.
 
 ## Setup guide
 
-This connector supports the `OAuth2.0` and `API PASSWORD` (for private applications) athentication methods.
+This connector supports the `OAuth2.0` and `API Password` (for private applications) athentication methods.
 
 ### Connect using OAuth2.0 (for Cloud users only)
 1. Click `Authenticate your Shopify account` to start the autentication.
@@ -28,9 +16,6 @@ This connector supports the `OAuth2.0` and `API PASSWORD` (for private applicati
 8. Click `Test and Save` to finish the source set up.
 
 ### Connect using `API PASSWORD` option (for OSS users)
-
-## Setup guide
-
 1. Name your source.
 2. Enter your Store name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
 3. Enter your Admin API access token. To set up the access token, you will need to set up a custom application. See instructions below on creating a custom app.
@@ -142,6 +127,14 @@ For better experience with `Incremental Refresh` the following is recommended:
 
 If child streams are synced alone from the parent stream - the full sync will take place, and the records are filtered out afterwards.
 
+## Capturing Deleted Records
+The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, `PriceRules` and `Products` streams. 
+
+When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records. 
+
+Check the following Shopify documentation for more information about the [Retrieving Deleted Records](https://shopify.dev/docs/api/admin-rest/2023-07/resources/event) 
+
+
 ## Data type mapping
 
 | Integration Type | Airbyte Type |
@@ -174,6 +167,8 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------ |
+| 1.1.1   | 2023-09-18 | [30560](https://github.com/airbytehq/airbyte/pull/30560) | Performance testing - include socat binary in docker image |
+| 1.1.0   | 2023-09-07 | [30246](https://github.com/airbytehq/airbyte/pull/30246) | Added ability to fetch `destroyed` records for `Articles, Blogs, CustomCollections, Orders, Pages, PriceRules, Products` |
 | 1.0.0   | 2023-08-11 | [29361](https://github.com/airbytehq/airbyte/pull/29361) | Migrate to the `2023-07` Shopify API Version  |
 | 0.6.2   | 2023-08-09 | [29302](https://github.com/airbytehq/airbyte/pull/29302) | Handle the `Internal Server Error` when entity could be fetched                 |
 | 0.6.1   | 2023-08-08 | [28291](https://github.com/airbytehq/airbyte/pull/28291) | Allow `shop` field to accept `*.myshopify.com` shop names, updated `OAuth Spec`                  |

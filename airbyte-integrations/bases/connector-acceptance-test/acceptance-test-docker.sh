@@ -23,14 +23,8 @@ if [ -n "$FETCH_SECRETS" ]; then
   cd -
 fi
 
-if [ -n "$LOCAL_CDK" ] && [ -f "$CONNECTOR_DIR/setup.py" ]; then
-  echo "Building Connector image with local CDK from $ROOT_DIR/airbyte-cdk"
-  echo "Building docker image $CONNECTOR_TAG."
-  CONNECTOR_NAME="$CONNECTOR_NAME" CONNECTOR_TAG="$CONNECTOR_TAG" QUIET_BUILD="$QUIET_BUILD" sh "$ROOT_DIR/airbyte-integrations/scripts/build-connector-image-with-local-cdk.sh"
-else
-  # Build latest connector image
-  docker build -t "$CONNECTOR_TAG" .
-fi
+# Build latest connector image
+docker build -t "$CONNECTOR_TAG" .
 
 # Pull latest acctest image
 docker pull airbyte/connector-acceptance-test:latest

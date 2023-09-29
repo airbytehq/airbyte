@@ -4,10 +4,6 @@ plugins {
     id 'airbyte-standard-source-test-file'
 }
 
-airbytePython {
-    moduleDirectory 'source_python_http_tutorial'
-}
-
 airbyteStandardSourceTestFile {
     // For more information on standard source tests, see https://docs.airbyte.com/connector-development/testing-connectors
 
@@ -23,9 +19,4 @@ airbyteStandardSourceTestFile {
     // Note: If your source supports incremental syncing, then make sure that the catalog that is returned in the get_catalog method is configured
     // for incremental syncing (e.g. include cursor fields, etc).
     configuredCatalogPath = "sample_files/configured_catalog.json"
-}
-
-
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:base-standard-source-test-file').airbyteDocker.outputs)
 }

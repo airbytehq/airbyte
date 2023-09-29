@@ -183,6 +183,7 @@
         "description": "Configures how data is extracted from the database.",
         "order": 8,
         "default": "CDC",
+        "display_type": "radio",
         "oneOf": [
           {
             "title": "Read Changes using Binary Log (CDC)",

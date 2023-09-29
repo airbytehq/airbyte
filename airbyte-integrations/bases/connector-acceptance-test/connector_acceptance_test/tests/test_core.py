@@ -55,6 +55,10 @@ from connector_acceptance_test.utils.json_schema_helper import (
     get_paths_in_connector_config,
 )
 
+pytestmark = [
+    pytest.mark.anyio,
+]
+
 
 @pytest.fixture(name="connector_spec_dict")
 def connector_spec_dict_fixture(actual_connector_spec):
@@ -92,7 +96,7 @@ DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 @pytest.mark.default_timeout(5 * 60)
 class TestSpec(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    def skip_backward_compatibility_tests_fixture(
+    async def skip_backward_compatibility_tests_fixture(
         self,
         inputs: SpecTestConfig,
         previous_connector_docker_runner: ConnectorRunner,
@@ -106,7 +110,7 @@ class TestSpec(BaseTest):
             pytest.skip("The previous connector image could not be retrieved.")
 
         # Get the real connector version in case 'latest' is used in the config:
-        previous_connector_version = previous_connector_docker_runner._image.labels.get("io.airbyte.version")
+        previous_connector_version = await previous_connector_docker_runner.get_container_label("io.airbyte.version")
 
         if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
@@ -455,27 +459,26 @@ class TestSpec(BaseTest):
                 errors.append(f"Groups can only be defined on top level, is defined at {group_path}")
         self._fail_on_errors(errors)
 
-    def test_required_always_show(self, actual_connector_spec: ConnectorSpecification):
+    def test_display_type(self, actual_connector_spec: ConnectorSpecification):
         """
-        Fields with always_show are not allowed to be required fields because only optional fields can be hidden in the form in the first place.
+        The display_type property can only be set on fields which have a oneOf property, and must be either "dropdown" or "radio"
         """
         errors = []
         schema_helper = JsonSchemaHelper(actual_connector_spec.connectionSpecification)
-        for result in dpath.util.search(actual_connector_spec.connectionSpecification, "/properties/**/always_show", yielded=True):
-            always_show_path = result[0]
-            parent_path = schema_helper.get_parent_path(always_show_path)
-            is_property_named_always_show = parent_path.endswith("properties")
-            if is_property_named_always_show:
+        for result in dpath.util.search(actual_connector_spec.connectionSpecification, "/properties/**/display_type", yielded=True):
+            display_type_path = result[0]
+            parent_path = schema_helper.get_parent_path(display_type_path)
+            is_property_named_display_type = parent_path.endswith("properties")
+            if is_property_named_display_type:
                 continue
-            property_name = parent_path.rsplit(sep="/", maxsplit=1)[1]
-            properties_path = schema_helper.get_parent_path(parent_path)
-            parent_object = schema_helper.get_parent(properties_path)
-            if (
-                "required" in parent_object
-                and isinstance(parent_object.get("required"), List)
-                and property_name in parent_object.get("required")
-            ):
-                errors.append(f"always_show is only allowed on optional properties, but is set on {always_show_path}")
+            parent_object = schema_helper.get_parent(display_type_path)
+            if "oneOf" not in parent_object:
+                errors.append(f"display_type is only allowed on fields which have a oneOf property, but is set on {parent_path}")
+            display_type_value = parent_object.get("display_type")
+            if display_type_value != "dropdown" and display_type_value != "radio":
+                errors.append(
+                    f"display_type must be either 'dropdown' or 'radio', but is set to '{display_type_value}' at {display_type_path}"
+                )
         self._fail_on_errors(errors)
 
     def test_defined_refs_exist_in_json_spec_file(self, connector_spec_dict: dict):
@@ -591,7 +594,6 @@ class TestConnection(BaseTest):
 
 @pytest.mark.default_timeout(30)
 class TestDiscovery(BaseTest):
-
     VALID_TYPES = {"null", "string", "number", "integer", "boolean", "object", "array"}
     VALID_AIRBYTE_TYPES = {"timestamp_with_timezone", "timestamp_without_timezone", "integer"}
     VALID_FORMATS = {"date-time", "date"}
@@ -611,10 +613,21 @@ class TestDiscovery(BaseTest):
         ({"number", "null"}, "integer"),
     ]
 
+    @pytest.fixture()
+    async def skip_backward_compatibility_tests_for_version(
+        self, inputs: DiscoveryTestConfig, previous_connector_docker_runner: ConnectorRunner
+    ):
+        # Get the real connector version in case 'latest' is used in the config:
+        previous_connector_version = await previous_connector_docker_runner.get_container_label("io.airbyte.version")
+        if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
+            pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
+        return False
+
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    def skip_backward_compatibility_tests_fixture(
+    async def skip_backward_compatibility_tests_fixture(
         self,
-        inputs: DiscoveryTestConfig,
+        # Even if unused, this fixture is required to make sure that the skip_backward_compatibility_tests_for_version fixture is called.
+        skip_backward_compatibility_tests_for_version: bool,
         previous_connector_docker_runner: ConnectorRunner,
         discovered_catalog: MutableMapping[str, AirbyteStream],
         previous_discovered_catalog: MutableMapping[str, AirbyteStream],
@@ -625,11 +638,6 @@ class TestDiscovery(BaseTest):
         if previous_connector_docker_runner is None:
             pytest.skip("The previous connector image could not be retrieved.")
 
-        # Get the real connector version in case 'latest' is used in the config:
-        previous_connector_version = previous_connector_docker_runner._image.labels.get("io.airbyte.version")
-
-        if previous_connector_version == inputs.backward_compatibility_tests_config.disable_for_version:
-            pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
         return False
 
     async def test_discover(self, connector_config, docker_runner: ConnectorRunner):

@@ -342,7 +342,15 @@ class Leads(MarketoExportBase):
 
     @property
     def stream_fields(self):
-        return list(self.get_json_schema()["properties"].keys())
+        standard_properties = set(self.get_json_schema()["properties"])
+        resp = self._session.get(f"{self._url_base}rest/v1/leads/describe.json", headers=self.authenticator.get_auth_header())
+        available_fields = set(x.get("rest").get("name") for x in resp.json().get("result"))
+        return list(standard_properties & available_fields)
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # TODO: make schema truly dynamic like in stream Activities
+        #  now blocked by https://github.com/airbytehq/airbyte/issues/30530 due to potentially > 500 fields in schema (can cause OOM)
+        return super().get_json_schema()
 
 
 class Activities(MarketoExportBase):

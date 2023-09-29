@@ -6,12 +6,10 @@
       "properties": {}
     },
     "canceled_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "current_period_end": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "plan": {
       "type": ["null", "object", "string"],
