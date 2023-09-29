@@ -94,7 +94,7 @@ Before merging:
 - [ ] Pull Request description explains what problem it is solving
 - [ ] Code change is unit tested
 - [ ] Build and my-py check pass
-- [ ] Smoke test the change on an affected connector
+- [ ] Smoke test the change on at least one affected connector
    - On Github: Run [this workflow](https://github.com/airbytehq/airbyte/actions/workflows/connectors_tests.yml), passing `--use-local-cdk --name=source-<connector>` as options
    - Locally: `airbyte-ci connectors --use-local-cdk --name=source-<connector> test`
 - [ ] PR is reviewed and approved
