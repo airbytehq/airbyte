@@ -122,7 +122,7 @@ jobs:
         uses: joelwmale/webhook-action@master
         with:
           url: ${{ secrets.INSTATUS_CONNECTOR_CI_WEBHOOK_URL }}
-          body: '{ "trigger": "down" }'
+          body: '{ "trigger": "down", "status": "HASISSUES" }'
 
   set-instatus-incident-on-success:
     name: Create Instatus Incident on Success
