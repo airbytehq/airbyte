@@ -689,6 +689,10 @@ subprojects {
             args "run"
             args "airbyte-ci", "connectors", "--name=${project.name}"
             args connectorsArgs
+            // Forbid these kinds of tasks from running concurrently.
+            // We can induce serial execution by giving them all a common output directory.
+            outputs.dir rootProject.file("${rootProject.buildDir}/airbyte-ci-lock")
+            outputs.upToDateWhen { false }
         }
         task.configure { dependsOn poetryInstallAirbyteCI }
         return task
