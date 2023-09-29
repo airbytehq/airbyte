@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tupl
 from xmlrpc.client import Boolean
 
 import dpath.util
+import jsonschema
 import pytest
 from airbyte_protocol.models import (
     AirbyteRecordMessage,
@@ -37,7 +38,7 @@ from connector_acceptance_test.config import (
     IgnoredFieldsConfiguration,
     SpecTestConfig,
 )
-from connector_acceptance_test.utils import ConnectorRunner, delete_fields, filter_output, make_hashable, verify_records_schema
+from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
 from connector_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from connector_acceptance_test.utils.common import (
     build_configured_catalog_from_custom_catalog,
@@ -115,16 +116,16 @@ class TestSpec(BaseTest):
             pytest.skip(f"Backward compatibility tests are disabled for version {previous_connector_version}.")
         return False
 
-    # def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
-    #     """Check that config matches the actual schema from the spec call"""
-    #     # Getting rid of technical variables that start with an underscore
-    #     config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
-    #     try:
-    #         jsonschema.validate(instance=config, schema=actual_connector_spec.connectionSpecification)
-    #     except jsonschema.exceptions.ValidationError as err:
-    #         pytest.fail(f"Config invalid: {err}")
-    #     except jsonschema.exceptions.SchemaError as err:
-    #         pytest.fail(f"Spec is invalid: {err}")
+    def test_config_match_spec(self, actual_connector_spec: ConnectorSpecification, connector_config: SecretDict):
+        """Check that config matches the actual schema from the spec call"""
+        # Getting rid of technical variables that start with an underscore
+        config = {key: value for key, value in connector_config.data.items() if not key.startswith("_")}
+        try:
+            jsonschema.validate(instance=config, schema=actual_connector_spec.connectionSpecification)
+        except jsonschema.exceptions.ValidationError as err:
+            pytest.fail(f"Config invalid: {err}")
+        except jsonschema.exceptions.SchemaError as err:
+            pytest.fail(f"Spec is invalid: {err}")
 
     def test_match_expected(self, connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification):
         """Check that spec call returns a spec equals to expected one"""
