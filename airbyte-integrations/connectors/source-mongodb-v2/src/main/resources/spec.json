@@ -151,6 +151,16 @@
         "min": 1000,
         "max": 10000,
         "group": "advanced"
+      },
+      "discover_sample_size": {
+        "type": "integer",
+        "title": "Document discovery sample size (Advanced)",
+        "description": "The maximum number of documents to sample when attempting to discover the unique fields for a collection.",
+        "default": 10000,
+        "order": 9,
+        "minimum": 1000,
+        "maximum": 100000,
+        "group": "advanced"
       }
     },
     "groups": [

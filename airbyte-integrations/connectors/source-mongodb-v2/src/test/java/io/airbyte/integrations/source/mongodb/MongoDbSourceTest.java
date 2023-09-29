@@ -6,6 +6,7 @@ package io.airbyte.integrations.source.mongodb;
 
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.DEFAULT_CURSOR_FIELD;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -58,6 +59,7 @@ class MongoDbSourceTest {
   private static final String DB_NAME = "airbyte_test";
 
   private JsonNode airbyteSourceConfig;
+  private MongoDbSourceConfig sourceConfig;
   private MongoClient mongoClient;
   private MongoDbCdcInitializer cdcInitializer;
   private MongoDbSource source;
@@ -65,6 +67,7 @@ class MongoDbSourceTest {
   @BeforeEach
   void setup() {
     airbyteSourceConfig = createConfiguration(Optional.empty(), Optional.empty());
+    sourceConfig = new MongoDbSourceConfig(airbyteSourceConfig);
     mongoClient = mock(MongoClient.class);
     cdcInitializer = mock(MongoDbCdcInitializer.class);
     source = spy(new MongoDbSource(cdcInitializer));
@@ -72,7 +75,7 @@ class MongoDbSourceTest {
 
     when(iterable.spliterator()).thenReturn(List.of(DB_NAME).spliterator());
     when(mongoClient.listDatabaseNames()).thenReturn(iterable);
-    doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY));
+    doReturn(mongoClient).when(source).createMongoClient(sourceConfig);
   }
 
   @Test
@@ -276,7 +279,7 @@ class MongoDbSourceTest {
   @Test
   void testReadClosesMongoClient() {
     final MongoClient mongoClient = mock(MongoClient.class);
-    doReturn(mongoClient).when(source).createMongoClient(airbyteSourceConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY));
+    doReturn(mongoClient).when(source).createMongoClient(sourceConfig);
     when(cdcInitializer.createCdcIterators(any(), any(), any(), any(), any(), any())).thenThrow(new RuntimeException());
     assertThrows(RuntimeException.class, () -> source.read(airbyteSourceConfig, null, null));
     verify(mongoClient, times(1)).close();
@@ -304,7 +307,8 @@ class MongoDbSourceTest {
     final Map<String, Object> baseConfig = Map.of(
         MongoConstants.DATABASE_CONFIGURATION_KEY, DB_NAME,
         MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://localhost:27017/",
-        MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin");
+        MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, "admin",
+        MongoConstants.DISCOVER_SAMPLE_SIZE_CONFIGURATION_KEY, DEFAULT_DISCOVER_SAMPLE_SIZE);
 
     final Map<String, Object> config = new HashMap<>(baseConfig);
     username.ifPresent(u -> config.put(MongoConstants.USERNAME_CONFIGURATION_KEY, u));

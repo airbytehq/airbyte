@@ -113,7 +113,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     ((ObjectNode) config).put(MongoConstants.IS_TEST_CONFIGURATION_KEY, true);
     ((ObjectNode) config).put(MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY, 1);
 
-    mongoClient = MongoConnectionUtils.createMongoClient(config);
+    final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, config)));
+
+    mongoClient = MongoConnectionUtils.createMongoClient(sourceConfig);
     createTestCollections(mongoClient);
     insertTestData(mongoClient);
   }

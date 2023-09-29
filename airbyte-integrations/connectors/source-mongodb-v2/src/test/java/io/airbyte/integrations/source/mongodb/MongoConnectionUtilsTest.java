@@ -5,11 +5,11 @@
 package io.airbyte.integrations.source.mongodb;
 
 import static io.airbyte.integrations.source.mongodb.MongoConstants.CREDENTIALS_PLACEHOLDER;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoClient;
@@ -28,11 +28,13 @@ class MongoConnectionUtilsTest {
     final int port = 1234;
     final String username = "user";
     final String password = "password";
-    final JsonNode config = Jsons.jsonNode(Map.of(
-        MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://" + host + ":" + port + "/",
-        MongoConstants.USERNAME_CONFIGURATION_KEY, username,
-        MongoConstants.PASSWORD_CONFIGURATION_KEY, password,
-        MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, authSource));
+    final MongoDbSourceConfig config = new MongoDbSourceConfig(Jsons.jsonNode(
+        Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
+            Map.of(
+                MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://" + host + ":" + port + "/",
+                MongoConstants.USERNAME_CONFIGURATION_KEY, username,
+                MongoConstants.PASSWORD_CONFIGURATION_KEY, password,
+                MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, authSource))));
 
     final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
 
@@ -54,11 +56,13 @@ class MongoConnectionUtilsTest {
     final int port = 1234;
     final String username = "user";
     final String password = "password";
-    final JsonNode config = Jsons.jsonNode(Map.of(
-        MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "\"mongodb://" + host + ":" + port + "/\"",
-        MongoConstants.USERNAME_CONFIGURATION_KEY, username,
-        MongoConstants.PASSWORD_CONFIGURATION_KEY, password,
-        MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, authSource));
+    final MongoDbSourceConfig config = new MongoDbSourceConfig(Jsons.jsonNode(
+        Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
+            Map.of(
+                MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "\"mongodb://" + host + ":" + port + "/\"",
+                MongoConstants.USERNAME_CONFIGURATION_KEY, username,
+                MongoConstants.PASSWORD_CONFIGURATION_KEY, password,
+                MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, authSource))));
 
     final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
 
@@ -77,8 +81,9 @@ class MongoConnectionUtilsTest {
   void testCreateMongoClientWithoutCredentials() {
     final String host = "host";
     final int port = 1234;
-    final JsonNode config = Jsons.jsonNode(Map.of(
-        MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://" + host + ":" + port + "/"));
+    final MongoDbSourceConfig config = new MongoDbSourceConfig(Jsons.jsonNode(
+        Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
+            Map.of(MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://" + host + ":" + port + "/"))));
 
     final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
 
@@ -98,11 +103,13 @@ class MongoConnectionUtilsTest {
     final int port = 1234;
     final String username = "user";
     final String password = "password";
-    final JsonNode config = Jsons.jsonNode(Map.of(
-        MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://" + CREDENTIALS_PLACEHOLDER + host + ":" + port + "/",
-        MongoConstants.USERNAME_CONFIGURATION_KEY, username,
-        MongoConstants.PASSWORD_CONFIGURATION_KEY, password,
-        MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, authSource));
+    final MongoDbSourceConfig config = new MongoDbSourceConfig(Jsons.jsonNode(
+        Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
+            Map.of(
+                MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://" + CREDENTIALS_PLACEHOLDER + host + ":" + port + "/",
+                MongoConstants.USERNAME_CONFIGURATION_KEY, username,
+                MongoConstants.PASSWORD_CONFIGURATION_KEY, password,
+                MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY, authSource))));
 
     final MongoClient mongoClient = MongoConnectionUtils.createMongoClient(config);
 

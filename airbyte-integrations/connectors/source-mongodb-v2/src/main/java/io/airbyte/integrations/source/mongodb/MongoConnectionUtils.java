@@ -4,12 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb;
 
-import static io.airbyte.integrations.source.mongodb.MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DRIVER_NAME;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.PASSWORD_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.USERNAME_CONFIGURATION_KEY;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
 import com.mongodb.MongoCredential;
@@ -30,7 +26,7 @@ public class MongoConnectionUtils {
    * @param config The source's configuration.
    * @return The configured {@link MongoClient}.
    */
-  public static MongoClient createMongoClient(final JsonNode config) {
+  public static MongoClient createMongoClient(final MongoDbSourceConfig config) {
     final ConnectionString mongoConnectionString = new ConnectionString(buildConnectionString(config));
 
     final MongoDriverInformation mongoDriverInformation = MongoDriverInformation.builder()
@@ -41,18 +37,18 @@ public class MongoConnectionUtils {
         .applyConnectionString(mongoConnectionString)
         .readPreference(ReadPreference.secondaryPreferred());
 
-    if (config.has(USERNAME_CONFIGURATION_KEY) && config.has(PASSWORD_CONFIGURATION_KEY)) {
-      final String authSource = config.get(AUTH_SOURCE_CONFIGURATION_KEY).asText();
-      final String user = config.get(USERNAME_CONFIGURATION_KEY).asText();
-      final String password = config.get(PASSWORD_CONFIGURATION_KEY).asText();
+    if (config.hasAuthCredentials()) {
+      final String authSource = config.getAuthSource();
+      final String user = config.getUsername();
+      final String password = config.getPassword();
       mongoClientSettingsBuilder.credential(MongoCredential.createCredential(user, authSource, password.toCharArray()));
     }
 
     return MongoClients.create(mongoClientSettingsBuilder.build(), mongoDriverInformation);
   }
 
-  private static String buildConnectionString(final JsonNode config) {
-    return MongoDbDebeziumPropertiesManager.buildConnectionString(config, true);
+  private static String buildConnectionString(final MongoDbSourceConfig config) {
+    return MongoDbDebeziumPropertiesManager.buildConnectionString(config.rawConfig(), true);
   }
 
 }

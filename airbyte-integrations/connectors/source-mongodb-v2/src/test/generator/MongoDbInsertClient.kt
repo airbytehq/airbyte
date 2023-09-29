@@ -31,16 +31,18 @@ object MongoDbInsertClient {
         println("Enter password: ")
         val password = readln()
 
-        var config = mapOf(
-            MongoConstants.DATABASE_CONFIGURATION_KEY to databaseName,
-                MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY to connectionString,
-                MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY to "admin",
-                MongoConstants.USERNAME_CONFIGURATION_KEY to username,
-                MongoConstants.PASSWORD_CONFIGURATION_KEY to password)
+        var config = mapOf(MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY to
+            mapOf(
+                MongoConstants.DATABASE_CONFIGURATION_KEY to databaseName,
+                    MongoConstants.CONNECTION_STRING_CONFIGURATION_KEY to connectionString,
+                    MongoConstants.AUTH_SOURCE_CONFIGURATION_KEY to "admin",
+                    MongoConstants.USERNAME_CONFIGURATION_KEY to username,
+                    MongoConstants.PASSWORD_CONFIGURATION_KEY to password)
+        )
 
         val faker = Faker();
 
-        MongoConnectionUtils.createMongoClient(Jsons.deserialize(Jsons.serialize(config))).use { mongoClient ->
+        MongoConnectionUtils.createMongoClient(MongoDbSourceConfig(Jsons.deserialize(Jsons.serialize(config)))).use { mongoClient ->
             val documents = mutableListOf<Document>()
             val batches = if (numberOfDocuments > BATCH_SIZE) numberOfDocuments / BATCH_SIZE else 1;
             val batchSize = if (numberOfDocuments > BATCH_SIZE) BATCH_SIZE else numberOfDocuments;

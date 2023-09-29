@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.MongoClient;
@@ -35,14 +34,6 @@ import org.slf4j.LoggerFactory;
 public class MongoUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoUtil.class);
-
-  /**
-   * The maximum number of documents to sample when attempting to discover the unique keys/types for a
-   * collection. Inspired by the
-   * <a href="https://www.mongodb.com/docs/compass/current/sampling/#sampling-method">sampling method
-   * utilized by the MongoDB Compass client</a>.
-   */
-  private static final Integer DISCOVERY_SAMPLE_SIZE = 1000;
 
   /**
    * Set of collection prefixes that should be ignored when performing operations, such as discover to
@@ -112,13 +103,15 @@ public class MongoUtil {
    *
    * @param mongoClient The {@link MongoClient} used to query the MongoDB server.
    * @param databaseName The name of the database to query for collections.
+   * @param sampleSize The maximum number of documents to sample when attempting to discover the
+   *        unique fields for a collection.
    * @return The list of {@link AirbyteStream}s that map to the available collections in the provided
    *         database.
    */
-  public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient, final String databaseName) {
+  public static List<AirbyteStream> getAirbyteStreams(final MongoClient mongoClient, final String databaseName, final Integer sampleSize) {
     final Set<String> authorizedCollections = getAuthorizedCollections(mongoClient, databaseName);
     return authorizedCollections.parallelStream()
-        .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName))
+        .map(collectionName -> discoverFields(collectionName, mongoClient, databaseName, sampleSize))
         .filter(stream -> stream.isPresent())
         .map(stream -> stream.get())
         .collect(Collectors.toList());
@@ -133,10 +126,8 @@ public class MongoUtil {
    * @param config The source connector's configuration.
    * @return The size of the Debezium event queue.
    */
-  public static OptionalInt getDebeziumEventQueueSize(final JsonNode config) {
-    final OptionalInt sizeFromConfig =
-        config.has(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY) ? OptionalInt.of(config.get(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY).asInt())
-            : OptionalInt.empty();
+  public static OptionalInt getDebeziumEventQueueSize(final MongoDbSourceConfig config) {
+    final OptionalInt sizeFromConfig = config.getQueueSize();
 
     if (sizeFromConfig.isPresent()) {
       int size = sizeFromConfig.getAsInt();
@@ -210,21 +201,26 @@ public class MongoUtil {
    * @param collectionName The name of the collection associated with the stream (stream name).
    * @param mongoClient The {@link MongoClient} used to access the fields.
    * @param databaseName The name of the database associated with the stream (stream namespace).
+   * @param sampleSize The maximum number of documents to sample when attempting to discover the
+   *        unique fields for a collection
    * @return The {@link AirbyteStream} that contains the discovered fields or an empty
    *         {@link Optional} if the underlying collection is empty.
    */
-  private static Optional<AirbyteStream> discoverFields(final String collectionName, final MongoClient mongoClient, final String databaseName) {
+  private static Optional<AirbyteStream> discoverFields(final String collectionName,
+                                                        final MongoClient mongoClient,
+                                                        final String databaseName,
+                                                        final Integer sampleSize) {
     /*
      * Fetch the keys/types from the first N documents and the last N documents from the collection.
      * This is an attempt to "survey" the documents in the collection for variance in the schema keys.
      */
     final MongoCollection<Document> mongoCollection = mongoClient.getDatabase(databaseName).getCollection(collectionName);
-    final Set<Field> discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection));
+    final Set<Field> discoveredFields = new HashSet<>(getFieldsInCollection(mongoCollection, sampleSize));
     return Optional
         .ofNullable(!discoveredFields.isEmpty() ? createAirbyteStream(collectionName, databaseName, new ArrayList<>(discoveredFields)) : null);
   }
 
-  private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection) {
+  private static Set<Field> getFieldsInCollection(final MongoCollection<Document> collection, final Integer sampleSize) {
     final Set<Field> discoveredFields = new HashSet<>();
     final Map<String, Object> fieldsMap = Map.of("input", Map.of("$objectToArray", "$$ROOT"),
         "as", "each",
@@ -238,7 +234,11 @@ public class MongoUtil {
     groupMap.put("fields", Map.of("$addToSet", "$fields"));
 
     final List<Bson> aggregateList = new ArrayList<>();
-    aggregateList.add(Aggregates.sample(DISCOVERY_SAMPLE_SIZE));
+    /*
+     * Use sampling to reduce the time it takes to discover fields. Inspired by
+     * https://www.mongodb.com/docs/compass/current/sampling/#sampling-method.
+     */
+    aggregateList.add(Aggregates.sample(sampleSize));
     aggregateList.add(Aggregates.project(new Document("fields", arrayToObjectAggregation)));
     aggregateList.add(Aggregates.unwind("$fields"));
     aggregateList.add(new Document("$group", groupMap));

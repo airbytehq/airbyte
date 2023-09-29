@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb;
 
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIGURATION_KEY;
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -51,10 +50,10 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
-    if (config.has(DATABASE_CONFIG_CONFIGURATION_KEY)) {
-      final JsonNode databaseConfig = config.get(DATABASE_CONFIG_CONFIGURATION_KEY);
-      try (final MongoClient mongoClient = createMongoClient(databaseConfig)) {
-        final String databaseName = databaseConfig.get(DATABASE_CONFIGURATION_KEY).asText();
+    try {
+      final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
+      try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
+        final String databaseName = sourceConfig.getDatabaseName();
 
         if (MongoUtil.checkDatabaseExists(mongoClient, databaseName)) {
           /*
@@ -92,9 +91,9 @@ public class MongoDbSource extends BaseConnector implements Source {
 
       LOGGER.info("The source passed the check operation test!");
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
-    } else {
+    } catch (final IllegalArgumentException e) {
       LOGGER
-          .error("Unable to perform connection check.  Configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' configuration.");
+          .error("Unable to perform connection check.  Configuration is missing required '{}' configuration.", DATABASE_CONFIG_CONFIGURATION_KEY);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
           .withMessage("Database connection configuration missing.");
     }
@@ -102,16 +101,17 @@ public class MongoDbSource extends BaseConnector implements Source {
 
   @Override
   public AirbyteCatalog discover(final JsonNode config) {
-    if (config.has(DATABASE_CONFIG_CONFIGURATION_KEY)) {
-      final JsonNode databaseConfig = config.get(DATABASE_CONFIG_CONFIGURATION_KEY);
-      try (final MongoClient mongoClient = createMongoClient(databaseConfig)) {
-        final String databaseName = databaseConfig.get(DATABASE_CONFIGURATION_KEY).asText();
-        final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName);
+    try {
+      final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
+      try (final MongoClient mongoClient = createMongoClient(sourceConfig)) {
+        final String databaseName = sourceConfig.getDatabaseName();
+        final Integer sampleSize = sourceConfig.getSampleSize();
+        final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize);
         return new AirbyteCatalog().withStreams(streams);
       }
-    } else {
+    } catch (final IllegalArgumentException e) {
       LOGGER
-          .error("Unable to perform schema discovery.  Configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' configuration.");
+          .error("Unable to perform schema discovery.  Configuration is missing required '{}' configuration.", DATABASE_CONFIG_CONFIGURATION_KEY);
       throw new IllegalArgumentException("Database connection configuration missing.");
     }
   }
@@ -124,27 +124,28 @@ public class MongoDbSource extends BaseConnector implements Source {
     final var cdcMetadataInjector = MongoDbCdcConnectorMetadataInjector.getInstance(emittedAt);
     final var stateManager = MongoDbStateManager.createStateManager(state);
 
-    if (config.has(DATABASE_CONFIG_CONFIGURATION_KEY)) {
-      final JsonNode databaseConfig = config.get(DATABASE_CONFIG_CONFIGURATION_KEY);
+    try {
+      final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
 
       // WARNING: do not close the client here since it needs to be used by the iterator
-      final MongoClient mongoClient = createMongoClient(databaseConfig);
+      final MongoClient mongoClient = createMongoClient(sourceConfig);
 
       try {
         final var iteratorList =
-            cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, catalog, stateManager, emittedAt, databaseConfig);
+            cdcInitializer.createCdcIterators(mongoClient, cdcMetadataInjector, catalog,
+                stateManager, emittedAt, sourceConfig);
         return AutoCloseableIterators.concatWithEagerClose(iteratorList, AirbyteTraceMessageUtility::emitStreamStatusTrace);
       } catch (final Exception e) {
         mongoClient.close();
         throw e;
       }
-    } else {
-      LOGGER.error("Unable to perform sync.  Configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' configuration.");
+    } catch (final Exception e) {
+      LOGGER.error("Unable to perform sync.  Configuration is missing required '{}' configuration.", DATABASE_CONFIG_CONFIGURATION_KEY);
       throw new IllegalArgumentException("Database connection configuration missing.");
     }
   }
 
-  protected MongoClient createMongoClient(final JsonNode config) {
+  protected MongoClient createMongoClient(final MongoDbSourceConfig config) {
     return MongoConnectionUtils.createMongoClient(config);
   }
 
