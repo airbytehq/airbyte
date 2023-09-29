@@ -4,8 +4,10 @@
 
 
 import logging
+import os
 import urllib
 from abc import ABC, abstractmethod
+from pathlib import Path
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import urljoin
 
@@ -15,9 +17,10 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.utils.types import JsonType
+from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from requests.auth import AuthBase
 
-from ...utils.types import JsonType
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
@@ -62,8 +65,8 @@ class HttpStream(Stream, ABC):
         return False
 
     def request_cache(self) -> requests.Session:
-        backend = requests_cache.SQLiteCache(use_temp=True)
-        return requests_cache.CachedSession(self.cache_filename, backend=backend)
+        cache_dir = Path(os.getenv(ENV_REQUEST_CACHE_PATH))
+        return requests_cache.CachedSession(str(cache_dir / self.cache_filename), backend="sqlite")
 
     def clear_cache(self) -> None:
         """
