@@ -32,9 +32,9 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
   public Optional<SnowflakeTableDefinition> findExistingTable(final StreamId id) throws SQLException {
     // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
     // VARIANT as VARCHAR
-    final LinkedHashMap<String, String> columns = database.queryJsons(
+    final LinkedHashMap<String, SnowflakeColumnDefinition> columns = database.queryJsons(
         """
-        SELECT column_name, data_type
+        SELECT column_name, data_type, is_nullable
         FROM information_schema.columns
         WHERE table_catalog = ?
           AND table_schema = ?
@@ -45,9 +45,10 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
         id.finalNamespace().toUpperCase(),
         id.finalName().toUpperCase()).stream()
         .collect(LinkedHashMap::new,
-            (map, row) -> map.put(row.get("COLUMN_NAME").asText(), row.get("DATA_TYPE").asText()),
+            (map, row) -> map.put(
+                row.get("COLUMN_NAME").asText(),
+                new SnowflakeColumnDefinition(row.get("DATA_TYPE").asText(), fromSnowflakeBoolean(row.get("IS_NULLABLE").asText()))),
             LinkedHashMap::putAll);
-    // TODO query for indexes/partitioning/etc
 
     if (columns.isEmpty()) {
       return Optional.empty();
@@ -98,6 +99,14 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
     }
 
     LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
+  }
+
+  /**
+   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't
+   * know how to use
+   */
+  private boolean fromSnowflakeBoolean(String input) {
+    return input.equalsIgnoreCase("yes");
   }
 
 }
