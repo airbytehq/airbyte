@@ -31,7 +31,7 @@ Here is its configuration:
 
 #### Example Stream Schemas
 If you need a stream for testing performance simulating a wide table, we have an example [500 column stream](https://gist.github.com/jbfbell/9b7db8fdf0de0187c7da92df2f699502)
-or use this tool to generate your own with an arbitrary width using the form below.
+or use this tool to generate your own with an arbitrary width using the form below, then copy+paste into your configuration. 
 
 <SchemaGenerator />
 
