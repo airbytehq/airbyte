@@ -37,19 +37,17 @@ class TestIncrementalKlaviyoStreamLatest:
         ["response_json", "next_page_token"],
         [
             (
-              {
-                "data": [
-                    {"type": "profile", "id": "00AA0A0AA0AA000AAAAAAA0AA0"},
-                ],
-                "links": {
-                  "self": "https://a.klaviyo.com/api/profiles/",
-                  "next": "https://a.klaviyo.com/api/profiles/?page%5Bcursor%5D=aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa",
-                  "prev": "null"
-                }
-              },
-              {
-                "page[cursor]": "aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa"
-              }
+                {
+                    "data": [
+                        {"type": "profile", "id": "00AA0A0AA0AA000AAAAAAA0AA0"},
+                    ],
+                    "links": {
+                        "self": "https://a.klaviyo.com/api/profiles/",
+                        "next": "https://a.klaviyo.com/api/profiles/?page%5Bcursor%5D=aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa",
+                        "prev": "null",
+                    },
+                },
+                {"page[cursor]": "aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa"},
             )
         ],
     )
@@ -67,62 +65,38 @@ class TestProfilesStream:
         json = {
             "data": [
                 {
-                  "type": "profile",
-                  "id": "00AA0A0AA0AA000AAAAAAA0AA0",
-                  "attributes": {
-                    "email": "name@airbyte.io",
-                    "phone_number": "+11111111111",
-                    "updated": "2023-03-10T20:36:36+00:00"
-                  },
-                  "properties": {
-                    "Status": "onboarding_complete"
-                  }
+                    "type": "profile",
+                    "id": "00AA0A0AA0AA000AAAAAAA0AA0",
+                    "attributes": {"email": "name@airbyte.io", "phone_number": "+11111111111", "updated": "2023-03-10T20:36:36+00:00"},
+                    "properties": {"Status": "onboarding_complete"},
                 },
                 {
-                  "type": "profile",
-                  "id": "AAAA1A1AA1AA111AAAAAAA1AA1",
-                  "attributes": {
-                    "email": "name2@airbyte.io",
-                    "phone_number": "+2222222222",
-                    "updated": "2023-02-10T20:36:36+00:00"
-                  },
-                  "properties": {
-                    "Status": "onboarding_started"
-                  }
-                }
+                    "type": "profile",
+                    "id": "AAAA1A1AA1AA111AAAAAAA1AA1",
+                    "attributes": {"email": "name2@airbyte.io", "phone_number": "+2222222222", "updated": "2023-02-10T20:36:36+00:00"},
+                    "properties": {"Status": "onboarding_started"},
+                },
             ],
             "links": {
-              "self": "https://a.klaviyo.com/api/profiles/",
-              "next": "https://a.klaviyo.com/api/profiles/?page%5Bcursor%5D=aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa",
-              "prev": "null"
-            }
+                "self": "https://a.klaviyo.com/api/profiles/",
+                "next": "https://a.klaviyo.com/api/profiles/?page%5Bcursor%5D=aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa",
+                "prev": "null",
+            },
         }
         records = list(stream.parse_response(mocker.Mock(json=mocker.Mock(return_value=json))))
         assert records == [
             {
-              "type": "profile",
-              "id": "00AA0A0AA0AA000AAAAAAA0AA0",
-              "updated": "2023-03-10T20:36:36+00:00",
-              "attributes": {
-                "email": "name@airbyte.io",
-                "phone_number": "+11111111111",
-                "updated": "2023-03-10T20:36:36+00:00"
-              },
-              "properties": {
-                "Status": "onboarding_complete"
-              }
+                "type": "profile",
+                "id": "00AA0A0AA0AA000AAAAAAA0AA0",
+                "updated": "2023-03-10T20:36:36+00:00",
+                "attributes": {"email": "name@airbyte.io", "phone_number": "+11111111111", "updated": "2023-03-10T20:36:36+00:00"},
+                "properties": {"Status": "onboarding_complete"},
             },
             {
-              "type": "profile",
-              "id": "AAAA1A1AA1AA111AAAAAAA1AA1",
-              "updated": "2023-02-10T20:36:36+00:00",
-              "attributes": {
-                "email": "name2@airbyte.io",
-                "phone_number": "+2222222222",
-                "updated": "2023-02-10T20:36:36+00:00"
-              },
-              "properties": {
-                "Status": "onboarding_started"
-              }
-            }
+                "type": "profile",
+                "id": "AAAA1A1AA1AA111AAAAAAA1AA1",
+                "updated": "2023-02-10T20:36:36+00:00",
+                "attributes": {"email": "name2@airbyte.io", "phone_number": "+2222222222", "updated": "2023-02-10T20:36:36+00:00"},
+                "properties": {"Status": "onboarding_started"},
+            },
         ]

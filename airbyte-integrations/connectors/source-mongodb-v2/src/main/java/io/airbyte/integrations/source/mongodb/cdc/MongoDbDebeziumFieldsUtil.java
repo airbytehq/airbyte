@@ -38,8 +38,9 @@ public class MongoDbDebeziumFieldsUtil {
    */
   public Set<ExcludedField> getFieldsNotIncludedInCatalog(final ConfiguredAirbyteCatalog configuredCatalog,
                                                           final String databaseName,
-                                                          final MongoClient mongoClient) {
-    final List<AirbyteStream> sourceAirbyteStreams = MongoUtil.getAirbyteStreams(mongoClient, databaseName);
+                                                          final MongoClient mongoClient,
+                                                          final Integer sampleSize) {
+    final List<AirbyteStream> sourceAirbyteStreams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, sampleSize);
     return getFieldsNotIncludedInConfiguredStreams(configuredCatalog, sourceAirbyteStreams);
   }
 

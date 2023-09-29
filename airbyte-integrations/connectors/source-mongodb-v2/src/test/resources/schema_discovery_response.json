@@ -9,7 +9,8 @@
         "total": "int",
         "price": "decimal",
         "items": "array",
-        "owners": "object"
+        "owners": "object",
+        "amount": "null"
       }
     ]
   },

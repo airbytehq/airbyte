@@ -351,12 +351,12 @@ class Issues(IncrementalJiraStream):
     cursor_field = "updated"
     extract_field = "issues"
     use_cache = True
+    _expand_fields_list = ["renderedFields", "transitions", "changelog"]
 
     skip_http_status_codes = [requests.codes.FORBIDDEN]
 
-    def __init__(self, expand_fields: list = None, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._expand_fields = expand_fields
         self._project_ids = []
         self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -376,8 +376,7 @@ class Issues(IncrementalJiraStream):
         if self._project_ids:
             jql_parts.append(f"project in ({stream_slice.get('project_id')})")
         params["jql"] = " and ".join([p for p in jql_parts if p])
-        if self._expand_fields:
-            params["expand"] = ",".join(self._expand_fields)
+        params["expand"] = ",".join(self._expand_fields_list)
         return params
 
     def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:

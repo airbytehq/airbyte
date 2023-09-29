@@ -4,9 +4,11 @@
 
 package io.airbyte.integrations.source.mongodb;
 
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mongodb.MongoCatalogHelper.AIRBYTE_STREAM_PROPERTIES;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DEFAULT_DISCOVER_SAMPLE_SIZE;
 import static io.airbyte.integrations.source.mongodb.MongoUtil.MAX_QUEUE_SIZE;
 import static io.airbyte.integrations.source.mongodb.MongoUtil.MIN_QUEUE_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -19,7 +21,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.mongodb.MongoCommandException;
 import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
@@ -85,10 +86,10 @@ public class MongoUtilTest {
     when(mongoDatabase.runCommand(any())).thenReturn(authorizedCollectionsResponse);
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
-    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName);
+    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE);
     assertNotNull(streams);
     assertEquals(1, streams.size());
-    assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
+    assertEquals(12, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
   }
 
   @Test
@@ -108,7 +109,7 @@ public class MongoUtilTest {
     when(mongoDatabase.runCommand(any())).thenReturn(authorizedCollectionsResponse);
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
-    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName);
+    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE);
     assertNotNull(streams);
     assertEquals(0, streams.size());
   }
@@ -134,7 +135,7 @@ public class MongoUtilTest {
     when(mongoDatabase.runCommand(any())).thenReturn(authorizedCollectionsResponse);
     when(mongoClient.getDatabase(databaseName)).thenReturn(mongoDatabase);
 
-    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName);
+    final List<AirbyteStream> streams = MongoUtil.getAirbyteStreams(mongoClient, databaseName, DEFAULT_DISCOVER_SAMPLE_SIZE);
     assertNotNull(streams);
     assertEquals(1, streams.size());
     assertEquals(11, streams.get(0).getJsonSchema().get(AIRBYTE_STREAM_PROPERTIES).size());
@@ -195,10 +196,14 @@ public class MongoUtilTest {
   @Test
   void testGetDebeziumEventQueueSize() {
     final int queueSize = 5000;
-    final JsonNode validQueueSizeConfiguration = Jsons.jsonNode(Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, queueSize));
-    final JsonNode tooSmallQueueSizeConfiguration = Jsons.jsonNode(Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, Integer.MIN_VALUE));
-    final JsonNode tooLargeQueueSizeConfiguration = Jsons.jsonNode(Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, Integer.MAX_VALUE));
-    final JsonNode missingQueueSizeConfiguration = Jsons.jsonNode(Map.of());
+    final MongoDbSourceConfig validQueueSizeConfiguration = new MongoDbSourceConfig(
+        Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, queueSize))));
+    final MongoDbSourceConfig tooSmallQueueSizeConfiguration = new MongoDbSourceConfig(
+        Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, Integer.MIN_VALUE))));
+    final MongoDbSourceConfig tooLargeQueueSizeConfiguration = new MongoDbSourceConfig(
+        Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, Integer.MAX_VALUE))));
+    final MongoDbSourceConfig missingQueueSizeConfiguration =
+        new MongoDbSourceConfig(Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, Map.of())));
 
     assertEquals(queueSize, MongoUtil.getDebeziumEventQueueSize(validQueueSizeConfiguration).getAsInt());
     assertEquals(MIN_QUEUE_SIZE, MongoUtil.getDebeziumEventQueueSize(tooSmallQueueSizeConfiguration).getAsInt());

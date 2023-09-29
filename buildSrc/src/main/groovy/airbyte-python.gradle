@@ -6,8 +6,8 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
-class AirbytePythonConfiguration {
-    String moduleDirectory
+abstract class AirbytePythonExtension {
+    abstract String moduleDirectory
 }
 
 class Helpers {
@@ -97,14 +97,14 @@ class Helpers {
 class AirbytePythonPlugin implements Plugin<Project> {
 
     void apply(Project project) {
-        def extension = project.extensions.create('airbytePython', AirbytePythonConfiguration)
+        def extension = project.extensions.create('airbytePython', AirbytePythonExtension)
 
         def venvDirectoryName = '.venv'
 
         // Add a task that allows cleaning up venvs to every python project
         def cleanPythonVenv = project.tasks.register('cleanPythonVenv', Exec) {
             commandLine 'rm'
-            args '-rf', "$project.projectDir.absolutePath/$venvDirectoryName"
+            args '-rf', "${project.projectDir.absolutePath}/${venvDirectoryName}", "${project.projectDir.absolutePath}/.pytest_cache"
         }
         project.tasks.named('clean').configure {
             dependsOn cleanPythonVenv
@@ -201,17 +201,6 @@ class AirbytePythonPlugin implements Plugin<Project> {
             dependsOn flakeCheck
         }
 
-        if (extension.moduleDirectory) {
-            def mypyCheck = project.tasks.register('mypyCheck', PythonTask) {
-                module = "mypy"
-                command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
-            }
-
-            project.tasks.named('check').configure {
-                dependsOn mypyCheck
-            }
-        }
-
         def installTestReqs = project.tasks.register('installTestReqs', PythonTask) {
             module = "pip"
             command = "install .[tests]"
@@ -220,6 +209,19 @@ class AirbytePythonPlugin implements Plugin<Project> {
         }
         installTestReqs.configure {
             dependsOn installReqs
+        }
+
+        if (extension.hasProperty('moduleDirectory') && extension.moduleDirectory != null) {
+            def mypyCheck = project.tasks.register('mypyCheck', PythonTask) {
+                module = "mypy"
+                command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
+            }
+            mypyCheck.configure {
+                dependsOn installTestReqs
+            }
+            project.tasks.named('check').configure {
+                dependsOn mypyCheck
+            }
         }
 
         Helpers.addTestTaskIfTestFilesFound(project, 'unit_tests', 'unitTest', installTestReqs)
@@ -296,6 +298,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             }
 
             mypyReport.configure {
+                dependsOn installReqs
                 it.logging.addStandardOutputListener(new StandardOutputListener() {
                     @Override
                     void onOutput(CharSequence charSequence) {

@@ -4,23 +4,20 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
-import static io.airbyte.integrations.source.mongodb.MongoConstants.CHECKPOINT_INTERVAL;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY;
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIGURATION_KEY;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.client.MongoClient;
+import io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.FirstRecordWaitTimeUtil;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
-import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
-import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.integrations.source.mongodb.InitialSnapshotHandler;
+import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.MongoUtil;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.ExcludedField;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
@@ -88,17 +85,19 @@ public class MongoDbCdcInitializer {
                                                                         final ConfiguredAirbyteCatalog catalog,
                                                                         final MongoDbStateManager stateManager,
                                                                         final Instant emittedAt,
-                                                                        final JsonNode config) {
+                                                                        final MongoDbSourceConfig config) {
 
-    final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(config);
+    final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(config.rawConfig());
     final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
-    final String databaseName = config.get(DATABASE_CONFIGURATION_KEY).asText();
+    final String databaseName = config.getDatabaseName();
+    final Integer sampleSize = config.getSampleSize();
     // WARNING!!! debezium's mongodb connector doesn't let you specify a list of fields to
     // include, so we can't filter fields solely using the configured catalog. Instead,
     // debezium only lets you specify a list of fields to exclude. If the fields to exclude
     // we specify are not equal to all the fields in the source that are not in the
     // configured catalog then we will be outputting incorrect data.
-    final Set<ExcludedField> fieldsNotIncludedInCatalog = mongoDbDebeziumFieldsUtil.getFieldsNotIncludedInCatalog(catalog, databaseName, mongoClient);
+    final Set<ExcludedField> fieldsNotIncludedInCatalog =
+        mongoDbDebeziumFieldsUtil.getFieldsNotIncludedInCatalog(catalog, databaseName, mongoClient, sampleSize);
     final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsNotIncludedInCatalog);
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
     final JsonNode initialDebeziumState =
@@ -109,7 +108,7 @@ public class MongoDbCdcInitializer {
         Jsons.clone(defaultDebeziumProperties),
         catalog,
         cdcState,
-        config,
+        config.rawConfig(),
         mongoClient);
 
     // We should always be able to extract offset out of state if it's not null
@@ -123,7 +122,7 @@ public class MongoDbCdcInitializer {
 
     if (!savedOffsetIsValid) {
       LOGGER.debug("Saved offset is not valid. Airbyte will trigger a full refresh.");
-      // If the offset in the state is invalid, reset the state to the initial state
+      // If the offset in the state is invalid, reset the state to the initial STATE
       stateManager.resetState(new MongoDbCdcState(initialDebeziumState));
     } else {
       LOGGER.debug("Valid offset state discovered.  Updating state manager with retrieved CDC state {}...", cdcState);
@@ -140,9 +139,9 @@ public class MongoDbCdcInitializer {
     final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
     final List<AutoCloseableIterator<AirbyteMessage>> initialSnapshotIterators =
         initialSnapshotHandler.getIterators(initialSnapshotStreams, stateManager, mongoClient.getDatabase(databaseName), cdcMetadataInjector,
-            emittedAt, getCheckpointInterval(config));
+            emittedAt, config.getCheckpointInterval());
 
-    final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config,
+    final AirbyteDebeziumHandler<BsonTimestamp> handler = new AirbyteDebeziumHandler<>(config.rawConfig(),
         new MongoDbCdcTargetPosition(resumeToken), false, firstRecordWaitTime, queueSize);
     final MongoDbCdcStateHandler mongoDbCdcStateHandler = new MongoDbCdcStateHandler(stateManager);
     final MongoDbCdcSavedInfoFetcher cdcSavedInfoFetcher = new MongoDbCdcSavedInfoFetcher(stateToBeUsed);
@@ -162,11 +161,6 @@ public class MongoDbCdcInitializer {
         AutoCloseableIterators.concatWithEagerClose(initialSnapshotIterators), mongoClient::close);
 
     return List.of(initialSnapshotIterator, AutoCloseableIterators.lazyIterator(incrementalIteratorSupplier, null));
-  }
-
-  private Integer getCheckpointInterval(final JsonNode config) {
-    return config.get(CHECKPOINT_INTERVAL_CONFIGURATION_KEY) != null ? config.get(CHECKPOINT_INTERVAL_CONFIGURATION_KEY).asInt()
-        : CHECKPOINT_INTERVAL;
   }
 
 }

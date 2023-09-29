@@ -330,36 +330,9 @@ flowchart TD
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 
 Available commands:
-* `airbyte-ci metadata validate`
-* `airbyte-ci metadata upload`
 * `airbyte-ci metadata test lib`
 * `airbyte-ci metadata test orchestrator`
 * `airbyte-ci metadata deploy orchestrator`
-
-### <a id="metadata-validate-command"></a>`metadata validate` command
-This commands validates the modified `metadata.yaml` files in the head commit, or all the `metadata.yaml` files.
-
-#### Example
-Validate all `metadata.yaml` files in the repo:
-`airbyte-ci metadata validate --all`
-
-#### Options
-| Option             | Default      | Description                                                                                                                |
-| ------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| `--modified/--all` | `--modified` | Flag to run validation of `metadata.yaml` files on the modified files in the head commit or all the `metadata.yaml` files. |
-
-### <a id="metadata-upload-command"></a>`metadata upload` command
-This command upload the modified `metadata.yaml` files in the head commit, or all the `metadata.yaml` files, to a GCS bucket.
-
-#### Example
-Upload all the `metadata.yaml` files to a GCS bucket:
-`airbyte-ci metadata upload --all <gcs-bucket-name>`
-
-#### Options
-| Option              | Required | Default      | Mapped environment variable | Description                                                                                                              |
-| ------------------- | -------- | ------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `--gcs-credentials` | True     |              | `GCS_CREDENTIALS`           | Service account credentials in JSON format with permission to get and upload on the GCS bucket                           |
-| `--modified/--all`  | True     | `--modified` |                             | Flag to upload the modified `metadata.yaml` files in the head commit or all the  `metadata.yaml`  files to a GCS bucket. |
 
 ### <a id="metadata-upload-orchestrator"></a>`metadata deploy orchestrator` command
 This command deploys the metadata service orchestrator to production.
@@ -407,6 +380,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 |---------| --------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
+| 1.4.2   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Remove directory name requirement                                                                         |
 | 1.4.1   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Load base migration guide into QA Test container for strict encrypt variants                              |
 | 1.4.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330) | Add support for pyproject.toml as the prefered entry point for a connector package                        |
 | 1.3.0   | [#30461](https://github.com/airbytehq/airbyte/pull/30461) | Add `--use-local-cdk` flag to all connectors commands                                                      |

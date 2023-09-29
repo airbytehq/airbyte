@@ -20,19 +20,19 @@ import com.google.common.collect.Iterables;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Updates;
+import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
+import io.airbyte.cdk.integrations.debezium.internals.SnapshotMetadata;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
+import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.debezium.internals.ChangeEventWithMetadata;
-import io.airbyte.integrations.debezium.internals.SnapshotMetadata;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbCdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbResumeTokenHelper;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcState;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStreamState;
-import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
@@ -113,7 +113,9 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     ((ObjectNode) config).put(MongoConstants.IS_TEST_CONFIGURATION_KEY, true);
     ((ObjectNode) config).put(MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY, 1);
 
-    mongoClient = MongoConnectionUtils.createMongoClient(config);
+    final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, config)));
+
+    mongoClient = MongoConnectionUtils.createMongoClient(sourceConfig);
     createTestCollections(mongoClient);
     insertTestData(mongoClient);
   }

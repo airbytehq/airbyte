@@ -129,9 +129,21 @@ The 1.0.0 version of the MongoDB V2 source connector contains breaking changes f
 
 :::
 
+The quickest upgrade path is to click upgrade on any out-of-date connection in the UI.  These connections will display
+the following message banner:
+ 
+> **Action Required**
+> There is a pending upgrade for **MongoDB**.
+>
+> **Version 1.0.0:**
+> **We advise against upgrading until you have run a test upgrade as outlined [here](https://docs.airbyte.com/integrations/sources/mongodb-v2-migrations).**  This version brings a host of updates to the MongoDB source connector, significantly increasing its scalability and reliability, especially for large collections. As of this version with checkpointing, [CDC incremental updates](https://docs.airbyte.com/understanding-airbyte/cdc) and improved schema discovery, this connector is also now [certified](https://docs.airbyte.com/integrations/). Selecting `Upgrade` will upgrade **all** connections using this source, require you to reconfigure the source, then run a full reset on **all** of your connections.
+>
+> Upgrade **MongoDB** by **Dec 1, 2023** to continue syncing with this source. For more information, see this [guide](https://docs.airbyte.com/integrations/sources/mongodb-v2).
+
 After upgrading to the latest version of the MongoDB V2 source connector, users will be required to manually re-configure
 existing MongoDB V2 source connector configurations.  The required [configuration parameter](#configuration-parameters) values can be discovered
 using the [quick start](#quick-start) steps in this documentation.
+
 
 ## Replication Methods
 
@@ -147,6 +159,7 @@ Airbyte utilizes [the change streams feature](https://www.mongodb.com/docs/manua
 * Schema discovery uses [sampling](https://www.mongodb.com/docs/manual/reference/operator/aggregation/sample/) of 1000 documents to collect all distinct top-level fields.  This is modelled after [MongoDB Compass sampling](https://www.mongodb.com/docs/compass/current/sampling/) and is used for efficiency.
 * TLS/SSL is required by this connector. TLS/SSL is enabled by default for MongoDB Atlas clusters. To enable TSL/SSL connection for a self-hosted MongoDB instance, please refer to [MongoDb Documentation](https://docs.mongodb.com/manual/tutorial/configure-ssl/).
 * Views, capped collections and clustered collections are not supported.
+* Empty collections are excluded from schema discovery.
 * Collections with different data types for the values in the `_id` field among the documents in a collection are not supported.  All `_id` values within the collection must be the same data type.
 * [MongoDB's change streams](https://www.mongodb.com/docs/manual/changeStreams/) are based on the [Replica Set Oplog](https://www.mongodb.com/docs/manual/core/replica-set-oplog/), which has retention limitations.  Syncs that run less frequently than the retention period of the oplog may encounter issues with missing data.
 
@@ -168,7 +181,8 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
-|:--------| :--------- |:---------------------------------------------------------| :-------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------| :-------------------------------------------------------------------------------------------------------- |
+| 1.0.0   | 2023-10-03 | [29969](https://github.com/airbytehq/airbyte/pull/29969) | General availability release using Change Data Capture (CDC)                                              |
 | 0.2.5   | 2023-07-27 | [28815](https://github.com/airbytehq/airbyte/pull/28815) | Revert back to version 0.2.0                                                                              |
 | 0.2.4   | 2023-07-26 | [28760](https://github.com/airbytehq/airbyte/pull/28760) | Fix bug preventing some syncs from succeeding when collecting stats                                       |
 | 0.2.3   | 2023-07-26 | [28733](https://github.com/airbytehq/airbyte/pull/28733) | Fix bug preventing syncs from discovering field types                                                     |

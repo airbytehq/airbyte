@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import io.airbyte.cdk.integrations.debezium.CdcStateHandler;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.debezium.CdcStateHandler;
-import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -29,7 +29,7 @@ public class MongoDbCdcStateHandler implements CdcStateHandler {
   }
 
   @Override
-  public AirbyteMessage saveState(final Map<String, String> offset, AirbyteSchemaHistoryStorage.SchemaHistory<String> ignored) {
+  public AirbyteMessage saveState(final Map<String, String> offset, final AirbyteSchemaHistoryStorage.SchemaHistory<String> ignored) {
     final MongoDbCdcState cdcState = new MongoDbCdcState(Jsons.jsonNode(offset));
 
     LOGGER.info("Saving Debezium state {}...", cdcState);

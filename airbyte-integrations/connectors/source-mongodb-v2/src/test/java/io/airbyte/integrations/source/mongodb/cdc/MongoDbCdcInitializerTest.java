@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.mongodb.cdc;
 
+import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -32,11 +33,12 @@ import com.mongodb.client.model.changestream.ChangeStreamDocument;
 import com.mongodb.connection.ClusterDescription;
 import com.mongodb.connection.ClusterType;
 import com.mongodb.connection.ServerDescription;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
+import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants;
-import io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumStateUtil;
+import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
@@ -88,9 +90,11 @@ class MongoDbCdcInitializerTest {
           .withSourceDefinedPrimaryKey(List.of(List.of("_id")))));
   protected static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = toConfiguredCatalog(CATALOG);
 
-  final JsonNode CONFIG = Jsons.jsonNode(Map.of(
-      MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
-      MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE));
+  final MongoDbSourceConfig CONFIG = new MongoDbSourceConfig(Jsons.jsonNode(
+      Map.of(DATABASE_CONFIG_CONFIGURATION_KEY,
+          Map.of(
+              MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+              MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE))));
 
   final Instant EMITTED_AT = Instant.now();
 
