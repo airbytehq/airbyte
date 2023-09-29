@@ -44,13 +44,13 @@ class TestConnector:
             assert isinstance(connector.metadata, dict)
             assert isinstance(connector.support_level, str)
             assert isinstance(connector.acceptance_test_config, dict)
-            assert connector.icon_path == Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{connector.metadata['icon']}")
+            assert connector.icon_path == Path(f"./airbyte-integrations/connectors/{connector.technical_name}/icon.svg")
             assert len(connector.version.split(".")) == 3
         else:
             assert connector.metadata is None
             assert connector.support_level is None
             assert connector.acceptance_test_config is None
-            assert connector.icon_path == Path(f"./airbyte-config-oss/init-oss/src/main/resources/icons/{connector.name}.svg")
+            assert connector.icon_path == Path(f"./airbyte-integrations/connectors/{connector.technical_name}/icon.svg")
             with pytest.raises(FileNotFoundError):
                 connector.version
             with pytest.raises(utils.ConnectorVersionNotFound):
@@ -58,14 +58,29 @@ class TestConnector:
                 mocker.patch.object(utils.Connector, "code_directory", tmp_path)
                 utils.Connector(connector.technical_name).version
 
+    def test_metadata_query_match(self, mocker):
+        connector = utils.Connector("source-faker")
+        mocker.patch.object(utils.Connector, "metadata", {"dockerRepository": "airbyte/source-faker", "ab_internal": {"ql": 100}})
+        assert connector.metadata_query_match("data.dockerRepository == 'airbyte/source-faker'")
+        assert connector.metadata_query_match("'source' in data.dockerRepository")
+        assert not connector.metadata_query_match("data.dockerRepository == 'airbyte/source-faker2'")
+        assert not connector.metadata_query_match("'destination' in data.dockerRepository")
+        assert connector.metadata_query_match("data.ab_internal.ql == 100")
+        assert connector.metadata_query_match("data.ab_internal.ql >= 100")
+        assert connector.metadata_query_match("data.ab_internal.ql > 1")
+        assert not connector.metadata_query_match("data.ab_internal.ql == 101")
+        assert not connector.metadata_query_match("data.ab_internal.ql >= 101")
+        assert not connector.metadata_query_match("data.ab_internal.ql > 101")
+        assert not connector.metadata_query_match("data.ab_internal == whatever")
+
 
 @pytest.fixture()
-def gradle_file_with_dependencies(tmpdir) -> Path:
+def gradle_file_with_dependencies(tmpdir) -> tuple[Path, list[Path], list[Path]]:
     test_gradle_file = Path(tmpdir) / "build.gradle"
     test_gradle_file.write_text(
         """
     plugins {
-            id 'java'
+        id 'java'
     }
 
     dependencies {
@@ -83,9 +98,60 @@ def gradle_file_with_dependencies(tmpdir) -> Path:
     return test_gradle_file, expected_dependencies, expected_test_dependencies
 
 
+@pytest.fixture()
+def gradle_file_with_local_cdk_dependencies(tmpdir) -> tuple[Path, list[Path], list[Path]]:
+    test_gradle_file = Path(tmpdir) / "build.gradle"
+    test_gradle_file.write_text(
+        """
+    plugins {
+        id 'java'
+        id 'airbyte-java-connector'
+    }
+
+    airbyteJavaConnector {
+        cdkVersionRequired = '0.1.0'
+        features = ['db-destinations']
+        useLocalCdk = true
+    }
+
+    airbyteJavaConnector.addCdkDependencies()
+
+    dependencies {
+        implementation project(':path:to:dependency1')
+        implementation project(':path:to:dependency2')
+        testImplementation project(':path:to:test:dependency')
+        integrationTestJavaImplementation project(':path:to:test:dependency1')
+        performanceTestJavaImplementation project(':path:to:test:dependency2')
+    }
+    """
+    )
+    expected_dependencies = [
+        Path("path/to/dependency1"),
+        Path("path/to/dependency2"),
+        Path("airbyte-cdk/java/airbyte-cdk"),
+        Path("airbyte-commons"),
+        Path("airbyte-commons-cli"),
+    ]
+    expected_test_dependencies = [
+        Path("path/to/test/dependency"),
+        Path("path/to/test/dependency1"),
+        Path("path/to/test/dependency2"),
+    ]
+    return test_gradle_file, expected_dependencies, expected_test_dependencies
+
+
 def test_parse_dependencies(gradle_file_with_dependencies):
     gradle_file, expected_regular_dependencies, expected_test_dependencies = gradle_file_with_dependencies
-    regular_dependencies, test_dependencies = utils.parse_dependencies(gradle_file)
+    regular_dependencies, test_dependencies = utils.parse_gradle_dependencies(gradle_file)
+    assert len(regular_dependencies) == len(expected_regular_dependencies)
+    assert all([regular_dependency in expected_regular_dependencies for regular_dependency in regular_dependencies])
+    assert len(test_dependencies) == len(expected_test_dependencies)
+    assert all([test_dependency in expected_test_dependencies for test_dependency in test_dependencies])
+
+
+def test_parse_dependencies_with_cdk(gradle_file_with_local_cdk_dependencies):
+    gradle_file, expected_regular_dependencies, expected_test_dependencies = gradle_file_with_local_cdk_dependencies
+    regular_dependencies, test_dependencies = utils.parse_gradle_dependencies(gradle_file)
     assert len(regular_dependencies) == len(expected_regular_dependencies)
     assert all([regular_dependency in expected_regular_dependencies for regular_dependency in regular_dependencies])
     assert len(test_dependencies) == len(expected_test_dependencies)
@@ -96,43 +162,35 @@ def test_parse_dependencies(gradle_file_with_dependencies):
 def test_get_all_gradle_dependencies(with_test_dependencies):
     build_file = Path("airbyte-integrations/connectors/source-postgres-strict-encrypt/build.gradle")
     if with_test_dependencies:
-        all_dependencies = utils.get_all_gradle_dependencies(build_file)
+        all_dependencies = sorted(utils.get_all_gradle_dependencies(build_file))
         expected_dependencies = [
-            Path("airbyte-cdk/java/airbyte-cdk"),
-            Path("airbyte-db/db-lib"),
-            Path("airbyte-json-validation"),
-            Path("airbyte-config-oss/config-models-oss"),
-            Path("airbyte-commons"),
-            Path("airbyte-test-utils"),
             Path("airbyte-api"),
-            Path("airbyte-connector-test-harnesses/acceptance-test-harness"),
-            Path("airbyte-commons-protocol"),
-            Path("airbyte-integrations/bases/base-java"),
-            Path("airbyte-commons-cli"),
-            Path("airbyte-integrations/bases/base"),
-            Path("airbyte-integrations/connectors/source-postgres"),
-            Path("airbyte-integrations/bases/debezium"),
-            Path("airbyte-integrations/connectors/source-jdbc"),
-            Path("airbyte-integrations/connectors/source-relational-db"),
-            Path("airbyte-integrations/bases/standard-source-test"),
-        ]
-        assert len(all_dependencies) == len(expected_dependencies)
-        assert all([dependency in expected_dependencies for dependency in all_dependencies])
-    else:
-        all_dependencies = utils.get_all_gradle_dependencies(build_file, with_test_dependencies=False)
-        expected_dependencies = [
-            Path("airbyte-cdk/java/airbyte-cdk"),
-            Path("airbyte-db/db-lib"),
-            Path("airbyte-json-validation"),
-            Path("airbyte-config-oss/config-models-oss"),
+            Path("airbyte-cdk/java/airbyte-cdk/core"),
+            Path("airbyte-cdk/java/airbyte-cdk/db-sources"),
             Path("airbyte-commons"),
-            Path("airbyte-integrations/bases/base-java"),
             Path("airbyte-commons-cli"),
-            Path("airbyte-integrations/bases/base"),
+            Path("airbyte-commons-protocol"),
+            Path("airbyte-config-oss/config-models-oss"),
+            Path("airbyte-config-oss/init-oss"),
+            Path("airbyte-connector-test-harnesses/acceptance-test-harness"),
+            Path("airbyte-integrations/bases/base-typing-deduping"),
             Path("airbyte-integrations/connectors/source-postgres"),
-            Path("airbyte-integrations/bases/debezium"),
-            Path("airbyte-integrations/connectors/source-jdbc"),
-            Path("airbyte-integrations/connectors/source-relational-db"),
+            Path("airbyte-json-validation"),
         ]
-        assert len(all_dependencies) == len(expected_dependencies)
-        assert all([dependency in expected_dependencies for dependency in all_dependencies])
+        assert set(all_dependencies) == set(expected_dependencies)
+    else:
+        all_dependencies = sorted(utils.get_all_gradle_dependencies(build_file, with_test_dependencies=False))
+        expected_dependencies = [
+            Path("airbyte-api"),
+            Path("airbyte-cdk/java/airbyte-cdk/core"),
+            Path("airbyte-commons"),
+            Path("airbyte-commons-cli"),
+            Path("airbyte-commons-protocol"),
+            Path("airbyte-config-oss/config-models-oss"),
+            Path("airbyte-config-oss/init-oss"),
+            Path("airbyte-connector-test-harnesses/acceptance-test-harness"),
+            Path("airbyte-integrations/bases/base-typing-deduping"),
+            Path("airbyte-integrations/connectors/source-postgres"),
+            Path("airbyte-json-validation"),
+        ]
+        assert set(all_dependencies) == set(expected_dependencies)

@@ -19,6 +19,10 @@ from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.default_file_based_stream import DefaultFileBasedStream
 
 
+class MockFormat:
+    pass
+
+
 @pytest.mark.parametrize(
     "input_schema, expected_output",
     [
@@ -60,13 +64,12 @@ def test_fill_nulls(input_schema: Mapping[str, Any], expected_output: Mapping[st
 
 
 class DefaultFileBasedStreamTest(unittest.TestCase):
-    _FILE_TYPE = "file_type"
     _NOW = datetime(2022, 10, 22, tzinfo=timezone.utc)
     _A_RECORD = {"a_record": 1}
 
     def setUp(self) -> None:
         self._stream_config = Mock()
-        self._stream_config.file_type = self._FILE_TYPE
+        self._stream_config.format = MockFormat()
         self._stream_config.name = "a stream name"
         self._catalog_schema = Mock()
         self._stream_reader = Mock(spec=AbstractFileBasedStreamReader)
@@ -83,7 +86,7 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
             stream_reader=self._stream_reader,
             availability_strategy=self._availability_strategy,
             discovery_policy=self._discovery_policy,
-            parsers={self._FILE_TYPE: self._parser},
+            parsers={MockFormat: self._parser},
             validation_policy=self._validation_policy,
             cursor=self._cursor,
         )
@@ -102,10 +105,16 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
         """
         self._parser.parse_records.side_effect = [ValueError("An error"), [self._A_RECORD]]
 
-        messages = list(self._stream.read_records_from_slice({"files": [
-            RemoteFile(uri="invalid_file", last_modified=self._NOW),
-            RemoteFile(uri="valid_file", last_modified=self._NOW),
-        ]}))
+        messages = list(
+            self._stream.read_records_from_slice(
+                {
+                    "files": [
+                        RemoteFile(uri="invalid_file", last_modified=self._NOW),
+                        RemoteFile(uri="valid_file", last_modified=self._NOW),
+                    ]
+                }
+            )
+        )
 
         assert messages[0].log.level == Level.ERROR
         assert messages[1].record.data["data"] == self._A_RECORD
@@ -115,10 +124,16 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
         self._validation_policy.record_passes_validation_policy.return_value = False
         self._parser.parse_records.side_effect = [self._iter([self._A_RECORD, ValueError("An error")])]
 
-        messages = list(self._stream.read_records_from_slice({"files": [
-            RemoteFile(uri="invalid_file", last_modified=self._NOW),
-            RemoteFile(uri="valid_file", last_modified=self._NOW),
-        ]}))
+        messages = list(
+            self._stream.read_records_from_slice(
+                {
+                    "files": [
+                        RemoteFile(uri="invalid_file", last_modified=self._NOW),
+                        RemoteFile(uri="valid_file", last_modified=self._NOW),
+                    ]
+                }
+            )
+        )
 
         assert messages[0].log.level == Level.ERROR
         assert messages[1].log.level == Level.WARN

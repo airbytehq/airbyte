@@ -8,10 +8,10 @@ import static java.util.stream.Collectors.joining;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.zaxxer.hikari.HikariDataSource;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeDatabase {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDatabase.class);
-  private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token's TTL is 10min and can't be modified
+  private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token TTL is 10min and can't be modified
 
   private static final Duration NETWORK_TIMEOUT = Duration.ofMinutes(1);
   private static final Duration QUERY_TIMEOUT = Duration.ofHours(3);

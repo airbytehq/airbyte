@@ -19,13 +19,14 @@ jobs:
         id: scd
         uses: peter-evans/slash-command-dispatch@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
           permission: write
           commands: |
             test
             legacy-test
             test-performance
             publish
+            publish-java-cdk
             legacy-publish
             connector-performance
           static-args: |

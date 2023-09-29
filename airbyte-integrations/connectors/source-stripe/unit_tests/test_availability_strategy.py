@@ -14,8 +14,7 @@ def test_traverse_over_substreams(mocker):
     check_availability_mock = mocker.MagicMock()
     check_availability_mock.return_value = (True, None)
     mocker.patch(
-        "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability",
-        check_availability_mock
+        "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability", check_availability_mock
     )
 
     # Prepare tree of nested objects
@@ -55,8 +54,7 @@ def test_traverse_over_substreams_failure(mocker):
     check_availability_mock = mocker.MagicMock()
     check_availability_mock.side_effect = [(True, None), (False, "child_1")]
     mocker.patch(
-        "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability",
-        check_availability_mock
+        "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability", check_availability_mock
     )
 
     # Prepare tree of nested objects
@@ -93,8 +91,7 @@ def test_substream_availability(mocker, invoice_line_items):
     check_availability_mock = mocker.MagicMock()
     check_availability_mock.return_value = (True, None)
     mocker.patch(
-        "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability",
-        check_availability_mock
+        "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability", check_availability_mock
     )
     stream = invoice_line_items()
     is_available, reason = stream.availability_strategy.check_availability(stream, mocker.Mock(), mocker.Mock())
@@ -109,8 +106,7 @@ def test_substream_availability_no_parent(mocker, invoice_line_items):
     check_availability_mock = mocker.MagicMock()
     check_availability_mock.return_value = (True, None)
     mocker.patch(
-        "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability",
-        check_availability_mock
+        "airbyte_cdk.sources.streams.http.availability_strategy.HttpAvailabilityStrategy.check_availability", check_availability_mock
     )
     stream = invoice_line_items()
     stream.parent = None

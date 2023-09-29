@@ -124,7 +124,7 @@ _avro_all_types_file = {
                 {"lead_singer": "Matty Healy", "lead_guitar": "Adam Hann", "bass_guitar": "Ross MacDonald", "drummer": "George Daniel"},
                 b"\x12\x34\x56\x78",
                 decimal.Decimal("1234.56789"),
-                uuid.UUID('123e4567-e89b-12d3-a456-426655440000').bytes,
+                uuid.UUID("123e4567-e89b-12d3-a456-426655440000").bytes,
                 datetime.date(2022, 5, 29),
                 datetime.time(6, 0, 0, 456000),
                 datetime.time(12, 0, 0, 456789),
@@ -203,7 +203,7 @@ single_avro_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "avro",
+                    "format": {"filetype": "avro"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -266,7 +266,7 @@ multiple_avro_combine_schema_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "avro",
+                    "format": {"filetype": "avro"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -362,7 +362,7 @@ avro_all_types_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "avro",
+                    "format": {"filetype": "avro"},
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
                 }
@@ -431,7 +431,11 @@ avro_all_types_scenario = (
                             "col_long": {"type": ["null", "integer"]},
                             "col_map": {"additionalProperties": {"type": ["null", "string"]}, "type": ["null", "object"]},
                             "col_record": {
-                                "properties": {"artist": {"type": ["null", "string"]}, "song": {"type": ["null", "string"]}, "year": {"type": ["null", "integer"]}},
+                                "properties": {
+                                    "artist": {"type": ["null", "string"]},
+                                    "song": {"type": ["null", "string"]},
+                                    "year": {"type": ["null", "integer"]},
+                                },
                                 "type": ["null", "object"],
                             },
                             "col_string": {"type": ["null", "string"]},
@@ -463,13 +467,13 @@ multiple_streams_avro_scenario = (
             "streams": [
                 {
                     "name": "songs_stream",
-                    "file_type": "avro",
+                    "format": {"filetype": "avro"},
                     "globs": ["*_songs.avro"],
                     "validation_policy": "Emit Record",
                 },
                 {
                     "name": "festivals_stream",
-                    "file_type": "avro",
+                    "format": {"filetype": "avro"},
                     "globs": ["*_festivals.avro"],
                     "validation_policy": "Emit Record",
                 },
@@ -586,7 +590,10 @@ multiple_streams_avro_scenario = (
                         "type": "object",
                         "properties": {
                             "col_title": {"type": ["null", "string"]},
-                            "col_album": {"type": ["null", "string"], "enum": ["SUMMERS_GONE", "IN_RETURN", "A_MOMENT_APART", "THE_LAST_GOODBYE"]},
+                            "col_album": {
+                                "type": ["null", "string"],
+                                "enum": ["SUMMERS_GONE", "IN_RETURN", "A_MOMENT_APART", "THE_LAST_GOODBYE"],
+                            },
                             "col_year": {"type": ["null", "integer"]},
                             "col_vocals": {"type": ["null", "boolean"]},
                             "_ab_source_file_last_modified": {"type": "string"},
@@ -604,7 +611,11 @@ multiple_streams_avro_scenario = (
                         "properties": {
                             "col_name": {"type": ["null", "string"]},
                             "col_location": {
-                                "properties": {"country": {"type": ["null", "string"]}, "state": {"type": ["null", "string"]}, "city": {"type": ["null", "string"]}},
+                                "properties": {
+                                    "country": {"type": ["null", "string"]},
+                                    "state": {"type": ["null", "string"]},
+                                    "city": {"type": ["null", "string"]},
+                                },
                                 "type": ["null", "object"],
                             },
                             "col_attendance": {"type": ["null", "integer"]},
@@ -629,13 +640,9 @@ avro_file_with_double_as_number_scenario = (
             "streams": [
                 {
                     "name": "stream1",
-                    "file_type": "avro",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                    "format": {
-                        "filetype": "avro",
-                        "double_as_string": False
-                    }
+                    "format": {"filetype": "avro", "double_as_string": False},
                 }
             ]
         }

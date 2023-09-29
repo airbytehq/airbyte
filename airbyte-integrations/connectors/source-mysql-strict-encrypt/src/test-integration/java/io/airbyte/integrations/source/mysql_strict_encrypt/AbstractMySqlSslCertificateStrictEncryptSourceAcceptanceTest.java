@@ -6,14 +6,15 @@ package io.airbyte.integrations.source.mysql_strict_encrypt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.MySqlUtils;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.MySqlUtils;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.ssh.SshHelpers;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.testcontainers.containers.MySQLContainer;
@@ -25,7 +26,7 @@ public abstract class AbstractMySqlSslCertificateStrictEncryptSourceAcceptanceTe
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new MySQLContainer<>("mysql:8.0");
     container.start();
     addTestData(container);

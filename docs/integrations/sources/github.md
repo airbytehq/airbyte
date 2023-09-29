@@ -74,6 +74,7 @@ This connector outputs the following full refresh streams:
 
 - [Assignees](https://docs.github.com/en/rest/reference/issues#list-assignees)
 - [Branches](https://docs.github.com/en/rest/reference/repos#list-branches)
+- [Contributor Activity](https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#get-all-contributor-commit-activity)
 - [Collaborators](https://docs.github.com/en/rest/reference/repos#list-repository-collaborators)
 - [Issue labels](https://docs.github.com/en/rest/issues/labels#list-labels-for-a-repository)
 - [Organizations](https://docs.github.com/en/rest/reference/orgs#get-an-organization)
@@ -100,6 +101,7 @@ This connector outputs the following incremental streams:
 - [Project cards](https://docs.github.com/en/rest/reference/projects#list-project-cards)
 - [Project columns](https://docs.github.com/en/rest/reference/projects#list-project-columns)
 - [Projects](https://docs.github.com/en/rest/reference/projects#list-repository-projects)
+- [ProjectsV2](https://docs.github.com/en/graphql/reference/objects#projectv2)
 - [Pull request comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment)
 - [Pull request stats](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request)
 - [Pull requests](https://docs.github.com/en/rest/reference/pulls#list-pull-requests)
@@ -163,9 +165,14 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.4   | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes  |
-| 1.0.3   | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references  |
-| 1.0.2   | 2023-07-11 | [28144](https://github.com/airbytehq/airbyte/pull/28144)                                                          | Add `archived_at` property to `Organizations` schema parameter                                                                                                                               |
+| 1.3.0   | 2023-08-25 | [30731](https://github.com/airbytehq/airbyte/pull/30731)                                                          | Add new stream `ProjectsV2`                                                                                                                                         |
+| 1.2.1   | 2023-08-22 | [30693](https://github.com/airbytehq/airbyte/pull/30693)                                                          | Handle 404 error in `TeamMemberShips`                                                                                                                               |
+| 1.2.0   | 2023-08-22 | [30647](https://github.com/airbytehq/airbyte/pull/30647)                                                          | Add support for self-hosted GitHub instances                                                                                                                        |
+| 1.1.1   | 2023-09-21 | [30654](https://github.com/airbytehq/airbyte/pull/30654)                                                          | Rewrite source connection error messages                                                                                                                            |
+| 1.1.0   | 2023-08-03 | [30615](https://github.com/airbytehq/airbyte/pull/30615)                                                          | Add new stream `Contributor Activity`                                                                                                                               |
+| 1.0.4   | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031)                                                          | Reverted `advancedAuth` spec changes                                                                                                                                |
+| 1.0.3   | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910)                                                          | Updated `advancedAuth` broken references                                                                                                                            |
+| 1.0.2   | 2023-07-11 | [28144](https://github.com/airbytehq/airbyte/pull/28144)                                                          | Add `archived_at` property to `Organizations` schema parameter                                                                                                      |
 | 1.0.1   | 2023-05-22 | [25838](https://github.com/airbytehq/airbyte/pull/25838)                                                          | Deprecate "page size" input parameter                                                                                                                               |
 | 1.0.0   | 2023-05-19 | [25778](https://github.com/airbytehq/airbyte/pull/25778)                                                          | Improve repo(s) name validation on UI                                                                                                                               |
 | 0.5.0   | 2023-05-16 | [25793](https://github.com/airbytehq/airbyte/pull/25793)                                                          | Implement client-side throttling of requests                                                                                                                        |

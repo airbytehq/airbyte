@@ -26,4 +26,3 @@ acceptance_tests:
       - config_path: "secrets/credentials.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         timeout_seconds: 180
-

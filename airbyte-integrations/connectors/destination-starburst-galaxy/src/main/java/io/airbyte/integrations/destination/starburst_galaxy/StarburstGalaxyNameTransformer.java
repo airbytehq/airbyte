@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.starburst_galaxy;
 
 import static java.util.Locale.ENGLISH;
 
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 
 public class StarburstGalaxyNameTransformer
     extends StandardNameTransformer {

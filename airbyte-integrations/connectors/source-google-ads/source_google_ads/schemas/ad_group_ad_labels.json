@@ -2,6 +2,12 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "ad_group.id": {
+      "type": ["null", "integer"]
+    },
+    "ad_group_ad.ad.id": {
+      "type": ["null", "integer"]
+    },
     "ad_group_ad.ad.resource_name": {
       "type": ["null", "string"]
     },
@@ -13,6 +19,9 @@
     },
     "label.resource_name": {
       "type": ["null", "string"]
+    },
+    "label.id": {
+      "type": ["null", "integer"]
     }
   }
 }

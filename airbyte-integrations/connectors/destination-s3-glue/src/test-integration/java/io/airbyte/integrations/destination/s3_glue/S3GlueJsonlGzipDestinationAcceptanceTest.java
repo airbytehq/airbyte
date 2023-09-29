@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_glue;
 
-import io.airbyte.integrations.destination.s3.S3BaseJsonlGzipDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.destination.s3.S3BaseJsonlGzipDestinationAcceptanceTest;
 
 public class S3GlueJsonlGzipDestinationAcceptanceTest extends S3BaseJsonlGzipDestinationAcceptanceTest {
 
