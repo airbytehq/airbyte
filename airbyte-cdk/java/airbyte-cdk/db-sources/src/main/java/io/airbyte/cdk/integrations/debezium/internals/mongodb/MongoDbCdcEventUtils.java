@@ -150,7 +150,11 @@ public class MongoDbCdcEventUtils {
           reader.skipValue();
         }
       } else if (ARRAY.equals(fieldType)) {
-        jsonNodes.set(fieldName, readArray(reader, columnNames, fieldName));
+        if (columnNames.contains(fieldName) || columnNames.contains(ALLOW_ALL)) {
+          jsonNodes.set(fieldName, readArray(reader, columnNames, fieldName));
+        } else {
+          reader.skipValue();
+        }
       } else {
         readField(reader, jsonNodes, columnNames, fieldName, fieldType);
       }
