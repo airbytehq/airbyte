@@ -23,6 +23,7 @@ from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification  # type: 
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit, split_config
 from airbyte_cdk.utils.airbyte_secrets_utils import get_secrets, update_secrets
+from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import PreparedRequest, Response, Session
 
@@ -94,7 +95,7 @@ class AirbyteEntrypoint(object):
         source_spec: ConnectorSpecification = self.source.spec(self.logger)
         try:
             with tempfile.TemporaryDirectory() as temp_dir:
-                os.environ["TMPDIR"] = temp_dir  # set this as default temp directory (used by requests_cache to store *.sqlite files)
+                os.environ[ENV_REQUEST_CACHE_PATH] = temp_dir  # set this as default directory for request_cache to store *.sqlite files
                 if cmd == "spec":
                     message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
                     yield from [

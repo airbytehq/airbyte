@@ -11,7 +11,6 @@ buildscript {
 plugins {
     id "com.github.eirnym.js2p" version "1.0"
 
-    // source-jdbc
     id 'application'
     id 'airbyte-integration-test-java'
     id "java-library"

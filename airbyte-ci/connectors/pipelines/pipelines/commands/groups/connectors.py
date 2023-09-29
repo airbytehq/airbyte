@@ -31,8 +31,8 @@ ALL_CONNECTORS = get_all_connectors_in_repo()
 def validate_environment(is_local: bool, use_remote_secrets: bool):
     """Check if the required environment variables exist."""
     if is_local:
-        if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
-            raise click.UsageError("You need to run this command from the airbyte repository root.")
+        if not Path(".git").is_dir():
+            raise click.UsageError("You need to run this command from the repository root.")
     else:
         required_env_vars_for_ci = [
             "GCP_GSM_CREDENTIALS",
