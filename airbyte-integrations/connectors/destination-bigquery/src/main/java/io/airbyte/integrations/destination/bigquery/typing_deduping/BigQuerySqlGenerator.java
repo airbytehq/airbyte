@@ -232,7 +232,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String columnsAndTypes(final StreamConfig stream) {
-    final List<String> pks = getPks(stream);
+    final Set<String> pks = getPks(stream);
     return stream.columns().entrySet().stream()
         .map(column -> String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()) + " "
             + (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))

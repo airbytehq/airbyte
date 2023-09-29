@@ -27,6 +27,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -103,7 +105,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
-    final List<String> pks = getPks(stream);
+    final Set<String> pks = getPks(stream);
     final String columnDeclarations = stream.columns().entrySet().stream()
         .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()) + " "
             + (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
@@ -130,7 +132,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   @Override
   public boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final SnowflakeTableDefinition existingTable)
       throws TableNotMigratedException {
-    final List<String> pks = getPks(stream);
+    final Set<String> pks = getPks(stream);
 
     // Check that the columns match, with special handling for the metadata columns.
     final LinkedHashMap<Object, Object> intendedColumns = stream.columns().entrySet().stream()
@@ -554,8 +556,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     return RESERVED_COLUMN_NAMES.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ? "_" + columnName : columnName;
   }
 
-  private static List<String> getPks(StreamConfig stream) {
-    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).toList() : Collections.emptyList();
+  private static Set<String> getPks(StreamConfig stream) {
+    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
   public static String escapeSingleQuotedString(final String str) {
