@@ -140,8 +140,15 @@ public class MongoDbCdcEventUtils {
       final var fieldName = reader.readName();
       final var fieldType = reader.getCurrentBsonType();
       if (DOCUMENT.equals(fieldType)) {
-        // recursion in used to parse inner documents
-        jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of(ALLOW_ALL)));
+        if (columnNames.contains(fieldName) || columnNames.contains(ALLOW_ALL)) {
+          /*
+           * Recursion in used to parse inner documents. Pass the allow all column name so all nested fields
+           * are processed.
+           */
+          jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of(ALLOW_ALL)));
+        } else {
+          reader.skipValue();
+        }
       } else if (ARRAY.equals(fieldType)) {
         jsonNodes.set(fieldName, readArray(reader, columnNames, fieldName));
       } else {
