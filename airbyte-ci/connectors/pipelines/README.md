@@ -57,6 +57,13 @@ _Note: `--force` is required to ensure updates are applied on subsequent install
 
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
 
+### Updating the airbyte-ci tool
+To reinstall airbyte-ci:
+
+```sh
+pipx reinstall .
+```
+
 ## Installation for development
 
 #### Pre-requisites
