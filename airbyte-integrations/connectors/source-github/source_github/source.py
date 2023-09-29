@@ -32,6 +32,7 @@ from .streams import (
     IssueMilestones,
     IssueReactions,
     Issues,
+    IssueTimelineEvents,
     Organizations,
     ProjectCards,
     ProjectColumns,
@@ -289,6 +290,7 @@ class SourceGithub(AbstractSource):
         workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
 
         return [
+            IssueTimelineEvents(**repository_args),
             Assignees(**repository_args),
             Branches(**repository_args),
             Collaborators(**repository_args),
