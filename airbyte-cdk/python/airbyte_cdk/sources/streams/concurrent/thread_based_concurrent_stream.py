@@ -109,7 +109,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
             if finished_partitions and all(partitions_to_done.values()):
                 # All partitions were generated and process. We're done here
                 break
-            self._check_for_errors(futures)
         self._check_for_errors(futures)
 
     def _check_for_errors(self, futures: List[Future[Any]]) -> None:
