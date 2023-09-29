@@ -103,6 +103,7 @@ After merging:
 - [ ] [Publish the CDK](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)
    - The CDK does not follow proper semantic versioning. Choose minor if this the change has significant user impact or is a breaking change. Choose patch otherwise.
    - Write a thoughtful changelog message so we know what was updated.
-- [ ] (Optionally) Merge the platform PR that was auto-created for updating the Connector Builder's CDK version.
+- [ ] Merge the platform PR that was auto-created for updating the Connector Builder's CDK version
+   - This step is optional if the change does not affect the connector builder or declarative connectors.
 
 </details>
