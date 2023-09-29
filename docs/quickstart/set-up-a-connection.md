@@ -24,7 +24,7 @@ Once you've finished setting up the connection, you will be automatically redire
 
 ![Connection dashboard](../.gitbook/assets/set-up-a-connection/getting-started-connection-success.png)
 
-Here's a quick rundown of each tab:
+Here's a quick breakdown of each tab:
 
 1. The **Status** tab shows you an overview of your connector's ongoing health.
 2. The **Job History** tab allows you to check the logs for each sync. If you encounter any errors or unexpected behaviors during a sync, checking the logs is always a good first step to finding the cause and solution.
