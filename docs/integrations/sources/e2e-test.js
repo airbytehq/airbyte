@@ -78,6 +78,7 @@ export const SchemaGenerator = () => {
       <div>
         <label for="schema-generator-column-count">Desired Number of Columns:</label>
         <input type="number" id="schema-generator-column-count" name="schema-generator-column-count" onChange={updateSchema}/>
+        <p>Generated Schema:</p>
         <CodeBlock id={"generated_e2e_test_schema"} language={"javascript"}>
           { generatedSchema['schema'] }
         </CodeBlock>
