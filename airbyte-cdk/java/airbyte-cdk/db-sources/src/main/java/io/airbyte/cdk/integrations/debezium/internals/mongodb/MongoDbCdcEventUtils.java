@@ -11,15 +11,15 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.mongodb.DBRefCodecProvider;
 import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonBinary;
 import org.bson.BsonDocument;
@@ -49,6 +49,7 @@ public class MongoDbCdcEventUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbCdcEventUtils.class);
 
   public static final String AIRBYTE_SUFFIX = "_aibyte_transform";
+  public static final String ALLOW_ALL = "*";
   public static final String DOCUMENT_OBJECT_ID_FIELD = "_id";
   public static final String ID_FIELD = "id";
   public static final String OBJECT_ID_FIELD = "$oid";
@@ -110,20 +111,20 @@ public class MongoDbCdcEventUtils {
    * @param json The Debezium event data as JSON.
    * @return The transformed Debezium event data as JSON.
    */
-  public static ObjectNode transformDataTypes(final String json) {
+  public static ObjectNode transformDataTypes(final String json, final Set<String> configuredFields) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
-    formatDocument(document, objectNode, ImmutableList.copyOf(document.keySet()));
+    formatDocument(document, objectNode, configuredFields);
     return normalizeObjectId(objectNode);
   }
 
-  public static JsonNode toJsonNode(final Document document, final List<String> columnNames) {
+  public static JsonNode toJsonNode(final Document document, final Set<String> columnNames) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     formatDocument(document, objectNode, columnNames);
     return normalizeObjectId(objectNode);
   }
 
-  private static void formatDocument(final Document document, final ObjectNode objectNode, final List<String> columnNames) {
+  private static void formatDocument(final Document document, final ObjectNode objectNode, final Set<String> columnNames) {
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
       readDocument(reader, objectNode, columnNames);
@@ -133,14 +134,14 @@ public class MongoDbCdcEventUtils {
     }
   }
 
-  private static ObjectNode readDocument(final BsonReader reader, final ObjectNode jsonNodes, final List<String> columnNames) {
+  private static ObjectNode readDocument(final BsonReader reader, final ObjectNode jsonNodes, final Set<String> columnNames) {
     reader.readStartDocument();
     while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
       final var fieldName = reader.readName();
       final var fieldType = reader.getCurrentBsonType();
       if (DOCUMENT.equals(fieldType)) {
         // recursion in used to parse inner documents
-        jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames));
+        jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of(ALLOW_ALL)));
       } else if (ARRAY.equals(fieldType)) {
         jsonNodes.set(fieldName, readArray(reader, columnNames, fieldName));
       } else {
@@ -153,7 +154,7 @@ public class MongoDbCdcEventUtils {
     return jsonNodes;
   }
 
-  private static JsonNode readArray(final BsonReader reader, final List<String> columnNames, final String fieldName) {
+  private static JsonNode readArray(final BsonReader reader, final Set<String> columnNames, final String fieldName) {
     reader.readStartArray();
     final var elements = Lists.newArrayList();
 
@@ -176,26 +177,31 @@ public class MongoDbCdcEventUtils {
 
   private static ObjectNode readField(final BsonReader reader,
                                       final ObjectNode o,
-                                      final List<String> columnNames,
+                                      final Set<String> columnNames,
                                       final String fieldName,
                                       final BsonType fieldType) {
-    switch (fieldType) {
-      case BOOLEAN -> o.put(fieldName, reader.readBoolean());
-      case INT32 -> o.put(fieldName, reader.readInt32());
-      case INT64 -> o.put(fieldName, reader.readInt64());
-      case DOUBLE -> o.put(fieldName, reader.readDouble());
-      case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
-      case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
-      case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
-      case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
-      case SYMBOL -> o.put(fieldName, reader.readSymbol());
-      case STRING -> o.put(fieldName, reader.readString());
-      case OBJECT_ID -> o.put(fieldName, toString(reader.readObjectId()));
-      case JAVASCRIPT -> o.put(fieldName, reader.readJavaScript());
-      case JAVASCRIPT_WITH_SCOPE -> readJavaScriptWithScope(o, reader, fieldName, columnNames);
-      case REGULAR_EXPRESSION -> o.put(fieldName, readRegularExpression(reader.readRegularExpression()));
-      default -> reader.skipValue();
+    if (columnNames.contains(fieldName) || columnNames.contains(ALLOW_ALL)) {
+      switch (fieldType) {
+        case BOOLEAN -> o.put(fieldName, reader.readBoolean());
+        case INT32 -> o.put(fieldName, reader.readInt32());
+        case INT64 -> o.put(fieldName, reader.readInt64());
+        case DOUBLE -> o.put(fieldName, reader.readDouble());
+        case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
+        case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
+        case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
+        case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
+        case SYMBOL -> o.put(fieldName, reader.readSymbol());
+        case STRING -> o.put(fieldName, reader.readString());
+        case OBJECT_ID -> o.put(fieldName, toString(reader.readObjectId()));
+        case JAVASCRIPT -> o.put(fieldName, reader.readJavaScript());
+        case JAVASCRIPT_WITH_SCOPE -> readJavaScriptWithScope(o, reader, fieldName, ImmutableSet.copyOf(o.fieldNames()));
+        case REGULAR_EXPRESSION -> o.put(fieldName, readRegularExpression(reader.readRegularExpression()));
+        default -> reader.skipValue();
+      }
+    } else {
+      reader.skipValue();
     }
+
     return o;
   }
 
@@ -233,9 +239,9 @@ public class MongoDbCdcEventUtils {
     return value == null ? null : value.getData();
   }
 
-  private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName, final List<String> columnNames) {
+  private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName, final Set<String> columnNames) {
     final var code = reader.readJavaScriptWithScope();
-    final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames);
+    final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of("scope"));
     o.set(fieldName, Jsons.jsonNode(ImmutableMap.of("code", code, "scope", scope)));
   }
 
@@ -249,7 +255,7 @@ public class MongoDbCdcEventUtils {
     }
   }
 
-  public static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
+  public static void transformToStringIfMarked(final ObjectNode jsonNodes, final Set<String> columnNames, final String fieldName) {
     if (columnNames.contains(fieldName + AIRBYTE_SUFFIX)) {
       final JsonNode data = jsonNodes.get(fieldName);
       if (data != null) {
