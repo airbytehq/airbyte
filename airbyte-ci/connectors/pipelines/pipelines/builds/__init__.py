@@ -9,9 +9,10 @@ import platform
 
 import anyio
 from connector_ops.utils import ConnectorLanguage
-from dagger import Platform
 from pipelines.bases import ConnectorReport, StepResult
-from pipelines.builds import common, java_connectors, python_connectors
+from pipelines.builds import java_connectors, python_connectors
+from pipelines.builds.common import LoadContainerToLocalDockerHost, StepStatus
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.contexts import ConnectorContext
 
 
@@ -24,9 +25,6 @@ LANGUAGE_BUILD_CONNECTOR_MAPPING = {
     ConnectorLanguage.LOW_CODE: python_connectors.run_connector_build,
     ConnectorLanguage.JAVA: java_connectors.run_connector_build,
 }
-
-BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
-LOCAL_BUILD_PLATFORM = Platform(f"linux/{platform.machine()}")
 
 
 async def run_connector_build(context: ConnectorContext) -> StepResult:
@@ -50,9 +48,8 @@ async def run_connector_build_pipeline(context: ConnectorContext, semaphore: any
         async with context:
             build_result = await run_connector_build(context)
             step_results.append(build_result)
-            if context.is_local and build_result.status is common.StepStatus.SUCCESS:
-                connector_to_load_to_local_docker_host = build_result.output_artifact[LOCAL_BUILD_PLATFORM]
-                load_image_result = await common.LoadContainerToLocalDockerHost(context, connector_to_load_to_local_docker_host).run()
+            if context.is_local and build_result.status is StepStatus.SUCCESS:
+                load_image_result = await LoadContainerToLocalDockerHost(context, LOCAL_BUILD_PLATFORM, build_result.output_artifact).run()
                 step_results.append(load_image_result)
             context.report = ConnectorReport(context, step_results, name="BUILD RESULTS")
         return context.report
