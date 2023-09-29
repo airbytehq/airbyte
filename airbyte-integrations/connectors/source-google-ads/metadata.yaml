@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 0.11.1
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-google-ads
   githubIssueLabel: source-google-ads
   icon: google-adwords.svg
@@ -36,6 +36,11 @@ data:
       - display_keyword_performance_report
       - shopping_performance_report
       - display_topics_performance_report
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: This release introduces fix to custom query schemas creation. User should refresh their schemas and data before update.
+        upgradeDeadline: "2023-10-31"
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   tags:
     - language:python
