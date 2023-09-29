@@ -275,7 +275,7 @@ The Google Analytics connector is subject to Google Analytics Data API quotas. P
 
 | Version | Date       | Pull Request                                             | Subject                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------|
-| 2.0.0   | 2023-09-29 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Use distinct stream naming in case there are multiple properties in the config.  |
+| 2.0.0   | 2023-09-29 | [30930](https://github.com/airbytehq/airbyte/pull/30930) | Use distinct stream naming in case there are multiple properties in the config.  |
 | 1.6.0   | 2023-09-19 | [30460](https://github.com/airbytehq/airbyte/pull/30460) | Migrated custom reports from string to array; add `FilterExpressions` support    |
 | 1.5.1   | 2023-09-20 | [30608](https://github.com/airbytehq/airbyte/pull/30608) | Revert `:` auto replacement name to underscore                                   |
 | 1.5.0   | 2023-09-18 | [30421](https://github.com/airbytehq/airbyte/pull/30421) | Add `yearWeek`, `yearMonth`, `year` dimensions cursor                            |
