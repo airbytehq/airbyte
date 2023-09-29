@@ -258,13 +258,7 @@ class HttpRequester(Requester):
         )
         if isinstance(headers, str):
             raise ValueError("Request headers cannot be a string")
-        formatted_headers = {}
-        for k, v in headers.items():
-            if isinstance(v, list):
-                formatted_headers[str(k)] = ",".join([str(_v) for _v in v])
-            else:
-                formatted_headers[str(k)] = str(v)
-        return formatted_headers
+        return {str(k): str(v) for k, v in headers.items()}
 
     def _request_params(
         self,

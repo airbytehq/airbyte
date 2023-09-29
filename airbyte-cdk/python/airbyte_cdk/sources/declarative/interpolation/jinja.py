@@ -4,7 +4,7 @@
 
 import ast
 import json
-from typing import Optional, Tuple, Type
+from typing import Any, Optional, Tuple, Type
 
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
@@ -64,7 +64,7 @@ class JinjaInterpolation(Interpolation):
         input_str: str,
         config: Config,
         default: Optional[str] = None,
-        valid_types: Optional[Tuple[Type]] = None,
+        valid_types: Optional[Tuple[Type[Any]]] = None,
         **additional_parameters,
     ):
         context = {"config": config, **additional_parameters}
@@ -91,12 +91,12 @@ class JinjaInterpolation(Interpolation):
         # If result is empty or resulted in an undefined error, evaluate and return the default string
         return self._literal_eval(self._eval(default, context), valid_types)
 
-    def _literal_eval(self, result, valid_types: Optional[Tuple[Type]]):
+    def _literal_eval(self, result, valid_types: Optional[Tuple[Type[Any]]]):
         try:
             evaluated = ast.literal_eval(result)
         except (ValueError, SyntaxError):
             return result
-        if not valid_types or (valid_types and isinstance(evaluated, tuple(valid_types))):
+        if not valid_types or (valid_types and isinstance(evaluated, valid_types)):
             return evaluated
         elif valid_types and isinstance(evaluated, dict):
             # try to turn the evaluated object into a json-deserializable string

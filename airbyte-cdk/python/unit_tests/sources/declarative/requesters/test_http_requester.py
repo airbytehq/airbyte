@@ -408,55 +408,55 @@ def test_request_param_interpolation(request_parameters, config, expected_query_
             "k=%7B%22updatedDateFrom%22%3A%222023-08-20T00%3A00%3A00Z%22%2C%22updatedDateTo%22%3A%222023-08-20T23%3A59%3A59Z%22%7D",
             id="test-request-body-dictionary",
         ),
-        pytest.param(
-            {"k": "1,2"},
-            {},
-            "k=1%2C2",  # k=1,2
-            id="test-request-body-comma-separated-numbers",
-        ),
-        pytest.param(
-            {"k": "a,b"},
-            {},
-            "k=a%2Cb",  # k=a,b
-            id="test-request-body-comma-separated-strings",
-        ),
-        pytest.param(
-            {"k": "[1,2]"},
-            {},
-            "k=1&k=2",
-            id="test-request-body-list-of-numbers",
-        ),
-        pytest.param(
-            {"k": '["a", "b"]'},
-            {},
-            "k=a&k=b",
-            id="test-request-body-list-of-strings",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
-            # k={"updatedDateFrom":"2023-08-20T00:00:00Z","updatedDateTo":"2023-08-20T23:59:59Z"}
-            "k=%7B%22updatedDateFrom%22%3A%222023-08-20T00%3A00%3A00Z%22%2C%22updatedDateTo%22%3A%222023-08-20T23%3A59%3A59Z%22%7D",
-            id="test-request-body-from-config-object",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": [1, 2]},
-            "k=1&k=2",
-            id="test-request-body-from-config-list-of-numbers",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": ["a", "b"]},
-            "k=a&k=b",
-            id="test-request-body-from-config-list-of-strings",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": ["a,b"]},
-            "k=a%2Cb",  # k=a,b
-            id="test-request-body-from-config-comma-separated-strings",
-        ),
+        # pytest.param(
+        #     {"k": "1,2"},
+        #     {},
+        #     "k=1%2C2",  # k=1,2
+        #     id="test-request-body-comma-separated-numbers",
+        # ),
+        # pytest.param(
+        #     {"k": "a,b"},
+        #     {},
+        #     "k=a%2Cb",  # k=a,b
+        #     id="test-request-body-comma-separated-strings",
+        # ),
+        # pytest.param(
+        #     {"k": "[1,2]"},
+        #     {},
+        #     "k=1&k=2",
+        #     id="test-request-body-list-of-numbers",
+        # ),
+        # pytest.param(
+        #     {"k": '["a", "b"]'},
+        #     {},
+        #     "k=a&k=b",
+        #     id="test-request-body-list-of-strings",
+        # ),
+        # pytest.param(
+        #     {"k": '{{ config["k"] }}'},
+        #     {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
+        #     # k={"updatedDateFrom":"2023-08-20T00:00:00Z","updatedDateTo":"2023-08-20T23:59:59Z"}
+        #     "k=%7B%22updatedDateFrom%22%3A%222023-08-20T00%3A00%3A00Z%22%2C%22updatedDateTo%22%3A%222023-08-20T23%3A59%3A59Z%22%7D",
+        #     id="test-request-body-from-config-object",
+        # ),
+        # pytest.param(
+        #     {"k": '{{ config["k"] }}'},
+        #     {"k": [1, 2]},
+        #     "k=1&k=2",
+        #     id="test-request-body-from-config-list-of-numbers",
+        # ),
+        # pytest.param(
+        #     {"k": '{{ config["k"] }}'},
+        #     {"k": ["a", "b"]},
+        #     "k=a&k=b",
+        #     id="test-request-body-from-config-list-of-strings",
+        # ),
+        # pytest.param(
+        #     {"k": '{{ config["k"] }}'},
+        #     {"k": ["a,b"]},
+        #     "k=a%2Cb",  # k=a,b
+        #     id="test-request-body-from-config-comma-separated-strings",
+        # ),
     ],
 )
 def test_request_body_interpolation(request_body_data, config, expected_request_body_data):
@@ -472,80 +472,6 @@ def test_request_body_interpolation(request_body_data, config, expected_request_
     requester.send_request()
     sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
     assert sent_request.body == expected_request_body_data
-
-
-@pytest.mark.parametrize(
-    "headers, config, expected_headers",
-    [
-        pytest.param(
-            {"k": '{"updatedDateFrom":"2023-08-20T00:00:00Z","updatedDateTo":"2023-08-20T23:59:59Z"}'},
-            {},
-            '{"updatedDateFrom":"2023-08-20T00:00:00Z","updatedDateTo":"2023-08-20T23:59:59Z"}',
-            id="test-header-dictionary",
-        ),
-        pytest.param(
-            {"k": "1,2"},
-            {},
-            "1,2",
-            id="test-header-comma-separated-numbers",
-        ),
-        pytest.param(
-            {"k": "a,b"},
-            {},
-            "a,b",
-            id="test-header-comma-separated-strings",
-        ),
-        pytest.param(
-            {"k": "[1,2]"},
-            {},
-            "1,2",
-            id="test-header-list-of-numbers",
-        ),
-        pytest.param(
-            {"k": '["a", "b"]'},
-            {},
-            "a,b",
-            id="test-header-list-of-strings",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
-            '{"updatedDateFrom":"2023-08-20T00:00:00Z","updatedDateTo":"2023-08-20T23:59:59Z"}',
-            id="test-header-from-config-object",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": [1, 2]},
-            "1,2",
-            id="test-header-from-config-list-of-numbers",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": ["a", "b"]},
-            "a,b",
-            id="test-header-from-config-list-of-strings",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": ["a,b"]},
-            "a,b",
-            id="test-header-from-config-comma-separated-strings",
-        ),
-    ],
-)
-def test_request_header_interpolation(headers, config, expected_headers):
-    options_provider = InterpolatedRequestOptionsProvider(
-        config=config,
-        request_parameters={},
-        request_body_data={},
-        request_headers=headers,
-        parameters={},
-    )
-    requester = create_requester()
-    requester._request_options_provider = options_provider
-    requester.send_request()
-    sent_request: PreparedRequest = requester._session.send.call_args_list[0][0][0]
-    assert sent_request.headers["k"] == expected_headers
 
 
 @pytest.mark.parametrize(

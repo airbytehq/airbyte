@@ -14,7 +14,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options.request_options_
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice, StreamState
 
 RequestInput = Union[str, Mapping[str, str]]
-ValidRequestTypes = [str, list]
+ValidRequestTypes = (str, list)
 
 
 @dataclass

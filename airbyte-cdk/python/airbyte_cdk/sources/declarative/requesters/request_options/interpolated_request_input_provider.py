@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Type, Union
+from typing import Any, Mapping, Optional, Tuple, Type, Union
 
 from airbyte_cdk.sources.declarative.interpolation.interpolated_mapping import InterpolatedMapping
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -35,7 +35,7 @@ class InterpolatedRequestInputProvider:
         stream_state: StreamState,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Mapping[str, Any] = None,
-        valid_types: List[Type[Any]] = None,
+        valid_types: Tuple[Type[Any]] = None,
     ) -> Mapping[str, Any]:
         """
         Returns the request inputs to set on an outgoing HTTP request
@@ -43,6 +43,7 @@ class InterpolatedRequestInputProvider:
         :param stream_state: The stream state
         :param stream_slice: The stream slice
         :param next_page_token: The pagination token
+        :param valid_types: A tuple of types that the interpolator should allow
         :return: The request inputs to set on an outgoing HTTP request
         """
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
