@@ -157,12 +157,12 @@ node {
 // python is required by the root project to apply python formatters like isort or black.
 python {
     envPath = '.venv'
-    minPythonVersion = '3.10'
+    minPythonVersion = '3.9' // should be 3.10 for local development
 
     // Pyenv support.
     try {
         def pyenvRoot = "pyenv root".execute()
-        def pyenvLatest = "pyenv latest ${minPythonVersion}".execute()
+        def pyenvLatest = "pyenv latest 3".execute()
         // Pyenv definitely exists at this point: use 'python' instead of 'python3' in all cases.
         pythonBinary "python"
         if (pyenvRoot.waitFor() == 0 && pyenvLatest.waitFor() == 0) {
