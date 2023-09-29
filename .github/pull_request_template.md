@@ -86,7 +86,7 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 
 </details>
 
-<details><summary><strong>Updating the Python CDK</summary>
+<details><summary><strong>Updating the Python CDK</strong></summary>
 
 ### Airbyter
 
@@ -100,7 +100,9 @@ Before merging:
 - [ ] PR is reviewed and approved
       
 After merging:
-- [ ] Don't forget to publish the CDK after merging!
+- [ ] [Publish the CDK](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml
+   - The CDK does not follow proper semantic versioning. Choose minor if this the change has significant user impact or is a breaking change. Choose patch otherwise.
+   - Write a thoughtful changelog message so we know what was updated.
 - [ ] (Optionally) Merge the platform PR created for the Connector Builder
 
 </details>
