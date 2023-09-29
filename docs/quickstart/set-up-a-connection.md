@@ -24,13 +24,12 @@ Once you've finished setting up the connection, you will be automatically redire
 
 ![Connection dashboard](../.gitbook/assets/set-up-a-connection/getting-started-connection-success.png)
 
-Here's a quick breakdown of each tab:
+Here's a basic overview of the tabs and their use:
 
-1. The **Status** tab shows you an overview of your connector's ongoing health.
+1. The **Status** tab shows you an overview of your connector's sync schedule and health.
 2. The **Job History** tab allows you to check the logs for each sync. If you encounter any errors or unexpected behaviors during a sync, checking the logs is always a good first step to finding the cause and solution.
 3. The **Replication** tab allows you to modify the configurations you chose during the connection setup.
-4. The **Transformation** tab allows you to configure [normalization and transformation settings](https://docs.airbyte.com/understanding-airbyte/basic-normalization) if supported by the connector.
-5. The **Settings** tab contains additional settings, and the option to delete the connection if you no longer wish to use it.
+4. The **Settings** tab contains additional settings, and the option to delete the connection if you no longer wish to use it.
 
 ### Check the data from your first sync
 
