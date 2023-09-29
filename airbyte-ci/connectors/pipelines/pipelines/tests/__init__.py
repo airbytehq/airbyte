@@ -37,7 +37,7 @@ async def run_metadata_validation(context: ConnectorContext) -> List[StepResult]
     Returns:
         List[StepResult]: The results of the metadata validation steps.
     """
-    return [await MetadataValidation(context, context.connector.code_directory / METADATA_FILE_NAME).run()]
+    return [await MetadataValidation(context).run()]
 
 
 async def run_version_checks(context: ConnectorContext) -> List[StepResult]:

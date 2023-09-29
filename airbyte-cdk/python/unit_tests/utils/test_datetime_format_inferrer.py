@@ -22,6 +22,7 @@ NOW = 1234567
         ("timestamp_ms_match_string", [{"d": "1686058051000"}], {"d": "%ms"}),
         ("timestamp_no_match_integer", [{"d": 99}], {}),
         ("timestamp_no_match_string", [{"d": "99999999999999999999"}], {}),
+        ("timestamp_overflow", [{"d": f"{10**100}_100"}], {}),  # this case was previously causing OverflowError hence this test
         ("simple_no_match", [{"d": "20220203"}], {}),
         ("multiple_match", [{"d": "2022-02-03", "e": "2022-02-03"}], {"d": "%Y-%m-%d", "e": "%Y-%m-%d"}),
         (

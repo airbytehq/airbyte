@@ -21,9 +21,7 @@ class VersionBreakingChange(BaseModel):
         ...,
         description="The deadline by which to upgrade before the breaking change takes effect.",
     )
-    message: str = Field(
-        ..., description="Descriptive message detailing the breaking change."
-    )
+    message: str = Field(..., description="Descriptive message detailing the breaking change.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",

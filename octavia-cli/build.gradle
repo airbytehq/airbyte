@@ -17,6 +17,10 @@ def generateApiClient = tasks.register('generateApiClient', GenerateTask) {
     generatorName = "python"
     packageName = "airbyte_api_client"
 }
+tasks.register('generate').configure {
+    dependsOn generateApiClient
+}
+
 tasks.named('installReqs').configure {
     dependsOn generateApiClient
 }

@@ -61,6 +61,8 @@ To get started, create a new collection in your Milvus instance. Make sure that
 * The primary key field is set to [auto_id](https://milvus.io/docs/create_collection.md)
 * There is a vector field with the correct dimensionality (1536 for OpenAI, 1024 for Cohere) and [a configured index](https://milvus.io/docs/build_index.md)
 
+If the record contains a field with the same name as the primary key, it will be prefixed with an underscore so Milvus can control the primary key internally.
+
 ### Setting up a collection
 
 When using the Zilliz cloud, this can be done using the UI - in this case only the colleciton name and the vector dimensionality needs to be configured, the vector field with index will be automatically created under the name `vector`. Using the REST API, the following command will create the index:
@@ -103,4 +105,5 @@ vector_store.similarity_search("test")
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.2   | 2023-08-25 | [#30689](https://github.com/airbytehq/airbyte/pull/30689)     | Update CDK to support azure OpenAI embeddings and text splitting options, make sure primary key field is not accidentally set, promote to certified | 
 | 0.0.1   | 2023-08-12 | [#29442](https://github.com/airbytehq/airbyte/pull/29442)     | Milvus connector with some embedders  | 

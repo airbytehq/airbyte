@@ -29,7 +29,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -144,6 +146,25 @@ public abstract class BaseTypingDedupingTest {
   protected void globalTeardown() throws Exception {}
 
   /**
+   * Conceptually identical to {@link #getFinalMetadataColumnNames()}, but for the raw table.
+   */
+  protected Map<String, String> getRawMetadataColumnNames() {
+    return new HashMap<>();
+  }
+
+  /**
+   * If the destination connector uses a nonstandard schema for the final table, override this method.
+   * For example, destination-snowflake upcases all column names in the final tables.
+   * <p>
+   * You only need to add mappings for the airbyte metadata column names (_airbyte_raw_id,
+   * _airbyte_extracted_at, etc.). The test framework automatically populates mappings for the primary
+   * key and cursor using the SqlGenerator.
+   */
+  protected Map<String, String> getFinalMetadataColumnNames() {
+    return new HashMap<>();
+  }
+
+  /**
    * @return A suffix which is different for each concurrent test, but stable within a single test.
    */
   protected synchronized String getUniqueSuffix() {
@@ -166,6 +187,8 @@ public abstract class BaseTypingDedupingTest {
 
     final SqlGenerator<?> generator = getSqlGenerator();
     DIFFER = new RecordDiffer(
+        getRawMetadataColumnNames(),
+        getFinalMetadataColumnNames(),
         Pair.of(generator.buildColumnId("id1"), AirbyteProtocolType.INTEGER),
         Pair.of(generator.buildColumnId("id2"), AirbyteProtocolType.INTEGER),
         Pair.of(generator.buildColumnId("updated_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE),
@@ -470,29 +493,108 @@ public abstract class BaseTypingDedupingTest {
                 .withJsonSchema(SCHEMA))));
 
     // First sync
-    // Read the same set of messages for both streams
     final List<AirbyteMessage> messages1 = Stream.concat(
         readMessages("dat/sync1_messages.jsonl", namespace1, streamName).stream(),
-        readMessages("dat/sync1_messages.jsonl", namespace2, streamName).stream()).toList();
+        readMessages("dat/sync1_messages2.jsonl", namespace2, streamName).stream()).toList();
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl");
-    final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, namespace1, streamName);
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, namespace2, streamName);
+    verifySyncResult(
+        readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl"),
+        readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
+        namespace1,
+        streamName);
+    verifySyncResult(
+        readRecords("dat/sync1_expectedrecords_dedup_raw2.jsonl"),
+        readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
+        namespace2,
+        streamName);
 
     // Second sync
     final List<AirbyteMessage> messages2 = Stream.concat(
         readMessages("dat/sync2_messages.jsonl", namespace1, streamName).stream(),
-        readMessages("dat/sync2_messages.jsonl", namespace2, streamName).stream()).toList();
+        readMessages("dat/sync2_messages2.jsonl", namespace2, streamName).stream()).toList();
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_raw.jsonl");
-    final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, namespace1, streamName);
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, namespace2, streamName);
+    verifySyncResult(
+        readRecords("dat/sync2_expectedrecords_incremental_dedup_raw.jsonl"),
+        readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl"),
+        namespace1,
+        streamName);
+    verifySyncResult(
+        readRecords("dat/sync2_expectedrecords_incremental_dedup_raw2.jsonl"),
+        readRecords("dat/sync2_expectedrecords_incremental_dedup_final2.jsonl"),
+        namespace2,
+        streamName);
+  }
+
+  /**
+   * Run two syncs at the same time. They each have one stream, which has the same name for both syncs
+   * but different namespace. This should work fine. This test is similar to
+   * {@link #incrementalDedupIdenticalName()}, but uses two separate syncs instead of one sync with
+   * two streams.
+   * <p>
+   * Note that destination stdout is a bit misleading: The two syncs' stdout _should_ be interleaved,
+   * but we're just dumping the entire sync1 stdout, and then the entire sync2 stdout.
+   */
+  @Test
+  public void identicalNameSimultaneousSync() throws Exception {
+    final String namespace1 = streamNamespace + "_1";
+    final ConfiguredAirbyteCatalog catalog1 = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(namespace1)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    final String namespace2 = streamNamespace + "_2";
+    final ConfiguredAirbyteCatalog catalog2 = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(List.of("updated_at"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
+            .withStream(new AirbyteStream()
+                .withNamespace(namespace2)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA))));
+
+    final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl", namespace1, streamName);
+    final List<AirbyteMessage> messages2 = readMessages("dat/sync1_messages2.jsonl", namespace2, streamName);
+
+    // Start two concurrent syncs
+    final AirbyteDestination sync1 = startSync(catalog1);
+    final AirbyteDestination sync2 = startSync(catalog2);
+    // Write some messages to both syncs. Write a lot of data to sync 2 to try and force a flush.
+    pushMessages(messages1, sync1);
+    for (int i = 0; i < 100_000; i++) {
+      pushMessages(messages2, sync2);
+    }
+    // This will dump sync1's entire stdout to our stdout
+    endSync(sync1);
+    // Write some more messages to the second sync. It should not be affected by the first sync's
+    // shutdown.
+    for (int i = 0; i < 100_000; i++) {
+      pushMessages(messages2, sync2);
+    }
+    // And this will dump sync2's entire stdout to our stdout
+    endSync(sync2);
+
+    verifySyncResult(
+        readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl"),
+        readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
+        namespace1,
+        streamName);
+    verifySyncResult(
+        readRecords("dat/sync1_expectedrecords_dedup_raw2.jsonl"),
+        readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
+        namespace2,
+        streamName);
   }
 
   @Test
@@ -617,31 +719,36 @@ public abstract class BaseTypingDedupingTest {
    * make edits here, you probably want to also edit there.
    */
 
-  // These contain some state, so they are instanced per test (i.e. cannot be static)
-  private Path jobRoot;
-  private ProcessFactory processFactory;
-
-  @BeforeEach
-  public void setupProcessFactory() throws IOException {
-    final Path testDir = Path.of("/tmp/airbyte_tests/");
-    Files.createDirectories(testDir);
-    final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
-    jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
-    final Path localRoot = Files.createTempDirectory(testDir, "output");
-    processFactory = new DockerProcessFactory(
-        workspaceRoot,
-        workspaceRoot.toString(),
-        localRoot.toString(),
-        "host",
-        Collections.emptyMap());
-  }
-
   protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages) throws Exception {
     runSync(catalog, messages, getImageName());
   }
 
   protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages, final String imageName) throws Exception {
-    catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
+    final AirbyteDestination destination = startSync(catalog, imageName);
+    pushMessages(messages, destination);
+    endSync(destination);
+  }
+
+  protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog) throws Exception {
+    return startSync(catalog, getImageName());
+  }
+
+  protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog, final String imageName) throws Exception {
+    synchronized (this) {
+      catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
+    }
+
+    final Path testDir = Path.of("/tmp/airbyte_tests/");
+    Files.createDirectories(testDir);
+    final Path workspaceRoot = Files.createTempDirectory(testDir, "test");
+    final Path jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
+    final Path localRoot = Files.createTempDirectory(testDir, "output");
+    final ProcessFactory processFactory = new DockerProcessFactory(
+        workspaceRoot,
+        workspaceRoot.toString(),
+        localRoot.toString(),
+        "host",
+        Collections.emptyMap());
 
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
@@ -659,14 +766,23 @@ public abstract class BaseTypingDedupingTest {
         new EnvVariableFeatureFlags()));
 
     destination.start(destinationConfig, jobRoot, Collections.emptyMap());
+
+    return destination;
+  }
+
+  private static void pushMessages(final List<AirbyteMessage> messages, final AirbyteDestination destination) {
     messages.forEach(
         message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
-    destination.notifyEndOfInput();
+  }
 
+  // TODO Eventually we'll want to somehow extract the state messages while a sync is running, to
+  // verify checkpointing.
+  // That's going to require some nontrivial changes to how attemptRead() works.
+  private static void endSync(final AirbyteDestination destination) throws Exception {
+    destination.notifyEndOfInput();
     while (!destination.isFinished()) {
       destination.attemptRead();
     }
-
     destination.close();
   }
 

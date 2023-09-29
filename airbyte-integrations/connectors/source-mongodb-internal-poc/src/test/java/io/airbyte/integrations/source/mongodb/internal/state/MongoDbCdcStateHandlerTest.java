@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.source.mongodb.internal.state;
 
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN;
-import static io.airbyte.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_SECONDS;
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_ORDER;
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN;
+import static io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbDebeziumConstants.ChangeEvent.SOURCE_SECONDS;
 import static io.airbyte.protocol.models.v0.AirbyteStateMessage.AirbyteStateType.GLOBAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -41,7 +41,7 @@ class MongoDbCdcStateHandlerTest {
         SOURCE_ORDER, String.valueOf(order),
         SOURCE_RESUME_TOKEN, RESUME_TOKEN);
 
-    final AirbyteMessage airbyteMessage = mongoDbCdcStateHandler.saveState(offset, "");
+    final AirbyteMessage airbyteMessage = mongoDbCdcStateHandler.saveState(offset, null);
 
     assertNotNull(airbyteMessage);
     assertEquals(AirbyteMessage.Type.STATE, airbyteMessage.getType());
