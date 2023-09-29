@@ -321,8 +321,9 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
-|:--------|:-----------| :------------------------------------------------------- |:------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.8   | 2023-09-20 | [30125](https://github.com/airbytehq/airbyte/pull/30125) | Improve initial load performance for older versions of PostgreSQL                             |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.10  | 2023-09-29 | [30806](https://github.com/airbytehq/airbyte/pull/30806) | Cap log line length to 32KB to prevent loss of records.                                                                                   |
+| 3.1.8   | 2023-09-20 | [30125](https://github.com/airbytehq/airbyte/pull/30125) | Improve initial load performance for older versions of PostgreSQL                                                                         |
 | 3.1.5   | 2023-08-22 | [29534](https://github.com/airbytehq/airbyte/pull/29534) | Support "options" JDBC URL parameter                                                                                                      |
 | 3.1.3   | 2023-08-03 | [28708](https://github.com/airbytehq/airbyte/pull/28708) | Enable checkpointing snapshots in CDC connections                                                                                         |
 | 3.1.2   | 2023-08-01 | [28954](https://github.com/airbytehq/airbyte/pull/28954) | Fix an issue that prevented use of tables with names containing uppercase letters                                                         |
