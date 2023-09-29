@@ -9,6 +9,7 @@ import static io.airbyte.integrations.base.destination.typing_deduping.Collectio
 import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey;
 import static java.util.stream.Collectors.joining;
 
+import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.Field.Mode;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
@@ -37,7 +38,6 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -253,7 +253,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     LOGGER.info("Alter Table Report {} {} {}; Clustering {}; Partitioning {}",
         alterTableReport.columnsToAdd(),
         alterTableReport.columnsToRemove(),
-        alterTableReport.columnsToChangeType(),
+        alterTableReport.columnsToChange(),
         tableClusteringMatches,
         tablePartitioningMatches);
 
@@ -278,7 +278,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   public AlterTableReport buildAlterTableReport(final StreamConfig stream, final TableDefinition existingTable) {
-    final List<String> pks = getPks(stream);
+    final Set<String> pks = getPks(stream);
 
     final Map<String, StandardSQLTypeName> streamSchema = stream.columns().entrySet().stream()
         .collect(Collectors.toMap(
@@ -302,7 +302,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .collect(Collectors.toSet());
 
     // Columns that are typed differently than the StreamConfig
-    final Set<String> columnsToChangeType = streamSchema.keySet().stream()
+    final Set<String> columnsToChange = Stream.concat(
+        streamSchema.keySet().stream()
         // If it's not in the existing schema, it should already be in the columnsToAdd Set
         .filter(name -> {
           // Big Query Columns are case-insensitive, first find the correctly cased key if it exists
@@ -311,24 +312,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               // is different between the stream and existing schemas
               .map(key -> !existingSchema.get(key).equals(streamSchema.get(name)))
               // if there is no matching key, then don't include it because it is probably already in columnsToAdd
-              .orElse(false)
-
-              ||
-
-          // Is this column a primary key without a unique index?
-              matchingKey(existingSchema.keySet(), name)
-                  .map(key -> pks.contains(key)
-                      && (long) existingTable.getSchema().getFields().stream().filter(s -> Objects.equals(
-                          s.getName(), key)).toList().size() == 1
-                      && existingTable.getSchema().getFields().stream().filter(s -> Objects.equals(
-                          s.getName(), key)).toList().get(0).getMode() != Mode.REQUIRED)
-                  .orElse(false);
-        })
+              .orElse(false);
+        }),
+        // Find any PK columns which do not have a Non-Null requirement
+        existingTable.getSchema().getFields().stream()
+                     .filter(field -> pks.contains(field.getName()))
+                     .filter(field -> field.getMode() != Mode.REQUIRED)
+                     .map(Field::getName))
         .collect(Collectors.toSet());
 
     final boolean isDestinationV2Format = schemaContainAllFinalTableV2AirbyteColumns(existingSchema.keySet());
 
-    return new AlterTableReport(columnsToAdd, columnsToRemove, columnsToChangeType, isDestinationV2Format);
+    return new AlterTableReport(columnsToAdd, columnsToRemove, columnsToChange, isDestinationV2Format);
   }
 
   /**
@@ -693,8 +688,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .replace("'", "\\'");
   }
 
-  private static List<String> getPks(StreamConfig stream) {
-    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).toList() : Collections.emptyList();
+  private static Set<String> getPks(StreamConfig stream) {
+    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
   private static String cast(final String content, final String asType, boolean useSafeCast) {
