@@ -18,7 +18,7 @@ application {
 
 dependencies {
     implementation libs.airbyte.protocol
-    implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.14.1'
+    implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.13.22'
     implementation 'com.zaxxer:HikariCP:5.0.1'
 
     testImplementation project(':airbyte-test-utils')
