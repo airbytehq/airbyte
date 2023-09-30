@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Union
 
 import pendulum
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
@@ -47,6 +47,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     token_expiry_date: Optional[Union[InterpolatedString, str]] = None
     _token_expiry_date: pendulum.DateTime = field(init=False, repr=False, default=None)
     token_expiry_date_format: str = None
+    token_expiry_is_time_of_expiration: bool = False
     access_token_name: Union[InterpolatedString, str] = "access_token"
     expires_in_name: Union[InterpolatedString, str] = "expires_in"
     refresh_request_body: Optional[Mapping[str, Any]] = None
@@ -100,20 +101,14 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     def get_refresh_request_body(self) -> Mapping[str, Any]:
         return self._refresh_request_body.eval(self.config)
 
-    def parse_token_lifespan(self, response_json: Dict[str, Any]) -> int:
-        expire_value = response_json[self.get_expires_in_name()]
-
-        if self.token_expiry_date_format:
-            period = pendulum.from_format(expire_value, self.token_expiry_date_format) - pendulum.now()
-            expire_value = period.total_seconds()
-
-        return int(float(expire_value))
-
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
-    def set_token_expiry_date(self, value: Union[str, int]):
-        self._token_expiry_date = pendulum.now().add(seconds=int(float(value)))
+    def set_token_expiry_date(self, value: int):
+        try:
+            self._token_expiry_date = pendulum.now().add(seconds=value)
+        except ValueError:
+            raise ValueError(f"Invalid token expiry value {value}; a number is required.")
 
     @property
     def access_token(self) -> str:

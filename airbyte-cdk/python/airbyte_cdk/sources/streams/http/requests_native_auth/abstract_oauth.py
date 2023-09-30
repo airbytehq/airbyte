@@ -4,7 +4,6 @@
 
 import logging
 from abc import abstractmethod
-from dataclasses import field
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
@@ -113,7 +112,31 @@ class AbstractOauth2Authenticator(AuthBase):
         :return: lifespan in seconds
         """
 
-        return int(response_json[self.get_expires_in_name()])
+        expire_value = response_json[self.get_expires_in_name()]
+
+        if self.token_set_time_of_expiration:
+            if not self.token_expiry_date_format:
+                raise ValueError(f"Invalid token expiry date format {self.token_expiry_date_format}; a string is required.")
+            period = pendulum.from_format(expire_value, self.token_expiry_date_format) - pendulum.now()
+            expire_value = period.total_seconds()
+
+        return int(float(expire_value))
+
+    @property
+    def token_set_time_of_expiration(self) -> bool:
+        """
+        Indicates that the Token Expiry returns the date until which the token will be valid, not the amount of time it will be valid.
+        """
+
+        return False
+
+    @property
+    def token_expiry_date_format(self) -> Union[str, None]:
+        """
+        Format of the datetime; provide it if expires_in is returned in datetime instead of seconds
+        """
+
+        return None
 
     @abstractmethod
     def get_token_refresh_endpoint(self) -> str:
@@ -140,7 +163,7 @@ class AbstractOauth2Authenticator(AuthBase):
         """Expiration date of the access token"""
 
     @abstractmethod
-    def set_token_expiry_date(self, value: Union[str, int]):
+    def set_token_expiry_date(self, value: int):
         """Setter for access token expiration date"""
 
     @abstractmethod
