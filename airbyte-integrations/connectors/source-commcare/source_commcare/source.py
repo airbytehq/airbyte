@@ -199,7 +199,11 @@ class Case(IncrementalStream):
                 # one field per item. This is because some cases have up to 2000 xform_ids and we don't want 2000 extra
                 # fields in the schema
                 record["xform_ids"] = ",".join(record["xform_ids"])
-                yield record
+                retval = {}
+                retval["id"] = record["id"]
+                retval["indexed_on"] = record["indexed_on"]
+                retval["data"] = record
+                yield retval
         if self._cursor_value.microsecond == 0:
             # Airbyte converts the cursor_field value (datetime) to string when it saves the state and
             # our state setter parses the saved state with a format that contains microseconds
@@ -265,7 +269,11 @@ class Form(IncrementalStream):
             self._cursor_value = datetime.strptime(date_string, date_format)
             CommcareStream.forms.add(record["id"])
             newform = self.scrubUnwantedFields(record)
-            yield newform
+            retval = {}
+            retval["id"] = newform["id"]
+            retval[self.cursor_field] = newform[self.cursor_field]
+            retval["data"] = newform
+            yield retval
         if self._cursor_value.microsecond == 0:
             # Airbyte converts the cursor_field value (datetime) to string when it saves the state and
             # our state setter parses the saved state with a format that contains microseconds
@@ -298,7 +306,7 @@ class SourceCommcare(AbstractSource):
         return {
             "$schema": "http://json-schema.org/draft-07/schema#",
             "type": "object",
-            "properties": {"id": {"type": "string"}, "indexed_on": {"type": "string", "format": "date-time"}},
+            "properties": {"id": {"type": "string"}, "indexed_on": {"type": "string", "format": "date-time"}, "data": {"type": "object"}},
         }
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -341,7 +349,7 @@ class SourceCommcare(AbstractSource):
                     if "en" in f["name"]:
                         formname = f["name"]["en"].strip()
                     else:
-                        # Unknown forms are named UNNAMED_xxxxx where xxxxx are the last 5 difits of the XMLNS
+                        # Unknown forms are named UNNAMED_xxxxx where xxxxx are the last 5 digits of the XMLNS
                         # This convention gives us repeatable names
                         formname = f"Unnamed_{xmlns[-5:]}"
 
