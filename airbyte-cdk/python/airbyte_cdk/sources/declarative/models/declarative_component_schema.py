@@ -348,6 +348,11 @@ class OAuthAuthenticator(BaseModel):
         examples=['%Y-%m-%d %H:%M:%S.%f+00:00'],
         title='Token Expiry Date Format',
     )
+    token_expiry_is_time_of_expiration: Optional[bool] = Field(
+        None,
+        description='Indicates that the Token Expiry returns the date until which the token will be valid, not the amount of time it will be valid.',
+        title='Token Expiry Is Time Of Expiration',
+    )
     refresh_token_updater: Optional[RefreshTokenUpdater] = Field(
         None,
         description='When the token updater is defined, new refresh tokens, access tokens and the access token expiry date are written back from the authentication response to the config object. This is important if the refresh token can only used once.',
