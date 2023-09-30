@@ -120,6 +120,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         token_expiry_date_config_path: Sequence[str] = ("credentials", "token_expiry_date"),
         token_expiry_date_format: Optional[str] = None,
         message_repository: MessageRepository = NoopMessageRepository(),
+        token_expiry_is_time_of_expiration: bool = False,
     ):
         """
 
@@ -163,6 +164,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             refresh_request_body=refresh_request_body,
             grant_type=grant_type,
             token_expiry_date_format=token_expiry_date_format,
+            token_expiry_is_time_of_expiration=token_expiry_is_time_of_expiration,
         )
 
     def get_refresh_token_name(self) -> str:
