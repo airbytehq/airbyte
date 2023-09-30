@@ -17,7 +17,6 @@ from airbyte_cdk.sources.streams.core import StreamData
 from datetime import datetime
 
 
-
 stream_json_schema = {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
@@ -31,9 +30,9 @@ stream_json_schema = {
     },
 }
 
+
 # Basic full refresh stream
 class GlificStream(HttpStream, ABC):
-
     primary_key = "id"
     cursor_value = None
     latest_updated_date = None
@@ -69,47 +68,46 @@ class GlificStream(HttpStream, ABC):
         self.api_url = url_base
         self.credentials = credentials
         self.pagination_limit = pagination_limit
-        self.start_time = config['start_time']
+        self.start_time = config["start_time"]
         self.offset = 0
         self.last_record = None
 
     @property
     def url_base(self) -> str:
         return self.api_url
-    
+
     @property
     def name(self) -> str:
         return self.stream_name
-    
+
     @property
     def http_method(self) -> str:
         """All requests in the glific stream are posts with body"""
         return "POST"
-    
+
     def get_json_schema(self) -> dict:
         """Return json schema of each stream"""
         return stream_json_schema
-    
-    def path(self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
         return ""
-    
+
     def update_state(self) -> None:
-        
         if self.latest_updated_date:
-            if self.latest_updated_date> self.state['updated_at']:
+            if self.latest_updated_date > self.state["updated_at"]:
                 self.state = {self.cursor_field: self.latest_updated_date}
         self.latest_updated_date = None
         return None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        
-        
         json_resp = response.json()
-        if json_resp['data']['organizationExportData'] is not None:
-            records_str = json_resp['data']['organizationExportData']['data']
+        if json_resp["data"]["organizationExportData"] is not None:
+            records_str = json_resp["data"]["organizationExportData"]["data"]
             records_obj = json.loads(records_str)
-            if self.stream_name in records_obj['data']:
-                records = json.loads(records_str)['data'][f'{self.stream_name}']
+            if self.stream_name in records_obj["data"]:
+                records = json.loads(records_str)["data"][f"{self.stream_name}"]
                 # more records need to be fetched
                 if len(records) == (self.pagination_limit + 1):
                     self.offset += 1
@@ -119,56 +117,62 @@ class GlificStream(HttpStream, ABC):
 
         return None
 
-    def request_headers(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
-        
-        return {'authorization': self.credentials['access_token'], 'Content-Type': 'application/json'}
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"authorization": self.credentials["access_token"], "Content-Type": "application/json"}
 
+    def request_body_json(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping:
+        query = (
+            "query organizationExportData($filter: ExportFilter) { organizationExportData(filter: $filter) {data errors { key message } } }"
+        )
 
-    def request_body_json(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping:
-
-        query = "query organizationExportData($filter: ExportFilter) { organizationExportData(filter: $filter) {data errors { key message } } }"
-            
         filter_obj = {
-            "startTime": self.state['updated_at'],
+            "startTime": self.state["updated_at"],
             "offset": self.offset,
             "limit": self.pagination_limit,
-            "tables": [self.stream_name]
+            "tables": [self.stream_name],
         }
 
         if next_page_token is not None:
             filter_obj["offset"] = next_page_token["offset"]
             filter_obj["limit"] = next_page_token["limit"]
 
-        return {"query":  query, "variables": {"filter": filter_obj}}
+        return {"query": query, "variables": {"filter": filter_obj}}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-
         json_resp = response.json()
-        if json_resp['data']['organizationExportData'] is not None:
-            records_str = json_resp['data']['organizationExportData']['data']
+        if json_resp["data"]["organizationExportData"] is not None:
+            records_str = json_resp["data"]["organizationExportData"]["data"]
             records_obj = json.loads(records_str)
-            yield from records_obj['data'][self.stream_name]
+            yield from records_obj["data"][self.stream_name]
 
-    
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None,) -> Iterable[StreamData]:
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
         records = super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
-        
+
         for record in records:
-            if(len(record['updated_at'])==19):
-                record['updated_at'] = record['updated_at'] + 'Z'
+            if len(record["updated_at"]) == 19:
+                record["updated_at"] = record["updated_at"] + "Z"
             else:
-                record['updated_at'] = datetime.strptime(record['updated_at'], "%Y-%m-%dT%H:%M:%S.%f").strftime("%Y-%m-%dT%H:%M:%SZ")
-            
+                record["updated_at"] = datetime.strptime(record["updated_at"], "%Y-%m-%dT%H:%M:%S.%f").strftime("%Y-%m-%dT%H:%M:%SZ")
+
             if self.latest_updated_date:
-                if record['updated_at']>self.latest_updated_date:
-                    self.latest_updated_date = record['updated_at']
+                if record["updated_at"] > self.latest_updated_date:
+                    self.latest_updated_date = record["updated_at"]
             else:
-                self.latest_updated_date = record['updated_at']
+                self.latest_updated_date = record["updated_at"]
             yield record
 
 
 class IncrementalGlificStream(GlificStream, IncrementalMixin, ABC):
-    
     state_checkpoint_interval = None
 
     @property
@@ -177,7 +181,6 @@ class IncrementalGlificStream(GlificStream, IncrementalMixin, ABC):
 
     @property
     def state(self) -> Mapping[str, Any]:
-
         if self.cursor_value:
             return {self.cursor_field: self.cursor_value}
         else:
@@ -196,7 +199,6 @@ class SourceGlific(AbstractSource):
     API_URL = "https://api.staging.tides.coloredcow.com/api"
     PAGINATION_LIMIT = 500
 
-
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
         Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
@@ -208,21 +210,16 @@ class SourceGlific(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        if 'phone' not in config:
-            logger.info('Phone number missing')
+        if "phone" not in config:
+            logger.info("Phone number missing")
             return False, "Phone number missing"
 
-        if 'password' not in config:
+        if "password" not in config:
             logger.info("Password missing")
             return False, "Password missing"
 
         endpoint = f"{self.API_URL}/v1/session"
-        auth_payload = {
-            "user": {
-                "phone": config["phone"],
-                "password": config["password"]
-            }
-        }
+        auth_payload = {"user": {"phone": config["phone"], "password": config["password"]}}
 
         response = requests.post(endpoint, json=auth_payload, timeout=30)
         try:
@@ -240,26 +237,21 @@ class SourceGlific(AbstractSource):
 
         # authenticate and get the credentials for all streams
         endpoint = f"{self.API_URL}/v1/session"
-        auth_payload = {
-            "user": {
-                "phone": config["phone"],
-                "password": config["password"]
-            }
-        }
+        auth_payload = {"user": {"phone": config["phone"], "password": config["password"]}}
         try:
             response = requests.post(endpoint, json=auth_payload, timeout=30)
             response.raise_for_status()
-            credentials = response.json()['data']
+            credentials = response.json()["data"]
         except requests.exceptions.HTTPError:
             # return empty zero streams since authentication failed
             return []
-        
+
         # fetch the export config for organization/client/user
         endpoint = f"{self.API_URL}"
-        headers = {'authorization': credentials['access_token']}
+        headers = {"authorization": credentials["access_token"]}
 
         try:
-            query = 'query organizationExportConfig { organizationExportConfig { data errors { key message } } }'
+            query = "query organizationExportConfig { organizationExportConfig { data errors { key message } } }"
             variables = {}
             payload = {"query": query, "variables": variables}
 
@@ -269,11 +261,11 @@ class SourceGlific(AbstractSource):
         except requests.exceptions.HTTPError:
             # return empty zero streams since config could not be fetched
             return []
-        
+
         # construct streams
-        export_config = json.loads(data['data']['organizationExportConfig']['data'])
+        export_config = json.loads(data["data"]["organizationExportConfig"]["data"])
         streams = []
-        for table in export_config['tables']:
+        for table in export_config["tables"]:
             stream_obj = IncrementalGlificStream(table, self.API_URL, self.PAGINATION_LIMIT, credentials, config)
             streams.append(stream_obj)
 
