@@ -20,6 +20,7 @@ dependencies {
     implementation libs.bundles.datadog
 
     implementation project(':airbyte-api')
+    implementation project(':airbyte-commons')
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-json-validation')

@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import java.util.List;
 
 /**
@@ -14,7 +14,7 @@ import java.util.List;
  * {@link io.airbyte.integrations.destination.s3.BlobStorageOperations}.
  *
  * <p>
- * Similar interface to {@link io.airbyte.integrations.destination.jdbc.SqlOperations}
+ * Similar interface to {@link io.airbyte.cdk.integrations.destination.jdbc.SqlOperations}
  * </p>
  */
 public interface BigQueryStagingOperations {

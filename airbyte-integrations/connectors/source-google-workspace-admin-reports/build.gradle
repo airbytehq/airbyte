@@ -1,9 +1,0 @@
-plugins {
-    id 'airbyte-python'
-    id 'airbyte-docker'
-}
-
-airbytePython {
-    moduleDirectory 'source_google_workspace_admin_reports'
-}
-

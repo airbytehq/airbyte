@@ -6,24 +6,25 @@ metadata:
     app: performance-harness
 spec:
   containers:
-  - name: main
-    image: airbyte/$HARNESS:dev
-    args: ["$CONNECTOR_IMAGE_NAME", "$DATASET", "$STREAM_NUMBER", "$SYNC_MODE"]
-    volumeMounts:
-      - name: secrets-volume
-        mountPath: /airbyte/secrets
-    resources:
-      limits:
-        cpu: "2.5"
-        memory: "2Gi"
-      requests:
-        cpu: "2.5"
-        memory: "2Gi"
+    - name: main
+      image: airbyte/$HARNESS:dev
+      args:
+        ["$CONNECTOR_IMAGE_NAME", "$DATASET", "$STREAM_NUMBER", "$SYNC_MODE"]
+      volumeMounts:
+        - name: secrets-volume
+          mountPath: /airbyte/secrets
+      resources:
+        limits:
+          cpu: "2.5"
+          memory: "2Gi"
+        requests:
+          cpu: "2.5"
+          memory: "2Gi"
   volumes:
     - name: secrets-volume
       hostPath:
         path: /secrets
         type: Directory
   imagePullSecrets:
-  - name: regcred
+    - name: regcred
   restartPolicy: Never
