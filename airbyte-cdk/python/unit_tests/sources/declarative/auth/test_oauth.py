@@ -149,6 +149,7 @@ class TestOauth2Authenticator:
             scopes=["scope1", "scope2"],
             token_expiry_date="{{ config['token_expiry_date'] }}",
             token_expiry_date_format=token_expiry_date_format,
+            token_expiry_is_time_of_expiration=True,
             refresh_request_body={
                 "custom_field": "{{ config['custom_field'] }}",
                 "another_field": "{{ config['another_field'] }}",

@@ -32,6 +32,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         scopes (Optional[List[str]]): The scopes to request
         token_expiry_date (Optional[Union[InterpolatedString, str]]): The access token expiration date
         token_expiry_date_format str: format of the datetime; provide it if expires_in is returned in datetime instead of seconds
+        token_expiry_is_time_of_expiration bool: set True it if expires_in is returned as time of expiration instead of seconds
         refresh_request_body (Optional[Mapping[str, Any]]): The request body to send in the refresh request
         grant_type: The grant_type to request for access_token. If set to refresh_token, the refresh_token parameter has to be provided
         message_repository (MessageRepository): the message repository used to emit logs on HTTP requests

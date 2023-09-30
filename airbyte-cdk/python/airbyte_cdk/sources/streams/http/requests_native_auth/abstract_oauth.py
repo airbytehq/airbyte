@@ -114,7 +114,7 @@ class AbstractOauth2Authenticator(AuthBase):
 
         expire_value = response_json[self.get_expires_in_name()]
 
-        if self.token_set_time_of_expiration:
+        if self.token_expiry_is_time_of_expiration:
             if not self.token_expiry_date_format:
                 raise ValueError(f"Invalid token expiry date format {self.token_expiry_date_format}; a string is required.")
             period = pendulum.from_format(expire_value, self.token_expiry_date_format) - pendulum.now()
@@ -123,7 +123,7 @@ class AbstractOauth2Authenticator(AuthBase):
         return int(float(expire_value))
 
     @property
-    def token_set_time_of_expiration(self) -> bool:
+    def token_expiry_is_time_of_expiration(self) -> bool:
         """
         Indicates that the Token Expiry returns the date until which the token will be valid, not the amount of time it will be valid.
         """
