@@ -18,7 +18,7 @@ Connector also has report streams including statistics about entities (e.g: how 
 * [Keyword-Level Report](https://developer.apple.com/documentation/apple_search_ads/get_keyword-level_reports)
 
 
-Connector uses `start_date` config for initial reports sync and current date as an end date if this one is not explicitly set.
+Connector uses `start_date` config for initial reports sync and current date as an end date if this one is not explicitly set. You can also set timezone as an optional parameter to determine how the report data is aggregated
 
 At the moment, report streams are only set to the `DAILY` granularity (e.g: `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`).
 

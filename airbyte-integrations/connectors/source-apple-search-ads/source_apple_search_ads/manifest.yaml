@@ -113,7 +113,7 @@ definitions:
         request_body_json:
           startTime: "{{ stream_slice.start_time }}"
           endTime: "{{ stream_slice.end_time }}"
-          timeZone: "UTC"
+          timeZone: "{{ config.time_zone }}"
           granularity: "{{ parameters.granularity }}"
           selector: '{
             "orderBy": [
