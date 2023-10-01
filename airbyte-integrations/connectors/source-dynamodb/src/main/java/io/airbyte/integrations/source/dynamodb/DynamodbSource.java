@@ -19,6 +19,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.stream.AirbyteStreamUtils;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
@@ -124,7 +125,6 @@ public class DynamodbSource extends BaseConnector implements Source {
                                                                 final StateManager stateManager) {
 
     final var streamPair = new AirbyteStreamNameNamespacePair(airbyteStream.getName(), airbyteStream.getNamespace());
-
     final Optional<CursorInfo> cursorInfo = stateManager.getCursorInfo(streamPair);
 
     final Map<String, JsonNode> properties = objectMapper.convertValue(airbyteStream.getJsonSchema().get("properties"), new TypeReference<>() {});
@@ -164,17 +164,18 @@ public class DynamodbSource extends BaseConnector implements Source {
         .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
 
     // wrap stream in state emission iterator
-    return AutoCloseableIterators.transform(autoCloseableIterator -> new StateDecoratingIterator(
-        autoCloseableIterator,
-        stateManager,
-        streamPair,
-        cursorField,
-        cursorInfo.map(CursorInfo::getCursor).orElse(null),
-        JsonSchemaPrimitive.valueOf(cursorType.toUpperCase()),
-        // emit state after full stream has been processed
-        0),
-        AutoCloseableIterators.fromStream(messageStream));
-
+    return AutoCloseableIterators.fromIterator(
+        new StateDecoratingIterator(
+            AutoCloseableIterators.fromStream(
+                messageStream,
+                AirbyteStreamUtils.convertFromNameAndNamespace(airbyteStream.getName(), airbyteStream.getNamespace())),
+            stateManager,
+            streamPair,
+            cursorField,
+            cursorInfo.map(CursorInfo::getCursor).orElse(null),
+            JsonSchemaPrimitive.valueOf(cursorType.toUpperCase()),
+            // emit state after full stream has been processed
+            0));
   }
 
   private AutoCloseableIterator<AirbyteMessage> scanFullRefresh(final DynamodbOperations dynamodbOperations,
@@ -187,7 +188,9 @@ public class DynamodbSource extends BaseConnector implements Source {
         .stream()
         .map(jn -> DynamodbUtils.mapAirbyteMessage(airbyteStream.getName(), jn));
 
-    return AutoCloseableIterators.fromStream(messageStream);
+    return AutoCloseableIterators.fromStream(
+        messageStream,
+        AirbyteStreamUtils.convertFromNameAndNamespace(airbyteStream.getName(), airbyteStream.getNamespace()));
   }
 
 }

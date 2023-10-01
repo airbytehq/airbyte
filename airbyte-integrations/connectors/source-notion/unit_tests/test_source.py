@@ -21,13 +21,13 @@ def test_check_connection(mocker, requests_mock):
 
 
 @pytest.mark.parametrize(
-        "status_code,json_response,expected_message",
-        [
-            (401, {"code": "unauthorized"}, UNAUTHORIZED_ERROR_MESSAGE),
-            (403, {"code": "restricted_resource"}, RESTRICTED_RESOURCE_ERROR_MESSAGE),
-            (409, {"message": GENERIC_ERROR_MESSAGE}, GENERIC_ERROR_MESSAGE),
-            (400, {}, NO_ERROR_MESSAGE)
-        ]
+    "status_code,json_response,expected_message",
+    [
+        (401, {"code": "unauthorized"}, UNAUTHORIZED_ERROR_MESSAGE),
+        (403, {"code": "restricted_resource"}, RESTRICTED_RESOURCE_ERROR_MESSAGE),
+        (409, {"message": GENERIC_ERROR_MESSAGE}, GENERIC_ERROR_MESSAGE),
+        (400, {}, NO_ERROR_MESSAGE),
+    ],
 )
 def test_check_connection_errors(mocker, requests_mock, status_code, json_response, expected_message):
     source = SourceNotion()

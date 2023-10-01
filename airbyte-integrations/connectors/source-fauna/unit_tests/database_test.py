@@ -172,18 +172,21 @@ def setup_container():
 
 def run_discover_test(source: SourceFauna, logger):
     # See `test_util.py` for these values
-    catalog = source.discover(logger, {
-        "secret": "secret",
-        "domain": "localhost",
-        "port": 9000,
-        "scheme": "http",
-        "collection": {
-            "page_size": 64,
-            "deletions": {
-                "deletion_mode": "ignore",
-            }
-        }
-    })
+    catalog = source.discover(
+        logger,
+        {
+            "secret": "secret",
+            "domain": "localhost",
+            "port": 9000,
+            "scheme": "http",
+            "collection": {
+                "page_size": 64,
+                "deletions": {
+                    "deletion_mode": "ignore",
+                },
+            },
+        },
+    )
     assert len(catalog.streams) == 1
     stream = catalog.streams[0]
     assert stream.name == "foo"

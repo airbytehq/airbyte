@@ -3,10 +3,6 @@ plugins {
     id 'airbyte-docker'
 }
 
-airbytePython {
-    moduleDirectory 'airbyte_cdk'
-}
-
 def generateComponentManifestClassFiles = tasks.register('generateComponentManifestClassFiles', Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/generate-component-manifest-files.sh'
