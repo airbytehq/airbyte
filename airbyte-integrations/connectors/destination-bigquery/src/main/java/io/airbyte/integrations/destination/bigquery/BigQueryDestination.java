@@ -396,12 +396,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             });
           }
         },
-        () -> {
+        (hasFailed) -> {
           LOGGER.info("Started closing all connections");
           final List<Exception> exceptionsThrown = new ArrayList<>();
           writeConfigs.get().forEach((streamId, uploader) -> {
             try {
-              uploader.close(false, outputRecordCollector, null);
+              uploader.close(hasFailed, outputRecordCollector, null);
             } catch (final Exception e) {
               exceptionsThrown.add(e);
               LOGGER.error("Exception while closing uploader {}", uploader, e);
