@@ -5,6 +5,7 @@
 import concurrent
 from concurrent.futures import Future
 from functools import lru_cache
+from logging import Logger
 from queue import Queue
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
@@ -37,6 +38,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         cursor_field: Optional[str],
         error_display_message_parser: ErrorMessageParser,
         slice_logger: SliceLogger,
+        logger: Logger,
         message_repository: MessageRepository,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
     ):
@@ -50,6 +52,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._cursor_field = cursor_field
         self._error_message_parser = error_display_message_parser
         self._slice_logger = slice_logger
+        self._logger = logger
         self._message_repository = message_repository
         self._timeout_seconds = timeout_seconds
 
@@ -70,7 +73,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
           - If the next work item is a PartitionCompleteSentinel, a partition is done processing
             - Update the value in partitions_to_done to True so we know the partition is completed
         """
-        self.logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
+        self._logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
         futures = []
         queue: Queue[QueueItem] = Queue()
         partition_generator = PartitionEnqueuer(queue, PARTITIONS_GENERATED_SENTINEL)
@@ -103,7 +106,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
             elif isinstance(record_or_partition, Partition):
                 # A new partition was generated and must be processed
                 partitions_to_done[record_or_partition] = False
-                if self._slice_logger.should_log_slice_message(self.logger):
+                if self._slice_logger.should_log_slice_message(self._logger):
                     self._message_repository.emit_message(self._slice_logger.create_slice_log_message(record_or_partition.to_slice()))
                 futures.append(self._threadpool.submit(partition_reader.process_partition, record_or_partition))
             if finished_partitions and all(partitions_to_done.values()):
@@ -124,7 +127,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         return self._name
 
     def check_availability(self) -> StreamAvailability:
-        return self._availability_strategy.check_availability(self.logger)
+        return self._availability_strategy.check_availability(self._logger)
 
     @property
     def cursor_field(self) -> Optional[str]:
@@ -147,7 +150,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         return stream
 
     def log_stream_sync_configuration(self) -> None:
-        self.logger.debug(
+        self._logger.debug(
             f"Syncing stream instance: {self.name}",
             extra={
                 "primary_key": self._primary_key,

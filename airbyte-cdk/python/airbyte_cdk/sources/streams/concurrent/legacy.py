@@ -44,7 +44,7 @@ class StreamFacade(Stream):
     """
 
     @classmethod
-    def create_from_legacy_stream(cls, stream: Stream, source: AbstractSource, max_workers: int) -> Stream:
+    def create_from_legacy_stream(cls, stream: Stream, source: AbstractSource, logger: logging.Logger, max_workers: int) -> Stream:
         """
         Create a ConcurrentStream from a legacy Stream.
         :param source: The source
@@ -73,6 +73,7 @@ class StreamFacade(Stream):
                 error_display_message_parser=LegacyErrorMessageParser(stream),
                 slice_logger=source._slice_logger,
                 message_repository=message_repository,
+                logger=logger,
             )
         )
 
