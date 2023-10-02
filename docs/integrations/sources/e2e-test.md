@@ -1,3 +1,5 @@
+import {SchemaGenerator} from './e2e-test.js'
+
 # End-to-End Testing Source
 
 ## Overview
@@ -25,6 +27,13 @@ Here is its configuration:
 | Both              | max records         | integer | yes      | 100                 | The number of record messages to emit from this connector. Min 1. Max 100 billion.                                                                      |
 |                   | random seed         | integer | no       | current time millis | The seed is used in random Json object generation. Min 0. Max 1 million.                                                                                |
 |                   | message interval    | integer | no       | 0                   | The time interval between messages in millisecond. Min 0 ms. Max 60000 ms (1 minute).                                                                   |
+
+
+#### Example Stream Schemas
+If you need a stream for testing performance simulating a wide table, we have an example [500 column stream](https://gist.github.com/jbfbell/9b7db8fdf0de0187c7da92df2f699502)
+or use the form below to generate your own with an arbitrary width, then copy+paste the resulting schema into your configuration. 
+
+<SchemaGenerator />
 
 ### Legacy Infinite Feed
 

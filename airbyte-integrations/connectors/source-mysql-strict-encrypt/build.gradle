@@ -11,6 +11,12 @@ airbyteJavaConnector {
 
 airbyteJavaConnector.addCdkDependencies()
 
+configurations.all {
+    resolutionStrategy {
+        force libs.jooq
+    }
+}
+
 application {
     mainClass = 'io.airbyte.integrations.source.mysql_strict_encrypt.MySqlStrictEncryptSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
@@ -19,8 +25,9 @@ application {
 dependencies {
     implementation project(':airbyte-integrations:connectors:source-mysql')
     implementation libs.airbyte.protocol
+    implementation libs.jooq
 
     testImplementation libs.junit.jupiter.system.stubs
-
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
     testImplementation libs.testcontainers.mysql
 }
