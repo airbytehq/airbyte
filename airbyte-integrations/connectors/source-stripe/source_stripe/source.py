@@ -420,4 +420,4 @@ class SourceStripe(AbstractSource):
             ),
         ]
         # return legacy_streams
-        return [StreamFacade.create_from_legacy_stream(stream, self, 4) for stream in legacy_streams]
+        return [StreamFacade.create_from_legacy_stream(stream, self, entrypoint_logger, 4) for stream in legacy_streams]
