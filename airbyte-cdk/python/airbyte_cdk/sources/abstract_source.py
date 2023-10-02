@@ -174,13 +174,7 @@ class AbstractSource(Source, ABC):
                 "cursor_field": configured_stream.cursor_field,
             },
         )
-        logger.debug(
-            f"Syncing stream instance: {stream_instance.name}",
-            extra={
-                "primary_key": stream_instance.primary_key,
-                "cursor_field": stream_instance.cursor_field,
-            },
-        )
+        stream_instance.log_stream_sync_configuration()
 
         use_incremental = configured_stream.sync_mode == SyncMode.incremental and stream_instance.supports_incremental
         if use_incremental:
