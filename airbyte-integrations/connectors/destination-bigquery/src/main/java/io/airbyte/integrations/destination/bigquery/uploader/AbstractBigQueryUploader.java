@@ -111,7 +111,7 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
 
   public void closeAfterPush() {
     try {
-      this.writer.close(false);
+      this.writer.closeAfterPush();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
