@@ -1,527 +1,702 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Generated schema for Root",
   "type": "object",
-  "required": ["base", "rates"],
   "properties": {
-    "base": {
+    "disclaimer": {
+      "type": "string"
+    },
+    "license": {
       "type": "string"
     },
     "timestamp": {
-      "type": "integer"
+      "type": "number"
+    },
+    "base": {
+      "type": "string"
     },
     "rates": {
       "type": "object",
       "properties": {
         "AED": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "AFN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "ALL": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "AMD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "ANG": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "AOA": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "ARS": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "AUD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "AWG": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "AZN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BAM": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BBD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BDT": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BGN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BHD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BIF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BMD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BND": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BOB": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BRL": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BSD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BTC": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BTN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BWP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BYN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "BZD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CAD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CDF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CHF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CLF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CLP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CNH": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CNY": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "COP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CRC": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CUC": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CUP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CVE": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "CZK": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "DJF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "DKK": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "DOP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "DZD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "EGP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "ERN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "ETB": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "EUR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "FJD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "FKP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "GBP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "GEL": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "GGP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "GHS": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "GIP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "GMD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "GNF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "GTQ": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "GYD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "HKD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "HNL": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "HRK": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "HTG": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "HUF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "IDR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "ILS": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "IMP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "INR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "IQD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "IRR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "ISK": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "JEP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "JMD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "JOD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "JPY": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "KES": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "KGS": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "KHR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "KMF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "KPW": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "KRW": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "KWD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "KYD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "KZT": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "LAK": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "LBP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "LKR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "LRD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "LSL": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "LYD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MAD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MDL": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MGA": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MKD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MMK": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MNT": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MOP": {
-          "type": ["null", "number"]
-        },
-        "MRO": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MRU": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MUR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MVR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MWK": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MXN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MYR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "MZN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "NAD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "NGN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "NIO": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "NOK": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "NPR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "NZD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "OMR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "PAB": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "PEN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "PGK": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "PHP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "PKR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "PLN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "PYG": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "QAR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "RON": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "RSD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "RUB": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "RWF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SAR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SBD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SCR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SDG": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SEK": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SGD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SHP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SLL": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SOS": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SRD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SSP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "STD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "STN": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SVC": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SYP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "SZL": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "THB": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "TJS": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "TMT": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "TND": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "TOP": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "TRY": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "TTD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "TWD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "TZS": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "UAH": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "UGX": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "USD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "UYU": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "UZS": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "VES": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "VND": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "VUV": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "WST": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "XAF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "XAG": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "XAU": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "XCD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "XDR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "XOF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "XPD": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "XPF": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "XPT": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "YER": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "ZAR": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "ZMW": {
-          "type": ["null", "number"]
+          "type": "number"
         },
         "ZWL": {
-          "type": ["null", "number"]
+          "type": "number"
         }
-      }
+      },
+      "required": [
+        "AED",
+        "AFN",
+        "ALL",
+        "AMD",
+        "ANG",
+        "AOA",
+        "ARS",
+        "AUD",
+        "AWG",
+        "AZN",
+        "BAM",
+        "BBD",
+        "BDT",
+        "BGN",
+        "BHD",
+        "BIF",
+        "BMD",
+        "BND",
+        "BOB",
+        "BRL",
+        "BSD",
+        "BTC",
+        "BTN",
+        "BWP",
+        "BYN",
+        "BZD",
+        "CAD",
+        "CDF",
+        "CHF",
+        "CLF",
+        "CLP",
+        "CNH",
+        "CNY",
+        "COP",
+        "CRC",
+        "CUC",
+        "CUP",
+        "CVE",
+        "CZK",
+        "DJF",
+        "DKK",
+        "DOP",
+        "DZD",
+        "EGP",
+        "ERN",
+        "ETB",
+        "EUR",
+        "FJD",
+        "FKP",
+        "GBP",
+        "GEL",
+        "GGP",
+        "GHS",
+        "GIP",
+        "GMD",
+        "GNF",
+        "GTQ",
+        "GYD",
+        "HKD",
+        "HNL",
+        "HRK",
+        "HTG",
+        "HUF",
+        "IDR",
+        "ILS",
+        "IMP",
+        "INR",
+        "IQD",
+        "IRR",
+        "ISK",
+        "JEP",
+        "JMD",
+        "JOD",
+        "JPY",
+        "KES",
+        "KGS",
+        "KHR",
+        "KMF",
+        "KPW",
+        "KRW",
+        "KWD",
+        "KYD",
+        "KZT",
+        "LAK",
+        "LBP",
+        "LKR",
+        "LRD",
+        "LSL",
+        "LYD",
+        "MAD",
+        "MDL",
+        "MGA",
+        "MKD",
+        "MMK",
+        "MNT",
+        "MOP",
+        "MRU",
+        "MUR",
+        "MVR",
+        "MWK",
+        "MXN",
+        "MYR",
+        "MZN",
+        "NAD",
+        "NGN",
+        "NIO",
+        "NOK",
+        "NPR",
+        "NZD",
+        "OMR",
+        "PAB",
+        "PEN",
+        "PGK",
+        "PHP",
+        "PKR",
+        "PLN",
+        "PYG",
+        "QAR",
+        "RON",
+        "RSD",
+        "RUB",
+        "RWF",
+        "SAR",
+        "SBD",
+        "SCR",
+        "SDG",
+        "SEK",
+        "SGD",
+        "SHP",
+        "SLL",
+        "SOS",
+        "SRD",
+        "SSP",
+        "STD",
+        "STN",
+        "SVC",
+        "SYP",
+        "SZL",
+        "THB",
+        "TJS",
+        "TMT",
+        "TND",
+        "TOP",
+        "TRY",
+        "TTD",
+        "TWD",
+        "TZS",
+        "UAH",
+        "UGX",
+        "USD",
+        "UYU",
+        "UZS",
+        "VES",
+        "VND",
+        "VUV",
+        "WST",
+        "XAF",
+        "XAG",
+        "XAU",
+        "XCD",
+        "XDR",
+        "XOF",
+        "XPD",
+        "XPF",
+        "XPT",
+        "YER",
+        "ZAR",
+        "ZMW",
+        "ZWL"
+      ]
     }
   }
 }
