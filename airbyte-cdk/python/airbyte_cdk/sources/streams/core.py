@@ -270,6 +270,18 @@ class Stream(ABC):
         """
         return {}
 
+    def log_stream_sync_configuration(self) -> None:
+        """
+        Logs the configuration of this stream.
+        """
+        self.logger.debug(
+            f"Syncing stream instance: {self.name}",
+            extra={
+                "primary_key": self.primary_key,
+                "cursor_field": self.cursor_field,
+            },
+        )
+
     @staticmethod
     def _wrapped_primary_key(keys: Optional[Union[str, List[str], List[List[str]]]]) -> Optional[List[List[str]]]:
         """

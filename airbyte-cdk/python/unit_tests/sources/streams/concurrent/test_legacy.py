@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
@@ -50,9 +50,9 @@ def test_legacy_availability_strategy():
     logger = Mock()
     availability_strategy = LegacyAvailabilityStrategy(stream, source)
 
-    available, message = availability_strategy.check_availability(logger)
-    assert available
-    assert message is None
+    stream_availability = availability_strategy.check_availability(logger)
+    assert stream_availability.is_available()
+    assert stream_availability.message() is None
 
     stream.check_availability.assert_called_once_with(logger, source)
 
@@ -136,14 +136,17 @@ def test_legacy_partition_hash(_slice, expected_hash):
 
 class StreamFacadeTest(unittest.TestCase):
     def setUp(self):
-        self._stream = Mock()
+        self._stream: StreamFacade = Mock()
+        self._stream.name = "stream"
+        self._stream.as_airbyte_stream.return_value = AirbyteStream(
+            name="stream",
+            json_schema={"type": "object"},
+            supported_sync_modes=[SyncMode.full_refresh],
+        )
         self._facade = StreamFacade(self._stream)
 
     def test_name_is_delegated_to_wrapped_stream(self):
         assert self._facade.name == self._stream.name
-
-    def test_primary_key_is_delegated_to_wrapped_stream(self):
-        assert self._facade.primary_key == self._stream.primary_key
 
     def test_cursor_field_is_a_string(self):
         self._stream.cursor_field = "cursor_field"
@@ -166,9 +169,9 @@ class StreamFacadeTest(unittest.TestCase):
         assert self._facade.supports_incremental is False
 
     def test_check_availability_is_delegated_to_wrapped_stream(self):
-        availability = True, None
+        availability = StreamAvailable()
         self._stream.check_availability.return_value = availability
-        assert self._facade.check_availability(Mock(), Mock()) == availability
+        assert self._facade.check_availability(Mock(), Mock()) == (availability.is_available(), availability.message())
         self._stream.check_availability.assert_called_once_with()
 
     def test_get_error_display_message_is_delegated_to_wrapped_stream(self):
@@ -211,30 +214,30 @@ class StreamFacadeTest(unittest.TestCase):
         facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
 
         assert facade.name == "stream"
-        assert facade.primary_key == "id"
         assert facade.cursor_field == "cursor"
+        assert facade._stream._primary_key == ["id"]
 
     def test_create_from_legacy_stream_with_none_primary_key(self):
         legacy_stream = Mock()
+        legacy_stream.name = "stream"
         legacy_stream.primary_key = None
         legacy_stream.cursor_field = []
         source = Mock()
         max_workers = 10
 
         facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
-
-        assert facade.primary_key is None
+        facade._stream._primary_key is None
 
     def test_create_from_legacy_stream_with_composite_primary_key(self):
         legacy_stream = Mock()
+        legacy_stream.name = "stream"
         legacy_stream.primary_key = ["id", "name"]
         legacy_stream.cursor_field = []
         source = Mock()
         max_workers = 10
 
         facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
-
-        assert facade.primary_key == ["id", "name"]
+        facade._stream._primary_key == ["id", "name"]
 
     def test_create_from_legacy_stream_with_empty_list_cursor(self):
         legacy_stream = Mock()

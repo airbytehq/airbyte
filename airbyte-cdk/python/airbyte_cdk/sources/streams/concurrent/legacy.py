@@ -8,14 +8,18 @@ import logging
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import SyncMode, AirbyteStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
+    AbstractAvailabilityStrategy,
+    StreamAvailability,
+    StreamAvailable,
+    StreamUnavailable,
+)
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
@@ -74,7 +78,9 @@ class StreamFacade(Stream):
 
     @classmethod
     def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> List[str]:
-        if stream_primary_key is None or isinstance(stream_primary_key, str):
+        if stream_primary_key is None:
+            return []
+        elif isinstance(stream_primary_key, str):
             return [stream_primary_key]
         elif isinstance(stream_primary_key, list):
             if len(stream_primary_key) > 0 and all(isinstance(k, str) for k in stream_primary_key):
@@ -138,7 +144,8 @@ class StreamFacade(Stream):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._stream.primary_key
+        # This method is not expected to be called directly. It is only implemented for backward compatibility with the old interface
+        return self.as_airbyte_stream().source_defined_primary_key
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -168,7 +175,8 @@ class StreamFacade(Stream):
         :param source:  (ignored)
         :return:
         """
-        return self._stream.check_availability()
+        availability = self._stream.check_availability()
+        return availability.is_available(), availability.message()
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         """
@@ -318,5 +326,9 @@ class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
         self._stream = stream
         self._source = source
 
-    def check_availability(self, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
-        return self._stream.check_availability(logger, self._source)
+    def check_availability(self, logger: logging.Logger) -> StreamAvailability:
+        available, message = self._stream.check_availability(logger, self._source)
+        if available:
+            return StreamAvailable()
+        else:
+            return StreamUnavailable(message)

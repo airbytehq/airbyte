@@ -8,9 +8,7 @@ from functools import lru_cache
 from queue import Queue
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
-from airbyte_protocol.models import AirbyteStream
-
-from airbyte_cdk.models import SyncMode, AirbyteStream
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
@@ -22,6 +20,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator impor
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_protocol.models import AirbyteStream
 
 
 class ThreadBasedConcurrentStream(AbstractStream):
@@ -140,7 +139,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         return self._error_message_parser.get_error_display_message(exception)
 
     def as_airbyte_stream(self) -> AirbyteStream:
-        stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
+        stream = AirbyteStream(name=self.name, json_schema=dict(self._json_schema), supported_sync_modes=[SyncMode.full_refresh])
 
         keys = self._primary_key
         if keys and len(keys) > 0:
