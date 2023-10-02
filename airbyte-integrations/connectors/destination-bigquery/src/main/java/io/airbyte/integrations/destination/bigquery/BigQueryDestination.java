@@ -17,21 +17,22 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
+import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.integrations.BaseConnector;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.DefaultBigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.formatter.GcsCsvBigQueryRecordFormatter;
@@ -47,7 +48,6 @@ import io.airbyte.integrations.destination.gcs.GcsDestination;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsNameTransformer;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -233,13 +233,13 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       setDefaultStreamNamespace(catalog, defaultNamespace);
 
       final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-      final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
-      final ParsedCatalog parsedCatalog = parseCatalog(catalog, datasetLocation);
+      final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
+      final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation);
       final BigQuery bigquery = getBigQuery(config);
       final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation);
 
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
-          "Please use the GCS upload mode if you are syncing a large amount of data.");
+              "Please use the GCS upload mode if you are syncing a large amount of data.");
       return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
     }
 
@@ -248,8 +248,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     setDefaultStreamNamespace(catalog, defaultNamespace);
 
     final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
-    final ParsedCatalog parsedCatalog = parseCatalog(catalog, datasetLocation);
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
+    final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation);
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation);
     // Shared code end
@@ -396,12 +396,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             });
           }
         },
-        (hasFailed) -> {
+        () -> {
           LOGGER.info("Started closing all connections");
           final List<Exception> exceptionsThrown = new ArrayList<>();
           writeConfigs.get().forEach((streamId, uploader) -> {
             try {
-              uploader.close(hasFailed, outputRecordCollector, null);
+              uploader.close(false, outputRecordCollector, null);
             } catch (final Exception e) {
               exceptionsThrown.add(e);
               LOGGER.error("Exception while closing uploader {}", uploader, e);
@@ -428,8 +428,21 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return streamSchema -> new GcsCsvBigQueryRecordFormatter(streamSchema, namingResolver);
   }
 
-  private ParsedCatalog parseCatalog(final ConfiguredAirbyteCatalog catalog, final String datasetLocation) {
-    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(datasetLocation);
+  private void setDefaultStreamNamespace(final ConfiguredAirbyteCatalog catalog, final String namespace) {
+    // Set the default namespace on streams with null namespace. This means we don't need to repeat this
+    // logic in the rest of the connector.
+    // (record messages still need to handle null namespaces though, which currently happens in e.g.
+    // AsyncStreamConsumer#accept)
+    // This probably should be shared logic amongst destinations eventually.
+    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
+      if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
+        stream.getStream().withNamespace(namespace);
+      }
+    }
+  }
+
+  private ParsedCatalog parseCatalog(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final String datasetLocation) {
+    final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
     final CatalogParser catalogParser = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).isPresent()
         ? new CatalogParser(sqlGenerator, TypingAndDedupingFlag.getRawNamespaceOverride(RAW_DATA_DATASET).get())
         : new CatalogParser(sqlGenerator);
@@ -449,21 +462,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         parsedCatalog,
         migrator,
         v2RawTableMigrator,
-            8);
+        8);
 
-  }
-
-  private void setDefaultStreamNamespace(final ConfiguredAirbyteCatalog catalog, final String namespace) {
-    // Set the default namespace on streams with null namespace. This means we don't need to repeat this
-    // logic in the rest of the connector.
-    // (record messages still need to handle null namespaces though, which currently happens in e.g.
-    // AsyncStreamConsumer#accept)
-    // This probably should be shared logic amongst destinations eventually.
-    for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
-      if (StringUtils.isEmpty(stream.getStream().getNamespace())) {
-        stream.getStream().withNamespace(namespace);
-      }
-    }
   }
 
   /**

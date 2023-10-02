@@ -144,16 +144,25 @@
       "type": ["null", "number"]
     },
     "ad_group_ad.ad.final_mobile_urls": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.final_urls": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.tracking_url_template": {
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.url_custom_parameters": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "metrics.cross_device_conversions": {
       "type": ["null", "number"]
@@ -265,7 +274,10 @@
       "type": ["null", "number"]
     },
     "metrics.interaction_event_types": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "metrics.interactions": {
       "type": ["null", "integer"]
@@ -292,7 +304,10 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.descriptions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.price_prefix": {
       "type": ["null", "string"]
@@ -304,13 +319,22 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.headlines": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.logo_images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.square_logo_images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.long_headline": {
       "type": ["null", "string"]
@@ -319,13 +343,22 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.marketing_images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.square_marketing_images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_display_ad.youtube_videos": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.expanded_text_ad.path1": {
       "type": ["null", "string"]
@@ -346,10 +379,16 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_search_ad.descriptions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_search_ad.headlines": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.responsive_search_ad.path1": {
       "type": ["null", "string"]
@@ -370,22 +409,37 @@
       "type": ["null", "number"]
     },
     "ad_group_ad.ad.app_ad.descriptions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_ad.headlines": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_ad.html5_media_bundles": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_ad.images": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "ad_group_ad.ad.app_ad.mandatory_ad_text": {
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.app_ad.youtube_videos": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "metrics.value_per_all_conversions": {
       "type": ["null", "number"]

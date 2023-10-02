@@ -6,7 +6,9 @@ from datetime import datetime, timedelta
 from unittest import mock
 from unittest.mock import patch
 
+import pytest
 import source_bing_ads.client
+from airbyte_cdk.utils import AirbyteTracedException
 from bingads.authorization import OAuthTokens
 from bingads.v13.reporting.exceptions import ReportingDownloadException
 from suds import sudsobject
@@ -106,3 +108,20 @@ def test_handling_ReportingDownloadException(patched_request_tokens):
     client._download_timeout = 600000
     client.should_give_up(ReportingDownloadException(message="test"))
     assert client._download_timeout == 600000
+
+
+def test_get_access_token(requests_mock):
+    requests_mock.post(
+        "https://login.microsoftonline.com/tenant_id/oauth2/v2.0/token",
+        status_code=400,
+        json={
+            "error": "invalid_grant",
+            "error_description": "AADSTS70000: The user could not be authenticated as the grant is expired. The user must sign in again.",
+        },
+    )
+    with pytest.raises(
+        AirbyteTracedException,
+        match="Failed to get OAuth access token by refresh token. The user could not be authenticated as the grant is expired. "
+        "The user must sign in again.",
+    ):
+        source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")

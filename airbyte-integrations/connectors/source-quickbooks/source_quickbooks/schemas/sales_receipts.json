@@ -166,7 +166,7 @@
                 "type": ["null", "number"]
               },
               "UnitPrice": {
-                "type": ["null", "integer"]
+                "type": ["null", "number"]
               },
               "TaxCodeRef": {
                 "type": ["null", "object"],

@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.starburst_galaxy;
 
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_NAME;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_NAME;
 import static io.airbyte.integrations.destination.starburst_galaxy.StarburstGalaxyConstants.STAGING_OBJECT_STORE;
 import static io.airbyte.integrations.destination.starburst_galaxy.StarburstGalaxyStagingStorageType.S3;
 

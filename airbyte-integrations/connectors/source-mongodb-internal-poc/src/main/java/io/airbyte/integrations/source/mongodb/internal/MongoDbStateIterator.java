@@ -6,7 +6,7 @@ package io.airbyte.integrations.source.mongodb.internal;
 
 import com.mongodb.MongoException;
 import com.mongodb.client.MongoCursor;
-import io.airbyte.db.mongodb.MongoUtils;
+import io.airbyte.cdk.db.mongodb.MongoUtils;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStateManager;
 import io.airbyte.integrations.source.mongodb.internal.state.MongoDbStreamState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;

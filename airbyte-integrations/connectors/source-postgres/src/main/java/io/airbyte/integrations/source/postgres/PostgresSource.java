@@ -4,18 +4,20 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.JDBC_INDEX_NON_UNIQUE;
-import static io.airbyte.db.jdbc.JdbcUtils.AMPERSAND;
-import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
-import static io.airbyte.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
-import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
-import static io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.parseSSLConfig;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_COLUMN_COLUMN_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_INDEX_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.JDBC_INDEX_NON_UNIQUE;
+import static io.airbyte.cdk.db.jdbc.JdbcUtils.AMPERSAND;
+import static io.airbyte.cdk.db.jdbc.JdbcUtils.EQUALS;
+import static io.airbyte.cdk.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
+import static io.airbyte.cdk.integrations.debezium.AirbyteDebeziumHandler.isAnyStreamIncrementalSyncMode;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils.DEFAULT_JDBC_PARAMETERS_DELIMITER;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.parseSSLConfig;
+import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
+import static io.airbyte.cdk.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_NO_SCHEMA_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.ROW_COUNT_RESULT_COL;
@@ -30,8 +32,6 @@ import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCt
 import static io.airbyte.integrations.source.postgres.cursor_based.CursorBasedCtidUtils.reclassifyCategorisedCtidStreams;
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.categoriseStreams;
 import static io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.reclassifyCategorisedCtidStreams;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -41,6 +41,25 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import datadog.trace.api.Trace;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.jdbc.StreamingJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
+import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicationConnection;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.JdbcDataSourceUtils;
+import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils;
+import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
+import io.airbyte.cdk.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
@@ -49,27 +68,12 @@ import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.StreamingJdbcDatabase;
-import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
-import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.integrations.debezium.internals.postgres.PostgresReplicationConnection;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.JdbcDataSourceUtils;
-import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
-import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
-import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.ResultWithFailed;
 import io.airbyte.integrations.source.postgres.PostgresQueryUtils.TableBlockSize;
 import io.airbyte.integrations.source.postgres.ctid.CtidPerStreamStateManager;
 import io.airbyte.integrations.source.postgres.ctid.CtidPostgresSourceOperations;
 import io.airbyte.integrations.source.postgres.ctid.CtidStateManager;
+import io.airbyte.integrations.source.postgres.ctid.CtidUtils;
 import io.airbyte.integrations.source.postgres.ctid.CtidUtils.StreamsCategorised;
 import io.airbyte.integrations.source.postgres.ctid.FileNodeHandler;
 import io.airbyte.integrations.source.postgres.ctid.PostgresCtidHandler;
@@ -80,9 +84,6 @@ import io.airbyte.integrations.source.postgres.internal.models.XminStatus;
 import io.airbyte.integrations.source.postgres.xmin.PostgresXminHandler;
 import io.airbyte.integrations.source.postgres.xmin.XminCtidUtils.XminStreams;
 import io.airbyte.integrations.source.postgres.xmin.XminStateManager;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -492,6 +493,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());
 
+      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple =
+          CtidUtils.isTidRangeScanCapableDBServer(database) ? null
+              : PostgresQueryUtils.getTableMaxTupleForStreams(database, finalListOfStreamsToBeSyncedViaCtid, getQuoteString());
       if (!streamsCategorised.ctidStreams().streamsForCtidSync().isEmpty()) {
         LOGGER.info("Streams to be synced via ctid : {}", finalListOfStreamsToBeSyncedViaCtid.size());
         LOGGER.info("Streams: {}", prettyPrintConfiguredAirbyteStreamList(finalListOfStreamsToBeSyncedViaCtid));
@@ -511,7 +515,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       final PostgresCtidHandler ctidHandler =
           new PostgresCtidHandler(sourceConfig, database, new CtidPostgresSourceOperations(Optional.empty()), getQuoteString(),
-              fileNodeHandler, tableBlockSizes, ctidStateManager,
+              fileNodeHandler, tableBlockSizes, tablesMaxTuple, ctidStateManager,
               namespacePair -> Jsons.jsonNode(xminStatus));
 
       final List<AutoCloseableIterator<AirbyteMessage>> initialSyncCtidIterators = new ArrayList<>(ctidHandler.getInitialSyncCtidIterator(
@@ -557,6 +561,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               database,
               finalListOfStreamsToBeSyncedViaCtid,
               getQuoteString());
+
+      final Map<io.airbyte.protocol.models.AirbyteStreamNameNamespacePair, Integer> tablesMaxTuple =
+          CtidUtils.isTidRangeScanCapableDBServer(database) ? null
+              : PostgresQueryUtils.getTableMaxTupleForStreams(database, finalListOfStreamsToBeSyncedViaCtid, getQuoteString());
+
       if (finalListOfStreamsToBeSyncedViaCtid.isEmpty()) {
         LOGGER.info("No Streams will be synced via ctid.");
       } else {
@@ -581,6 +590,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
               getQuoteString(),
               fileNodeHandler,
               tableBlockSizes,
+              tablesMaxTuple,
               ctidStateManager,
               namespacePair -> Jsons.jsonNode(cursorBasedStatusMap.get(namespacePair)));
 

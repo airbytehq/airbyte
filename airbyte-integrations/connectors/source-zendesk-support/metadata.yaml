@@ -7,7 +7,7 @@ data:
   connectorType: source
   maxSecondsBetweenMessages: 10800
   definitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
-  dockerImageTag: 1.7.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-zendesk-support
   githubIssueLabel: source-zendesk-support
   icon: zendesk-support.svg
@@ -46,4 +46,7 @@ data:
       1.0.0:
         message: "`cursor_field` for `Tickets` stream is changed to `generated_timestamp`"
         upgradeDeadline: "2023-07-19"
+      2.0.0:
+        message: "The `Deleted Tickets` stream was removed. Deleted tickets are still available from the Tickets stream."
+        upgradeDeadline: "2023-10-04"
 metadataSpecVersion: "1.0"

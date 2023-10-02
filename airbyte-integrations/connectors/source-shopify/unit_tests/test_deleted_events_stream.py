@@ -74,36 +74,36 @@ def test_has_no_availability_strategy(stream, expected, config):
             Products,
             [
                 {
-                    'id': 123,
-                    'subject_id': 234,
-                    'created_at': '2023-09-05T14:02:00-07:00',
-                    'subject_type': 'Product',
-                    'verb': 'destroy',
-                    'arguments': [],
-                    'message': 'Test Message',
-                    'author': 'Online Store',
-                    'description': 'Test Description',
-                    'shop_url': 'airbyte-integration-test',
+                    "id": 123,
+                    "subject_id": 234,
+                    "created_at": "2023-09-05T14:02:00-07:00",
+                    "subject_type": "Product",
+                    "verb": "destroy",
+                    "arguments": [],
+                    "message": "Test Message",
+                    "author": "Online Store",
+                    "description": "Test Description",
+                    "shop_url": "airbyte-integration-test",
                 },
             ],
             [
                 {
-                    'id': 123,
-                    'subject_id': 234,
-                    'created_at': '2023-09-05T14:02:00-07:00',
-                    'subject_type': 'Product',
-                    'verb': 'destroy',
-                    'arguments': [],
-                    'message': 'Test Message',
-                    'author': 'Online Store',
-                    'description': 'Test Description',
-                    'shop_url': 'airbyte-integration-test',
+                    "id": 123,
+                    "subject_id": 234,
+                    "created_at": "2023-09-05T14:02:00-07:00",
+                    "subject_type": "Product",
+                    "verb": "destroy",
+                    "arguments": [],
+                    "message": "Test Message",
+                    "author": "Online Store",
+                    "description": "Test Description",
+                    "shop_url": "airbyte-integration-test",
                 },
-            ]
+            ],
         ),
     ],
 )
-def test_read_deleted_records(stream, requests_mock, deleted_records_json, expected, config,  mocker):
+def test_read_deleted_records(stream, requests_mock, deleted_records_json, expected, config, mocker):
     stream = stream(config)
     deleted_records_url = stream.url_base + stream.deleted_events.path()
     requests_mock.get(deleted_records_url, json=deleted_records_json)
@@ -118,27 +118,27 @@ def test_read_deleted_records(stream, requests_mock, deleted_records_json, expec
             Products,
             [
                 {
-                    'id': 123,
-                    'subject_id': 234,
-                    'created_at': '2023-09-05T14:02:00-07:00',
-                    'subject_type': 'Product',
-                    'verb': 'destroy',
-                    'arguments': [],
-                    'message': 'Test Message',
-                    'author': 'Online Store',
-                    'description': 'Test Description',
-                    'shop_url': 'airbyte-integration-test',
+                    "id": 123,
+                    "subject_id": 234,
+                    "created_at": "2023-09-05T14:02:00-07:00",
+                    "subject_type": "Product",
+                    "verb": "destroy",
+                    "arguments": [],
+                    "message": "Test Message",
+                    "author": "Online Store",
+                    "description": "Test Description",
+                    "shop_url": "airbyte-integration-test",
                 }
             ],
             [
                 {
-                    'id': 234,
-                    'deleted_at': '2023-09-05T14:02:00-07:00',
-                    'updated_at': '2023-09-05T14:02:00-07:00',
-                    'deleted_message': 'Test Message',
-                    'deleted_description': 'Test Description',
-                    'shop_url': 'airbyte-integration-test',
-                    }
+                    "id": 234,
+                    "deleted_at": "2023-09-05T14:02:00-07:00",
+                    "updated_at": "2023-09-05T14:02:00-07:00",
+                    "deleted_message": "Test Message",
+                    "deleted_description": "Test Description",
+                    "shop_url": "airbyte-integration-test",
+                }
             ],
         ),
     ],
@@ -157,24 +157,24 @@ def test_produce_deleted_records_from_events(stream, input, expected, config):
             Products,
             {},
             None,
-            {'limit': 250, 'order': 'updated_at asc', 'updated_at_min': '2020-11-01'},
-            {'filter': 'Product', 'verb': 'destroy'},
+            {"limit": 250, "order": "updated_at asc", "updated_at_min": "2020-11-01"},
+            {"filter": "Product", "verb": "destroy"},
         ),
         # params with STATE
         (
             Products,
             {"updated_at": "2028-01-01", "deleted": {"deleted_at": "2029-01-01"}},
             None,
-            {'limit': 250, 'order': 'updated_at asc', 'updated_at_min': '2028-01-01'},
-            {'created_at_min': '2029-01-01', 'filter': 'Product', 'verb': 'destroy'},
+            {"limit": 250, "order": "updated_at asc", "updated_at_min": "2028-01-01"},
+            {"created_at_min": "2029-01-01", "filter": "Product", "verb": "destroy"},
         ),
         # params with NO STATE but with NEXT_PAGE_TOKEN
         (
             Products,
             {},
-            {'page_info': 'next_page_token'},
-            {'limit': 250, 'page_info': 'next_page_token'},
-            {'page_info': 'next_page_token'},
+            {"page_info": "next_page_token"},
+            {"limit": 250, "page_info": "next_page_token"},
+            {"page_info": "next_page_token"},
         ),
     ],
 )
@@ -214,28 +214,28 @@ def test_default_deleted_state_comparison_value(stream, config, expected):
             Products,
             {"id": 1, "updated_at": "2021-01-01"},
             {},
-            {'updated_at': '2021-01-01', 'deleted': {'deleted_at': ''}},
+            {"updated_at": "2021-01-01", "deleted": {"deleted_at": ""}},
         ),
         # with INITIAL STATE
         (
             Products,
             {"id": 1, "updated_at": "2022-01-01"},
-            {'updated_at': '2021-01-01', 'deleted': {'deleted_at': ''}},
-            {'updated_at': '2022-01-01', 'deleted': {'deleted_at': ''}},
+            {"updated_at": "2021-01-01", "deleted": {"deleted_at": ""}},
+            {"updated_at": "2022-01-01", "deleted": {"deleted_at": ""}},
         ),
         # with NO Last Record value and NO current state value
         (
             Products,
             {},
             {},
-            {'updated_at': '', 'deleted': {'deleted_at': ''}},
+            {"updated_at": "", "deleted": {"deleted_at": ""}},
         ),
         # with NO Last Record value but with Current state value
         (
             Products,
             {},
-            {'updated_at': '2030-01-01', 'deleted': {'deleted_at': ''}},
-            {'updated_at': '2030-01-01', 'deleted': {'deleted_at': ''}},
+            {"updated_at": "2030-01-01", "deleted": {"deleted_at": ""}},
+            {"updated_at": "2030-01-01", "deleted": {"deleted_at": ""}},
         ),
     ],
 )

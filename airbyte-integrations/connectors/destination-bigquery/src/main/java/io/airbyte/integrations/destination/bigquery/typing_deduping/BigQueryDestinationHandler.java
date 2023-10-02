@@ -72,8 +72,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
     if (job.getStatus().getError() != null) {
       throw new BigQueryException(Streams.concat(
           Stream.of(job.getStatus().getError()),
-          job.getStatus().getExecutionErrors().stream()
-      ).toList());
+          job.getStatus().getExecutionErrors().stream()).toList());
     }
 
     final JobStatistics.QueryStatistics statistics = job.getStatistics();

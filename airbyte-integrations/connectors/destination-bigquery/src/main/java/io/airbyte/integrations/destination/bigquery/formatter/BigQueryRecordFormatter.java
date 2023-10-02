@@ -6,8 +6,8 @@ package io.airbyte.integrations.destination.bigquery.formatter;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.Schema;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.destination_async.partial_messages.PartialAirbyteMessage;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,7 +49,7 @@ public abstract class BigQueryRecordFormatter {
 
   public abstract JsonNode formatRecord(AirbyteRecordMessage recordMessage);
 
-  public abstract String formatRecord(PartialAirbyteMessage recordMessage);
+  public abstract JsonNode formatRecord(PartialAirbyteMessage recordMessage);
 
   public Schema getBigQuerySchema() {
     if (bigQuerySchema == null) {

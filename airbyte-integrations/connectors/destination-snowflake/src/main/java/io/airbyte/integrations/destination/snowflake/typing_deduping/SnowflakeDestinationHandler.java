@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.SQLException;
@@ -85,7 +85,8 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
       database.execute(sql);
     } catch (final SnowflakeSQLException e) {
       LOGGER.error("Sql {} failed", queryId, e);
-      // Snowflake SQL exceptions by default may not be super helpful, so we try to extract the relevant part of the message.
+      // Snowflake SQL exceptions by default may not be super helpful, so we try to extract the relevant
+      // part of the message.
       final String trimmedMessage;
       if (e.getMessage().startsWith(EXCEPTION_COMMON_PREFIX)) {
         // The first line is a pretty generic message, so just remove it

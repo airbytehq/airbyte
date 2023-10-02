@@ -107,27 +107,21 @@ pip install -e .
 You should see that `pip` has uninstalled the version of `airbyte-cdk` defined by your connector's `setup.py` and installed your local CDK. Any changes you make will be immediately reflected in your editor, so long as your editor's interpreter is set to your connector's virtual environment.
 
 ##### Building a Python connector in Docker with your local CDK installed
+_Pre-requisite: Install the [`airbyte-ci` CLI](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)_
 
 You can build your connector image with the local CDK using
 ```bash
 # from the airbytehq/airbyte base directory
-CONNECTOR_TAG=<TAG_NAME> CONNECTOR_NAME=<CONNECTOR_NAME> sh airbyte-integrations/scripts/build-connector-image-with-local-cdk.sh
+airbyte-ci connectors --use-local-cdk --name=<CONNECTOR> build
 ```
 Note that the local CDK is injected at build time, so if you make changes, you will have to run the build command again to see them reflected.
 
 ##### Running Connector Acceptance Tests for a single connector in Docker with your local CDK installed
+_Pre-requisite: Install the [`airbyte-ci` CLI](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md)_
 
 To run acceptance tests for a single connectors using the local CDK, from the connector directory, run
 ```bash
-LOCAL_CDK=1 sh acceptance-test-docker.sh
-```
-To additionally fetch secrets required by CATs, set the `FETCH_SECRETS` environment variable. This requires you to have a Google Service Account, and the GCP_GSM_CREDENTIALS environment variable to be set, per the instructions [here](https://github.com/airbytehq/airbyte/tree/master/airbyte-ci/connectors/ci_credentials).
-
-##### Running Connector Acceptance Tests for multiple connectors in Docker with your local CDK installed
-
-To run acceptance tests for multiple connectors using the local CDK, from the root of the `airbyte` repo, run
-```bash
-./airbyte-cdk/python/bin/run-cats-with-local-cdk.sh -c <connector1>,<connector2>,...
+airbyte-ci connectors --use-local-cdk --name=<CONNECTOR> test
 ```
 
 #### When you don't have access to the API

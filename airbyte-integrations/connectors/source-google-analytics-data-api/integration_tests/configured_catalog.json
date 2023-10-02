@@ -819,7 +819,11 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["yearWeek"],
-        "source_defined_primary_key": [["property_id"], ["yearWeek"], ["eventName"]]
+        "source_defined_primary_key": [
+          ["property_id"],
+          ["yearWeek"],
+          ["eventName"]
+        ]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",

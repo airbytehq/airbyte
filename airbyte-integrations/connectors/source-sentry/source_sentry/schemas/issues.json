@@ -130,19 +130,19 @@
       "type": "integer"
     },
     "isUnhandled": {
-      "type" : ["null", "boolean"]
+      "type": ["null", "boolean"]
     },
     "issueCategory": {
-      "type" : ["null", "string"]
+      "type": ["null", "string"]
     },
     "issueType": {
-      "type" : ["null", "string"]
+      "type": ["null", "string"]
     },
     "platform": {
-      "type" : ["null", "string"]
+      "type": ["null", "string"]
     },
     "substatus": {
-      "type" : ["null", "string"]
+      "type": ["null", "string"]
     }
   }
 }

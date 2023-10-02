@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.redis;
 
-import io.airbyte.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
 
 public class SshPasswordRedisDestinationAcceptanceTest extends SshRedisDestinationAcceptanceTest {
 

@@ -4,18 +4,18 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static io.airbyte.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
+import static io.airbyte.cdk.db.mongodb.MongoUtils.MongoInstanceType.STANDALONE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.mongodb.client.MongoCollection;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.mongodb.MongoDatabase;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.integrations.source.mongodb.MongoDbSource;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;

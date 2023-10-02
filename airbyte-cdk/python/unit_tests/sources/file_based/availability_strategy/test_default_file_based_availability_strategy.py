@@ -26,7 +26,6 @@ _ANY_SCHEMA = {"key": "value"}
 
 
 class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
-
     def setUp(self) -> None:
         self._stream_reader = Mock(spec=AbstractFileBasedStreamReader)
         self._strategy = DefaultFileBasedAvailabilityStrategy(self._stream_reader)

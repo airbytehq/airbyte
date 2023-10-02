@@ -6,10 +6,10 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.BigQuery;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
-import io.airbyte.integrations.destination.buffered_stream_consumer.OnStartFunction;
-import io.airbyte.integrations.destination_async.AsyncStreamConsumer;
-import io.airbyte.integrations.destination_async.OnCloseFunction;
-import io.airbyte.integrations.destination_async.buffers.BufferManager;
+import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.OnStartFunction;
+import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
+import io.airbyte.cdk.integrations.destination_async.OnCloseFunction;
+import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;

@@ -4,18 +4,18 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_PASS;
-import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_URL;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_PASS;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.CLIENT_KEY_STORE_URL;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SSL_MODE;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_PASS;
+import static io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.TRUST_KEY_STORE_URL;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.debezium.internals.mysql.CustomMySQLTinyIntOneToBooleanConverter;
-import io.airbyte.integrations.debezium.internals.mysql.MySQLDateTimeConverter;
-import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.debezium.internals.mysql.CustomMySQLTinyIntOneToBooleanConverter;
+import io.airbyte.cdk.integrations.debezium.internals.mysql.MySQLDateTimeConverter;
+import io.airbyte.cdk.integrations.source.jdbc.JdbcSSLConnectionUtils.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -69,10 +69,11 @@ public class MySqlCdcProperties {
     if (sourceConfig.get("replication_method").has("server_time_zone")) {
       final String serverTimeZone = sourceConfig.get("replication_method").get("server_time_zone").asText();
       if (!serverTimeZone.isEmpty()) {
-        /** Per Debezium docs, https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-temporal-types
-        * this property is now connectionTimeZone
-        * {@link com.mysql.cj.conf.PropertyKey#connectionTimeZone}
-        **/
+        /**
+         * Per Debezium docs,
+         * https://debezium.io/documentation/reference/stable/connectors/mysql.html#mysql-temporal-types
+         * this property is now connectionTimeZone {@link com.mysql.cj.conf.PropertyKey#connectionTimeZone}
+         **/
         props.setProperty("database.connectionTimeZone", serverTimeZone);
       }
     }

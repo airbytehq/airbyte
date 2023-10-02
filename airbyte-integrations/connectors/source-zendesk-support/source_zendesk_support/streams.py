@@ -955,28 +955,3 @@ class ArticleCommentVotes(AbstractVotes, HttpSubStream):
         article_id = stream_slice.get("parent").get("source_id")
         comment_id = stream_slice.get("parent").get("id")
         return f"help_center/articles/{article_id}/comments/{comment_id}/votes"
-
-
-class DeletedTickets(CursorPaginationZendeskSupportStream):
-    """Deleted Tickets Stream https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#list-deleted-tickets"""
-
-    response_list_name: str = "deleted_tickets"
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    cursor_field = "deleted_at"
-
-    def path(self, **kwargs) -> str:
-        return "deleted_tickets.json"
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = {
-            "sort_by": self.cursor_field,
-            "page[size]": self.page_size,
-        }
-        if next_page_token:
-            params.update(next_page_token)
-        return params
