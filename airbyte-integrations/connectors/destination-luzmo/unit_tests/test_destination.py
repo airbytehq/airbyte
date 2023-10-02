@@ -20,7 +20,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_cumulio.destination import DestinationCumulio
+from destination_luzmo.destination import DestinationLuzmo
 
 
 @pytest.fixture(name="logger")
@@ -33,7 +33,7 @@ def config_fixture() -> Mapping[str, Any]:
     return {
         "api_key": "123abc",
         "api_token": "456def",
-        "api_host": "https://api.cumul.io",
+        "api_host": "https://api.luzmo.com",
     }
 
 
@@ -100,10 +100,10 @@ def airbyte_state_message_fixture() -> AirbyteMessage:
 
 
 def test_check(config: Mapping[str, Any], logger: MagicMock):
-    with patch("destination_cumulio.destination.CumulioClient") as cumulio_client:
-        destination_cumulio = DestinationCumulio()
-        destination_cumulio.check(logger, config)
-        assert cumulio_client.mock_calls == [
+    with patch("destination_luzmo.destination.LuzmoClient") as luzmo_client:
+        destination_luzmo = DestinationLuzmo()
+        destination_luzmo.check(logger, config)
+        assert luzmo_client.mock_calls == [
             call(config, logger),
             call().test_api_token(),
         ]
@@ -117,14 +117,14 @@ def test_write_no_input_messages(
     airbyte_state_message: AirbyteMessage,
     logger: MagicMock,
 ):
-    with patch("destination_cumulio.destination.CumulioWriter") as cumulio_writer:
-        destination_cumulio = DestinationCumulio()
+    with patch("destination_luzmo.destination.LuzmoWriter") as luzmo_writer:
+        destination_luzmo = DestinationLuzmo()
 
         input_messages = [airbyte_state_message]
-        result = list(destination_cumulio.write(config, configured_catalog, input_messages))
+        result = list(destination_luzmo.write(config, configured_catalog, input_messages))
         assert result == [airbyte_state_message]
 
-        assert cumulio_writer.mock_calls == [
+        assert luzmo_writer.mock_calls == [
             call(config, configured_catalog, logger),
             call().delete_stream_entries("overwrite_stream"),
             call().flush_all(),  # The first flush_all is called before yielding the state message
@@ -140,12 +140,12 @@ def test_write(
     airbyte_state_message: AirbyteMessage,
     logger: MagicMock,
 ):
-    with patch("destination_cumulio.destination.CumulioWriter") as cumulio_writer:
+    with patch("destination_luzmo.destination.LuzmoWriter") as luzmo_writer:
         input_messages = [airbyte_message_1, airbyte_message_2, airbyte_state_message]
-        destination_cumulio = DestinationCumulio()
-        result = list(destination_cumulio.write(config, configured_catalog, input_messages))
+        destination_luzmo = DestinationLuzmo()
+        result = list(destination_luzmo.write(config, configured_catalog, input_messages))
         assert result == [airbyte_state_message]
-        assert cumulio_writer.mock_calls == [
+        assert luzmo_writer.mock_calls == [
             call(config, configured_catalog, logger),
             call().delete_stream_entries("overwrite_stream"),
             call().queue_write_operation("append_stream", {"string_column": "value_1", "int_column": 1}),

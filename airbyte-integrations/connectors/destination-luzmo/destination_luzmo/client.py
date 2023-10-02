@@ -7,7 +7,7 @@ import time
 from logging import Logger
 from typing import Any, Mapping
 
-from cumulio.cumulio import Cumulio  # type: ignore
+from luzmo.luzmo import Luzmo  # type: ignore
 
 # def _retry_with_backoff(
 #     fn: Callable,
@@ -18,8 +18,8 @@ from cumulio.cumulio import Cumulio  # type: ignore
 #             return fn()
 
 
-class CumulioClient:
-    # Cumul.io will auto-generate a UUID that is unique to the dataset created.
+class LuzmoClient:
+    # Luzmo will auto-generate a UUID that is unique to the dataset created.
     # To ensure a consistent flow to the same dataset, we'll add a tag to the dataset:
     # the tag is a combination of the prefix below and the stream name.
     # This allows us to retrieve the same dataset resource upon further sync schedules.
@@ -33,7 +33,7 @@ class CumulioClient:
 
     def __init__(self, config: Mapping[str, Any], logger: Logger):
         self.logger = logger
-        self.client = Cumulio(config["api_key"], config["api_token"], config["api_host"])
+        self.client = Luzmo(config["api_key"], config["api_token"], config["api_host"])
 
     def batch_write(
         self,
@@ -44,7 +44,7 @@ class CumulioClient:
         is_first_batch: bool,
         update_metadata: bool,
     ):
-        """Write a list of data (array of arrays) in a specific sync mode to Cumul.io."""
+        """Write a list of data (array of arrays) in a specific sync mode to Luzmo."""
         if len(write_buffer) == 0 or (len(write_buffer) == 1 and len(write_buffer[0]) == 0):
             return
 
@@ -62,17 +62,17 @@ class CumulioClient:
                 update_metadata,
             )
 
-        self.logger.info(f"Successfully pushed {len(write_buffer)} rows to Cumul.io's data warehouse in a dataset with id {dataset_id}.")
+        self.logger.info(f"Successfully pushed {len(write_buffer)} rows to Luzmo's data warehouse in a dataset with id {dataset_id}.")
 
     def test_api_token(self):
         """Test an API key and token by retrieving it."""
         self.logger.info("Checking API host, key and token.")
         data = self.client.get("authorization", {"where": {"type": "api"}})
-        # if response contains a count 0, the API host, key and token combination is unknown to Cumul.io.
+        # if response contains a count 0, the API host, key and token combination is unknown to Luzmo.
         if data["count"] == 0:
             raise Exception(
                 "Unknown combination of API host, key and token. Can you verify whether you've specified the correct combination of "
-                "Cumul.io API host, key, and token?"
+                "Luzmo API host, key, and token?"
             )
         self.logger.info("API host, key and token combination is valid.")
 
@@ -88,7 +88,7 @@ class CumulioClient:
         self.logger.info("Finished deleting dummy dataset.")
 
     def delete_dataset(self, stream_name: str):
-        """Delete a dataset in Cumul.io.
+        """Delete a dataset in Luzmo.
         This should only be used for testing purposes. Currently used in:
           - Integration tests
           - When pushing dummy data to an example dataset during "check" of Airbyte destination connector (see destination.py check method)
@@ -100,12 +100,12 @@ class CumulioClient:
         self.logger.info(f"No dataset for stream {stream_name} found to delete.")
 
     def get_ordered_columns(self, stream_name: str):
-        """Return a list of ordered columns (based on their order in Cumul.io).
-        The dataset is retrieved based on a Cumul.io tag that includes the stream_name.
+        """Return a list of ordered columns (based on their order in Luzmo).
+        The dataset is retrieved based on a Luzmo tag that includes the stream_name.
         """
         dataset_and_columns = self.get_dataset_and_columns_from_stream_name(stream_name)
         if dataset_and_columns is None:
-            # Dataset hasn't been created yet on Cumul.io's side.
+            # Dataset hasn't been created yet on Luzmo's side.
             return []
         # Sort columns based on the order property.
         order_sorted_columns = sorted(dataset_and_columns["columns"], key=lambda x: x["order"])
@@ -113,7 +113,7 @@ class CumulioClient:
         return [column["source_name"] for column in order_sorted_columns]
 
     def get_dataset_and_columns_from_stream_name(self, stream_name: str):
-        """Return a dataset and its columns based on a Cumul.io tag that includes the stream_name."""
+        """Return a dataset and its columns based on a Luzmo tag that includes the stream_name."""
         result = self.client.get(
             "securable",
             {
@@ -137,9 +137,9 @@ class CumulioClient:
         if result["count"] > 1:
             raise Exception(
                 f"More than one dataset has been returned, could you verify whether the tag for stream {stream_name} is set up "
-                f"correctly in Cumul.io (expected a tag '{self.TAG_PREFIX}{stream_name}')?"
+                f"correctly in Luzmo (expected a tag '{self.TAG_PREFIX}{stream_name}')?"
             )
-        # A count of zero means that the dataset has not been created on Cumul.io's side yet.
+        # A count of zero means that the dataset has not been created on Luzmo's side yet.
         # We'll return None to indicate this.
         elif result["count"] == 0:
             return None
@@ -160,7 +160,7 @@ class CumulioClient:
             return self._associate_tag_dataset_id(self.REPLACE_TAG, dataset_id)
         self.logger.debug(
             f"No dataset found to set Replace tag on (looking for stream name '{stream_name}'), "
-            f"this might be due to the dataset not existing yet on Cumul.io's side."
+            f"this might be due to the dataset not existing yet on Luzmo's side."
         )
 
     def _push_batch_to_new_dataset(self, stream_name: str, write_buffer: list[list[Any]], column_headers: list[str]):
@@ -179,7 +179,7 @@ class CumulioClient:
         while (not data_is_pushed) and try_count < len(self.BACKOFF_TIMES_IN_SECONDS):
             try:
                 self.logger.info(
-                    f"Pushing {len(write_buffer)} rows to Cumul.io's data warehouse in a new Cumul.io dataset "
+                    f"Pushing {len(write_buffer)} rows to Luzmo's data warehouse in a new Luzmo dataset "
                     f"with name {self.INITIAL_DATASET_NAME_PREFIX}{stream_name}."
                 )
 
@@ -225,10 +225,10 @@ class CumulioClient:
         first_batch_replace: bool,
         update_metadata: bool,
     ):
-        cumulio_sync_type = "replace" if first_batch_replace else "append"
+        luzmo_sync_type = "replace" if first_batch_replace else "append"
 
         properties = {
-            "type": cumulio_sync_type,
+            "type": luzmo_sync_type,
             "data": write_buffer,
             "securable_id": dataset_id,
             "options": {
@@ -241,7 +241,7 @@ class CumulioClient:
         while (not data_is_pushed) and try_count < len(self.BACKOFF_TIMES_IN_SECONDS):
             try:
                 self.logger.info(
-                    f"Pushing {len(write_buffer)} rows to Cumul.io dataset with id {dataset_id} in {cumulio_sync_type} mode, "
+                    f"Pushing {len(write_buffer)} rows to Luzmo dataset with id {dataset_id} in {luzmo_sync_type} mode, "
                     f"{'while' if update_metadata else 'not'} updating the columns of that dataset."
                 )
                 self.client.create("data", properties)
@@ -299,12 +299,12 @@ class CumulioClient:
         if tag_id is not None:
             return self._dissociate_tag_with_dataset_id(tag_id, dataset_id)
         self.logger.debug(
-            f"No replace tag found, so could not remove for Cumul.io dataset with id {dataset_id}."
+            f"No replace tag found, so could not remove for Luzmo dataset with id {dataset_id}."
             f"This could be expected as the stream might be configured in overwrite mode."
         )
 
     def _get_dataset_id_from_stream_name(self, stream_name: str):
-        """Return a dataset ID based on a Cumul.io tag that includes the stream_name."""
+        """Return a dataset ID based on a Luzmo tag that includes the stream_name."""
         result = self.client.get(
             "securable",
             {
@@ -323,9 +323,9 @@ class CumulioClient:
         if result["count"] > 1:
             raise Exception(
                 f"More than one dataset has been found, could you verify whether the tag for stream {stream_name} is set up "
-                f"correctly in Cumul.io (expected a tag '{self.TAG_PREFIX}{stream_name}' on a single dataset)?"
+                f"correctly in Luzmo (expected a tag '{self.TAG_PREFIX}{stream_name}' on a single dataset)?"
             )
-        # A count of zero means that the dataset has not been created on Cumul.io's side yet.
+        # A count of zero means that the dataset has not been created on Luzmo's side yet.
         # We'll return None to indicate this.
         elif result["count"] == 0:
             return None

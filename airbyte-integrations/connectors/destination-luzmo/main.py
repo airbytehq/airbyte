@@ -5,7 +5,7 @@
 
 import sys
 
-from destination_cumulio import DestinationCumulio
+from destination_luzmo import DestinationLuzmo
 
 if __name__ == "__main__":
-    DestinationCumulio().run(sys.argv[1:])
+    DestinationLuzmo().run(sys.argv[1:])

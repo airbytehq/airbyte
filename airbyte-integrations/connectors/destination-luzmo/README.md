@@ -1,7 +1,7 @@
-# Cumulio Destination
+# Luzmo Destination
 
-This is the repository for the Cumulio destination connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/cumulio).
+This is the repository for the Luzmo destination connector, written in Python.
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/destinations/luzmo).
 
 ## Local development
 
@@ -32,16 +32,16 @@ should work as you expect.
 #### Building via Gradle
 From the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:destination-cumulio:build
+./gradlew :airbyte-integrations:connectors:destination-luzmo:build
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/destinations/cumulio)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `destination_cumulio/spec.json` file.
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/destinations/luzmo)
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `destination_luzmo/spec.json` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
-**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `destination cumulio test creds`
+**If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `destination luzmo test creds`
 and place them into `secrets/config.json`.
 
 ### Locally running the connector
@@ -56,12 +56,12 @@ python main.py write --config secrets/config.json --catalog integration_tests/co
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/destination-cumulio:dev
+docker build . -t airbyte/destination-luzmo:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:destination-cumulio:airbyteDocker
+./gradlew :airbyte-integrations:connectors:destination-luzmo:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -69,10 +69,10 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/destination-cumulio:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-cumulio:dev check --config /secrets/config.json
+docker run --rm airbyte/destination-luzmo:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-luzmo:dev check --config /secrets/config.json
 # messages.jsonl is a file containing line-separated JSON representing AirbyteMessages
-cat messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-cumulio:dev write --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+cat messages.jsonl | docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-luzmo:dev write --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 ## Testing
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
@@ -100,11 +100,11 @@ Coming soon:
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:destination-cumulio:unitTest
+./gradlew :airbyte-integrations:connectors:destination-luzmo:unitTest
 ```
 To run acceptance and custom integration tests:
 ```
-./gradlew :airbyte-integrations:connectors:destination-cumulio:integrationTest
+./gradlew :airbyte-integrations:connectors:destination-luzmo:integrationTest
 ```
 
 ## Dependency Management
