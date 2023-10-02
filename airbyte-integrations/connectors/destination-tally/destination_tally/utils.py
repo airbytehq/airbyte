@@ -395,7 +395,7 @@ def prepare_payment_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
     required_fields = ["Voucher Date", "Voucher Number", "Voucher Type", "Cash/Bank Ledger", "Debit Ledgers", "Amount", "Instrument Type"]
 
     for field in required_fields:
-        if (field not in data) or (data[field] == ""):
+        if (field not in data) or (str(data[field]) == ""):
             logger.error(f"Please provide {field} as it is required field.")
             return
 
