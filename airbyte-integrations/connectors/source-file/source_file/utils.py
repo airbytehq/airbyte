@@ -8,6 +8,7 @@ from urllib.parse import parse_qs, urlencode, urlparse
 # default logger
 logger = logging.getLogger("airbyte")
 
+LOCAL_STORAGE_NAME = "local"
 
 def dropbox_force_download(url):
     """
