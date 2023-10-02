@@ -7,7 +7,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
-  dockerImageTag: 1.6.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-google-analytics-data-api
   githubIssueLabel: source-google-analytics-data-api
   icon: google-analytics.svg
@@ -18,6 +18,11 @@ data:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "Version 2.0.0 introduces changes to stream naming. This fixes a defect when the connector config has multiple properties and produces duplicated streams. In order to have the connector working, please re-set up the connector."
+        upgradeDeadline: "2023-10-16"
   releaseStage: generally_available
   suggestedStreams:
     streams:
