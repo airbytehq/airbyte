@@ -1,0 +1,126 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Amazon Dsp Campaign Spec
+  type: object
+  properties:
+    client_id:
+      title: Client ID
+      description:
+        The client ID of your Amazon DSP developer application.
+      type: string
+    client_secret:
+      title: Client Secret
+      description:
+        The client secret of your Amazon DSP developer application.
+      airbyte_secret: true
+      type: string
+    refresh_token:
+      title: Refresh Token
+      description:
+        Amazon DSP refresh token.
+      airbyte_secret: true
+      type: string
+<<<<<<< HEAD
+    auth_url:
+      title: auth_url
+      type: object
+      properties:
+        default:
+          title: default
+          description:
+             The default auth url for Amazon DSP.
+          type: string
+=======
+>>>>>>> 9ef4df2b95 (Adding amazon-dsp-campaign connector)
+    startDate:
+      title: startDate
+      description:
+        The start date for which you want the report for. In YYYY-MM-DD format.
+      type: string
+    endDate:
+      title: startDate
+      description:
+        The end date for which you want the report for. In YYYY-MM-DD format.
+      type: string
+    format:
+      title: format
+      description:
+        Format in which you want your data to be returned. Supported formats are CSV and JSON.
+      type: string
+    time_unit:
+      title: time_unit
+      description:
+        The time unit for which you want the report for. Supported time units are Summary and Daily.
+      type: string
+    report_types:
+      title: report_types
+      type: object
+      properties:
+        report_type:
+          title: report_type
+          description:
+           The report type for which you want the report for. Supported report types are Campaign,For rest report types- Inventory,Audience,Products,Technology and Geography.
+          type: string
+        reqbody:
+          title: reqbody
+          type: object
+          properties:
+            metrics:
+              title: metrics
+              description:
+                Comma- delimited string of metric fields to be included in the report.
+              type: string
+        dimensions:
+          title: dimensions
+          description:
+                List of dimensions in string format to be included in the report.
+          type: string
+        key_figures:
+          title: key_figures
+          description:
+                List of key figures in string format to be included in the report.
+          type: string
+    advertisers:
+      title: advertisers
+      type: object
+      properties:
+        advertiser_name:
+          title: advertiser_name
+          description:
+                Advertiser name for which you want the report for.
+          type: string
+        advertiser_id:
+          title: advertiser_id
+          description:
+                Advertiser id for which you want the report for.
+          type: string
+        region:
+          title: region
+          description:
+                Region where your specific advertiser is present.
+          type: string
+        country:
+          title: country
+          description:
+                Country where your specific advertiser is present.
+          type: string
+        aws_region:
+          title: aws_region
+          description:
+                aws region where your specific advertiser is present.
+          type: string
+        url:
+          title: url
+          description:
+                region specific url where your specific advertiser is present.
+          type: string
+        active:
+          title: active
+          description:
+                Boolean value to check if your specific advertiser is active or not.
+          type: boolean
+  required:
+    - client_id
+    - client_secret
+    - refresh_token

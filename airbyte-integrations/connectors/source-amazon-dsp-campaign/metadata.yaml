@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: a863b92b-eeda-4315-97f0-b55d2c649655
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-amazon-dsp-campaign
+  githubIssueLabel: source-amazon-dsp-campaign
+  icon: amazon-dsp-campaign.svg
+  license: MIT
+  name: Amazon Dsp Campaign
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-dsp-campaign
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"
