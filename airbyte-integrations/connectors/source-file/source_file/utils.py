@@ -10,6 +10,7 @@ logger = logging.getLogger("airbyte")
 
 LOCAL_STORAGE_NAME = "local"
 
+
 def dropbox_force_download(url):
     """
     https://help.dropbox.com/share/force-download

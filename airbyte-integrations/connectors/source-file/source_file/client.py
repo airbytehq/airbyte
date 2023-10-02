@@ -36,7 +36,7 @@ from paramiko import SSHException
 from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
-from .utils import backoff_handler, LOCAL_STORAGE_NAME
+from .utils import LOCAL_STORAGE_NAME, backoff_handler
 
 SSH_TIMEOUT = 60
 

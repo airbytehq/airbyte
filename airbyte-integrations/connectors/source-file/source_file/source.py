@@ -26,7 +26,7 @@ from airbyte_cdk.sources import Source
 from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 
 from .client import Client
-from .utils import dropbox_force_download, LOCAL_STORAGE_NAME
+from .utils import LOCAL_STORAGE_NAME, dropbox_force_download
 
 
 class SourceFile(Source):
