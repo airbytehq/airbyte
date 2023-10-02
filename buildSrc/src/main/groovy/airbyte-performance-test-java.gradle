@@ -14,8 +14,9 @@ class AirbytePerformanceTestJavaPlugin implements Plugin<Project> {
                 }
             }
         }
-        project.tasks.named('test').configure {
-            dependsOn project.tasks.named('compilePerformanceTestJavaJava')
+        project.tasks.named('check').configure {
+            dependsOn project.tasks.matching { it.name == 'compilePerformanceTestJavaJava' }
+            dependsOn project.tasks.matching { it.name == 'spotbugsPerformanceTestJava' }
         }
 
         project.configurations {
@@ -40,7 +41,7 @@ class AirbytePerformanceTestJavaPlugin implements Plugin<Project> {
             maxHeapSize = '3g'
         }
         performanceTestJava.configure {
-            mustRunAfter project.tasks.named('test')
+            mustRunAfter project.tasks.named('check')
             dependsOn project.tasks.matching { it.name == 'assemble' }
         }
     }

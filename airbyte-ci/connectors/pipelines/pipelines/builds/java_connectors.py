@@ -18,7 +18,6 @@ class BuildConnectorDistributionTar(GradleTask):
     title = "Build connector tar"
     gradle_task_name = "distTar"
 
-
     async def _run(self) -> StepResult:
         result = await super()._run()
         if result.status is not StepStatus.SUCCESS:
@@ -45,8 +44,8 @@ class BuildConnectorDistributionTar(GradleTask):
                 self,
                 StepStatus.FAILURE,
                 stderr="The distributions directory for this java connector contains multiple tar files. "
-                       "We can't infer which one should be used. "
-                       "Please review and delete any unnecessary tar files.",
+                "We can't infer which one should be used. "
+                "Please review and delete any unnecessary tar files.",
             )
 
 

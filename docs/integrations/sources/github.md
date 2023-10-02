@@ -84,6 +84,7 @@ This connector outputs the following full refresh streams:
 - [TeamMemberships](https://docs.github.com/en/rest/reference/teams#get-team-membership-for-a-user)
 - [Teams](https://docs.github.com/en/rest/reference/teams#list-teams)
 - [Users](https://docs.github.com/en/rest/reference/orgs#list-organization-members)
+- [Issue timeline events](https://docs.github.com/en/rest/issues/timeline?apiVersion=2022-11-28)
 
 This connector outputs the following incremental streams:
 
@@ -101,6 +102,7 @@ This connector outputs the following incremental streams:
 - [Project cards](https://docs.github.com/en/rest/reference/projects#list-project-cards)
 - [Project columns](https://docs.github.com/en/rest/reference/projects#list-project-columns)
 - [Projects](https://docs.github.com/en/rest/reference/projects#list-repository-projects)
+- [ProjectsV2](https://docs.github.com/en/graphql/reference/objects#projectv2)
 - [Pull request comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment)
 - [Pull request stats](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request)
 - [Pull requests](https://docs.github.com/en/rest/reference/pulls#list-pull-requests)
@@ -164,8 +166,13 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.2.1   | 2023-08-22 | [30693](https://github.com/airbytehq/airbyte/pull/30693)                                                          | Handle 404 error in `TeamMemberShips`                                                                                                                               |
-| 1.2.0   | 2023-08-22 | [30647](https://github.com/airbytehq/airbyte/pull/30647)                                                          | Add support for self-hosted GitHub instances                                                                                                                        |
+| 1.4.2   | 2023-09-30 | [30927](https://github.com/airbytehq/airbyte/pull/30927)                                                          | Provide actionable user error messages                                                                                                                              |
+| 1.4.1   | 2023-09-30 | [30839](https://github.com/airbytehq/airbyte/pull/30839)                                                          | Update CDK to Latest version                                                                                                                                        |
+| 1.4.0   | 2023-09-29 | [30823](https://github.com/airbytehq/airbyte/pull/30823)                                                          | Add new stream `issue Timeline Events`                                                                                                                              |
+| 1.3.1   | 2023-09-28 | [30824](https://github.com/airbytehq/airbyte/pull/30824)                                                          | Handle empty response in stream `ContributorActivity`                                                                                                               |
+| 1.3.0   | 2023-09-25 | [30731](https://github.com/airbytehq/airbyte/pull/30731)                                                          | Add new stream `ProjectsV2`                                                                                                                                         |
+| 1.2.1   | 2023-09-22 | [30693](https://github.com/airbytehq/airbyte/pull/30693)                                                          | Handle 404 error in `TeamMemberShips`                                                                                                                               |
+| 1.2.0   | 2023-09-22 | [30647](https://github.com/airbytehq/airbyte/pull/30647)                                                          | Add support for self-hosted GitHub instances                                                                                                                        |
 | 1.1.1   | 2023-09-21 | [30654](https://github.com/airbytehq/airbyte/pull/30654)                                                          | Rewrite source connection error messages                                                                                                                            |
 | 1.1.0   | 2023-08-03 | [30615](https://github.com/airbytehq/airbyte/pull/30615)                                                          | Add new stream `Contributor Activity`                                                                                                                               |
 | 1.0.4   | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031)                                                          | Reverted `advancedAuth` spec changes                                                                                                                                |

@@ -1,8 +1,15 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.bigquery.BigQueryDestination'
@@ -19,11 +26,10 @@ application {
     ]
 }
 
+airbyteJavaConnector.addCdkDependencies()
+
 dependencies {
-    implementation project(':airbyte-commons')
-    implementation ('io.airbyte:airbyte-cdk:0.0.1') {
-        exclude group: 'io.airbyte', module: 'airbyte-commons'
-    }
+    implementation project(':airbyte-integrations:connectors:destination-gcs')
 
     implementation 'com.google.cloud:google-cloud-bigquery:2.31.1'
     implementation 'org.apache.commons:commons-lang3:3.11'
@@ -34,22 +40,15 @@ dependencies {
     implementation group: 'com.codepoetics', name: 'protonpack', version: '1.13'
 
     implementation project(':airbyte-config-oss:config-models-oss')
-    implementation project(':airbyte-integrations:bases:base-java')
     implementation (libs.airbyte.protocol) {
         exclude group: 'io.airbyte', module: 'airbyte-commons'
     }
-    implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation project(':airbyte-integrations:bases:base-typing-deduping')
-    implementation project(':airbyte-integrations:connectors:destination-gcs')
     // implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
-    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
-    integrationTestJavaImplementation project(':airbyte-db:db-lib')
-    integrationTestJavaImplementation project(':airbyte-commons')
 }
 
 configurations.all {

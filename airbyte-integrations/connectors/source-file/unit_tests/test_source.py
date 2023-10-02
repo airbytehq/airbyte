@@ -42,7 +42,7 @@ def test_csv_with_utf16_encoding(absolute_path, test_files):
     config_local_csv_utf16 = {
         "dataset_name": "AAA",
         "format": "csv",
-        "reader_options": '{"encoding":"utf_16", "parse_dates": [\"header5\"]}',
+        "reader_options": '{"encoding":"utf_16", "parse_dates": ["header5"]}',
         "url": f"{absolute_path}/{test_files}/test_utf16.csv",
         "provider": {"storage": "local"},
     }
@@ -156,7 +156,10 @@ def test_check_wrong_reader_options(source, config):
 
 def test_check_google_spreadsheets_url(source, config):
     config["url"] = "https://docs.google.com/spreadsheets/d/"
-    with pytest.raises(AirbyteTracedException, match="Failed to load https://docs.google.com/spreadsheets/d/: please use the Official Google Sheets Source connector"):
+    with pytest.raises(
+        AirbyteTracedException,
+        match="Failed to load https://docs.google.com/spreadsheets/d/: please use the Official Google Sheets Source connector",
+    ):
         source.check(logger=logger, config=config)
 
 
@@ -209,10 +212,16 @@ def test_incorrect_reader_options(absolute_path, test_files):
     }
 
     source = SourceFile()
-    with pytest.raises(AirbyteTracedException, match="can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"):
+    with pytest.raises(
+        AirbyteTracedException,
+        match="can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html",
+    ):
         _ = source.discover(logger=logger, config=deepcopy(config))
 
-    with pytest.raises(AirbyteTracedException, match="can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html"):
+    with pytest.raises(
+        AirbyteTracedException,
+        match="can not be parsed. Please check your reader_options. https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html",
+    ):
         catalog = get_catalog({"0": {"type": ["string", "null"]}, "1": {"type": ["string", "null"]}})
         records = source.read(logger=logger, config=deepcopy(config), catalog=catalog)
         records = [r.record.data for r in records]

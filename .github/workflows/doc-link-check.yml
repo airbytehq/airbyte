@@ -6,7 +6,7 @@ name: Check for broken links in docs
 on:
   workflow_dispatch:
   schedule:
-    - cron:  '0 18 * * *'
+    - cron: "0 18 * * *"
 
 jobs:
   markdown-link-check:
@@ -17,8 +17,8 @@ jobs:
       # check all files on master
       - uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
-          use-quiet-mode: 'yes'
-          check-modified-files-only: 'no'
+          use-quiet-mode: "yes"
+          check-modified-files-only: "no"
           config-file: .github/workflows/doc-link-check.json
 
       # posts to #_doc_link_checker
