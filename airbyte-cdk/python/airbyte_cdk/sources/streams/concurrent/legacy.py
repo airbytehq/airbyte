@@ -2,8 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+<<<<<<< HEAD
 import copy
 import json
+=======
+>>>>>>> alex/abstract_stream
 import logging
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union

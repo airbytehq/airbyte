@@ -10,7 +10,9 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.message import MessageRepository
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, PrimaryKey
+from airbyte_protocol.models import AirbyteStream
+
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
@@ -33,7 +35,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         name: str,
         json_schema: Mapping[str, Any],
         availability_strategy: AbstractAvailabilityStrategy,
-        primary_key: Optional[PrimaryKey],
+        primary_key: Optional[List[str]],
         cursor_field: Optional[str],
         error_display_message_parser: ErrorMessageParser,
         slice_logger: SliceLogger,
@@ -127,10 +129,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
         return self._availability_strategy.check_availability(self.logger)
 
     @property
-    def primary_key(self) -> Optional[PrimaryKey]:
-        return self._primary_key
-
-    @property
     def cursor_field(self) -> Optional[str]:
         return self._cursor_field
 
@@ -140,3 +138,9 @@ class ThreadBasedConcurrentStream(AbstractStream):
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         return self._error_message_parser.get_error_display_message(exception)
+
+    def as_airbyte_stream(self) -> AirbyteStream:
+        raise NotImplementedError
+
+    def log_stream_sync_configuration(self) -> None:
+        raise NotImplementedError

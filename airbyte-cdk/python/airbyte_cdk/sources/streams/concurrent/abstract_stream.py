@@ -4,12 +4,12 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Any, Iterable, Mapping, Optional, Tuple
 
-from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from deprecated.classic import deprecated
 
-PrimaryKey = Union[str, List[str]]
+from airbyte_cdk.models import AirbyteStream
+from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 
 
 @deprecated("This class is experimental. Use at your own risk.")
@@ -26,7 +26,7 @@ class AbstractStream(ABC):
     - Using composition instead of inheritance to add new capabilities
 
     To allow us to iterate fast while ensuring backwards compatibility, we are creating a new interface with a facade object that will bridge the old and the new interfaces.
-    Source connectors that which to leverage concurrency need to implement this new interface. An example will be available shortly
+    Source connectors that wish to leverage concurrency need to implement this new interface. An example will be available shortly
 
     Current restrictions on sources that implement this interface. Not all of these restrictions will be lifted in the future, but most will as we iterate on the design.
     - Only full refresh is supported. This will be addressed in the future.
@@ -66,15 +66,6 @@ class AbstractStream(ABC):
         :return: The name of the field used as a cursor. Nested cursor fields are not supported.
         """
 
-    @property
-    @abstractmethod
-    def primary_key(self) -> Optional[PrimaryKey]:
-        """
-        :return: A string if single primary key, list of strings if composite primary key.
-          Primary keys in nested fields are not supported.
-          If the stream has no primary keys, return None.
-        """
-
     @abstractmethod
     def check_availability(self) -> Tuple[bool, Optional[str]]:
         """
@@ -100,4 +91,16 @@ class AbstractStream(ABC):
 
         :param exception: The exception that was raised
         :return: A user-friendly message that indicates the cause of the error
+        """
+
+    @abstractmethod
+    def as_airbyte_stream(self) -> AirbyteStream:
+        """
+        :return: A dict of the JSON schema representing this stream.
+        """
+
+    @abstractmethod
+    def log_stream_sync_configuration(self) -> None:
+        """
+        Logs the stream's configuration for debugging purposes.
         """
