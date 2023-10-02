@@ -5,15 +5,13 @@
 from functools import lru_cache
 from typing import Any, Iterable, Mapping, Optional
 
-from airbyte_protocol.models import AirbyteStream
-
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, PrimaryKey
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_protocol.models import AirbyteStream
 
 
 class ThreadBasedConcurrentStream(AbstractStream):
-
     def read(self) -> Iterable[Record]:
         raise NotImplementedError
 

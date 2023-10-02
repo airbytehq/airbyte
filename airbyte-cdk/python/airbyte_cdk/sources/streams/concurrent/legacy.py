@@ -6,7 +6,7 @@ import logging
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -72,7 +72,8 @@ class StreamFacade(Stream):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._stream.primary_key
+        # This method is not expected to be called directly. It is only implemented for backward compatibility with the old interface
+        return self.as_airbyte_stream().source_defined_primary_key
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -102,7 +103,8 @@ class StreamFacade(Stream):
         :param source:  (ignored)
         :return:
         """
-        return self._stream.check_availability()
+        availability = self._stream.check_availability()
+        return availability.is_available(), availability.message()
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         """
@@ -115,6 +117,9 @@ class StreamFacade(Stream):
         :return: A user-friendly message that indicates the cause of the error
         """
         return self._stream.get_error_display_message(exception)
+
+    def as_airbyte_stream(self) -> AirbyteStream:
+        return self._stream.as_airbyte_stream()
 
 
 @deprecated("This class is experimental. Use at your own risk.")

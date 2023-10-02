@@ -270,7 +270,7 @@ class Stream(ABC):
         """
         return {}
 
-    def log_stream_sync_configuration(self):
+    def log_stream_sync_configuration(self) -> None:
         """
         Logs the configuration of this stream.
         """
