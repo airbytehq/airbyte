@@ -26,7 +26,7 @@ class AbstractStream(ABC):
     - Using composition instead of inheritance to add new capabilities
 
     To allow us to iterate fast while ensuring backwards compatibility, we are creating a new interface with a facade object that will bridge the old and the new interfaces.
-    Source connectors that which to leverage concurrency need to implement this new interface. An example will be available shortly
+    Source connectors that wish to leverage concurrency need to implement this new interface. An example will be available shortly
 
     Current restrictions on sources that implement this interface. Not all of these restrictions will be lifted in the future, but most will as we iterate on the design.
     - Only full refresh is supported. This will be addressed in the future.
