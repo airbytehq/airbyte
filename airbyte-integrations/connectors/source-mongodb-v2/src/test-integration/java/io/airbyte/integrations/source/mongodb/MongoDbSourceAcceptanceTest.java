@@ -109,11 +109,11 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     otherCollection2Name = "collection_" + RandomStringUtils.randomAlphabetic(8);
 
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
-    final ObjectNode databaseConfig = (ObjectNode)config.get(DATABASE_CONFIG_CONFIGURATION_KEY);
+    final ObjectNode databaseConfig = (ObjectNode) config.get(DATABASE_CONFIG_CONFIGURATION_KEY);
     databaseConfig.put(MongoConstants.DATABASE_CONFIGURATION_KEY, databaseName);
     databaseConfig.put(MongoConstants.IS_TEST_CONFIGURATION_KEY, true);
     databaseConfig.put(MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY, 1);
-    ((ObjectNode)config).put(DATABASE_CONFIG_CONFIGURATION_KEY, databaseConfig);
+    ((ObjectNode) config).put(DATABASE_CONFIG_CONFIGURATION_KEY, databaseConfig);
 
     final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
 
