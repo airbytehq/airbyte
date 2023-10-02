@@ -141,10 +141,10 @@ public class MongoDbCdcEventUtils {
       final var fieldType = reader.getCurrentBsonType();
 
       /**
-       * Test when the field that is currently being read is included in the configured set
-       * of fields/columns.  In order to support the fields of nested document fields that
-       * pass the initial filter, the ALLOW_ALL name may be included in the provided set as
-       * a way to allow the fields of the nested document to be processed.
+       * Test when the field that is currently being read is included in the configured set of
+       * fields/columns. In order to support the fields of nested document fields that pass the initial
+       * filter, the ALLOW_ALL name may be included in the provided set as a way to allow the fields of
+       * the nested document to be processed.
        */
       if (columnNames.contains(fieldName) || columnNames.contains(ALLOW_ALL)) {
         if (DOCUMENT.equals(fieldType)) {
@@ -195,10 +195,10 @@ public class MongoDbCdcEventUtils {
                                       final String fieldName,
                                       final BsonType fieldType) {
     /**
-     * Test when the field that is currently being read is included in the configured set
-     * of fields/columns.  In order to support the fields of nested document fields that
-     * pass the initial filter, the ALLOW_ALL name may be included in the provided set as
-     * a way to allow the fields of the nested document to be processed.
+     * Test when the field that is currently being read is included in the configured set of
+     * fields/columns. In order to support the fields of nested document fields that pass the initial
+     * filter, the ALLOW_ALL name may be included in the provided set as a way to allow the fields of
+     * the nested document to be processed.
      */
     if (columnNames.contains(fieldName) || columnNames.contains(ALLOW_ALL)) {
       switch (fieldType) {
