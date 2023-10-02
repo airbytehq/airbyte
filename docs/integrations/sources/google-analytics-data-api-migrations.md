@@ -1,4 +1,4 @@
-# Google Analytics Data API Migration Guide
+# Google Analytics 4 (GA4) Migration Guide
 
 ## Upgrading to 2.0.0
 

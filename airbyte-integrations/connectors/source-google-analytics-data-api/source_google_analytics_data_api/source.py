@@ -516,7 +516,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
                     invalid_metrics = ", ".join(invalid_metrics)
                     return False, WRONG_METRICS.format(fields=invalid_metrics, report_name=report["name"])
 
-                report_stream = self.instantiate_report_class(report, _config, page_size=100)
+                report_stream = self.instantiate_report_class(report, False, _config, page_size=100)
                 # check if custom_report dimensions + metrics can be combined and report generated
                 stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
                 next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
