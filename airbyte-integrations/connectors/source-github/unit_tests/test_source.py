@@ -31,8 +31,15 @@ def check_source(repo_line: str) -> AirbyteConnectionStatus:
 @pytest.mark.parametrize(
     "config, expected",
     (
-            ({"start_date": "2021-08-27T00:00:46Z", "access_token": "test_token", "repository": "airbyte/test",}, True),
-            ({"access_token": "test_token", "repository": "airbyte/test"}, True)
+        (
+            {
+                "start_date": "2021-08-27T00:00:46Z",
+                "access_token": "test_token",
+                "repository": "airbyte/test",
+            },
+            True,
+        ),
+        ({"access_token": "test_token", "repository": "airbyte/test"}, True),
     ),
 )
 def test_check_start_date(config, expected):
@@ -322,14 +329,29 @@ def test_streams_page_size():
 @pytest.mark.parametrize(
     "config, expected",
     (
-            ({"start_date": "2021-08-27T00:00:46Z", "access_token": "test_token", "repository": "airbyte/test",}, 39),
-            ({"access_token": "test_token", "repository": "airbyte/test"}, 39)
+        (
+            {
+                "start_date": "2021-08-27T00:00:46Z",
+                "access_token": "test_token",
+                "repository": "airbyte/test",
+            },
+            39,
+        ),
+        ({"access_token": "test_token", "repository": "airbyte/test"}, 39),
     ),
 )
 def test_streams_config_start_date(config, expected):
     responses.add(responses.GET, "https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "airbyte/test"})
-    responses.add(responses.GET, "https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "airbyte/test", "default_branch": "default_branch"})
-    responses.add(responses.GET, "https://api.github.com/repos/airbyte/test/branches?per_page=100", json=[{"repository": "airbyte/test", "name": "name"}])
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbyte/test?per_page=100",
+        json={"full_name": "airbyte/test", "default_branch": "default_branch"},
+    )
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbyte/test/branches?per_page=100",
+        json=[{"repository": "airbyte/test", "name": "name"}],
+    )
     source = SourceGithub()
     streams = source.streams(config=config)
     # projects stream that uses start date
@@ -338,4 +360,6 @@ def test_streams_config_start_date(config, expected):
     if config.get("start_date"):
         assert project_stream._start_date == "2021-08-27T00:00:46Z"
     else:
-        assert datetime.datetime.strptime(project_stream._start_date, "%Y-%m-%dT%H:%M:%S.%f").date() - datetime.date.today() == datetime.timedelta(days=-2*365)
+        assert datetime.datetime.strptime(
+            project_stream._start_date, "%Y-%m-%dT%H:%M:%S.%f"
+        ).date() - datetime.date.today() == datetime.timedelta(days=-2 * 365)
