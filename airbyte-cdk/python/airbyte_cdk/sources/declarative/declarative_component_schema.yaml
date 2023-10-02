@@ -799,6 +799,7 @@ definitions:
         title: Token Expiry Is Time Of Expiration
         description: Indicates that the Token Expiry returns the date until which the token will be valid, not the amount of time it will be valid.
         type: boolean
+        default: false
       refresh_token_updater:
         title: Token Updater
         description: When the token updater is defined, new refresh tokens, access tokens and the access token expiry date are written back from the authentication response to the config object. This is important if the refresh token can only used once.
