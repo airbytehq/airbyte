@@ -47,3 +47,4 @@ Planhat needs required parameters depending on the object choosen. Please refer 
 | Version | Date       | Pull Request                                     | Subject                    |
 | :------ | :--------- | :----------------------------------------------- | :------------------------- |
 | 0.1.0   | 2023-09-27 | [5](https://github.com/airbytehq/airbyte/pull/5) | 🎉 New Destination: Planhat |
+| 0.1.1   | 2023-10-02 | [6](https://github.com/airbytehq/airbyte/pull/6) | print error log            |

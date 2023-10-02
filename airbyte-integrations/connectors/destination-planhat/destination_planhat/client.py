@@ -45,12 +45,15 @@ class PlanHatClient:
 
     def flush(self):
         response = self.write(self.write_buffer)
-        self.print_error(response, "createdErrors")
-        self.print_error(response, "updatedErrors")
+
+        logs = response.json()
+        logs_created_errors = logs['createdErrors']
+        logs_updated_errors = logs['updatedErrors']
+
+        if logs_created_errors:
+            logger.warning(logs_created_errors)
+        if logs_updated_errors:
+            logger.warning(logs_updated_errors)
+
         self.write_buffer.clear()
 
-    def print_error(self, response, key):
-        if key in response.json():
-            error = response.json()[key]
-            if error != []:
-                logger.error(error)
