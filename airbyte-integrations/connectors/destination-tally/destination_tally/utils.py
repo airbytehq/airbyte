@@ -89,7 +89,7 @@ def prepare_ledger_master_payload(data: Dict[str, Any], logger: AirbyteLogger):
 
     ledger_master_payload = {}
     for key, value in data.items():
-        if key in ledger_fields:
+        if (key in ledger_fields) and (str(value) != ""):
             ledger_master_payload[key] = value
 
     return json.dumps({"body": [ledger_master_payload]})
@@ -252,7 +252,7 @@ def prepare_item_master_payload(data: Dict[str, Any], logger: AirbyteLogger):
 
     item_master_payload = {}
     for key, value in data.items():
-        if key in item_master_fields:
+        if( key in item_master_fields) and (str(value) != ""):
             item_master_payload[key] = value
 
     return json.dumps({"body": [item_master_payload]})
@@ -417,7 +417,7 @@ def prepare_payment_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
 
     payment_voucher_payload = {}
     for key, value in data.items():
-        if key in payment_voucher_fields:
+        if (key in payment_voucher_fields) and (str(value) != ""):
             payment_voucher_payload[key] = value
 
     return json.dumps({"body": [payment_voucher_payload]})
