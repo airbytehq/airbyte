@@ -349,7 +349,7 @@ class OAuthAuthenticator(BaseModel):
         title='Token Expiry Date Format',
     )
     token_expiry_is_time_of_expiration: Optional[bool] = Field(
-        None,
+        False,
         description='Indicates that the Token Expiry returns the date until which the token will be valid, not the amount of time it will be valid.',
         title='Token Expiry Is Time Of Expiration',
     )
