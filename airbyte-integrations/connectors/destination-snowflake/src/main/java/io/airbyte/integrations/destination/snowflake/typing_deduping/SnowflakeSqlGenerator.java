@@ -173,15 +173,15 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "cdc_deletes", cdcDeletes,
         "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
-        """
-        BEGIN TRANSACTION;
-        ${insert_new_records}
-        ${dedup_final_table}
-        ${dedupe_raw_table}
-        ${cdc_deletes}
-        ${commit_raw_table}
-        COMMIT;
-        """);
+            """
+            BEGIN TRANSACTION;
+            ${insert_new_records}
+            ${dedup_final_table}
+            ${dedupe_raw_table}
+            ${cdc_deletes}
+            ${commit_raw_table}
+            COMMIT;
+            """);
   }
 
   @Override
@@ -191,21 +191,20 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
     return new StringSubstitutor(Map.of("unsafeQuery", unsafeTransaction, "safeQuery", safeTransaction)).replace(
         """
-            EXECUTE IMMEDIATE $$
-            BEGIN
-            
-            ${unsafeQuery}
-            
-            EXCEPTION WHEN OTHER THEN
-            ROLLBACK;
-            
-            ${safeQuery}
-           
-            END;
-            $$
-            ;
-            """
-    );
+        EXECUTE IMMEDIATE $$
+        BEGIN
+
+        ${unsafeQuery}
+
+        EXCEPTION WHEN OTHER THEN
+        ROLLBACK;
+
+        ${safeQuery}
+
+        END;
+        $$
+        ;
+        """);
   }
 
   private String extractAndCast(final ColumnId column, final AirbyteType airbyteType, final boolean forceTryCasting) {
@@ -283,13 +282,15 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             END
             """);
         case "TEXT" -> "((" + sqlExpression + ")::text)"; // we don't need TRY_CAST on strings.
-        default -> castFunction +"((" + sqlExpression + ")::text as " + dialectType + ")";
+        default -> castFunction + "((" + sqlExpression + ")::text as " + dialectType + ")";
       };
     }
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
+  String insertNewRecords(final StreamConfig stream,
+                          final String finalSuffix,
+                          final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
                           final boolean forceTryCasting) {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue(), forceTryCasting) + " as " + col.getKey().name(QUOTE) + ",")
@@ -310,7 +311,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                   ELSE NULL
                 END"""))
         .collect(joining(",\n"))
-                                : "";
+        : "";
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
@@ -387,7 +388,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   @VisibleForTesting
   String cdcDeletes(final StreamConfig stream,
                     final String finalSuffix,
-                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns, final boolean forceTryCasting) {
+                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
+                    final boolean forceTryCasting) {
 
     if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
