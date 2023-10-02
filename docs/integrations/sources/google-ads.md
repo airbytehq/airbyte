@@ -232,7 +232,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 | :------- | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------- |
-| `1.0.1`  | 2023-10-02 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)     | Fix type of `google_ads_campaign_budget`.`status`                                                                                    |
+| `1.0.1`  | 2023-10-02 | [30997](https://github.com/airbytehq/airbyte/pull/30997) | Fix type of `google_ads_campaign_budget`.`status`                                                                                    |
 | `1.0.0`  | 2023-09-28 | [30705](https://github.com/airbytehq/airbyte/pull/30705) | Fix schemas for custom queries                                                                                                       |
 | `0.11.1` | 2023-09-26 | [30758](https://github.com/airbytehq/airbyte/pull/30758) | Exception should not be raises if a stream is not found                                                                              |
 | `0.11.0` | 2023-09-23 | [30704](https://github.com/airbytehq/airbyte/pull/30704) | Update error handling                                                                                                                |
