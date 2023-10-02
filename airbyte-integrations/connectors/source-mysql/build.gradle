@@ -12,6 +12,12 @@ airbyteJavaConnector {
     useLocalCdk = false
 }
 
+configurations.all {
+    resolutionStrategy {
+        force libs.jooq
+    }
+}
+
 airbyteJavaConnector.addCdkDependencies()
 
 application {
@@ -21,6 +27,7 @@ application {
 
 dependencies {
     implementation libs.airbyte.protocol
+    implementation libs.jooq
 
     implementation 'mysql:mysql-connector-java:8.0.30'
     implementation 'org.apache.commons:commons-lang3:3.11'
