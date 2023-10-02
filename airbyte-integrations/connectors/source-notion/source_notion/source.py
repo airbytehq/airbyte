@@ -17,7 +17,6 @@ from .streams import Blocks, Databases, Pages, Users
 
 
 class SourceNotion(AbstractSource):
-
     def _get_authenticator(self, config: Mapping[str, Any]) -> TokenAuthenticator:
         credentials = config.get("credentials", {})
         auth_type = credentials.get("auth_type")
@@ -36,7 +35,7 @@ class SourceNotion(AbstractSource):
             authenticator = self._get_authenticator(config)
             stream = Pages(authenticator=authenticator, config=config)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
-            next(islice(records, 5)) # Read the first 5 records to ensure that the connection is valid.
+            next(islice(records, 5))  # Read the first 5 records to ensure that the connection is valid.
             return True, None
         except requests.exceptions.RequestException as e:
             # The most likely user error will be incorrectly configured credentials. We can provide a specific error message for those cases. Otherwise, the stock Notion API message should suffice.
