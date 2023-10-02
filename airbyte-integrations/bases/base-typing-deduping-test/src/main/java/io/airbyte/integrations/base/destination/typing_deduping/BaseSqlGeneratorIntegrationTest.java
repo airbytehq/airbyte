@@ -930,7 +930,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * existingSchemaMatchesStreamConfig
+   * Verify that the final table inherently rejects null values for primary key columns.
+   * Subclasses MAY override this if they don't support `NOT NULL` constraints.
    */
   @Test
   public void ensurePKsAreIndexedUnique() throws Exception {
