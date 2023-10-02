@@ -63,6 +63,8 @@ The Datadog source connector supports the following [sync modes](https://docs.ai
 * [Incidents](https://docs.datadoghq.com/api/latest/incidents/#get-a-list-of-incidents)
 * [Logs](https://docs.datadoghq.com/api/latest/logs/#search-logs)
 * [Metrics](https://docs.datadoghq.com/api/latest/metrics/#get-a-list-of-metrics)
+* [Monitors](https://docs.datadoghq.com/api/latest/monitors/#get-all-monitor-details)
+* [ServiceLevelObjectives](https://docs.datadoghq.com/api/latest/service-level-objectives/#get-all-slos)
 * [SyntheticTests](https://docs.datadoghq.com/api/latest/synthetics/#get-the-list-of-all-tests)
 * [Users](https://docs.datadoghq.com/api/latest/users/#list-all-users)
 * [Series](https://docs.datadoghq.com/api/latest/metrics/?code-lang=curl#query-timeseries-data-across-multiple-products)
