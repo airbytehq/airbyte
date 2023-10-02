@@ -4,12 +4,12 @@
 
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, Optional, Tuple
-
-from deprecated.classic import deprecated
+from typing import Any, Iterable, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteStream
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from deprecated.classic import deprecated
 
 
 @deprecated("This class is experimental. Use at your own risk.")
@@ -67,14 +67,9 @@ class AbstractStream(ABC):
         """
 
     @abstractmethod
-    def check_availability(self) -> Tuple[bool, Optional[str]]:
+    def check_availability(self) -> StreamAvailability:
         """
-        Checks whether this stream is available.
-
-        :return: A tuple of (boolean, str). If boolean is true, then this stream
-          is available, and no str is required. Otherwise, this stream is unavailable
-          for some reason and the str should describe what went wrong and how to
-          resolve the unavailability, if possible.
+        :return: The stream's availability
         """
 
     @abstractmethod

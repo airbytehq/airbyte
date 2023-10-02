@@ -8,13 +8,18 @@ import logging
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
+from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.models import SyncMode, AirbyteStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
+    AbstractAvailabilityStrategy,
+    StreamAvailability,
+    StreamAvailable,
+    StreamUnavailable,
+)
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
@@ -170,7 +175,8 @@ class StreamFacade(Stream):
         :param source:  (ignored)
         :return:
         """
-        return self._stream.check_availability()
+        availability = self._stream.check_availability()
+        return availability.is_available(), availability.message()
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         """
@@ -320,5 +326,9 @@ class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
         self._stream = stream
         self._source = source
 
-    def check_availability(self, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
-        return self._stream.check_availability(logger, self._source)
+    def check_availability(self, logger: logging.Logger) -> StreamAvailability:
+        available, message = self._stream.check_availability(logger, self._source)
+        if available:
+            return StreamAvailable()
+        else:
+            return StreamUnavailable(message)

@@ -8,9 +8,8 @@ from functools import lru_cache
 from queue import Queue
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
-from airbyte_cdk.models import SyncMode, AirbyteStream
+from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.message import MessageRepository
-
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser

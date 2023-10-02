@@ -6,7 +6,7 @@ import unittest
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, AirbyteStream
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
@@ -50,9 +50,9 @@ def test_legacy_availability_strategy():
     logger = Mock()
     availability_strategy = LegacyAvailabilityStrategy(stream, source)
 
-    available, message = availability_strategy.check_availability(logger)
-    assert available
-    assert message is None
+    stream_availability = availability_strategy.check_availability(logger)
+    assert stream_availability.is_available()
+    assert stream_availability.message() is None
 
     stream.check_availability.assert_called_once_with(logger, source)
 
@@ -136,7 +136,7 @@ def test_legacy_partition_hash(_slice, expected_hash):
 
 class StreamFacadeTest(unittest.TestCase):
     def setUp(self):
-        self._stream = Mock()
+        self._stream: StreamFacade = Mock()
         self._stream.name = "stream"
         self._stream.as_airbyte_stream.return_value = AirbyteStream(
             name="stream",
@@ -169,9 +169,9 @@ class StreamFacadeTest(unittest.TestCase):
         assert self._facade.supports_incremental is False
 
     def test_check_availability_is_delegated_to_wrapped_stream(self):
-        availability = True, None
+        availability = StreamAvailable()
         self._stream.check_availability.return_value = availability
-        assert self._facade.check_availability(Mock(), Mock()) == availability
+        assert self._facade.check_availability(Mock(), Mock()) == (availability.is_available(), availability.message())
         self._stream.check_availability.assert_called_once_with()
 
     def test_get_error_display_message_is_delegated_to_wrapped_stream(self):
