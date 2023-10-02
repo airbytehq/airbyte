@@ -200,16 +200,34 @@ Now that you have set up the Hubspot source connector, check out the following H
 
 [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
 
+## Unnesting top level properties
+
+Since version 1.5.0, in order to not make the users query their destinations for complicated json fields, we duplicate most of nested data as top level fields.
+For instance:
+
+`{"id": 1, "updatedAt": "2020-01-01", "properties": {"hs_note_body": "World's best boss", "hs_created_by": "Michael Scott"}}`
+
+becomes
+
+`{
+    "id": 1,
+    "updatedAt": "2020-01-01",
+    "properties": {"hs_note_body": "World's best boss", "hs_created_by": "Michael Scott"},
+    "properties_hs_note_body": "World's best boss",
+    "properties_hs_created_by": "Michael Scott"
+}`
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1.4.1   | 2023-08-22 | [29715](https://github.com/airbytehq/airbyte/pull/29715) | Fix python package configuration  stream                                                                                                                                               |
-| 1.4.0   | 2023-08-11 | [29249](https://github.com/airbytehq/airbyte/pull/29249) | Add `OwnersArchived` stream                                                                                                                                               |
-| 1.3.3   | 2023-08-10 | [29248](https://github.com/airbytehq/airbyte/pull/29248) | Specify `threadId` in `engagements` stream to type string                                                                                                                                               |
-| 1.3.2   | 2023-08-10 | [29326](https://github.com/airbytehq/airbyte/pull/29326) | Add primary keys to streams `ContactLists` and `PropertyHistory` |
-| 1.3.1   | 2023-08-08 | [29211](https://github.com/airbytehq/airbyte/pull/29211) | Handle 400 and 403 errors without interruption of the sync                                |
-| 1.3.0   | 2023-08-01 | [28909](https://github.com/airbytehq/airbyte/pull/28909) | Add handling of source connection errors                                                                                                                                               |
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.5.0   | 2023-09-11 | [30322](https://github.com/airbytehq/airbyte/pull/30322) | Unnest stream schemas                                                                                                                                                              |
+| 1.4.1   | 2023-08-22 | [29715](https://github.com/airbytehq/airbyte/pull/29715) | Fix python package configuration  stream                                                                                                                                           |
+| 1.4.0   | 2023-08-11 | [29249](https://github.com/airbytehq/airbyte/pull/29249) | Add `OwnersArchived` stream                                                                                                                                                        |
+| 1.3.3   | 2023-08-10 | [29248](https://github.com/airbytehq/airbyte/pull/29248) | Specify `threadId` in `engagements` stream to type string                                                                                                                          |
+| 1.3.2   | 2023-08-10 | [29326](https://github.com/airbytehq/airbyte/pull/29326) | Add primary keys to streams `ContactLists` and `PropertyHistory`                                                                                                                   |
+| 1.3.1   | 2023-08-08 | [29211](https://github.com/airbytehq/airbyte/pull/29211) | Handle 400 and 403 errors without interruption of the sync                                                                                                                         |
+| 1.3.0   | 2023-08-01 | [28909](https://github.com/airbytehq/airbyte/pull/28909) | Add handling of source connection errors                                                                                                                                           |
 | 1.2.0   | 2023-07-27 | [27091](https://github.com/airbytehq/airbyte/pull/27091) | Add new stream `ContactsMergedAudit`                                                                                                                                               |
 | 1.1.2   | 2023-07-27 | [28558](https://github.com/airbytehq/airbyte/pull/28558) | Improve error messages during connector setup                                                                                                                                      |
 | 1.1.1   | 2023-07-25 | [28705](https://github.com/airbytehq/airbyte/pull/28705) | Fix retry handler for token expired error                                                                                                                                          |
