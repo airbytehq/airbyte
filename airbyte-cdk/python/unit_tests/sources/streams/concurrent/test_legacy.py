@@ -144,6 +144,7 @@ class StreamFacadeTest(unittest.TestCase):
             supported_sync_modes=[SyncMode.full_refresh],
         )
         self._facade = StreamFacade(self._stream)
+        self._logger = Mock()
 
     def test_name_is_delegated_to_wrapped_stream(self):
         assert self._facade.name == self._stream.name
@@ -211,7 +212,7 @@ class StreamFacadeTest(unittest.TestCase):
         source = Mock()
         max_workers = 10
 
-        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
 
         assert facade.name == "stream"
         assert facade.cursor_field == "cursor"
@@ -225,7 +226,7 @@ class StreamFacadeTest(unittest.TestCase):
         source = Mock()
         max_workers = 10
 
-        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
         facade._stream._primary_key is None
 
     def test_create_from_legacy_stream_with_composite_primary_key(self):
@@ -236,7 +237,7 @@ class StreamFacadeTest(unittest.TestCase):
         source = Mock()
         max_workers = 10
 
-        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
         facade._stream._primary_key == ["id", "name"]
 
     def test_create_from_legacy_stream_with_empty_list_cursor(self):
@@ -246,7 +247,7 @@ class StreamFacadeTest(unittest.TestCase):
         source = Mock()
         max_workers = 10
 
-        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
 
         assert facade.cursor_field == []
 
@@ -258,7 +259,7 @@ class StreamFacadeTest(unittest.TestCase):
         max_workers = 10
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+            StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
 
     def test_create_from_legacy_stream_raises_exception_if_primary_key_has_invalid_type(self):
         legacy_stream = Mock()
@@ -268,7 +269,7 @@ class StreamFacadeTest(unittest.TestCase):
         max_workers = 10
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+            StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
 
     def test_create_from_legacy_stream_raises_exception_if_cursor_field_is_nested(self):
         legacy_stream = Mock()
@@ -279,7 +280,7 @@ class StreamFacadeTest(unittest.TestCase):
         max_workers = 10
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+            StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
 
     def test_create_from_legacy_stream_with_cursor_field_as_list(self):
         legacy_stream = Mock()
@@ -289,7 +290,7 @@ class StreamFacadeTest(unittest.TestCase):
         source = Mock()
         max_workers = 10
 
-        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
         assert facade.cursor_field == "cursor"
 
     def test_create_from_legacy_stream_none_message_repository(self):
@@ -302,4 +303,4 @@ class StreamFacadeTest(unittest.TestCase):
         max_workers = 10
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_legacy_stream(legacy_stream, source, max_workers)
+            StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
