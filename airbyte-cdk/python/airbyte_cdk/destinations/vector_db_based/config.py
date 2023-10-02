@@ -124,6 +124,27 @@ class OpenAIEmbeddingConfigModel(BaseModel):
         }
 
 
+class OpenAICompatibleEmbeddingConfigModel(BaseModel):
+    mode: Literal["openai_compatible"] = Field("openai_compatible", const=True)
+    api_key: str = Field(title="API key", default="", airbyte_secret=True)
+    base_url: str = Field(
+        ..., title="Base URL", description="The base URL for your OpenAI-compatible service", examples=["https://your-service-name.com"]
+    )
+    model_name: str = Field(
+        title="Model name",
+        description="The name of the model to use for embedding",
+        default="text-embedding-ada-002",
+        examples=["text-embedding-ada-002"],
+    )
+    dimensions: int = Field(
+        title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384]
+    )
+
+    class Config:
+        title = "OpenAI-compatible"
+        schema_extra = {"description": "Use a service that's compatible with the OpenAI API to embed text."}
+
+
 class AzureOpenAIEmbeddingConfigModel(BaseModel):
     mode: Literal["azure_openai"] = Field("azure_openai", const=True)
     openai_key: str = Field(
