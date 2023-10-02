@@ -188,12 +188,12 @@ def previous_connector_image_name_fixture(image_tag, inputs) -> str:
 
 
 @pytest.fixture(name="previous_connector_docker_runner")
-async def previous_connector_docker_runner_fixture(previous_connector_image_name, dagger_client) -> ConnectorRunner:
+async def previous_connector_docker_runner_fixture(previous_connector_image_name, dagger_client, deployment_mode) -> ConnectorRunner:
     """Fixture to create a connector runner with the previous connector docker image.
     Returns None if the latest image was not found, to skip downstream tests if the current connector is not yet published to the docker registry.
     Raise not found error if the previous connector image is not latest and expected to be published.
     """
-    runner = ConnectorRunner(previous_connector_image_name, dagger_client)
+    runner = ConnectorRunner(previous_connector_image_name, dagger_client, deployment_mode=deployment_mode)
     await runner.load_container()
     return runner
 
