@@ -49,7 +49,21 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
             ],
             OPEN_AI_VECTOR_SIZE,
         ),
-        (OpenAICompatibleEmbedder, [OpenAICompatibleEmbeddingConfigModel(**{"mode": "openai_compatible", "api_key": "abc", "base_url": "https://my-service.com", "model_name": "text-embedding-ada-002", "dimensions": 50})], 50),
+        (
+            OpenAICompatibleEmbedder,
+            [
+                OpenAICompatibleEmbeddingConfigModel(
+                    **{
+                        "mode": "openai_compatible",
+                        "api_key": "abc",
+                        "base_url": "https://my-service.com",
+                        "model_name": "text-embedding-ada-002",
+                        "dimensions": 50,
+                    }
+                )
+            ],
+            50,
+        ),
     ),
 )
 def test_embedder(embedder_class, args, dimensions):
