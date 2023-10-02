@@ -2,21 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-<<<<<<< HEAD
 import copy
 import json
-=======
->>>>>>> alex/abstract_stream
 import logging
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.models import SyncMode, AirbyteStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, PrimaryKey
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -75,9 +72,11 @@ class StreamFacade(Stream):
         )
 
     @classmethod
-    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> Optional[PrimaryKey]:
-        if stream_primary_key is None or isinstance(stream_primary_key, str):
-            return stream_primary_key
+    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> List[str]:
+        if stream_primary_key is None:
+            return []
+        elif isinstance(stream_primary_key, str):
+            return [stream_primary_key]
         elif isinstance(stream_primary_key, list):
             if len(stream_primary_key) > 0 and all(isinstance(k, str) for k in stream_primary_key):
                 return stream_primary_key  # type: ignore # We verified all items in the list are strings
@@ -87,7 +86,7 @@ class StreamFacade(Stream):
             raise ValueError(f"Invalid type for primary key: {stream_primary_key}")
 
     @classmethod
-    def _get_cursor_field_from_stream(cls, stream: Stream) -> Optional[PrimaryKey]:
+    def _get_cursor_field_from_stream(cls, stream: Stream) -> Optional[str]:
         if isinstance(stream.cursor_field, list):
             if len(stream.cursor_field) > 1:
                 raise ValueError(f"Nested cursor fields are not supported. Got {stream.cursor_field} for {stream.name}")
@@ -140,7 +139,8 @@ class StreamFacade(Stream):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._stream.primary_key
+        # This method is not expected to be called directly. It is only implemented for backward compatibility with the old interface
+        return self.as_airbyte_stream().source_defined_primary_key
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -183,6 +183,12 @@ class StreamFacade(Stream):
         :return: A user-friendly message that indicates the cause of the error
         """
         return self._stream.get_error_display_message(exception)
+
+    def as_airbyte_stream(self) -> AirbyteStream:
+        return self._stream.as_airbyte_stream()
+
+    def log_stream_sync_configuration(self):
+        self._stream.log_stream_sync_configuration()
 
 
 class LegacyPartition(Partition):
