@@ -97,25 +97,27 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
 
 
 @pytest.mark.parametrize(
-    ("http_status", "response_headers", "text"),
+    ("http_status", "response_headers", "text", "should_retry"),
     [
-        (HTTPStatus.OK, {"X-RateLimit-Resource": "graphql"}, '{"errors": [{"type": "RATE_LIMITED"}]}'),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0"}, ""),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, ""),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, ""),
-        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, ""),
-        (HTTPStatus.BAD_GATEWAY, {}, ""),
-        (HTTPStatus.SERVICE_UNAVAILABLE, {}, ""),
+        (HTTPStatus.OK, {"X-RateLimit-Resource": "graphql"}, '{"errors": [{"type": "RATE_LIMITED"}]}', True),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0"}, "", True),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, "", True),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, "", True),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, "", True),
+        (HTTPStatus.BAD_GATEWAY, {}, "", True),
+        (HTTPStatus.SERVICE_UNAVAILABLE, {}, "", True),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "601"}, "", False),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "3000000000"}, "", False),
     ],
 )
-def test_should_retry(http_status, response_headers, text):
+def test_should_retry(http_status, response_headers, text, should_retry):
     stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
     response_mock = MagicMock()
     response_mock.status_code = http_status
     response_mock.headers = response_headers
     response_mock.text = text
     response_mock.json = lambda: json.loads(text)
-    assert stream.should_retry(response_mock)
+    assert stream.should_retry(response_mock) == should_retry
 
 
 @responses.activate

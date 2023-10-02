@@ -26,11 +26,13 @@ from .graphql import (
 )
 from .utils import getter
 
+MAX_BACKOFF_TIME_IN_SECONDS = 60 * 10
+
 
 class GithubStreamABC(HttpStream, ABC):
 
     primary_key = "id"
-
+    raise_on_http_errors = True
     # Detect streams with high API load
     large_stream = False
 
@@ -116,6 +118,11 @@ class GithubStreamABC(HttpStream, ABC):
             self.logger.info(
                 f"Rate limit handling for stream `{self.name}` for the response with {response.status_code} status code, {headers} with message: {response.text}"
             )
+
+            if self.backoff_time(response) and self.backoff_time(response) > MAX_BACKOFF_TIME_IN_SECONDS:
+                self.logger.error(f"Stream `{self.name}`. Limit for backoff time reached , details: {response.content}. Skipping.")
+                setattr(self, "raise_on_http_errors", False)
+                return False
 
         return retry_flag
 
