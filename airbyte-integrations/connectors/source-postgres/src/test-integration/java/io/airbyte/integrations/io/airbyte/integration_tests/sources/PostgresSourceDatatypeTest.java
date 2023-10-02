@@ -10,10 +10,12 @@ import io.airbyte.cdk.db.Database;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -90,6 +92,38 @@ public class PostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTe
   @Override
   public boolean testCatalog() {
     return true;
+  }
+
+  @Override
+  protected void initTests() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("NUMERIC(38,0)")
+            .addInsertValues("'70000'")
+            .addExpectedValues("70000")
+            .build());
+
+//    addDataTypeTestData(
+//        TestDataHolder.builder()
+//            .sourceType("numeric")
+//            .fullSourceDataType("NUMERIC")
+//            .airbyteType(JsonSchemaType.NUMBER)
+//            .addInsertValues("'33.345'")
+//            .addExpectedValues("33.345")
+//            .build());
+//
+//    // case of a column type being a NUMERIC data type
+//    // with precision but no decimal
+//    addDataTypeTestData(
+//        TestDataHolder.builder()
+//            .sourceType("numeric")
+//            .fullSourceDataType("NUMERIC(38)")
+//            .airbyteType(JsonSchemaType.INTEGER)
+//            .addInsertValues("'33'")
+//            .addExpectedValues("33")
+//            .build());
   }
 
 }

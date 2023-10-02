@@ -7,6 +7,7 @@ package io.airbyte.commons.json;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toMap;
 
+import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
@@ -48,6 +49,9 @@ public class Jsons {
   static {
     OBJECT_MAPPER_EXACT = MoreMappers.initMapper();
     OBJECT_MAPPER_EXACT.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+    OBJECT_MAPPER_EXACT.enable(DeserializationFeature.USE_BIG_INTEGER_FOR_INTS);
+    OBJECT_MAPPER_EXACT.configure(Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);
+    OBJECT_MAPPER.configure(Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);
   }
 
   private static final ObjectMapper YAML_OBJECT_MAPPER = MoreMappers.initYamlMapper(new YAMLFactory());

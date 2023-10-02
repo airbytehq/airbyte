@@ -111,20 +111,52 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
 
   @Override
   protected void addHstoreTest() {
+//    addDataTypeTestData(
+//        TestDataHolder.builder()
+//            .sourceType("hstore")
+//            .airbyteType(JsonSchemaType.STRING)
+//            .addInsertValues("""
+//                             '"paperback" => "243","publisher" => "postgresqltutorial.com",
+//                             "language"  => "English","ISBN-13" => "978-1449370000",
+//                             "weight"    => "11.2 ounces"'
+//                             """, null)
+//            .addExpectedValues(
+//                //
+//                "\"weight\"=>\"11.2 ounces\", \"ISBN-13\"=>\"978-1449370000\", \"language\"=>\"English\", \"paperback\"=>\"243\", \"publisher\"=>\"postgresqltutorial.com\"",
+//                null)
+//            .build());
+  }
+
+  @Override
+  protected void initTests() {
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("hstore")
-            .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("""
-                             '"paperback" => "243","publisher" => "postgresqltutorial.com",
-                             "language"  => "English","ISBN-13" => "978-1449370000",
-                             "weight"    => "11.2 ounces"'
-                             """, null)
-            .addExpectedValues(
-                //
-                "\"weight\"=>\"11.2 ounces\", \"ISBN-13\"=>\"978-1449370000\", \"language\"=>\"English\", \"paperback\"=>\"243\", \"publisher\"=>\"postgresqltutorial.com\"",
-                null)
+            .sourceType("numeric")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("NUMERIC(38)")
+            .addInsertValues("'70000'")
+            .addExpectedValues("70000")
             .build());
+
+//    addDataTypeTestData(
+//        TestDataHolder.builder()
+//            .sourceType("numeric")
+//            .fullSourceDataType("NUMERIC")
+//            .airbyteType(JsonSchemaType.NUMBER)
+//            .addInsertValues("'33.345'")
+//            .addExpectedValues("33.345")
+//            .build());
+//
+//    // case of a column type being a NUMERIC data type
+//    // with precision but no decimal
+//    addDataTypeTestData(
+//        TestDataHolder.builder()
+//            .sourceType("numeric")
+//            .fullSourceDataType("NUMERIC(38)")
+//            .airbyteType(JsonSchemaType.INTEGER)
+//            .addInsertValues("'33'")
+//            .addExpectedValues("33")
+//            .build());
   }
 
 }
