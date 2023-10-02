@@ -5,6 +5,7 @@
 import unittest
 from unittest.mock import Mock
 
+from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
@@ -107,3 +108,9 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         list(self._stream.read())
 
         self._message_repository.emit_message.assert_called_once_with(slice_log_message)
+
+    def test_as_airbyte_stream(self):
+        expected_airbyte_stream = AirbyteStream(name=self._name, json_schema=self._json_schema, supported_sync_modes=[SyncMode.full_refresh], source_defined_cursor=None, default_cursor_field=None, source_defined_primary_key=None, namespace=None)
+        actual_airbyte_stream = self._stream.as_airbyte_stream()
+
+        assert expected_airbyte_stream == actual_airbyte_stream

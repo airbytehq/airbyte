@@ -12,8 +12,9 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.models import SyncMode, AirbyteStream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream, PrimaryKey
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -72,9 +73,9 @@ class StreamFacade(Stream):
         )
 
     @classmethod
-    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> Optional[PrimaryKey]:
+    def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> List[str]:
         if stream_primary_key is None or isinstance(stream_primary_key, str):
-            return stream_primary_key
+            return [stream_primary_key]
         elif isinstance(stream_primary_key, list):
             if len(stream_primary_key) > 0 and all(isinstance(k, str) for k in stream_primary_key):
                 return stream_primary_key  # type: ignore # We verified all items in the list are strings
@@ -84,7 +85,7 @@ class StreamFacade(Stream):
             raise ValueError(f"Invalid type for primary key: {stream_primary_key}")
 
     @classmethod
-    def _get_cursor_field_from_stream(cls, stream: Stream) -> Optional[PrimaryKey]:
+    def _get_cursor_field_from_stream(cls, stream: Stream) -> Optional[str]:
         if isinstance(stream.cursor_field, list):
             if len(stream.cursor_field) > 1:
                 raise ValueError(f"Nested cursor fields are not supported. Got {stream.cursor_field} for {stream.name}")
@@ -180,6 +181,12 @@ class StreamFacade(Stream):
         :return: A user-friendly message that indicates the cause of the error
         """
         return self._stream.get_error_display_message(exception)
+
+    def as_airbyte_stream(self) -> AirbyteStream:
+        return self._stream.as_airbyte_stream()
+
+    def log_stream_sync_configuration(self):
+        self._stream.log_stream_sync_configuration()
 
 
 class LegacyPartition(Partition):
