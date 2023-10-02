@@ -6,10 +6,9 @@ import logging
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, Optional, Tuple
 
-from deprecated.classic import deprecated
-
 from airbyte_cdk.models import AirbyteStream
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from deprecated.classic import deprecated
 
 
 @deprecated("This class is experimental. Use at your own risk.")
