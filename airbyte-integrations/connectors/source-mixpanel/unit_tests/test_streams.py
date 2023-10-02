@@ -284,7 +284,7 @@ def engage_schema_response():
                 "$CreatedDateTimestamp": {"count": 300, "type": "number"},
                 "$CreatedDate": {"count": 11, "type": "datetime"},
                 "$properties": {"count": 2, "type": "object"},
-                "$tags": {"count": 131, "type": "list"}
+                "$tags": {"count": 131, "type": "list"},
             }
         },
     )
@@ -316,9 +316,9 @@ def test_engage_schema(requests_mock, engage_schema_response, config):
             "region": {"type": ["null", "string"]},
             "tags": {"items": {}, "required": False, "type": ["null", "array"]},
             "timezone": {"type": ["null", "string"]},
-            "unblocked": {"type": ["null", "string"]}
+            "unblocked": {"type": ["null", "string"]},
         },
-        "type": "object"
+        "type": "object",
     }
 
 
