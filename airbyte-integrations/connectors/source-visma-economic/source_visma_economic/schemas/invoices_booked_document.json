@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-03/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Booked invoice schema",
   "description": "A schema for retrieving a booked invoice.",
   "type": "object",
@@ -11,6 +11,9 @@
       "filterable": true,
       "sortable": true,
       "description": "A reference number for the booked invoice document."
+    },
+    "orderNumber": {
+      "type": ["null","integer"]
     },
     "date": {
       "type": "string",
