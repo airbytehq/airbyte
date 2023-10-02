@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.51.25
+Add  configurable OpenAI embedder to cdk and add cloud environment helper
+
+## 0.51.24
+Fix previous version of request_cache clearing
+
 ## 0.51.23
 Fix request_cache clearing and move it to tmp folder
 
