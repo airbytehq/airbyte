@@ -21,7 +21,6 @@ import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigrated
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -155,13 +154,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()).type());
   }
 
-  @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix) {
-    return updateTable(stream, finalSuffix, true);
-  }
-
-  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
+  private String updateTableQuery(final StreamConfig stream, final String finalSuffix, final boolean forceTryCasting) {
+    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), forceTryCasting);
     String dedupFinalTable = "";
     String cdcDeletes = "";
     String dedupRawTable = "";
@@ -169,7 +163,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
       // If we're in dedup mode, then we must have a cursor
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
-      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
+      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns(), forceTryCasting);
     }
     final String commitRawTable = commitRawTable(stream.id());
 
@@ -179,56 +173,51 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "cdc_deletes", cdcDeletes,
         "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
+        """
+        BEGIN TRANSACTION;
+        ${insert_new_records}
+        ${dedup_final_table}
+        ${dedupe_raw_table}
+        ${cdc_deletes}
+        ${commit_raw_table}
+        COMMIT;
+        """);
+  }
+
+  @Override
+  public String updateTable(final StreamConfig stream, final String finalSuffix) {
+    final String unsafeTransaction = updateTableQuery(stream, finalSuffix, false);
+    final String safeTransaction = updateTableQuery(stream, finalSuffix, true);
+
+    return new StringSubstitutor(Map.of("unsafeQuery", unsafeTransaction, "safeQuery", safeTransaction)).replace(
+        """
+            EXECUTE IMMEDIATE $$
+            BEGIN
+            
+            ${unsafeQuery}
+            
+            EXCEPTION WHEN OTHER THEN
+            ROLLBACK;
+            
+            ${safeQuery}
+           
+            END;
+            $$
+            ;
             """
-            BEGIN TRANSACTION;
-            ${insert_new_records}
-            ${dedup_final_table}
-            ${dedupe_raw_table}
-            ${cdc_deletes}
-            ${commit_raw_table}
-            COMMIT;
-            """);
+    );
   }
 
-  private String extractAndCast(final ColumnId column, final AirbyteType airbyteType) {
-    return cast("\"_airbyte_data\":\"" + escapeJsonIdentifier(column.originalName()) + "\"", airbyteType);
+  private String extractAndCast(final ColumnId column, final AirbyteType airbyteType, final boolean forceTryCasting) {
+    return cast("\"_airbyte_data\":\"" + escapeJsonIdentifier(column.originalName()) + "\"", airbyteType, forceTryCasting);
   }
 
-  /**
-   * The `${` bigram causes problems inside script blocks. For example, a perfectly innocuous query
-   * like `SELECT "_airbyte_data":"${foo}" FROM ...` works fine normally, but running this block will
-   * throw an error:
-   *
-   * <pre>
-   * {@code
-   * EXECUTE IMMEDIATE 'BEGIN
-   * LET x INTEGER := (SELECT "_airbyte_data":"${foo}" FROM ...);
-   * END;';
-   * }
-   * </pre>
-   * <p>
-   * This method is a workaround for this behavior. We switch to using the {@code get} method to
-   * extract JSON values, and avoid the `${` sequence by using string concatenation. This generates a
-   * sql statement like {@code SELECT TRY_CAST((get("_airbyte_data", '$' + '{foo}')::text) as INTEGER)
-   * FROM ...}.
-   */
-  private String extractAndCastInsideScript(final ColumnId column, final AirbyteType airbyteType) {
-    final String[] parts = column.originalName().split("\\$\\{", -1);
-
-    final String hackReplacement = "$' || '{";
-    String escapedAndQuotedColumnName = Arrays.stream(parts)
-        .map(SnowflakeSqlGenerator::escapeSingleQuotedString)
-        .collect(joining(hackReplacement));
-    escapedAndQuotedColumnName = "'" + escapedAndQuotedColumnName + "'";
-    final String extract = "get(\"_airbyte_data\", " + escapedAndQuotedColumnName + ")";
-    return cast(extract, airbyteType);
-  }
-
-  private String cast(final String sqlExpression, final AirbyteType airbyteType) {
+  private String cast(final String sqlExpression, final AirbyteType airbyteType, final boolean forceTryCasting) {
+    final var castFunction = forceTryCasting ? "TRY_CAST" : "CAST";
     if (airbyteType instanceof final Union u) {
       // This is guaranteed to not be a Union, so we won't recurse infinitely
       final AirbyteType chosenType = u.chooseType();
-      return cast(sqlExpression, chosenType);
+      return cast(sqlExpression, chosenType, forceTryCasting);
     } else if (airbyteType == AirbyteProtocolType.TIME_WITH_TIMEZONE) {
       // We're using TEXT for this type, so need to explicitly check the string format.
       // There's a bunch of ways we could do this; this regex is approximately correct and easy to
@@ -249,7 +238,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     } else {
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {
-        case "TIMESTAMP_TZ" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
+        case "TIMESTAMP_TZ" -> new StringSubstitutor(Map.of("expression", sqlExpression, "cast_function", castFunction)).replace(
             // Handle offsets in +/-HHMM and +/-HH formats
             // The four cases, in order, match:
             // 2023-01-01T12:34:56-0800
@@ -267,7 +256,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                 THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
               WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{2}'
                 THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
-              ELSE TRY_CAST((${expression})::TEXT AS TIMESTAMP_TZ)
+              ELSE ${cast_function}((${expression})::TEXT AS TIMESTAMP_TZ)
             END
             """);
         // try_cast doesn't support variant/array/object, so handle them specially
@@ -294,22 +283,24 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             END
             """);
         case "TEXT" -> "((" + sqlExpression + ")::text)"; // we don't need TRY_CAST on strings.
-        default -> "TRY_CAST((" + sqlExpression + ")::text as " + dialectType + ")";
+        default -> castFunction +"((" + sqlExpression + ")::text as " + dialectType + ")";
       };
     }
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
+                          final boolean forceTryCasting) {
     final String columnCasts = streamColumns.entrySet().stream().map(
-        col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
+        col -> extractAndCast(col.getKey(), col.getValue(), forceTryCasting) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
-    final String columnErrors = streamColumns.entrySet().stream().map(
+
+    final String columnErrors = forceTryCasting ? streamColumns.entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
             "raw_col_name", escapeJsonIdentifier(col.getKey().originalName()),
             "printable_col_name", escapeSingleQuotedString(col.getKey().originalName()),
             "col_type", toDialectType(col.getValue()),
-            "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
+            "json_extract", extractAndCast(col.getKey(), col.getValue(), true))).replace(
                 // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
                 """
                 CASE
@@ -318,7 +309,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                     THEN 'Problem with `${printable_col_name}`'
                   ELSE NULL
                 END"""))
-        .collect(joining(",\n"));
+        .collect(joining(",\n"))
+                                : "";
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
     String cdcConditionalOrIncludeStatement = "";
@@ -395,7 +387,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   @VisibleForTesting
   String cdcDeletes(final StreamConfig stream,
                     final String finalSuffix,
-                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns, final boolean forceTryCasting) {
 
     if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
@@ -406,7 +398,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     }
 
     final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    final String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
+    final String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk), forceTryCasting)).collect(joining(",\n"));
 
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
     // out-of-order record insertions after the delete has been registered
@@ -472,7 +464,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public String softReset(final StreamConfig stream) {
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
-    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), false);
+    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX.toUpperCase());
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX.toUpperCase());
     return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
