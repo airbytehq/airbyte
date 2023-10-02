@@ -145,11 +145,11 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey(), column.getValue().type()),
             LinkedHashMap::putAll);
-    final boolean hasPksWithoutIndex = existingTable.columns().entrySet().stream()
+    final boolean hasPksWithoutNullConstraint = existingTable.columns().entrySet().stream()
         .anyMatch(c -> pks.contains(c.getKey()) && c.getValue().isNullable());
 
     return actualColumns.equals(intendedColumns)
-        && !hasPksWithoutIndex
+        && !hasPksWithoutNullConstraint
         && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()).type())
         && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()).type())
         && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()).type());
@@ -556,7 +556,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     return RESERVED_COLUMN_NAMES.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ? "_" + columnName : columnName;
   }
 
-  private static Set<String> getPks(StreamConfig stream) {
+  private static Set<String> getPks(final StreamConfig stream) {
     return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 

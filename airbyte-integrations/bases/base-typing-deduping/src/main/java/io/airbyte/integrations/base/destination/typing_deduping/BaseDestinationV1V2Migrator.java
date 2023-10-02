@@ -8,7 +8,6 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABL
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -23,7 +22,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
                                  final SqlGenerator sqlGenerator,
                                  final DestinationHandler destinationHandler,
                                  final StreamConfig streamConfig)
-      throws TableNotMigratedException, UnexpectedSchemaException, SQLException {
+      throws TableNotMigratedException, UnexpectedSchemaException, Exception {
     LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
     if (shouldMigrate(streamConfig)) {
       LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id().finalName());
@@ -41,7 +40,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param streamConfig the stream in question
    * @return whether to migrate the stream
    */
-  protected boolean shouldMigrate(final StreamConfig streamConfig) throws SQLException {
+  protected boolean shouldMigrate(final StreamConfig streamConfig) throws Exception {
     final var v1RawTable = convertToV1RawName(streamConfig);
     LOGGER.info("Checking whether v1 raw table {} in dataset {} exists", v1RawTable.tableName(), v1RawTable.namespace());
     final var syncModeNeedsMigration = isMigrationRequiredForSyncMode(streamConfig.destinationSyncMode());
@@ -67,7 +66,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
     final var namespacedTableName = convertToV1RawName(streamConfig);
     try {
       destinationHandler.execute(sqlGenerator.migrateFromV1toV2(streamConfig.id(), namespacedTableName.namespace(), namespacedTableName.tableName()));
-    } catch (Exception e) {
+    } catch (final Exception e) {
       final var message = "Attempted and failed to migrate stream %s".formatted(streamConfig.id().finalName());
       throw new TableNotMigratedException(message, e);
     }
@@ -79,7 +78,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param existingV2AirbyteRawTable the v1 raw table
    * @return whether the schema is as expected
    */
-  private boolean doesV1RawTableMatchExpectedSchema(DialectTableDefinition existingV2AirbyteRawTable) {
+  private boolean doesV1RawTableMatchExpectedSchema(final DialectTableDefinition existingV2AirbyteRawTable) {
 
     return schemaMatchesExpectation(existingV2AirbyteRawTable, LEGACY_RAW_TABLE_COLUMNS);
   }
@@ -89,7 +88,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    *
    * @param existingV2AirbyteRawTable the v2 raw table
    */
-  private void validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(DialectTableDefinition existingV2AirbyteRawTable) {
+  private void validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema(final DialectTableDefinition existingV2AirbyteRawTable) {
     if (!schemaMatchesExpectation(existingV2AirbyteRawTable, V2_RAW_TABLE_COLUMN_NAMES)) {
       throw new UnexpectedSchemaException("Destination V2 Raw Table does not match expected Schema");
     }
@@ -111,7 +110,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param streamConfig the raw table to check
    * @return whether it exists and is in the correct format
    */
-  private boolean doesValidV2RawTableAlreadyExist(final StreamConfig streamConfig) throws SQLException {
+  private boolean doesValidV2RawTableAlreadyExist(final StreamConfig streamConfig) throws Exception {
     if (doesAirbyteInternalNamespaceExist(streamConfig)) {
       final var existingV2Table = getTableIfExists(streamConfig.id().rawNamespace(), streamConfig.id().rawName());
       existingV2Table.ifPresent(this::validateAirbyteInternalNamespaceRawTableMatchExpectedV2Schema);
@@ -127,7 +126,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param tableName
    * @return whether it exists and is in the correct format
    */
-  protected boolean doesValidV1RawTableExist(final String namespace, final String tableName) throws SQLException {
+  protected boolean doesValidV1RawTableExist(final String namespace, final String tableName) throws Exception {
     final var existingV1RawTable = getTableIfExists(namespace, tableName);
     return existingV1RawTable.isPresent() && doesV1RawTableMatchExpectedSchema(existingV1RawTable.get());
   }
@@ -138,7 +137,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param streamConfig the stream to check
    * @return whether the schema exists
    */
-  abstract protected boolean doesAirbyteInternalNamespaceExist(StreamConfig streamConfig) throws SQLException;
+  abstract protected boolean doesAirbyteInternalNamespaceExist(StreamConfig streamConfig) throws Exception;
 
   /**
    * Checks a Table's schema and compares it to an expected schema to make sure it matches
@@ -156,7 +155,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
    * @param tableName
    * @return an optional potentially containing a reference to the table
    */
-  abstract protected Optional<DialectTableDefinition> getTableIfExists(String namespace, String tableName) throws SQLException;
+  abstract protected Optional<DialectTableDefinition> getTableIfExists(String namespace, String tableName) throws Exception;
 
   /**
    * We use different naming conventions for raw table names in destinations v2, we need a way to map
