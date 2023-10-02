@@ -19,6 +19,8 @@ from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
 from .utils import command_check
 
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
     source = SourceGithub()

@@ -3,6 +3,7 @@
 #
 
 import json
+import os
 from http import HTTPStatus
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -55,6 +56,7 @@ from source_github.utils import read_full_refresh
 from .utils import ProjectsResponsesAPI, read_incremental
 
 DEFAULT_BACKOFF_DELAYS = [5, 10, 20, 40, 80]
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 
 @responses.activate
