@@ -23,9 +23,10 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.bson.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +45,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
   private final Optional<CdcMetadataInjector<?>> cdcMetadataInjector;
   private final MongoDbStateManager stateManager;
   private final ConfiguredAirbyteStream stream;
-  private final List<String> fields;
+  private final Set<String> fields;
   private final Instant emittedAt;
   private Instant lastCheckpoint = Instant.now();
   private final Integer checkpointInterval;
@@ -98,7 +99,7 @@ public class MongoDbStateIterator implements Iterator<AirbyteMessage> {
     this.checkpointInterval = checkpointInterval;
     this.checkpointDuration = checkpointDuration;
     this.emittedAt = emittedAt;
-    this.fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().toList();
+    this.fields = CatalogHelpers.getTopLevelFieldNames(stream).stream().collect(Collectors.toSet());
     this.lastId =
         stateManager.getStreamState(stream.getStream().getName(), stream.getStream().getNamespace()).map(MongoDbStreamState::id).orElse(null);
     this.cdcMetadataInjector = cdcMetadataInjector;

@@ -19,7 +19,6 @@ import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.integrations.source.mongodb.InitialSnapshotHandler;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.MongoUtil;
-import io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcProperties.ExcludedField;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
@@ -30,7 +29,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Properties;
-import java.util.Set;
 import java.util.function.Supplier;
 import org.bson.BsonDocument;
 import org.bson.BsonTimestamp;
@@ -51,16 +49,14 @@ public class MongoDbCdcInitializer {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbCdcInitializer.class);
 
   private final MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
-  private final MongoDbDebeziumFieldsUtil mongoDbDebeziumFieldsUtil;
 
   @VisibleForTesting
-  MongoDbCdcInitializer(final MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil, final MongoDbDebeziumFieldsUtil mongoDbDebeziumFieldsUtil) {
+  MongoDbCdcInitializer(final MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil) {
     this.mongoDbDebeziumStateUtil = mongoDbDebeziumStateUtil;
-    this.mongoDbDebeziumFieldsUtil = mongoDbDebeziumFieldsUtil;
   }
 
   public MongoDbCdcInitializer() {
-    this(new MongoDbDebeziumStateUtil(), new MongoDbDebeziumFieldsUtil());
+    this(new MongoDbDebeziumStateUtil());
   }
 
   /**
@@ -90,15 +86,7 @@ public class MongoDbCdcInitializer {
     final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(config.rawConfig());
     final OptionalInt queueSize = MongoUtil.getDebeziumEventQueueSize(config);
     final String databaseName = config.getDatabaseName();
-    final Integer sampleSize = config.getSampleSize();
-    // WARNING!!! debezium's mongodb connector doesn't let you specify a list of fields to
-    // include, so we can't filter fields solely using the configured catalog. Instead,
-    // debezium only lets you specify a list of fields to exclude. If the fields to exclude
-    // we specify are not equal to all the fields in the source that are not in the
-    // configured catalog then we will be outputting incorrect data.
-    final Set<ExcludedField> fieldsNotIncludedInCatalog =
-        mongoDbDebeziumFieldsUtil.getFieldsNotIncludedInCatalog(catalog, databaseName, mongoClient, sampleSize);
-    final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties(fieldsNotIncludedInCatalog);
+    final Properties defaultDebeziumProperties = MongoDbCdcProperties.getDebeziumProperties();
     final BsonDocument resumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
     final JsonNode initialDebeziumState =
         mongoDbDebeziumStateUtil.constructInitialDebeziumState(resumeToken, mongoClient, databaseName);
