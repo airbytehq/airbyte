@@ -8,15 +8,15 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 
 ### Prerequisites
 - Spreadsheet Link - The link to the Google spreadsheet you want to sync.
-<env:cloud>
+<!-- env:cloud -->
 - **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet  
-</env:cloud>
-<env:oss>
+<!-- /env:cloud -->
+<!-- env:oss -->
 -  **For Airbyte Open Source:** 
   - A GCP project
   - Enable the Google Sheets API in your GCP project
   - Service Account Key with access to the Spreadsheet you want to replicate
-</env:oss>
+<!-- /env:oss -->
 
 ## Setup guide
 
@@ -132,6 +132,8 @@ Airbyte batches requests to the API in order to efficiently pull data and respec
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 |---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.3.9   | 2023-09-25 | [30749](https://github.com/airbytehq/airbyte/pull/30749) | Performance testing - include socat binary in docker image                        |
+| 0.3.8   | 2023-09-25 | [30747](https://github.com/airbytehq/airbyte/pull/30747) | Performance testing - include socat binary in docker image                        |
 | 0.3.7   | 2023-08-25 | [29826](https://github.com/airbytehq/airbyte/pull/29826) | Remove row batch size from spec, add auto increase this value when rate limits    |
 | 0.3.6   | 2023-08-16 | [29491](https://github.com/airbytehq/airbyte/pull/29491) | Update to latest CDK                                                              |
 | 0.3.5   | 2023-08-16 | [29427](https://github.com/airbytehq/airbyte/pull/29427) | Add stop reading in case of 429 error                                             |

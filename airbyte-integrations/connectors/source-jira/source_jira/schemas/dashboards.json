@@ -2087,6 +2087,44 @@
     "view": {
       "type": "string",
       "description": "The URL of the dashboard."
+    },
+    "editpermission": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "group": {
+            "type": ["null", "object"]
+          },
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "project": {
+            "type": ["null", "object"]
+          },
+          "role": {
+            "type": ["null", "object"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          },
+          "user": {
+            "type": ["null", "object"]
+          }
+        }
+      }
+    },
+    "isWritable": {
+      "type": ["null", "boolean"]
+    },
+    "systemDashboard": {
+      "type": ["null", "boolean"]
+    },
+    "editPermissions": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"]
+      }
     }
   },
   "additionalProperties": true,

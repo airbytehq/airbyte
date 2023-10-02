@@ -46,6 +46,9 @@
     },
     "updated": {
       "type": ["null", "integer"]
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

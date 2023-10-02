@@ -19,6 +19,8 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: secrets/config_oauth.json
+        backward_compatibility_tests_config:
+          disable_for_version: 1.4.1
   basic_read:
     tests:
       - config_path: secrets/config_oauth.json
@@ -48,62 +50,114 @@ acceptance_tests:
             - name: ilsFilterBranch
               bypass_reason: Floating fields order
           companies:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_was_imported
+              bypass_reason: attribute is not stable
             - name: properties/hs_was_imported
               bypass_reason: attribute is not stable
           contacts:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_time_in_subscriber
               bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_in_subscriber
               bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_latest_source_timestamp
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_latest_source_timestamp
               bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_predictivescoringtier
+              bypass_reason: Hubspot prediction changes
             - name: properties/hs_predictivescoringtier
               bypass_reason: Hubspot prediction changes
+            - name: properties_lastmodifieddate
+              bypass_reason: Hubspot time depend on current time
             - name: properties/lastmodifieddate
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_time_in_lead
               bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_in_lead
               bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_time_in_opportunity
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_in_opportunity
               bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_was_imported
+              bypass_reason: attribute is not stable
             - name: properties/hs_was_imported
               bypass_reason: attribute is not stable
             - name: updatedAt
               bypass_reason: Hubspot time depend on current time
           deals:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_acv
+              bypass_reason: value can be an integer or float
             - name: properties/hs_acv
+              bypass_reason: value can be an integer or float
+            - name: properties_hs_arr
               bypass_reason: value can be an integer or float
             - name: properties/hs_arr
               bypass_reason: value can be an integer or float
+            - name: properties_hs_mrr
+              bypass_reason: value can be an integer or float
             - name: properties/hs_mrr
               bypass_reason: value can be an integer or float
+            - name: properties_hs_tcv
+              bypass_reason: value can be an integer or float
             - name: properties/hs_tcv
+              bypass_reason: value can be an integer or float
+            - name: properties_hs_num_of_associated_line_items
               bypass_reason: value can be an integer or float
             - name: properties/hs_num_of_associated_line_items
               bypass_reason: value can be an integer or float
           deals_archived:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_acv
+              bypass_reason: value can be an integer or float
             - name: properties/hs_acv
+              bypass_reason: value can be an integer or float
+            - name: properties_hs_arr
               bypass_reason: value can be an integer or float
             - name: properties/hs_arr
               bypass_reason: value can be an integer or float
+            - name: properties_hs_mrr
+              bypass_reason: value can be an integer or float
             - name: properties/hs_mrr
               bypass_reason: value can be an integer or float
+            - name: properties_hs_tcv
+              bypass_reason: value can be an integer or float
             - name: properties/hs_tcv
+              bypass_reason: value can be an integer or float
+            - name: properties_hs_num_of_associated_line_items
               bypass_reason: value can be an integer or float
             - name: properties/hs_num_of_associated_line_items
               bypass_reason: value can be an integer or float
           tickets:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
           goals:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_lastmodifieddate
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_lastmodifieddate
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_kpi_value_last_calculated_at
               bypass_reason: Hubspot time depend on current time
             - name: properties/hs_kpi_value_last_calculated_at
               bypass_reason: Hubspot time depend on current time
@@ -120,15 +174,23 @@ acceptance_tests:
             - name: ilsFilterBranch
               bypass_reason: Floating fields order
           companies:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
           contacts:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
           deals:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
           tickets:
+            - name: properties_hs_time_*
+              bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
               bypass_reason: Hubspot time depend on current time
   incremental:

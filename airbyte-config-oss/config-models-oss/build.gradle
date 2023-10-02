@@ -29,6 +29,9 @@ jsonSchema2Pojo {
     includeSetters = true
     serializable = true
 }
+tasks.register('generate').configure {
+    dependsOn tasks.named('generateJsonSchema2Pojo')
+}
 
 test {
     useJUnitPlatform {

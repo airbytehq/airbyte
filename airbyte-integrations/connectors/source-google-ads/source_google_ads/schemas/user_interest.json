@@ -3,7 +3,10 @@
   "type": "object",
   "properties": {
     "user_interest.availabilities": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "user_interest.launched_to_all": {
       "type": ["null", "boolean"]

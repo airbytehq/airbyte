@@ -23,9 +23,7 @@ import static io.airbyte.integrations.source.postgres.PostgresType.TINYINT;
 import static io.airbyte.integrations.source.postgres.PostgresType.VARCHAR;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.v0.SyncMode;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -164,11 +162,6 @@ public class PostgresUtils {
         && config.get("replication_method").get("method").asText().equals("Xmin");
     LOGGER.info("using Xmin: {}", isXmin);
     return isXmin;
-  }
-
-  public static boolean isAnyStreamIncrementalSyncMode(final ConfiguredAirbyteCatalog catalog) {
-    return catalog.getStreams().stream().map(ConfiguredAirbyteStream::getSyncMode)
-        .anyMatch(syncMode -> syncMode == SyncMode.INCREMENTAL);
   }
 
   public static String prettyPrintConfiguredAirbyteStreamList(final List<ConfiguredAirbyteStream> streamList) {

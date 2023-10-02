@@ -86,12 +86,20 @@
         "pattern": "^([\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))\\s+)*[\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))$",
         "pattern_descriptor": "org/repo org/another-repo org/*"
       },
+      "api_url": {
+        "type": "string",
+        "examples": ["https://github.com", "https://github.company.org"],
+        "title": "API URL",
+        "default": "https://api.github.com/",
+        "description": "Please enter your basic URL from self-hosted GitHub instance or leave it empty to use GitHub.",
+        "order": 3
+      },
       "branch": {
         "type": "string",
         "title": "Branch",
         "examples": ["airbytehq/airbyte/master airbytehq/airbyte/my-branch"],
         "description": "Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.",
-        "order": 3,
+        "order": 4,
         "pattern_descriptor": "org/repo/branch1 org/repo/branch2"
       },
       "requests_per_hour": {
@@ -99,7 +107,7 @@
         "title": "Max requests per hour",
         "description": "The GitHub API allows for a maximum of 5000 requests per hour (15000 for Github Enterprise). You can specify a lower value to limit your use of the API quota.",
         "minimum": 1,
-        "order": 4
+        "order": 5
       }
     }
   },

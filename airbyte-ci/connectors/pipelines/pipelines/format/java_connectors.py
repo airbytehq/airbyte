@@ -15,18 +15,14 @@ class FormatConnectorCode(GradleTask):
     """
 
     title = "Format connector code"
+    gradle_task_name = "format"
 
     async def _run(self) -> StepResult:
-        formatted = (
-            environments.with_gradle(self.context, self.build_include, bind_to_docker_host=self.BIND_TO_DOCKER_HOST)
-            .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
-            .with_exec(["./gradlew", "format"])
-        )
-        exit_code, stdout, stderr = await get_exec_result(formatted)
+        result = await super()._run()
         return StepResult(
             self,
-            self.get_step_status_from_exit_code(exit_code),
-            stderr=stderr,
-            stdout=stdout,
-            output_artifact=formatted.directory(str(self.context.connector.code_directory)),
+            result.status,
+            stderr=result.stderr,
+            stdout=result.stdout,
+            output_artifact=result.output_artifact.directory(str(self.context.connector.code_directory)),
         )
