@@ -3,6 +3,7 @@
 #
 
 import json
+from typing import Any, Optional
 
 import pytest
 import requests
@@ -35,3 +36,16 @@ def test_page_increment_paginator_strategy(page_size, start_from, last_records, 
 
     paginator_strategy.reset()
     assert start_from == paginator_strategy._page
+
+
+@pytest.mark.parametrize(
+    "inject_on_first_request, expected_initial_token",
+    [
+        pytest.param(True, 0, id="test_with_inject_offset"),
+        pytest.param(False, None, id="test_without_inject_offset"),
+    ],
+)
+def test_page_increment_paginator_strategy_initial_token(inject_on_first_request: bool, expected_initial_token: Optional[Any]):
+    paginator_strategy = PageIncrement(page_size=20, parameters={}, inject_on_first_request=inject_on_first_request)
+
+    assert paginator_strategy.initial_token == expected_initial_token
