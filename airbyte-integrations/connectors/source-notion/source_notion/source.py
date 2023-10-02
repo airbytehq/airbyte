@@ -24,7 +24,7 @@ class SourceNotion(AbstractSource):
 
         if credentials and token:
             return TokenAuthenticator(token)
-        
+
         # The original implementation did not support OAuth, and therefore had no "credentials" key.
         # We can maintain backwards compatibility for OG connections by checking for the deprecated "access_token" key, just in case.
         if config.get("access_token"):
