@@ -139,6 +139,13 @@ public class MongoDbCdcEventUtils {
     while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
       final var fieldName = reader.readName();
       final var fieldType = reader.getCurrentBsonType();
+
+      /**
+       * Test when the field that is currently being read is included in the configured set
+       * of fields/columns.  In order to support the fields of nested document fields that
+       * pass the initial filter, the ALLOW_ALL name may be included in the provided set as
+       * a way to allow the fields of the nested document to be processed.
+       */
       if (columnNames.contains(fieldName) || columnNames.contains(ALLOW_ALL)) {
         if (DOCUMENT.equals(fieldType)) {
           /*
@@ -187,6 +194,12 @@ public class MongoDbCdcEventUtils {
                                       final Set<String> columnNames,
                                       final String fieldName,
                                       final BsonType fieldType) {
+    /**
+     * Test when the field that is currently being read is included in the configured set
+     * of fields/columns.  In order to support the fields of nested document fields that
+     * pass the initial filter, the ALLOW_ALL name may be included in the provided set as
+     * a way to allow the fields of the nested document to be processed.
+     */
     if (columnNames.contains(fieldName) || columnNames.contains(ALLOW_ALL)) {
       switch (fieldType) {
         case BOOLEAN -> o.put(fieldName, reader.readBoolean());
