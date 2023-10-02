@@ -49,7 +49,9 @@ public abstract class BigQueryRecordFormatter {
 
   public abstract JsonNode formatRecord(AirbyteRecordMessage recordMessage);
 
-  public abstract String formatRecord(PartialAirbyteMessage recordMessage);
+  public String formatRecord(PartialAirbyteMessage recordMessage) {
+    return "";
+  }
 
   public Schema getBigQuerySchema() {
     if (bigQuerySchema == null) {
