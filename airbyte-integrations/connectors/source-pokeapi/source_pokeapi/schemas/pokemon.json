@@ -14,7 +14,7 @@
     "height": {
       "type": ["null", "integer"]
     },
-    "is_default ": {
+    "is_default": {
       "type": ["null", "boolean"]
     },
     "order": {
@@ -266,6 +266,47 @@
           }
         }
       }
+    },
+    "past_types": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "generation": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": ["null", "string"]
+                },
+                "url": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "types": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "slot": {
+                    "type": ["null", "integer"]
+                  },
+                  "type": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": ["null", "string"]
+                      },
+                      "url": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
     }
   }
 }
