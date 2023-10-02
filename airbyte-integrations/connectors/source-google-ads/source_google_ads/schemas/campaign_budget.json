@@ -60,10 +60,7 @@
       "type": ["null", "string"]
     },
     "campaign_budget.status": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string"]
     },
     "campaign_budget.total_amount_micros": {
       "type": ["null", "integer"]
