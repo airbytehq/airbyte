@@ -12,7 +12,6 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.mongodb.DBRefCodecProvider;
 import io.airbyte.cdk.db.DataTypeUtils;
@@ -49,7 +48,6 @@ public class MongoDbCdcEventUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoDbCdcEventUtils.class);
 
   public static final String AIRBYTE_SUFFIX = "_aibyte_transform";
-  public static final String ALLOW_ALL = "*";
   public static final String DOCUMENT_OBJECT_ID_FIELD = "_id";
   public static final String ID_FIELD = "id";
   public static final String OBJECT_ID_FIELD = "$oid";
@@ -127,38 +125,35 @@ public class MongoDbCdcEventUtils {
   private static void formatDocument(final Document document, final ObjectNode objectNode, final Set<String> columnNames) {
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
-      readDocument(reader, objectNode, columnNames);
+      readDocument(reader, objectNode, columnNames, false);
     } catch (final Exception e) {
       LOGGER.error("Exception while parsing BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
     }
   }
 
-  private static ObjectNode readDocument(final BsonReader reader, final ObjectNode jsonNodes, final Set<String> columnNames) {
+  private static ObjectNode readDocument(final BsonReader reader,
+                                         final ObjectNode jsonNodes,
+                                         final Set<String> includedFields,
+                                         final boolean allowAllFields) {
     reader.readStartDocument();
     while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
       final var fieldName = reader.readName();
       final var fieldType = reader.getCurrentBsonType();
 
-      /**
-       * Test when the field that is currently being read is included in the configured set of
-       * fields/columns. In order to support the fields of nested document fields that pass the initial
-       * filter, the ALLOW_ALL name may be included in the provided set as a way to allow the fields of
-       * the nested document to be processed.
-       */
-      if (columnNames.contains(fieldName) || columnNames.contains(ALLOW_ALL)) {
+      if (shouldIncludeField(fieldName, includedFields, allowAllFields)) {
         if (DOCUMENT.equals(fieldType)) {
           /*
            * Recursion in used to parse inner documents. Pass the allow all column name so all nested fields
            * are processed.
            */
-          jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of(ALLOW_ALL)));
+          jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of(), true));
         } else if (ARRAY.equals(fieldType)) {
-          jsonNodes.set(fieldName, readArray(reader, columnNames, fieldName));
+          jsonNodes.set(fieldName, readArray(reader, includedFields, fieldName));
         } else {
-          readField(reader, jsonNodes, columnNames, fieldName, fieldType);
+          readField(reader, jsonNodes, includedFields, fieldName, fieldType, false);
         }
-        transformToStringIfMarked(jsonNodes, columnNames, fieldName);
+        transformToStringIfMarked(jsonNodes, includedFields, fieldName);
       } else {
         reader.skipValue();
       }
@@ -176,12 +171,12 @@ public class MongoDbCdcEventUtils {
       final var currentBsonType = reader.getCurrentBsonType();
       if (DOCUMENT.equals(currentBsonType)) {
         // recursion is used to read inner doc
-        elements.add(readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames));
+        elements.add(readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, true));
       } else if (ARRAY.equals(currentBsonType)) {
         // recursion is used to read inner array
         elements.add(readArray(reader, columnNames, fieldName));
       } else {
-        final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, fieldName, currentBsonType);
+        final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, fieldName, currentBsonType, true);
         elements.add(element.get(fieldName));
       }
     }
@@ -191,16 +186,11 @@ public class MongoDbCdcEventUtils {
 
   private static ObjectNode readField(final BsonReader reader,
                                       final ObjectNode o,
-                                      final Set<String> columnNames,
+                                      final Set<String> includedFields,
                                       final String fieldName,
-                                      final BsonType fieldType) {
-    /**
-     * Test when the field that is currently being read is included in the configured set of
-     * fields/columns. In order to support the fields of nested document fields that pass the initial
-     * filter, the ALLOW_ALL name may be included in the provided set as a way to allow the fields of
-     * the nested document to be processed.
-     */
-    if (columnNames.contains(fieldName) || columnNames.contains(ALLOW_ALL)) {
+                                      final BsonType fieldType,
+                                      final boolean allowAllFields) {
+    if (shouldIncludeField(fieldName, includedFields, allowAllFields)) {
       switch (fieldType) {
         case BOOLEAN -> o.put(fieldName, reader.readBoolean());
         case INT32 -> o.put(fieldName, reader.readInt32());
@@ -214,7 +204,7 @@ public class MongoDbCdcEventUtils {
         case STRING -> o.put(fieldName, reader.readString());
         case OBJECT_ID -> o.put(fieldName, toString(reader.readObjectId()));
         case JAVASCRIPT -> o.put(fieldName, reader.readJavaScript());
-        case JAVASCRIPT_WITH_SCOPE -> readJavaScriptWithScope(o, reader, fieldName, ImmutableSet.copyOf(o.fieldNames()));
+        case JAVASCRIPT_WITH_SCOPE -> readJavaScriptWithScope(o, reader, fieldName);
         case REGULAR_EXPRESSION -> o.put(fieldName, readRegularExpression(reader.readRegularExpression()));
         default -> reader.skipValue();
       }
@@ -259,9 +249,9 @@ public class MongoDbCdcEventUtils {
     return value == null ? null : value.getData();
   }
 
-  private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName, final Set<String> columnNames) {
+  private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName) {
     final var code = reader.readJavaScriptWithScope();
-    final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of("scope"));
+    final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of("scope"), false);
     o.set(fieldName, Jsons.jsonNode(ImmutableMap.of("code", code, "scope", scope)));
   }
 
@@ -285,6 +275,22 @@ public class MongoDbCdcEventUtils {
         LOGGER.debug("WARNING Field list out of sync, Document doesn't contain field: {}", fieldName);
       }
     }
+  }
+
+  /**
+   * Test if the current field that is included in the configured set of discovered fields. In order
+   * to support the fields of nested document fields that pass the initial filter, the
+   * {@code allowAll} flag may be included in the as a way to allow the fields of the nested document
+   * to be processed.
+   *
+   * @param fieldName The name of the current field.
+   * @param includedFields The discovered fields.
+   * @param allowAll Flag that overrides the field inclusion comparison.
+   * @return {@code true} if the current field should be included for processing or {@code false}
+   *         otherwise.
+   */
+  private static boolean shouldIncludeField(final String fieldName, final Set<String> includedFields, final boolean allowAll) {
+    return includedFields.contains(fieldName) || allowAll;
   }
 
 }
