@@ -5,6 +5,7 @@
 import datetime
 import json
 import os
+import re
 import uuid
 from collections import defaultdict
 from logging import getLogger
@@ -17,6 +18,19 @@ from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, Configur
 
 logger = getLogger("airbyte")
 
+CONFIG_MOTHERDUCK_API_KEY = "motherduck_api_key"
+CONFIG_DEFAULT_SCHEMA = "main"
+
+
+def validated_sql_name(sql_name: Any) -> str:
+    """Return the input if it is a valid SQL name, otherwise raise an exception."""
+    pattern = r"^[a-zA-Z0-9_]*$"
+    result = str(sql_name)
+    if bool(re.match(pattern, result)):
+        return result
+
+    raise ValueError(f"Invalid SQL name: {sql_name}")
+
 
 class DestinationDuckdb(Destination):
     @staticmethod
@@ -25,6 +39,9 @@ class DestinationDuckdb(Destination):
         Get a normalized version of the destination path.
         Automatically append /local/ to the start of the path
         """
+        if destination_path.startswith("md:") or destination_path.startswith("motherduck:"):
+            return destination_path
+
         if not destination_path.startswith("/local"):
             destination_path = os.path.join("/local", destination_path)
 
@@ -37,9 +54,11 @@ class DestinationDuckdb(Destination):
         return destination_path
 
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self,
+        config: Mapping[str, Any],
+        configured_catalog: ConfiguredAirbyteCatalog,
+        input_messages: Iterable[AirbyteMessage],
     ) -> Iterable[AirbyteMessage]:
-
         """
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
@@ -56,33 +75,32 @@ class DestinationDuckdb(Destination):
         streams = {s.stream.name for s in configured_catalog.streams}
         logger.info(f"Starting write to DuckDB with {len(streams)} streams")
 
-        path = config.get("destination_path")
+        path = str(config.get("destination_path"))
         path = self._get_destination_path(path)
-        # check if file exists
+        schema_name = validated_sql_name(config.get("schema", CONFIG_DEFAULT_SCHEMA))
 
-        logger.info(f"Opening DuckDB file at {path}")
+        # Get and register auth token if applicable
+        motherduck_api_key = str(config.get(CONFIG_MOTHERDUCK_API_KEY, ""))
+        if motherduck_api_key:
+            os.environ["motherduck_token"] = motherduck_api_key
+
         con = duckdb.connect(database=path, read_only=False)
 
-        # create the tables if needed
-        # con.execute("BEGIN TRANSACTION")
-        for configured_stream in configured_catalog.streams:
+        con.execute(f"CREATE SCHEMA IF NOT EXISTS {schema_name}")
 
+        for configured_stream in configured_catalog.streams:
             name = configured_stream.stream.name
             table_name = f"_airbyte_raw_{name}"
             if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
                 # delete the tables
                 logger.info(f"Dropping tables for overwrite: {table_name}")
-                query = """
-                DROP TABLE IF EXISTS {}
-                """.format(
-                    table_name
-                )
+                query = f"DROP TABLE IF EXISTS {schema_name}.{table_name}"
                 con.execute(query)
             # create the table if needed
             query = f"""
-            CREATE TABLE IF NOT EXISTS {table_name} (
+            CREATE TABLE IF NOT EXISTS {schema_name}.{table_name} (
                 _airbyte_ab_id TEXT PRIMARY KEY,
-                _airbyte_emitted_at JSON,
+                _airbyte_emitted_at DATETIME,
                 _airbyte_data JSON
             )
             """
@@ -92,20 +110,16 @@ class DestinationDuckdb(Destination):
         buffer = defaultdict(list)
 
         for message in input_messages:
-
             if message.type == Type.STATE:
                 # flush the buffer
                 for stream_name in buffer.keys():
-
                     logger.info(f"flushing buffer for state: {message}")
-                    query = """
-                    INSERT INTO {table_name}
+                    table_name = f"_airbyte_raw_{stream_name}"
+                    query = f"""
+                    INSERT INTO {schema_name}.{table_name}
+                      (_airbyte_ab_id, _airbyte_emitted_at, _airbyte_data)
                     VALUES (?,?,?)
-                    """.format(
-                        table_name=f"_airbyte_raw_{stream_name}"
-                    )
-                    logger.info(f"query: {query}")
-
+                    """
                     con.executemany(query, buffer[stream_name])
 
                 con.commit()
@@ -120,19 +134,23 @@ class DestinationDuckdb(Destination):
                     continue
 
                 # add to buffer
-                buffer[stream].append((str(uuid.uuid4()), datetime.datetime.now().isoformat(), json.dumps(data)))
+                buffer[stream].append(
+                    (
+                        str(uuid.uuid4()),
+                        datetime.datetime.now().isoformat(),
+                        json.dumps(data),
+                    )
+                )
             else:
                 logger.info(f"Message type {message.type} not supported, skipping")
 
         # flush any remaining messages
         for stream_name in buffer.keys():
-
-            query = """
-            INSERT INTO {table_name}
+            table_name = f"_airbyte_raw_{stream_name}"
+            query = f"""
+            INSERT INTO {schema_name}.{table_name}
             VALUES (?,?,?)
-            """.format(
-                table_name=f"_airbyte_raw_{stream_name}"
-            )
+            """
 
             con.executemany(query, buffer[stream_name])
             con.commit()
@@ -150,11 +168,16 @@ class DestinationDuckdb(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # parse the destination path
-            param_path = config.get("destination_path")
-            path = self._get_destination_path(param_path)
+            path = config.get("destination_path")
+            path = self._get_destination_path(path)
 
-            os.makedirs(os.path.dirname(path), exist_ok=True)
+            if path.startswith("/local"):
+                logger.info(f"Using DuckDB file at {path}")
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+
+            if CONFIG_MOTHERDUCK_API_KEY in config:
+                os.environ["motherduck_token"] = str(config[CONFIG_MOTHERDUCK_API_KEY])
+
             con = duckdb.connect(database=path, read_only=False)
             con.execute("SELECT 1;")
 

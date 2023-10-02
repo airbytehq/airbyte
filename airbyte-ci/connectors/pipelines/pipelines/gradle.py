@@ -64,7 +64,6 @@ class GradleTask(Step, ABC):
         )
 
     async def _run(self) -> StepResult:
-
         include = [
             ".root",
             ".env",

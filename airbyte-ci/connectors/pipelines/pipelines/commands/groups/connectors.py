@@ -31,8 +31,8 @@ ALL_CONNECTORS = get_all_connectors_in_repo()
 def validate_environment(is_local: bool, use_remote_secrets: bool):
     """Check if the required environment variables exist."""
     if is_local:
-        if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
-            raise click.UsageError("You need to run this command from the airbyte repository root.")
+        if not Path(".git").is_dir():
+            raise click.UsageError("You need to run this command from the repository root.")
     else:
         required_env_vars_for_ci = [
             "GCP_GSM_CREDENTIALS",
@@ -158,6 +158,13 @@ def get_selected_connectors_with_modified_files(
     default=False,
     type=bool,
 )
+@click.option(
+    "--use-local-cdk",
+    is_flag=True,
+    help=("Build with the airbyte-cdk from the local repository. " "This is useful for testing changes to the CDK."),
+    default=False,
+    type=bool,
+)
 @click.pass_context
 def connectors(
     ctx: click.Context,
@@ -171,6 +178,7 @@ def connectors(
     concurrency: int,
     execute_timeout: int,
     enable_dependency_scanning: bool,
+    use_local_cdk: bool,
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
@@ -179,6 +187,7 @@ def connectors(
     ctx.obj["use_remote_secrets"] = use_remote_secrets
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
+    ctx.obj["use_local_cdk"] = use_local_cdk
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
         names,
         support_levels,
@@ -256,6 +265,7 @@ def test(
             fail_fast=fail_fast,
             fast_tests_only=fast_tests_only,
             code_tests_only=code_tests_only,
+            use_local_cdk=ctx.obj.get("use_local_cdk"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
@@ -304,6 +314,7 @@ def build(ctx: click.Context) -> bool:
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            use_local_cdk=ctx.obj.get("use_local_cdk"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]

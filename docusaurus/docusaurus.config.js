@@ -1,14 +1,16 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const yaml = require('js-yaml');
+const yaml = require("js-yaml");
 const fs = require("node:fs");
 const path = require("node:path");
 
 const lightCodeTheme = require("prism-react-renderer/themes/github");
 const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 
-const redirects = yaml.load(fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8"));
+const redirects = yaml.load(
+  fs.readFileSync(path.join(__dirname, "redirects.yml"), "utf-8")
+);
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
@@ -41,14 +43,16 @@ const config = {
             rules: [
               {
                 test: /\.ya?ml$/,
-                use: 'yaml-loader'
-              }
-            ]
+                use: "yaml-loader",
+              },
+            ],
           },
         };
       },
     }),
   ],
+
+  clientModules: [require.resolve("./src/scripts/cloudStatus.js")],
 
   presets: [
     [
@@ -83,9 +87,9 @@ const config = {
         },
       },
       algolia: {
-          appId: 'OYKDBC51MU',
-          apiKey: '15c487fd9f7722282efd8fcb76746fce', // Public API key: it is safe to commit it
-          indexName: 'airbyte',
+        appId: "OYKDBC51MU",
+        apiKey: "15c487fd9f7722282efd8fcb76746fce", // Public API key: it is safe to commit it
+        indexName: "airbyte",
       },
       navbar: {
         title: "",
@@ -93,19 +97,13 @@ const config = {
           alt: "Simple, secure and extensible data integration",
           src: "img/logo-dark.png",
           srcDark: "img/logo-light.png",
-          width: 140,
           height: 40,
         },
         items: [
           {
             href: "https://airbyte.io/",
             position: "left",
-            label: "Home",
-          },
-          {
-            href: "https://status.airbyte.io/",
-            label: "Status",
-            position: "left",
+            label: "About Airbyte",
           },
           {
             href: "https://airbyte.com/tutorials",
@@ -117,10 +115,24 @@ const config = {
             label: "Support",
             position: "left",
           },
+          // --- Right side ---
+          {
+            href: "https://status.airbyte.com",
+            label: "Cloud Status",
+            className: "cloudStatusLink",
+            position: "right",
+          },
           {
             href: "https://cloud.airbyte.io/signup?utm_campaign=22Q1_AirbyteCloudSignUpCampaign_Trial&utm_source=Docs&utm_content=NavBar",
             label: "Try Airbyte Cloud",
-            position: "left",
+            position: "right",
+            className: "header-button",
+          },
+          {
+            href: "https://github.com/airbytehq",
+            position: "right",
+            "aria-label": "Airbyte on GitHub",
+            className: "header-github-link",
           },
         ],
       },

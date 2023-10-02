@@ -19,8 +19,8 @@ dependencies {
     implementation 'org.bouncycastle:bctls-jdk15on:1.66'
 
     implementation libs.jackson.annotations
-    implementation libs.connectors.testcontainers
-    implementation libs.connectors.testcontainers.jdbc
+    implementation libs.testcontainers
+    implementation libs.testcontainers.jdbc
     implementation libs.bundles.datadog
 
     testImplementation 'commons-lang:commons-lang:2.6'

@@ -15,7 +15,7 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
-from dagger import Client, Directory, Secret
+from dagger import Client, Directory, File, Secret
 from github import PullRequest
 from pipelines import hacks
 from pipelines.actions import secrets
@@ -184,6 +184,19 @@ class PipelineContext:
 
         return f"https://alpha.dagger.cloud/changeByPipelines?filter=dagger.io/git.ref:{self.git_revision}"
 
+    def get_repo_file(self, file_path: str) -> File:
+        """Get a file from the current repository.
+
+        The file is extracted from the host file system.
+
+        Args:
+            file_path (str): Path to the file to get.
+
+        Returns:
+            Path: The selected repo file.
+        """
+        return self.dagger_client.host().file(file_path)
+
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get a directory from the current repository.
 
@@ -320,6 +333,7 @@ class ConnectorContext(PipelineContext):
         fail_fast: bool = False,
         fast_tests_only: bool = False,
         code_tests_only: bool = False,
+        use_local_cdk: bool = False,
     ):
         """Initialize a connector context.
 
@@ -355,6 +369,7 @@ class ConnectorContext(PipelineContext):
         self.fail_fast = fail_fast
         self.fast_tests_only = fast_tests_only
         self.code_tests_only = code_tests_only
+        self.use_local_cdk = use_local_cdk
 
         super().__init__(
             pipeline_name=pipeline_name,

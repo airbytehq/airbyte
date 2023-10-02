@@ -35,9 +35,9 @@ import com.google.cloud.bigquery.TableInfo;
 import com.google.cloud.bigquery.TimePartitioning;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
@@ -252,6 +252,10 @@ public class BigQueryUtils {
 
   public static GcsDestinationConfig getGcsAvroDestinationConfig(final JsonNode config) {
     return GcsDestinationConfig.getGcsDestinationConfig(getGcsAvroJsonNodeConfig(config));
+  }
+
+  public static GcsDestinationConfig getGcsCsvDestinationConfig(final JsonNode config) {
+    return GcsDestinationConfig.getGcsDestinationConfig(getGcsJsonNodeConfig(config));
   }
 
   public static JsonNode getGcsAvroJsonNodeConfig(final JsonNode config) {

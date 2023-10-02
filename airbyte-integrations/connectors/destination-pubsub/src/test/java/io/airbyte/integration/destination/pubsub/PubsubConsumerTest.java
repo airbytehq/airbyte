@@ -4,10 +4,10 @@
 
 package io.airbyte.integration.destination.pubsub;
 
-import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.FailureTrackingAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.integrations.destination.pubsub.PubsubConsumer;
 import io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig;
-import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.function.Consumer;
