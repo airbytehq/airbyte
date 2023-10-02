@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Mapping, Optional
 
@@ -50,13 +49,6 @@ class AbstractStream(ABC):
         """
         :return: The stream name
         """
-
-    @property
-    def logger(self) -> logging.Logger:
-        """
-        :return: The logger object
-        """
-        return logging.getLogger(f"airbyte.streams.{self.name}")
 
     @property
     @abstractmethod

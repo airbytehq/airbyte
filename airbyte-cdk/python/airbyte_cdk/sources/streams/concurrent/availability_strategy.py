@@ -16,6 +16,7 @@ class StreamAvailability(ABC):
         :return: True if the stream is available. False if the stream is not
         """
 
+    @abstractmethod
     def message(self) -> Optional[str]:
         """
         :return: A message describing why the stream is not available. If the stream is available, this should return None.
