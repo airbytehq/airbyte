@@ -12,7 +12,7 @@ from source_freshsales.source import Contacts, FreshsalesStream, OpenDeals, Open
 def test_get_input_stream_args(config):
     source = SourceFreshsales()
     expected_keys = ["authenticator", "domain_name"]
-    actual = source.get_input_stream_args(config['api_key'], config["domain_name"])
+    actual = source.get_input_stream_args(config["api_key"], config["domain_name"])
     for key in expected_keys:
         assert key in actual.keys()
 
@@ -43,7 +43,7 @@ def test_next_page_token(stream_args, requests_mock):
     stream_filters = [{"id": 1, "name": stream.filter_name}]
     with patch.object(stream, "_get_filters", return_value=stream_filters) as mock_method:
         url = f"{stream.url_base}{stream.path()}"
-        requests_mock.get(url, json={stream.name: [{'id': 123}]})
+        requests_mock.get(url, json={stream.name: [{"id": 123}]})
         response = requests.get(url)
         assert stream.next_page_token(response) == 2
         mock_method.assert_called()
@@ -52,17 +52,17 @@ def test_next_page_token(stream_args, requests_mock):
 def test_request_params(stream_args):
     stream = OpenTasks(**stream_args)
     actual = stream.request_params()
-    expected = {'filter': 'open', 'page': 1, 'sort': 'updated_at', 'sort_type': 'asc'}
+    expected = {"filter": "open", "page": 1, "sort": "updated_at", "sort_type": "asc"}
     assert actual == expected
 
 
 @pytest.mark.parametrize(
     "stream, response, expected",
     [
-        (Contacts, [{'id': 123}], [{'id': 123}]),
-        (OpenDeals, [{'id': 234, "fc_widget_collaboration": {"test": "test"}}], [{'id': 234}]),
+        (Contacts, [{"id": 123}], [{"id": 123}]),
+        (OpenDeals, [{"id": 234, "fc_widget_collaboration": {"test": "test"}}], [{"id": 234}]),
     ],
-    ids=["Contacts", "OpenDeals"]
+    ids=["Contacts", "OpenDeals"],
 )
 def test_parse_response(stream, response, expected, stream_args, requests_mock):
     stream = stream(**stream_args)
@@ -79,5 +79,5 @@ def test_path(stream_args):
     stream = Contacts(**stream_args)
     stream_filters = [{"id": 1, "name": stream.filter_name}]
     with patch.object(stream, "_get_filters", return_value=stream_filters) as mock_method:
-        assert stream.path() == 'contacts/view/1'
+        assert stream.path() == "contacts/view/1"
         mock_method.assert_called()

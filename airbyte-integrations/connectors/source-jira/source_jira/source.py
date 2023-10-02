@@ -122,7 +122,7 @@ class SourceJira(AbstractSource):
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
         incremental_args = {**args, "start_date": config.get("start_date")}
-        issues_stream = Issues(**incremental_args, expand_fields=config.get("issues_stream_expand_with", []))
+        issues_stream = Issues(**incremental_args)
         issue_fields_stream = IssueFields(**args)
         experimental_streams = []
         if config.get("enable_experimental_streams", False):

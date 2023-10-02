@@ -140,12 +140,13 @@ The available `Dimensions` are:
 - `device`
 - `page`
 - `query`
-- `search_type`
 
 For example, to query the API for a report that groups results by country, then by date, you could enter the following custom report:
 
 * Name: country_date
 * Dimensions: ["country", "date"]
+
+Please note, that for technical reasons `date` is the default dimension which will be included in your query whether you specify it or not. By specifying it you can change the order the results are grouped in. Primary key will consist of your custom dimensions and the default dimension along with `site_url` and `search_type`.
 
 The information you provide via UI Custom report builder will then be transformed into the custom stream by it's `Name`
 
@@ -179,6 +180,7 @@ This connector attempts to back off gracefully when it hits Reports API's rate l
 
 | Version  | Date       | Pull Request                                                                                                  | Subject                                                                                                                        |
 |:---------|:-----------|:--------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------|
+| `1.3.5`  | 2023-09-28 | [30822](https://github.com/airbytehq/airbyte/pull/30822)                                                      | Fix primary key for custom reports                                                                                             |
 | `1.3.4`  | 2023-09-27 | [30785](https://github.com/airbytehq/airbyte/pull/30785)                                                      | Do not migrate config for the newly created connections                                                                        |
 | `1.3.3`  | 2023-08-29 | [29941](https://github.com/airbytehq/airbyte/pull/29941)                                                      | Added `primary key` to each stream, added `custom_report` config migration                                                     |
 | `1.3.2`  | 2023-08-25 | [29829](https://github.com/airbytehq/airbyte/pull/29829)                                                      | Make `Start Date` a non-required, added the `suggested streams`, corrected public docs                                         |

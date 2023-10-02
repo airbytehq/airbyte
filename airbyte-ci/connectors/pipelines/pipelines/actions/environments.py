@@ -14,13 +14,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
     AMAZONCORRETTO_IMAGE,
-    CI_CREDENTIALS_SOURCE_PATH,
-    CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
     DOCKER_HOST_NAME,
     DOCKER_HOST_PORT,
@@ -28,6 +26,7 @@ from pipelines.consts import (
     LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
+from pipelines.tools.internal import INTERNAL_TOOL_PATHS
 from pipelines.utils import check_path_in_workdir, get_file_contents, sh_dash_c
 
 if TYPE_CHECKING:
@@ -459,7 +458,7 @@ async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> C
         Container: A python environment with the ci_credentials package installed.
     """
     python_base_environment: Container = with_python_base(context)
-    ci_credentials = await with_installed_pipx_package(context, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
+    ci_credentials = await with_installed_pipx_package(context, python_base_environment, INTERNAL_TOOL_PATHS.CI_CREDENTIALS.value)
     ci_credentials = ci_credentials.with_env_variable("VERSION", "dagger_ci")
     return ci_credentials.with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
 
@@ -515,7 +514,7 @@ async def with_connector_ops(context: PipelineContext) -> Container:
     """
     python_base_environment: Container = with_python_base(context)
 
-    return await with_installed_pipx_package(context, python_base_environment, CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH)
+    return await with_installed_pipx_package(context, python_base_environment, INTERNAL_TOOL_PATHS.CONNECTOR_OPS.value)
 
 
 def with_global_dockerd_service(dagger_client: Client) -> Container:

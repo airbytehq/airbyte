@@ -13,12 +13,12 @@ import com.google.cloud.bigquery.JobInfo.WriteDisposition;
 import com.google.cloud.bigquery.LoadJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -118,8 +118,9 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   /**
-   * Similar to COPY INTO within {@link io.airbyte.integrations.destination.staging.StagingOperations}
-   * which loads the data stored in the stage area into a target table in the destination
+   * Similar to COPY INTO within
+   * {@link io.airbyte.cdk.integrations.destination.staging.StagingOperations} which loads the data
+   * stored in the stage area into a target table in the destination
    *
    * Reference
    * https://googleapis.dev/java/google-cloud-clients/latest/index.html?com/google/cloud/bigquery/package-summary.html

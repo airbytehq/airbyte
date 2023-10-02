@@ -316,13 +316,13 @@ def test_read_incremental(requests_mock):
             "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "112"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
             "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "125"}]}],
-            "rowCount": 1
+            "rowCount": 1,
         },
         {
             "dimensionHeaders": [{"name": "yearWeek"}],

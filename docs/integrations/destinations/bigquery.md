@@ -14,13 +14,6 @@ This page guides you through setting up the BigQuery destination connector.
 
 - (Required for Airbyte Cloud; Optional for Airbyte Open Source) A Google Cloud [Service Account](https://cloud.google.com/iam/docs/service-accounts) with the [`BigQuery User`](https://cloud.google.com/bigquery/docs/access-control#bigquery) and [`BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery) roles and the [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
 
-## Connector modes
-
-While setting up the connector, you can configure it in the following modes:
-
-- **BigQuery**: Produces a normalized output by storing the JSON blob data in `_airbyte_raw_*` tables and then transforming and normalizing the data into separate tables, potentially `exploding` nested streams into their own tables if basic normalization is configured.
-- **BigQuery (Denormalized)**: Leverages BigQuery capabilities with Structured and Repeated fields to produce a single "big" table per stream. Airbyte does not support normalization for this option at this time.
-
 ## Setup guide
 
 ### Step 1: Set up a data loading method
@@ -46,7 +39,7 @@ You can use BigQuery's [`INSERT`](https://cloud.google.com/bigquery/docs/referen
 
 1. Log into your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
 2. Click **Destinations** and then click **+ New destination**.
-3. On the Set up the destination page, select **BigQuery** or **BigQuery (denormalized typed struct)** from the **Destination type** dropdown depending on whether you want to set up the connector in [BigQuery](#connector-modes) or [BigQuery (Denormalized)](#connector-modes) mode.
+3. On the Set up the destination page, select **BigQuery** from the **Destination type** dropdown.
 4. Enter the name for the BigQuery connector.
 5. For **Project ID**, enter your [Google Cloud project ID](https://cloud.google.com/resource-manager/docs/creating-managing-projects#identifying_projects).
 6. For **Dataset Location**, select the location of your BigQuery dataset.
@@ -94,20 +87,20 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 
 ## Data type map
 
-| Airbyte type                        | BigQuery type | BigQuery denormalized type |
-| :---------------------------------- | :------------ | :------------------------- |
-| DATE                                | DATE          | DATE                       |
-| STRING (BASE64)                     | STRING        | STRING                     |
-| NUMBER                              | FLOAT         | NUMBER                     |
-| OBJECT                              | STRING        | RECORD                     |
-| STRING                              | STRING        | STRING                     |
-| BOOLEAN                             | BOOLEAN       | BOOLEAN                    |
-| INTEGER                             | INTEGER       | INTEGER                    |
-| STRING (BIG_NUMBER)                 | STRING        | STRING                     |
-| STRING (BIG_INTEGER)                | STRING        | STRING                     |
-| ARRAY                               | REPEATED      | REPEATED                   |
-| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP     | DATETIME                   |
-| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP     | DATETIME                   |
+| Airbyte type                        | BigQuery type |
+| :---------------------------------- | :------------ |
+| DATE                                | DATE          |
+| STRING (BASE64)                     | STRING        |
+| NUMBER                              | FLOAT         |
+| OBJECT                              | STRING        |
+| STRING                              | STRING        |
+| BOOLEAN                             | BOOLEAN       |
+| INTEGER                             | INTEGER       |
+| STRING (BIG_NUMBER)                 | STRING        | 
+| STRING (BIG_INTEGER)                | STRING        |
+| ARRAY                               | REPEATED      |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP     |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP     |
 
 ## Troubleshooting permission issues
 
@@ -133,6 +126,9 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.19  | 2023-09-26 | [\#30775](https://github.com/airbytehq/airbyte/pull/30775  | Increase async block size                                                                                                                                       |
+| 2.0.18  | 2023-09-27 | [\#30739](https://github.com/airbytehq/airbyte/pull/30739) | Fix column name collision detection                                                                                                                             |
+| 2.0.17  | 2023-09-26 | [\#30696](https://github.com/airbytehq/airbyte/pull/30696) | Attempt unsafe typing operations with an exception clause                                                                                                       |
 | 2.0.16  | 2023-09-22 | [\#30697](https://github.com/airbytehq/airbyte/pull/30697) | Improve resiliency to unclean exit during schema change                                                                                                         |
 | 2.0.15  | 2023-09-21 | [\#30640](https://github.com/airbytehq/airbyte/pull/30640) | Handle streams with identical name and namespace                                                                                                                |
 | 2.0.14  | 2023-09-20 | [\#30069](https://github.com/airbytehq/airbyte/pull/30069) | Staging destination async                                                                                                                                       |

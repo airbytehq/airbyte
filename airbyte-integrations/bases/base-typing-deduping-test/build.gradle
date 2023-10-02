@@ -3,6 +3,8 @@ plugins {
 }
 
 dependencies {
+  implementation project(':airbyte-commons')
+
   implementation project(':airbyte-config-oss:config-models-oss')
   implementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
   implementation project(':airbyte-integrations:bases:base-typing-deduping')
