@@ -7,10 +7,10 @@ package io.airbyte.integrations.destination.iceberg.rest;
 import static io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil.ICEBERG_IMAGE_NAME;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.destination.iceberg.IcebergIntegrationTestUtil;
 import io.airbyte.integrations.destination.iceberg.config.format.DataFileFormat;
 import io.airbyte.integrations.destination.iceberg.container.RESTServerWithMinioCompose;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.util.HashSet;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;

@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.databricks.utils;
 
-import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
 import java.util.Set;
 
 public class DatabricksConstants {

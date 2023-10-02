@@ -29,7 +29,311 @@
       "type": "object",
       "additionalProperties": true,
       "description": "The rendered value of each field present on the issue.",
-      "readOnly": true
+      "readOnly": true,
+      "properties": {
+        "statuscategorychangedate": {
+          "type": ["null", "string"]
+        },
+        "issuetype": {
+          "type": ["null", "string"]
+        },
+        "timespent": {
+          "type": ["null", "string"]
+        },
+        "project": {
+          "type": ["null", "string"]
+        },
+        "fixVersions": {
+          "type": ["null", "string"]
+        },
+        "aggregatetimespent": {
+          "type": ["null", "string"]
+        },
+        "resolution": {
+          "type": ["null", "string"]
+        },
+        "resolutiondate": {
+          "type": ["null", "string"]
+        },
+        "workratio": {
+          "type": ["null", "string"]
+        },
+        "watches": {
+          "type": ["null", "string"]
+        },
+        "lastViewed": {
+          "type": ["null", "string"]
+        },
+        "issuerestriction": {
+          "type": ["null", "string"]
+        },
+        "created": {
+          "type": ["null", "string"]
+        },
+        "priority": {
+          "type": ["null", "string"]
+        },
+        "labels": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "timeestimate": {
+          "type": ["null", "string"]
+        },
+        "aggregatetimeoriginalestimate": {
+          "type": ["null", "array"]
+        },
+        "versions": {
+          "type": ["null", "string"]
+        },
+        "issuelinks": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "assignee": {
+          "type": ["null", "string"]
+        },
+        "updated": {
+          "type": ["null", "string"]
+        },
+        "status": {
+          "type": ["null", "string"]
+        },
+        "components": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"]
+          }
+        },
+        "timeoriginalestimate": {
+          "type": ["null", "integer"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "timetracking": {
+          "type": ["null", "object"]
+        },
+        "security": {
+          "type": ["null", "string"]
+        },
+        "aggregatetimeestimate": {
+          "type": ["null", "string"]
+        },
+        "attachment": {
+          "type": ["null", "array"]
+        },
+        "summary": {
+          "type": ["null", "string"]
+        },
+        "creator": {
+          "type": ["null", "string"]
+        },
+        "subtasks": {
+          "type": ["null", "array"]
+        },
+        "reporter": {
+          "type": ["null", "string"]
+        },
+        "aggregateprogress": {
+          "type": ["null", "string"]
+        },
+        "environment": {
+          "type": ["null", "string"]
+        },
+        "duedate": {
+          "type": ["null", "string"]
+        },
+        "progress": {
+          "type": ["null", "string"]
+        },
+        "comment": {
+          "type": ["null", "object"],
+          "properties": {
+            "comments": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "object"],
+                "properties": {
+                  "self": {
+                    "type": ["null", "string"]
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "author": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "self": {
+                        "type": ["null", "string"]
+                      },
+                      "accountId": {
+                        "type": ["null", "string"]
+                      },
+                      "emailAddress": {
+                        "type": ["null", "string"]
+                      },
+                      "avatarUrls": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "48x48": {
+                            "type": ["null", "string"]
+                          },
+                          "24x24": {
+                            "type": ["null", "string"]
+                          },
+                          "16x16": {
+                            "type": ["null", "string"]
+                          },
+                          "32x32": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "displayName": {
+                        "type": ["null", "string"]
+                      },
+                      "active": {
+                        "type": "boolean"
+                      },
+                      "timeZone": {
+                        "type": ["null", "string"]
+                      },
+                      "accountType": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "body": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "version": {
+                        "type": ["null", "integer"]
+                      },
+                      "type": {
+                        "type": ["null", "string"]
+                      },
+                      "content": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "type": ["null", "object"],
+                          "properties": {
+                            "type": {
+                              "type": ["null", "string"]
+                            },
+                            "content": {
+                              "type": "array",
+                              "items": {
+                                "type": ["null", "object"],
+                                "properties": {
+                                  "type": {
+                                    "type": ["null", "string"]
+                                  },
+                                  "text": {
+                                    "type": ["null", "string"]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "updateAuthor": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "self": {
+                        "type": ["null", "string"]
+                      },
+                      "accountId": {
+                        "type": ["null", "string"]
+                      },
+                      "emailAddress": {
+                        "type": ["null", "string"]
+                      },
+                      "avatarUrls": {
+                        "type": ["null", "object"],
+                        "properties": {
+                          "48x48": {
+                            "type": ["null", "string"]
+                          },
+                          "24x24": {
+                            "type": ["null", "string"]
+                          },
+                          "16x16": {
+                            "type": ["null", "string"]
+                          },
+                          "32x32": {
+                            "type": ["null", "string"]
+                          }
+                        }
+                      },
+                      "displayName": {
+                        "type": ["null", "string"]
+                      },
+                      "active": {
+                        "type": "boolean"
+                      },
+                      "timeZone": {
+                        "type": ["null", "string"]
+                      },
+                      "accountType": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "created": {
+                    "type": ["null", "string"]
+                  },
+                  "updated": {
+                    "type": ["null", "string"]
+                  },
+                  "jsdPublic": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "self": {
+              "type": ["null", "string"]
+            },
+            "maxResults": {
+              "type": ["null", "integer"]
+            },
+            "total": {
+              "type": ["null", "integer"]
+            },
+            "startAt": {
+              "type": ["null", "integer"]
+            }
+          }
+        },
+        "votes": {
+          "type": ["null", "string"]
+        },
+        "worklog": {
+          "type": ["null", "object"],
+          "properties": {
+            "startAt": {
+              "type": ["null", "integer"]
+            },
+            "maxResults": {
+              "type": ["null", "integer"]
+            },
+            "total": {
+              "type": "integer"
+            },
+            "worklogs": {
+              "type": ["null", "array"]
+            }
+          }
+        }
+      }
     },
     "properties": {
       "type": "object",
@@ -51,7 +355,76 @@
     "transitions": {
       "type": "array",
       "description": "The transitions that can be performed on the issue.",
-      "readOnly": true
+      "readOnly": true,
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "to": {
+            "type": ["null", "object"],
+            "properties": {
+              "self": {
+                "type": ["null", "string"]
+              },
+              "description": {
+                "type": ["null", "string"]
+              },
+              "iconUrl": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "id": {
+                "type": ["null", "string"]
+              },
+              "statusCategory": {
+                "type": ["null", "object"],
+                "properties": {
+                  "self": {
+                    "type": ["null", "string"]
+                  },
+                  "id": {
+                    "type": ["null", "integer"]
+                  },
+                  "key": {
+                    "type": ["null", "string"]
+                  },
+                  "colorName": {
+                    "type": ["null", "string"]
+                  },
+                  "name": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          },
+          "hasScreen": {
+            "type": "boolean"
+          },
+          "isGlobal": {
+            "type": "boolean"
+          },
+          "isInitial": {
+            "type": "boolean"
+          },
+          "isAvailable": {
+            "type": "boolean"
+          },
+          "isConditional": {
+            "type": "boolean"
+          },
+          "isLooped": {
+            "type": "boolean"
+          }
+        }
+      }
     },
     "operations": {
       "type": ["object", "null"],
@@ -66,7 +439,101 @@
     "changelog": {
       "type": ["object", "null"],
       "description": "Details of changelogs associated with the issue.",
-      "readOnly": true
+      "readOnly": true,
+      "properties": {
+        "startAt": {
+          "type": ["null", "integer"]
+        },
+        "maxResults": {
+          "type": ["null", "integer"]
+        },
+        "total": {
+          "type": ["null", "integer"]
+        },
+        "histories": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "string"]
+              },
+              "author": {
+                "type": ["null", "object"],
+                "properties": {
+                  "self": {
+                    "type": ["null", "string"]
+                  },
+                  "accountId": {
+                    "type": ["null", "string"]
+                  },
+                  "emailAddress": {
+                    "type": ["null", "string"]
+                  },
+                  "avatarUrls": {
+                    "type": ["null", "object"],
+                    "properties": {
+                      "48x48": {
+                        "type": ["null", "string"]
+                      },
+                      "24x24": {
+                        "type": ["null", "string"]
+                      },
+                      "16x16": {
+                        "type": ["null", "string"]
+                      },
+                      "32x32": {
+                        "type": ["null", "string"]
+                      }
+                    }
+                  },
+                  "displayName": {
+                    "type": "string"
+                  },
+                  "active": {
+                    "type": "boolean"
+                  },
+                  "timeZone": {
+                    "type": ["null", "string"]
+                  },
+                  "accountType": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "created": {
+                "type": ["null", "string"]
+              },
+              "items": {
+                "type": ["null", "array"],
+                "items": {
+                  "type": ["null", "object"],
+                  "properties": {
+                    "field": {
+                      "type": ["null", "string"]
+                    },
+                    "fieldtype": {
+                      "type": ["null", "string"]
+                    },
+                    "from": {
+                      "type": ["null", "string"]
+                    },
+                    "fromString": {
+                      "type": ["null", "string"]
+                    },
+                    "to": {
+                      "type": ["null", "string"]
+                    },
+                    "toString": {
+                      "type": ["null", "string"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "versionedRepresentations": {
       "type": "object",
