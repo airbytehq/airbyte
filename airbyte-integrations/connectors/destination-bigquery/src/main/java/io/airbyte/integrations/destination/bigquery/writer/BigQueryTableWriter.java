@@ -47,17 +47,17 @@ public class BigQueryTableWriter implements DestinationWriter {
     }
   }
 
-  // @Override
-  // public void write(String formattedData) throws IOException {
-//
-  //   try {
-  //     writeChannel.write(ByteBuffer.wrap((formattedData + "\n").getBytes(Charsets.UTF_8)));
-  //   } catch (Exception e) {
-  //     LOGGER.error("BigQueryTableWriter", e);
-  //     LOGGER.error(formattedData);
-  //     throw e;
-  //   }
-  // }
+  @Override
+  public void write(String formattedData) throws IOException {
+
+    try {
+      writeChannel.write(ByteBuffer.wrap((formattedData + "\n").getBytes(Charsets.UTF_8)));
+    } catch (Exception e) {
+      LOGGER.error("BigQueryTableWriter", e);
+      LOGGER.error(formattedData);
+      throw e;
+    }
+  }
 
   @Override
   public void close(boolean hasFailed) throws IOException {
@@ -66,11 +66,11 @@ public class BigQueryTableWriter implements DestinationWriter {
     this.writeChannel.close();
   }
 
-  // @Override
-  // public void closeAfterPush() throws IOException {
-  //   LOGGER.error("===================== CLOSING AFTER PUSH ==========================");
-  //   this.writeChannel.close();
-  // }
+  @Override
+  public void closeAfterPush() throws IOException {
+    LOGGER.error("===================== CLOSING AFTER PUSH ==========================");
+    this.writeChannel.close();
+  }
 
   public TableDataWriteChannel getWriteChannel() {
     return writeChannel;
