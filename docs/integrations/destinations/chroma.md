@@ -75,4 +75,5 @@ You should now have all the requirements needed to configure Chroma as a destina
 
 | Version | Date       | Pull Request                                               | Subject                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------- |
+| 0.0.2   | 2023-09-29 | [#30820](https://github.com/airbytehq/airbyte/pull/30820)     | Update CDK | 
 | 0.0.1   | 2023-09-08 | [#30023](https://github.com/airbytehq/airbyte/pull/30023) | 🎉 New Destination: Chroma (Vector Database)    |
