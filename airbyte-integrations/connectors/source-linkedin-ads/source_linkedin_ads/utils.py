@@ -333,3 +333,12 @@ def transform_data(records: List) -> Iterable[Mapping]:
         record = transform_col_names(record, DESTINATION_RESERVED_KEYWORDS)
 
         yield record
+
+
+def is_supported_creative(creative_content_field: Dict):
+    """ Function to check if a sponsoredCreative is supported by the ad_preview endpoint """
+    try:
+        if creative_content_field["reference"].split(":")[2] == "share":
+            return True
+    except KeyError:
+        return False

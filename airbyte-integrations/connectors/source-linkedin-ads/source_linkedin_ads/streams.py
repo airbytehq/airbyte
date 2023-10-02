@@ -6,7 +6,7 @@
 import logging
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Mapping, MutableMapping, Optional
-from urllib.parse import urlencode
+from urllib.parse import quote_plus, urlencode
 
 import pendulum
 import requests
@@ -17,11 +17,11 @@ from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .analytics import make_analytics_slices, merge_chunks, update_analytics_params
-from .utils import get_parent_stream_values, transform_data
+from .utils import get_parent_stream_values, transform_data, is_supported_creative
 
 logger = logging.getLogger("airbyte")
 
-LINKEDIN_VERSION_API = "202305"
+LINKEDIN_VERSION_API = "202309"
 
 
 class LinkedinAdsStream(HttpStream, ABC):
@@ -351,6 +351,39 @@ class Creatives(LinkedInAdsStreamSlicing):
             else current_stream_state
         )
         return {self.cursor_field: max(latest_record.get(self.cursor_field), int(current_stream_state.get(self.cursor_field)))}
+
+
+class AdPreviews(LinkedinAdsStream):
+    endpoint = "adPreviews"
+    parent_stream = Creatives
+    parent_values_map = {"creative_id": "id"}
+
+    def path(
+        self,
+        *,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> str:
+        return f"{self.endpoint}"
+
+    def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state, stream_slice, **kwargs)
+        creative_id = stream_slice['creative_id']
+        params.update({
+            "q": "creative",
+            "creative": quote_plus(creative_id)
+        })
+        return urlencode(params, safe="():,%")
+
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        parent_stream = self.parent_stream(config=self.config)
+        for record in parent_stream.read_records(**kwargs):
+            if is_supported_creative(record["content"]):
+                child_stream_slice = super().read_records(stream_slice=get_parent_stream_values(record, self.parent_values_map), **kwargs)
+                yield from child_stream_slice
 
 
 class Conversions(LinkedInAdsStreamSlicing):

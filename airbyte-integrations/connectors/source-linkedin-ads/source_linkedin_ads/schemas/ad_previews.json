@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "title": "Ad Previews",
+  "additionalProperties": true,
+  "properties": {
+    "preview": {
+      "type": ["null", "string"]
+    },
+    "creative": {
+      "type": ["null", "string"]
+    },
+    "placement": {
+      "type": ["null", "object"],
+      "properties": {
+        "linkedin": {
+          "type": ["null", "object"],
+          "properties" : {
+            "placementName": {
+              "type" : [
+                "null",
+                "string"
+              ]
+            },
+            "contentPresentationType": {
+              "type" : "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
