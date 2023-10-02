@@ -369,6 +369,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         catalog,
         parsedCatalog);
 
+    final String bqNamespace = BigQueryUtils.getDatasetId(config);
+
+    LOGGER.error("BQ Namespace: " +  bqNamespace);
+
     return new BigQueryRecordStandardConsumer(
         outputRecordCollector,
         () -> {
@@ -416,7 +420,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         },
         bigquery,
         catalog,
-        BigQueryUtils.getDatasetId(config),
+        bqNamespace,
         writeConfigs);
   }
 
