@@ -24,7 +24,12 @@ class SourceNotion(AbstractSource):
         token = credentials.get("access_token") if auth_type == "OAuth2.0" else credentials.get("token")
 
         if credentials and token:
-            return TokenAuthenticator(token)                
+            return TokenAuthenticator(token)
+        
+        # The original implementation did not support OAuth, and therefore had no "credentials" key.
+        # We can maintain backwards compatibility for OG connections by checking for the deprecated "access_token" key, just in case.
+        if config.get("access_token"):
+            return TokenAuthenticator(config["access_token"])
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
