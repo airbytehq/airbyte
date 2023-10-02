@@ -32,7 +32,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         ignored_fields:
-          datasets:
+          dataset_collection:
             - name: "accessedAt"
               bypass_reason: "Change everytime"
             - name: "stats/readCount"

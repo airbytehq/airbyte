@@ -61,7 +61,7 @@ definitions:
 
 streams:
   - type: DeclarativeStream
-    name: "Dataset Collection"
+    name: dataset_collection
     primary_key: "id"
     $parameters:
       path: "datasets"
@@ -77,7 +77,7 @@ streams:
           field_path: ["data", "items"]
 
   - type: DeclarativeStream
-    name: "Dataset"
+    name: dataset
     primary_key: "id"
     $parameters:
       path: "datasets/{{ config['dataset_id'] }}"
@@ -93,7 +93,7 @@ streams:
           field_path: ["data"]
 
   - type: DeclarativeStream
-    name: "Item Collection - Website Content Crawler (WCC)"
+    name: item_collection_website_content_crawler
     $parameters:
       path: "datasets/{{ config['dataset_id'] }}/items"
     schema_loader:
@@ -110,6 +110,6 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - "Dataset Collection"
-    - "Dataset"
-    - "Item Collection - Website Content Crawler (WCC)"
+    - dataset_collection
+    - dataset
+    - item_collection_website_content_crawler
