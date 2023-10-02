@@ -57,6 +57,7 @@ def default_backoff_handler(
         giveup=should_give_up,
         max_tries=max_tries,
         factor=factor,
+        max_time=600,
         **kwargs,
     )
 
@@ -86,5 +87,6 @@ def user_defined_backoff_handler(max_tries: Optional[int], **kwargs: Any) -> Cal
         on_giveup=log_give_up,
         jitter=None,
         max_tries=max_tries,
+        max_time=600,
         **kwargs,
     )
