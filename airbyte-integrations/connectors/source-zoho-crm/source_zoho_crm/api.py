@@ -37,6 +37,7 @@ class ZohoAPI:
     )
     _API_ENV_TO_URL_PREFIX = MappingProxyType({"production": "", "developer": "developer", "sandbox": "sandbox"})
     _CONCURRENCY_API_LIMITS = MappingProxyType({"Free": 5, "Standard": 10, "Professional": 15, "Enterprise": 20, "Ultimate": 25})
+    _API_VERSION = "v4"
 
     def __init__(self, config: Mapping[str, Any]):
         self.config = config
@@ -76,16 +77,16 @@ class ZohoAPI:
         return response.json()[key]
 
     def module_settings(self, module_name: str) -> List[MutableMapping[Any, Any]]:
-        return self._json_from_path(f"/crm/v2/settings/modules/{module_name}", key="modules")
+        return self._json_from_path(f"/crm/{self._API_VERSION}/settings/modules/{module_name}", key="modules")
 
     def modules_settings(self) -> List[MutableMapping[Any, Any]]:
-        return self._json_from_path("/crm/v2/settings/modules", key="modules")
+        return self._json_from_path(f"/crm/{self._API_VERSION}/settings/modules", key="modules")
 
     def fields_settings(self, module_name: str) -> List[MutableMapping[Any, Any]]:
-        return self._json_from_path("/crm/v2/settings/fields", key="fields", params={"module": module_name})
+        return self._json_from_path(f"/crm/{self._API_VERSION}/settings/fields", key="fields", params={"module": module_name})
 
     def check_connection(self) -> Tuple[bool, Any]:
-        path = "/crm/v2/settings/modules"
+        path = f"/crm/{self._API_VERSION}/settings/modules"
         response = requests.get(url=f"{self.api_url}{path}", headers=self.authenticator.get_auth_header())
         try:
             response.raise_for_status()

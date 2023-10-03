@@ -44,7 +44,7 @@ class ZohoCrmStream(HttpStream, ABC):
         yield from data
 
     def path(self, *args, **kwargs) -> str:
-        return f"/crm/v2/{self.module.api_name}"
+        return f"/crm/v4/{self.module.api_name}"
 
     def get_json_schema(self) -> Optional[Dict[Any, Any]]:
         try:
