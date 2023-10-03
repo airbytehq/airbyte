@@ -32,7 +32,6 @@ brew install pyenv
 If you haven't installed pipx, you can do it with pip:
 
 ```bash
-cd airbyte-ci/connectors/pipelines/
 pyenv install # ensure you have the correct python version
 python -m pip install --user pipx
 python -m pipx ensurepath
@@ -41,19 +40,15 @@ python -m pipx ensurepath
 Once pyenv and pipx is installed then run the following:
 
 ```bash
-# ensure you are in the correct directory
-cd airbyte-ci/connectors/pipelines/
-
-# ensure you have the correct python version
-pyenv install
-
 # install airbyte-ci
-pipx install --editable --force .
+pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/
 ```
 
 This command installs `airbyte-ci` and makes it globally available in your terminal.
 
 _Note: `--force` is required to ensure updates are applied on subsequent installs._
+_Note: `--version=python3.10` is required to ensure the correct python version is used._
+_Note: `--editable` is required to ensure the correct python version is used._
 
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
 
@@ -61,7 +56,7 @@ If you face any installation problem feel free to reach out the Airbyte Connecto
 To reinstall airbyte-ci:
 
 ```sh
-pipx reinstall .
+pipx reinstall pipelines
 ```
 
 ## Installation for development

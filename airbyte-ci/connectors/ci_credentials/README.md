@@ -30,17 +30,17 @@ python -m pipx ensurepath
 Once pyenv and pipx is installed then run the following:
 
 ```bash
-# ensure you are in the correct directory
-cd airbyte-ci/connectors/ci_credentials/
-
-# ensure you have the correct python version
-pyenv install
-
-# install ci_credentials
-pipx install --editable --force .
+pipx install --editable --force --version=python3.10 airbyte-ci/connectors/ci_credentials/
 ```
 
-This command installs ci_credentials and makes it globally available in your terminal.
+This command installs `ci_credentials` and makes it globally available in your terminal.
+
+_Note: `--force` is required to ensure updates are applied on subsequent installs._
+_Note: `--version=python3.10` is required to ensure the correct python version is used._
+_Note: `--editable` is required to ensure the correct python version is used._
+
+If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
+
 
 ## Get GSM access
 Download a Service account json key that has access to Google Secrets Manager.
