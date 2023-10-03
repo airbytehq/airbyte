@@ -76,6 +76,13 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     single_csv_input_state_is_later_scenario,
     single_csv_no_input_state_scenario,
 )
+from unit_tests.sources.file_based.scenarios.jsonl_scenarios import (
+    invalid_jsonl_scenario,
+    multi_jsonl_stream_n_bytes_exceeds_limit_for_inference,
+    multi_jsonl_stream_n_file_exceeds_limit_for_inference,
+    multi_jsonl_with_different_keys_scenario,
+    single_jsonl_scenario,
+)
 from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     multi_parquet_scenario,
     parquet_file_with_decimal_as_float_scenario,
@@ -130,11 +137,11 @@ discover_scenarios = [
     # multi_stream_user_input_schema_scenario_schema_is_invalid,
     # valid_multi_stream_user_input_schema_scenario,
     # valid_single_stream_user_input_schema_scenario,
-    # single_jsonl_scenario,
-    # multi_jsonl_with_different_keys_scenario,
-    # multi_jsonl_stream_n_file_exceeds_limit_for_inference,
-    # multi_jsonl_stream_n_bytes_exceeds_limit_for_inference,
-    # invalid_jsonl_scenario,
+    single_jsonl_scenario,
+    multi_jsonl_with_different_keys_scenario,
+    multi_jsonl_stream_n_file_exceeds_limit_for_inference,
+    multi_jsonl_stream_n_bytes_exceeds_limit_for_inference,
+    invalid_jsonl_scenario,
     # jsonl_multi_stream_scenario,
     # jsonl_user_input_schema_scenario,
     # schemaless_jsonl_scenario,
