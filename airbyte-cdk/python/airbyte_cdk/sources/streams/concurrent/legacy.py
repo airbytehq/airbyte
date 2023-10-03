@@ -112,7 +112,7 @@ class StreamFacade(Stream):
         Retrieves the user-friendly display message that corresponds to an exception.
         This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
 
-        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
+        A display message will be returned if the exception is an instance of ExceptionWithDisplayMessage.
 
         :param exception: The exception that was raised
         :return: A user-friendly message that indicates the cause of the error
