@@ -4,7 +4,8 @@ import styled from "styled-components";
 import { CrossIcon } from "components/icons/CrossIcon";
 
 interface IProps {
-  message: string;
+  message?: string;
+  formattedMessage?: React.ReactNode;
   onClose: () => void;
 }
 
@@ -40,11 +41,11 @@ export const CrossButton = styled.button`
   background-color: transparent;
 `;
 
-const Alert: React.FC<IProps> = ({ message, onClose }) => {
-  if (message) {
+const Alert: React.FC<IProps> = ({ message, onClose, formattedMessage }) => {
+  if (message || formattedMessage) {
     return (
       <AlertContainer>
-        <Message>{message}</Message>
+        <Message>{formattedMessage ? formattedMessage : message}</Message>
         <CrossButton onClick={onClose}>
           <CrossIcon color="#F87171" />
         </CrossButton>
