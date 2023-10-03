@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
+
 class ExceptionWithDisplayMessage(Exception):
     """
     Exception that can be used to display a custom message to the user.
