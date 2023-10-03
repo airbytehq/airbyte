@@ -22,8 +22,7 @@ DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE = (
     "_EXPERIMENTAL_DAGGER_CLOUD_TOKEN",
     "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k",
 )
-ARGS_DISABLING_TUI = ["--no-tui", "publish"]
-
+ARGS_DISABLING_TUI = ["--no-tui", "publish", "--version"]
 
 def get_dagger_path() -> Optional[str]:
     try:
@@ -86,7 +85,6 @@ def check_dagger_cli_install() -> str:
         return check_dagger_cli_install()
     return dagger_path
 
-
 def main():
     os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
     exit_code = 0
@@ -97,6 +95,7 @@ def main():
         command = [dagger_path, "run", "airbyte-ci-internal"] + sys.argv[1:]
     try:
         try:
+            print(f"Running command: {command}")
             subprocess.run(command, check=True)
         except KeyboardInterrupt:
             LOGGER.info("Keyboard interrupt detected. Exiting...")
