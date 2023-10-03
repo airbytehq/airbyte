@@ -1,6 +1,5 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -12,8 +11,8 @@ import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useDestinationList } from "hooks/services/useDestinationHook";
 import useRouter from "hooks/useRouter";
 
-import { RoutePaths } from "../../../routePaths";
 import DestinationsTable from "./components/DestinationsTable";
+import { RoutePaths } from "../../../routePaths";
 
 const BtnInnerContainer = styled.div`
   width: 100%;
@@ -37,6 +36,7 @@ const BtnText = styled.div`
 const AllDestinationsPage: React.FC = () => {
   const { push } = useRouter();
   const { destinations } = useDestinationList();
+
   useTrackPage(PageTrackingCodes.DESTINATION_LIST);
 
   const onCreateDestination = () => push(`${RoutePaths.SelectDestination}`);
