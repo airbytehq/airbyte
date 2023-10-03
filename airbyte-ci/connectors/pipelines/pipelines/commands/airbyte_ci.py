@@ -4,12 +4,16 @@
 
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
+import importlib
+import os
+import subprocess
 from typing import List
 
 import click
 from github import PullRequest
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
+from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
 from pipelines.utils import (
     get_current_epoch_time,
     get_current_git_branch,
@@ -25,6 +29,31 @@ from .groups.metadata import metadata
 from .groups.tests import test
 
 # HELPERS
+
+__installed_version__ = importlib.metadata.version("pipelines")
+
+
+def check_up_to_date() -> bool:
+    """Check if the installed version of pipelines is up to date."""
+    # get the version of the latest release, which is just in the pyproject.toml file of the pipelines package
+    # as this is an internal tool, we don't need to check for the latest version on PyPI
+    latest_version = get_latest_version()
+    if latest_version != __installed_version__:
+        main_logger.warning(f"pipelines is not up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
+        main_logger.warning("Please run `pipx reinstall pipelines` to upgrade to the latest version.")
+        return False
+
+    main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
+    return True
+
+
+def get_latest_version() -> str:
+    path_to_pyproject_toml = LOCAL_PIPELINE_PACKAGE_PATH + "pyproject.toml"
+    with open(path_to_pyproject_toml, "r") as f:
+        for line in f.readlines():
+            if "version" in line:
+                return line.split("=")[1].strip().replace('"', "")
+    raise Exception("Could not find version in pyproject.toml. Please ensure you are running from the root of the airbyte repo.")
 
 
 def get_modified_files(
@@ -55,6 +84,7 @@ def get_modified_files(
 
 
 @click.group(help="Airbyte CI top-level command group.")
+@click.version_option(__installed_version__)
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
@@ -99,6 +129,7 @@ def airbyte_ci(
     show_dagger_logs: bool,
 ):  # noqa D103
     ctx.ensure_object(dict)
+    check_up_to_date()
     ctx.obj["is_local"] = is_local
     ctx.obj["is_ci"] = not is_local
     ctx.obj["git_branch"] = git_branch
