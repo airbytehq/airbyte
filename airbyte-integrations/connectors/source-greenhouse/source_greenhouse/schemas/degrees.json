@@ -1,7 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
   "properties": {
+    "external_id": {
+      "type": "integer"
+    },
     "id": {
       "type": "integer"
     },
@@ -10,9 +12,7 @@
     },
     "priority": {
       "type": "integer"
-    },
-    "external_id": {
-      "type": ["null", "string"]
     }
-  }
+  },
+  "type": "object"
 }

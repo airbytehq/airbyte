@@ -1,107 +1,109 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
   "properties": {
+    "application_id": {
+      "type": "integer"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "end": {
+      "properties": {
+        "date": {
+          "type": "string"
+        },
+        "date_time": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "external_event_id": {
+      "type": "string"
+    },
     "id": {
       "type": "integer"
     },
-    "application_id": {
-      "type": ["null", "integer"]
-    },
-    "external_event_id": {
-      "type": ["null", "string"]
-    },
-    "start": {
-      "type": ["null", "object"],
-      "properties": {
-        "date_time": {
-          "type": ["null", "string"],
-          "format": "date-time"
-        }
-      }
-    },
-    "end": {
-      "type": ["null", "object"],
-      "properties": {
-        "date_time": {
-          "type": ["null", "string"],
-          "format": "date-time"
-        }
-      }
-    },
-    "location": {
-      "type": ["null", "string"]
-    },
-    "video_conferencing_url": {
-      "type": ["null", "string"]
-    },
-    "status": {
-      "type": ["null", "string"]
-    },
-    "created_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "updated_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
     "interview": {
-      "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": ["null", "integer"]
+          "type": "integer"
         },
         "name": {
-          "type": ["null", "string"]
+          "type": "string"
         }
-      }
-    },
-    "organizer": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "first_name": {
-          "type": ["null", "string"]
-        },
-        "last_name": {
-          "type": ["null", "string"]
-        },
-        "name": {
-          "type": ["null", "string"]
-        },
-        "employee_id": {
-          "type": ["null", "string"]
-        }
-      }
+      },
+      "type": "object"
     },
     "interviewers": {
-      "type": ["null", "array"],
       "items": {
-        "type": ["null", "object"],
         "properties": {
-          "id": {
-            "type": ["null", "integer"]
+          "email": {
+            "type": "string"
           },
           "employee_id": {
             "type": ["null", "string"]
           },
-          "name": {
-            "type": ["null", "string"]
+          "id": {
+            "type": ["integer", "null"]
           },
-          "email": {
+          "name": {
             "type": ["null", "string"]
           },
           "response_status": {
             "type": ["null", "string"]
           },
           "scorecard_id": {
-            "type": ["null", "integer"]
+            "type": ["integer", "null"]
           }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "organizer": {
+      "properties": {
+        "employee_id": {
+          "type": ["null", "string"]
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
         }
-      }
+      },
+      "type": "object"
+    },
+    "start": {
+      "properties": {
+        "date": {
+          "type": "string"
+        },
+        "date_time": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "status": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "video_conferencing_url": {
+      "type": ["null", "string"]
     }
-  }
+  },
+  "type": "object"
 }

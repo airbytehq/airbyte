@@ -1,83 +1,82 @@
 {
-  "$schema": "https://json-schema.org/draft-07/schema",
-  "type": ["null", "object"],
-  "additionalProperties": true,
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
+    "approval_status": {
+      "type": "string"
+    },
+    "approval_type": {
+      "type": "string"
+    },
+    "approver_groups": {
+      "items": {
+        "properties": {
+          "approvals_required": {
+            "type": "integer"
+          },
+          "approvers": {
+            "items": {
+              "properties": {
+                "emails": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "employee_id": {
+                  "type": ["null", "string"]
+                },
+                "id": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer"
+          },
+          "job_id": {
+            "type": "integer"
+          },
+          "offer_id": {
+            "type": ["integer", "null"]
+          },
+          "priority": {
+            "type": "integer"
+          },
+          "resolved_at": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
     "id": {
-      "type": ["null", "integer"]
+      "type": "integer"
+    },
+    "job_id": {
+      "type": "integer"
     },
     "offer_id": {
-      "type": ["null", "integer"]
+      "type": ["integer", "null"]
+    },
+    "requested_by_user_id": {
+      "type": ["integer", "null"]
     },
     "sequential": {
       "type": "boolean"
     },
     "version": {
-      "type": ["null", "integer"]
-    },
-    "approval_type": {
-      "type": ["null", "string"]
-    },
-    "approval_status": {
-      "type": ["null", "string"]
-    },
-    "job_id": {
-      "type": ["null", "integer"]
-    },
-    "requested_by_user_id": {
-      "type": ["null", "integer"]
-    },
-    "approver_groups": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "object"],
-        "properties": {
-          "id": {
-            "type": ["null", "integer"]
-          },
-          "approvals_required": {
-            "type": ["null", "integer"]
-          },
-          "created_at": {
-            "type": ["null", "string"]
-          },
-          "resolved_at": {
-            "type": ["null", "string"]
-          },
-          "priority": {
-            "type": ["null", "integer"]
-          },
-          "job_id": {
-            "type": ["null", "integer"]
-          },
-          "offer_id": {
-            "type": ["integer", "null"]
-          },
-          "approvers": {
-            "type": ["null", "array"],
-            "items": {
-              "type": ["null", "object"],
-              "properties": {
-                "id": {
-                  "type": ["null", "integer"]
-                },
-                "name": {
-                  "type": ["null", "string"]
-                },
-                "employee_id": {
-                  "type": ["null", "string"]
-                },
-                "email_addresses": {
-                  "type": ["null", "array"],
-                  "items": {
-                    "type": ["null", "string"]
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      "type": "integer"
     }
-  }
+  },
+  "type": "object"
 }

@@ -1,92 +1,93 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
   "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "version": {
-      "type": "integer"
-    },
     "application_id": {
-      "type": "integer"
-    },
-    "created_at": {
-      "type": "string"
-    },
-    "updated_at": {
-      "type": "string"
-    },
-    "sent_at": {
-      "type": ["null", "string"]
-    },
-    "resolved_at": {
-      "type": ["null", "string"]
-    },
-    "starts_at": {
-      "type": "string"
-    },
-    "status": {
-      "type": "string"
-    },
-    "job_id": {
       "type": "integer"
     },
     "candidate_id": {
       "type": "integer"
     },
-    "opening": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "opening_id": {
-          "type": "string"
-        },
-        "status": {
-          "type": "string"
-        },
-        "opened_at": {
-          "type": "string"
-        },
-        "closed_at": {
-          "type": ["null", "string"]
-        },
-        "application_id": {
-          "type": ["null", "integer"]
-        },
-        "close_reason": {
-          "type": ["null", "string"]
-        }
-      }
+    "created_at": {
+      "type": "string"
     },
     "custom_fields": {
-      "type": ["null", "object"],
-      "properties": {
-        "employment_type": {
-          "type": ["null", "string"]
-        }
-      }
+      "type": "object"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "job_id": {
+      "type": "integer"
     },
     "keyed_custom_fields": {
-      "type": "object",
-      "properties": {
-        "employment_type": {
-          "type": "object",
+      "type": "object"
+    },
+    "opening": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
           "properties": {
-            "name": {
+            "application_id": {
+              "type": "integer"
+            },
+            "close_reason": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                }
+              ]
+            },
+            "closed_at": {
               "type": "string"
             },
-            "type": {
+            "id": {
+              "type": "integer"
+            },
+            "opened_at": {
               "type": "string"
             },
-            "value": {
+            "opening_id": {
+              "type": ["null", "string"]
+            },
+            "status": {
               "type": "string"
             }
-          }
+          },
+          "type": "object"
         }
-      }
+      ]
+    },
+    "resolved_at": {
+      "type": ["null", "string"]
+    },
+    "sent_at": {
+      "type": ["null", "string"]
+    },
+    "starts_at": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
     }
-  }
+  },
+  "type": "object"
 }

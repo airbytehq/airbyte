@@ -1,60 +1,87 @@
 {
-  "$schema": "https://json-schema.org/draft-07/schema",
-  "type": ["null", "object"],
-  "additionalProperties": true,
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
     "application_id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     },
     "candidate_id": {
-      "type": ["null", "integer"]
-    },
-    "race": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "description": {
-          "type": ["null", "string"]
-        }
-      }
-    },
-    "gender": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "description": {
-          "type": ["null", "string"]
-        }
-      }
-    },
-    "veteran_status": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "message": {
-          "type": ["null", "string"]
-        }
-      }
+      "type": "integer"
     },
     "disability_status": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
+      "anyOf": [
+        {
+          "type": "null"
         },
-        "description": {
-          "type": ["null", "string"]
+        {
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            }
+          },
+          "type": "object"
         }
-      }
+      ]
+    },
+    "gender": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "race": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        }
+      ]
     },
     "submitted_at": {
-      "type": ["null", "string"]
+      "type": "string"
+    },
+    "veteran_status": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            }
+          },
+          "type": "object"
+        }
+      ]
     }
-  }
+  },
+  "type": "object"
 }

@@ -1,114 +1,129 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
   "properties": {
-    "id": {
-      "type": ["null", "integer"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "first_name": {
-      "type": ["null", "string"]
-    },
-    "last_name": {
-      "type": ["null", "string"]
-    },
-    "primary_email_address": {
-      "type": ["null", "string"]
-    },
-    "updated_at": {
-      "type": ["null", "string"]
-    },
     "created_at": {
-      "type": ["null", "string"]
-    },
-    "disabled": {
-      "type": ["null", "boolean"]
-    },
-    "site_admin": {
-      "type": ["null", "boolean"]
-    },
-    "emails": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
-    },
-    "employee_id": {
-      "type": ["null", "string"]
-    },
-    "linked_candidate_ids": {
-      "type": ["null", "array"]
+      "type": "string"
     },
     "departments": {
-      "type": "array",
       "items": {
-        "type": "object",
         "properties": {
+          "child_department_external_ids": {
+            "items": {
+              "type": ["null", "string"]
+            },
+            "type": "array"
+          },
+          "child_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "external_id": {
+            "type": ["null", "string"]
+          },
           "id": {
             "type": "integer"
           },
           "name": {
             "type": "string"
-          },
-          "parent_id": {
-            "type": ["null", "integer"]
           },
           "parent_department_external_id": {
             "type": ["null", "string"]
           },
+          "parent_id": {
+            "type": ["integer", "null"]
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "disabled": {
+      "type": "boolean"
+    },
+    "emails": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "employee_id": {
+      "type": "null"
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": "integer"
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "linked_candidate_ids": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "name": {
+      "type": "string"
+    },
+    "offices": {
+      "items": {
+        "properties": {
           "child_ids": {
+            "items": {
+              "type": "integer"
+            },
             "type": "array"
           },
-          "child_department_external_ids": {
+          "child_office_external_ids": {
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           },
           "external_id": {
-            "type": ["null", "string"]
-          }
-        }
-      }
-    },
-    "offices": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
+            "type": "null"
+          },
           "id": {
             "type": "integer"
           },
-          "name": {
-            "type": "string"
-          },
           "location": {
-            "type": "object",
             "properties": {
               "name": {
                 "type": ["null", "string"]
               }
-            }
+            },
+            "type": "object"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_id": {
+            "type": ["integer", "null"]
+          },
+          "parent_office_external_id": {
+            "type": "string"
           },
           "primary_contact_user_id": {
             "type": "integer"
-          },
-          "parent_id": {
-            "type": ["null", "integer"]
-          },
-          "parent_office_external_id": {
-            "type": ["null", "string"]
-          },
-          "child_ids": {
-            "type": "array"
-          },
-          "child_office_external_ids": {
-            "type": "array"
-          },
-          "external_id": {
-            "type": ["null", "string"]
           }
-        }
-      }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "primary_email_address": {
+      "type": "string"
+    },
+    "site_admin": {
+      "type": "boolean"
+    },
+    "updated_at": {
+      "type": "string"
     }
-  }
+  },
+  "type": "object"
 }

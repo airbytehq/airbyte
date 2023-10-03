@@ -1,24 +1,40 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
   "properties": {
-    "id": {
-      "type": "integer"
-    },
     "active": {
       "type": "boolean"
     },
-    "live": {
+    "content": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "demographic_question_set_id": {
+      "type": ["integer", "null"]
+    },
+    "external": {
       "type": "boolean"
     },
     "first_published_at": {
       "type": ["null", "string"]
     },
-    "title": {
-      "type": "string"
+    "id": {
+      "type": "integer"
+    },
+    "internal": {
+      "type": "boolean"
+    },
+    "internal_content": {
+      "type": ["null", "string"]
+    },
+    "job_id": {
+      "type": "integer"
+    },
+    "live": {
+      "type": "boolean"
     },
     "location": {
-      "type": "object",
       "properties": {
         "id": {
           "type": "integer"
@@ -27,55 +43,16 @@
           "type": "string"
         },
         "office_id": {
-          "type": ["null", "integer"]
-        },
-        "job_post_location_type": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "name": {
-              "type": "string"
-            }
-          }
+          "type": ["integer", "null"]
         }
-      }
-    },
-    "internal": {
-      "type": "boolean"
-    },
-    "external": {
-      "type": "boolean"
-    },
-    "job_id": {
-      "type": "integer"
-    },
-    "content": {
-      "type": "string"
-    },
-    "internal_content": {
-      "type": ["null", "string"]
-    },
-    "updated_at": {
-      "type": "string"
-    },
-    "created_at": {
-      "type": "string"
-    },
-    "demographic_question_set_id": {
-      "type": ["null", "integer"]
+      },
+      "type": "object"
     },
     "questions": {
-      "type": "array",
       "items": {
-        "type": "object",
         "properties": {
-          "required": {
-            "type": ["boolean", "null"]
-          },
-          "private": {
-            "type": "boolean"
+          "description": {
+            "type": ["null", "string"]
           },
           "label": {
             "type": "string"
@@ -83,17 +60,40 @@
           "name": {
             "type": "string"
           },
+          "private": {
+            "type": "boolean"
+          },
+          "required": {
+            "type": ["boolean", "null"]
+          },
           "type": {
             "type": "string"
           },
           "values": {
+            "items": {
+              "properties": {
+                "label": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "integer"
+                }
+              },
+              "type": "object"
+            },
             "type": "array"
-          },
-          "description": {
-            "type": ["null", "string"]
           }
-        }
-      }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "title": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
     }
-  }
+  },
+  "type": "object"
 }

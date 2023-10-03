@@ -1,94 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
   "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "updated_at": {
-      "type": "string"
-    },
-    "created_at": {
-      "type": "string"
-    },
-    "interview": {
-      "type": "string"
-    },
-    "interview_step": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "name": {
-          "type": "string"
-        }
-      }
-    },
-    "candidate_id": {
-      "type": "integer"
-    },
     "application_id": {
       "type": "integer"
     },
-    "interviewed_at": {
-      "type": "string"
-    },
-    "submitted_by": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "first_name": {
-          "type": "string"
-        },
-        "last_name": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "employee_id": {
-          "type": ["null", "string"]
-        }
-      }
-    },
-    "interviewer": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "integer"
-        },
-        "first_name": {
-          "type": "string"
-        },
-        "last_name": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "employee_id": {
-          "type": ["null", "string"]
-        }
-      }
-    },
-    "submitted_at": {
-      "type": "string"
-    },
-    "overall_recommendation": {
-      "type": "string"
-    },
     "attributes": {
-      "type": "array",
       "items": {
-        "type": "object",
         "properties": {
           "name": {
-            "type": "string"
-          },
-          "type": {
             "type": "string"
           },
           "note": {
@@ -96,46 +15,142 @@
           },
           "rating": {
             "type": "string"
+          },
+          "type": {
+            "type": "string"
           }
-        }
-      }
+        },
+        "type": "object"
+      },
+      "type": "array"
     },
-    "ratings": {
-      "type": "object",
+    "candidate_id": {
+      "type": "integer"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "interview": {
+      "type": "string"
+    },
+    "interview_step": {
       "properties": {
-        "definitely_not": {
-          "type": "array"
+        "id": {
+          "type": "integer"
         },
-        "no": {
-          "type": "array"
-        },
-        "mixed": {
-          "type": "array"
-        },
-        "yes": {
-          "type": "array"
-        },
-        "strong_yes": {
-          "type": "array"
+        "name": {
+          "type": "string"
         }
-      }
+      },
+      "type": "object"
+    },
+    "interviewed_at": {
+      "type": "string"
+    },
+    "interviewer": {
+      "properties": {
+        "employee_id": {
+          "type": ["null", "string"]
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "overall_recommendation": {
+      "type": ["null", "string"]
     },
     "questions": {
-      "type": "array",
       "items": {
-        "type": "object",
         "properties": {
+          "answer": {
+            "type": ["null", "string"]
+          },
           "id": {
-            "type": ["null", "integer"]
+            "type": ["integer", "null"]
           },
           "question": {
             "type": "string"
-          },
-          "answer": {
-            "type": "string"
           }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "ratings": {
+      "properties": {
+        "definitely_not": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "mixed": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "no": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "strong_yes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "yes": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
-      }
+      },
+      "type": "object"
+    },
+    "submitted_at": {
+      "type": "string"
+    },
+    "submitted_by": {
+      "properties": {
+        "employee_id": {
+          "type": ["null", "string"]
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "updated_at": {
+      "type": "string"
     }
-  }
+  },
+  "type": "object"
 }

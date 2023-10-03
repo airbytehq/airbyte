@@ -1,142 +1,286 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
   "properties": {
-    "status": {
-      "type": "string"
-    },
-    "source": {
-      "type": "object",
-      "properties": {
-        "public_name": {
-          "type": "string"
-        },
-        "id": {
-          "type": "integer"
-        }
-      }
-    },
-    "rejection_reason": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "name": {
-          "type": ["null", "string"]
-        },
-        "type": {
-          "type": ["null", "object"],
-          "properties": {
-            "id": {
-              "type": ["null", "integer"]
-            },
-            "name": {
-              "type": ["null", "string"]
-            }
+    "answers": {
+      "items": {
+        "properties": {
+          "answer": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
           }
-        }
-      }
-    },
-    "rejection_details": {
-      "type": ["null", "object"],
-      "properties": {
-        "custom_fields": {
-          "type": ["null", "object"]
         },
-        "keyed_custom_fields": {
-          "type": ["null", "object"]
-        }
-      }
-    },
-    "rejected_at": {
-      "type": ["null", "string"]
-    },
-    "prospective_office": {
-      "type": ["null", "string"]
-    },
-    "prospective_department": {
-      "type": ["null", "string"]
-    },
-    "prospect_detail": {
-      "type": "object",
-      "properties": {
-        "prospect_stage": {
-          "type": ["null", "string"]
-        },
-        "prospect_pool": {
-          "type": ["null", "string"]
-        },
-        "prospect_owner": {
-          "type": ["null", "object"],
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "id": {
-              "type": "integer"
-            }
-          }
-        }
-      }
-    },
-    "prospect": {
-      "type": "boolean"
-    },
-    "location": {
-      "type": ["null", "string"]
-    },
-    "last_activity_at": {
-      "type": "string"
-    },
-    "jobs": {
-      "type": "array"
-    },
-    "id": {
-      "type": "integer"
-    },
-    "current_stage": {
-      "type": ["null", "object"],
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "id": {
-          "type": "integer"
-        }
-      }
-    },
-    "credited_to": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": ["null", "string"]
-        },
-        "last_name": {
-          "type": ["null", "string"]
-        },
-        "id": {
-          "type": "integer"
-        },
-        "first_name": {
-          "type": ["null", "string"]
-        },
-        "employee_id": {
-          "type": ["null", "string"]
-        }
-      }
-    },
-    "candidate_id": {
-      "type": "integer"
-    },
-    "attachments": {
+        "type": "object"
+      },
       "type": "array"
     },
     "applied_at": {
       "type": "string"
     },
-    "answers": {
+    "attachments": {
+      "items": {
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "type": "array"
+    },
+    "candidate_id": {
+      "type": "integer"
+    },
+    "credited_to": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "employee_id": {
+              "type": "string"
+            },
+            "first_name": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "last_name": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "current_stage": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "custom_fields": {
+      "type": "object"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "job_post_id": {
+      "type": "integer"
+    },
+    "jobs": {
+      "items": {
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "keyed_custom_fields": {
+      "type": "object"
+    },
+    "last_activity_at": {
+      "type": "string"
+    },
+    "location": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "address": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "prospect": {
+      "type": "boolean"
+    },
+    "prospect_detail": {
+      "properties": {
+        "prospect_owner": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "prospect_pool": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "prospect_stage": {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "prospective_department": {
+      "properties": {
+        "child_ids": {
+          "items": {
+            "type": "integer"
+          },
+          "type": "array"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string"
+        },
+        "parent_id": {
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "prospective_office": {
+      "properties": {
+        "child_ids": {
+          "type": "array"
+        },
+        "external_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "location": {
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "parent_id": {
+          "type": "integer"
+        },
+        "primary_contact_user_id": {
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    },
+    "rejected_at": {
+      "type": "string"
+    },
+    "rejection_details": {
+      "type": "object"
+    },
+    "rejection_reason": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "name": {
+              "type": "string"
+            },
+            "type": {
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "source": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "id": {
+              "type": "integer"
+            },
+            "public_name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "status": {
+      "type": "string"
     }
-  }
+  },
+  "type": "object"
 }

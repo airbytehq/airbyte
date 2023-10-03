@@ -1,63 +1,18 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
   "properties": {
-    "id": {
-      "type": "integer"
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
     "active": {
-      "type": ["null", "boolean"]
-    },
-    "field_type": {
-      "type": ["null", "string"]
-    },
-    "priority": {
-      "type": ["null", "integer"]
-    },
-    "value_type": {
-      "type": ["null", "string"]
-    },
-    "private": {
-      "type": ["null", "boolean"]
-    },
-    "required": {
-      "type": ["null", "boolean"]
-    },
-    "require_approval": {
-      "type": ["null", "boolean"]
-    },
-    "trigger_new_version": {
-      "type": ["null", "boolean"]
-    },
-    "name_key": {
-      "type": ["null", "string"]
-    },
-    "description": {
-      "type": ["null", "string"]
-    },
-    "expose_in_job_board_api": {
-      "type": ["null", "boolean"]
+      "type": "boolean"
     },
     "api_only": {
-      "type": ["null", "boolean"]
-    },
-    "offices": {
-      "type": ["null", "array"]
-    },
-    "departments": {
-      "type": ["null", "array"]
-    },
-    "template_token_string": {
-      "type": ["null", "string"]
+      "type": "boolean"
     },
     "custom_field_options": {
-      "type": ["null", "array"],
       "items": {
-        "type": "object",
         "properties": {
+          "external_id": {
+            "type": ["null", "string"]
+          },
           "id": {
             "type": "integer"
           },
@@ -66,12 +21,89 @@
           },
           "priority": {
             "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "departments": {
+      "items": {
+        "properties": {
+          "child_department_external_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "child_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
           },
           "external_id": {
             "type": ["null", "string"]
+          },
+          "id": {
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_department_external_id": {
+            "type": ["null", "string"]
+          },
+          "parent_id": {
+            "type": ["integer", "null"]
           }
-        }
-      }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "expose_in_job_board_api": {
+      "type": "boolean"
+    },
+    "field_type": {
+      "type": "string"
+    },
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "name_key": {
+      "type": "string"
+    },
+    "offices": {
+      "type": "array"
+    },
+    "priority": {
+      "type": "integer"
+    },
+    "private": {
+      "type": "boolean"
+    },
+    "require_approval": {
+      "type": "boolean"
+    },
+    "required": {
+      "type": "boolean"
+    },
+    "template_token_string": {
+      "type": ["null", "string"]
+    },
+    "trigger_new_version": {
+      "type": "boolean"
+    },
+    "value_type": {
+      "type": ["null", "string"]
     }
-  }
+  },
+  "type": "object"
 }

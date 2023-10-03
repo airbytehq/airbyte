@@ -1,63 +1,95 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
   "properties": {
+    "active": {
+      "type": "boolean"
+    },
+    "created_at": {
+      "type": "string"
+    },
     "id": {
       "type": "integer"
     },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "created_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "updated_at": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "job_id": {
-      "type": ["null", "integer"]
-    },
-    "priority": {
-      "type": ["null", "integer"]
-    },
     "interviews": {
-      "type": ["null", "array"],
       "items": {
-        "type": "object",
         "properties": {
-          "id": {
-            "type": ["null", "integer"]
-          },
-          "name": {
-            "type": ["null", "string"]
-          },
-          "schedulable": {
-            "type": ["null", "boolean"]
+          "default_interviewer_users": {
+            "items": {
+              "properties": {
+                "employee_id": {
+                  "type": ["null", "string"]
+                },
+                "first_name": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "integer"
+                },
+                "last_name": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
           },
           "estimated_minutes": {
-            "type": ["null", "integer"]
+            "type": ["integer", "null"]
           },
-          "default_interviewer_users": {
-            "type": ["null", "array"]
+          "id": {
+            "type": "integer"
           },
           "interview_kit": {
-            "type": ["null", "object"],
             "properties": {
-              "id": {
-                "type": ["null", "integer"]
-              },
               "content": {
                 "type": ["null", "string"]
               },
+              "id": {
+                "type": "integer"
+              },
               "questions": {
-                "type": ["null", "array"]
+                "items": {
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "question": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
               }
-            }
+            },
+            "type": "object"
+          },
+          "name": {
+            "type": "string"
+          },
+          "schedulable": {
+            "type": "boolean"
           }
-        }
-      }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "job_id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "integer"
+    },
+    "updated_at": {
+      "type": "string"
     }
-  }
+  },
+  "type": "object"
 }

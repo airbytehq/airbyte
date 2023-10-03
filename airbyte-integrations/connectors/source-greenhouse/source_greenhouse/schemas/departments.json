@@ -1,27 +1,33 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
   "properties": {
+    "child_department_external_ids": {
+      "items": {
+        "type": ["null", "string"]
+      },
+      "type": "array"
+    },
+    "child_ids": {
+      "items": {
+        "type": "integer"
+      },
+      "type": "array"
+    },
+    "external_id": {
+      "type": ["null", "string"]
+    },
     "id": {
       "type": "integer"
     },
     "name": {
       "type": "string"
     },
-    "parent_id": {
-      "type": ["null", "integer"]
-    },
     "parent_department_external_id": {
       "type": ["null", "string"]
     },
-    "child_ids": {
-      "type": "array"
-    },
-    "child_department_external_ids": {
-      "type": "array"
-    },
-    "external_id": {
-      "type": ["null", "string"]
+    "parent_id": {
+      "type": ["integer", "null"]
     }
-  }
+  },
+  "type": "object"
 }
