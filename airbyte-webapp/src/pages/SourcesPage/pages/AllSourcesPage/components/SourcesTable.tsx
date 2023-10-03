@@ -4,20 +4,21 @@ import { ImplementationTable } from "components/EntityTable";
 import { EntityTableDataItem } from "components/EntityTable/types";
 import { getEntityTableData } from "components/EntityTable/utils";
 
-import { SourceRead } from "core/request/AirbyteClient";
-import { useConnectionList } from "hooks/services/useConnectionHook";
+import { SourceRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+// import { useConnectionList } from "hooks/services/useConnectionHook";
 import useRouter from "hooks/useRouter";
 
 import { useSourceDefinitionList } from "../../../../../services/connector/SourceDefinitionService";
 
 interface SourcesTableProps {
   sources: SourceRead[];
+  connections: WebBackendConnectionRead[];
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({ sources }) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({ sources, connections }) => {
   const { push } = useRouter();
 
-  const { connections } = useConnectionList();
+  // const { connections } = useConnectionList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
   const data = getEntityTableData(sources, connections, sourceDefinitions, "source");
