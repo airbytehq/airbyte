@@ -5,6 +5,7 @@
 
 from abc import ABC
 from datetime import datetime
+from http import HTTPStatus
 from types import MappingProxyType
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from airbyte_cdk.models import SyncMode
@@ -69,6 +70,12 @@ class DzZohoBooksStream(HttpStream, ABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         return record
 
+    def should_retry(self, response: requests.Response) -> bool:
+        return response.status_code == 429 or 500 <= response.status_code < 600
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        self.logger.warning(f"Retry in {60} seconds.")
+        return 60
 
 class IncrementalDzZohoBooksStream(DzZohoBooksStream, IncrementalMixin):
     cursor_field = "last_modified_time"
