@@ -39,9 +39,6 @@ dependencies {
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor('org.projectlombok:lombok:1.18.20')
 
-    // MongoDB
-    implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
-
     // Teradata
     implementation 'com.teradata.jdbc:terajdbc4:17.20.00.12'
 
