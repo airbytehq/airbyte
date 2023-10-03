@@ -21,7 +21,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._availability_strategy = Mock()
         self._primary_key = []
         self._cursor_field = None
-        self._error_display_message_parser = Mock()
         self._slice_logger = Mock()
         self._logger = Mock()
         self._message_repository = Mock()
@@ -33,20 +32,11 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._availability_strategy,
             self._primary_key,
             self._cursor_field,
-            self._error_display_message_parser,
             self._slice_logger,
             self._logger,
             self._message_repository,
             1,
         )
-
-    def test_get_error_display_message_delegates_to_error_message_parser(self):
-        self._error_display_message_parser.get_error_display_message.return_value = "error message"
-        exception = Mock()
-        error_message = self._stream.get_error_display_message(exception)
-
-        assert error_message == "error message"
-        self._error_display_message_parser.get_error_display_message.assert_called_once_with(exception)
 
     def test_get_json_schema(self):
         json_schema = self._stream.get_json_schema()

@@ -13,7 +13,6 @@ from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
-from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -36,7 +35,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
         availability_strategy: AbstractAvailabilityStrategy,
         primary_key: List[str],
         cursor_field: Optional[str],
-        error_display_message_parser: ErrorMessageParser,
         slice_logger: SliceLogger,
         logger: Logger,
         message_repository: MessageRepository,
@@ -50,7 +48,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._availability_strategy = availability_strategy
         self._primary_key = primary_key
         self._cursor_field = cursor_field
-        self._error_message_parser = error_display_message_parser
         self._slice_logger = slice_logger
         self._logger = logger
         self._message_repository = message_repository
@@ -136,9 +133,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         return self._json_schema
-
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        return self._error_message_parser.get_error_display_message(exception)
 
     def as_airbyte_stream(self) -> AirbyteStream:
         stream = AirbyteStream(name=self.name, json_schema=dict(self._json_schema), supported_sync_modes=[SyncMode.full_refresh])

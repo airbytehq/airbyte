@@ -10,10 +10,10 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream,
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
+from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.legacy import (
     AvailabilityStrategyFacade,
     LegacyAvailabilityStrategy,
-    LegacyErrorMessageParser,
     LegacyPartition,
     LegacyPartitionGenerator,
     StreamFacade,
@@ -55,18 +55,6 @@ def test_legacy_availability_strategy():
     assert stream_availability.message() is None
 
     stream.check_availability.assert_called_once_with(logger, source)
-
-
-def test_legacy_error_message_parser():
-    stream = Mock()
-    stream.get_error_display_message.return_value = "error message"
-    message_parser = LegacyErrorMessageParser(stream)
-    exception = Mock()
-
-    error_message = message_parser.get_error_display_message(exception)
-
-    assert error_message == "error message"
-    stream.get_error_display_message.assert_called_once_with(exception)
 
 
 @pytest.mark.parametrize(
@@ -119,6 +107,29 @@ def test_legacy_partition():
 
 
 @pytest.mark.parametrize(
+    "exception_type, expected_display_message",
+    [
+        pytest.param(Exception, None, id="test_exception_no_display_message"),
+        pytest.param(ExceptionWithDisplayMessage, "display_message", id="test_exception_no_display_message"),
+    ],
+)
+def test_legacy_partition_raising_exception(exception_type, expected_display_message):
+    stream = Mock()
+    stream.get_error_display_message.return_value = expected_display_message
+
+    message_repository = InMemoryMessageRepository()
+    _slice = None
+    partition = LegacyPartition(stream, _slice, message_repository)
+
+    stream.read_records.side_effect = Exception()
+
+    with pytest.raises(exception_type) as e:
+        list(partition.read())
+        if isinstance(e, ExceptionWithDisplayMessage):
+            assert e.display_message == "display message"
+
+
+@pytest.mark.parametrize(
     "_slice, expected_hash",
     [
         pytest.param({"partition": 1, "k": "v"}, hash(("stream", '{"k": "v", "partition": 1}')), id="test_hash_with_slice"),
@@ -136,7 +147,7 @@ def test_legacy_partition_hash(_slice, expected_hash):
 
 class StreamFacadeTest(unittest.TestCase):
     def setUp(self):
-        self._stream: StreamFacade = Mock()
+        self._stream = Mock()
         self._stream.name = "stream"
         self._stream.as_airbyte_stream.return_value = AirbyteStream(
             name="stream",
@@ -145,6 +156,11 @@ class StreamFacadeTest(unittest.TestCase):
         )
         self._facade = StreamFacade(self._stream)
         self._logger = Mock()
+        self._source = Mock()
+        self._max_workers = 10
+
+        self._legacy_stream = Mock()
+        self._legacy_stream.primary_key = "id"
 
     def test_name_is_delegated_to_wrapped_stream(self):
         assert self._facade.name == self._stream.name
@@ -175,13 +191,6 @@ class StreamFacadeTest(unittest.TestCase):
         assert self._facade.check_availability(Mock(), Mock()) == (availability.is_available(), availability.message())
         self._stream.check_availability.assert_called_once_with()
 
-    def test_get_error_display_message_is_delegated_to_wrapped_stream(self):
-        exception = Mock()
-        display_message = "display_message"
-        self._stream.get_error_display_message.return_value = display_message
-        assert self._facade.get_error_display_message(exception) == display_message
-        self._stream.get_error_display_message.assert_called_once_with(exception)
-
     def test_full_refresh(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
         records = [Record(data) for data in expected_stream_data]
@@ -209,10 +218,8 @@ class StreamFacadeTest(unittest.TestCase):
         legacy_stream.name = "stream"
         legacy_stream.primary_key = "id"
         legacy_stream.cursor_field = "cursor"
-        source = Mock()
-        max_workers = 10
 
-        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, self._source, self._logger, self._max_workers)
 
         assert facade.name == "stream"
         assert facade.cursor_field == "cursor"
@@ -223,10 +230,8 @@ class StreamFacadeTest(unittest.TestCase):
         legacy_stream.name = "stream"
         legacy_stream.primary_key = None
         legacy_stream.cursor_field = []
-        source = Mock()
-        max_workers = 10
 
-        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, self._source, self._logger, self._max_workers)
         facade._stream._primary_key is None
 
     def test_create_from_legacy_stream_with_composite_primary_key(self):
@@ -234,20 +239,16 @@ class StreamFacadeTest(unittest.TestCase):
         legacy_stream.name = "stream"
         legacy_stream.primary_key = ["id", "name"]
         legacy_stream.cursor_field = []
-        source = Mock()
-        max_workers = 10
 
-        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, self._source, self._logger, self._max_workers)
         facade._stream._primary_key == ["id", "name"]
 
     def test_create_from_legacy_stream_with_empty_list_cursor(self):
         legacy_stream = Mock()
         legacy_stream.primary_key = "id"
         legacy_stream.cursor_field = []
-        source = Mock()
-        max_workers = 10
 
-        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, self._source, self._logger, self._max_workers)
 
         assert facade.cursor_field == []
 
@@ -255,52 +256,65 @@ class StreamFacadeTest(unittest.TestCase):
         legacy_stream = Mock()
         legacy_stream.name = "stream"
         legacy_stream.primary_key = [["field", "id"]]
-        source = Mock()
-        max_workers = 10
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
+            StreamFacade.create_from_legacy_stream(legacy_stream, self._source, self._logger, self._max_workers)
 
     def test_create_from_legacy_stream_raises_exception_if_primary_key_has_invalid_type(self):
         legacy_stream = Mock()
         legacy_stream.name = "stream"
         legacy_stream.primary_key = 123
-        source = Mock()
-        max_workers = 10
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
+            StreamFacade.create_from_legacy_stream(legacy_stream, self._source, self._logger, self._max_workers)
 
     def test_create_from_legacy_stream_raises_exception_if_cursor_field_is_nested(self):
         legacy_stream = Mock()
         legacy_stream.name = "stream"
         legacy_stream.primary_key = "id"
         legacy_stream.cursor_field = ["field", "cursor"]
-        source = Mock()
-        max_workers = 10
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
+            StreamFacade.create_from_legacy_stream(legacy_stream, self._source, self._logger, self._max_workers)
 
     def test_create_from_legacy_stream_with_cursor_field_as_list(self):
         legacy_stream = Mock()
         legacy_stream.name = "stream"
         legacy_stream.primary_key = "id"
         legacy_stream.cursor_field = ["cursor"]
-        source = Mock()
-        max_workers = 10
 
-        facade = StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
+        facade = StreamFacade.create_from_legacy_stream(legacy_stream, self._source, self._logger, self._max_workers)
         assert facade.cursor_field == "cursor"
 
     def test_create_from_legacy_stream_none_message_repository(self):
-        legacy_stream = Mock()
-        legacy_stream.name = "stream"
-        legacy_stream.primary_key = "id"
-        legacy_stream.cursor_field = "cursor"
-        source = Mock()
-        source.message_repository = None
-        max_workers = 10
+        self._legacy_stream.name = "stream"
+        self._legacy_stream.primary_key = "id"
+        self._legacy_stream.cursor_field = "cursor"
+        self._source.message_repository = None
 
         with self.assertRaises(ValueError):
-            StreamFacade.create_from_legacy_stream(legacy_stream, source, self._logger, max_workers)
+            StreamFacade.create_from_legacy_stream(self._legacy_stream, self._source, self._logger, self._max_workers)
+
+    def test_get_error_display_message_no_display_message(self):
+        self._legacy_stream.get_error_display_message.return_value = "display_message"
+
+        facade = StreamFacade.create_from_legacy_stream(self._legacy_stream, self._source, self._logger, self._max_workers)
+
+        expected_display_message = None
+        e = Exception()
+
+        display_message = facade.get_error_display_message(e)
+
+        assert expected_display_message == display_message
+
+    def test_get_error_display_message_with_display_message(self):
+        self._legacy_stream.get_error_display_message.return_value = "display_message"
+
+        facade = StreamFacade.create_from_legacy_stream(self._legacy_stream, self._source, self._logger, self._max_workers)
+
+        expected_display_message = "display_message"
+        e = ExceptionWithDisplayMessage("display_message")
+
+        display_message = facade.get_error_display_message(e)
+
+        assert expected_display_message == display_message

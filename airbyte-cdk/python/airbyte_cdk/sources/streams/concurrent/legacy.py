@@ -20,7 +20,7 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
     StreamAvailable,
     StreamUnavailable,
 )
-from airbyte_cdk.sources.streams.concurrent.error_message_parser import ErrorMessageParser
+from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
@@ -70,7 +70,6 @@ class StreamFacade(Stream):
                 availability_strategy=LegacyAvailabilityStrategy(stream, source),
                 primary_key=pk,
                 cursor_field=cursor_field,
-                error_display_message_parser=LegacyErrorMessageParser(stream),
                 slice_logger=source._slice_logger,
                 message_repository=message_repository,
                 logger=logger,
@@ -184,12 +183,15 @@ class StreamFacade(Stream):
         Retrieves the user-friendly display message that corresponds to an exception.
         This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
 
-        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
+        A display message will be returned if the exception is an instance of ExceptionWithDisplayMessage.
 
         :param exception: The exception that was raised
         :return: A user-friendly message that indicates the cause of the error
         """
-        return self._stream.get_error_display_message(exception)
+        if isinstance(exception, ExceptionWithDisplayMessage):
+            return exception.display_message
+        else:
+            return None
 
     def as_airbyte_stream(self) -> AirbyteStream:
         return self._stream.as_airbyte_stream()
@@ -224,11 +226,19 @@ class LegacyPartition(Partition):
         If the StreamData is a Mapping, it will be converted to a Record.
         Otherwise, the message will be emitted on the message repository.
         """
-        for record_data in self._stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=copy.deepcopy(self._slice)):
-            if isinstance(record_data, Mapping):
-                yield Record(record_data)
+        try:
+            for record_data in self._stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=copy.deepcopy(self._slice)):
+                if isinstance(record_data, Mapping):
+                    yield Record(record_data)
+                else:
+                    self._message_repository.emit_message(record_data)
+        except Exception as e:
+            display_message = self._stream.get_error_display_message(e)
+            print(f"display_message: {display_message}")
+            if display_message:
+                raise ExceptionWithDisplayMessage(display_message) from e
             else:
-                self._message_repository.emit_message(record_data)
+                raise e
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         return self._slice
@@ -264,28 +274,6 @@ class LegacyPartitionGenerator(PartitionGenerator):
     def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
         for s in self._stream.stream_slices(sync_mode=sync_mode):
             yield LegacyPartition(self._stream, copy.deepcopy(s), self.message_repository)
-
-
-@deprecated("This class is experimental. Use at your own risk.")
-class LegacyErrorMessageParser(ErrorMessageParser):
-    """
-    This class acts as an adapter between the new ErrorMessageParser interface and the legacy Stream interface
-
-    This class can be used to help enable concurrency on existing connectors without having to rewrite everything as AbstractStream.
-    In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
-    """
-
-    def __init__(self, stream: Stream):
-        """
-        :param stream: The stream to delegate to
-        """
-        self._stream = stream
-
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        """
-        Always delegate to the stream's get_error_display_message method.
-        """
-        return self._stream.get_error_display_message(exception)
 
 
 @deprecated("This class is experimental. Use at your own risk.")
@@ -328,8 +316,15 @@ class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
         self._source = source
 
     def check_availability(self, logger: logging.Logger) -> StreamAvailability:
-        available, message = self._stream.check_availability(logger, self._source)
-        if available:
-            return StreamAvailable()
-        else:
-            return StreamUnavailable(message)
+        try:
+            available, message = self._stream.check_availability(logger, self._source)
+            if available:
+                return StreamAvailable()
+            else:
+                return StreamUnavailable(message)
+        except Exception as e:
+            display_message = self._stream.get_error_display_message(e)
+            if display_message:
+                raise ExceptionWithDisplayMessage(display_message)
+            else:
+                raise e
