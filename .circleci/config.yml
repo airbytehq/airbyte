@@ -121,7 +121,7 @@ workflows:
           context: VOODOO_INFRA_TOOLS
           create-repo: false
           no-output-timeout: 20m
-          repo: "data-core/vgp-data-airbyte-googleads"
+          repo: "data-core/vgp-data-airbyte-google-ads"
           tag: << pipeline.git.revision >>
           skip-when-tags-exist: true
           requires:
