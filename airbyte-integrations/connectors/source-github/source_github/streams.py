@@ -663,7 +663,9 @@ class Commits(IncrementalMixin, GithubStream):
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalMixin, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        params["since"] = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        since = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        if since:
+            params["since"] = since
         params["sha"] = stream_slice["branch"]
         return params
 
