@@ -294,9 +294,7 @@ class SourceAppsflyer(AbstractSource):
             app_id = config["app_id"]
             api_token = config["api_token"]
             dates = pendulum.now("UTC").to_date_string()
-            test_url = (
-                f"https://hq1.appsflyer.com/api/agg-data/export/app/{app_id}/daily_report/v5?from={dates}&to={dates}&timezone=UTC"
-            )
+            test_url = f"https://hq1.appsflyer.com/api/agg-data/export/app/{app_id}/daily_report/v5?from={dates}&to={dates}&timezone=UTC"
             headersList = {
                 "authorization": f"Bearer {api_token}",
                 "accept": "text/csv",
