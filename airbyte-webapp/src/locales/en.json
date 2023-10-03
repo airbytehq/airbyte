@@ -303,6 +303,7 @@
   "syncMode.full_refresh": "Full refresh",
   "syncMode.incremental": "Incremental",
   "connection.resetModalTitle": "Stream Configuration Changed",
+  "connection.sync.error": "Your free trial has expired. Sync won't run for the connection",
   "connection.streamResetHint": "Due to changes in the stream configuration, we recommend a data reset. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping the reset is discouraged and might lead to unexpected behavior.",
   "connection.streamFullResetHint": "Due to changes in the stream configuration, we recommend a data reset. A reset will delete data in the destination of the affected streams and then re-sync that data. Skipping the reset is discouraged and might lead to unexpected behavior.",
   "connection.saveWithReset": "Reset affected streams (recommended)",
