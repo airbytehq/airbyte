@@ -403,6 +403,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 |---------| --------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
+| 1.4.3   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Add --version and version check                                                                           |
 | 1.4.2   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Remove directory name requirement                                                                         |
 | 1.4.1   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Load base migration guide into QA Test container for strict encrypt variants                              |
 | 1.4.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330) | Add support for pyproject.toml as the prefered entry point for a connector package                        |
