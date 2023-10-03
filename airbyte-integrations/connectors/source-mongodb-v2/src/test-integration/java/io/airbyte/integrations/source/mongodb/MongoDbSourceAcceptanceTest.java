@@ -183,6 +183,7 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     final List<Field> fields = List.of(
+        Field.of(DOCUMENT_ID_FIELD, JsonSchemaType.STRING),
         Field.of(ID_FIELD, JsonSchemaType.STRING),
         Field.of(NAME_FIELD, JsonSchemaType.STRING),
         Field.of(TEST_FIELD, JsonSchemaType.STRING),
