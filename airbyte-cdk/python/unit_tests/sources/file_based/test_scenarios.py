@@ -21,6 +21,17 @@ from unit_tests.sources.file_based.scenarios.avro_scenarios import (
     avro_file_with_double_as_number_scenario,
     multiple_avro_combine_schema_scenario,
     multiple_streams_avro_scenario,
+    single_avro_scenario,
+)
+from unit_tests.sources.file_based.scenarios.check_scenarios import (
+    error_empty_stream_scenario,
+    error_listing_files_scenario,
+    error_multi_stream_scenario,
+    error_reading_file_scenario,
+    error_record_validation_user_provided_schema_scenario,
+    success_extensionless_scenario,
+    success_multi_stream_scenario,
+    success_user_provided_schema_scenario,
 )
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 
@@ -206,19 +217,19 @@ def test_spec(capsys: CaptureFixture[str], scenario: TestScenario) -> None:
 
 
 check_scenarios = [
-    # error_empty_stream_scenario,
-    # error_listing_files_scenario,
-    # error_reading_file_scenario,
-    # error_record_validation_user_provided_schema_scenario,
-    # error_multi_stream_scenario,
+    error_empty_stream_scenario,
+    error_listing_files_scenario,
+    error_reading_file_scenario,
+    error_record_validation_user_provided_schema_scenario,
+    error_multi_stream_scenario,
     # success_csv_scenario,
-    # success_extensionless_scenario,
-    # success_multi_stream_scenario,
-    # success_user_provided_schema_scenario,
+    success_extensionless_scenario,
+    success_multi_stream_scenario,
+    success_user_provided_schema_scenario,
     # schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     # schemaless_with_user_input_schema_fails_connection_check_scenario,
     # valid_single_stream_user_input_schema_scenario,
-    # single_avro_scenario,
+    single_avro_scenario,
     # earlier_csv_scenario,
 ]
 

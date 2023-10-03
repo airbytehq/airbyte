@@ -146,6 +146,9 @@ class FileBasedSourceBuilder:
         self._cursor_cls = cursor_cls
         return self
 
+    def copy(self) -> "FileBasedSourceBuilder":
+        return deepcopy(self)
+
 
 class TestScenarioBuilder:
     def __init__(self) -> None:
@@ -160,7 +163,7 @@ class TestScenarioBuilder:
         self._expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
-        self._source_builder = None
+        self.source_builder = None
 
     def set_name(self, name: str) -> "TestScenarioBuilder":
         self._name = name
@@ -211,16 +214,16 @@ class TestScenarioBuilder:
         return self
 
     def set_source_builder(self, source_builder):
-        self._source_builder = source_builder
+        self.source_builder = source_builder
         return self
 
     def copy(self) -> "TestScenarioBuilder":
         return deepcopy(self)
 
     def build(self) -> TestScenario:
-        if self._source_builder is None:
+        if self.source_builder is None:
             raise ValueError("source_builder is not set")
-        source = self._source_builder.build(
+        source = self.source_builder.build(
             self._configured_catalog(SyncMode.incremental if self._incremental_scenario_config else SyncMode.full_refresh)
         )
         return TestScenario(
