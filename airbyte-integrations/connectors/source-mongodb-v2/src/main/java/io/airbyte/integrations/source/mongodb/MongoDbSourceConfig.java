@@ -37,7 +37,7 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
     if (rawConfig.has(DATABASE_CONFIG_CONFIGURATION_KEY)) {
       this.rawConfig = rawConfig.get(DATABASE_CONFIG_CONFIGURATION_KEY);
     } else {
-      throw new IllegalArgumentException("Database configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + " property.");
+      throw new IllegalArgumentException("Database configuration is missing required '" + DATABASE_CONFIG_CONFIGURATION_KEY + "' property.");
     }
   }
 
