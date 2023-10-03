@@ -24,6 +24,7 @@ DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE = (
 )
 ARGS_DISABLING_TUI = ["--no-tui", "publish", "--version"]
 
+
 def get_dagger_path() -> Optional[str]:
     try:
         return (
@@ -84,6 +85,7 @@ def check_dagger_cli_install() -> str:
         install_dagger_cli(expected_dagger_cli_version)
         return check_dagger_cli_install()
     return dagger_path
+
 
 def main():
     os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]

@@ -4,11 +4,12 @@
 
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
-from typing import List
-import os
-import click
 import importlib
+import os
 import subprocess
+from typing import List
+
+import click
 from github import PullRequest
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
@@ -30,6 +31,7 @@ from .groups.tests import test
 # HELPERS
 
 __installed_version__ = importlib.metadata.version("pipelines")
+
 
 def check_up_to_date() -> bool:
     """Check if the installed version of pipelines is up to date."""
@@ -77,6 +79,7 @@ def get_modified_files(
         else:
             return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
     return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
+
 
 # COMMANDS
 
