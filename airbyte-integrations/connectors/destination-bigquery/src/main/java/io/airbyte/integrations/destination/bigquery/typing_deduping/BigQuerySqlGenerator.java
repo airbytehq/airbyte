@@ -237,8 +237,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .map(column -> String.join(
             " ",
             column.getKey().name(QUOTE),
-            toDialectType(column.getValue()).name(), pks.contains(column.getKey().name()) ? "NOT NULL" : ""
-        )).collect(joining(",\n"));
+            toDialectType(column.getValue()).name(), pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
+        .collect(joining(",\n"));
   }
 
   @Override
