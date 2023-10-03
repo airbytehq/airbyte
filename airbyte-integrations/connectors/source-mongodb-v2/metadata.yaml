@@ -17,7 +17,7 @@ data:
       enabled: true
     oss:
       enabled: true
-  releaseStage: general_availability
+  releaseStage: generally_available
   supportLevel: certified
   tags:
     - language:java
