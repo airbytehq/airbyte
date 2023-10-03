@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import pytest
 from airbyte_cdk.models import SyncMode
 from source_stock_ticker_api_cdk.source import StockPrices
 
@@ -35,18 +34,3 @@ def test_stream_checkpoint_interval(patch_base_class, config):
     stream = StockPrices(config)
     expected_checkpoint_interval = None
     assert stream.state_checkpoint_interval == expected_checkpoint_interval
-
-
-@pytest.mark.parametrize(
-    ("current_stream_state", "latest_record", "expected_date"),
-    [
-        ({"date": "2023-09-21"}, {"date": "2023-09-22", "stock_ticker": "TCKR", "price": 111.11}, "2023-09-22"),
-        ({"date": "2023-09-22"}, {"date": "2023-09-21", "stock_ticker": "TCKR", "price": 111.11}, "2023-09-22"),
-        ({}, {"date": "2023-09-22", "stock_ticker": "TCKR", "price": 111.11}, "2023-09-22"),
-    ]
-)
-def test_get_updated_state(patch_base_class, config, current_stream_state, latest_record, expected_date):
-    stream = StockPrices(config)
-    inputs = {"current_stream_state": current_stream_state, "latest_record": latest_record}
-    expected_state = {"date": expected_date}
-    assert stream.get_updated_state(**inputs) == expected_state

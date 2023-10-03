@@ -1,5 +1,13 @@
-{
-  "stock_prices": {
-    "date": "2121-01-01"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date": "2121-01-01"
+      },
+      "stream_descriptor": {
+        "name": "stock_prices"
+      }
+    }
   }
-}
+]

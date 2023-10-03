@@ -20,6 +20,7 @@ class StockPrices(HttpStream, IncrementalMixin):
     url_base = "https://api.polygon.io/v2/"
     primary_key = "date"
     cursor_field = "date"
+    raise_on_http_errors: bool = True
 
     def __init__(self, config: Mapping[str, Any], **kwargs) -> None:
         super().__init__(**kwargs)
@@ -29,12 +30,7 @@ class StockPrices(HttpStream, IncrementalMixin):
         self.end_date: str = config["end_date"]
         self.multiplier: int = config["multiplier"]
         self.timespan: str = config["timespan"]
-        self._raise_on_http_errors: bool = True
         self._cursor_value: Optional[str] = None
-
-    @property
-    def raise_on_http_errors(self) -> bool:
-        return self._raise_on_http_errors
 
     def next_page_token(self, response: Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -83,17 +79,9 @@ class StockPrices(HttpStream, IncrementalMixin):
     def should_retry(self, response: Response) -> bool:
         if response.status_code in (HTTPStatus.FORBIDDEN, HTTPStatus.UNPROCESSABLE_ENTITY, HTTPStatus.BAD_REQUEST):
             self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
-            self._raise_on_http_errors = False
+            setattr(self, "raise_on_http_errors", False)
             return False
         return super().should_retry(response)
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        return {
-            self.cursor_field: max(
-                current_stream_state.get(self.cursor_field, self.start_date),
-                latest_record.get(self.cursor_field, self.start_date),
-            )
-        }
 
 
 class SourceStockTickerApiCDK(AbstractSource):
