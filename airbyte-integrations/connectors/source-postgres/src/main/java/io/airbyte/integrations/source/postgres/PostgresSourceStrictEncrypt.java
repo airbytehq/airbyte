@@ -1,6 +1,10 @@
-package io.airbyte.integrations.source.postgres;/*
+/*
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
+
+package io.airbyte.integrations.source.postgres;/*
+                                                 * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+                                                 */
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;

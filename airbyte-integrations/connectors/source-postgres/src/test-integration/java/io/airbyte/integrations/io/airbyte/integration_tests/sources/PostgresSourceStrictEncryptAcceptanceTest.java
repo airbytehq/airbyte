@@ -134,9 +134,9 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME, SCHEMA_NAME,
-                    Field.of("id", JsonSchemaType.NUMBER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME, SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
         new ConfiguredAirbyteStream()
@@ -144,9 +144,9 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME2, SCHEMA_NAME,
-                    Field.of("id", JsonSchemaType.NUMBER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME2, SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
                 .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
   }

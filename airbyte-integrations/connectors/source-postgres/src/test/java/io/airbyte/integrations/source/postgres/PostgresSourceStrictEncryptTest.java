@@ -133,8 +133,8 @@ public class PostgresSourceStrictEncryptTest {
   }
 
   private ImmutableMap.Builder<Object, Object> getDatabaseConfigBuilderWithSSLMode(final PostgreSQLContainer<?> db,
-      final String sslMode,
-      final boolean innerAddress) {
+                                                                                   final String sslMode,
+                                                                                   final boolean innerAddress) {
     final var containerAddress = innerAddress ? SshHelpers.getInnerContainerAddress(db) : SshHelpers.getOuterContainerAddress(db);
     return ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(
