@@ -3,7 +3,8 @@ version: "0.29.0"
 definitions:
   selector:
     extractor:
-      field_path: ["data"]
+      field_path: []
+      # ["includes", "users"] [ "data" ]
   requester:
     url_base: "https://api.twitter.com/2/tweets"
     http_method: "GET"
@@ -14,6 +15,8 @@ definitions:
     request_parameters:
       query: "{{ config['query'] }}"
       tweet.fields: "attachments,author_id,context_annotations,conversation_id,created_at,edit_controls,entities,geo,in_reply_to_user_id,lang,possibly_sensitive,referenced_tweets,reply_settings,source,withheld"
+      user.fields: "created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,verified_type,withheld"
+      expansions: "author_id"
   retriever:
     record_selector:
       $ref: "#/definitions/selector"
@@ -35,8 +38,6 @@ definitions:
       $ref: "#/definitions/requester"
 
   base_stream:
-    retriever:
-      $ref: "#/definitions/retriever"
     incremental_sync:
       type: DatetimeBasedCursor
       datetime_format: "%Y-%m-%dT%H:%M:%S.000Z"
@@ -62,10 +63,30 @@ definitions:
       path: "/search/recent"
       cursor_field: "created_at"
       primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        extractor:
+          field_path: [ "data" ]
+
+  authors_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "authors"
+      path: "/search/recent"
+      cursor_field: "created_at"
+      primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        extractor:
+          field_path: [ "includes", "users" ]
 
 streams:
   - "#/definitions/tweets_stream"
+  - "#/definitions/authors_stream"
 
 check:
   stream_names:
     - "tweets"
+    - "authors"

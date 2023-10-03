@@ -2,28 +2,16 @@
   "$schema" : "http://json-schema.org/draft-07/schema#",
   "type" : "object",
   "properties" : {
-    "attachments" : {
-      "type" : [
-        "null",
-        "object"
-      ]
-    },
-    "author_id" : {
+    "id" : {
       "type" : [
         "null",
         "string"
       ]
     },
-    "context_annotations" : {
+    "public_metrics" : {
       "type" : [
         "null",
         "object"
-      ]
-    },
-    "conversation_id" : {
-      "type" : [
-        "null",
-        "string"
       ]
     },
     "created_at" : {
@@ -33,20 +21,53 @@
       ],
       "format" : "date-time"
     },
-    "edit_controls" : {
+    "name" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "location" : {
       "type" : [
         "null",
         "object"
       ]
     },
-    "edit_history_tweet_ids" : {
+    "pinned_tweet_id" : {
       "type" : [
         "null",
-        "array"
-      ],
-      "items" : {
-        "type" : "string"
-      }
+        "string"
+      ]
+    },
+    "profile_image_url" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "username" : {
+      "type" : [
+        "null",
+        "object"
+      ]
+    },
+    "verified_type" : {
+      "type" : [
+        "null",
+        "object"
+      ]
+    },
+    "verified" : {
+      "type" : [
+        "null",
+        "object"
+      ]
+    },
+    "url" : {
+      "type" : [
+        "null",
+        "object"
+      ]
     },
     "entities" : {
       "type" : [
@@ -54,70 +75,16 @@
         "object"
       ]
     },
-    "geo" : {
+    "description" : {
       "type" : [
         "null",
         "string"
       ]
     },
-    "id" : {
+    "protected" : {
       "type" : [
         "null",
         "string"
-      ]
-    },
-    "in_reply_to_user_id" : {
-      "type" : [
-        "null",
-        "string"
-      ]
-    },
-    "lang" : {
-      "type" : [
-        "null",
-        "string"
-      ]
-    },
-    "possibly_sensitive" : {
-      "type" : [
-        "null",
-        "string"
-      ]
-    },
-    "referenced_tweets" : {
-      "type" : [
-        "null",
-        "array"
-      ]
-    },
-    "reply_settings" : {
-      "type" : [
-        "null",
-        "string"
-      ]
-    },
-    "source" : {
-      "type" : [
-        "null",
-        "string"
-      ]
-    },
-    "text" : {
-      "type" : [
-        "null",
-        "string"
-      ]
-    },
-    "withheld" : {
-      "type" : [
-        "null",
-        "object"
-      ]
-    },
-    "users" : {
-      "type" : [
-        "null",
-        "object"
       ]
     }
   }
