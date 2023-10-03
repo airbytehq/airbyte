@@ -116,7 +116,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
       //if (Strings.isNullOrEmpty(message.getRecord().getNamespace())) {
         message.getRecord().setNamespace(defaultNamespace);
       //}
-      validateRecord(message);
+      // validateRecord(message);
     } else if (Type.STATE.equals(message.getType())) {
       lastState = message;
     }
