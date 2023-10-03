@@ -5,7 +5,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: [ "items" ]
+      field_path: [ "items", "data" ]
   requester:
     type: HttpRequester
     url_base: "https://api.getbase.com/v2"
@@ -199,7 +199,7 @@ check:
     - "deal_sources"
     - "deal_unqualified_reasons"
     - "deals"
-    - "lead_Conversions"
+    - "lead_conversions"
     - "lead_sources"
     - "lead_unqualified_reasons"
     - "leads"
