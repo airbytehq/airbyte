@@ -113,10 +113,10 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
      */
     final var message = deserializeAirbyteMessage(messageString);
     if (Type.RECORD.equals(message.getType())) {
-      //if (Strings.isNullOrEmpty(message.getRecord().getNamespace())) {
+      if (Strings.isNullOrEmpty(message.getRecord().getNamespace())) {
         message.getRecord().setNamespace(defaultNamespace);
-      //}
-      // validateRecord(message);
+      }
+      validateRecord(message);
     } else if (Type.STATE.equals(message.getType())) {
       lastState = message;
     }
