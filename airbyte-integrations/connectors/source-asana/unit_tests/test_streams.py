@@ -7,12 +7,12 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests_mock as req_mock
 from airbyte_cdk.models import SyncMode
-from source_asana.streams import AsanaStream, Sections, Stories, Tags, Tasks, TeamMemberships, Users
+from source_asana.streams import AsanaStream, SectionsCompact, Sections, Stories, Tags, Tasks, TeamMemberships, Users
 
 
 @pytest.mark.parametrize(
     "stream",
-    [Tasks, Sections, Users, TeamMemberships, Tags, Stories],
+    [Tasks, SectionsCompact, Sections, Users, TeamMemberships, Tags, Stories],
 )
 def test_task_stream(requests_mock, stream, mock_response):
     requests_mock.get(req_mock.ANY, json=mock_response)

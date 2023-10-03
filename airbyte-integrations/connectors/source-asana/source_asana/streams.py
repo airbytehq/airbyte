@@ -132,7 +132,7 @@ class WorkspaceRequestParamsRelatedStream(WorkspaceRelatedStream, ABC):
 
 class ProjectRelatedStream(AsanaStream, ABC):
     """
-    Few streams (Sections and Tasks) depends on `project gid`: Sections as a part of url and Tasks as `projects`
+    Few streams (SectionsCompact and Tasks) depends on `project gid`: SectionsCompact as a part of url and Tasks as `projects`
     argument in request.
     """
 
@@ -153,11 +153,18 @@ class Projects(WorkspaceRequestParamsRelatedStream):
         return "projects"
 
 
-class Sections(ProjectRelatedStream):
+class SectionsCompact(ProjectRelatedStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         project_gid = stream_slice["project_gid"]
         return f"projects/{project_gid}/sections"
 
+class Section(AsanaStream):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        section_gid = stream_slice["section_gid"]
+        return f"sections/{section_gid}"
+    
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.read_slices_from_records(stream_class=SectionsCompact, slice_field="section_gid")
 
 class Stories(AsanaStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
