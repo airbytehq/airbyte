@@ -12,7 +12,7 @@ RUN apk --no-cache upgrade \
 
 COPY setup.py ./
 # install necessary packages to a temporary folder
-RUN pip install --prefix=/install .
+RUN echo "Cython<3" > cython_constraint.txt && PIP_CONSTRAINT=cython_constraint.txt pip install --prefix=/install .
 
 # build a clean environment
 FROM base
@@ -34,5 +34,5 @@ COPY source_walmart ./source_walmart
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.1.2
 LABEL io.airbyte.name=yuanrui2014/source-walmart
