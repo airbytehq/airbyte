@@ -84,7 +84,7 @@ export interface SetWorkflowInAttemptRequestBody {
   workflowId: WorkflowId;
 }
 
-export type UploadReadStatus = typeof UploadReadStatus[keyof typeof UploadReadStatus];
+export type UploadReadStatus = (typeof UploadReadStatus)[keyof typeof UploadReadStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const UploadReadStatus = {
@@ -104,7 +104,7 @@ export interface UploadRead {
   resourceId?: ResourceId;
 }
 
-export type ImportReadStatus = typeof ImportReadStatus[keyof typeof ImportReadStatus];
+export type ImportReadStatus = (typeof ImportReadStatus)[keyof typeof ImportReadStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ImportReadStatus = {
@@ -122,7 +122,7 @@ export interface ImportRead {
  */
 export type AirbyteArchive = Blob;
 
-export type DestinationSyncMode = typeof DestinationSyncMode[keyof typeof DestinationSyncMode];
+export type DestinationSyncMode = (typeof DestinationSyncMode)[keyof typeof DestinationSyncMode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DestinationSyncMode = {
@@ -131,7 +131,7 @@ export const DestinationSyncMode = {
   append_dedup: "append_dedup",
 } as const;
 
-export type SyncMode = typeof SyncMode[keyof typeof SyncMode];
+export type SyncMode = (typeof SyncMode)[keyof typeof SyncMode];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const SyncMode = {
@@ -224,7 +224,7 @@ export interface OAuthConsentRead {
   consentUrl: string;
 }
 
-export type AdvancedAuthAuthFlowType = typeof AdvancedAuthAuthFlowType[keyof typeof AdvancedAuthAuthFlowType];
+export type AdvancedAuthAuthFlowType = (typeof AdvancedAuthAuthFlowType)[keyof typeof AdvancedAuthAuthFlowType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AdvancedAuthAuthFlowType = {
@@ -343,7 +343,7 @@ export interface SourceOauthConsentRequest {
   oAuthInputConfiguration?: OAuthInputConfiguration;
 }
 
-export type DbMigrationState = typeof DbMigrationState[keyof typeof DbMigrationState];
+export type DbMigrationState = (typeof DbMigrationState)[keyof typeof DbMigrationState];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DbMigrationState = {
@@ -399,7 +399,7 @@ export interface ResourceRequirements {
 /**
  * enum that describes the different types of jobs that the platform runs.
  */
-export type JobType = typeof JobType[keyof typeof JobType];
+export type JobType = (typeof JobType)[keyof typeof JobType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const JobType = {
@@ -453,7 +453,8 @@ export interface FieldAdd {
   schema?: FieldSchema;
 }
 
-export type FieldTransformTransformType = typeof FieldTransformTransformType[keyof typeof FieldTransformTransformType];
+export type FieldTransformTransformType =
+  (typeof FieldTransformTransformType)[keyof typeof FieldTransformTransformType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const FieldTransformTransformType = {
@@ -474,7 +475,7 @@ export interface FieldTransform {
 }
 
 export type StreamTransformTransformType =
-  typeof StreamTransformTransformType[keyof typeof StreamTransformTransformType];
+  (typeof StreamTransformTransformType)[keyof typeof StreamTransformTransformType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const StreamTransformTransformType = {
@@ -498,7 +499,7 @@ export interface CatalogDiff {
   transforms: StreamTransform[];
 }
 
-export type ConnectionStateType = typeof ConnectionStateType[keyof typeof ConnectionStateType];
+export type ConnectionStateType = (typeof ConnectionStateType)[keyof typeof ConnectionStateType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ConnectionStateType = {
@@ -533,7 +534,7 @@ export interface ConnectionState {
   globalState?: GlobalState;
 }
 
-export type CheckConnectionReadStatus = typeof CheckConnectionReadStatus[keyof typeof CheckConnectionReadStatus];
+export type CheckConnectionReadStatus = (typeof CheckConnectionReadStatus)[keyof typeof CheckConnectionReadStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const CheckConnectionReadStatus = {
@@ -597,7 +598,7 @@ export interface JobInfoRead {
   attempts: AttemptInfoRead[];
 }
 
-export type AttemptStatus = typeof AttemptStatus[keyof typeof AttemptStatus];
+export type AttemptStatus = (typeof AttemptStatus)[keyof typeof AttemptStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AttemptStatus = {
@@ -609,7 +610,7 @@ export const AttemptStatus = {
 /**
  * Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
  */
-export type AttemptFailureType = typeof AttemptFailureType[keyof typeof AttemptFailureType];
+export type AttemptFailureType = (typeof AttemptFailureType)[keyof typeof AttemptFailureType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AttemptFailureType = {
@@ -621,7 +622,7 @@ export const AttemptFailureType = {
 /**
  * Indicates where the error originated. If not set, the origin of error is not well known.
  */
-export type AttemptFailureOrigin = typeof AttemptFailureOrigin[keyof typeof AttemptFailureOrigin];
+export type AttemptFailureOrigin = (typeof AttemptFailureOrigin)[keyof typeof AttemptFailureOrigin];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AttemptFailureOrigin = {
@@ -676,7 +677,7 @@ export interface AttemptRead {
   failureSummary?: AttemptFailureSummary;
 }
 
-export type JobStatus = typeof JobStatus[keyof typeof JobStatus];
+export type JobStatus = (typeof JobStatus)[keyof typeof JobStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const JobStatus = {
@@ -700,7 +701,7 @@ export interface ResetConfig {
   streamsToReset?: StreamDescriptor[];
 }
 
-export type JobConfigType = typeof JobConfigType[keyof typeof JobConfigType];
+export type JobConfigType = (typeof JobConfigType)[keyof typeof JobConfigType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const JobConfigType = {
@@ -757,7 +758,7 @@ export interface JobListRequestBody {
   pagination?: Pagination;
 }
 
-export type DataType = typeof DataType[keyof typeof DataType];
+export type DataType = (typeof DataType)[keyof typeof DataType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const DataType = {
@@ -826,7 +827,7 @@ export interface AirbyteCatalog {
 /**
  * type/source of logs produced
  */
-export type LogType = typeof LogType[keyof typeof LogType];
+export type LogType = (typeof LogType)[keyof typeof LogType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LogType = {
@@ -838,7 +839,7 @@ export interface LogsRequestBody {
   logType: LogType;
 }
 
-export type CheckOperationReadStatus = typeof CheckOperationReadStatus[keyof typeof CheckOperationReadStatus];
+export type CheckOperationReadStatus = (typeof CheckOperationReadStatus)[keyof typeof CheckOperationReadStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const CheckOperationReadStatus = {
@@ -858,7 +859,8 @@ export interface OperatorDbt {
   dbtArguments?: string;
 }
 
-export type OperatorNormalizationOption = typeof OperatorNormalizationOption[keyof typeof OperatorNormalizationOption];
+export type OperatorNormalizationOption =
+  (typeof OperatorNormalizationOption)[keyof typeof OperatorNormalizationOption];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OperatorNormalizationOption = {
@@ -869,7 +871,7 @@ export interface OperatorNormalization {
   option?: OperatorNormalizationOption;
 }
 
-export type OperatorType = typeof OperatorType[keyof typeof OperatorType];
+export type OperatorType = (typeof OperatorType)[keyof typeof OperatorType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const OperatorType = {
@@ -922,7 +924,7 @@ export interface OperationIdRequestBody {
 /**
  * Method used for computing final namespace in destination
  */
-export type NamespaceDefinitionType = typeof NamespaceDefinitionType[keyof typeof NamespaceDefinitionType];
+export type NamespaceDefinitionType = (typeof NamespaceDefinitionType)[keyof typeof NamespaceDefinitionType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const NamespaceDefinitionType = {
@@ -937,7 +939,7 @@ export type ConnectionScheduleDataCron = {
 };
 
 export type ConnectionScheduleDataBasicScheduleTimeUnit =
-  typeof ConnectionScheduleDataBasicScheduleTimeUnit[keyof typeof ConnectionScheduleDataBasicScheduleTimeUnit];
+  (typeof ConnectionScheduleDataBasicScheduleTimeUnit)[keyof typeof ConnectionScheduleDataBasicScheduleTimeUnit];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ConnectionScheduleDataBasicScheduleTimeUnit = {
@@ -964,7 +966,7 @@ export interface ConnectionScheduleData {
 /**
  * determine how the schedule data should be interpreted
  */
-export type ConnectionScheduleType = typeof ConnectionScheduleType[keyof typeof ConnectionScheduleType];
+export type ConnectionScheduleType = (typeof ConnectionScheduleType)[keyof typeof ConnectionScheduleType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ConnectionScheduleType = {
@@ -973,7 +975,7 @@ export const ConnectionScheduleType = {
   cron: "cron",
 } as const;
 
-export type ConnectionScheduleTimeUnit = typeof ConnectionScheduleTimeUnit[keyof typeof ConnectionScheduleTimeUnit];
+export type ConnectionScheduleTimeUnit = (typeof ConnectionScheduleTimeUnit)[keyof typeof ConnectionScheduleTimeUnit];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ConnectionScheduleTimeUnit = {
@@ -995,7 +997,7 @@ export interface ConnectionSchedule {
 /**
  * Active means that data is flowing through the connection. Inactive means it is not. Deprecated means the connection is off and cannot be re-activated. the schema field describes the elements of the schema that will be synced.
  */
-export type ConnectionStatus = typeof ConnectionStatus[keyof typeof ConnectionStatus];
+export type ConnectionStatus = (typeof ConnectionStatus)[keyof typeof ConnectionStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ConnectionStatus = {
@@ -1124,7 +1126,7 @@ export interface ConnectionIdRequestBody {
   connectionId: ConnectionId;
 }
 
-export type ReleaseStage = typeof ReleaseStage[keyof typeof ReleaseStage];
+export type ReleaseStage = (typeof ReleaseStage)[keyof typeof ReleaseStage];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const ReleaseStage = {
@@ -1414,7 +1416,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
   oauthFlowOutputParameters: string[][];
 }
 
-export type AuthSpecificationAuthType = typeof AuthSpecificationAuthType[keyof typeof AuthSpecificationAuthType];
+export type AuthSpecificationAuthType = (typeof AuthSpecificationAuthType)[keyof typeof AuthSpecificationAuthType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const AuthSpecificationAuthType = {
@@ -1454,7 +1456,7 @@ export interface PrivateSourceDefinitionReadList {
 }
 
 export type SourceDefinitionReadSourceType =
-  typeof SourceDefinitionReadSourceType[keyof typeof SourceDefinitionReadSourceType];
+  (typeof SourceDefinitionReadSourceType)[keyof typeof SourceDefinitionReadSourceType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const SourceDefinitionReadSourceType = {
@@ -1581,7 +1583,7 @@ export interface WorkspaceIdRequestBody {
   workspaceId: WorkspaceId;
 }
 
-export type NotificationReadStatus = typeof NotificationReadStatus[keyof typeof NotificationReadStatus];
+export type NotificationReadStatus = (typeof NotificationReadStatus)[keyof typeof NotificationReadStatus];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const NotificationReadStatus = {
@@ -1594,7 +1596,7 @@ export interface NotificationRead {
   message?: string;
 }
 
-export type NotificationType = typeof NotificationType[keyof typeof NotificationType];
+export type NotificationType = (typeof NotificationType)[keyof typeof NotificationType];
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const NotificationType = {
@@ -3241,7 +3243,12 @@ export const webBackendGetWorkspaceState = (
  */
 export const listJobsFor = (jobListRequestBody: JobListRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<JobReadList>(
-    { url: `/etl/jobs/list`, method: "post", headers: { "Content-Type": "application/json" }, data: jobListRequestBody },
+    {
+      url: `/etl/jobs/list`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: jobListRequestBody,
+    },
     options
   );
 };
@@ -3276,7 +3283,12 @@ export const getJobInfoLight = (jobIdRequestBody: JobIdRequestBody, options?: Se
  */
 export const cancelJob = (jobIdRequestBody: JobIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<JobInfoRead>(
-    { url: `/etl/jobs/cancel`, method: "post", headers: { "Content-Type": "application/json" }, data: jobIdRequestBody },
+    {
+      url: `/etl/jobs/cancel`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: jobIdRequestBody,
+    },
     options
   );
 };

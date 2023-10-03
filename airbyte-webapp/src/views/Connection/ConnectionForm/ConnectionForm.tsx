@@ -210,6 +210,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   );
 
   const errorMessage = submitError ? generateMessageFromError(submitError) : null;
+
   const frequencies = useFrequencyDropdownData(connection.scheduleData);
 
   return (
@@ -279,7 +280,12 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                     <DropDown
                       {...field}
                       error={!!meta.error && meta.touched}
-                      options={frequencies}
+                      // options={frequencies}
+                      options={[
+                        // Include the "Manual" option in the dropdown
+                        { value: ConnectionScheduleType.manual, label: "Manual" },
+                        ...frequencies,
+                      ]}
                       onChange={(item) => {
                         onDropDownSelect?.(item);
                         setFieldValue(field.name, item.value);

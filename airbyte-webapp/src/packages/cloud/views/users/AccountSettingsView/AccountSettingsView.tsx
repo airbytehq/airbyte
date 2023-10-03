@@ -19,6 +19,10 @@ const Header = styled.div`
 const AccountSettingsView: React.FC = () => {
   const authService = useAuthService();
   const { mutateAsync: logout, isLoading: isLoggingOut } = useMutation(() => authService.logout());
+  const logoutHandler = () => {
+    localStorage.clear();
+    logout();
+  };
 
   useTrackPage(PageTrackingCodes.SETTINGS_ACCOUNT);
   return (
@@ -31,7 +35,7 @@ const AccountSettingsView: React.FC = () => {
         title={
           <Header>
             <FormattedMessage id="settings.accountSettings.logoutLabel" />
-            <LoadingButton danger onClick={() => logout()} isLoading={isLoggingOut} data-testid="button.signout">
+            <LoadingButton danger onClick={logoutHandler} isLoading={isLoggingOut} data-testid="button.signout">
               <FormattedMessage id="settings.accountSettings.logoutText" />
             </LoadingButton>
           </Header>
