@@ -1288,6 +1288,7 @@ class ProjectCards(GithubStream):
     """
 
     cursor_field = "updated_at"
+    stream_base_params = {"archived_state": "all"}
 
     def __init__(self, parent: HttpStream, start_date: str, **kwargs):
         super().__init__(**kwargs)
