@@ -1,0 +1,232 @@
+{
+  "streams" : [
+    {
+      "stream" : {
+        "name" : "get_stat_trends_stream",
+        "json_schema" : {
+          "title" : "GetStatTrends",
+          "type" : "object",
+          "properties" : {
+            "comments" : {
+              "title" : "Comments",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "complaints" : {
+              "title" : "Complaints",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "content_opens" : {
+              "title" : "Content Opens",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "engagement" : {
+              "title" : "Engagement",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "feedback" : {
+              "title" : "Feedback",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "hides_from_feed" : {
+              "title" : "Hides From Feed",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "left_members" : {
+              "title" : "Left Members",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "likes" : {
+              "title" : "Likes",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "link_clicks" : {
+              "title" : "Link Clicks",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "members_count" : {
+              "title" : "Members Count",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "members_diff" : {
+              "title" : "Members Diff",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "music_plays" : {
+              "title" : "Music Plays",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "negatives" : {
+              "title" : "Negatives",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "new_members" : {
+              "title" : "New Members",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "new_members_target" : {
+              "title" : "New Members Target",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "page_visits" : {
+              "title" : "Page Visits",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "photo_opens" : {
+              "title" : "Photo Opens",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "reach" : {
+              "title" : "Reach",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "reach_earned" : {
+              "title" : "Reach Earned",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "reach_mob" : {
+              "title" : "Reach Mob",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "reach_mobweb" : {
+              "title" : "Reach Mobweb",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "reach_own" : {
+              "title" : "Reach Own",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "reach_web" : {
+              "title" : "Reach Web",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "renderings" : {
+              "title" : "Renderings",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "reshares" : {
+              "title" : "Reshares",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "topic_opens" : {
+              "title" : "Topic Opens",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "video_plays" : {
+              "title" : "Video Plays",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            },
+            "votes" : {
+              "title" : "Votes",
+              "type" : "array",
+              "items" : {
+                "$ref" : "#/definitions/StatData"
+              }
+            }
+          },
+          "definitions" : {
+            "StatData" : {
+              "title" : "StatData",
+              "type" : "object",
+              "properties" : {
+                "time" : {
+                  "title" : "Time",
+                  "type" : "integer"
+                },
+                "value" : {
+                  "title" : "Value",
+                  "type" : "integer"
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes" : [
+          "full_refresh"
+        ]
+      },
+      "sync_mode" : "full_refresh",
+      "destination_sync_mode" : "overwrite"
+    }
+  ]
+}

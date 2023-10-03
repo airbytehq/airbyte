@@ -1,0 +1,67 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Odnoklassniki Groups Spec
+  type: object
+  required:
+    - credentials
+    - gid
+  additionalProperties: false
+  properties:
+    credentials:
+      title: Authorization Method
+      type: object
+      oneOf:
+        - title: CredentialsCraft Auth
+          type: object
+          required:
+            - auth_type
+            - credentials_craft_host
+            - credentials_craft_token
+            - credentials_craft_odnoklassniki_token_id
+          properties:
+            auth_type:
+              title: Auth Type
+              type: string
+              const: credentials_craft_auth
+            credentials_craft_host:
+              title: CredentialsCraft Host
+              type: string
+              examples:
+                - https://credentialscraft.mysite.com
+            credentials_craft_token:
+              title: CredentialsCraft Bearer token
+              type: string
+              airbyte_secret: true
+              description: Bearer token for CredentialsCraft API
+            credentials_craft_odnoklassniki_token_id:
+              title: CredentialsCraft StaticToken ID
+              type: integer
+              description: StaticToken ID in CredentialsCraft for Odnoklassniki
+              examples:
+                - 100
+    gid:
+      title: Group ID
+      type: string
+      examples:
+        - 597307567859781
+    date_from:
+      title: Date from
+      type: string
+      description: "Start replication date in format YYYY-MM-DD"
+      pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      examples:
+        - 2023-08-01
+    date_to:
+      title: Date to
+      type: string
+      description: "End replication date in format YYYY-MM-DD"
+      pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+      examples:
+        - 2023-08-01
+    last_days:
+      title: Load last N days
+      type: integer
+      minimum: 1
+      examples:
+        - 7

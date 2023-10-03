@@ -94,7 +94,7 @@ class AdsStream(Stream, ABC):
             try:
                 response = requests.get("https://advert-api.wb.ru/adv/v0/adverts", headers=self.headers)
             except ChunkedEncodingError:
-                time.sleep(60)
+                time.sleep(20)
                 continue
             if response.status_code == 200:
                 if records := response.json():
@@ -104,12 +104,12 @@ class AdsStream(Stream, ABC):
             elif response.status_code == 204:
                 return
             elif response.status_code > 500:
-                time.sleep(60)
+                time.sleep(20)
                 continue
             elif response.status_code in (408, 429):
                 attempts_count += 1
                 if attempts_count < 3:
-                    time.sleep(60)  # Wait for Wildberries rate limits
+                    time.sleep(20)  # Wait for Wildberries rate limits
                 else:
                     raise Exception(f"Failed to get campaigns from Wildberries API after 3 attempts due to rate limits")
             else:
@@ -121,7 +121,7 @@ class AdsStream(Stream, ABC):
             try:
                 response = requests.get(self.url, headers=self.headers)
             except ChunkedEncodingError:
-                time.sleep(60)
+                time.sleep(20)
                 continue
             if response.status_code == 200:
                 try:
@@ -133,12 +133,12 @@ class AdsStream(Stream, ABC):
             elif response.status_code == 204:
                 return
             elif response.status_code > 500:
-                time.sleep(60)
+                time.sleep(20)
                 continue
             elif response.status_code in (408, 429):
                 attempts_count += 1
                 if attempts_count < 3:
-                    time.sleep(60)  # Wait for Wildberries rate limits
+                    time.sleep(20)  # Wait for Wildberries rate limits
                 else:
                     raise Exception(f"Failed to load data from Wildberries API after 3 attempts due to rate limits")
             else:
@@ -182,7 +182,7 @@ class AutoStatStream(AdsStream):
             try:
                 response = requests.get("https://advert-api.wb.ru/adv/v0/adverts", headers=self.headers)
             except ChunkedEncodingError:
-                time.sleep(60)
+                time.sleep(20)
                 continue
             if response.status_code == 200:
                 if records := response.json():
@@ -194,12 +194,12 @@ class AutoStatStream(AdsStream):
             elif response.status_code == 204:
                 return
             elif response.status_code > 500:
-                time.sleep(60)
+                time.sleep(20)
                 continue
             elif response.status_code in (408, 429):
                 attempts_count += 1
                 if attempts_count < 3:
-                    time.sleep(60)  # Wait for Wildberries rate limits
+                    time.sleep(20)  # Wait for Wildberries rate limits
                 else:
                     raise Exception(f"Failed to get auto campaigns from Wildberries API after 3 attempts due to rate limits")
             else:
@@ -242,7 +242,7 @@ class AdsCampaignStream(Stream):
             try:
                 response = requests.get(self.URL, headers=self.headers)
             except ChunkedEncodingError:
-                time.sleep(60)
+                time.sleep(20)
                 continue
             if response.status_code == 200:
                 if records := response.json():
@@ -252,12 +252,12 @@ class AdsCampaignStream(Stream):
             elif response.status_code == 204:
                 return
             elif response.status_code > 500:
-                time.sleep(60)
+                time.sleep(20)
                 continue
             elif response.status_code in (408, 429):
                 attempts_count += 1
                 if attempts_count < 3:
-                    time.sleep(60)  # Wait for Wildberries rate limits
+                    time.sleep(20)  # Wait for Wildberries rate limits
                 else:
                     raise Exception(f"Failed to load data from Wildberries API after 3 attempts due to rate limits")
             else:
@@ -300,7 +300,7 @@ class AdsCostHistoryStream(Stream):
             try:
                 response = requests.get(self.url, headers=self.headers)
             except ChunkedEncodingError:
-                time.sleep(60)
+                time.sleep(20)
                 continue
             if response.status_code == 200:
                 try:
@@ -313,12 +313,12 @@ class AdsCostHistoryStream(Stream):
             elif response.status_code == 204:
                 return
             elif response.status_code > 500:
-                time.sleep(60)
+                time.sleep(20)
                 continue
             elif response.status_code in (408, 429):
                 attempts_count += 1
                 if attempts_count < 3:
-                    time.sleep(60)  # Wait for Wildberries rate limits
+                    time.sleep(20)  # Wait for Wildberries rate limits
                 else:
                     raise Exception(f"Failed to load data from Wildberries API after 3 attempts due to rate limits")
             else:
