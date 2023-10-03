@@ -49,7 +49,6 @@ class DisplayTargeting(Targeting):
 
 
 class DisplayCreatives(CatalogModel):
-    name: str
     adGroupId: Decimal
     creativeId: Decimal
     creativeType: str
