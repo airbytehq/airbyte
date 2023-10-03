@@ -31,7 +31,6 @@ Create a [GitHub Account](https://github.com).
 Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
 <!-- /env:oss -->
 
-<!-- env:cloud -->
 ### Step 2: Set up the GitHub connector in Airbyte
 
 
@@ -41,10 +40,10 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 4. Click `Authenticate your GitHub account` by selecting Oauth or Personal Access Token for Authentication.
 5. To authenticate:
    <!-- env:cloud -->
-   **For Airbyte Cloud**: Click **Authenticate your account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
+-  **For Airbyte Cloud**: Click **Authenticate your account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
    <!-- /env:cloud -->
    <!-- env:oss -->
-   **For Airbyte Open Source**: Authenticate with **Personal Access Token**.
+-  **For Airbyte Open Source**: Authenticate with **Personal Access Token**.
    <!-- /env:oss -->
 6. **GitHub Repositories** - Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`. Repositories with the wrong name, or repositories that do not exist, or have the wrong name format are not allowed.
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. If the date is not set, all data will be replicated. Using for streams: `Comments`, `Commit comment reactions`, `Commit comments`, `Commits`, `Deployments`, `Events`, `Issue comment reactions`, `Issue events`, `Issue milestones`, `Issue reactions`, `Issues`, `Project cards`, `Project columns`, `Projects`, `Pull request comment reactions`, `Pull requests`, `Pull request stats`, `Releases`, `Review comments`, `Reviews`, `Stargazers`, `Workflow runs`, `Workflows`.
