@@ -146,6 +146,10 @@ class FileBasedSourceBuilder:
         self._cursor_cls = cursor_cls
         return self
 
+    def set_file_write_options(self, file_write_options: Mapping[str, Any]) -> "FileBasedSourceBuilder":
+        self._file_write_options = file_write_options
+        return self
+
     def copy(self) -> "FileBasedSourceBuilder":
         return deepcopy(self)
 
@@ -207,10 +211,6 @@ class TestScenarioBuilder:
 
     def set_expected_read_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder":
         self._expected_read_error = error, message
-        return self
-
-    def set_file_write_options(self, file_write_options: Mapping[str, Any]) -> "TestScenarioBuilder":
-        self._file_write_options = file_write_options
         return self
 
     def set_source_builder(self, source_builder):
