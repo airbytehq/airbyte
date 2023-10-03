@@ -434,3 +434,55 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## More info
 This project is owned by the Connectors Operations team.
 We share project updates and remaining stories before its release to production in this [EPIC](https://github.com/airbytehq/airbyte/issues/24403).
+
+# Troubleshooting
+## `airbyte-ci` is not found
+If you get the following error when running `airbyte-ci`:
+```bash
+$ airbyte-ci
+zsh: command not found: airbyte-ci
+```
+It means that the `airbyte-ci` command is not in your PATH.
+
+To fix this, you can either:
+* Ensure that airbyte-ci is installed with pipx. Run `pipx list` to check if airbyte-ci is installed.
+* Run `pipx ensurepath` to add the pipx binary directory to your PATH.
+* Add the pipx binary directory to your PATH manually. The pipx binary directory is usually `~/.local/bin`.
+
+
+## python3.10 not found
+If you get the following error when running `pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/`:
+```bash
+$ pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/
+Error: Python 3.10 not found on your system.
+```
+
+It means that you don't have Python 3.10 installed on your system.
+
+To fix this, you can either:
+* Install Python 3.10 with pyenv. Run `pyenv install 3.10` to install the latest Python version.
+* Install Python 3.10 with your system package manager. For instance, on Ubuntu you can run `sudo apt install python3.10`.
+* Ensure that Python 3.10 is in your PATH. Run `which python3.10` to check if Python 3.10 is installed and in your PATH.
+
+## Any type of pipeline failure
+First you should check that the version of the CLI you are using is the latest one.
+You can check the version of the CLI with the `--version` option:
+```bash
+$ airbyte-ci --version
+airbyte-ci, version 0.1.0
+```
+
+and compare it with the version in the pyproject.toml file:
+```bash
+$ cat airbyte-ci/connectors/pipelines/pyproject.toml | grep version
+```
+
+If you get any type of pipeline failure, you can run the pipeline with the `--show-dagger-logs` option to get more information about the failure.
+```bash
+$ airbyte-ci --show-dagger-logs connectors --name=source-pokeapi test
+```
+
+and when in doubt, you can reinstall the CLI with the `--force` option:
+```bash
+$ pipx reinstall pipelines --force
+```
