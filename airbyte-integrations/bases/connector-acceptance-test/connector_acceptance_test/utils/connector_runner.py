@@ -33,12 +33,14 @@ class ConnectorRunner:
         dagger_client: dagger.Client,
         connector_configuration_path: Optional[Path] = None,
         custom_environment_variables: Optional[Mapping] = {},
+        deployment_mode: Optional[str] = None,
     ):
         self._check_connector_under_test()
         self.image_tag = image_tag
         self.dagger_client = dagger_client
         self._connector_configuration_path = connector_configuration_path
         self._custom_environment_variables = custom_environment_variables
+        self._deployment_mode = deployment_mode
         connector_image_tarball_path = self._get_connector_image_tarball_path()
         self._connector_under_test_container = self._get_connector_container(connector_image_tarball_path)
 
@@ -145,6 +147,8 @@ class ConnectorRunner:
             container = container.with_env_variable("CACHEBUSTER", cachebuster_value)
         for key, value in self._custom_environment_variables.items():
             container = container.with_env_variable(key, str(value))
+        if self._deployment_mode:
+            container = container.with_env_variable("DEPLOYMENT_MODE", self._deployment_mode.upper())
         return container
 
     async def _run(
