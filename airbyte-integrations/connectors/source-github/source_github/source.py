@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import datetime
+
 from os import getenv
 from typing import Any, Dict, List, Mapping, MutableMapping, Set, Tuple
 from urllib.parse import urlparse
@@ -271,7 +271,7 @@ class SourceGithub(AbstractSource):
             "api_url": config.get("api_url"),
             "access_token_type": access_token_type,
         }
-        start_date = config.get("start_date", datetime.datetime.isoformat(datetime.datetime.now() - datetime.timedelta(days=2 * 365)))
+        start_date = config.get("start_date")
         organization_args_with_start_date = {**organization_args, "start_date": start_date}
 
         repository_args = {

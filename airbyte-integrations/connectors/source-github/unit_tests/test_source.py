@@ -19,8 +19,6 @@ from source_github.utils import MultipleTokenAuthenticatorWithRateLimiter
 
 from .utils import command_check
 
-os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
-
 
 def check_source(repo_line: str) -> AirbyteConnectionStatus:
     source = SourceGithub()
@@ -362,6 +360,4 @@ def test_streams_config_start_date(config, expected):
     if config.get("start_date"):
         assert project_stream._start_date == "2021-08-27T00:00:46Z"
     else:
-        assert datetime.datetime.strptime(
-            project_stream._start_date, "%Y-%m-%dT%H:%M:%S.%f"
-        ).date() - datetime.date.today() == datetime.timedelta(days=-2 * 365)
+        assert not project_stream._start_date
