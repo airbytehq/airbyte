@@ -116,7 +116,7 @@ public class PostgresDestinationTest {
   @BeforeAll
   static void init() throws IOException, InterruptedException {
     PSQL_DB = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
-                                            .asCompatibleSubstituteFor("postgres"));
+        .asCompatibleSubstituteFor("postgres"));
     PSQL_DB.start();
     getCertificate(PSQL_DB);
   }
@@ -326,19 +326,19 @@ public class PostgresDestinationTest {
   @Test
   void testStrictGetSpec() throws Exception {
     assertEquals(Jsons.deserialize(MoreResources.readResource("expected_spec_strict_encrypt.json"), ConnectorSpecification.class),
-                 new PostgresDestinationStrictEncrypt().spec());
+        new PostgresDestinationStrictEncrypt().spec());
   }
 
   @Test
   void testStrictSSLUnsecuredNoTunnel() throws Exception {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-                                               .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
-                                                   .put("mode", "prefer")
-                                                   .build())
-                                               .put("tunnel_method", ImmutableMap.builder()
-                                                   .put("tunnel_method", "NO_TUNNEL")
-                                                   .build())
-                                               .build());
+        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
+            .put("mode", "prefer")
+            .build())
+        .put("tunnel_method", ImmutableMap.builder()
+            .put("tunnel_method", "NO_TUNNEL")
+            .build())
+        .build());
 
     final var actual = new PostgresDestinationStrictEncrypt().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -348,19 +348,19 @@ public class PostgresDestinationTest {
   @Test
   void testStrictSSLSecuredNoTunnel() throws Exception {
     final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
-                                               .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
-                                               .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
-                                               .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
-                                               .put(JdbcUtils.SCHEMA_KEY, "public")
-                                               .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
-                                               .put(JdbcUtils.DATABASE_KEY, PSQL_DB.getDatabaseName())
-                                               .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
-                                                   .put("mode", "require")
-                                                   .build())
-                                               .put("tunnel_method", ImmutableMap.builder()
-                                                   .put("tunnel_method", "NO_TUNNEL")
-                                                   .build())
-                                               .build());
+        .put(JdbcUtils.HOST_KEY, PSQL_DB.getHost())
+        .put(JdbcUtils.USERNAME_KEY, PSQL_DB.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, PSQL_DB.getPassword())
+        .put(JdbcUtils.SCHEMA_KEY, "public")
+        .put(JdbcUtils.PORT_KEY, PSQL_DB.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, PSQL_DB.getDatabaseName())
+        .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
+            .put("mode", "require")
+            .build())
+        .put("tunnel_method", ImmutableMap.builder()
+            .put("tunnel_method", "NO_TUNNEL")
+            .build())
+        .build());
 
     final var actual = new PostgresDestinationStrictEncrypt().check(config);
     assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, actual.getStatus());

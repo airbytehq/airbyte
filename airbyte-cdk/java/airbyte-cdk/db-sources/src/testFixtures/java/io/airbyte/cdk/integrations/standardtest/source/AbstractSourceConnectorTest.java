@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.model.generated.DiscoverCatalogResult;
@@ -168,7 +167,7 @@ public abstract class AbstractSourceConnectorTest {
   protected ConnectorSpecification runSpec() throws TestHarnessException {
     final io.airbyte.protocol.models.ConnectorSpecification spec = new DefaultGetSpecTestHarness(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false,
-                                       new EnvVariableFeatureFlags(), Collections.emptyMap()))
+            new EnvVariableFeatureFlags(), Collections.emptyMap()))
                 .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
     return convertProtocolObject(spec, ConnectorSpecification.class);
   }
