@@ -76,6 +76,14 @@ from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     single_csv_input_state_is_later_scenario,
     single_csv_no_input_state_scenario,
 )
+from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
+    multi_parquet_scenario,
+    parquet_file_with_decimal_as_float_scenario,
+    parquet_file_with_decimal_as_string_scenario,
+    parquet_file_with_decimal_no_config_scenario,
+    parquet_various_types_scenario,
+    single_parquet_scenario,
+)
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 
 discover_scenarios = [
@@ -104,12 +112,12 @@ discover_scenarios = [
     earlier_csv_scenario,
     multi_stream_custom_format,
     # empty_schema_inference_scenario,
-    # single_parquet_scenario,
-    # multi_parquet_scenario,
-    # parquet_various_types_scenario,
-    # parquet_file_with_decimal_no_config_scenario,
-    # parquet_file_with_decimal_as_string_scenario,
-    # parquet_file_with_decimal_as_float_scenario,
+    single_parquet_scenario,
+    multi_parquet_scenario,
+    parquet_various_types_scenario,
+    parquet_file_with_decimal_no_config_scenario,
+    parquet_file_with_decimal_as_string_scenario,
+    parquet_file_with_decimal_as_float_scenario,
     # schemaless_csv_scenario,
     # schemaless_csv_multi_stream_scenario,
     # schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
