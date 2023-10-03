@@ -74,7 +74,7 @@ class DzZohoBooksStream(HttpStream, ABC):
         return response.status_code == 429 or 500 <= response.status_code < 600
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        self.logger.warning(f"Retry in {60} seconds.")
+        self.logger.warning("Retry in 60 seconds.")
         return 60
 
 class IncrementalDzZohoBooksStream(DzZohoBooksStream, IncrementalMixin):
