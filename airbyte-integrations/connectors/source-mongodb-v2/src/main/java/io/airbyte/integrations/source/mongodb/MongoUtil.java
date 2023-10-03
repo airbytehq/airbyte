@@ -243,6 +243,13 @@ public class MongoUtil {
     aggregateList.add(Aggregates.unwind("$fields"));
     aggregateList.add(new Document("$group", groupMap));
 
+    /*
+     * Runs the following aggregation query: db.<collection name>.aggregate( [ { "$sample": { "size" :
+     * 10000 } }, { "$project" : { "fields" : { "$arrayToObject": { "$map" : { "input" : {
+     * "$objectToArray" : "$$ROOT" }, "as" : "each", "in" : { "k" : "$$each.k", "v" : { "$type" :
+     * "$$each.v" } } } } } } }, { "$unwind" : "$fields" }, { "$group" : { "_id" : null, "fields" : {
+     * "$addToSet" : "$fields" } } } ] )
+     */
     final AggregateIterable<Document> output = collection.aggregate(aggregateList);
 
     try (final MongoCursor<Document> cursor = output.cursor()) {

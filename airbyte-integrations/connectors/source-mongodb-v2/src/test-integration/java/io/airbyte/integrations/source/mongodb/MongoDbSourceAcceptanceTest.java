@@ -109,11 +109,13 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
     otherCollection2Name = "collection_" + RandomStringUtils.randomAlphabetic(8);
 
     config = Jsons.deserialize(Files.readString(CREDENTIALS_PATH));
-    ((ObjectNode) config).put(MongoConstants.DATABASE_CONFIGURATION_KEY, databaseName);
-    ((ObjectNode) config).put(MongoConstants.IS_TEST_CONFIGURATION_KEY, true);
-    ((ObjectNode) config).put(MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY, 1);
+    final ObjectNode databaseConfig = (ObjectNode) config.get(DATABASE_CONFIG_CONFIGURATION_KEY);
+    databaseConfig.put(MongoConstants.DATABASE_CONFIGURATION_KEY, databaseName);
+    databaseConfig.put(MongoConstants.IS_TEST_CONFIGURATION_KEY, true);
+    databaseConfig.put(MongoConstants.CHECKPOINT_INTERVAL_CONFIGURATION_KEY, 1);
+    ((ObjectNode) config).put(DATABASE_CONFIG_CONFIGURATION_KEY, databaseConfig);
 
-    final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, config)));
+    final MongoDbSourceConfig sourceConfig = new MongoDbSourceConfig(config);
 
     mongoClient = MongoConnectionUtils.createMongoClient(sourceConfig);
     createTestCollections(mongoClient);
@@ -175,12 +177,13 @@ class MongoDbSourceAcceptanceTest extends SourceAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-    return Jsons.jsonNode(Map.of(DATABASE_CONFIG_CONFIGURATION_KEY, config));
+    return config;
   }
 
   @Override
   protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     final List<Field> fields = List.of(
+        Field.of(DOCUMENT_ID_FIELD, JsonSchemaType.STRING),
         Field.of(ID_FIELD, JsonSchemaType.STRING),
         Field.of(NAME_FIELD, JsonSchemaType.STRING),
         Field.of(TEST_FIELD, JsonSchemaType.STRING),

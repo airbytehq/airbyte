@@ -11,11 +11,14 @@ import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
 import io.airbyte.cdk.integrations.debezium.internals.mongodb.MongoDbCdcEventUtils;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.time.Instant;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DebeziumEventUtils {
 
-  public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
   public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
 
@@ -30,10 +33,11 @@ public class DebeziumEventUtils {
 
   public static AirbyteMessage toAirbyteMessage(final ChangeEventWithMetadata event,
                                                 final CdcMetadataInjector cdcMetadataInjector,
+                                                final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
                                                 final Instant emittedAt,
                                                 final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType) {
     return switch (debeziumConnectorType) {
-      case MONGODB -> formatMongoDbEvent(event, cdcMetadataInjector, emittedAt);
+      case MONGODB -> formatMongoDbEvent(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt);
       case RELATIONALDB -> formatRelationalDbEvent(event, cdcMetadataInjector, emittedAt);
     };
   }
@@ -58,6 +62,7 @@ public class DebeziumEventUtils {
 
   private static AirbyteMessage formatMongoDbEvent(final ChangeEventWithMetadata event,
                                                    final CdcMetadataInjector cdcMetadataInjector,
+                                                   final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
                                                    final Instant emittedAt) {
     final JsonNode debeziumEventKey = event.eventKeyAsJson();
     final JsonNode debeziumEvent = event.eventValueAsJson();
@@ -65,6 +70,7 @@ public class DebeziumEventUtils {
     final JsonNode after = debeziumEvent.get(AFTER_EVENT);
     final JsonNode source = debeziumEvent.get(SOURCE_EVENT);
     final String operation = debeziumEvent.get(OPERATION_FIELD).asText();
+    final Set<String> configuredFields = getConfiguredMongoDbCollectionFields(source, configuredAirbyteCatalog, cdcMetadataInjector);
 
     /*
      * Delete events need to be handled separately from other CrUD events, as depending on the version
@@ -72,8 +78,8 @@ public class DebeziumEventUtils {
      * #formatMongoDbDeleteDebeziumData() for more details.
      */
     final JsonNode data = switch (operation) {
-      case "c", "i", "u" -> formatMongoDbDebeziumData(before, after, source, cdcMetadataInjector);
-      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector);
+      case "c", "i", "u" -> formatMongoDbDebeziumData(before, after, source, cdcMetadataInjector, configuredFields);
+      case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields);
       default -> throw new IllegalArgumentException("Unsupported MongoDB change event operation '" + operation + "'.");
     };
 
@@ -95,15 +101,18 @@ public class DebeziumEventUtils {
   private static JsonNode formatMongoDbDebeziumData(final JsonNode before,
                                                     final JsonNode after,
                                                     final JsonNode source,
-                                                    final CdcMetadataInjector cdcMetadataInjector) {
+                                                    final CdcMetadataInjector cdcMetadataInjector,
+                                                    final Set<String> configuredFields) {
+
     final String eventJson = (after.isNull() ? before : after).asText();
-    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(eventJson), source, cdcMetadataInjector, false);
+    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields), source, cdcMetadataInjector, false);
   }
 
   private static JsonNode formatMongoDbDeleteDebeziumData(final JsonNode before,
                                                           final JsonNode debeziumEventKey,
                                                           final JsonNode source,
-                                                          final CdcMetadataInjector cdcMetadataInjector) {
+                                                          final CdcMetadataInjector cdcMetadataInjector,
+                                                          final Set<String> configuredFields) {
     String eventJson;
 
     /*
@@ -123,7 +132,7 @@ public class DebeziumEventUtils {
       eventJson = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
     }
 
-    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(eventJson), source, cdcMetadataInjector, true);
+    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields), source, cdcMetadataInjector, true);
   }
 
   private static JsonNode formatRelationalDbDebeziumData(final JsonNode before,
@@ -153,6 +162,18 @@ public class DebeziumEventUtils {
     }
 
     return baseNode;
+  }
+
+  private static Set<String> getConfiguredMongoDbCollectionFields(final JsonNode source,
+                                                                  final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+                                                                  final CdcMetadataInjector cdcMetadataInjector) {
+    final String streamNamespace = cdcMetadataInjector.namespace(source);
+    final String streamName = cdcMetadataInjector.name(source);
+    return configuredAirbyteCatalog.getStreams().stream()
+        .filter(s -> streamName.equals(s.getStream().getName()) && streamNamespace.equals(s.getStream().getNamespace()))
+        .map(CatalogHelpers::getTopLevelFieldNames)
+        .flatMap(Set::stream)
+        .collect(Collectors.toSet());
   }
 
 }

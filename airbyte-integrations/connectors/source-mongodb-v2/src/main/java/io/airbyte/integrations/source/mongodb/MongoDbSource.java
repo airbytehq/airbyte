@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.mongodb;
 
-import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CONFIG_CONFIGURATION_KEY;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.mongodb.MongoSecurityException;
@@ -92,10 +90,9 @@ public class MongoDbSource extends BaseConnector implements Source {
       LOGGER.info("The source passed the check operation test!");
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final IllegalArgumentException e) {
-      LOGGER
-          .error("Unable to perform connection check.  Configuration is missing required '{}' configuration.", DATABASE_CONFIG_CONFIGURATION_KEY);
+      LOGGER.error("Unable to perform connection check operation.", e);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Database connection configuration missing.");
+          .withMessage("Unable to perform connection check operation: " + e.getMessage());
     }
   }
 
@@ -110,9 +107,8 @@ public class MongoDbSource extends BaseConnector implements Source {
         return new AirbyteCatalog().withStreams(streams);
       }
     } catch (final IllegalArgumentException e) {
-      LOGGER
-          .error("Unable to perform schema discovery.  Configuration is missing required '{}' configuration.", DATABASE_CONFIG_CONFIGURATION_KEY);
-      throw new IllegalArgumentException("Database connection configuration missing.");
+      LOGGER.error("Unable to perform schema discovery operation.", e);
+      throw e;
     }
   }
 
@@ -140,8 +136,8 @@ public class MongoDbSource extends BaseConnector implements Source {
         throw e;
       }
     } catch (final Exception e) {
-      LOGGER.error("Unable to perform sync.  Configuration is missing required '{}' configuration.", DATABASE_CONFIG_CONFIGURATION_KEY);
-      throw new IllegalArgumentException("Database connection configuration missing.");
+      LOGGER.error("Unable to perform sync read operation.", e);
+      throw e;
     }
   }
 

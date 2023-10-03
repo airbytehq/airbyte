@@ -39,30 +39,26 @@
                 "type": "string",
                 "description": "The connection string of the cluster that you want to replicate.",
                 "examples": ["mongodb+srv://cluster0.abcd1.mongodb.net/"],
-                "order": 2,
-                "group": "db"
+                "order": 2
               },
               "database": {
                 "title": "Database Name",
                 "type": "string",
                 "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
-                "order": 3,
-                "group": "db"
+                "order": 3
               },
               "username": {
                 "title": "Username",
                 "type": "string",
                 "description": "The username which is used to access the database.",
-                "order": 4,
-                "group": "auth"
+                "order": 4
               },
               "password": {
                 "title": "Password",
                 "type": "string",
                 "description": "The password associated with this username.",
                 "airbyte_secret": true,
-                "order": 5,
-                "group": "auth"
+                "order": 5
               },
               "auth_source": {
                 "title": "Authentication Source",
@@ -70,8 +66,7 @@
                 "description": "The authentication source where the user information is stored.  See https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource for more details.",
                 "default": "admin",
                 "examples": ["admin"],
-                "order": 6,
-                "group": "auth"
+                "order": 6
               }
             }
           },
@@ -94,30 +89,26 @@
                   "mongodb://example1.host.com:27017,example2.host.com:27017,example3.host.com:27017/",
                   "mongodb://example.host.com:27017/"
                 ],
-                "order": 2,
-                "group": "db"
+                "order": 2
               },
               "database": {
                 "title": "Database Name",
                 "type": "string",
                 "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
-                "order": 3,
-                "group": "db"
+                "order": 3
               },
               "username": {
                 "title": "Username",
                 "type": "string",
                 "description": "The username which is used to access the database.",
-                "order": 4,
-                "group": "auth"
+                "order": 4
               },
               "password": {
                 "title": "Password",
                 "type": "string",
                 "description": "The password associated with this username.",
                 "airbyte_secret": true,
-                "order": 5,
-                "group": "auth"
+                "order": 5
               },
               "auth_source": {
                 "title": "Authentication Source",
@@ -125,8 +116,7 @@
                 "description": "The authentication source where the user information is stored.",
                 "default": "admin",
                 "examples": ["admin"],
-                "order": 6,
-                "group": "auth"
+                "order": 6
               }
             }
           }
@@ -166,12 +156,6 @@
     "groups": [
       {
         "id": "connection"
-      },
-      {
-        "id": "db"
-      },
-      {
-        "id": "auth"
       },
       {
         "id": "advanced",

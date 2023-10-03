@@ -11,7 +11,6 @@ import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mongodb.DBRefCodecProvider;
@@ -19,7 +18,7 @@ import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import java.util.Collections;
-import java.util.List;
+import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonBinary;
 import org.bson.BsonDocument;
@@ -110,50 +109,61 @@ public class MongoDbCdcEventUtils {
    * @param json The Debezium event data as JSON.
    * @return The transformed Debezium event data as JSON.
    */
-  public static ObjectNode transformDataTypes(final String json) {
+  public static ObjectNode transformDataTypes(final String json, final Set<String> configuredFields) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     final Document document = Document.parse(json);
-    formatDocument(document, objectNode, ImmutableList.copyOf(document.keySet()));
+    formatDocument(document, objectNode, configuredFields);
     return normalizeObjectId(objectNode);
   }
 
-  public static JsonNode toJsonNode(final Document document, final List<String> columnNames) {
+  public static JsonNode toJsonNode(final Document document, final Set<String> columnNames) {
     final ObjectNode objectNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
     formatDocument(document, objectNode, columnNames);
     return normalizeObjectId(objectNode);
   }
 
-  private static void formatDocument(final Document document, final ObjectNode objectNode, final List<String> columnNames) {
+  private static void formatDocument(final Document document, final ObjectNode objectNode, final Set<String> columnNames) {
     final BsonDocument bsonDocument = toBsonDocument(document);
     try (final BsonReader reader = new BsonDocumentReader(bsonDocument)) {
-      readDocument(reader, objectNode, columnNames);
+      readDocument(reader, objectNode, columnNames, false);
     } catch (final Exception e) {
       LOGGER.error("Exception while parsing BsonDocument: {}", e.getMessage());
       throw new RuntimeException(e);
     }
   }
 
-  private static ObjectNode readDocument(final BsonReader reader, final ObjectNode jsonNodes, final List<String> columnNames) {
+  private static ObjectNode readDocument(final BsonReader reader,
+                                         final ObjectNode jsonNodes,
+                                         final Set<String> includedFields,
+                                         final boolean allowAllFields) {
     reader.readStartDocument();
     while (reader.readBsonType() != BsonType.END_OF_DOCUMENT) {
       final var fieldName = reader.readName();
       final var fieldType = reader.getCurrentBsonType();
-      if (DOCUMENT.equals(fieldType)) {
-        // recursion in used to parse inner documents
-        jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames));
-      } else if (ARRAY.equals(fieldType)) {
-        jsonNodes.set(fieldName, readArray(reader, columnNames, fieldName));
+
+      if (shouldIncludeField(fieldName, includedFields, allowAllFields)) {
+        if (DOCUMENT.equals(fieldType)) {
+          /*
+           * Recursion in used to parse inner documents. Pass the allow all column name so all nested fields
+           * are processed.
+           */
+          jsonNodes.set(fieldName, readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of(), true));
+        } else if (ARRAY.equals(fieldType)) {
+          jsonNodes.set(fieldName, readArray(reader, includedFields, fieldName));
+        } else {
+          readField(reader, jsonNodes, includedFields, fieldName, fieldType, false);
+        }
+        transformToStringIfMarked(jsonNodes, includedFields, fieldName);
       } else {
-        readField(reader, jsonNodes, columnNames, fieldName, fieldType);
+        reader.skipValue();
       }
-      transformToStringIfMarked(jsonNodes, columnNames, fieldName);
     }
     reader.readEndDocument();
 
     return jsonNodes;
   }
 
-  private static JsonNode readArray(final BsonReader reader, final List<String> columnNames, final String fieldName) {
+  private static JsonNode readArray(final BsonReader reader, final Set<String> columnNames, final String fieldName) {
     reader.readStartArray();
     final var elements = Lists.newArrayList();
 
@@ -161,12 +171,12 @@ public class MongoDbCdcEventUtils {
       final var currentBsonType = reader.getCurrentBsonType();
       if (DOCUMENT.equals(currentBsonType)) {
         // recursion is used to read inner doc
-        elements.add(readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames));
+        elements.add(readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, true));
       } else if (ARRAY.equals(currentBsonType)) {
         // recursion is used to read inner array
         elements.add(readArray(reader, columnNames, fieldName));
       } else {
-        final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, fieldName, currentBsonType);
+        final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, fieldName, currentBsonType, true);
         elements.add(element.get(fieldName));
       }
     }
@@ -176,26 +186,32 @@ public class MongoDbCdcEventUtils {
 
   private static ObjectNode readField(final BsonReader reader,
                                       final ObjectNode o,
-                                      final List<String> columnNames,
+                                      final Set<String> includedFields,
                                       final String fieldName,
-                                      final BsonType fieldType) {
-    switch (fieldType) {
-      case BOOLEAN -> o.put(fieldName, reader.readBoolean());
-      case INT32 -> o.put(fieldName, reader.readInt32());
-      case INT64 -> o.put(fieldName, reader.readInt64());
-      case DOUBLE -> o.put(fieldName, reader.readDouble());
-      case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
-      case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
-      case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
-      case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
-      case SYMBOL -> o.put(fieldName, reader.readSymbol());
-      case STRING -> o.put(fieldName, reader.readString());
-      case OBJECT_ID -> o.put(fieldName, toString(reader.readObjectId()));
-      case JAVASCRIPT -> o.put(fieldName, reader.readJavaScript());
-      case JAVASCRIPT_WITH_SCOPE -> readJavaScriptWithScope(o, reader, fieldName, columnNames);
-      case REGULAR_EXPRESSION -> o.put(fieldName, readRegularExpression(reader.readRegularExpression()));
-      default -> reader.skipValue();
+                                      final BsonType fieldType,
+                                      final boolean allowAllFields) {
+    if (shouldIncludeField(fieldName, includedFields, allowAllFields)) {
+      switch (fieldType) {
+        case BOOLEAN -> o.put(fieldName, reader.readBoolean());
+        case INT32 -> o.put(fieldName, reader.readInt32());
+        case INT64 -> o.put(fieldName, reader.readInt64());
+        case DOUBLE -> o.put(fieldName, reader.readDouble());
+        case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
+        case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
+        case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
+        case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
+        case SYMBOL -> o.put(fieldName, reader.readSymbol());
+        case STRING -> o.put(fieldName, reader.readString());
+        case OBJECT_ID -> o.put(fieldName, toString(reader.readObjectId()));
+        case JAVASCRIPT -> o.put(fieldName, reader.readJavaScript());
+        case JAVASCRIPT_WITH_SCOPE -> readJavaScriptWithScope(o, reader, fieldName);
+        case REGULAR_EXPRESSION -> o.put(fieldName, readRegularExpression(reader.readRegularExpression()));
+        default -> reader.skipValue();
+      }
+    } else {
+      reader.skipValue();
     }
+
     return o;
   }
 
@@ -233,9 +249,9 @@ public class MongoDbCdcEventUtils {
     return value == null ? null : value.getData();
   }
 
-  private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName, final List<String> columnNames) {
+  private static void readJavaScriptWithScope(final ObjectNode o, final BsonReader reader, final String fieldName) {
     final var code = reader.readJavaScriptWithScope();
-    final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames);
+    final var scope = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Set.of("scope"), false);
     o.set(fieldName, Jsons.jsonNode(ImmutableMap.of("code", code, "scope", scope)));
   }
 
@@ -249,7 +265,7 @@ public class MongoDbCdcEventUtils {
     }
   }
 
-  public static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
+  public static void transformToStringIfMarked(final ObjectNode jsonNodes, final Set<String> columnNames, final String fieldName) {
     if (columnNames.contains(fieldName + AIRBYTE_SUFFIX)) {
       final JsonNode data = jsonNodes.get(fieldName);
       if (data != null) {
@@ -259,6 +275,22 @@ public class MongoDbCdcEventUtils {
         LOGGER.debug("WARNING Field list out of sync, Document doesn't contain field: {}", fieldName);
       }
     }
+  }
+
+  /**
+   * Test if the current field that is included in the configured set of discovered fields. In order
+   * to support the fields of nested document fields that pass the initial filter, the
+   * {@code allowAll} flag may be included in the as a way to allow the fields of the nested document
+   * to be processed.
+   *
+   * @param fieldName The name of the current field.
+   * @param includedFields The discovered fields.
+   * @param allowAll Flag that overrides the field inclusion comparison.
+   * @return {@code true} if the current field should be included for processing or {@code false}
+   *         otherwise.
+   */
+  private static boolean shouldIncludeField(final String fieldName, final Set<String> includedFields, final boolean allowAll) {
+    return includedFields.contains(fieldName) || allowAll;
   }
 
 }

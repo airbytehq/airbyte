@@ -1,4 +1,4 @@
-# MongoDB V2 General Availability Migration Guide
+# MongoDb Migration Guide
 
 ## Upgrading to 1.0.0
 

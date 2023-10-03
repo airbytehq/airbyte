@@ -22,6 +22,7 @@ import io.airbyte.cdk.db.DataTypeUtils;
 import io.airbyte.commons.json.Jsons;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Set;
 import org.bson.BsonBinary;
 import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
@@ -95,10 +96,10 @@ class MongoDbCdcEventUtilsTest {
         .append("field15", new BsonNull());
 
     final String documentAsJson = document.toJson();
-    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson);
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet());
 
     assertNotNull(transformed);
-    assertNotEquals(documentAsJson, transformed);
+    assertNotEquals(documentAsJson, Jsons.serialize(transformed));
     assertEquals(true, transformed.get("field1").asBoolean());
     assertEquals(1, transformed.get("field2").asInt());
     assertEquals(2, transformed.get("field3").asInt());
@@ -115,7 +116,49 @@ class MongoDbCdcEventUtilsTest {
     assertEquals("scope", transformed.get("field13").get("scope").get("scope").asText());
     assertEquals("pattern", transformed.get("field14").asText());
     assertFalse(transformed.has("field15"));
+  }
 
+  @Test
+  void testTransformDataTypesWithFilteredFields() {
+    final BsonTimestamp bsonTimestamp = new BsonTimestamp(394, 1926745562);
+    final String expectedTimestamp = DataTypeUtils.toISO8601StringWithMilliseconds(bsonTimestamp.getValue());
+
+    final Document document = new Document("field1", new BsonBoolean(true))
+        .append("field2", new BsonInt32(1))
+        .append("field3", new BsonInt64(2))
+        .append("field4", new BsonDouble(3.0))
+        .append("field5", new BsonDecimal128(new Decimal128(4)))
+        .append("field6", bsonTimestamp)
+        .append("field7", new BsonDateTime(bsonTimestamp.getValue()))
+        .append("field8", new BsonBinary("test".getBytes(Charset.defaultCharset())))
+        .append("field9", new BsonSymbol("test2"))
+        .append("field10", new BsonString("test3"))
+        .append("field11", new BsonObjectId(new ObjectId(OBJECT_ID)))
+        .append("field12", new BsonJavaScript("code"))
+        .append("field13", new BsonJavaScriptWithScope("code2", new BsonDocument("scope", new BsonString("scope"))))
+        .append("field14", new BsonRegularExpression("pattern"))
+        .append("field15", new BsonNull());
+
+    final String documentAsJson = document.toJson();
+    final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, Set.of("field1", "field2", "field3"));
+
+    assertNotNull(transformed);
+    assertNotEquals(documentAsJson, Jsons.serialize(transformed));
+    assertEquals(true, transformed.get("field1").asBoolean());
+    assertEquals(1, transformed.get("field2").asInt());
+    assertEquals(2, transformed.get("field3").asInt());
+    assertFalse(transformed.has("field4"));
+    assertFalse(transformed.has("field5"));
+    assertFalse(transformed.has("field6"));
+    assertFalse(transformed.has("field7"));
+    assertFalse(transformed.has("field8"));
+    assertFalse(transformed.has("field9"));
+    assertFalse(transformed.has("field10"));
+    assertFalse(transformed.has("field11"));
+    assertFalse(transformed.has("field12"));
+    assertFalse(transformed.has("field13"));
+    assertFalse(transformed.has("field14"));
+    assertFalse(transformed.has("field15"));
   }
 
 }
