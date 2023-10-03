@@ -22,7 +22,7 @@ def setup_responses(
     targeting_response=None,
     product_ads_response=None,
     generic_response=None,
-    creatives_response=None
+    creatives_response=None,
 ):
     responses.add(
         responses.POST,
@@ -229,21 +229,14 @@ def test_streams_campaigns_pagination_403_error_expected(mocker, config, profile
 )
 @responses.activate
 def test_streams_displays(
-    config,
-    stream_name,
-    endpoint,
-    profiles_response,
-    adgroups_response,
-    targeting_response,
-    product_ads_response,
-    creatives_response
+    config, stream_name, endpoint, profiles_response, adgroups_response, targeting_response, product_ads_response, creatives_response
 ):
     setup_responses(
         profiles_response=profiles_response,
         adgroups_response=adgroups_response,
         targeting_response=targeting_response,
         product_ads_response=product_ads_response,
-        creatives_response=creatives_response
+        creatives_response=creatives_response,
     )
 
     source = SourceAmazonAds()
