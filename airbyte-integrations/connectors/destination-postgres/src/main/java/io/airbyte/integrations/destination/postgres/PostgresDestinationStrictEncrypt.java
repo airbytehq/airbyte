@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
-import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
@@ -58,13 +57,6 @@ public class PostgresDestinationStrictEncrypt extends SpecModifyingDestination i
       }
     }
     return super.check(config);
-  }
-
-  public static void main(final String[] args) throws Exception {
-    final Destination destination = new PostgresDestinationStrictEncrypt();
-    LOGGER.info("starting destination: {}", PostgresDestinationStrictEncrypt.class);
-    new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", PostgresDestinationStrictEncrypt.class);
   }
 
 }

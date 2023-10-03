@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.TestEnvConfigs.DeploymentMode;
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.BasicTestDataComparator;
@@ -315,6 +316,10 @@ public abstract class DestinationAcceptanceTest {
                                                      final String namespace)
       throws Exception {
     throw new IllegalStateException("Not implemented");
+  }
+
+  protected DeploymentMode getDeploymentMode() {
+    return DeploymentMode.OSS;
   }
 
   /**
@@ -1215,14 +1220,14 @@ public abstract class DestinationAcceptanceTest {
   private ConnectorSpecification runSpec() throws TestHarnessException {
     return convertProtocolObject(
         new DefaultGetSpecTestHarness(
-            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()))
+            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags(), ImmutableMap.of(TestEnvConfigs.DEPLOYMENT_MODE, getDeploymentMode().toString())))
                 .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec(),
         ConnectorSpecification.class);
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws TestHarnessException {
     return new DefaultCheckConnectionTestHarness(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()),
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags(), ImmutableMap.of(TestEnvConfigs.DEPLOYMENT_MODE, getDeploymentMode().toString())),
         mConnectorConfigUpdater)
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .getCheckConnection();
@@ -1232,7 +1237,7 @@ public abstract class DestinationAcceptanceTest {
                                                                               final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionTestHarness(
-          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()),
+          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags(), ImmutableMap.of(TestEnvConfigs.DEPLOYMENT_MODE, getDeploymentMode().toString())),
           mConnectorConfigUpdater)
               .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
               .getCheckConnection();
@@ -1245,7 +1250,7 @@ public abstract class DestinationAcceptanceTest {
 
   protected AirbyteDestination getDestination() {
     return new DefaultAirbyteDestination(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags()));
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, null, false, new EnvVariableFeatureFlags(), ImmutableMap.of(TestEnvConfigs.DEPLOYMENT_MODE, getDeploymentMode().toString())));
   }
 
   protected void runSyncAndVerifyStateOutput(final JsonNode config,

@@ -9,13 +9,13 @@ airbyteJavaConnector {
             'db-sources', // required for tests
             'db-destinations',
     ]
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 airbyteJavaConnector.addCdkDependencies()
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestination'
+    mainClass = 'io.airbyte.integrations.destination.postgres.PostgresDestinationRunner'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
