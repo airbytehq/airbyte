@@ -40,8 +40,7 @@ def check_up_to_date() -> bool:
     latest_version = get_latest_version()
     if latest_version != __installed_version__:
         main_logger.warning(f"pipelines is not up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
-        # todo double check
-        main_logger.warning("Please run `pipx upgrade pipelines` to upgrade to the latest version.")
+        main_logger.warning("Please run `pipx reinstall pipelines` to upgrade to the latest version.")
         return False
 
     main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
@@ -54,7 +53,7 @@ def get_latest_version() -> str:
         for line in f.readlines():
             if "version" in line:
                 return line.split("=")[1].strip().replace('"', "")
-    raise Exception("Could not find version in pyproject.toml")
+    raise Exception("Could not find version in pyproject.toml. Please ensure you are running from the root of the airbyte repo.")
 
 
 def get_modified_files(

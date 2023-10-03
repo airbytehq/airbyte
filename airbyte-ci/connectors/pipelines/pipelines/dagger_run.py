@@ -97,7 +97,7 @@ def main():
         command = [dagger_path, "run", "airbyte-ci-internal"] + sys.argv[1:]
     try:
         try:
-            print(f"Running command: {command}")
+            LOGGER.info(f"Running command: {command}")
             subprocess.run(command, check=True)
         except KeyboardInterrupt:
             LOGGER.info("Keyboard interrupt detected. Exiting...")
