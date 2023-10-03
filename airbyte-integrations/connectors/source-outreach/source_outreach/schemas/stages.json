@@ -10,7 +10,7 @@
       "type": ["null", "string"]
     },
     "order": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "color": {
       "type": ["null", "string"]

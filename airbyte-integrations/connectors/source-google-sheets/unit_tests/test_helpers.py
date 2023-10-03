@@ -34,6 +34,18 @@ def google_sheet_client(row_data, spreadsheet_id, client):
     return sheet_client
 
 
+def google_sheet_invalid_client(spreadsheet_id, client):
+    fake_response = Spreadsheet(
+        spreadsheetId=spreadsheet_id,
+        sheets=[Sheet(data=[])],
+    )
+    client.get.return_value.execute.return_value = fake_response
+    with patch.object(GoogleSheetsClient, "__init__", lambda s, credentials, scopes: None):
+        sheet_client = GoogleSheetsClient({"fake": "credentials"}, ["auth_scopes"])
+        sheet_client.client = client
+    return sheet_client
+
+
 class TestHelpers(unittest.TestCase):
     def test_headers_to_airbyte_stream(self):
         sheet_name = "sheet1"
@@ -189,6 +201,26 @@ class TestHelpers(unittest.TestCase):
         sheet_client = google_sheet_client(row_data, spreadsheet_id, client)
         self.assertEqual(Helpers.get_first_row(sheet_client, spreadsheet_id, sheet), [])
         client.get.assert_called_with(spreadsheetId=spreadsheet_id, includeGridData=True, ranges=f"{sheet}!1:1")
+
+    def test_check_sheet_is_valid(self):
+        spreadsheet_id = "123"
+        sheet = "s1"
+        expected_first_row = ["1", "2", "3", "4"]
+        row_data = [RowData(values=[CellData(formattedValue=v) for v in expected_first_row])]
+        client = Mock()
+        sheet_client = google_sheet_client(row_data, spreadsheet_id, client)
+        is_valid, reason = Helpers.check_sheet_is_valid(sheet_client, spreadsheet_id, sheet)
+        self.assertTrue(is_valid)
+        self.assertEqual(reason, "")
+
+    def test_check_sheet_is_valid_empty(self):
+        spreadsheet_id = "123"
+        sheet = "s1"
+        client = Mock()
+        sheet_client = google_sheet_invalid_client(spreadsheet_id, client)
+        is_valid, reason = Helpers.check_sheet_is_valid(sheet_client, spreadsheet_id, sheet)
+        self.assertFalse(is_valid)
+        self.assertEqual(reason, "Expected data for exactly one range for sheet s1")
 
     def test_get_sheets_in_spreadsheet(self):
         spreadsheet_id = "id1"

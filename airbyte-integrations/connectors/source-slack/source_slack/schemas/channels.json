@@ -17,6 +17,9 @@
     "is_im": {
       "type": "boolean"
     },
+    "context_team_id": {
+      "type": "string"
+    },
     "created": {
       "type": "integer"
     },
@@ -30,6 +33,9 @@
       "type": "boolean"
     },
     "unlinked": {
+      "type": "integer"
+    },
+    "updated": {
       "type": "integer"
     },
     "name_normalized": {
@@ -96,6 +102,12 @@
         }
       }
     },
+    "shared_team_ids": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "previous_names": {
       "type": "array",
       "items": {
@@ -104,6 +116,15 @@
     },
     "num_members": {
       "type": "integer"
+    },
+    "parent_conversation": {
+      "type": ["null", "string"]
+    },
+    "pending_connected_team_ids": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "locale": {
       "type": "string"

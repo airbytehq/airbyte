@@ -7,13 +7,13 @@ There are two flavors of connectors for this destination:
 
 ## Features
 
-| Feature                       | Supported?\(Yes/No\) | Notes |
-| :---------------------------- | :------------------- | :---- |
-| Full Refresh Sync             | Yes                  |       |
-| Incremental - Append Sync     | Yes                  |       |
-| Incremental - Deduped History | No                   |       |
-| Namespaces                    | Yes                  |       |
-| SSH Tunnel Connection         | Yes                  |       |
+| Feature                        | Supported?\(Yes/No\) | Notes |
+| :----------------------------- | :------------------- | :---- |
+| Full Refresh Sync              | Yes                  |       |
+| Incremental - Append Sync      | Yes                  |       |
+| Incremental - Append + Deduped | Yes                  |       |
+| Namespaces                     | Yes                  |       |
+| SSH Tunnel Connection          | Yes                  |       |
 
 #### Output Schema
 

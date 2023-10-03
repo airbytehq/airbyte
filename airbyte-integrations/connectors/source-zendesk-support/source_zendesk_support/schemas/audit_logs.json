@@ -1,10 +1,12 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Audit_logs Schema",
-  "additionalProperties": true,
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Audit Logs",
   "type": ["null", "object"],
   "properties": {
     "action": {
+      "type": ["null", "string"]
+    },
+    "action_label": {
       "type": ["null", "string"]
     },
     "actor_id": {

@@ -17,8 +17,13 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         empty_streams: []
-        fail_on_extra_columns: false
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
   incremental:
+    # bypass_reason: "Connection check getting lost"
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"

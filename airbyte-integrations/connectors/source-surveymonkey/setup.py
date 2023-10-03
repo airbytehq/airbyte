@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk", "vcrpy==4.1.1", "urllib3<2.0"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "connector-acceptance-test", "requests_mock"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1", "requests_mock"]
 
 setup(
     name="source_surveymonkey",

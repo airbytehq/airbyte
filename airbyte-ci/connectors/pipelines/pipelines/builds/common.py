@@ -1,15 +1,16 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from abc import ABC
 from typing import Tuple
 
 import docker
+from dagger import Container, Platform
 from pipelines.bases import Step, StepResult, StepStatus
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.contexts import ConnectorContext
 from pipelines.utils import export_container_to_tarball
-from dagger import Container, Platform
 
 
 class BuildConnectorImageBase(Step, ABC):

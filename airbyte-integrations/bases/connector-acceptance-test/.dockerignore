@@ -1,5 +1,7 @@
 *
 !Dockerfile
 !connector_acceptance_test
-!setup.py
+!pyproject.toml
+!poetry.lock
 !pytest.ini
+!requirements.txt

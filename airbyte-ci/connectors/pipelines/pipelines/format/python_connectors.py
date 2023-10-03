@@ -50,7 +50,7 @@ class FormatConnectorCode(Step):
 
         return StepResult(
             self,
-            self.get_step_status_from_exit_code(await soon_exit_code),
+            self.get_step_status_from_exit_code(soon_exit_code.value),
             stderr=soon_stderr.value,
             stdout=soon_stdout.value,
             output_artifact=formatted.directory("/connector_code"),

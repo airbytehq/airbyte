@@ -20,6 +20,15 @@ def basic_config():
 
 
 @pytest.fixture
+def auth_config():
+    return {
+        "shop": "test_shop",
+        "credentials": {"auth_method": "api_password", "api_password": "api_password"},
+        "authenticator": None,
+    }
+
+
+@pytest.fixture
 def catalog_with_streams():
     def _catalog_with_streams(names):
         streams = []

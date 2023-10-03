@@ -121,9 +121,7 @@ def test_write_no_input_messages(
         destination_cumulio = DestinationCumulio()
 
         input_messages = [airbyte_state_message]
-        result = list(
-            destination_cumulio.write(config, configured_catalog, input_messages)
-        )
+        result = list(destination_cumulio.write(config, configured_catalog, input_messages))
         assert result == [airbyte_state_message]
 
         assert cumulio_writer.mock_calls == [
@@ -145,19 +143,13 @@ def test_write(
     with patch("destination_cumulio.destination.CumulioWriter") as cumulio_writer:
         input_messages = [airbyte_message_1, airbyte_message_2, airbyte_state_message]
         destination_cumulio = DestinationCumulio()
-        result = list(
-            destination_cumulio.write(config, configured_catalog, input_messages)
-        )
+        result = list(destination_cumulio.write(config, configured_catalog, input_messages))
         assert result == [airbyte_state_message]
         assert cumulio_writer.mock_calls == [
             call(config, configured_catalog, logger),
             call().delete_stream_entries("overwrite_stream"),
-            call().queue_write_operation(
-                "append_stream", {"string_column": "value_1", "int_column": 1}
-            ),
-            call().queue_write_operation(
-                "overwrite_stream", {"string_column": "value_2", "int_column": 2}
-            ),
+            call().queue_write_operation("append_stream", {"string_column": "value_1", "int_column": 1}),
+            call().queue_write_operation("overwrite_stream", {"string_column": "value_2", "int_column": 2}),
             call().flush_all(),  # The first flush_all is called before yielding the state message
             call().flush_all(),  # The second flush_all is called after going through all input messages
         ]

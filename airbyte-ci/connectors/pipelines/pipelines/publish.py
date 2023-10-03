@@ -1,19 +1,20 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import json
 import uuid
 from typing import List, Tuple
 
 import anyio
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification
+from dagger import Container, ExecError, File, ImageLayerCompression, QueryError
 from pipelines import builds, consts
 from pipelines.actions import environments
 from pipelines.actions.remote_storage import upload_to_gcs
 from pipelines.bases import ConnectorReport, Step, StepResult, StepStatus
 from pipelines.contexts import PublishConnectorContext
 from pipelines.pipelines import metadata
-from dagger import Container, ExecError, File, ImageLayerCompression, QueryError
 from pydantic import ValidationError
 
 
@@ -174,7 +175,7 @@ class UploadSpecToCache(Step):
         return self._parse_spec_output(spec_output)
 
     async def _get_spec_as_file(self, spec: str, name="spec_to_cache.json") -> File:
-        return (await self.context.get_connector_dir()).with_new_file(name, spec).file(name)
+        return (await self.context.get_connector_dir()).with_new_file(name, contents=spec).file(name)
 
     async def _run(self, built_connector: Container) -> StepResult:
         try:
@@ -186,7 +187,7 @@ class UploadSpecToCache(Step):
         specs_to_uploads: List[Tuple[str, File]] = [(self.oss_spec_key, await self._get_spec_as_file(oss_spec))]
 
         if oss_spec != cloud_spec:
-            specs_to_uploads.append(self.cloud_spec_key, await self._get_spec_as_file(cloud_spec, "cloud_spec_to_cache.json"))
+            specs_to_uploads.append((self.cloud_spec_key, await self._get_spec_as_file(cloud_spec, "cloud_spec_to_cache.json")))
 
         for key, file in specs_to_uploads:
             exit_code, stdout, stderr = await upload_to_gcs(
@@ -222,7 +223,6 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
         docker_hub_username_secret=context.docker_hub_username_secret,
         docker_hub_password_secret=context.docker_hub_password_secret,
         metadata_bucket_name=context.metadata_bucket_name,
-        metadata_path=context.metadata_path,
         pre_release=context.pre_release,
         pre_release_tag=context.docker_image_tag,
     )
@@ -238,7 +238,7 @@ async def run_connector_publish_pipeline(context: PublishConnectorContext, semap
 
             results = []
 
-            metadata_validation_results = await metadata.MetadataValidation(context, context.metadata_path).run()
+            metadata_validation_results = await metadata.MetadataValidation(context).run()
             results.append(metadata_validation_results)
 
             # Exit early if the metadata file is invalid.

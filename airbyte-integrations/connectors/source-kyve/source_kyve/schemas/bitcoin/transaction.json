@@ -1,121 +1,103 @@
 {
-  "$schema" : "http://json-schema.org/draft-04/schema#",
-  "type" : "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
   "additionalProperties": true,
-  "properties" : {
-    "txid" : {
-      "type" : ["null", "string"]
+  "properties": {
+    "txid": {
+      "type": ["null", "string"]
     },
-    "hash" : {
-      "type" : ["null", "string"]
+    "hash": {
+      "type": ["null", "string"]
     },
-    "version" : {
-      "type" : ["null", "integer"]
+    "version": {
+      "type": ["null", "integer"]
     },
-    "size" : {
-      "type" : ["null", "integer"]
+    "size": {
+      "type": ["null", "integer"]
     },
-    "vsize" : {
-      "type" : ["null", "integer"]
+    "vsize": {
+      "type": ["null", "integer"]
     },
-    "weight" : {
-      "type" : ["null", "integer"]
+    "weight": {
+      "type": ["null", "integer"]
     },
-    "locktime" : {
-      "type" : ["null", "integer"]
+    "locktime": {
+      "type": ["null", "integer"]
     },
-    "vin" : {
-      "type" : ["null", "array"],
-      "items" : {
-        "type" : ["null", "object"],
-        "properties" : {
-          "txid" : {
-            "type" : ["null", "string"]
+    "vin": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "txid": {
+            "type": ["null", "string"]
           },
-          "vout" : {
-            "type" : ["null", "integer"]
+          "vout": {
+            "type": ["null", "integer"]
           },
-          "scriptSig" : {
-            "type" : ["null", "object"],
-            "properties" : {
-              "asm" : {
-                "type" : ["null", "string"]
+          "scriptSig": {
+            "type": ["null", "object"],
+            "properties": {
+              "asm": {
+                "type": ["null", "string"]
               },
-              "hex" : {
-                "type" : ["null", "string"]
+              "hex": {
+                "type": ["null", "string"]
               }
             },
-            "required" : [
-              "asm",
-              "hex"
-            ]
+            "required": ["asm", "hex"]
           },
-          "sequence" : {
-            "type" : ["null", "integer"]
+          "sequence": {
+            "type": ["null", "integer"]
           }
         },
-        "required" : [
-          "txid",
-          "vout",
-          "scriptSig",
-          "sequence"
-        ]
+        "required": ["txid", "vout", "scriptSig", "sequence"]
       }
     },
-    "vout" : {
-      "type" : ["null", "array"],
-      "items" : {
-        "type" : ["null", "object"],
-        "properties" : {
-          "value" : {
-            "type" : ["null", "number"]
+    "vout": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "value": {
+            "type": ["null", "number"]
           },
-          "n" : {
-            "type" : ["null", "integer"]
+          "n": {
+            "type": ["null", "integer"]
           },
-          "scriptPubKey" : {
-            "type" : ["null", "object"],
-            "properties" : {
-              "asm" : {
-                "type" : ["null", "string"]
+          "scriptPubKey": {
+            "type": ["null", "object"],
+            "properties": {
+              "asm": {
+                "type": ["null", "string"]
               },
-              "desc" : {
-                "type" : ["null", "string"]
+              "desc": {
+                "type": ["null", "string"]
               },
-              "hex" : {
-                "type" : ["null", "string"]
+              "hex": {
+                "type": ["null", "string"]
               },
-              "address" : {
-                "type" : ["null", "string"]
+              "address": {
+                "type": ["null", "string"]
               },
-              "type" : {
-                "type" : ["null", "string"]
+              "type": {
+                "type": ["null", "string"]
               }
             },
-            "required" : [
-              "asm",
-              "desc",
-              "hex",
-              "address",
-              "type"
-            ]
+            "required": ["asm", "desc", "hex", "address", "type"]
           }
         },
-        "required" : [
-          "value",
-          "n",
-          "scriptPubKey"
-        ]
+        "required": ["value", "n", "scriptPubKey"]
       }
     },
-    "fee" : {
-      "type" : ["null", "number"]
+    "fee": {
+      "type": ["null", "number"]
     },
-    "hex" : {
-      "type" : ["null", "string"]
+    "hex": {
+      "type": ["null", "string"]
     }
   },
-  "required" : [
+  "required": [
     "txid",
     "hash",
     "version",

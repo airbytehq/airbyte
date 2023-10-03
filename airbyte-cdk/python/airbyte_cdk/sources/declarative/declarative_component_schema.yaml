@@ -582,6 +582,7 @@ definitions:
         description: |
           The datetime format used to format the datetime values that are sent in outgoing requests to the API. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%ms**: Epoch unix timestamp (milliseconds) - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
             * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)
@@ -613,6 +614,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S.%f%z"
           - "%Y-%m-%d"
           - "%s"
+          - "%ms"
       start_datetime:
         title: Start Datetime
         description: The datetime that determines the earliest record that should be synced.
@@ -1413,6 +1415,7 @@ definitions:
         description: |
           Format of the datetime value. Defaults to "%Y-%m-%dT%H:%M:%S.%f%z" if left empty. Use placeholders starting with "%" to describe the format the API is using. The following placeholders are available:
             * **%s**: Epoch unix timestamp - `1686218963`
+            * **%ms**: Epoch unix timestamp - `1686218963123`
             * **%a**: Weekday (abbreviated) - `Sun`
             * **%A**: Weekday (full) - `Sunday`
             * **%w**: Weekday (decimal) - `0` (Sunday), `6` (Saturday)

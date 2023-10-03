@@ -1,9 +1,13 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.mysql.initialsync;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import io.airbyte.integrations.source.mysql.MySqlCdcConnectorMetadataInjector;
 import io.airbyte.integrations.source.mysql.MySqlSourceOperations;
 import java.sql.ResultSet;
@@ -29,6 +33,14 @@ public class MySqlInitialLoadSourceOperations extends MySqlSourceOperations {
       final int columnCount = metadata.getColumnCount();
       final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
       for (int i = 1; i <= columnCount; i++) {
+        // attempt to access the column. this allows us to know if it is null before we do type-specific
+        // parsing. if it is null, we can move on. while awkward, this seems to be the agreed upon way of
+        // checking for null values with jdbc.
+        queryContext.getObject(i);
+        if (queryContext.wasNull()) {
+          continue;
+        }
+
         // convert to java types that will convert into reasonable json.
         copyToJsonField(queryContext, i, jsonNode);
       }
@@ -46,8 +58,9 @@ public class MySqlInitialLoadSourceOperations extends MySqlSourceOperations {
     private final MysqlDebeziumStateAttributes stateAttributes;
     private final MySqlCdcConnectorMetadataInjector metadataInjector;
 
-    public CdcMetadataInjector(final String transactionTimestamp, final MysqlDebeziumStateAttributes stateAttributes,
-        final MySqlCdcConnectorMetadataInjector metadataInjector) {
+    public CdcMetadataInjector(final String transactionTimestamp,
+                               final MysqlDebeziumStateAttributes stateAttributes,
+                               final MySqlCdcConnectorMetadataInjector metadataInjector) {
       this.transactionTimestamp = transactionTimestamp;
       this.stateAttributes = stateAttributes;
       this.metadataInjector = metadataInjector;
@@ -56,5 +69,7 @@ public class MySqlInitialLoadSourceOperations extends MySqlSourceOperations {
     private void inject(final ObjectNode record) {
       metadataInjector.addMetaDataToRowsFetchedOutsideDebezium(record, transactionTimestamp, stateAttributes);
     }
+
   }
+
 }

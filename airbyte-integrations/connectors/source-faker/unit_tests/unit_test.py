@@ -9,13 +9,13 @@ from source_faker import SourceFaker
 
 
 class MockLogger:
-    def debug(a,b, **kwargs):
+    def debug(a, b, **kwargs):
         return None
 
-    def info(a,b, **kwargs):
+    def info(a, b, **kwargs):
         return None
 
-    def exception(a,b,**kwargs):
+    def exception(a, b, **kwargs):
         print(b)
         return None
 
@@ -46,7 +46,7 @@ def test_source_streams():
 
     assert len(schemas) == 3
     assert schemas[1]["properties"] == {
-        "id": {"type": "number"},
+        "id": {"type": "integer"},
         "created_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
         "updated_at": {"type": "string", "format": "date-time", "airbyte_type": "timestamp_with_timezone"},
         "name": {"type": "string"},
@@ -62,18 +62,18 @@ def test_source_streams():
         "height": {"type": "string"},
         "blood_type": {"type": "string"},
         "weight": {"type": "integer"},
-        'address': {
-            'type': 'object',
-            'properties': {
-                'city': {'type': 'string'},
-                'country_code': {'type': 'string'},
-                'postal_code': {'type': 'string'},
-                'province': {'type': 'string'},
-                'state': {'type': 'string'},
-                'street_name': {'type': 'string'},
-                'street_number': {'type': 'string'}
-            }
-        }
+        "address": {
+            "type": "object",
+            "properties": {
+                "city": {"type": "string"},
+                "country_code": {"type": "string"},
+                "postal_code": {"type": "string"},
+                "province": {"type": "string"},
+                "state": {"type": "string"},
+                "street_name": {"type": "string"},
+                "street_number": {"type": "string"},
+            },
+        },
     }
 
 

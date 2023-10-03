@@ -12,7 +12,7 @@ MAIN_REQUIREMENTS = [
     "pendulum>=2,<3",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6", "requests_mock~=1.8", "freezegun"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "pytest-mock~=3.6", "requests_mock~=1.8", "freezegun"]
 
 setup(
     name="source_facebook_marketing",

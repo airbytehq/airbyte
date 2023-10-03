@@ -15,7 +15,7 @@ from typing import List, Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
-from dagger import Client, Directory, Secret
+from dagger import Client, Directory, File, Secret
 from github import PullRequest
 from pipelines import hacks
 from pipelines.actions import secrets
@@ -53,6 +53,7 @@ class PipelineContext:
         + glob("**/.mypy_cache", recursive=True)
         + glob("**/.DS_Store", recursive=True)
         + glob("**/airbyte_ci_logs", recursive=True)
+        + glob("**/.gradle", recursive=True)
     )
 
     def __init__(
@@ -183,6 +184,19 @@ class PipelineContext:
 
         return f"https://alpha.dagger.cloud/changeByPipelines?filter=dagger.io/git.ref:{self.git_revision}"
 
+    def get_repo_file(self, file_path: str) -> File:
+        """Get a file from the current repository.
+
+        The file is extracted from the host file system.
+
+        Args:
+            file_path (str): Path to the file to get.
+
+        Returns:
+            Path: The selected repo file.
+        """
+        return self.dagger_client.host().file(file_path)
+
     def get_repo_dir(self, subdir: str = ".", exclude: Optional[List[str]] = None, include: Optional[List[str]] = None) -> Directory:
         """Get a directory from the current repository.
 
@@ -292,7 +306,7 @@ class PipelineContext:
 class ConnectorContext(PipelineContext):
     """The connector context is used to store configuration for a specific connector pipeline run."""
 
-    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:latest"
+    DEFAULT_CONNECTOR_ACCEPTANCE_TEST_IMAGE = "airbyte/connector-acceptance-test:dev"
 
     def __init__(
         self,
@@ -316,6 +330,10 @@ class ConnectorContext(PipelineContext):
         reporting_slack_channel: Optional[str] = None,
         pull_request: PullRequest = None,
         should_save_report: bool = True,
+        fail_fast: bool = False,
+        fast_tests_only: bool = False,
+        code_tests_only: bool = False,
+        use_local_cdk: bool = False,
     ):
         """Initialize a connector context.
 
@@ -334,6 +352,9 @@ class ConnectorContext(PipelineContext):
             slack_webhook (Optional[str], optional): The slack webhook to send messages to. Defaults to None.
             reporting_slack_channel (Optional[str], optional): The slack channel to send messages to. Defaults to None.
             pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
+            fail_fast (bool, optional): Whether to fail fast. Defaults to False.
+            fast_tests_only (bool, optional): Whether to run only fast tests. Defaults to False.
+            code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
         """
 
         self.pipeline_name = pipeline_name
@@ -345,6 +366,10 @@ class ConnectorContext(PipelineContext):
         self._updated_secrets_dir = None
         self.cdk_version = None
         self.should_save_report = should_save_report
+        self.fail_fast = fail_fast
+        self.fast_tests_only = fast_tests_only
+        self.code_tests_only = code_tests_only
+        self.use_local_cdk = use_local_cdk
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -427,7 +452,7 @@ class ConnectorContext(PipelineContext):
             Directory: The connector under test source code directory.
         """
         vanilla_connector_dir = self.get_repo_dir(str(self.connector.code_directory), exclude=exclude, include=include)
-        return await hacks.patch_connector_dir(self, vanilla_connector_dir)
+        return await vanilla_connector_dir.with_timestamps(1)
 
     async def __aexit__(
         self, exception_type: Optional[type[BaseException]], exception_value: Optional[BaseException], traceback: Optional[TracebackType]

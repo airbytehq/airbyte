@@ -1,8 +1,11 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import re
 from datetime import datetime, timedelta
 
 import pytest
-
 from common_utils import Logger
 
 LOG_RE = re.compile(r"^\[(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\.\d{6})\] -" r"\s+(\w+)\s+- \[.*tests/test_logger.py:(\d+)\] # (.+)")

@@ -5,7 +5,7 @@
         "name": "audit",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [["author"]]
+        "source_defined_primary_key": [["creationDate"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"

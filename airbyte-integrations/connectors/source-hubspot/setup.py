@@ -17,7 +17,6 @@ TEST_REQUIREMENTS = [
     "pytest~=6.2",
     "pytest-mock~=3.6",
     "requests-mock~=1.9.3",
-    "connector-acceptance-test",
 ]
 
 setup(
@@ -27,7 +26,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "*,yaml", "schemas/*.json"]},
+    package_data={"": ["*.json", "*.yaml", "schemas/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

@@ -36,27 +36,38 @@ Build your connector image if needed.
 docker build .
 ```
 
-Run one of the two scripts in the root of the connector:
+And test via one of the two following Options
 
-- `python -m pytest -p integration_tests.acceptance` - to run tests inside virtual environment
+### (Prefered) Option 1: Run against the production acceptance test image
 
-  - On test completion, a log will be outputted to the terminal verifying:
+From the root of your connector run:
+```bash
+./acceptance-test-docker.sh
+```
 
-    - The connector the tests were ran for
-    - The git hash of the code used
-    - Whether the tests passed or failed
+This will run you local connector image against the same test suite that Airbyte uses in production
 
-    This is useful to provide in your PR as evidence of the acceptance tests passing locally.
+### Option 2: Run against the Airbyte CI test suite
+```bash
+pipx install airbyte-ci/connectors/pipelines/
+airbyte-ci connectors --name=<name-of-your-connector></name-of-your-connector> --use-remote-secrets=false test
+```
 
-- `./acceptance-test-docker.sh` - to run tests from a docker container
+### (Debugging) Option 3: Run against the acceptance tests on your branch
 
-If the test fails you will see detail about the test and where to find its inputs and outputs to reproduce it. You can also debug failed tests by adding `—pdb —last-failed`:
+This will run the acceptance test suite directly with pytest. Allowing you to set breakpoints and debug your connector locally.
 
-```text
-python -m pytest -p integration_tests.acceptance --pdb --last-failed
+The only pre-requisite is that you have [Poetry](https://python-poetry.org/docs/#installation) installed.
+
+Afterwards you do the following from the root of the `airbyte` repo:
+```bash
+cd airbyte-integrations/bases/connector-acceptance-test/
+poetry install
+poetry run pytest -p connector_acceptance_test.plugin --acceptance-test-config=../../connectors/<your-connector> --pdb
 ```
 
 See other useful pytest options [here](https://docs.pytest.org/en/stable/usage.html)
+See a more comprehensive guide in our README [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/bases/connector-acceptance-test/README.md)
 
 ## Dynamically managing inputs & resources used in standard tests
 
@@ -216,9 +227,7 @@ This test verifies that all streams in the input catalog which support increment
 | :------------------------ | :----- | :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `config_path`             | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                                                                  |
 | `configured_catalog_path` | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                                                                          |
-| `cursor_paths`            | dict   | {}                                          | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor_field. |
 | `timeout_seconds`         | int    | 20\*60                                      | Test execution timeout in seconds                                                                                                                                   |
-| `threshold_days`          | int    | 0                                           | For date-based cursors, allow records to be emitted with a cursor value this number of days before the state value.                                                 |
 
 ### TestReadSequentialSlices
 
@@ -228,9 +237,7 @@ This test offers more comprehensive verification that all streams in the input c
 | :------------------------------------- | :----- | :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `config_path`                          | string | `secrets/config.json`                       | Path to a JSON object representing a valid connector configuration                                                                                                  |
 | `configured_catalog_path`              | string | `integration_tests/configured_catalog.json` | Path to configured catalog                                                                                                                                          |
-| `cursor_paths`                         | dict   | {}                                          | For each stream, the path of its cursor field in the output state messages. If omitted the path will be taken from the last piece of path from stream cursor_field. |
 | `timeout_seconds`                      | int    | 20\*60                                      | Test execution timeout in seconds                                                                                                                                   |
-| `threshold_days`                       | int    | 0                                           | For date-based cursors, allow records to be emitted with a cursor value this number of days before the state value.                                                 |
 | `skip_comprehensive_incremental_tests` | bool   | false                                       | For non-GA and in-development connectors, control whether the more comprehensive incremental tests will be skipped                                                  |
 
 **Note that this test samples a fraction of stream slices across an incremental sync in order to reduce test duration and avoid spamming partner APIs**
@@ -356,7 +363,6 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
-        cursor_paths:
           ...
         future_state:
           future_state_path: integration_tests/abnormal_state.json
