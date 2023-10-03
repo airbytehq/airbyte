@@ -19,10 +19,11 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._name = "name"
         self._json_schema = {}
         self._availability_strategy = Mock()
-        self._primary_key = None
+        self._primary_key = []
         self._cursor_field = None
         self._error_display_message_parser = Mock()
         self._slice_logger = Mock()
+        self._logger = Mock()
         self._message_repository = Mock()
         self._stream = ThreadBasedConcurrentStream(
             self._partition_generator,
@@ -34,6 +35,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._cursor_field,
             self._error_display_message_parser,
             self._slice_logger,
+            self._logger,
             self._message_repository,
             1,
         )
@@ -54,7 +56,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._availability_strategy.check_availability.return_value = STREAM_AVAILABLE
         availability = self._stream.check_availability()
         assert availability == STREAM_AVAILABLE
-        self._availability_strategy.check_availability.assert_called_once_with(self._stream.logger)
+        self._availability_strategy.check_availability.assert_called_once_with(self._logger)
 
     def test_check_for_error_raises_no_exception_if_all_futures_succeeded(self):
         futures = [Mock() for _ in range(3)]
@@ -110,7 +112,15 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._message_repository.emit_message.assert_called_once_with(slice_log_message)
 
     def test_as_airbyte_stream(self):
-        expected_airbyte_stream = AirbyteStream(name=self._name, json_schema=self._json_schema, supported_sync_modes=[SyncMode.full_refresh], source_defined_cursor=None, default_cursor_field=None, source_defined_primary_key=None, namespace=None)
+        expected_airbyte_stream = AirbyteStream(
+            name=self._name,
+            json_schema=self._json_schema,
+            supported_sync_modes=[SyncMode.full_refresh],
+            source_defined_cursor=None,
+            default_cursor_field=None,
+            source_defined_primary_key=None,
+            namespace=None,
+        )
         actual_airbyte_stream = self._stream.as_airbyte_stream()
 
         assert expected_airbyte_stream == actual_airbyte_stream
