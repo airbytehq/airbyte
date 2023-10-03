@@ -128,7 +128,8 @@ class MongoDbSourceTest {
     final AirbyteConnectionStatus airbyteConnectionStatus = source.check(Jsons.jsonNode(Map.of()));
     assertNotNull(airbyteConnectionStatus);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, airbyteConnectionStatus.getStatus());
-    assertEquals("Unable to perform connection check operation: Database configuration is missing required 'database_config' property.", airbyteConnectionStatus.getMessage());
+    assertEquals("Unable to perform connection check operation: Database configuration is missing required 'database_config' property.",
+        airbyteConnectionStatus.getMessage());
   }
 
   @Test
