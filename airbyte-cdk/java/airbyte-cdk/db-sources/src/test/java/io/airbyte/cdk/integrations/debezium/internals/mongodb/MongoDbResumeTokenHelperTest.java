@@ -30,7 +30,7 @@ class MongoDbResumeTokenHelperTest {
   void testRetrievingResumeToken() {
     final String resumeToken = "8264BEB9F3000000012B0229296E04";
     final BsonDocument resumeTokenDocument = ResumeTokens.fromData(resumeToken);
-    final ChangeStreamIterable changeStreamIterable = mock(ChangeStreamIterable.class);
+    final ChangeStreamIterable<BsonDocument> changeStreamIterable = mock(ChangeStreamIterable.class);
     final MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor =
         mock(MongoChangeStreamCursor.class);
     final MongoClient mongoClient = mock(MongoClient.class);
@@ -39,7 +39,7 @@ class MongoDbResumeTokenHelperTest {
     when(changeStreamIterable.cursor()).thenReturn(mongoChangeStreamCursor);
     when(mongoClient.watch(BsonDocument.class)).thenReturn(changeStreamIterable);
 
-    final BsonDocument actualResumeToken = MongoDbResumeTokenHelper.getResumeToken(mongoClient);
+    final BsonDocument actualResumeToken = MongoDbResumeTokenHelper.getMostRecentResumeToken(mongoClient);
     assertEquals(resumeTokenDocument, actualResumeToken);
   }
 
