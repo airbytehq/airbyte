@@ -6,7 +6,8 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
-from airbyte_cdk.sources.streams.concurrent.legacy import AvailabilityStrategyFacade
+from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
+from airbyte_cdk.sources.streams.concurrent.legacy import AvailabilityStrategyFacade, StreamFacade
 
 
 @pytest.mark.parametrize(
@@ -29,3 +30,19 @@ def test_availability_strategy_facade(stream_availability, expected_available, e
     assert message == expected_message
 
     strategy.check_availability.assert_called_once_with(logger)
+
+
+@pytest.mark.parametrize(
+    "exception, expected_display_message",
+    [
+        pytest.param(Exception("message"), None, id="test_no_display_message"),
+        pytest.param(ExceptionWithDisplayMessage("message"), "message", id="test_no_display_message"),
+    ],
+)
+def test_get_error_display_message(exception, expected_display_message):
+    stream = Mock()
+    facade = StreamFacade(stream)
+
+    display_message = facade.get_error_display_message(exception)
+
+    assert display_message == expected_display_message

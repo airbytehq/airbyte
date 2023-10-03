@@ -71,16 +71,6 @@ class AbstractStream(ABC):
         """
 
     @abstractmethod
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        """
-        Retrieves the user-friendly display message that corresponds to an exception.
-        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
-
-        :param exception: The exception that was raised
-        :return: A user-friendly message that indicates the cause of the error
-        """
-
-    @abstractmethod
     def as_airbyte_stream(self) -> AirbyteStream:
         """
         :return: A dict of the JSON schema representing this stream.

@@ -12,6 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy
+from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
@@ -116,7 +117,10 @@ class StreamFacade(Stream):
         :param exception: The exception that was raised
         :return: A user-friendly message that indicates the cause of the error
         """
-        return self._stream.get_error_display_message(exception)
+        if isinstance(exception, ExceptionWithDisplayMessage):
+            return exception.display_message
+        else:
+            return None
 
     def as_airbyte_stream(self) -> AirbyteStream:
         return self._stream.as_airbyte_stream()
