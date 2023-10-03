@@ -4,6 +4,4 @@
 
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
-import java.util.LinkedHashMap;
-
-public record SnowflakeTableDefinition(LinkedHashMap<String, SnowflakeColumnDefinition> columns) {}
+public record SnowflakeColumnDefinition(String type, boolean isNullable) {}
