@@ -21,4 +21,8 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
+releases:
+  breakingChanges:
+    1.0.0:
+      message: "This version changes connector authentication by removing support for the API V1 token, which has been deprecated by the (upstream source)[https://support.appsflyer.com/hc/en-us/articles/12399683708305-Bulletin-API-token-changes] as of September 18, 2023 in favour of the new JWT based API V2 token. Users will need to reauthenticate with the new API V2 token after upgrading in order to continue syncing."
 metadataSpecVersion: "1.0"
