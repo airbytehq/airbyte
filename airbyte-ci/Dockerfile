@@ -5,7 +5,7 @@ RUN docker --version && git --version
 
 COPY . /airbyte-ci
 RUN pip install /airbyte-ci/connectors/pipelines
-RUN airbyte-ci --version
+# RUN airbyte-ci --version
 
 RUN mkdir /airbyte
 
