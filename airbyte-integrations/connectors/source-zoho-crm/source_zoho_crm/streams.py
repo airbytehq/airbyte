@@ -38,9 +38,10 @@ class ZohoCrmStream(HttpStream, ABC):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        if len(self.module.fields) > 50:
-            self.logger.warning("ZohoCRM only allows a max of 50 parameters per query, dropping all fields after 50")
-        params["fields"] = ",".join([field.api_name for field in self.module.fields][:50])
+        if self.module:
+            if len(self.module.fields) > 50:
+                self.logger.warning("ZohoCRM only allows a max of 50 parameters per query, dropping all fields after 50")
+            params["fields"] = ",".join([field.api_name for field in self.module.fields][:50])
         if next_page_token:
             params.update(**next_page_token)
         return params
