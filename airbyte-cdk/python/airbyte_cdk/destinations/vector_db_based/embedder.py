@@ -96,7 +96,7 @@ class BaseOpenAIEmbedder(Embedder):
 
 class OpenAIEmbedder(BaseOpenAIEmbedder):
     def __init__(self, config: OpenAIEmbeddingConfigModel, chunk_size: int):
-        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15), chunk_size)  # type: ignore
+        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, max_retries=15), chunk_size)  # type: ignore
 
 
 class AzureOpenAIEmbedder(BaseOpenAIEmbedder):
