@@ -159,7 +159,7 @@ class OpenAICompatibleEmbedder(Embedder):
         super().__init__()
         self.config = config
         # Client is set internally
-        self.embeddings = LocalAIEmbeddings(model=config.model_name, openai_api_key=config.api_key, openai_api_base=config.base_url, chunk_size=8191, max_retries=15)  # type: ignore
+        self.embeddings = LocalAIEmbeddings(model=config.model_name, openai_api_key=config.api_key, openai_api_base=config.base_url, max_retries=15)  # type: ignore
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
