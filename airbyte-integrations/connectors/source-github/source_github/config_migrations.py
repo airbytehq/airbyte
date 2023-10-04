@@ -54,9 +54,7 @@ class MigrateStringToArray(ABC):
     def _transform_to_array(cls, config: Mapping[str, Any], source: SourceGithub = None) -> Mapping[str, Any]:
         # assign old values to new property that will be used within the new version
         config[cls.migrate_to_key] = config[cls.migrate_to_key] if cls.migrate_to_key in config else []
-        # data = config.pop(cls.migrate_from_key)
         data = set(filter(None, config.pop(cls.migrate_from_key).split(" ")))
-        # TODO: add regular check
         config[cls.migrate_to_key] = list(data | set(config[cls.migrate_to_key]))
         return config
 
