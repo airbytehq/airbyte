@@ -4,10 +4,7 @@ This page contains the setup guide and reference information for the GitHub sour
 
 ## Prerequisites
 
-- Start date
-- GitHub Repositories
-- Branch (Optional)
-- Page size for large streams (Optional)
+- List of GitHub Repositories (and access for them in case they are private)
 
 <!-- env:cloud -->
 **For Airbyte Cloud:**
@@ -34,89 +31,84 @@ Create a [GitHub Account](https://github.com).
 Log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
 <!-- /env:oss -->
 
-<!-- env:cloud -->
 ### Step 2: Set up the GitHub connector in Airbyte
 
-**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **GitHub** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your GitHub account` by selecting Oauth or Personal Access Token for Authentication.
-5. Log in and Authorize to the GitHub account.
+5. To authenticate:
+   <!-- env:cloud -->
+-  **For Airbyte Cloud**: Click **Authenticate your account** to authorize your GitHub account. Airbyte will authenticate the GitHub account you are already logged in to. Please make sure you are logged into the right account.
+   <!-- /env:cloud -->
+   <!-- env:oss -->
+-  **For Airbyte Open Source**: Authenticate with **Personal Access Token**.
+   <!-- /env:oss -->
 6. **GitHub Repositories** - Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`. Repositories with the wrong name, or repositories that do not exist, or have the wrong name format are not allowed.
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. If the date is not set, all data will be replicated. Using for streams: `Comments`, `Commit comment reactions`, `Commit comments`, `Commits`, `Deployments`, `Events`, `Issue comment reactions`, `Issue events`, `Issue milestones`, `Issue reactions`, `Issues`, `Project cards`, `Project columns`, `Projects`, `Pull request comment reactions`, `Pull requests`, `Pull request stats`, `Releases`, `Review comments`, `Reviews`, `Stargazers`, `Workflow runs`, `Workflows`.
 8. **Branch (Optional)** - Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 9. **Max requests per hour (Optional)** - The GitHub API allows for a maximum of 5000 requests per hour (15000 for Github Enterprise). You can specify a lower value to limit your use of the API quota.
-<!-- /env:cloud -->
 
-<!-- env:oss -->
-**For Airbyte Open Source:**
-
-1. Authenticate with **Personal Access Token**.
-<!-- /env:oss -->
 
 ## Supported sync modes
 
 The GitHub source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts/#connection-sync-modes):
 
-| Feature                       | Supported?  |
-| :---------------------------- | :---------- |
-| Full Refresh Sync             | Yes         |
-| Incremental - Append Sync     | Yes         |
-| Replicate Incremental Deletes | Coming soon |
-| SSL connection                | Yes         |
-| Namespaces                    | No          |
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental Sync - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
 This connector outputs the following full refresh streams:
 
-- [Assignees](https://docs.github.com/en/rest/reference/issues#list-assignees)
-- [Branches](https://docs.github.com/en/rest/reference/repos#list-branches)
+- [Assignees](https://docs.github.com/en/rest/issues/assignees?apiVersion=2022-11-28#list-assignees)
+- [Branches](https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#list-branches)
 - [Contributor Activity](https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#get-all-contributor-commit-activity)
-- [Collaborators](https://docs.github.com/en/rest/reference/repos#list-repository-collaborators)
-- [Issue labels](https://docs.github.com/en/rest/issues/labels#list-labels-for-a-repository)
-- [Organizations](https://docs.github.com/en/rest/reference/orgs#get-an-organization)
-- [Pull request commits](https://docs.github.com/en/rest/reference/pulls#list-commits-on-a-pull-request)
-- [Tags](https://docs.github.com/en/rest/reference/repos#list-repository-tags)
-- [TeamMembers](https://docs.github.com/en/rest/teams/members#list-team-members)
-- [TeamMemberships](https://docs.github.com/en/rest/reference/teams#get-team-membership-for-a-user)
-- [Teams](https://docs.github.com/en/rest/reference/teams#list-teams)
-- [Users](https://docs.github.com/en/rest/reference/orgs#list-organization-members)
-- [Issue timeline events](https://docs.github.com/en/rest/issues/timeline?apiVersion=2022-11-28)
+- [Collaborators](https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators)
+- [Issue labels](https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#list-labels-for-a-repository)
+- [Organizations](https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations)
+- [Pull request commits](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-commits-on-a-pull-request)
+- [Tags](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags)
+- [TeamMembers](https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#list-team-members)
+- [TeamMemberships](https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#get-team-membership-for-a-user)
+- [Teams](https://docs.github.com/en/rest/teams/teams?apiVersion=2022-11-28#list-teams)
+- [Users](https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#list-organization-members)
+- [Issue timeline events](https://docs.github.com/en/rest/issues/timeline?apiVersion=2022-11-28#list-timeline-events-for-an-issue)
 
 This connector outputs the following incremental streams:
 
-- [Comments](https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository)
-- [Commit comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment)
-- [Commit comments](https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository)
-- [Commits](https://docs.github.com/en/rest/reference/repos#list-commits)
-- [Deployments](https://docs.github.com/en/rest/reference/deployments#list-deployments)
-- [Events](https://docs.github.com/en/rest/reference/activity#list-repository-events)
-- [Issue comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue-comment)
-- [Issue events](https://docs.github.com/en/rest/reference/issues#list-issue-events-for-a-repository)
-- [Issue milestones](https://docs.github.com/en/rest/reference/issues#list-milestones)
-- [Issue reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue)
-- [Issues](https://docs.github.com/en/rest/reference/issues#list-repository-issues)
-- [Project cards](https://docs.github.com/en/rest/reference/projects#list-project-cards)
-- [Project columns](https://docs.github.com/en/rest/reference/projects#list-project-columns)
-- [Projects](https://docs.github.com/en/rest/reference/projects#list-repository-projects)
+- [Comments](https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#list-issue-comments-for-a-repository)
+- [Commit comment reactions](https://docs.github.com/en/rest/reference/reactions?apiVersion=2022-11-28#list-reactions-for-a-commit-comment)
+- [Commit comments](https://docs.github.com/en/rest/commits/comments?apiVersion=2022-11-28#list-commit-comments-for-a-repository)
+- [Commits](https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#list-commits)
+- [Deployments](https://docs.github.com/en/rest/deployments/deployments?apiVersion=2022-11-28#list-deployments)
+- [Events](https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events)
+- [Issue comment reactions](https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-an-issue-comment)
+- [Issue events](https://docs.github.com/en/rest/issues/events?apiVersion=2022-11-28#list-issue-events-for-a-repository)
+- [Issue milestones](https://docs.github.com/en/rest/issues/milestones?apiVersion=2022-11-28#list-milestones)
+- [Issue reactions](https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-an-issue)
+- [Issues](https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues)
+- [Project (Classic) cards](https://docs.github.com/en/rest/projects/cards?apiVersion=2022-11-28#list-project-cards)
+- [Project (Classic) columns](https://docs.github.com/en/rest/projects/columns?apiVersion=2022-11-28#list-project-columns)
+- [Projects (Classic)](https://docs.github.com/en/rest/projects/projects?apiVersion=2022-11-28#list-repository-projects)
 - [ProjectsV2](https://docs.github.com/en/graphql/reference/objects#projectv2)
-- [Pull request comment reactions](https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-pull-request-review-comment)
-- [Pull request stats](https://docs.github.com/en/rest/reference/pulls#get-a-pull-request)
-- [Pull requests](https://docs.github.com/en/rest/reference/pulls#list-pull-requests)
-- [Releases](https://docs.github.com/en/rest/reference/repos#list-releases)
-- [Repositories](https://docs.github.com/en/rest/reference/repos#list-organization-repositories)
-- [Review comments](https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository)
-- [Reviews](https://docs.github.com/en/rest/reference/pulls#list-reviews-for-a-pull-request)
-- [Stargazers](https://docs.github.com/en/rest/reference/activity#list-stargazers)
-- [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository)
-- [Workflows](https://docs.github.com/en/rest/reference/actions#workflows)
+- [Pull request comment reactions](https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-a-pull-request-review-comment)
+- [Pull request stats](https://docs.github.com/en/graphql/reference/objects#pullrequest)
+- [Pull requests](https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests)
+- [Releases](https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases)
+- [Repositories](https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories)
+- [Review comments](https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository)
+- [Reviews](https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#list-reviews-for-a-pull-request)
+- [Stargazers](https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers)
+- [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
+- [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
 ### Notes
 
-1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from the above 24 incremental streams are pure incremental meaning that they:
+1. Only 4 streams \(`comments`, `commits`, `issues` and `review comments`\) from the listed above streams are pure incremental meaning that they:
 
    - read only new records;
    - output only new records.
@@ -133,7 +125,7 @@ This connector outputs the following incremental streams:
    - output only new records.
      Please, consider this behaviour when using those 19 incremental streams because it may affect you API call limits.
 
-4. We are passing few parameters \(`since`, `sort` and `direction`\) to GitHub in order to filter records and sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
+4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
    **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
 - `assignees`
@@ -150,7 +142,7 @@ This connector outputs the following incremental streams:
 
 ### Permissions and scopes
 
-If you use OAuth authentication method, the oauth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **workflow**. For [personal access token](https://github.com/settings/tokens) it need to manually select needed scopes.
+If you use OAuth authentication method, the oauth2.0 application requests the next list of [scopes](https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes): **repo**, **read:org**, **read:repo_hook**, **read:user**, **read:discussion**, **workflow**. For [personal access token](https://github.com/settings/tokens) you need to manually select needed scopes.
 
 Your token should have at least the `repo` scope. Depending on which streams you want to sync, the user generating the token needs more permissions:
 
@@ -166,6 +158,7 @@ The GitHub connector should not run into GitHub API limitations under normal usa
 
 | Version | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                             |
 |:--------|:-----------|:------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.4.5   | 2023-10-02 | [31023](https://github.com/airbytehq/airbyte/pull/31023)                                                          | Increase backoff for stream `Contributor Activity`                                                                                                                  |
 | 1.4.4   | 2023-10-02 | [30971](https://github.com/airbytehq/airbyte/pull/30971)                                                          | Mark `start_date` as optional.                                                                                                                                      |
 | 1.4.3   | 2023-10-02 | [30979](https://github.com/airbytehq/airbyte/pull/30979)                                                          | Fetch archived records in `Project Cards`                                                                                                                           |
 | 1.4.2   | 2023-09-30 | [30927](https://github.com/airbytehq/airbyte/pull/30927)                                                          | Provide actionable user error messages                                                                                                                              |
