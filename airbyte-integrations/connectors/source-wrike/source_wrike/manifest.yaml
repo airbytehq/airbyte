@@ -23,7 +23,7 @@ definitions:
     page_token_option:
       type: "RequestPath"
       field_name: "nextPageToken"
-      inject_into: "url_base"
+      inject_into: "request_parameter"
 
   retriever:
     type: SimpleRetriever
