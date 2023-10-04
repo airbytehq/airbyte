@@ -19,7 +19,7 @@ definitions:
       error_handlers:
         - type: DefaultErrorHandler
           response_filters:
-            - http_codes: [403]
+            - http_codes: [403, 404]
               action: IGNORE
         - type: DefaultErrorHandler
     authenticator:
@@ -315,6 +315,11 @@ definitions:
           - stream: "#/definitions/candidates_stream"
             parent_key: "id"
             partition_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["candidate_id"]
+            value: "{{ stream_slice.parent_id }}"
   approvals_stream:
     $parameters:
       name: "approvals"

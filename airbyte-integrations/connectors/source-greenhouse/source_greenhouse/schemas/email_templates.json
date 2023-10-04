@@ -1,46 +1,69 @@
 {
-  "$schema": "https://json-schema.org/draft-07/schema",
-  "type": "object",
-  "additionalProperties": true,
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "properties": {
-    "id": {
-      "type": ["null", "integer"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "description": {
-      "type": ["null", "string"]
-    },
-    "default": {
-      "type": ["null", "boolean"]
-    },
-    "updated_at": {
-      "type": ["null", "string"]
-    },
-    "created_at": {
-      "type": ["null", "string"]
-    },
-    "type": {
-      "type": ["null", "string"]
-    },
-    "from": {
+    "body": {
       "type": ["null", "string"]
     },
     "cc": {
-      "type": ["null", "array"],
       "items": {
-        "type": ["null", "string"]
-      }
+        "type": "string"
+      },
+      "type": "array"
     },
-    "body": {
+    "created_at": {
+      "type": "string"
+    },
+    "default": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "string"
+    },
+    "from": {
       "type": ["null", "string"]
     },
     "html_body": {
       "type": ["null", "string"]
     },
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "updated_at": {
+      "type": "string"
+    },
     "user": {
-      "type": ["null", "string"]
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "employee_id": {
+              "type": ["null", "string"]
+            },
+            "first_name": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer"
+            },
+            "last_name": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      ]
     }
-  }
+  },
+  "type": "object"
 }
