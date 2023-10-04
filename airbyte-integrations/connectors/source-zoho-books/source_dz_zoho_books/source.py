@@ -30,7 +30,7 @@ class DzZohoBooksStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self.base_url
-    
+
     @property
     def max_retries(self) -> Union[int, None]:
         """
