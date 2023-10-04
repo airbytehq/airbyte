@@ -1,315 +1,212 @@
 {
-  "$schema" : "https://json-schema.org/draft/2020-12/schema",
-  "type" : "object",
-  "properties" : {
-    "id" : {
-      "type" : "string",
-      "format" : "uuid"
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "accountNumber": {
+      "type": ["null", "string"]
     },
-    "parentAccountId" : {
-      "type" : "string",
-      "format" : "uuid",
-      "nullable" : true
+    "accountType": {
+      "type": ["null", "string"]
     },
-    "accountNumber" : {
-      "type" : "string",
-      "nullable" : true
+    "accountsReceivable": {
+      "type": ["null", "string"]
     },
-    "accountType" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/AccountType"
+    "acv": {
+      "additionalProperties": true,
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyAmount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
         }
-      ]
-    },
-    "inactive" : {
-      "type" : "boolean"
-    },
-    "invoiceDeliveryMethod" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/InvoiceDeliveryMethod"
-        }
-      ]
-    },
-    "accountsReceivable" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "currencyCode" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "defaultPaymentTerm" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "domain" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "electronicInvoiceAddress" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "electronicInvoiceAddressScheme" : {
-      "type" : "string",
-      "description" : "Electronic Invoice Scheme (EAS) code list.  Read more on: https://docs.peppol.eu/poacc/billing/3.0/codelist/eas/",
-      "nullable" : true,
-      "example" : "0007"
-    },
-    "imageUrl" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "invoiceEmailAddress" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "invoiceEmailCcAddresses" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "reminderEmailAddress" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "name" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "organizationNumber" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "ourReference" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "taxRegistrationNumber" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "taxTemplate" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "yourReference" : {
-      "type" : "string",
-      "nullable" : true
-    },
-    "invoiceTemplateId" : {
-      "type" : "string",
-      "format" : "uuid",
-      "nullable" : true
-    },
-    "invoiceBatchGroupId" : {
-      "type" : "string",
-      "format" : "uuid",
-      "nullable" : true
-    },
-    "defaultInvoiceAddress" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/AddressResponse"
-        }
-      ],
-      "nullable" : true
-    },
-    "defaultDeliveryAddress" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/AddressResponse"
-        }
-      ],
-      "nullable" : true
-    },
-    "addresses" : {
-      "type" : "array",
-      "items" : {
-        "$ref" : "#/$defs/AddressResponse"
       },
-      "nullable" : true
+      "type": "object"
     },
-    "customFields" : {
-      "type" : "object",
-      "additionalProperties" : {},
-      "nullable" : true
+    "addresses": {
+      "items": {
+        "additionalProperties": true,
+        "properties": {
+          "city": {
+            "type": ["null", "string"]
+          },
+          "country": {
+            "type": ["null", "string"]
+          },
+          "description": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          },
+          "street": {
+            "type": ["null", "string"]
+          },
+          "zip": {
+            "type": ["null", "string"]
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
     },
-    "onlinePaymentDetails" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/OnlinePaymentDetailsResponse"
+    "cmrr": {
+      "additionalProperties": true,
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyAmount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
         }
-      ],
-      "nullable" : true
+      },
+      "type": "object"
     },
-    "externalERPId" : {
-      "type" : "string",
-      "nullable" : true
+    "created": {
+      "type": ["null", "string"]
     },
-    "externalCRMId" : {
-      "type" : "string",
-      "nullable" : true
+    "currencyCode": {
+      "type": ["null", "string"]
     },
-    "cmrr" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/CurrencyAmount"
+    "customFields": {
+      "additionalProperties": true,
+      "type": "object"
+    },
+    "defaultDeliveryAddress": {
+      "additionalProperties": true,
+      "properties": {
+        "country": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
         }
-      ],
-      "nullable" : true
+      },
+      "type": "object"
     },
-    "acv" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/CurrencyAmount"
+    "defaultInvoiceAddress": {
+      "additionalProperties": true,
+      "properties": {
+        "city": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "description": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        },
+        "street": {
+          "type": ["null", "string"]
+        },
+        "zip": {
+          "type": ["null", "string"]
         }
-      ],
-      "nullable" : true
+      },
+      "type": "object"
     },
-    "emrr" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/CurrencyAmount"
-        }
-      ],
-      "nullable" : true
+    "defaultPaymentTerm": {
+      "type": ["null", "string"]
     },
-    "oneTimeFees" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/CurrencyAmount"
+    "emrr": {
+      "additionalProperties": true,
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyAmount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
         }
-      ],
-      "nullable" : true
+      },
+      "type": "object"
     },
-    "tcv" : {
-      "allOf" : [
-        {
-          "$ref" : "#/$defs/CurrencyAmount"
+    "id": {
+      "type": ["null", "string"]
+    },
+    "inactive": {
+      "type": ["null", "boolean"]
+    },
+    "invoiceDeliveryMethod": {
+      "type": ["null", "string"]
+    },
+    "invoiceTemplateId": {
+      "type": ["null", "string"]
+    },
+    "modified": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "oneTimeFees": {
+      "additionalProperties": true,
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyAmount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
         }
-      ],
-      "nullable" : true
+      },
+      "type": "object"
+    },
+    "organizationNumber": {
+      "type": ["null", "string"]
+    },
+    "ourReference": {
+      "type": ["null", "string"]
+    },
+    "taxRegistrationNumber": {
+      "type": ["null", "string"]
+    },
+    "taxTemplate": {
+      "type": ["null", "string"]
+    },
+    "tcv": {
+      "additionalProperties": true,
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyAmount": {
+          "type": ["null", "number"]
+        },
+        "baseCurrencyCode": {
+          "type": ["null", "string"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
+        }
+      },
+      "type": "object"
     }
   },
-  "additionalProperties" : false,
-  "$defs" : {
-    "AccountType" : {
-      "enum" : [
-        "Customer",
-        "Reseller",
-        "Subsidiary",
-        "Prospect",
-        "Other"
-      ],
-      "type" : "string"
-    },
-    "AddressResponse" : {
-      "type" : "object",
-      "properties" : {
-        "id" : {
-          "type" : "string",
-          "format" : "uuid",
-          "nullable" : true
-        },
-        "description" : {
-          "type" : "string",
-          "nullable" : true
-        },
-        "name" : {
-          "type" : "string",
-          "nullable" : true
-        },
-        "street" : {
-          "type" : "string",
-          "nullable" : true
-        },
-        "street2" : {
-          "type" : "string",
-          "nullable" : true
-        },
-        "city" : {
-          "type" : "string",
-          "nullable" : true
-        },
-        "county" : {
-          "type" : "string",
-          "nullable" : true
-        },
-        "state" : {
-          "type" : "string",
-          "nullable" : true
-        },
-        "zip" : {
-          "type" : "string",
-          "nullable" : true
-        },
-        "country" : {
-          "type" : "string",
-          "nullable" : true
-        }
-      },
-      "additionalProperties" : false
-    },
-    "CurrencyAmount" : {
-      "type" : "object",
-      "properties" : {
-        "amount" : {
-          "type" : "number",
-          "format" : "double"
-        },
-        "currencyCode" : {
-          "type" : "string",
-          "nullable" : true
-        },
-        "currencyConversionDate" : {
-          "type" : "string",
-          "format" : "date-time",
-          "nullable" : true
-        },
-        "baseCurrencyAmount" : {
-          "type" : "number",
-          "format" : "double"
-        },
-        "baseCurrencyCode" : {
-          "type" : "string",
-          "nullable" : true
-        }
-      },
-      "additionalProperties" : false
-    },
-    "InvoiceDeliveryMethod" : {
-      "enum" : [
-        "Email",
-        "Print",
-        "ElectronicInvoice",
-        "ExternalPrint",
-        "AutomaticElectronicRouting"
-      ],
-      "type" : "string"
-    },
-    "OnlinePaymentDetailsResponse" : {
-      "type" : "object",
-      "properties" : {
-        "created" : {
-          "type" : "string",
-          "format" : "date-time"
-        },
-        "modified" : {
-          "type" : "string",
-          "format" : "date-time"
-        },
-        "stripeCustomerId" : {
-          "type" : "string",
-          "nullable" : true
-        },
-        "stripePaymentMethodId" : {
-          "type" : "string",
-          "nullable" : true
-        }
-      },
-      "additionalProperties" : false
-    }
-  }
+  "type": "object"
 }

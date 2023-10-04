@@ -63,6 +63,7 @@ class YouniumStream(HttpStream, ABC):
         response_results = response.json()
         yield from response_results.get("data", [])
 
+
 class Account(YouniumStream):
     primary_key = "id"
 
@@ -71,6 +72,7 @@ class Account(YouniumStream):
     ) -> str:
         return "Accounts"
 
+
 class Booking(YouniumStream):
     primary_key = "id"
 
@@ -78,6 +80,7 @@ class Booking(YouniumStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "Bookings"
+
 
 class Invoice(YouniumStream):
     primary_key = "id"
@@ -125,7 +128,6 @@ class SourceYounium(AbstractSource):
         return auth
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-
         try:
             stream = Invoice(authenticator=self.get_auth(config), **config)
             stream.next_page_token = lambda response: None
