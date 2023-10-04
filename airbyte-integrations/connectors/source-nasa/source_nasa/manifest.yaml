@@ -14,8 +14,8 @@ definitions:
     authenticator:
       type: NoAuth
     request_parameters:
-      api_key: "{{ config[api_key] }}"
-      start_date: "{{ config[start_date] }}"
+      api_key: "{{ config['api_key'] }}"
+      start_date: "{{ config['start_date'] }}"
 
   retriever:
     type: SimpleRetriever
@@ -51,6 +51,8 @@ definitions:
       name: "nasa_apod"
       incremental_cursor: "date"
       path: "planetary/apod"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync_base"
 
 streams:
   - "#/definitions/nasa_apod_stream"
