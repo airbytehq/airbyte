@@ -94,7 +94,6 @@ check:
   stream_names:
     - "customfields"
     - "contacts"
-    # - "comments"   # Commenting as sandbox account don't have permission to access the resource results 403
     - "folders"
     - "tasks"
     - "workflows"
