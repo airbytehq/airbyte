@@ -683,6 +683,7 @@ subprojects {
     def airbyteCIConnectorsTask = { String taskName, String... connectorsArgs ->
         def task = tasks.register(taskName, Exec) {
             workingDir rootDir
+            environment "CI", "1" // set to use more suitable logging format
             commandLine rootProject.file('.venv/bin/python').absolutePath
             args "-m", "poetry"
             args "--directory", "${rootProject.file('airbyte-ci/connectors/pipelines').absolutePath}"
