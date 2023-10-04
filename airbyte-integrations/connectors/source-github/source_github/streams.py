@@ -1584,7 +1584,7 @@ class ContributorActivity(GithubStream):
             return True
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return 20 if response.status_code == requests.codes.ACCEPTED else super().backoff_time(response)
+        return 60 if response.status_code == requests.codes.ACCEPTED else super().backoff_time(response)
 
     def parse_response(
         self,
