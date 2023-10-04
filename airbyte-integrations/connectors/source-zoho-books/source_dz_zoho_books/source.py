@@ -6,7 +6,7 @@
 from abc import ABC
 from datetime import datetime
 from types import MappingProxyType
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import IncrementalMixin
 from airbyte_cdk.sources.streams.core import StreamData
@@ -29,8 +29,18 @@ class DzZohoBooksStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self.base_url
+    
+    @property
+    def max_retries(self) -> int | None:
+        """
+        Specifies maximum amount of retries for backoff policy. Return None for no limit.
+        """
+        return 10
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
+        """
+        Returns: how long to backoff in seconds.
+        """
         self.logger.warning("Retry in 60 seconds.")
         return 60
 
