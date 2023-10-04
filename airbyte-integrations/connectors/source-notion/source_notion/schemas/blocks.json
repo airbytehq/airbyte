@@ -45,7 +45,8 @@
         "pdf",
         "bookmark",
         "equation",
-        "unsupported"
+        "unsupported",
+        "table_of_contents"
       ]
     },
     "paragraph": { "$ref": "text_element.json" },
