@@ -408,6 +408,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             }
           });*/
           try {
+            LOGGER.error("Sleeping for 2 minutes");
             Thread.sleep(1000 * 60 * 2);
           } catch (InterruptedException e) {
             throw new RuntimeException(e);
