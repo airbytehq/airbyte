@@ -11,7 +11,7 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .readdirSync(dir)
     .filter(
       (fileName) =>
-        !(fileName.endsWith(".inapp.md") || fileName.endsWith("-migrations.md"))
+        !(fileName.endsWith(".inapp.md") || fileName.endsWith("-migrations.md") || fileName.endsWith(".js"))
     )
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)

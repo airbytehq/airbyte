@@ -4,7 +4,7 @@ COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 # Install curl & gnupg dependencies
 USER root
 WORKDIR /tmp
-RUN apt-get update && apt-get install -y \
+RUN apt-get update --allow-insecure-repositories && apt-get install -y \
     wget \
     curl \
     unzip \

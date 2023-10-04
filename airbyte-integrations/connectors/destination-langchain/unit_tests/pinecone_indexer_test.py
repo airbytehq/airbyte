@@ -42,7 +42,7 @@ def create_index_description(dimensions=3, pod_type="p1"):
 
 @pytest.fixture(scope="module", autouse=True)
 def mock_describe_index():
-    with patch('pinecone.describe_index') as mock:
+    with patch("pinecone.describe_index") as mock:
         mock.return_value = create_index_description()
         yield mock
 
@@ -79,7 +79,9 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
         ],
         ["delete_id1", "delete_id2"],
     )
-    indexer.pinecone_index.query.assert_called_with(vector=[0,0,0],filter={"_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000)
+    indexer.pinecone_index.query.assert_called_with(
+        vector=[0, 0, 0], filter={"_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000
+    )
     indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"])
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
@@ -167,7 +169,7 @@ def test_pinecone_pre_sync_starter(mock_describe_index):
     indexer = create_pinecone_indexer()
     indexer.pinecone_index.query.return_value = MagicMock(matches=[MagicMock(id="doc_id1"), MagicMock(id="doc_id2")])
     indexer.pre_sync(generate_catalog())
-    indexer.pinecone_index.query.assert_called_with(vector=[0,0,0],filter={"_airbyte_stream": "example_stream2"}, top_k=10_000)
+    indexer.pinecone_index.query.assert_called_with(vector=[0, 0, 0], filter={"_airbyte_stream": "example_stream2"}, top_k=10_000)
     indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"])
 
 

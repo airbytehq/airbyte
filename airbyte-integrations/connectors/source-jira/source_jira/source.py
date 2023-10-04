@@ -25,6 +25,7 @@ from .streams import (
     Groups,
     IssueComments,
     IssueCustomFieldContexts,
+    IssueCustomFieldOptions,
     IssueFieldConfigurations,
     IssueFields,
     IssueLinkTypes,
@@ -37,6 +38,7 @@ from .streams import (
     Issues,
     IssueSecuritySchemes,
     IssueTransitions,
+    IssueTypes,
     IssueTypeSchemes,
     IssueTypeScreenSchemes,
     IssueVotes,
@@ -51,6 +53,7 @@ from .streams import (
     ProjectComponents,
     ProjectEmail,
     ProjectPermissionSchemes,
+    ProjectRoles,
     Projects,
     ProjectTypes,
     ProjectVersions,
@@ -119,7 +122,7 @@ class SourceJira(AbstractSource):
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
         incremental_args = {**args, "start_date": config.get("start_date")}
-        issues_stream = Issues(**incremental_args, expand_fields=config.get("issues_stream_expand_with", []))
+        issues_stream = Issues(**incremental_args)
         issue_fields_stream = IssueFields(**args)
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
@@ -140,6 +143,7 @@ class SourceJira(AbstractSource):
             issue_fields_stream,
             IssueFieldConfigurations(**args),
             IssueCustomFieldContexts(**args),
+            IssueCustomFieldOptions(**args),
             IssueLinkTypes(**args),
             IssueNavigatorSettings(**args),
             IssueNotificationSchemes(**args),
@@ -150,6 +154,7 @@ class SourceJira(AbstractSource):
             IssueSecuritySchemes(**args),
             IssueTransitions(**args),
             IssueTypeSchemes(**args),
+            IssueTypes(**args),
             IssueTypeScreenSchemes(**args),
             IssueVotes(**incremental_args),
             IssueWatchers(**incremental_args),
@@ -159,6 +164,7 @@ class SourceJira(AbstractSource):
             Permissions(**args),
             PermissionSchemes(**args),
             Projects(**args),
+            ProjectRoles(**args),
             ProjectAvatars(**args),
             ProjectCategories(**args),
             ProjectComponents(**args),

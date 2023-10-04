@@ -22,24 +22,42 @@ This project requires Python 3.10 and pipx.
 
 The recommended way to install `airbyte-ci` is using pipx. This ensures the tool and its dependencies are isolated from your other Python projects.
 
+If you havent installed pyenv, you can do it with brew:
+
+```bash
+brew update
+brew install pyenv
+```
+
 If you haven't installed pipx, you can do it with pip:
 
 ```bash
+pyenv install # ensure you have the correct python version
 python -m pip install --user pipx
 python -m pipx ensurepath
 ```
 
-Once pipx is installed, navigate to the root directory of the project, then run:
+Once pyenv and pipx is installed then run the following:
 
 ```bash
-pipx install airbyte-ci/connectors/pipelines/ --force
+# install airbyte-ci
+pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/
 ```
 
 This command installs `airbyte-ci` and makes it globally available in your terminal.
 
 _Note: `--force` is required to ensure updates are applied on subsequent installs._
+_Note: `--version=python3.10` is required to ensure the correct python version is used._
+_Note: `--editable` is required to ensure the correct python version is used._
 
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
+
+### Updating the airbyte-ci tool
+To reinstall airbyte-ci:
+
+```sh
+pipx reinstall pipelines
+```
 
 ## Installation for development
 
@@ -330,36 +348,9 @@ flowchart TD
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 
 Available commands:
-* `airbyte-ci metadata validate`
-* `airbyte-ci metadata upload`
 * `airbyte-ci metadata test lib`
 * `airbyte-ci metadata test orchestrator`
 * `airbyte-ci metadata deploy orchestrator`
-
-### <a id="metadata-validate-command"></a>`metadata validate` command
-This commands validates the modified `metadata.yaml` files in the head commit, or all the `metadata.yaml` files.
-
-#### Example
-Validate all `metadata.yaml` files in the repo:
-`airbyte-ci metadata validate --all`
-
-#### Options
-| Option             | Default      | Description                                                                                                                |
-| ------------------ | ------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| `--modified/--all` | `--modified` | Flag to run validation of `metadata.yaml` files on the modified files in the head commit or all the `metadata.yaml` files. |
-
-### <a id="metadata-upload-command"></a>`metadata upload` command
-This command upload the modified `metadata.yaml` files in the head commit, or all the `metadata.yaml` files, to a GCS bucket.
-
-#### Example
-Upload all the `metadata.yaml` files to a GCS bucket:
-`airbyte-ci metadata upload --all <gcs-bucket-name>`
-
-#### Options
-| Option              | Required | Default      | Mapped environment variable | Description                                                                                                              |
-| ------------------- | -------- | ------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| `--gcs-credentials` | True     |              | `GCS_CREDENTIALS`           | Service account credentials in JSON format with permission to get and upload on the GCS bucket                           |
-| `--modified/--all`  | True     | `--modified` |                             | Flag to upload the modified `metadata.yaml` files in the head commit or all the  `metadata.yaml`  files to a GCS bucket. |
 
 ### <a id="metadata-upload-orchestrator"></a>`metadata deploy orchestrator` command
 This command deploys the metadata service orchestrator to production.
@@ -407,6 +398,9 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 |---------| --------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
+| 1.4.4   | [#30743](https://github.com/airbytehq/airbyte/pull/30743) | Add `--disable-report-auto-open` and `--use-host-gradle-dist-tar` to allow gradle integration.            |
+| 1.4.3   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Add --version and version check                                                                           |
+| 1.4.2   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Remove directory name requirement                                                                         |
 | 1.4.1   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Load base migration guide into QA Test container for strict encrypt variants                              |
 | 1.4.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330) | Add support for pyproject.toml as the prefered entry point for a connector package                        |
 | 1.3.0   | [#30461](https://github.com/airbytehq/airbyte/pull/30461) | Add `--use-local-cdk` flag to all connectors commands                                                      |
@@ -441,3 +435,56 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## More info
 This project is owned by the Connectors Operations team.
 We share project updates and remaining stories before its release to production in this [EPIC](https://github.com/airbytehq/airbyte/issues/24403).
+
+# Troubleshooting
+## `airbyte-ci` is not found
+If you get the following error when running `airbyte-ci`:
+```bash
+$ airbyte-ci
+zsh: command not found: airbyte-ci
+```
+It means that the `airbyte-ci` command is not in your PATH.
+
+To fix this, you can either:
+* Ensure that airbyte-ci is installed with pipx. Run `pipx list` to check if airbyte-ci is installed.
+* Run `pipx ensurepath` to add the pipx binary directory to your PATH.
+* Add the pipx binary directory to your PATH manually. The pipx binary directory is usually `~/.local/bin`.
+
+
+## python3.10 not found
+If you get the following error when running `pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/`:
+```bash
+$ pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/
+Error: Python 3.10 not found on your system.
+```
+
+It means that you don't have Python 3.10 installed on your system.
+
+To fix this, you can either:
+* Install Python 3.10 with pyenv. Run `pyenv install 3.10` to install the latest Python version.
+* Install Python 3.10 with your system package manager. For instance, on Ubuntu you can run `sudo apt install python3.10`.
+* Ensure that Python 3.10 is in your PATH. Run `which python3.10` to check if Python 3.10 is installed and in your PATH.
+
+## Any type of pipeline failure
+First you should check that the version of the CLI you are using is the latest one.
+You can check the version of the CLI with the `--version` option:
+```bash
+$ airbyte-ci --version
+airbyte-ci, version 0.1.0
+```
+
+and compare it with the version in the pyproject.toml file:
+```bash
+$ cat airbyte-ci/connectors/pipelines/pyproject.toml | grep version
+```
+
+If you get any type of pipeline failure, you can run the pipeline with the `--show-dagger-logs` option to get more information about the failure.
+```bash
+$ airbyte-ci --show-dagger-logs connectors --name=source-pokeapi test
+```
+
+and when in doubt, you can reinstall the CLI with the `--force` option:
+```bash
+$ pipx reinstall pipelines --force
+```
+

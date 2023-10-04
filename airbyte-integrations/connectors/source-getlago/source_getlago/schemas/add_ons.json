@@ -22,6 +22,9 @@
     },
     "amount_currency": {
       "type": ["null", "string"]
+    },
+    "taxes": {
+      "type": ["array", "null"]
     }
   }
 }

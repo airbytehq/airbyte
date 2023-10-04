@@ -178,17 +178,8 @@ class GoogleAds:
         # For example:
         # 1. ad_group_ad.ad.responsive_display_ad.long_headline - type AdTextAsset (https://developers.google.com/google-ads/api/reference/rpc/v6/AdTextAsset?hl=en).
         # 2. ad_group_ad.ad.legacy_app_install_ad - type LegacyAppInstallAdInfo (https://developers.google.com/google-ads/api/reference/rpc/v7/LegacyAppInstallAdInfo?hl=en).
-        #
-        if not (isinstance(field_value, (list, int, float, str, bool, dict)) or field_value is None):
+        if not isinstance(field_value, (list, int, float, str, bool, dict)) and field_value is not None:
             field_value = str(field_value)
-        # In case of custom query field has MESSAGE type it represents protobuf
-        # message and could be anything, convert it to a string or array of
-        # string if it has "repeated" flag on metadata
-        if schema_type.get("protobuf_message"):
-            if "array" in schema_type.get("type"):
-                field_value = [str(field) for field in field_value]
-            else:
-                field_value = str(field_value)
 
         return field_value
 

@@ -27,13 +27,39 @@ def check_source(repo_line: str) -> AirbyteConnectionStatus:
     return source.check(logger_mock, config)
 
 
+@responses.activate
+@pytest.mark.parametrize(
+    "config, expected",
+    (
+        (
+            {
+                "start_date": "2021-08-27T00:00:46Z",
+                "access_token": "test_token",
+                "repository": "airbyte/test",
+            },
+            True,
+        ),
+        ({"access_token": "test_token", "repository": "airbyte/test"}, True),
+    ),
+)
+def test_check_start_date(config, expected):
+    responses.add(responses.GET, "https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "test_full_name"})
+    source = SourceGithub()
+    status, _ = source.check_connection(logger=logging.getLogger("airbyte"), config=config)
+    assert status == expected
+
+
 @pytest.mark.parametrize(
     "api_url, deployment_env, expected_message",
     (
-        ("github.my.company.org", "CLOUD", "Please enter a full URL starting with http..."),
-        ("http://github.my.company.org", "CLOUD", "HTTP connection is insecure and is not allowed in this environment. Please use `https` instead."),
-        ("http:/github.my.company.org", "NOT_CLOUD", "Please provide a correct URL"),
-        ("https:/github.my.company.org", "CLOUD", "Please provide a correct URL"),
+        ("github.my.company.org", "CLOUD", "Please enter a full url for `API URL` field starting with `http`"),
+        (
+            "http://github.my.company.org",
+            "CLOUD",
+            "HTTP connection is insecure and is not allowed in this environment. Please use `https` instead.",
+        ),
+        ("http:/github.my.company.org", "NOT_CLOUD", "Please provide a correct API URL."),
+        ("https:/github.my.company.org", "CLOUD", "Please provide a correct API URL."),
     ),
 )
 def test_connection_fail_due_to_config_error(api_url, deployment_env, expected_message):
@@ -164,7 +190,11 @@ def test_organization_or_repo_available(monkeypatch):
 
 def tests_get_and_prepare_repositories_config():
     config = {"repository": "airbytehq/airbyte airbytehq/airbyte.test  airbytehq/integration-test"}
-    assert SourceGithub._get_and_prepare_repositories_config(config) == {"airbytehq/airbyte", "airbytehq/airbyte.test", "airbytehq/integration-test"}
+    assert SourceGithub._get_and_prepare_repositories_config(config) == {
+        "airbytehq/airbyte",
+        "airbytehq/airbyte.test",
+        "airbytehq/integration-test",
+    }
 
 
 def test_check_config_repository():
@@ -221,7 +251,7 @@ def test_check_config_repository():
         assert command_check(source, config)
 
     for repos in repos_fail:
-        config["repository"] = " ".join(repos_ok[:len(repos_ok)//2] + [repos] + repos_ok[len(repos_ok)//2:])
+        config["repository"] = " ".join(repos_ok[: len(repos_ok) // 2] + [repos] + repos_ok[len(repos_ok) // 2 :])
         with pytest.raises(AirbyteTracedException):
             assert command_check(source, config)
 
@@ -241,7 +271,7 @@ def test_multiple_token_authenticator_with_rate_limiter(monkeypatch):
         frozen_time.tick(delta=datetime.timedelta(seconds=seconds))
         called_args.append(seconds)
 
-    monkeypatch.setattr(time, 'sleep', sleep_mock)
+    monkeypatch.setattr(time, "sleep", sleep_mock)
 
     with freeze_time("2021-01-01 12:00:00") as frozen_time:
 
@@ -293,3 +323,41 @@ def test_streams_page_size():
             assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
         else:
             assert stream.page_size == constants.DEFAULT_PAGE_SIZE
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "config, expected",
+    (
+        (
+            {
+                "start_date": "2021-08-27T00:00:46Z",
+                "access_token": "test_token",
+                "repository": "airbyte/test",
+            },
+            39,
+        ),
+        ({"access_token": "test_token", "repository": "airbyte/test"}, 39),
+    ),
+)
+def test_streams_config_start_date(config, expected):
+    responses.add(responses.GET, "https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "airbyte/test"})
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbyte/test?per_page=100",
+        json={"full_name": "airbyte/test", "default_branch": "default_branch"},
+    )
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbyte/test/branches?per_page=100",
+        json=[{"repository": "airbyte/test", "name": "name"}],
+    )
+    source = SourceGithub()
+    streams = source.streams(config=config)
+    # projects stream that uses start date
+    project_stream = streams[4]
+    assert len(streams) == expected
+    if config.get("start_date"):
+        assert project_stream._start_date == "2021-08-27T00:00:46Z"
+    else:
+        assert not project_stream._start_date

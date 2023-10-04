@@ -32,10 +32,12 @@ from .streams import (
     IssueMilestones,
     IssueReactions,
     Issues,
+    IssueTimelineEvents,
     Organizations,
     ProjectCards,
     ProjectColumns,
     Projects,
+    ProjectsV2,
     PullRequestCommentReactions,
     PullRequestCommits,
     PullRequests,
@@ -147,11 +149,11 @@ class SourceGithub(AbstractSource):
         api_url_parsed = urlparse(config["api_url"])
 
         if not api_url_parsed.scheme.startswith("http"):
-            message = "Please enter a full URL starting with http..."
+            message = "Please enter a full url for `API URL` field starting with `http`"
         elif api_url_parsed.scheme == "http" and not self._is_http_allowed():
             message = "HTTP connection is insecure and is not allowed in this environment. Please use `https` instead."
         elif not api_url_parsed.netloc:
-            message = "Please provide a correct URL"
+            message = "Please provide a correct API URL."
         else:
             return config
 
@@ -207,7 +209,7 @@ class SourceGithub(AbstractSource):
         elif "404 Client Error: Not Found for url: https://api.github.com/orgs/" in message:
             # 404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100
             org_name = message.split("https://api.github.com/orgs/")[1].split("/")[0]
-            user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated'
+            user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated. Please validate your repository config.'
         elif "401 Client Error: Unauthorized for url" in message:
             # 401 Client Error: Unauthorized for url: https://api.github.com/orgs/datarootsio/repos?per_page=100&sort=updated&direction=desc
             user_message = (
@@ -251,6 +253,7 @@ class SourceGithub(AbstractSource):
             user_message = (
                 "No streams available. Looks like your config for repositories or organizations is not valid."
                 " Please, check your permissions, names of repositories and organizations."
+                " Needed scopes: repo, read:org, read:repo_hook, read:user, read:discussion, workflow."
             )
             raise AirbyteTracedException(
                 internal_message="No streams available. Please check permissions",
@@ -268,7 +271,8 @@ class SourceGithub(AbstractSource):
             "api_url": config.get("api_url"),
             "access_token_type": access_token_type,
         }
-        organization_args_with_start_date = {**organization_args, "start_date": config["start_date"]}
+        start_date = config.get("start_date")
+        organization_args_with_start_date = {**organization_args, "start_date": start_date}
 
         repository_args = {
             "authenticator": authenticator,
@@ -277,7 +281,7 @@ class SourceGithub(AbstractSource):
             "page_size_for_large_streams": page_size,
             "access_token_type": access_token_type,
         }
-        repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
+        repository_args_with_start_date = {**repository_args, "start_date": start_date}
 
         default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)
         pull_requests_stream = PullRequests(**repository_args_with_start_date)
@@ -288,6 +292,7 @@ class SourceGithub(AbstractSource):
         workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
 
         return [
+            IssueTimelineEvents(**repository_args),
             Assignees(**repository_args),
             Branches(**repository_args),
             Collaborators(**repository_args),
@@ -311,6 +316,7 @@ class SourceGithub(AbstractSource):
             PullRequestCommentReactions(**repository_args_with_start_date),
             PullRequestCommits(parent=pull_requests_stream, **repository_args),
             PullRequestStats(**repository_args_with_start_date),
+            ProjectsV2(**repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
             Repositories(**organization_args_with_start_date),
