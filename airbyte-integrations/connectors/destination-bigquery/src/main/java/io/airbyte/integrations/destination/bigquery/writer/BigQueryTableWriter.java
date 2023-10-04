@@ -50,6 +50,10 @@ public class BigQueryTableWriter implements DestinationWriter {
     LOGGER.error("===================== REGULAR CLOSING ==========================");
 
     this.writeChannel.close();
+    if (writeChannel.getJob().getStatus().getError() != null) {
+      LOGGER.error("===================== REGULAR CLOSING HAD AN ERROR ==========================");
+      close(hasFailed);
+    }
   }
 
   @Override
