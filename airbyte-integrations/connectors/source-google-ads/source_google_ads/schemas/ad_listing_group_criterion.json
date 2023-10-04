@@ -61,31 +61,15 @@
     },
     "ad_group_criterion.listing_group.case_value.product_channel.channel": {
       "type": ["null", "string"],
-      "enum": [
-        "LOCAL",
-        "ONLINE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["LOCAL", "ONLINE", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_criterion.listing_group.case_value.product_channel_exclusivity.channel_exclusivity": {
       "type": ["null", "string"],
-      "enum": [
-        "MULTI_CHANNEL",
-        "SINGLE_CHANNEL",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["MULTI_CHANNEL", "SINGLE_CHANNEL", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_criterion.listing_group.case_value.product_condition.condition": {
       "type": ["null", "string"],
-      "enum": [
-        "NEW",
-        "REFURBISHED",
-        "UNKNOWN",
-        "UNSPECIFIED",
-        "USED"
-      ]
+      "enum": ["NEW", "REFURBISHED", "UNKNOWN", "UNSPECIFIED", "USED"]
     },
     "ad_group_criterion.listing_group.case_value.product_custom_attribute.index": {
       "type": ["null", "string"],
@@ -125,12 +109,7 @@
     },
     "ad_group_criterion.listing_group.type": {
       "type": ["null", "string"],
-      "enum": [
-        "SUBDIVISION",
-        "UNIT",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["SUBDIVISION", "UNIT", "UNKNOWN", "UNSPECIFIED"]
     }
   }
 }

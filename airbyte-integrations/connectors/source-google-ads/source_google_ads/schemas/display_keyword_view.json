@@ -40,13 +40,7 @@
     },
     "ad_group.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "segments.ad_network_type": {
       "type": ["null", "string"],
@@ -126,13 +120,7 @@
     },
     "campaign.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "metrics.clicks": {
       "type": ["null", "integer"]
@@ -302,26 +290,14 @@
     },
     "ad_group_criterion.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_criterion.tracking_url_template": {
       "type": ["null", "string"]
     },
     "ad_group_criterion.keyword.match_type": {
       "type": ["null", "string"],
-      "enum": [
-        "BROAD",
-        "EXACT",
-        "PHRASE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["BROAD", "EXACT", "PHRASE", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_criterion.url_custom_parameters": {
       "type": ["null", "array"],

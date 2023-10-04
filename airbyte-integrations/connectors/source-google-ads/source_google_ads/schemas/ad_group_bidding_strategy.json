@@ -52,12 +52,7 @@
     },
     "bidding_strategy.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "bidding_strategy.target_cpa.cpc_bid_ceiling_micros": {
       "type": ["null", "integer"]

@@ -7,12 +7,7 @@
     },
     "ad_group.ad_rotation_mode": {
       "type": ["null", "string"],
-      "enum": [
-        "OPTIMIZE",
-        "ROTATE_FOREVER",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["OPTIMIZE", "ROTATE_FOREVER", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group.base_ad_group": {
       "type": ["null", "string"]
@@ -133,13 +128,7 @@
     },
     "ad_group.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group.target_cpa_micros": {
       "type": ["null", "integer"]

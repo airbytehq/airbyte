@@ -16,12 +16,7 @@
     },
     "campaign_budget.delivery_method": {
       "type": ["null", "string"],
-      "enum": [
-        "ACCELERATED",
-        "STANDARD",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ACCELERATED", "STANDARD", "UNKNOWN", "UNSPECIFIED"]
     },
     "campaign_budget.explicitly_shared": {
       "type": ["null", "boolean"]
@@ -37,12 +32,7 @@
     },
     "campaign_budget.period": {
       "type": ["null", "string"],
-      "enum": [
-        "CUSTOM_PERIOD",
-        "DAILY",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["CUSTOM_PERIOD", "DAILY", "UNKNOWN", "UNSPECIFIED"]
     },
     "campaign_budget.recommended_budget_amount_micros": {
       "type": ["null", "integer"]
@@ -67,12 +57,7 @@
     },
     "campaign_budget.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "campaign_budget.total_amount_micros": {
       "type": ["null", "integer"]
@@ -97,12 +82,7 @@
     },
     "segments.budget_campaign_association_status.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "metrics.all_conversions": {
       "type": ["null", "number"]

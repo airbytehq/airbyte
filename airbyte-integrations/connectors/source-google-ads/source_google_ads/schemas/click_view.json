@@ -16,13 +16,7 @@
     },
     "click_view.keyword_info.match_type": {
       "type": ["null", "string"],
-      "enum": [
-        "BROAD",
-        "EXACT",
-        "PHRASE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["BROAD", "EXACT", "PHRASE", "UNKNOWN", "UNSPECIFIED"]
     },
     "click_view.keyword_info.text": {
       "type": ["null", "string"]

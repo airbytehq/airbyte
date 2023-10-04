@@ -77,26 +77,14 @@
     },
     "campaign.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group.name": {
       "type": ["null", "string"]
     },
     "ad_group.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group.base_ad_group": {
       "type": ["null", "string"]

@@ -13,13 +13,7 @@
     },
     "ad_group.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "segments.ad_network_type": {
       "type": ["null", "string"],
@@ -60,13 +54,7 @@
     },
     "campaign.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "segments.product_bidding_category_level1": {
       "type": ["null", "string"]
@@ -85,21 +73,11 @@
     },
     "segments.product_channel": {
       "type": ["null", "string"],
-      "enum": [
-        "LOCAL",
-        "ONLINE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["LOCAL", "ONLINE", "UNKNOWN", "UNSPECIFIED"]
     },
     "segments.product_channel_exclusivity": {
       "type": ["null", "string"],
-      "enum": [
-        "MULTI_CHANNEL",
-        "SINGLE_CHANNEL",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["MULTI_CHANNEL", "SINGLE_CHANNEL", "UNKNOWN", "UNSPECIFIED"]
     },
     "segments.click_type": {
       "type": ["null", "string"],
@@ -257,13 +235,7 @@
     },
     "segments.product_condition": {
       "type": ["null", "string"],
-      "enum": [
-        "NEW",
-        "REFURBISHED",
-        "UNKNOWN",
-        "UNSPECIFIED",
-        "USED"
-      ]
+      "enum": ["NEW", "REFURBISHED", "UNKNOWN", "UNSPECIFIED", "USED"]
     },
     "segments.product_title": {
       "type": ["null", "string"]

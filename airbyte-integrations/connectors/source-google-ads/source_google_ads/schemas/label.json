@@ -16,12 +16,7 @@
     },
     "label.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "label.text_label.background_color": {
       "type": ["null", "string"]

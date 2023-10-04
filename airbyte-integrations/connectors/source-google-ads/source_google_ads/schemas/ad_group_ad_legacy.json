@@ -46,13 +46,7 @@
     },
     "ad_group.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "segments.ad_network_type": {
       "type": ["null", "string"],
@@ -176,13 +170,7 @@
     },
     "campaign.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "metrics.clicks": {
       "type": ["null", "integer"]
@@ -326,13 +314,7 @@
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.format_setting": {
       "type": ["null", "string"],
-      "enum": [
-        "ALL_FORMATS",
-        "NATIVE",
-        "NON_NATIVE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ALL_FORMATS", "NATIVE", "NON_NATIVE", "UNKNOWN", "UNSPECIFIED"]
     },
     "metrics.gmail_forwards": {
       "type": ["null", "integer"]
@@ -444,13 +426,7 @@
     },
     "ad_group_ad.ad.responsive_display_ad.format_setting": {
       "type": ["null", "string"],
-      "enum": [
-        "ALL_FORMATS",
-        "NATIVE",
-        "NON_NATIVE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ALL_FORMATS", "NATIVE", "NON_NATIVE", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_ad.ad.responsive_display_ad.headlines": {
       "type": ["null", "array"],
@@ -535,13 +511,7 @@
     },
     "ad_group_ad.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_ad.ad.system_managed_resource_source": {
       "type": ["null", "string"],

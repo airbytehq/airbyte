@@ -13,7 +13,7 @@ from google.ads.googleads.v11.errors.types.request_error import RequestErrorEnum
 from google.api_core.exceptions import DataLoss, InternalServerError, ResourceExhausted, TooManyRequests
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
-from source_google_ads.streams import Customer, ClickView
+from source_google_ads.streams import ClickView, Customer
 
 # EXPIRED_PAGE_TOKEN exception will be raised when page token has expired.
 exception = GoogleAdsException(

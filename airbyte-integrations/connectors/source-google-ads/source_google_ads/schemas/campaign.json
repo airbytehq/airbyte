@@ -67,12 +67,7 @@
     },
     "campaign.app_campaign_setting.app_store": {
       "type": ["null", "string"],
-      "enum": [
-        "APPLE_APP_STORE",
-        "GOOGLE_APP_STORE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["APPLE_APP_STORE", "GOOGLE_APP_STORE", "UNKNOWN", "UNSPECIFIED"]
     },
     "campaign.app_campaign_setting.bidding_strategy_goal_type": {
       "type": ["null", "string"],
@@ -183,13 +178,7 @@
     },
     "campaign.experiment_type": {
       "type": ["null", "string"],
-      "enum": [
-        "BASE",
-        "DRAFT",
-        "EXPERIMENT",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["BASE", "DRAFT", "EXPERIMENT", "UNKNOWN", "UNSPECIFIED"]
     },
     "campaign.final_url_suffix": {
       "type": ["null", "string"]
@@ -202,12 +191,7 @@
     },
     "campaign.geo_target_type_setting.negative_geo_target_type": {
       "type": ["null", "string"],
-      "enum": [
-        "PRESENCE",
-        "PRESENCE_OR_INTEREST",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["PRESENCE", "PRESENCE_OR_INTEREST", "UNKNOWN", "UNSPECIFIED"]
     },
     "campaign.geo_target_type_setting.positive_geo_target_type": {
       "type": ["null", "string"],
@@ -233,12 +217,7 @@
     },
     "campaign.local_campaign_setting.location_source_type": {
       "type": ["null", "string"],
-      "enum": [
-        "AFFILIATE",
-        "GOOGLE_MY_BUSINESS",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["AFFILIATE", "GOOGLE_MY_BUSINESS", "UNKNOWN", "UNSPECIFIED"]
     },
     "campaign.manual_cpc.enhanced_cpc_enabled": {
       "type": ["null", "boolean"]
@@ -344,13 +323,7 @@
     },
     "campaign.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "campaign.target_cpa.cpc_bid_ceiling_micros": {
       "type": ["null", "integer"]

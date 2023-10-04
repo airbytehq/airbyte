@@ -151,13 +151,7 @@
     },
     "ad_group_criterion.gender.type": {
       "type": ["null", "string"],
-      "enum": [
-        "FEMALE",
-        "MALE",
-        "UNDETERMINED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["FEMALE", "MALE", "UNDETERMINED", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_criterion.income_range.type": {
       "type": ["null", "string"],
@@ -175,13 +169,7 @@
     },
     "ad_group_criterion.keyword.match_type": {
       "type": ["null", "string"],
-      "enum": [
-        "BROAD",
-        "EXACT",
-        "PHRASE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["BROAD", "EXACT", "PHRASE", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_criterion.keyword.text": {
       "type": ["null", "string"]
@@ -273,22 +261,11 @@
     },
     "ad_group_criterion.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_criterion.system_serving_status": {
       "type": ["null", "string"],
-      "enum": [
-        "ELIGIBLE",
-        "RARELY_SERVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ELIGIBLE", "RARELY_SERVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_criterion.topic.path": {
       "type": ["null", "array"],

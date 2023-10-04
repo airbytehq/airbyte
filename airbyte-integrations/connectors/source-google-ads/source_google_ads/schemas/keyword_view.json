@@ -64,13 +64,7 @@
     },
     "ad_group_criterion.keyword.match_type": {
       "type": ["null", "string"],
-      "enum": [
-        "BROAD",
-        "EXACT",
-        "PHRASE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["BROAD", "EXACT", "PHRASE", "UNKNOWN", "UNSPECIFIED"]
     },
     "metrics.historical_quality_score": {
       "type": ["null", "integer"]

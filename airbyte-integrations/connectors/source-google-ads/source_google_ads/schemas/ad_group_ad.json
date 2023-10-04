@@ -263,13 +263,7 @@
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.format_setting": {
       "type": ["null", "string"],
-      "enum": [
-        "ALL_FORMATS",
-        "NATIVE",
-        "NON_NATIVE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ALL_FORMATS", "NATIVE", "NON_NATIVE", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.logo_image": {
       "type": ["null", "string"]
@@ -372,13 +366,7 @@
     },
     "ad_group_ad.ad.responsive_display_ad.format_setting": {
       "type": ["null", "string"],
-      "enum": [
-        "ALL_FORMATS",
-        "NATIVE",
-        "NON_NATIVE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ALL_FORMATS", "NATIVE", "NON_NATIVE", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_ad.ad.responsive_display_ad.headlines": {
       "type": ["null", "array"],
@@ -644,13 +632,7 @@
     },
     "ad_group_ad.status": {
       "type": ["null", "string"],
-      "enum": [
-        "ENABLED",
-        "PAUSED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "segments.date": {
       "type": ["null", "string"],

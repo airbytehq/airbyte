@@ -31,13 +31,7 @@
     },
     "change_status.resource_status": {
       "type": ["null", "string"],
-      "enum": [
-        "ADDED",
-        "CHANGED",
-        "REMOVED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "enum": ["ADDED", "CHANGED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
     },
     "change_status.resource_name": {
       "type": ["null", "string"]
