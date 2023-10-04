@@ -292,7 +292,9 @@ class SemiIncrementalMixin:
             state_path = [stream_slice[k] for k in self.slice_keys] + [self.cursor_field]
             stream_state_value = getter(stream_state, state_path, strict=False)
             if stream_state_value:
-                return max(self._start_date, stream_state_value)
+                if self._start_date:
+                    return max(self._start_date, stream_state_value)
+                return stream_state_value
         return self._start_date
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
@@ -313,7 +315,7 @@ class SemiIncrementalMixin:
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             cursor_value = self.convert_cursor_value(record[self.cursor_field])
-            if cursor_value > start_point:
+            if not start_point or cursor_value > start_point:
                 yield record
             elif self.is_sorted == "desc" and cursor_value < start_point:
                 break
@@ -661,7 +663,9 @@ class Commits(IncrementalMixin, GithubStream):
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalMixin, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        params["since"] = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        since = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        if since:
+            params["since"] = since
         params["sha"] = stream_slice["branch"]
         return params
 
@@ -985,7 +989,9 @@ class ReactionStream(GithubStream, ABC):
             parent_id = str(stream_slice[self.copy_parent_key])
             stream_state_value = stream_state.get(repository, {}).get(parent_id, {}).get(self.cursor_field)
             if stream_state_value:
-                return max(self._start_date, stream_state_value)
+                if self._start_date:
+                    return max(self._start_date, stream_state_value)
+                return stream_state_value
         return self._start_date
 
     def read_records(
@@ -999,7 +1005,7 @@ class ReactionStream(GithubStream, ABC):
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
-            if record[self.cursor_field] > starting_point:
+            if not starting_point or record[self.cursor_field] > starting_point:
                 yield record
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -1254,7 +1260,7 @@ class ProjectColumns(GithubStream):
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
-            if record[self.cursor_field] > starting_point:
+            if not starting_point or record[self.cursor_field] > starting_point:
                 yield record
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
@@ -1263,7 +1269,9 @@ class ProjectColumns(GithubStream):
             project_id = str(stream_slice["project_id"])
             stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
             if stream_state_value:
-                return max(self._start_date, stream_state_value)
+                if self._start_date:
+                    return max(self._start_date, stream_state_value)
+                return stream_state_value
         return self._start_date
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
@@ -1322,7 +1330,7 @@ class ProjectCards(GithubStream):
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
-            if record[self.cursor_field] > starting_point:
+            if not starting_point or record[self.cursor_field] > starting_point:
                 yield record
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
@@ -1332,7 +1340,9 @@ class ProjectCards(GithubStream):
             column_id = str(stream_slice["column_id"])
             stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
             if stream_state_value:
-                return max(self._start_date, stream_state_value)
+                if self._start_date:
+                    return max(self._start_date, stream_state_value)
+                return stream_state_value
         return self._start_date
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
@@ -1407,15 +1417,17 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         # workflows_runs records cannot be updated. It means if we initially fully synced stream on subsequent incremental sync we need
         # only to look behind on 30 days to find all records which were updated.
         start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
+        break_point = None
+        if start_point:
+            break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
         for record in super(SemiIncrementalMixin, self).read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             cursor_value = record[self.cursor_field]
             created_at = record["created_at"]
-            if cursor_value > start_point:
+            if not start_point or cursor_value > start_point:
                 yield record
-            if created_at < break_point:
+            if break_point and created_at < break_point:
                 break
 
 
