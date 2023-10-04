@@ -20,9 +20,9 @@ class MigrateStringToArray(ABC):
     This class stands for migrating the config at runtime,
     while providing the backward compatibility when falling back to the previous source version.
 
-    Specifically, starting from `1.3.0`, the `repository` and `branch` properties should be like :
+    Specifically, starting from `1.4.6`, the `repository` and `branch` properties should be like :
         > List(["<repository_1>", "<repository_2>", ..., "<repository_n>"])
-    instead of, in `1.2.0`:
+    instead of, in `1.4.5`:
         > JSON STR: "repository_1 repository_2"
     """
 
