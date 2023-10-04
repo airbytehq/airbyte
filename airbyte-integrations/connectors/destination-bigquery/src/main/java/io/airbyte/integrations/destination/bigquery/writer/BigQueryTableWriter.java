@@ -51,8 +51,8 @@ public class BigQueryTableWriter implements DestinationWriter {
 
     this.writeChannel.close();
     if (writeChannel.getJob().getStatus().getError() != null) {
-      LOGGER.error("===================== REGULAR CLOSING HAD AN ERROR ==========================");
-      close(hasFailed);
+      throw new IOException("Fail to complete a load job in big query, Job id: " + writeChannel.getJob().getJobId() +
+              ", with error: " + writeChannel.getJob().getStatus().getError());
     }
   }
 
