@@ -37,7 +37,6 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                 "streams": [
                     {
                         "name": "test_data",
-                        "file_type": "avro",
                         "globs": ["**/*.avro"],
                         "legacy_prefix": "a_folder/",
                         "validation_policy": "Emit Record",
@@ -65,7 +64,6 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                 "streams": [
                     {
                         "name": "test_data",
-                        "file_type": "avro",
                         "globs": ["**/*.avro"],
                         "legacy_prefix": "",
                         "validation_policy": "Emit Record",
@@ -93,17 +91,16 @@ from source_s3.v4.legacy_config_transformer import LegacyConfigTransformer
                 "streams": [
                     {
                         "name": "test_data",
-                        "file_type": "avro",
                         "globs": ["*.csv", "**/*"],
                         "validation_policy": "Emit Record",
                         "legacy_prefix": "a_prefix/",
                         "format": {"filetype": "avro"},
                     }
-                ]
-            }
-            , id="test_convert_with_multiple_path_patterns"
+                ],
+            },
+            id="test_convert_with_multiple_path_patterns",
         ),
-    ]
+    ],
 )
 def test_convert_legacy_config(legacy_config, expected_config):
     parsed_legacy_config = SourceS3Spec(**legacy_config)
@@ -164,7 +161,25 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "quote_char": "^",
                 "encoding": "utf8",
                 "double_quote": True,
-                "null_values": ["", "#N/A", "#N/A N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan", "1.#IND", "1.#QNAN", "N/A", "NA",  "NULL", "NaN",  "n/a", "nan", "null"],
+                "null_values": [
+                    "",
+                    "#N/A",
+                    "#N/A N/A",
+                    "#NA",
+                    "-1.#IND",
+                    "-1.#QNAN",
+                    "-NaN",
+                    "-nan",
+                    "1.#IND",
+                    "1.#QNAN",
+                    "N/A",
+                    "NA",
+                    "NULL",
+                    "NaN",
+                    "n/a",
+                    "nan",
+                    "null",
+                ],
                 "true_values": ["1", "True", "TRUE", "true"],
                 "false_values": ["0", "False", "FALSE", "false"],
                 "inference_type": "Primitive Types Only",
@@ -183,7 +198,25 @@ def test_convert_legacy_config(legacy_config, expected_config):
                 "quote_char": '"',
                 "encoding": "utf8",
                 "double_quote": True,
-                "null_values": ["", "#N/A", "#N/A N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan", "1.#IND", "1.#QNAN", "N/A", "NA",  "NULL", "NaN",  "n/a", "nan", "null"],
+                "null_values": [
+                    "",
+                    "#N/A",
+                    "#N/A N/A",
+                    "#NA",
+                    "-1.#IND",
+                    "-1.#QNAN",
+                    "-NaN",
+                    "-nan",
+                    "1.#IND",
+                    "1.#QNAN",
+                    "N/A",
+                    "NA",
+                    "NULL",
+                    "NaN",
+                    "n/a",
+                    "nan",
+                    "null",
+                ],
                 "true_values": ["1", "True", "TRUE", "true"],
                 "false_values": ["0", "False", "FALSE", "false"],
                 "inference_type": "Primitive Types Only",
@@ -393,7 +426,6 @@ def test_convert_file_format(file_type, legacy_format_config, expected_format_co
         "streams": [
             {
                 "name": "test_data",
-                "file_type": file_type,
                 "globs": [f"**/*.{file_type}"],
                 "legacy_prefix": "",
                 "validation_policy": "Emit Record",

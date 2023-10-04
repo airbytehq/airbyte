@@ -27,6 +27,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
             "permissions. If accessing publicly available data, this field is not necessary.",
             airbyte_secret=True,
+            always_show=True,
             order=1,
         )
         aws_secret_access_key: Optional[str] = Field(
@@ -35,6 +36,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
             description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
             "permissions. If accessing publicly available data, this field is not necessary.",
             airbyte_secret=True,
+            always_show=True,
             order=2,
         )
         path_prefix: str = Field(

@@ -13,8 +13,11 @@ pytestmark = [
 
 
 @pytest.fixture
-def python_connector() -> Connector:
-    return Connector("source-openweather")
+def python_connectors() -> Connector:
+    return [
+        Connector("source-openweather"),  # setup.py based
+        Connector("destination-duckdb"),  # pyproject.toml based
+    ]
 
 
 @pytest.fixture
@@ -29,11 +32,12 @@ def context(dagger_client):
     return context
 
 
-async def test_with_installed_python_package(context, python_connector):
-    python_environment = context.dagger_client.container().from_("python:3.10")
-    installed_connector_package = await environments.with_installed_python_package(
-        context,
-        python_environment,
-        str(python_connector.code_directory),
-    )
-    await installed_connector_package.with_exec(["python", "main.py", "spec"])
+async def test_with_installed_python_package(context, python_connectors):
+    for python_connector in python_connectors:
+        python_environment = context.dagger_client.container().from_("python:3.10")
+        installed_connector_package = await environments.with_installed_python_package(
+            context,
+            python_environment,
+            str(python_connector.code_directory),
+        )
+        await installed_connector_package.with_exec(["python", "main.py", "spec"])

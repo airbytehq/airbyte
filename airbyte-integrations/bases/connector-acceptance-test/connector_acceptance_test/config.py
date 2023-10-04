@@ -7,7 +7,7 @@ import logging
 from copy import deepcopy
 from enum import Enum
 from pathlib import Path
-from typing import Generic, List, Mapping, Optional, Set, TypeVar, Union
+from typing import Generic, List, Mapping, Optional, Set, TypeVar
 
 from pydantic import BaseModel, Field, root_validator, validator
 from pydantic.generics import GenericModel
@@ -19,6 +19,7 @@ spec_path: str = Field(
 )
 configured_catalog_path: Optional[str] = Field(default=None, description="Path to configured catalog")
 timeout_seconds: int = Field(default=None, description="Test execution timeout_seconds", ge=0)
+deployment_mode: Optional[str] = Field(default=None, description="Deployment mode to run the test in", regex=r"^(cloud|oss)$")
 
 SEMVER_REGEX = r"(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*))(?:\.(0|(?:[1-9]\d*)))?(?:\-([\w][\w\.\-_]*))?)?"
 ALLOW_LEGACY_CONFIG = True
@@ -45,6 +46,7 @@ class SpecTestConfig(BaseConfig):
     spec_path: str = spec_path
     config_path: str = config_path
     timeout_seconds: int = timeout_seconds
+    deployment_mode: Optional[str] = deployment_mode
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
         description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
     )
@@ -59,11 +61,13 @@ class ConnectionTestConfig(BaseConfig):
     config_path: str = config_path
     status: Status = Field(Status.Succeed, description="Indicate if connection check should succeed with provided config")
     timeout_seconds: int = timeout_seconds
+    deployment_mode: Optional[str] = deployment_mode
 
 
 class DiscoveryTestConfig(BaseConfig):
     config_path: str = config_path
     timeout_seconds: int = timeout_seconds
+    deployment_mode: Optional[str] = deployment_mode
     backward_compatibility_tests_config: BackwardCompatibilityTestsConfig = Field(
         description="Configuration for the backward compatibility tests.", default=BackwardCompatibilityTestsConfig()
     )
@@ -122,6 +126,7 @@ ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = Field
 
 class BasicReadTestConfig(BaseConfig):
     config_path: str = config_path
+    deployment_mode: Optional[str] = deployment_mode
     configured_catalog_path: Optional[str] = configured_catalog_path
     empty_streams: Set[EmptyStreamConfiguration] = Field(
         default_factory=set, description="We validate that all streams has records. These are exceptions"
@@ -148,6 +153,7 @@ class FullRefreshConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
     timeout_seconds: int = timeout_seconds
+    deployment_mode: Optional[str] = deployment_mode
     ignored_fields: Optional[Mapping[str, List[IgnoredFieldsConfiguration]]] = ignored_fields
 
 
@@ -162,6 +168,7 @@ class IncrementalConfig(BaseConfig):
     configured_catalog_path: Optional[str] = configured_catalog_path
     future_state: Optional[FutureStateConfig] = Field(description="Configuration for the future state.")
     timeout_seconds: int = timeout_seconds
+    deployment_mode: Optional[str] = deployment_mode
     skip_comprehensive_incremental_tests: Optional[bool] = Field(
         description="Determines whether to skip more granular testing for incremental syncs", default=False
     )

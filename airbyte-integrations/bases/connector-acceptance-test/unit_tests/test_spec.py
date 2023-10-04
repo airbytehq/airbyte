@@ -1019,7 +1019,7 @@ def test_nested_group(mocker, connector_spec, should_fail):
         # SUCCESS: no display_type specified
         (
             {
-                "type": "object", 
+                "type": "object",
                 "properties": {
                     "select_type": {
                         "type": "object",
@@ -1041,13 +1041,13 @@ def test_nested_group(mocker, connector_spec, should_fail):
                         ],
                     },
                 },
-            }, 
+            },
             False,
         ),
         # SUCCESS: display_type is set to a valid value on a field with oneOf set
         (
             {
-                "type": "object", 
+                "type": "object",
                 "properties": {
                     "select_type": {
                         "type": "object",
@@ -1070,25 +1070,25 @@ def test_nested_group(mocker, connector_spec, should_fail):
                         ],
                     },
                 },
-            }, 
+            },
             False,
         ),
         # SUCCESS: display_type is the name of the property
         (
             {
-                "type": "object", 
+                "type": "object",
                 "properties": {
                     "display_type": {
                         "type": "string",
                     },
                 },
-            }, 
+            },
             False,
         ),
         # FAILURE: display_type is set to an invalid value
         (
             {
-                "type": "object", 
+                "type": "object",
                 "properties": {
                     "select_type": {
                         "type": "object",
@@ -1111,20 +1111,20 @@ def test_nested_group(mocker, connector_spec, should_fail):
                         ],
                     },
                 },
-            }, 
+            },
             True,
         ),
         # FAILURE: display_type is set on a non-oneOf field
         (
             {
-                "type": "object", 
+                "type": "object",
                 "properties": {
                     "select_type": {
                         "type": "string",
                         "display_type": "dropdown",
                     },
                 },
-            }, 
+            },
             True,
         ),
     ),

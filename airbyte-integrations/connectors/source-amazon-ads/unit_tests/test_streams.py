@@ -281,12 +281,15 @@ def test_sponsored_product_ad_group_bid_recommendations_404_error(caplog, config
     responses.add(
         responses.GET,
         "https://advertising-api.amazon.com/v2/sp/adGroups/xxx/bidRecommendations",
-        json={"code": "404", "details": "404 Either the specified ad group identifier was not found or the specified ad group was found but no associated bid was found."},
+        json={
+            "code": "404",
+            "details": "404 Either the specified ad group identifier was not found or the specified ad group was found but no associated bid was found.",
+        },
         status=404,
     )
     source = SourceAmazonAds()
     streams = source.streams(config)
     test_stream = get_stream_by_name(streams, "sponsored_product_ad_group_bid_recommendations")
-    records = get_all_stream_records(test_stream, stream_slice={'profileId': '1231', 'adGroupId': 'xxx'})
+    records = get_all_stream_records(test_stream, stream_slice={"profileId": "1231", "adGroupId": "xxx"})
     assert records == []
     assert "Skip current AdGroup because the specified ad group has no associated bid" in caplog.text

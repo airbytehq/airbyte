@@ -9,66 +9,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable, List
 
 import requests
-from connector_ops.utils import ConnectorLanguage
-from dagger import DaggerError
 
 if TYPE_CHECKING:
-    from dagger import Client, Container, Directory
-    from pipelines.contexts import ConnectorContext
-
-
-LINES_TO_REMOVE_FROM_GRADLE_FILE = [
-    # Do not build normalization with Gradle - we build normalization with Dagger in the BuildOrPullNormalization step.
-    "project(':airbyte-integrations:bases:base-normalization').airbyteDocker.output",
-]
-
-
-async def _patch_gradle_file(context: ConnectorContext, connector_dir: Directory) -> Directory:
-    """Patch the build.gradle file of the connector under test by removing the lines declared in LINES_TO_REMOVE_FROM_GRADLE_FILE.
-
-    Underlying issue:
-        Java connectors build.gradle declare a dependency to the normalization module.
-        It means every time we test a java connector the normalization is built.
-        This is time consuming and not required as normalization is now baked in containers.
-        Normalization is going away soon so hopefully this hack will be removed soon.
-
-    Args:
-        context (ConnectorContext): The initialized connector context.
-        connector_dir (Directory): The directory containing the build.gradle file to patch.
-    Returns:
-        Directory: The directory containing the patched gradle file.
-    """
-    if context.connector.language is not ConnectorLanguage.JAVA:
-        context.logger.info(f"Connector language {context.connector.language} does not require a patched build.gradle file.")
-        return connector_dir
-
-    try:
-        gradle_file_content = await connector_dir.file("build.gradle").contents()
-    except DaggerError:
-        context.logger.info("Could not find build.gradle file in the connector directory. Skipping patching.")
-        return connector_dir
-
-    context.logger.warn("Patching build.gradle file to remove normalization build.")
-
-    patched_gradle_file = []
-
-    for line in gradle_file_content.splitlines():
-        if not any(line_to_remove in line for line_to_remove in LINES_TO_REMOVE_FROM_GRADLE_FILE):
-            patched_gradle_file.append(line)
-    return connector_dir.with_new_file("build.gradle", contents="\n".join(patched_gradle_file))
-
-
-async def patch_connector_dir(context: ConnectorContext, connector_dir: Directory) -> Directory:
-    """Patch a connector directory: patch cat config, gradle file and dockerfile.
-
-    Args:
-        context (ConnectorContext): The initialized connector context.
-        connector_dir (Directory): The directory containing the connector to patch.
-    Returns:
-        Directory: The directory containing the patched connector.
-    """
-    patched_connector_dir = await _patch_gradle_file(context, connector_dir)
-    return patched_connector_dir.with_timestamps(1)
+    from dagger import Client, Container
 
 
 async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "pip_cache") -> None:

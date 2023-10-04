@@ -88,7 +88,7 @@ The Salesforce source connector supports the following sync modes:
 
 ### Incremental Deletes sync
 
-The Salesforce connector retrieves deleted records from Salesforce. For the streams which support it, a deleted record will be marked with `isDeleted=true`.
+The Salesforce connector supports retrieving deleted records from the Salesforce recycle bin. For the streams which support it, a deleted record will be marked with `isDeleted=true`.  To find out more about how Salesforce manages records in the recycle bin, please visit their [docs](https://help.salesforce.com/s/articleView?id=sf.home_delete.htm&type=5).
 
 ## Performance considerations
 

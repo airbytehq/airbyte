@@ -126,7 +126,7 @@ def test_render_report_output_prefix(ctx, expected):
 
 @pytest.mark.parametrize("enable_dependency_scanning", [True, False])
 def test_get_modified_connectors_with_dependency_scanning(all_connectors, enable_dependency_scanning):
-    base_java_changed_file = Path("airbyte-integrations/bases/base-java/src/main/java/io/airbyte/integrations/BaseConnector.java")
+    base_java_changed_file = Path("airbyte-cdk/java/airbyte-cdk/core/src/main/java/io/airbyte/cdk/integrations/BaseConnector.java")
     modified_files = [base_java_changed_file]
 
     not_modified_java_connector = pick_a_random_connector(language=ConnectorLanguage.JAVA)
@@ -181,3 +181,9 @@ async def test_check_path_in_workdir(dagger_client):
     assert await utils.check_path_in_workdir(container, "setup.py")
     assert await utils.check_path_in_workdir(container, "requirements.txt")
     assert await utils.check_path_in_workdir(container, "not_existing_file") is False
+
+
+def test_sh_dash_c():
+    assert utils.sh_dash_c(["foo", "bar"]) == ["sh", "-c", "set -o xtrace && foo && bar"]
+    assert utils.sh_dash_c(["foo"]) == ["sh", "-c", "set -o xtrace && foo"]
+    assert utils.sh_dash_c([]) == ["sh", "-c", "set -o xtrace"]

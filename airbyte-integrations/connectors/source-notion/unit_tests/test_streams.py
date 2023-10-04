@@ -76,10 +76,10 @@ def test_should_retry(patch_base_class, http_status, should_retry):
 def test_should_not_retry_with_ai_block(requests_mock):
     stream = Blocks(parent=None, config=MagicMock())
     json_response = {
-        "object":"error",
-        "status":400,
-        "code":"validation_error",
-        "message":"Block type ai_block is not supported via the API.",
+        "object": "error",
+        "status": 400,
+        "code": "validation_error",
+        "message": "Block type ai_block is not supported via the API.",
     }
     requests_mock.get("https://api.notion.com/v1/blocks/123", json=json_response, status_code=400)
     test_response = requests.get("https://api.notion.com/v1/blocks/123")
