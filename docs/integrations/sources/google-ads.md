@@ -230,7 +230,8 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
-| `1.0.0`  | 2023-09-28  | [30705](https://github.com/airbytehq/airbyte/pull/30705) | Fix schemas for custom queries                                                                                                       |
+| `2.0.0`  | 2023-10-04 | [31048](https://github.com/airbytehq/airbyte/pull/31048) | Fix schem default streams, change names of streams.                                                                                  |
+| `1.0.0`  | 2023-09-28 | [30705](https://github.com/airbytehq/airbyte/pull/30705) | Fix schemas for custom queries                                                                                                       |
 | `0.11.1` | 2023-09-26 | [30758](https://github.com/airbytehq/airbyte/pull/30758) | Exception should not be raises if a stream is not found                                                                              |
 | `0.11.0` | 2023-09-23 | [30704](https://github.com/airbytehq/airbyte/pull/30704) | Update error handling                                                                                                                |
 | `0.10.0` | 2023-09-19 | [30091](https://github.com/airbytehq/airbyte/pull/30091) | Fix schemas for correct primary and foreign keys                                                                                     |
