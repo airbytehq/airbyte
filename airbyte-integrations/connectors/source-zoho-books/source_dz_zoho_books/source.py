@@ -30,9 +30,6 @@ class DzZohoBooksStream(HttpStream, ABC):
     @property
     def url_base(self) -> str:
         return self.base_url
-    
-    def should_retry(self, response: requests.Response) -> bool:
-        return response.status_code == 429 or 500 <= response.status_code < 600
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         self.logger.warning("Retry in 60 seconds.")
