@@ -54,6 +54,16 @@ ext {
     version = System.getenv("VERSION") ?: env.VERSION
     image_tag = System.getenv("VERSION") ?: 'dev'
     skipSlowTests = (System.getProperty('skipSlowTests', 'false') != 'false')
+
+}
+// Pyenv support.
+try {
+    def pyenvRoot = "pyenv root".execute()
+    if (pyenvRoot.waitFor() == 0) {
+        ext.pyenvRoot = pyenvRoot.text.trim()
+    }
+} catch (IOException _) {
+    // Swallow exception if pyenv is not installed.
 }
 
 def isConnectorProject = { Project project ->
@@ -147,17 +157,35 @@ node {
 // python is required by the root project to apply python formatters like isort or black.
 python {
     envPath = '.venv'
-    minPythonVersion = '3.9'
+    minPythonVersion = '3.10' // should be 3.10 for local development
+
+    // Pyenv support.
+    try {
+        def pyenvRoot = "pyenv root".execute()
+        def pyenvLatest = "pyenv latest ${minPythonVersion}".execute()
+        // Pyenv definitely exists at this point: use 'python' instead of 'python3' in all cases.
+        pythonBinary "python"
+        if (pyenvRoot.waitFor() == 0 && pyenvLatest.waitFor() == 0) {
+            pythonPath "${pyenvRoot.text.trim()}/versions/${pyenvLatest.text.trim()}/bin"
+        }
+    } catch (IOException _) {
+        // Swallow exception if pyenv is not installed.
+    }
+
     scope = 'VIRTUALENV'
     installVirtualenv = true
-    pip 'pip:21.3.1'
+    // black and isort are required for formatting
     pip 'black:22.3.0'
-    pip 'mypy:1.4.1'
     pip 'isort:5.6.4'
-    pip 'flake8:4.0.1'
-    // flake8 doesn't support pyproject.toml files
-    // and thus there is the wrapper "pyproject-flake8" for this
-    pip 'pyproject-flake8:0.0.1a2'
+    // poetry is required for installing and running airbyte-ci
+    pip 'poetry:1.5.1'
+}
+def cleanPythonVenv = rootProject.tasks.register('cleanPythonVenv', Exec) {
+    commandLine 'rm'
+    args '-rf', "${rootProject.projectDir.absolutePath}/.venv"
+}
+rootProject.tasks.named('clean').configure {
+    dependsOn cleanPythonVenv
 }
 
 // format tasks per project
@@ -340,13 +368,6 @@ allprojects {
             dependsOn licensePythonFormat
             dependsOn isortPythonFormat
         }
-
-        def flakePythonCheck = registerPythonFormatTask('flakePythonCheck', 'pflake8', '--config')
-        flakePythonCheck.configure {
-            dependsOn licensePythonCheck
-            dependsOn isortPythonCheck
-            dependsOn blackPythonCheck
-        }
     }
 
     tasks.register('format') {
@@ -358,8 +379,6 @@ allprojects {
         dependsOn tasks.matching { it.name == 'licensePythonCheck' }
         dependsOn tasks.matching { it.name == 'isortPythonCheck' }
         dependsOn tasks.matching { it.name == 'blackPythonCheck' }
-        // TODO: address flake issues then re-enable flakePythonCheck dependency
-        // dependsOn tasks.matching { it.name == 'flakePythonCheck' }
     }
 }
 
@@ -450,7 +469,6 @@ subprojects { subproj ->
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
 
     if (isConnectorProject(subproj)) {
         // This is a Java connector project.
@@ -610,14 +628,13 @@ subprojects { subproj ->
     }
 }
 
-
 // integration and performance test tasks per project
 allprojects {
     tasks.register('integrationTest') {
         dependsOn tasks.matching {
             [
                     'integrationTestJava',
-                    'customIntegrationTests', // python integration tests
+                    'integrationTestPython',
                     'standardSourceTestFile',
             ].contains(it.name)
         }
@@ -636,6 +653,70 @@ allprojects {
 // convenience task to list all dependencies per project
 subprojects {
     tasks.register('listAllDependencies', DependencyReportTask) {}
+}
+
+// airbyte-ci tasks for local development
+def poetryInstallAirbyteCI = tasks.register('poetryInstallAirbyteCI', Exec) {
+    workingDir rootProject.file('airbyte-ci/connectors/pipelines')
+    commandLine rootProject.file('.venv/bin/python').absolutePath
+    args "-m", "poetry", "install", "--no-cache"
+}
+poetryInstallAirbyteCI.configure {
+    dependsOn tasks.named('pipInstall')
+}
+def poetryCleanVirtualenv = tasks.register('cleanVirtualenv', Exec) {
+    workingDir rootProject.file('airbyte-ci/connectors/pipelines')
+    commandLine rootProject.file('.venv/bin/python').absolutePath
+    args "-m", "poetry", "env", "remove", "--all"
+    onlyIf {
+        rootProject.file('.venv/bin/python').exists()
+    }
+}
+cleanPythonVenv.configure {
+    dependsOn poetryCleanVirtualenv
+}
+
+subprojects {
+    if (!isConnectorProject(project)) {
+        return
+    }
+    def airbyteCIConnectorsTask = { String taskName, String... connectorsArgs ->
+        def task = tasks.register(taskName, Exec) {
+            workingDir rootDir
+            environment "CI", "1" // set to use more suitable logging format
+            commandLine rootProject.file('.venv/bin/python').absolutePath
+            args "-m", "poetry"
+            args "--directory", "${rootProject.file('airbyte-ci/connectors/pipelines').absolutePath}"
+            args "run"
+            args "airbyte-ci", "connectors", "--name=${project.name}"
+            args connectorsArgs
+            // Forbid these kinds of tasks from running concurrently.
+            // We can induce serial execution by giving them all a common output directory.
+            outputs.dir rootProject.file("${rootProject.buildDir}/airbyte-ci-lock")
+            outputs.upToDateWhen { false }
+        }
+        task.configure { dependsOn poetryInstallAirbyteCI }
+        return task
+    }
+
+    // Build connector image as part of 'assemble' task.
+    // This is required for local 'integrationTest' execution.
+    def buildConnectorImage = airbyteCIConnectorsTask(
+            'buildConnectorImage', '--disable-report-auto-open', 'build', '--use-host-gradle-dist-tar')
+    buildConnectorImage.configure {
+        // Images for java projects always rely on the distribution tarball.
+        dependsOn tasks.matching { it.name == 'distTar' }
+        // Ensure that all files exist beforehand.
+        dependsOn tasks.matching { it.name == 'generate' }
+    }
+    tasks.named('assemble').configure {
+        // We may revisit the dependency on assemble but the dependency should always be on a base task.
+        dependsOn buildConnectorImage
+    }
+
+    // Convenience tasks for local airbyte-ci execution.
+    airbyteCIConnectorsTask('airbyteCIConnectorBuild', 'build')
+    airbyteCIConnectorsTask('airbyteCIConnectorTest', 'test')
 }
 
 // produce reproducible archives
