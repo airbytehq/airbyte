@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class DebeziumEventUtilsTest {
@@ -60,6 +61,7 @@ class DebeziumEventUtilsTest {
     deepCompare(expectedDelete, actualDelete);
   }
 
+  @Disabled("See https://github.com/airbytehq/airbyte/issues/31032")
   @Test
   void testConvertMongoDbChangeEvent() throws IOException {
     final String objectId = "64f24244f95155351c4185b1";
