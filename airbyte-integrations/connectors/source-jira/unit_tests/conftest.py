@@ -12,6 +12,7 @@ from source_jira.streams import Projects
 
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
+
 @fixture
 def config():
     return {
