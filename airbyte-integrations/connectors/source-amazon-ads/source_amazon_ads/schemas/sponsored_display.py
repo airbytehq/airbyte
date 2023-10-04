@@ -52,7 +52,7 @@ class DisplayCreatives(CatalogModel):
     adGroupId: Decimal
     creativeId: Decimal
     creativeType: str
-    properties: List[Dict[str, str]]
+    properties: Dict[str, Any]
     moderationStatus: str
 
 
