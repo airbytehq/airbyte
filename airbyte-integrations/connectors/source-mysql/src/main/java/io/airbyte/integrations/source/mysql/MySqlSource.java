@@ -90,6 +90,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
+
   private static final String MODE = System.getenv("DEPLOYMENT_MODE");
   public static final String TUNNEL_METHOD = "tunnel_method";
   public static final String NO_TUNNEL = "NO_TUNNEL";

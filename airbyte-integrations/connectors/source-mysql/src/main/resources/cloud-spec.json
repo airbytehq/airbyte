@@ -4,13 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MySql Source Spec",
     "type": "object",
-    "required": [
-      "host",
-      "port",
-      "database",
-      "username",
-      "replication_method"
-    ],
+    "required": ["host", "port", "database", "username", "replication_method"],
     "properties": {
       "host": {
         "description": "The host name of the database.",
@@ -25,9 +19,7 @@
         "minimum": 0,
         "maximum": 65536,
         "default": 3306,
-        "examples": [
-          "3306"
-        ],
+        "examples": ["3306"],
         "order": 1
       },
       "database": {
@@ -65,9 +57,7 @@
           {
             "title": "preferred",
             "description": "Automatically attempt SSL connection. If the MySQL server does not support SSL, continue with a regular connection.",
-            "required": [
-              "mode"
-            ],
+            "required": ["mode"],
             "properties": {
               "mode": {
                 "type": "string",
@@ -79,9 +69,7 @@
           {
             "title": "required",
             "description": "Always connect with SSL. If the MySQL server doesn’t support SSL, the connection will not be established. Certificate Authority (CA) and Hostname are not verified.",
-            "required": [
-              "mode"
-            ],
+            "required": ["mode"],
             "properties": {
               "mode": {
                 "type": "string",
@@ -93,10 +81,7 @@
           {
             "title": "Verify CA",
             "description": "Always connect with SSL. Verifies CA, but allows connection even if Hostname does not match.",
-            "required": [
-              "mode",
-              "ca_certificate"
-            ],
+            "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
@@ -141,10 +126,7 @@
           {
             "title": "Verify Identity",
             "description": "Always connect with SSL. Verify both CA and Hostname.",
-            "required": [
-              "mode",
-              "ca_certificate"
-            ],
+            "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
@@ -200,9 +182,7 @@
           {
             "title": "Read Changes using Binary Log (CDC)",
             "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the MySQL <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">binary log</a>. This must be enabled on your database.",
-            "required": [
-              "method"
-            ],
+            "required": ["method"],
             "properties": {
               "method": {
                 "type": "string",
@@ -231,9 +211,7 @@
           {
             "title": "Scan Changes with User Defined Cursor",
             "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
-            "required": [
-              "method"
-            ],
+            "required": ["method"],
             "properties": {
               "method": {
                 "type": "string",
@@ -251,9 +229,7 @@
         "oneOf": [
           {
             "title": "No Tunnel",
-            "required": [
-              "tunnel_method"
-            ],
+            "required": ["tunnel_method"],
             "properties": {
               "tunnel_method": {
                 "description": "No ssh tunnel needed to connect to database",
@@ -292,9 +268,7 @@
                 "minimum": 0,
                 "maximum": 65536,
                 "default": 22,
-                "examples": [
-                  "22"
-                ],
+                "examples": ["22"],
                 "order": 2
               },
               "tunnel_user": {
@@ -342,9 +316,7 @@
                 "minimum": 0,
                 "maximum": 65536,
                 "default": 22,
-                "examples": [
-                  "22"
-                ],
+                "examples": ["22"],
                 "order": 2
               },
               "tunnel_user": {
