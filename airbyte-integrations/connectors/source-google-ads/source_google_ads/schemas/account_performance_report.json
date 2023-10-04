@@ -158,12 +158,12 @@
       "items": {
         "type": "string",
         "enum": [
-          "CLICK",
-          "ENGAGEMENT",
-          "NONE",
-          "UNKNOWN",
-          "UNSPECIFIED",
-          "VIDEO_VIEW"
+          "InteractionEventType.CLICK",
+          "InteractionEventType.ENGAGEMENT",
+          "InteractionEventType.NONE",
+          "InteractionEventType.UNKNOWN",
+          "InteractionEventType.UNSPECIFIED",
+          "InteractionEventType.VIDEO_VIEW"
         ]
       }
     },
