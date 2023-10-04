@@ -16,15 +16,15 @@ acceptance_tests:
         status: "failed"
   discovery:
     tests:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: 1.1.2
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 1.1.2
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      expect_records:
-        path: "integration_tests/expected_records.jsonl"
-      fail_on_extra_columns: true
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.jsonl"
+        fail_on_extra_columns: true
   incremental:
     tests:
       - config_path: "secrets/config.json"
