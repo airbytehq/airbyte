@@ -51,7 +51,13 @@
       "type": ["null", "string"]
     },
     "bidding_strategy.status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "bidding_strategy.target_cpa.cpc_bid_ceiling_micros": {
       "type": ["null", "integer"]
@@ -66,7 +72,14 @@
       "type": ["null", "integer"]
     },
     "bidding_strategy.target_impression_share.location": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ABSOLUTE_TOP_OF_PAGE",
+        "ANYWHERE_ON_PAGE",
+        "TOP_OF_PAGE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "bidding_strategy.target_impression_share.location_fraction_micros": {
       "type": ["null", "integer"]
@@ -87,10 +100,32 @@
       "type": ["null", "integer"]
     },
     "bidding_strategy.type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "COMMISSION",
+        "ENHANCED_CPC",
+        "INVALID",
+        "MANUAL_CPA",
+        "MANUAL_CPC",
+        "MANUAL_CPM",
+        "MANUAL_CPV",
+        "MAXIMIZE_CONVERSIONS",
+        "MAXIMIZE_CONVERSION_VALUE",
+        "PAGE_ONE_PROMOTED",
+        "PERCENT_CPC",
+        "TARGET_CPA",
+        "TARGET_CPM",
+        "TARGET_IMPRESSION_SHARE",
+        "TARGET_OUTRANK_SHARE",
+        "TARGET_ROAS",
+        "TARGET_SPEND",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "segments.date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

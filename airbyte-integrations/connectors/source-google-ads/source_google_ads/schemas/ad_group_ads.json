@@ -75,7 +75,14 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.call_ad.conversion_reporting_state": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "DISABLED",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "USE_ACCOUNT_LEVEL_CALL_CONVERSION_ACTION",
+        "USE_RESOURCE_LEVEL_CALL_CONVERSION_ACTION"
+      ]
     },
     "ad_group_ad.ad.call_ad.country_code": {
       "type": ["null", "string"]
@@ -108,10 +115,33 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.device_preference": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "CONNECTED_TV",
+        "DESKTOP",
+        "MOBILE",
+        "OTHER",
+        "TABLET",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.ad.display_upload_ad.display_upload_product_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "DYNAMIC_HTML5_CUSTOM_AD",
+        "DYNAMIC_HTML5_EDUCATION_AD",
+        "DYNAMIC_HTML5_FLIGHT_AD",
+        "DYNAMIC_HTML5_HOTEL_AD",
+        "DYNAMIC_HTML5_HOTEL_RENTAL_AD",
+        "DYNAMIC_HTML5_JOB_AD",
+        "DYNAMIC_HTML5_LOCAL_AD",
+        "DYNAMIC_HTML5_REAL_ESTATE_AD",
+        "DYNAMIC_HTML5_TRAVEL_AD",
+        "HTML5_UPLOAD_AD",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.ad.display_upload_ad.media_bundle": {
       "type": ["null", "string"]
@@ -177,7 +207,23 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.image_ad.mime_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "AUDIO_MP3",
+        "AUDIO_WAV",
+        "FLASH",
+        "HTML5_AD_ZIP",
+        "IMAGE_GIF",
+        "IMAGE_JPEG",
+        "IMAGE_PNG",
+        "MSEXCEL",
+        "MSWORD",
+        "PDF",
+        "RTF",
+        "TEXT_HTML",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.ad.image_ad.name": {
       "type": ["null", "string"]
@@ -216,7 +262,14 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.format_setting": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ALL_FORMATS",
+        "NATIVE",
+        "NON_NATIVE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.logo_image": {
       "type": ["null", "string"]
@@ -318,7 +371,14 @@
       }
     },
     "ad_group_ad.ad.responsive_display_ad.format_setting": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ALL_FORMATS",
+        "NATIVE",
+        "NON_NATIVE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.ad.responsive_display_ad.headlines": {
       "type": ["null", "array"],
@@ -408,7 +468,8 @@
       }
     },
     "ad_group_ad.ad.system_managed_resource_source": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": ["AD_VARIATIONS", "UNKNOWN", "UNSPECIFIED"]
     },
     "ad_group_ad.ad.text_ad.description1": {
       "type": ["null", "string"]
@@ -423,7 +484,41 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "APP_AD",
+        "APP_ENGAGEMENT_AD",
+        "APP_PRE_REGISTRATION_AD",
+        "CALL_AD",
+        "DISCOVERY_CAROUSEL_AD",
+        "DISCOVERY_MULTI_ASSET_AD",
+        "DYNAMIC_HTML5_AD",
+        "EXPANDED_DYNAMIC_SEARCH_AD",
+        "EXPANDED_TEXT_AD",
+        "HOTEL_AD",
+        "HTML5_UPLOAD_AD",
+        "IMAGE_AD",
+        "IN_FEED_VIDEO_AD",
+        "LEGACY_APP_INSTALL_AD",
+        "LEGACY_RESPONSIVE_DISPLAY_AD",
+        "LOCAL_AD",
+        "RESPONSIVE_DISPLAY_AD",
+        "RESPONSIVE_SEARCH_AD",
+        "SHOPPING_COMPARISON_LISTING_AD",
+        "SHOPPING_PRODUCT_AD",
+        "SHOPPING_SMART_AD",
+        "SMART_CAMPAIGN_AD",
+        "TEXT_AD",
+        "TRAVEL_AD",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "VIDEO_AD",
+        "VIDEO_BUMPER_AD",
+        "VIDEO_NON_SKIPPABLE_IN_STREAM_AD",
+        "VIDEO_OUTSTREAM_AD",
+        "VIDEO_RESPONSIVE_AD",
+        "VIDEO_TRUEVIEW_IN_STREAM_AD"
+      ]
     },
     "ad_group_ad.ad.url_collections": {
       "type": ["null", "array"],
@@ -498,7 +593,17 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad_strength": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "AVERAGE",
+        "EXCELLENT",
+        "GOOD",
+        "NO_ADS",
+        "PENDING",
+        "POOR",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.labels": {
       "type": ["null", "array"],
@@ -507,7 +612,15 @@
       }
     },
     "ad_group_ad.policy_summary.approval_status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "APPROVED",
+        "APPROVED_LIMITED",
+        "AREA_OF_INTEREST_ONLY",
+        "DISAPPROVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.policy_summary.policy_topic_entries": {
       "type": ["null", "array"],
@@ -516,13 +629,28 @@
       }
     },
     "ad_group_ad.policy_summary.review_status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ELIGIBLE_MAY_SERVE",
+        "REVIEWED",
+        "REVIEW_IN_PROGRESS",
+        "UNDER_APPEAL",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.resource_name": {
       "type": ["null", "string"]
     },
     "ad_group_ad.status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "PAUSED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "segments.date": {
       "type": ["null", "string"],

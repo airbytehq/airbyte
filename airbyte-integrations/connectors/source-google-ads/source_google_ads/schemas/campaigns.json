@@ -6,22 +6,86 @@
       "type": ["null", "string"]
     },
     "campaign.ad_serving_optimization_status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "CONVERSION_OPTIMIZE",
+        "OPTIMIZE",
+        "ROTATE",
+        "ROTATE_INDEFINITELY",
+        "UNAVAILABLE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.advertising_channel_sub_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "APP_CAMPAIGN",
+        "APP_CAMPAIGN_FOR_ENGAGEMENT",
+        "APP_CAMPAIGN_FOR_PRE_REGISTRATION",
+        "DISPLAY_EXPRESS",
+        "DISPLAY_GMAIL_AD",
+        "DISPLAY_MOBILE_APP",
+        "DISPLAY_SMART_CAMPAIGN",
+        "LOCAL_CAMPAIGN",
+        "SEARCH_EXPRESS",
+        "SEARCH_MOBILE_APP",
+        "SHOPPING_COMPARISON_LISTING_ADS",
+        "SHOPPING_SMART_ADS",
+        "SMART_CAMPAIGN",
+        "TRAVEL_ACTIVITIES",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "VIDEO_ACTION",
+        "VIDEO_NON_SKIPPABLE",
+        "VIDEO_OUTSTREAM",
+        "VIDEO_REACH_TARGET_FREQUENCY",
+        "VIDEO_SEQUENCE"
+      ]
     },
     "campaign.advertising_channel_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "DISCOVERY",
+        "DISPLAY",
+        "HOTEL",
+        "LOCAL",
+        "LOCAL_SERVICES",
+        "MULTI_CHANNEL",
+        "PERFORMANCE_MAX",
+        "SEARCH",
+        "SHOPPING",
+        "SMART",
+        "TRAVEL",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "VIDEO"
+      ]
     },
     "campaign.app_campaign_setting.app_id": {
       "type": ["null", "string"]
     },
     "campaign.app_campaign_setting.app_store": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "APPLE_APP_STORE",
+        "GOOGLE_APP_STORE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.app_campaign_setting.bidding_strategy_goal_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "OPTIMIZE_INSTALLS_TARGET_INSTALL_COST",
+        "OPTIMIZE_INSTALLS_WITHOUT_TARGET_INSTALL_COST",
+        "OPTIMIZE_IN_APP_CONVERSIONS_TARGET_CONVERSION_COST",
+        "OPTIMIZE_IN_APP_CONVERSIONS_TARGET_INSTALL_COST",
+        "OPTIMIZE_PRE_REGISTRATION_CONVERSION_VOLUME",
+        "OPTIMIZE_RETURN_ON_ADVERTISING_SPEND",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.base_campaign": {
       "type": ["null", "string"]
@@ -30,7 +94,28 @@
       "type": ["null", "string"]
     },
     "campaign.bidding_strategy_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "COMMISSION",
+        "ENHANCED_CPC",
+        "INVALID",
+        "MANUAL_CPA",
+        "MANUAL_CPC",
+        "MANUAL_CPM",
+        "MANUAL_CPV",
+        "MAXIMIZE_CONVERSIONS",
+        "MAXIMIZE_CONVERSION_VALUE",
+        "PAGE_ONE_PROMOTED",
+        "PERCENT_CPC",
+        "TARGET_CPA",
+        "TARGET_CPM",
+        "TARGET_IMPRESSION_SHARE",
+        "TARGET_OUTRANK_SHARE",
+        "TARGET_ROAS",
+        "TARGET_SPEND",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.campaign_budget": {
       "type": ["null", "string"]
@@ -62,11 +147,49 @@
     "campaign.excluded_parent_asset_field_types": {
       "type": ["null", "array"],
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "AD_IMAGE",
+          "BOOK_ON_GOOGLE",
+          "BUSINESS_LOGO",
+          "BUSINESS_NAME",
+          "CALL",
+          "CALLOUT",
+          "CALL_TO_ACTION_SELECTION",
+          "DESCRIPTION",
+          "HEADLINE",
+          "HOTEL_CALLOUT",
+          "HOTEL_PROPERTY",
+          "LANDSCAPE_LOGO",
+          "LEAD_FORM",
+          "LOGO",
+          "LONG_HEADLINE",
+          "MANDATORY_AD_TEXT",
+          "MARKETING_IMAGE",
+          "MEDIA_BUNDLE",
+          "MOBILE_APP",
+          "PORTRAIT_MARKETING_IMAGE",
+          "PRICE",
+          "PROMOTION",
+          "SITELINK",
+          "SQUARE_MARKETING_IMAGE",
+          "STRUCTURED_SNIPPET",
+          "UNKNOWN",
+          "UNSPECIFIED",
+          "VIDEO",
+          "YOUTUBE_VIDEO"
+        ]
       }
     },
     "campaign.experiment_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "BASE",
+        "DRAFT",
+        "EXPERIMENT",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.final_url_suffix": {
       "type": ["null", "string"]
@@ -78,10 +201,23 @@
       }
     },
     "campaign.geo_target_type_setting.negative_geo_target_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "PRESENCE",
+        "PRESENCE_OR_INTEREST",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.geo_target_type_setting.positive_geo_target_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "PRESENCE",
+        "PRESENCE_OR_INTEREST",
+        "SEARCH_INTEREST",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.hotel_setting.hotel_center_id": {
       "type": ["null", "integer"]
@@ -96,7 +232,13 @@
       }
     },
     "campaign.local_campaign_setting.location_source_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "AFFILIATE",
+        "GOOGLE_MY_BUSINESS",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.manual_cpc.enhanced_cpc_enabled": {
       "type": ["null", "boolean"]
@@ -131,14 +273,29 @@
     "campaign.optimization_goal_setting.optimization_goal_types": {
       "type": ["null", "array"],
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "APP_PRE_REGISTRATION",
+          "CALL_CLICKS",
+          "DRIVING_DIRECTIONS",
+          "UNKNOWN",
+          "UNSPECIFIED"
+        ]
       }
     },
     "campaign.optimization_score": {
       "type": ["null", "number"]
     },
     "campaign.payment_mode": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "CLICKS",
+        "CONVERSIONS",
+        "CONVERSION_VALUE",
+        "GUEST_STAY",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.percent_cpc.cpc_bid_ceiling_micros": {
       "type": ["null", "integer"]
@@ -159,7 +316,16 @@
       }
     },
     "campaign.serving_status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ENDED",
+        "NONE",
+        "PENDING",
+        "SERVING",
+        "SUSPENDED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.shopping_setting.campaign_priority": {
       "type": ["null", "integer"]
@@ -177,7 +343,14 @@
       "type": ["null", "string"]
     },
     "campaign.status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "PAUSED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.target_cpa.cpc_bid_ceiling_micros": {
       "type": ["null", "integer"]
@@ -192,13 +365,21 @@
       "type": ["null", "integer"]
     },
     "campaign.target_cpm.target_frequency_goal.time_unit": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": ["UNKNOWN", "UNSPECIFIED", "WEEKLY"]
     },
     "campaign.target_impression_share.cpc_bid_ceiling_micros": {
       "type": ["null", "integer"]
     },
     "campaign.target_impression_share.location": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ABSOLUTE_TOP_OF_PAGE",
+        "ANYWHERE_ON_PAGE",
+        "TOP_OF_PAGE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.target_impression_share.location_fraction_micros": {
       "type": ["null", "integer"]
@@ -237,13 +418,42 @@
       }
     },
     "campaign.vanity_pharma.vanity_pharma_display_url_mode": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "MANUFACTURER_WEBSITE_URL",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "WEBSITE_DESCRIPTION"
+      ]
     },
     "campaign.vanity_pharma.vanity_pharma_text": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "MEDICAL_DEVICE_WEBSITE_EN",
+        "MEDICAL_DEVICE_WEBSITE_ES",
+        "PRESCRIPTION_CONTRACEPTION_WEBSITE_EN",
+        "PRESCRIPTION_CONTRACEPTION_WEBSITE_ES",
+        "PRESCRIPTION_DEVICE_WEBSITE_EN",
+        "PRESCRIPTION_DEVICE_WEBSITE_ES",
+        "PRESCRIPTION_TREATMENT_WEBSITE_EN",
+        "PRESCRIPTION_TREATMENT_WEBSITE_ES",
+        "PRESCRIPTION_VACCINE_WEBSITE_EN",
+        "PRESCRIPTION_VACCINE_WEBSITE_ES",
+        "PREVENTATIVE_TREATMENT_WEBSITE_EN",
+        "PREVENTATIVE_TREATMENT_WEBSITE_ES",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.video_brand_safety_suitability": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "EXPANDED_INVENTORY",
+        "LIMITED_INVENTORY",
+        "STANDARD_INVENTORY",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "metrics.clicks": {
       "type": ["null", "integer"]
@@ -261,10 +471,10 @@
       "type": ["null", "integer"]
     },
     "metrics.impressions": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.video_views": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.video_quartile_p100_rate": {
       "type": ["null", "number"]
@@ -303,7 +513,18 @@
       "type": ["null", "integer"]
     },
     "metrics.interaction_event_types": {
-      "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"],
+        "enum": [
+          "CLICK",
+          "ENGAGEMENT",
+          "NONE",
+          "UNKNOWN",
+          "UNSPECIFIED",
+          "VIDEO_VIEW"
+        ]
+      }
     },
     "metrics.value_per_conversion": {
       "type": ["null", "number"]
@@ -316,10 +537,20 @@
       "format": "date"
     },
     "segments.hour": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "segments.ad_network_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "CONTENT",
+        "MIXED",
+        "SEARCH",
+        "SEARCH_PARTNERS",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "YOUTUBE_SEARCH",
+        "YOUTUBE_WATCH"
+      ]
     }
   }
 }

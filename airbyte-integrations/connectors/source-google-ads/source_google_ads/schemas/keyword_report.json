@@ -20,6 +20,7 @@
         "AD_SCHEDULE",
         "AGE_RANGE",
         "APP_PAYMENT_MODEL",
+        "AUDIENCE",
         "CARRIER",
         "COMBINED_AUDIENCE",
         "CONTENT_LABEL",
@@ -35,6 +36,7 @@
         "LANGUAGE",
         "LISTING_GROUP",
         "LISTING_SCOPE",
+        "LOCAL_SERVICE_ID",
         "LOCATION",
         "LOCATION_GROUP",
         "MOBILE_APPLICATION",
@@ -62,7 +64,13 @@
     },
     "ad_group_criterion.keyword.match_type": {
       "type": ["null", "string"],
-      "enum": ["BROAD", "EXACT", "PHRASE", "UNKNOWN", "UNSPECIFIED"]
+      "enum": [
+        "BROAD",
+        "EXACT",
+        "PHRASE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "metrics.historical_quality_score": {
       "type": ["null", "integer"]
@@ -75,7 +83,28 @@
       "format": "date"
     },
     "campaign.bidding_strategy_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "COMMISSION",
+        "ENHANCED_CPC",
+        "INVALID",
+        "MANUAL_CPA",
+        "MANUAL_CPC",
+        "MANUAL_CPM",
+        "MANUAL_CPV",
+        "MAXIMIZE_CONVERSIONS",
+        "MAXIMIZE_CONVERSION_VALUE",
+        "PAGE_ONE_PROMOTED",
+        "PERCENT_CPC",
+        "TARGET_CPA",
+        "TARGET_CPM",
+        "TARGET_IMPRESSION_SHARE",
+        "TARGET_OUTRANK_SHARE",
+        "TARGET_ROAS",
+        "TARGET_SPEND",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "metrics.clicks": {
       "type": ["null", "integer"]
@@ -113,7 +142,15 @@
     "metrics.interaction_event_types": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "string"]
+        "type": ["null", "string"],
+        "enum": [
+          "CLICK",
+          "ENGAGEMENT",
+          "NONE",
+          "UNKNOWN",
+          "UNSPECIFIED",
+          "VIDEO_VIEW"
+        ]
       }
     },
     "metrics.view_through_conversions": {

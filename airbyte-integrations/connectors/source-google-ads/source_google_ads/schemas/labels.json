@@ -15,7 +15,13 @@
       "type": ["null", "string"]
     },
     "label.status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "label.text_label.background_color": {
       "type": ["null", "string"]

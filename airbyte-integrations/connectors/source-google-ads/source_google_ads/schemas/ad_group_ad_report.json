@@ -45,16 +45,77 @@
       "type": ["null", "string"]
     },
     "ad_group.status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "PAUSED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "segments.ad_network_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "CONTENT",
+        "MIXED",
+        "SEARCH",
+        "SEARCH_PARTNERS",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "YOUTUBE_SEARCH",
+        "YOUTUBE_WATCH"
+      ]
     },
     "ad_group_ad.ad_strength": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "AVERAGE",
+        "EXCELLENT",
+        "GOOD",
+        "NO_ADS",
+        "PENDING",
+        "POOR",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.ad.type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "APP_AD",
+        "APP_ENGAGEMENT_AD",
+        "APP_PRE_REGISTRATION_AD",
+        "CALL_AD",
+        "DISCOVERY_CAROUSEL_AD",
+        "DISCOVERY_MULTI_ASSET_AD",
+        "DYNAMIC_HTML5_AD",
+        "EXPANDED_DYNAMIC_SEARCH_AD",
+        "EXPANDED_TEXT_AD",
+        "HOTEL_AD",
+        "HTML5_UPLOAD_AD",
+        "IMAGE_AD",
+        "IN_FEED_VIDEO_AD",
+        "LEGACY_APP_INSTALL_AD",
+        "LEGACY_RESPONSIVE_DISPLAY_AD",
+        "LOCAL_AD",
+        "RESPONSIVE_DISPLAY_AD",
+        "RESPONSIVE_SEARCH_AD",
+        "SHOPPING_COMPARISON_LISTING_AD",
+        "SHOPPING_PRODUCT_AD",
+        "SHOPPING_SMART_AD",
+        "SMART_CAMPAIGN_AD",
+        "TEXT_AD",
+        "TRAVEL_AD",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "VIDEO_AD",
+        "VIDEO_BUMPER_AD",
+        "VIDEO_NON_SKIPPABLE_IN_STREAM_AD",
+        "VIDEO_OUTSTREAM_AD",
+        "VIDEO_RESPONSIVE_AD",
+        "VIDEO_TRUEVIEW_IN_STREAM_AD"
+      ]
     },
     "metrics.all_conversions_from_interactions_rate": {
       "type": ["null", "number"]
@@ -114,13 +175,28 @@
       "type": ["null", "string"]
     },
     "campaign.status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "PAUSED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "metrics.clicks": {
       "type": ["null", "integer"]
     },
     "ad_group_ad.policy_summary.approval_status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "APPROVED",
+        "APPROVED_LIMITED",
+        "AREA_OF_INTEREST_ONLY",
+        "DISAPPROVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "metrics.conversions_from_interactions_rate": {
       "type": ["null", "number"]
@@ -181,7 +257,18 @@
       "format": "date"
     },
     "segments.day_of_week": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "FRIDAY",
+        "MONDAY",
+        "SATURDAY",
+        "SUNDAY",
+        "THURSDAY",
+        "TUESDAY",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "WEDNESDAY"
+      ]
     },
     "ad_group_ad.ad.expanded_text_ad.description": {
       "type": ["null", "string"]
@@ -193,7 +280,16 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.device_preference": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "CONNECTED_TV",
+        "DESKTOP",
+        "MOBILE",
+        "OTHER",
+        "TABLET",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.ad.display_url": {
       "type": ["null", "string"]
@@ -229,7 +325,14 @@
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.format_setting": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ALL_FORMATS",
+        "NATIVE",
+        "NON_NATIVE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "metrics.gmail_forwards": {
       "type": ["null", "integer"]
@@ -262,7 +365,23 @@
       "type": ["null", "integer"]
     },
     "ad_group_ad.ad.image_ad.mime_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "AUDIO_MP3",
+        "AUDIO_WAV",
+        "FLASH",
+        "HTML5_AD_ZIP",
+        "IMAGE_GIF",
+        "IMAGE_JPEG",
+        "IMAGE_PNG",
+        "MSEXCEL",
+        "MSWORD",
+        "PDF",
+        "RTF",
+        "TEXT_HTML",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.ad.image_ad.name": {
       "type": ["null", "string"]
@@ -276,7 +395,15 @@
     "metrics.interaction_event_types": {
       "type": ["null", "array"],
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "CLICK",
+          "ENGAGEMENT",
+          "NONE",
+          "UNKNOWN",
+          "UNSPECIFIED",
+          "VIDEO_VIEW"
+        ]
       }
     },
     "metrics.interactions": {
@@ -316,7 +443,14 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.ad.responsive_display_ad.format_setting": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ALL_FORMATS",
+        "NATIVE",
+        "NON_NATIVE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.ad.responsive_display_ad.headlines": {
       "type": ["null", "array"],
@@ -400,10 +534,18 @@
       "type": ["null", "string"]
     },
     "ad_group_ad.status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "PAUSED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_ad.ad.system_managed_resource_source": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": ["AD_VARIATIONS", "UNKNOWN", "UNSPECIFIED"]
     },
     "metrics.top_impression_percentage": {
       "type": ["null", "number"]

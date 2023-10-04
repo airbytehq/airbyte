@@ -33,7 +33,17 @@
       "type": ["null", "number"]
     },
     "segments.ad_network_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "CONTENT",
+        "MIXED",
+        "SEARCH",
+        "SEARCH_PARTNERS",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "YOUTUBE_SEARCH",
+        "YOUTUBE_WATCH"
+      ]
     },
     "metrics.all_conversions_from_interactions_rate": {
       "type": ["null", "number"]
@@ -103,10 +113,30 @@
       "format": "date"
     },
     "segments.day_of_week": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "FRIDAY",
+        "MONDAY",
+        "SATURDAY",
+        "SUNDAY",
+        "THURSDAY",
+        "TUESDAY",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "WEDNESDAY"
+      ]
     },
     "segments.device": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "CONNECTED_TV",
+        "DESKTOP",
+        "MOBILE",
+        "OTHER",
+        "TABLET",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "metrics.engagement_rate": {
       "type": ["null", "number"]
@@ -126,7 +156,15 @@
     "metrics.interaction_event_types": {
       "type": ["null", "array"],
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "CLICK",
+          "ENGAGEMENT",
+          "NONE",
+          "UNKNOWN",
+          "UNSPECIFIED",
+          "VIDEO_VIEW"
+        ]
       }
     },
     "metrics.interactions": {

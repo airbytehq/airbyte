@@ -18,7 +18,16 @@
       "type": ["null", "string"]
     },
     "user_interest.taxonomy_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "AFFINITY",
+        "IN_MARKET",
+        "MOBILE_APP_INSTALL_USER",
+        "NEW_SMART_PHONE_USER",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "VERTICAL_GEO"
+      ]
     },
     "user_interest.user_interest_id": {
       "type": ["null", "integer"]

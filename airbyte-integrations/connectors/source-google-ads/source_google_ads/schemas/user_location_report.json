@@ -3,146 +3,189 @@
   "type": "object",
   "properties": {
     "segments.date": {
-      "type": ["null", "string"],
+      "type": ["string"],
       "format": "date"
     },
     "segments.day_of_week": {
-      "type": ["null", "string"]
+      "type": ["string"],
+      "enum": [
+        "FRIDAY",
+        "MONDAY",
+        "SATURDAY",
+        "SUNDAY",
+        "THURSDAY",
+        "TUESDAY",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "WEDNESDAY"
+      ]
     },
     "segments.month": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "segments.week": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "segments.quarter": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "segments.year": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "segments.ad_network_type": {
-      "type": ["null", "string"]
+      "type": ["string"],
+      "enum": [
+        "CONTENT",
+        "MIXED",
+        "SEARCH",
+        "SEARCH_PARTNERS",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "YOUTUBE_SEARCH",
+        "YOUTUBE_WATCH"
+      ]
     },
     "customer.currency_code": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "customer.id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "customer.descriptive_name": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "customer.time_zone": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "user_location_view.country_criterion_id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "user_location_view.targeting_location": {
-      "type": ["null", "boolean"]
+      "type": ["boolean"]
     },
     "user_location_view.resource_name": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "campaign.base_campaign": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "campaign.id": {
-      "type": ["null", "integer"]
+      "type": ["integer"]
     },
     "campaign.name": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "campaign.status": {
-      "type": ["null", "string"]
+      "type": ["string"],
+      "enum": [
+        "ENABLED",
+        "PAUSED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group.name": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "ad_group.status": {
-      "type": ["null", "string"]
+      "type": ["string"],
+      "enum": [
+        "ENABLED",
+        "PAUSED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group.base_ad_group": {
-      "type": ["null", "string"]
+      "type": ["string"]
     },
     "metrics.all_conversions": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.all_conversions_from_interactions_rate": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.all_conversions_value": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.average_cost": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.average_cpc": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.average_cpm": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.average_cpv": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.clicks": {
-      "type": ["null", "number"]
+      "type": ["integer"]
     },
     "metrics.conversions": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.conversions_from_interactions_rate": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.conversions_value": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.cost_micros": {
-      "type": ["null", "number"]
+      "type": ["integer"]
     },
     "metrics.cost_per_all_conversions": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.cost_per_conversion": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.cross_device_conversions": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.ctr": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.impressions": {
-      "type": ["null", "number"]
+      "type": ["integer"]
     },
     "metrics.interaction_event_types": {
-      "type": ["null", "array"],
+      "type": ["array"],
       "items": {
-        "type": ["null", "string"]
+        "type": ["string"],
+        "enum": [
+          "CLICK",
+          "ENGAGEMENT",
+          "NONE",
+          "UNKNOWN",
+          "UNSPECIFIED",
+          "VIDEO_VIEW"
+        ]
       }
     },
     "metrics.interaction_rate": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.interactions": {
-      "type": ["null", "number"]
+      "type": ["integer"]
     },
     "metrics.value_per_all_conversions": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.value_per_conversion": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.video_view_rate": {
-      "type": ["null", "number"]
+      "type": ["number"]
     },
     "metrics.video_views": {
-      "type": ["null", "number"]
+      "type": ["integer"]
     },
     "metrics.view_through_conversions": {
-      "type": ["null", "number"]
+      "type": ["integer"]
     }
   }
 }

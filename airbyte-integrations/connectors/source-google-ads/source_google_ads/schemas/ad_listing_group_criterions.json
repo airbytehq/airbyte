@@ -45,22 +45,59 @@
       "type": ["null", "integer"]
     },
     "ad_group_criterion.listing_group.case_value.product_bidding_category.level": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "LEVEL1",
+        "LEVEL2",
+        "LEVEL3",
+        "LEVEL4",
+        "LEVEL5",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_criterion.listing_group.case_value.product_brand.value": {
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_channel.channel": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "LOCAL",
+        "ONLINE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_criterion.listing_group.case_value.product_channel_exclusivity.channel_exclusivity": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "MULTI_CHANNEL",
+        "SINGLE_CHANNEL",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_criterion.listing_group.case_value.product_condition.condition": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "NEW",
+        "REFURBISHED",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "USED"
+      ]
     },
     "ad_group_criterion.listing_group.case_value.product_custom_attribute.index": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "INDEX0",
+        "INDEX1",
+        "INDEX2",
+        "INDEX3",
+        "INDEX4",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_criterion.listing_group.case_value.product_custom_attribute.value": {
       "type": ["null", "string"]
@@ -69,7 +106,16 @@
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_type.level": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "LEVEL1",
+        "LEVEL2",
+        "LEVEL3",
+        "LEVEL4",
+        "LEVEL5",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_criterion.listing_group.case_value.product_type.value": {
       "type": ["null", "string"]
@@ -78,7 +124,13 @@
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "SUBDIVISION",
+        "UNIT",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     }
   }
 }

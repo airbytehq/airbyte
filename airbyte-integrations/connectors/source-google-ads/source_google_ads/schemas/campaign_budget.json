@@ -15,10 +15,13 @@
       "type": ["null", "integer"]
     },
     "campaign_budget.delivery_method": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string"],
+      "enum": [
+        "ACCELERATED",
+        "STANDARD",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign_budget.explicitly_shared": {
       "type": ["null", "boolean"]
@@ -33,10 +36,13 @@
       "type": ["null", "string"]
     },
     "campaign_budget.period": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string"],
+      "enum": [
+        "CUSTOM_PERIOD",
+        "DAILY",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign_budget.recommended_budget_amount_micros": {
       "type": ["null", "integer"]
@@ -60,19 +66,27 @@
       "type": ["null", "string"]
     },
     "campaign_budget.status": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign_budget.total_amount_micros": {
       "type": ["null", "integer"]
     },
     "campaign_budget.type": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string"],
+      "enum": [
+        "FIXED_CPA",
+        "LOCAL_SERVICES",
+        "SMART_CAMPAIGN",
+        "STANDARD",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "segments.date": {
       "type": ["null", "string"],
@@ -82,10 +96,13 @@
       "type": ["null", "string"]
     },
     "segments.budget_campaign_association_status.status": {
-      "type": ["null", "array"],
-      "items": {
-        "type": ["null", "string"]
-      }
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "metrics.all_conversions": {
       "type": ["null", "number"]
@@ -150,7 +167,15 @@
     "metrics.interaction_event_types": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "string"]
+        "type": ["null", "string"],
+        "enum": [
+          "CLICK",
+          "ENGAGEMENT",
+          "NONE",
+          "UNKNOWN",
+          "UNSPECIFIED",
+          "VIDEO_VIEW"
+        ]
       }
     },
     "metrics.interaction_rate": {

@@ -42,10 +42,27 @@
       "type": ["null", "string"]
     },
     "ad_group.status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "PAUSED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "segments.ad_network_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "CONTENT",
+        "MIXED",
+        "SEARCH",
+        "SEARCH_PARTNERS",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "YOUTUBE_SEARCH",
+        "YOUTUBE_WATCH"
+      ]
     },
     "metrics.all_conversions_from_interactions_rate": {
       "type": ["null", "number"]
@@ -84,7 +101,28 @@
       "type": ["null", "string"]
     },
     "campaign.bidding_strategy_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "COMMISSION",
+        "ENHANCED_CPC",
+        "INVALID",
+        "MANUAL_CPA",
+        "MANUAL_CPC",
+        "MANUAL_CPM",
+        "MANUAL_CPV",
+        "MAXIMIZE_CONVERSIONS",
+        "MAXIMIZE_CONVERSION_VALUE",
+        "PAGE_ONE_PROMOTED",
+        "PERCENT_CPC",
+        "TARGET_CPA",
+        "TARGET_CPM",
+        "TARGET_IMPRESSION_SHARE",
+        "TARGET_OUTRANK_SHARE",
+        "TARGET_ROAS",
+        "TARGET_SPEND",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "campaign.id": {
       "type": ["null", "integer"]
@@ -93,7 +131,14 @@
       "type": ["null", "string"]
     },
     "campaign.status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "PAUSED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "metrics.clicks": {
       "type": ["null", "integer"]
@@ -120,13 +165,27 @@
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpc_bid_source": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "AD_GROUP",
+        "AD_GROUP_CRITERION",
+        "CAMPAIGN_BIDDING_STRATEGY",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_criterion.effective_cpm_bid_micros": {
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpm_bid_source": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "AD_GROUP",
+        "AD_GROUP_CRITERION",
+        "CAMPAIGN_BIDDING_STRATEGY",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_criterion.topic.path": {
       "type": ["null", "array"],
@@ -145,10 +204,30 @@
       "format": "date"
     },
     "segments.day_of_week": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "FRIDAY",
+        "MONDAY",
+        "SATURDAY",
+        "SUNDAY",
+        "THURSDAY",
+        "TUESDAY",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "WEDNESDAY"
+      ]
     },
     "segments.device": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "CONNECTED_TV",
+        "DESKTOP",
+        "MOBILE",
+        "OTHER",
+        "TABLET",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "metrics.engagement_rate": {
       "type": ["null", "number"]
@@ -192,7 +271,15 @@
     "metrics.interaction_event_types": {
       "type": ["null", "array"],
       "items": {
-        "type": "string"
+        "type": "string",
+        "enum": [
+          "CLICK",
+          "ENGAGEMENT",
+          "NONE",
+          "UNKNOWN",
+          "UNSPECIFIED",
+          "VIDEO_VIEW"
+        ]
       }
     },
     "metrics.interactions": {
@@ -214,7 +301,14 @@
       "type": ["null", "string"]
     },
     "ad_group_criterion.status": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "ENABLED",
+        "PAUSED",
+        "REMOVED",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "ad_group_criterion.tracking_url_template": {
       "type": ["null", "string"]

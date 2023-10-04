@@ -15,7 +15,14 @@
       "type": ["null", "string"]
     },
     "click_view.keyword_info.match_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "BROAD",
+        "EXACT",
+        "PHRASE",
+        "UNKNOWN",
+        "UNSPECIFIED"
+      ]
     },
     "click_view.keyword_info.text": {
       "type": ["null", "string"]
@@ -27,7 +34,8 @@
       "type": ["null", "integer"]
     },
     "segments.date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     },
     "customer.id": {
       "type": ["null", "integer"]
@@ -36,7 +44,17 @@
       "type": ["null", "string"]
     },
     "segments.ad_network_type": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "enum": [
+        "CONTENT",
+        "MIXED",
+        "SEARCH",
+        "SEARCH_PARTNERS",
+        "UNKNOWN",
+        "UNSPECIFIED",
+        "YOUTUBE_SEARCH",
+        "YOUTUBE_WATCH"
+      ]
     },
     "campaign.network_settings.target_content_network": {
       "type": ["null", "boolean"]
