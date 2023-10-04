@@ -46,7 +46,7 @@ class MigrateStringToArray(ABC):
             > True, if the transformation is necessary
             > False, otherwise.
         """
-        if cls.migrate_from_key in config:
+        if cls.migrate_from_key in config and cls.migrate_to_key not in config:
             return True
         return False
 
@@ -54,7 +54,7 @@ class MigrateStringToArray(ABC):
     def _transform_to_array(cls, config: Mapping[str, Any], source: SourceGithub = None) -> Mapping[str, Any]:
         # assign old values to new property that will be used within the new version
         config[cls.migrate_to_key] = config[cls.migrate_to_key] if cls.migrate_to_key in config else []
-        data = set(filter(None, config.pop(cls.migrate_from_key).split(" ")))
+        data = set(filter(None, config.get(cls.migrate_from_key).split(" ")))
         config[cls.migrate_to_key] = list(data | set(config[cls.migrate_to_key]))
         return config
 
@@ -72,7 +72,7 @@ class MigrateStringToArray(ABC):
         # add the Airbyte Control Message to message repo
         cls.message_repository.emit_message(create_connector_config_control_message(migrated_config))
         # emit the Airbyte Control Message from message queue to stdout
-        for message in cls.message_repository.consume_queue():
+        for message in cls.message_repository._message_queue:
             print(message.json(exclude_unset=True))
 
     @classmethod

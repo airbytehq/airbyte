@@ -3,7 +3,7 @@
 #
 
 from os import getenv
-from typing import Any, Dict, List, Mapping, MutableMapping, Set, Tuple
+from typing import Any, Dict, List, Mapping, MutableMapping, Tuple
 from urllib.parse import urlparse
 
 from airbyte_cdk import AirbyteLogger
