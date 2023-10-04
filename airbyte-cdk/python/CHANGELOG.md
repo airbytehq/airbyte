@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.26
+Vector DB CDK: Fix OpenAI embedder batch size
+
 ## 0.51.25
 Add  configurable OpenAI embedder to cdk and add cloud environment helper
 
