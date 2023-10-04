@@ -159,7 +159,7 @@ class Sections(ProjectRelatedStream):
         return f"projects/{project_gid}/sections"
 
 
-class Stories(AsanaStream):
+class StoriesCompact(AsanaStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         task_gid = stream_slice["task_gid"]
         return f"tasks/{task_gid}/stories"
@@ -167,6 +167,13 @@ class Stories(AsanaStream):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from self.read_slices_from_records(stream_class=Tasks, slice_field="task_gid")
 
+class Stories(AsanaStream):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        story_gid = stream_slice["story_gid"]
+        return f"stories/{story_gid}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.read_slices_from_records(stream_class=StoriesCompact, slice_field="story_gid")
 
 class Tags(WorkspaceRequestParamsRelatedStream):
     def path(self, **kwargs) -> str:
