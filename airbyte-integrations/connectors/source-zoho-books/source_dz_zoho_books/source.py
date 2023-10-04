@@ -5,7 +5,6 @@
 
 from abc import ABC
 from datetime import datetime
-from http import HTTPStatus
 from types import MappingProxyType
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from airbyte_cdk.models import SyncMode
