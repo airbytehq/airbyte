@@ -310,6 +310,7 @@ streams:
   - "#/definitions/refunds_stream"
   - "#/definitions/payments_stream"
   - "#/definitions/orders_stream"
+  - "#/definitions/banks_accounts_stream"
 
 check:
   stream_names:
