@@ -93,7 +93,8 @@ class MongoDbCdcEventUtilsTest {
         .append("field12", new BsonJavaScript("code"))
         .append("field13", new BsonJavaScriptWithScope("code2", new BsonDocument("scope", new BsonString("scope"))))
         .append("field14", new BsonRegularExpression("pattern"))
-        .append("field15", new BsonNull());
+        .append("field15", new BsonNull())
+        .append("field16", new Document("key", "value"));
 
     final String documentAsJson = document.toJson();
     final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet());
@@ -116,6 +117,7 @@ class MongoDbCdcEventUtilsTest {
     assertEquals("scope", transformed.get("field13").get("scope").get("scope").asText());
     assertEquals("pattern", transformed.get("field14").asText());
     assertFalse(transformed.has("field15"));
+    assertEquals("value", transformed.get("field16").get("key").asText());
   }
 
   @Test
@@ -137,7 +139,8 @@ class MongoDbCdcEventUtilsTest {
         .append("field12", new BsonJavaScript("code"))
         .append("field13", new BsonJavaScriptWithScope("code2", new BsonDocument("scope", new BsonString("scope"))))
         .append("field14", new BsonRegularExpression("pattern"))
-        .append("field15", new BsonNull());
+        .append("field15", new BsonNull())
+        .append("field16", new Document("key", "value"));
 
     final String documentAsJson = document.toJson();
     final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, Set.of("field1", "field2", "field3"));
@@ -159,6 +162,7 @@ class MongoDbCdcEventUtilsTest {
     assertFalse(transformed.has("field13"));
     assertFalse(transformed.has("field14"));
     assertFalse(transformed.has("field15"));
+    assertFalse(transformed.has("field16"));
   }
 
 }
