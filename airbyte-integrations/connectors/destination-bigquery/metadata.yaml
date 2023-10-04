@@ -1,9 +1,9 @@
 data:
   connectorSubtype: database
   connectorType: destination
-  definitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
-  dockerImageTag: 2.0.20
-  dockerRepository: airbyte/destination-bigquery
+  definitionId: 22f6c74f-5699-40ff-833c-4a879ea40134
+  dockerImageTag: 2.0.21
+  dockerRepository: quotabook/airbyte-connector-destination-bigquery
   githubIssueLabel: destination-bigquery
   icon: bigquery.svg
   license: ELv2

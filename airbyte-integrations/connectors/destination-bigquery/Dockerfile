@@ -6,7 +6,7 @@
 
 # If you need to add a custom logic to build your connector image, you can do it by adding a finalize_build.sh or finalize_build.py script in the connector folder.
 # Please reach out to the Connectors Operations team if you have any question.
-FROM airbyte/integration-base-java:dev AS build
+FROM airbyte/destination-bigquery:2.0.20 AS build
 
 WORKDIR /airbyte
 
@@ -16,7 +16,7 @@ COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
 
 RUN tar xf ${APPLICATION}.tar --strip-components=1 && rm -rf ${APPLICATION}.tar
 
-FROM airbyte/integration-base-java:dev
+FROM airbyte/destination-bigquery:2.0.20
 
 WORKDIR /airbyte
 
@@ -25,5 +25,5 @@ ENV AIRBYTE_NORMALIZATION_INTEGRATION bigquery
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=2.0.20
+LABEL io.airbyte.version=2.0.21
 LABEL io.airbyte.name=airbyte/destination-bigquery
