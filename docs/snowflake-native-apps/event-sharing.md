@@ -1,10 +1,10 @@
 ## Event Sharing
 
-Sharing the events is important to ensure that in case of issue, our team can investigate easily. The app will never share private or sensitive information, only errors that will allow our team to understand the problem.
+Sharing the events is important to ensure that in case of issue, our team can investigate easily. The app will never share private or sensitive information, only errors and diagnostic metrics that allow our team to understand the problem.
 
 In order to share the events, you can refer to the [Snowflake documentation](https://other-docs.snowflake.com/en/native-apps/consumer-enable-logging#label-nativeapps-consumer-logging-enabling). As of 2023-10-02, you have to:
 
-1. Create the event table. This table is global to an account so all application will share the same event table. We recommend using:
+1. Create the event table. This table is global to an account so all applications share the same event table. We recommend using:
 ```
 CREATE DATABASE event_database;
 CREATE SCHEMA event_schema;
