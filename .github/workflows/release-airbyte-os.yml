@@ -203,8 +203,8 @@ jobs:
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:
           # specify the same version as in ~/.python-version
-          python_version: "3.9.11"
-          pip_version: "21.1"
+          python_version: "3.10"
+          pip_version: "23.2"
           subdir: "octavia-cli/"
         env:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
@@ -214,8 +214,8 @@ jobs:
         uses: mariamrf/py-package-publish-action@v1.1.0
         with:
           # specify the same version as in ~/.python-version
-          python_version: "3.9.11"
-          pip_version: "21.1"
+          python_version: "3.10"
+          pip_version: "23.2"
           subdir: "octavia-cli/"
         env:
           TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
