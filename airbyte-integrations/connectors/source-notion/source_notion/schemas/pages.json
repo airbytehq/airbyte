@@ -74,8 +74,8 @@
                     "enum": ["rich_text"]
                   },
                   "rich_text": {
-                    "type" : ["array"],
-                    "items" : {
+                    "type": ["array"],
+                    "items": {
                       "$ref": "rich_text.json"
                     }
                   }
