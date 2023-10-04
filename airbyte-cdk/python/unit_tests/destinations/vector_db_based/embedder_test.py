@@ -10,6 +10,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
     FromFieldEmbeddingConfigModel,
+    OpenAICompatibleEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
 )
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
@@ -20,6 +21,7 @@ from airbyte_cdk.destinations.vector_db_based.embedder import (
     CohereEmbedder,
     FakeEmbedder,
     FromFieldEmbedder,
+    OpenAICompatibleEmbedder,
     OpenAIEmbedder,
 )
 from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage
@@ -46,6 +48,21 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
                 1000,
             ],
             OPEN_AI_VECTOR_SIZE,
+        ),
+        (
+            OpenAICompatibleEmbedder,
+            [
+                OpenAICompatibleEmbeddingConfigModel(
+                    **{
+                        "mode": "openai_compatible",
+                        "api_key": "abc",
+                        "base_url": "https://my-service.com",
+                        "model_name": "text-embedding-ada-002",
+                        "dimensions": 50,
+                    }
+                )
+            ],
+            50,
         ),
     ),
 )
