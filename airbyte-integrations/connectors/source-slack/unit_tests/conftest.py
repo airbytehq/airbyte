@@ -2,13 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import os
 import copy
+import os
 from typing import MutableMapping
 
 import pytest
 
 os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+
 
 @pytest.fixture(autouse=True)
 def conversations_list(requests_mock):
