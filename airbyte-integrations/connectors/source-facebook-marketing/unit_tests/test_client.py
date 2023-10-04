@@ -115,8 +115,8 @@ class TestBackoff:
         records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
 
         assert records == [
-            {'id': '123', 'object_type': 'SHARE', 'status': 'ACTIVE'},
-            {'id': '1234', 'object_type': 'SHARE', 'status': 'ACTIVE'}
+            {"id": "123", "object_type": "SHARE", "status": "ACTIVE"},
+            {"id": "1234", "object_type": "SHARE", "status": "ACTIVE"},
         ]
 
     @pytest.mark.parametrize(
@@ -175,13 +175,13 @@ class TestBackoff:
         }
         success = {
             "json": {
-                'data': [],
+                "data": [],
                 "paging": {
                     "cursors": {
                         "after": "test",
                     },
-                    "next": f"https://graph.facebook.com/{FB_API_VERSION}/act_{account_id}/activities?limit=31&after=test"
-                }
+                    "next": f"https://graph.facebook.com/{FB_API_VERSION}/act_{account_id}/activities?limit=31&after=test",
+                },
             },
             "status_code": 200,
         }
@@ -196,18 +196,18 @@ class TestBackoff:
         try:
             list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_state={}))
         except FacebookRequestError:
-            assert [x.qs.get("limit")[0] for x in res.request_history] == ['100', '50', '100', '50']
+            assert [x.qs.get("limit")[0] for x in res.request_history] == ["100", "50", "100", "50"]
 
     def test_start_date_not_provided(self, requests_mock, api, account_id):
         success = {
             "json": {
-                'data': [],
+                "data": [],
                 "paging": {
                     "cursors": {
                         "after": "test",
                     },
-                    "next": f"https://graph.facebook.com/{FB_API_VERSION}/act_{account_id}/activities?limit=31&after=test"
-                }
+                    "next": f"https://graph.facebook.com/{FB_API_VERSION}/act_{account_id}/activities?limit=31&after=test",
+                },
             },
             "status_code": 200,
         }
@@ -226,17 +226,18 @@ class TestBackoff:
         base_url = FacebookSession.GRAPH + f"/{FB_API_VERSION}/act_{account_id}/advideos"
 
         res = requests_mock.register_uri(
-            "GET", base_url,
+            "GET",
+            base_url,
             [
                 {
                     "json": {
                         "data": [{"id": 1, "updated_time": "2020-09-25T00:00:00Z"}, {"id": 2, "updated_time": "2020-09-25T00:00:00Z"}],
-                        "paging": {"next": f"{base_url}?after=after_page_1&limit=100"}
+                        "paging": {"next": f"{base_url}?after=after_page_1&limit=100"},
                     },
-                    "status_code": 200
+                    "status_code": 200,
                 },
-                fb_call_amount_data_response
-            ]
+                fb_call_amount_data_response,
+            ],
         )
 
         stream = Videos(api=api, start_date=pendulum.now(), end_date=pendulum.now(), include_deleted=False, page_size=100)

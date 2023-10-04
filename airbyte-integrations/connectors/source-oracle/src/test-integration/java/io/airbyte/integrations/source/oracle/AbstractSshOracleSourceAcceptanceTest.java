@@ -45,7 +45,7 @@ public abstract class AbstractSshOracleSourceAcceptanceTest extends SourceAccept
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     startTestContainers();
-    config = sshBastionContainer.getTunnelConfig(getTunnelMethod(), getBasicOracleDbConfigBuider(db));
+    config = sshBastionContainer.getTunnelConfig(getTunnelMethod(), getBasicOracleDbConfigBuider(db), false);
     populateDatabaseTestData();
   }
 

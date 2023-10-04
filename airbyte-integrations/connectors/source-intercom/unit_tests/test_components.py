@@ -26,7 +26,11 @@ def test_slicer():
     [
         (
             {"first_stream_cursor": 1662459010},
-            {'first_stream_cursor': 1662459010, 'prior_state': {'first_stream_cursor': 1662459010, 'parent_stream_name': {'parent_cursor_field': 1662459010}}, 'parent_stream_name': {'parent_cursor_field': 1662459010}},
+            {
+                "first_stream_cursor": 1662459010,
+                "prior_state": {"first_stream_cursor": 1662459010, "parent_stream_name": {"parent_cursor_field": 1662459010}},
+                "parent_stream_name": {"parent_cursor_field": 1662459010},
+            },
             [{"first_stream_cursor": 1662459010}],
         )
     ],
@@ -64,7 +68,7 @@ def test_sub_slicer(last_record, expected, records):
         ({"X-RateLimit-Limit": 167, "X-RateLimit-Remaining": 83}, 1.5),
         ({"X-RateLimit-Limit": 167, "X-RateLimit-Remaining": 16}, 8.0),
         ({}, 1.0),
-    ]
+    ],
 )
 def test_rate_limiter(rate_limit_header, backoff_time):
     def check_backoff_time(t):
@@ -76,7 +80,7 @@ def test_rate_limiter(rate_limit_header, backoff_time):
         def interpret_response_status(self, response: requests.Response):
             """A stub for the decorator function being tested"""
 
-    with patch.object(IntercomRateLimiter, 'backoff_time') as backoff_time_mock:
+    with patch.object(IntercomRateLimiter, "backoff_time") as backoff_time_mock:
         # Call `check_backoff_time` instead of original `IntercomRateLimiter.backoff_time` method
         backoff_time_mock.side_effect = check_backoff_time
 

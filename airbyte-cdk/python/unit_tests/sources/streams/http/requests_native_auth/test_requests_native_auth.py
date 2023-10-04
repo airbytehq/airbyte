@@ -179,13 +179,11 @@ class TestOauth2Authenticator:
             f"https://{TestOauth2Authenticator.refresh_endpoint}",
             TestOauth2Authenticator.client_id,
             TestOauth2Authenticator.client_secret,
-            TestOauth2Authenticator.refresh_token
+            TestOauth2Authenticator.refresh_token,
         )
         requests_mock.post(
             f"https://{TestOauth2Authenticator.refresh_endpoint}",
-            [
-                {"status_code": error_code}, {"status_code": error_code}, {"json": {"access_token": "token", "expires_in": 10}}
-            ]
+            [{"status_code": error_code}, {"status_code": error_code}, {"json": {"access_token": "token", "expires_in": 10}}],
         )
         token, expires_in = oauth.refresh_access_token()
         assert isinstance(expires_in, int)
@@ -217,7 +215,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
                 "refresh_token": "my_refresh_token",
                 "client_id": "my_client_id",
                 "client_secret": "my_client_secret",
-                "token_expiry_date": "2022-12-31T00:00:00+00:00"
+                "token_expiry_date": "2022-12-31T00:00:00+00:00",
             }
         }
 
@@ -243,9 +241,11 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
             ("number_of_seconds", 42, None, "2022-12-31T00:00:42+00:00"),
             ("string_of_seconds", "42", None, "2022-12-31T00:00:42+00:00"),
             ("date_format", "2023-04-04", "YYYY-MM-DD", "2023-04-04T00:00:00+00:00"),
-        ]
+        ],
     )
-    def test_given_no_message_repository_get_access_token(self, test_name, expires_in_value, expiry_date_format, expected_expiry_date, capsys, mocker, connector_config):
+    def test_given_no_message_repository_get_access_token(
+        self, test_name, expires_in_value, expiry_date_format, expected_expiry_date, capsys, mocker, connector_config
+    ):
         authenticator = SingleUseRefreshTokenOauth2Authenticator(
             connector_config,
             token_refresh_endpoint="foobar",
@@ -306,7 +306,9 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
             message_repository=message_repository,
         )
         mocker.patch("airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth.requests.request")
-        mocker.patch("airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth.format_http_message", return_value="formatted json")
+        mocker.patch(
+            "airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth.format_http_message", return_value="formatted json"
+        )
         authenticator.token_has_expired = mocker.Mock(return_value=True)
 
         authenticator.get_access_token()
