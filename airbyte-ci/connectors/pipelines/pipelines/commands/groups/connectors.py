@@ -165,6 +165,13 @@ def get_selected_connectors_with_modified_files(
     default=False,
     type=bool,
 )
+@click.option(
+    "--enable-report-auto-open/--disable-report-auto-open",
+    is_flag=True,
+    help=("When enabled, finishes by opening a browser window to display an HTML report."),
+    default=True,
+    type=bool,
+)
 @click.pass_context
 def connectors(
     ctx: click.Context,
@@ -179,6 +186,7 @@ def connectors(
     execute_timeout: int,
     enable_dependency_scanning: bool,
     use_local_cdk: bool,
+    enable_report_auto_open: bool,
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
@@ -188,6 +196,7 @@ def connectors(
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
     ctx.obj["use_local_cdk"] = use_local_cdk
+    ctx.obj["open_report_in_browser"] = enable_report_auto_open
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
         names,
         support_levels,
@@ -295,8 +304,15 @@ def test(
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
+@click.option(
+    "--use-host-gradle-dist-tar",
+    is_flag=True,
+    help="Use gradle distTar output from host for java connectors.",
+    default=False,
+    type=bool,
+)
 @click.pass_context
-def build(ctx: click.Context) -> bool:
+def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
     """Runs a build pipeline for the selected connectors."""
 
     connectors_contexts = [
@@ -315,9 +331,13 @@ def build(ctx: click.Context) -> bool:
             ci_context=ctx.obj.get("ci_context"),
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
             use_local_cdk=ctx.obj.get("use_local_cdk"),
+            open_report_in_browser=ctx.obj.get("open_report_in_browser"),
+            use_host_gradle_dist_tar=use_host_gradle_dist_tar,
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
+    if use_host_gradle_dist_tar and not ctx.obj["is_local"]:
+        raise Exception("flag --use-host-gradle-dist-tar requires --is-local")
     anyio.run(
         run_connectors_pipelines,
         connectors_contexts,
