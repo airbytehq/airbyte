@@ -327,6 +327,61 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
 }
 ```
 
+#### oneOf display type
+You can also configure the way that oneOf fields are displayed in the Airbyte UI through the `display_type` property. Valid values for this property are:
+- `dropdown`
+  - Renders a dropdown menu containing the title of each option for the user to select
+  - This is a compact look that works well in most cases
+  - The descriptions of the options can be found in the oneOf field's tooltip
+- `radio`
+  - Renders radio-button cards side-by-side containing the title and description of each option for the user to select
+  - This choice draws more attention to the field and shows the descriptions of each option at all times, which can be useful for important or complicated fields
+
+Here is an example of setting the `display_type` of a oneOf field to `dropdown`, along with how it looks in the Airbyte UI:
+```
+"update_method": {
+  "type": "object",
+  "title": "Update Method",
+  "display_type": "dropdown",
+  "oneOf": [
+    {
+      "title": "Read Changes using Binary Log (CDC)",
+      "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the MySQL <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\">binary log</a>. This must be enabled on your database.",
+      "required": ["method"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "const": "CDC",
+          "order": 0
+        },
+        "initial_waiting_seconds": {
+          ...
+        },
+        "server_time_zone": {
+          ...
+        }
+      }
+    },
+    {
+      "title": "Scan Changes with User Defined Cursor",
+      "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
+      "required": ["method"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "const": "STANDARD",
+          "order": 0
+        }
+      }
+    }
+  ]
+}
+```
+![dropdown oneOf](../assets/docs/oneOf-dropdown.png)
+
+And here is how it looks if the `display_type` property is set to `radio` instead:
+![radio oneOf](../assets/docs/oneOf-radio.png)
+
 ### Using `enum`
 
 In regular `jsonschema`, some drafts enforce that `enum` lists must contain distinct values, while others do not. For consistency, Airbyte enforces this restriction.

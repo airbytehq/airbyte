@@ -56,8 +56,62 @@
     "currency": {
       "type": ["null", "string"]
     },
+    "applicable_timezone": {
+      "type": ["null", "string"]
+    },
     "billing_configuration": {
-      "type": ["null", "object"]
+      "additionalProperties": true,
+      "properties": {
+        "document_locale": {
+          "type": ["null", "string"]
+        },
+        "invoice_grace_period": {
+          "type": ["null", "integer"]
+        },
+        "payment_provider": {
+          "type": ["null", "string"]
+        },
+        "provider_customer_id": {
+          "type": ["null", "string"]
+        },
+        "provider_payment_methods": {
+          "items": {
+            "type": ["null", "string"]
+          },
+          "type": ["null", "array"]
+        },
+        "vat_rate": {
+          "type": ["null", "integer"]
+        }
+      },
+      "type": "object"
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "external_salesforce_id": {
+      "type": ["null", "integer"]
+    },
+    "metadata": {
+      "type": ["null", "array"]
+    },
+    "net_payment_term": {
+      "type": ["null", "integer"]
+    },
+    "tax_identification_number": {
+      "type": ["null", "integer"]
+    },
+    "taxes": {
+      "type": ["null", "array"]
+    },
+    "timezone": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"]
+    },
+    "zipcode": {
+      "type": ["null", "string"]
     }
   }
 }

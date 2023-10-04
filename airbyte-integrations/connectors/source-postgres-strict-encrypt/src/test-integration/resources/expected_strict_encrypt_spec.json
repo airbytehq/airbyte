@@ -224,26 +224,16 @@
       },
       "replication_method": {
         "type": "object",
-        "title": "Replication Method",
-        "description": "Replication method for extracting data from the database.",
+        "title": "Update Method",
+        "description": "Configures how data is extracted from the database.",
         "order": 9,
         "group": "advanced",
+        "default": "CDC",
+        "display_type": "radio",
         "oneOf": [
           {
-            "title": "Standard (Xmin)",
-            "description": "Xmin replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "Xmin",
-                "order": 0
-              }
-            }
-          },
-          {
-            "title": "Logical Replication (CDC)",
-            "description": "Logical replication uses the Postgres write-ahead log (WAL) to detect inserts, updates, and deletes. This needs to be configured on the source database itself. Only available on Postgres 10 and above. Read the <a href=\"https://docs.airbyte.com/integrations/sources/postgres\">docs</a>.",
+            "title": "Read Changes using Write-Ahead Log (CDC)",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts, updates, and deletes using the Postgres <a href=\"https://docs.airbyte.com/integrations/sources/postgres/#cdc\">write-ahead log (WAL)</a>. This needs to be configured on the source database itself. Recommended for tables of any size.",
             "required": ["method", "replication_slot", "publication"],
             "additionalProperties": true,
             "properties": {
@@ -304,8 +294,20 @@
             }
           },
           {
-            "title": "Standard",
-            "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
+            "title": "Detect Changes with Xmin System Column",
+            "description": "<i>Recommended</i> - Incrementally reads new inserts and updates via Postgres <a href=\"https://docs.airbyte.com/integrations/sources/postgres/#xmin\">Xmin system column</a>. Only recommended for tables up to 500GB.",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Xmin",
+                "order": 0
+              }
+            }
+          },
+          {
+            "title": "Scan Changes with User Defined Cursor",
+            "description": "Incrementally detects new inserts and updates using the <a href=\"https://docs.airbyte.com/understanding-airbyte/connections/incremental-append/#user-defined-cursor\">cursor column</a> chosen when configuring a connection (e.g. created_at, updated_at).",
             "required": ["method"],
             "properties": {
               "method": {

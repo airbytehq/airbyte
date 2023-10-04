@@ -68,7 +68,7 @@ MESSAGE_FROM_REPOSITORY = AirbyteMessage(
         type=OrchestratorType.CONNECTOR_CONFIG,
         emitted_at=10,
         connectorConfig=AirbyteControlConnectorConfigMessage(config={"any config": "a config value"}),
-    )
+    ),
 )
 
 
@@ -276,7 +276,7 @@ def test_invalid_command(entrypoint: AirbyteEntrypoint, config_mock):
         pytest.param("OSS", "https://192.168.27.30", None, id="test_oss_private_endpoint_is_successful"),
         pytest.param("OSS", "https://localhost:8080/api/v1/cast", None, id="test_oss_private_endpoint_is_successful"),
         pytest.param("OSS", "http://past.lives.net/api/v1/inyun", None, id="test_oss_unsecured_endpoint_is_successful"),
-    ]
+    ],
 )
 @patch.object(requests.Session, "send", lambda self, request, **kwargs: requests.Response())
 def test_filter_internal_requests(deployment_mode, url, expected_error):

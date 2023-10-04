@@ -7,12 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk", "stripe==2.56.0", "pendulum==2.1.2"]
 
-TEST_REQUIREMENTS = [
-    "pytest-mock~=3.6.1",
-    "pytest~=6.1",
-    "requests-mock",
-    "requests_mock~=1.8",
-]
+TEST_REQUIREMENTS = ["pytest-mock~=3.6.1", "pytest~=6.1", "requests-mock", "requests_mock~=1.8", "freezegun==1.2.2"]
 
 setup(
     name="source_stripe",

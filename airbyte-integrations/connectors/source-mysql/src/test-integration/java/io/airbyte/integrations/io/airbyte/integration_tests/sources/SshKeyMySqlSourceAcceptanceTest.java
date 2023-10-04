@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import java.nio.file.Path;
 import org.junit.jupiter.api.extension.ExtendWith;
 import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;

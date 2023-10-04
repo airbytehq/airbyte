@@ -3,18 +3,18 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "id": {"type": ["integer", "null"]},
-    "_self": {"type": ["string", "null"]},
-    "type": {"type": ["string", "null"]},
-    "group": {"type": ["string", "null"]},
-    "parent": {"type": ["string", "null"]},
-    "child": {"type": ["string", "null"]},
-    "actor": {"type": ["string", "null"]},
-    "project": {"type": ["string", "null"]},
-    "parent_type": {"type": ["string", "null"]},
-    "child_type": {"type": ["string", "null"]},
-    "meta": {"type": ["object", "null"]},
-    "created": {"type": ["string", "null"], "format": "date-time"},
-    "modified": {"type": ["string", "null"], "format": "date-time"}
+    "id": { "type": ["integer", "null"] },
+    "_self": { "type": ["string", "null"] },
+    "type": { "type": ["string", "null"] },
+    "group": { "type": ["string", "null"] },
+    "parent": { "type": ["string", "null"] },
+    "child": { "type": ["string", "null"] },
+    "actor": { "type": ["string", "null"] },
+    "project": { "type": ["string", "null"] },
+    "parent_type": { "type": ["string", "null"] },
+    "child_type": { "type": ["string", "null"] },
+    "meta": { "type": ["object", "null"] },
+    "created": { "type": ["string", "null"], "format": "date-time" },
+    "modified": { "type": ["string", "null"], "format": "date-time" }
   }
 }

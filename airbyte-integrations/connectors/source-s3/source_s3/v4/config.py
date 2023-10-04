@@ -26,7 +26,7 @@ class Config(AbstractFileBasedSpec):
         description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
         "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
-        order=1,
+        order=2,
     )
 
     aws_secret_access_key: Optional[str] = Field(
@@ -35,7 +35,7 @@ class Config(AbstractFileBasedSpec):
         description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
         "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
-        order=2,
+        order=3,
     )
 
     endpoint: Optional[str] = Field(

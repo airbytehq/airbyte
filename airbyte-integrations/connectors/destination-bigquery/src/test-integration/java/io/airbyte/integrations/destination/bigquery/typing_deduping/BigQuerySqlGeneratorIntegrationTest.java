@@ -27,12 +27,13 @@ import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableResult;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.AirbyteProtocolType;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
+import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
 import io.airbyte.integrations.destination.bigquery.BigQueryDestination;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
@@ -60,17 +61,22 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySqlGeneratorIntegrationTest.class);
 
   private static BigQuery bq;
+  private static String projectId;
+  private static String datasetLocation;
 
   @BeforeAll
   public static void setupBigquery() throws Exception {
     final String rawConfig = Files.readString(Path.of("secrets/credentials-gcs-staging.json"));
     final JsonNode config = Jsons.deserialize(rawConfig);
     bq = BigQueryDestination.getBigQuery(config);
+
+    projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+    datasetLocation = config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText();
   }
 
   @Override
   protected BigQuerySqlGenerator getSqlGenerator() {
-    return new BigQuerySqlGenerator("US");
+    return new BigQuerySqlGenerator(projectId, datasetLocation);
   }
 
   @Override
@@ -122,41 +128,6 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
                         ) CLUSTER BY _airbyte_emitted_at;
                         """))
             .build());
-  }
-
-  @Override
-  protected void createFinalTable(final boolean includeCdcDeletedAt, final StreamId streamId, final String suffix) throws InterruptedException {
-    final String cdcDeletedAt = includeCdcDeletedAt ? "`_ab_cdc_deleted_at` TIMESTAMP," : "";
-    bq.query(QueryJobConfiguration.newBuilder(
-        new StringSubstitutor(Map.of(
-            "final_table_id", streamId.finalTableId(BigQuerySqlGenerator.QUOTE, suffix),
-            "cdc_deleted_at", cdcDeletedAt)).replace(
-                """
-                                          CREATE TABLE ${final_table_id} (
-                                            _airbyte_raw_id STRING NOT NULL,
-                                            _airbyte_extracted_at TIMESTAMP NOT NULL,
-                                            _airbyte_meta JSON NOT NULL,
-                                            `id1` INT64,
-                                            `id2` INT64,
-                                            `updated_at` TIMESTAMP,
-                                            ${cdc_deleted_at}
-                                            `struct` JSON,
-                                            `array` JSON,
-                                            `string` STRING,
-                  `number` NUMERIC,
-                  `integer` INT64,
-                  `boolean` BOOL,
-                  `timestamp_with_timezone` TIMESTAMP,
-                  `timestamp_without_timezone` DATETIME,
-                  `time_with_timezone` STRING,
-                  `time_without_timezone` TIME,
-                  `date` DATE,
-                  `unknown` JSON
-                )
-                PARTITION BY (DATE_TRUNC(_airbyte_extracted_at, DAY))
-                CLUSTER BY id1, id2, _airbyte_extracted_at;
-                """))
-        .build());
   }
 
   @Override
@@ -373,8 +344,8 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
             Field.newBuilder("_airbyte_raw_id", legacySQLTypeName(StandardSQLTypeName.STRING)).setMode(Field.Mode.REQUIRED).build(),
             Field.newBuilder("_airbyte_extracted_at", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)).setMode(Field.Mode.REQUIRED).build(),
             Field.newBuilder("_airbyte_meta", legacySQLTypeName(StandardSQLTypeName.JSON)).setMode(Field.Mode.REQUIRED).build(),
-            Field.of("id1", legacySQLTypeName(StandardSQLTypeName.INT64)),
-            Field.of("id2", legacySQLTypeName(StandardSQLTypeName.INT64)),
+            Field.newBuilder("id1", legacySQLTypeName(StandardSQLTypeName.INT64)).setMode(Field.Mode.REQUIRED).build(),
+            Field.newBuilder("id2", legacySQLTypeName(StandardSQLTypeName.INT64)).setMode(Field.Mode.REQUIRED).build(),
             Field.of("updated_at", legacySQLTypeName(StandardSQLTypeName.TIMESTAMP)),
             Field.of("struct", legacySQLTypeName(StandardSQLTypeName.JSON)),
             Field.of("array", legacySQLTypeName(StandardSQLTypeName.JSON)),
@@ -398,7 +369,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
     // We're creating the dataset in the wrong location in the @BeforeEach block. Explicitly delete it.
     bq.getDataset(namespace).delete();
 
-    destinationHandler.execute(new BigQuerySqlGenerator("asia-east1").createTable(incrementalDedupStream, "", false));
+    destinationHandler.execute(new BigQuerySqlGenerator(projectId, "asia-east1").createTable(incrementalDedupStream, "", false));
 
     // Empirically, it sometimes takes Bigquery nearly 30 seconds to propagate the dataset's existence.
     // Give ourselves 2 minutes just in case.

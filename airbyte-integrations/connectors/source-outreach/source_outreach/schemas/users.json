@@ -12,6 +12,15 @@
     "activityNotificationsDisabled": {
       "type": ["null", "boolean"]
     },
+    "activeProspectsCount": {
+      "type": ["null", "integer"]
+    },
+    "batches": {
+      "type": ["null", "array"]
+    },
+    "batchesViewId": {
+      "type": ["null", "integer"]
+    },
     "bounceWarningEmailEnabled": {
       "type": ["null", "boolean"]
     },
@@ -21,8 +30,20 @@
     "bridgePhoneExtension": {
       "type": ["null", "string"]
     },
+    "buyerLanguagePreference": {
+      "type": ["null", "string"]
+    },
+    "calendar": {
+      "type": ["null", "array"]
+    },
+    "calendarEventsViewId": {
+      "type": ["null", "integer"]
+    },
     "callsViewId": {
       "type": ["null", "integer"]
+    },
+    "contentCategoryOwnerships": {
+      "type": ["null", "array"]
     },
     "controlledTabDefault": {
       "type": ["null", "string"]
@@ -53,6 +74,9 @@
     "dailyDigestEmailEnabled": {
       "type": ["null", "boolean"]
     },
+    "defaultScheduleId": {
+      "type": ["null", "integer"]
+    },
     "defaultRulesetId": {
       "type": ["null", "integer"]
     },
@@ -73,6 +97,9 @@
       },
       "type": ["null", "array"]
     },
+    "dutiesSetAt": {
+      "type": ["null", "string"]
+    },
     "email": {
       "type": ["null", "string"]
     },
@@ -82,8 +109,17 @@
     "engagementEmailsEnabled": {
       "type": ["null", "boolean"]
     },
+    "favorites": {
+      "type": ["null", "array"]
+    },
     "firstName": {
       "type": ["null", "string"]
+    },
+    "globalId": {
+      "type": ["null", "string"]
+    },
+    "importsViewId": {
+      "type": "null"
     },
     "inboundBridgePhone": {
       "type": ["null", "string"]
@@ -106,14 +142,26 @@
     "inboundVoicemailPromptType": {
       "type": ["null", "string"]
     },
+    "jobRole": {
+      "type": ["null", "array"]
+    },
     "kaiaRecordingsViewId": {
       "type": ["null", "integer"]
     },
     "keepBridgePhoneConnected": {
       "type": ["null", "boolean"]
     },
+    "languagePreference": {
+      "type": ["null", "string"]
+    },
     "lastName": {
       "type": ["null", "string"]
+    },
+    "linkToSequenceStateInTaskFlow": {
+      "type": ["null", "boolean"]
+    },
+    "liveListenViewId": {
+      "type": ["null", "integer"]
     },
     "lastSignInAt": {
       "type": ["null", "string"],
@@ -125,8 +173,20 @@
     "mailboxErrorEmailEnabled": {
       "type": ["null", "boolean"]
     },
+    "mailingsDeliveredCount": {
+      "type": ["null", "integer"]
+    },
+    "mailingsRepliedCount": {
+      "type": ["null", "integer"]
+    },
+    "mailingsViewId": {
+      "type": ["null", "integer"]
+    },
     "meetingEngagementNotificationEnabled": {
       "type": ["null", "boolean"]
+    },
+    "meetingTypesViewId": {
+      "type": ["null", "integer"]
     },
     "name": {
       "type": ["null", "string"]
@@ -155,12 +215,25 @@
     "oceWindowMode": {
       "type": ["null", "boolean"]
     },
+    "onboardedAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "opportunitiesViewId": {
       "type": ["null", "integer"]
+    },
+    "orcaStandaloneEnabled": {
+      "type": ["null", "boolean"]
+    },
+    "outboundVoicemails": {
+      "type": ["null", "array"]
     },
     "passwordExpiresAt": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "phone": {
+      "type": ["null", "array"]
     },
     "phoneCountryCode": {
       "type": ["null", "string"]
@@ -169,6 +242,15 @@
       "type": ["null", "string"]
     },
     "phoneType": {
+      "type": ["null", "string"]
+    },
+    "phones": {
+      "type": ["null", "array"]
+    },
+    "phonesViewId": {
+      "type": ["null", "integer"]
+    },
+    "prospectDetailDefault": {
       "type": ["null", "string"]
     },
     "pluginAlertNotificationEnabled": {
@@ -186,7 +268,16 @@
     "prospectsViewId": {
       "type": ["null", "integer"]
     },
+    "reportsSequencePerformanceViewId": {
+      "type": ["null", "integer"]
+    },
     "reportsTeamPerfViewId": {
+      "type": ["null", "integer"]
+    },
+    "reportsTeamPerformanceIntradayViewId": {
+      "type": ["null", "integer"]
+    },
+    "reportsTeamPerformanceViewId": {
       "type": ["null", "integer"]
     },
     "reportsViewId": {
@@ -201,13 +292,34 @@
     "secondaryTimezone": {
       "type": ["null", "string"]
     },
+    "sendInviteFallback": {
+      "type": ["null", "boolean"]
+    },
     "senderNotificationsExcluded": {
       "type": ["null", "boolean"]
+    },
+    "sequenceStatesViewId": {
+      "type": ["null", "integer"]
+    },
+    "sequencesViewId": {
+      "type": ["null", "integer"]
+    },
+    "smsPhone": {
+      "type": ["null", "array"]
+    },
+    "snippetsViewId": {
+      "type": ["null", "integer"]
+    },
+    "tasksDueCount": {
+      "type": ["null", "integer"]
     },
     "tasksViewId": {
       "type": ["null", "integer"]
     },
     "teamsViewId": {
+      "type": ["null", "integer"]
+    },
+    "templatesViewId": {
       "type": ["null", "integer"]
     },
     "tertiaryTimezone": {
@@ -234,6 +346,9 @@
     },
     "usersViewId": {
       "type": ["null", "integer"]
+    },
+    "voicemailPrompts": {
+      "type": ["null", "array"]
     },
     "voicemailNotificationEnabled": {
       "type": ["null", "boolean"]
@@ -288,6 +403,9 @@
       "items": {
         "type": ["null", "integer"]
       }
+    },
+    "useSalesNavigatorForLinkedInTasks": {
+      "type": ["null", "boolean"]
     },
     "updater": {
       "type": ["null", "array"],

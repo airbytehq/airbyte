@@ -24,10 +24,10 @@ Since the dataset items do not have strongly typed schema, they are synced as ob
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | No |
+| Feature                   | Supported?       |
+| :------------------------ | :--------------- |
+| Full Refresh Sync         | Yes              |
+| Incremental Sync          | Yes              |
 
 ### Performance considerations
 
@@ -37,16 +37,18 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
 
 ### Requirements
 
-* Apify [dataset](https://docs.apify.com/storage/dataset) ID
+* Apify [token](https://console.apify.com/account/integrations) token
+* Parameter clean: true or false 
 
 ### Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.2.0 | 2022-06-20 | [28290](https://github.com/airbytehq/airbyte/pull/28290) | Make connector work with platform changes not syncing empty stream schemas. |
-| 0.1.11 | 2022-04-27 | [12397](https://github.com/airbytehq/airbyte/pull/12397) | No changes. Used connector to test publish workflow changes. |
-| 0.1.9 | 2022-04-05 | [PR\#11712](https://github.com/airbytehq/airbyte/pull/11712) | No changes from 0.1.4. Used connector to test publish workflow changes. |
-| 0.1.4 | 2021-12-23 | [PR\#8434](https://github.com/airbytehq/airbyte/pull/8434) | Update fields in source-connectors specifications |
-| 0.1.2 | 2021-11-08 | [PR\#7499](https://github.com/airbytehq/airbyte/pull/7499) | Remove base-python dependencies |
-| 0.1.0 | 2021-07-29 | [PR\#5069](https://github.com/airbytehq/airbyte/pull/5069) | Initial version of the connector |
+| Version   | Date        | Pull Request                                                  | Subject                                                                     |
+| :-------- | :---------- | :------------------------------------------------------------ | :-------------------------------------------------------------------------- |
+|   1.0.0   | 2023-08-25  | [29859](https://github.com/airbytehq/airbyte/pull/29859)      | Migrate to lowcode                                                          |
+|   0.2.0   | 2022-06-20  | [28290](https://github.com/airbytehq/airbyte/pull/28290)      | Make connector work with platform changes not syncing empty stream schemas. |
+|   0.1.11  | 2022-04-27  | [12397](https://github.com/airbytehq/airbyte/pull/12397)      | No changes. Used connector to test publish workflow changes.                |
+|   0.1.9   | 2022-04-05  | [PR\#11712](https://github.com/airbytehq/airbyte/pull/11712)  | No changes from 0.1.4. Used connector to test publish workflow changes.     |
+|   0.1.4   | 2021-12-23  | [PR\#8434](https://github.com/airbytehq/airbyte/pull/8434)    | Update fields in source-connectors specifications                           |
+|   0.1.2   | 2021-11-08  | [PR\#7499](https://github.com/airbytehq/airbyte/pull/7499)    | Remove base-python dependencies                                             |
+|   0.1.0   | 2021-07-29  | [PR\#5069](https://github.com/airbytehq/airbyte/pull/5069)    | Initial version of the connector                                            |
 

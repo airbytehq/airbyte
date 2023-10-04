@@ -35,11 +35,12 @@ The Copper source connector supports the following [sync modes](https://docs.air
 - [People](https://developer.copper.com/people/list-people-search.html)
 - [Companies](https://developer.copper.com/companies/list-companies-search.html)
 - [Projects](https://developer.copper.com/projects/list-projects-search.html)
+- [Oppurtunities](https://developer.copper.com/opportunities/list-opportunities-search.html)
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                            |
-| :------ | :--------- | :-------------------------------------------------------- | :--------------------------------- |
-| 0.2.1   | 2023-08-16 | [24824](https://github.com/airbytehq/airbyte/pull/24824) | Fix schemas and tests  |
-| 0.2.0   | 2023-04-17 | [24824](https://github.com/airbytehq/airbyte/pull/24824) | Add `opportunities` stream |
-| 0.1.0   | 2022-11-17 | [18848](https://github.com/airbytehq/airbyte/pull/18848) | 🎉 New Source: Copper [python cdk] |
+| Version | Date       | Pull Request                                              | Subject                             |
+| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------- |
+| 0.3.0   | 2023-08-10 | [*****](https://github.com/airbytehq/airbyte/pull/*****)  | Migrate to low code                 |
+| 0.2.0   | 2023-04-17 | [24824](https://github.com/airbytehq/airbyte/pull/24824)  | Add `opportunities` stream          |
+| 0.1.0   | 2022-11-17 | [18848](https://github.com/airbytehq/airbyte/pull/18848)  | 🎉 New Source: Copper [python cdk]  |

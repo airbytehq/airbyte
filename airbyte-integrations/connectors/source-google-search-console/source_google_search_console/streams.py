@@ -25,7 +25,6 @@ class QueryAggregationType(Enum):
 
 class GoogleSearchConsole(HttpStream, ABC):
     url_base = BASE_URL
-    primary_key = None
     data_field = ""
     raise_on_http_errors = True
 
@@ -74,6 +73,11 @@ class GoogleSearchConsole(HttpStream, ABC):
                 self.logger.error(f"Stream {self.name}. {error.get('message')}. Skipping.")
                 setattr(self, "raise_on_http_errors", False)
                 return False
+            # handle the `HTTP-400` - Bad query params with `aggregationType`
+            if error.get("code", 0) == 400:
+                self.logger.error(f"Stream `{self.name}`. {error.get('message')}. Trying with `aggregationType = auto` instead.")
+                self.aggregation_type = QueryAggregationType.auto
+                setattr(self, "raise_on_http_errors", False)
         return super().should_retry(response)
 
 
@@ -81,6 +85,8 @@ class Sites(GoogleSearchConsole):
     """
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sites
     """
+
+    primary_key = None
 
     def path(
         self,
@@ -96,6 +102,7 @@ class Sitemaps(GoogleSearchConsole):
     API docs: https://developers.google.com/webmaster-tools/search-console-api-original/v3/sitemaps
     """
 
+    primary_key = None
     data_field = "sitemap"
 
     def path(
@@ -212,6 +219,7 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
             "rowLimit": ROW_LIMIT,
             "dataState": stream_slice.get("data_state"),
         }
+
         return data
 
     def _get_end_date(self) -> pendulum.date:
@@ -300,30 +308,36 @@ class SearchAnalytics(GoogleSearchConsole, ABC):
 
 
 class SearchAnalyticsByDate(SearchAnalytics):
+    primary_key = ["site_url", "date", "search_type"]
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date"]
 
 
 class SearchAnalyticsByCountry(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "search_type"]
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date", "country"]
 
 
 class SearchAnalyticsByDevice(SearchAnalytics):
+    primary_key = ["site_url", "date", "device", "search_type"]
     search_types = ["web", "news", "image", "video", "googleNews"]
     dimensions = ["date", "device"]
 
 
 class SearchAnalyticsByPage(SearchAnalytics):
+    primary_key = ["site_url", "date", "page", "search_type"]
     search_types = ["web", "news", "image", "video", "discover", "googleNews"]
     dimensions = ["date", "page"]
 
 
 class SearchAnalyticsByQuery(SearchAnalytics):
+    primary_key = ["site_url", "date", "query", "search_type"]
     dimensions = ["date", "query"]
 
 
 class SearchAnalyticsAllFields(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
     dimensions = ["date", "country", "device", "page", "query"]
 
 
@@ -334,6 +348,7 @@ class SearchAppearance(SearchAnalytics):
     https://developers.google.com/webmaster-tools/v1/how-tos/all-your-data#search-appearance-data
     """
 
+    primary_key = None
     dimensions = ["searchAppearance"]
 
 
@@ -354,7 +369,6 @@ class SearchByKeyword(SearchAnalytics):
         stream = SearchAppearance(self.authenticator, self._site_urls, self._start_date, self._end_date)
         keywords_records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state, stream_slice=stream_slice)
         keywords = {record["searchAppearance"] for record in keywords_records}
-
         filters = []
         for keyword in keywords:
             filters.append({"dimension": "searchAppearance", "operator": "equals", "expression": keyword})
@@ -365,76 +379,89 @@ class SearchByKeyword(SearchAnalytics):
 
 
 class SearchAnalyticsKeywordPageReport(SearchByKeyword):
+    primary_key = ["site_url", "date", "country", "device", "query", "page", "search_type"]
     dimensions = ["date", "country", "device", "query", "page"]
 
 
 class SearchAnalyticsKeywordSiteReportByPage(SearchByKeyword):
+    primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
     aggregation_type = QueryAggregationType.by_page
 
 
 class SearchAnalyticsKeywordSiteReportBySite(SearchByKeyword):
+    primary_key = ["site_url", "date", "country", "device", "query", "search_type"]
     dimensions = ["date", "country", "device", "query"]
     aggregation_type = QueryAggregationType.by_property
 
 
 class SearchAnalyticsSiteReportBySite(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "device", "search_type"]
     dimensions = ["date", "country", "device"]
     aggregation_type = QueryAggregationType.by_property
 
 
 class SearchAnalyticsSiteReportByPage(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "device", "search_type"]
     search_types = ["web", "news", "image", "video", "googleNews"]
     dimensions = ["date", "country", "device"]
     aggregation_type = QueryAggregationType.by_page
 
 
 class SearchAnalyticsPageReport(SearchAnalytics):
+    primary_key = ["site_url", "date", "country", "device", "search_type", "page"]
     search_types = ["web", "news", "image", "video", "googleNews"]
     dimensions = ["date", "country", "device", "page"]
 
 
 class SearchAnalyticsByCustomDimensions(SearchAnalytics):
-    dimension_to_property_schema_map = {
+    # `date` is a cursor field therefore should be mandatory
+    DEFAULT_DIMENSIONS = ["date"]
+    DIMENSION_TO_PROPERTY_SCHEMA_MAP = {
         "country": [{"country": {"type": ["null", "string"]}}],
-        "date": [],
+        "date": [{"date": {"type": ["null", "string"], "format": "date"}}],
         "device": [{"device": {"type": ["null", "string"]}}],
         "page": [{"page": {"type": ["null", "string"]}}],
         "query": [{"query": {"type": ["null", "string"]}}],
     }
 
+    primary_key = None
+
     def __init__(self, dimensions: List[str], *args, **kwargs):
         super(SearchAnalyticsByCustomDimensions, self).__init__(*args, **kwargs)
-        self.dimensions = dimensions
+        self.dimensions = dimensions + [dimension for dimension in self.DEFAULT_DIMENSIONS if dimension not in dimensions]
+        # Assign the dimensions as PK for the custom report stream.
+        # Site URL and Search Type are included in the API call thus affect the resulting data.
+        # `site_url` is a required URL param for making API calls;
+        # `search_type` remains a query param for historical reasons, we do not want to remove it to not break existing connections.
+        self.primary_key = self.dimensions + ["site_url", "search_type"]
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        try:
-            return super(SearchAnalyticsByCustomDimensions, self).get_json_schema()
-        except FileNotFoundError:
-            schema: Mapping[str, Any] = {
-                "$schema": "https://json-schema.org/draft-07/schema#",
-                "type": ["null", "object"],
-                "additionalProperties": True,
-                "properties": {
-                    "clicks": {"type": ["null", "integer"]},
-                    "ctr": {"type": ["null", "number"], "multipleOf": 1e-25},
-                    "date": {"type": ["null", "string"], "format": "date"},
-                    "impressions": {"type": ["null", "integer"]},
-                    "position": {"type": ["null", "number"], "multipleOf": 1e-25},
-                    "search_type": {"type": ["null", "string"]},
-                    "site_url": {"type": ["null", "string"]},
-                },
-            }
+        schema: Mapping[str, Any] = {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": ["null", "object"],
+            "additionalProperties": True,
+            "properties": {
+                # metrics
+                "clicks": {"type": ["null", "integer"]},
+                "ctr": {"type": ["null", "number"], "multipleOf": 1e-25},
+                "impressions": {"type": ["null", "integer"]},
+                "position": {"type": ["null", "number"], "multipleOf": 1e-25},
+                # default fields
+                "search_type": {"type": ["null", "string"]},
+                "site_url": {"type": ["null", "string"]},
+            },
+        }
 
-            dimension_properties = self.dimension_to_property_schema()
-            schema["properties"].update(dimension_properties)
-
-            return schema
+        # dimensions
+        dimension_properties = self.dimension_to_property_schema()
+        schema["properties"].update(dimension_properties)
+        return schema
 
     def dimension_to_property_schema(self) -> dict:
         properties = {}
         for dimension in sorted(self.dimensions):
-            fields = self.dimension_to_property_schema_map[dimension]
+            fields = self.DIMENSION_TO_PROPERTY_SCHEMA_MAP[dimension]
             for field in fields:
                 properties = {**properties, **field}
         return properties

@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - https://api.customer.io/v1/
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 34f697bc-b989-4eda-b06f-d0f39b88825b
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-customer-io
+  githubIssueLabel: source-customer-io
+  icon: customer-io.svg
+  license: MIT
+  name: Customer Io
+  releaseDate: 2023-08-20
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/customer-io
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

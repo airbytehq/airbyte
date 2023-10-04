@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.0.1
+Changing `format` or `airbyte_type` in a field definition of a schema or specification is now a breaking change.
+
+## 2.0.0
+Update test_incremental.test_two_sequential_reads to be unaware of the contents of the state message. This is to support connectors that have a custom implementation of a cursor.
+
+## 1.0.4
+Fix edge case in skip_backward_compatibility_tests_fixture on discovery: if the current config structure is not compatible with the previous connector version, the discovery command failing and the previous connector version catalog could not be retrieved.
+
+## 1.0.3
+Add tests for display_type property
+
+## 1.0.2
+Fix bug in skip_backward_compatibility_tests_fixture, the previous connector version could not be retrieved.
+
 ## 1.0.1
 Pin airbyte-protocol-model to <1.0.0.
 
