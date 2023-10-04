@@ -24,6 +24,11 @@ public class SshHelpers {
     return injectSshIntoSpec(originalSpec, group);
   }
 
+  public static ConnectorSpecification getSpecAndInjectSsh(final String specFile) throws IOException {
+    final ConnectorSpecification originalSpec = Jsons.deserialize(MoreResources.readResource(specFile), ConnectorSpecification.class);
+    return injectSshIntoSpec(originalSpec, Optional.empty());
+  }
+
   public static ConnectorSpecification injectSshIntoSpec(final ConnectorSpecification connectorSpecification) throws IOException {
     return injectSshIntoSpec(connectorSpecification, Optional.empty());
   }

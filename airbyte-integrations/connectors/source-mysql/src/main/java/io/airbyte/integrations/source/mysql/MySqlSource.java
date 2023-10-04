@@ -90,10 +90,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source {
-
   private static final String MODE = System.getenv("DEPLOYMENT_MODE");
-  private static final Source source = new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
-
   public static final String TUNNEL_METHOD = "tunnel_method";
   public static final String NO_TUNNEL = "NO_TUNNEL";
   public static final String SSL_MODE = "ssl_mode";
@@ -130,7 +127,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   private final FeatureFlags featureFlags;
 
   public static Source sshWrappedSource() {
-    return source;
+    return new SshWrappedSource(new MySqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   private ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
@@ -142,10 +139,10 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
 
   @Override
   public ConnectorSpecification spec() throws Exception {
-     if (MODE != null && MODE.equalsIgnoreCase("cloud")) {
-       return modifySpec(super.spec());
-     }
-     return super.spec();
+    if (MODE != null && MODE.equalsIgnoreCase("cloud")) {
+      return modifySpec(super.spec());
+    }
+    return super.spec();
   }
 
   @Override
