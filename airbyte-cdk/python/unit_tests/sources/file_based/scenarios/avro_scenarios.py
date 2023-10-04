@@ -4,7 +4,6 @@
 
 import datetime
 import decimal
-import uuid
 
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryAvroFilesStreamReader
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
