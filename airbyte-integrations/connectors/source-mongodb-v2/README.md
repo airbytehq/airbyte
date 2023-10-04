@@ -37,13 +37,16 @@ As a community contributor, you will need to have an Atlas cluster to test Mongo
 1. Create `secrets/credentials.json` file
    1. Insert below json to the file with your configuration
        ```
-      {
-         "database": "database_name",
-         "user": "user",
-         "password": "password",
-         "cluster_url": "cluster_url"
+       {
+            "cluster_type": "ATLAS_REPLICA_SET"
+            "database": "database_name",
+            "username": "username",
+            "password": "password",
+            "connection_string": "mongodb+srv://cluster0.abcd1.mongodb.net/",
+            "auth_source": "auth_database",
        }
       ```
+      where `installation_type` is one of `ATLAS_REPLICA_SET` or `SELF_HOSTED_REPLICA_SET` depending on the location of the target cluster.
 
 ## Airbyte Employee
 

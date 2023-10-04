@@ -271,7 +271,8 @@ class SourceGithub(AbstractSource):
             "api_url": config.get("api_url"),
             "access_token_type": access_token_type,
         }
-        organization_args_with_start_date = {**organization_args, "start_date": config["start_date"]}
+        start_date = config.get("start_date")
+        organization_args_with_start_date = {**organization_args, "start_date": start_date}
 
         repository_args = {
             "authenticator": authenticator,
@@ -280,7 +281,7 @@ class SourceGithub(AbstractSource):
             "page_size_for_large_streams": page_size,
             "access_token_type": access_token_type,
         }
-        repository_args_with_start_date = {**repository_args, "start_date": config["start_date"]}
+        repository_args_with_start_date = {**repository_args, "start_date": start_date}
 
         default_branches, branches_to_pull = self._get_branches_data(config.get("branch", ""), repository_args)
         pull_requests_stream = PullRequests(**repository_args_with_start_date)

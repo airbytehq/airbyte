@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 public record AlterTableReport(Set<String> columnsToAdd,
                                Set<String> columnsToRemove,
-                               Set<String> columnsToChangeType,
+                               Set<String> columnsToChange,
                                boolean isDestinationV2Format) {
 
   /**
@@ -18,7 +18,7 @@ public record AlterTableReport(Set<String> columnsToAdd,
    * @return whether the schema matches
    */
   public boolean isNoOp() {
-    return isDestinationV2Format && Stream.of(this.columnsToAdd, this.columnsToRemove, this.columnsToChangeType)
+    return isDestinationV2Format && Stream.of(this.columnsToAdd, this.columnsToRemove, this.columnsToChange)
         .allMatch(Set::isEmpty);
   }
 
