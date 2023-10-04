@@ -76,7 +76,7 @@ def targeting_response():
 @fixture
 def creatives_response():
     return """
-[{"creativeId":0,"adGroupId":0,"creativeType":"IMAGE","properties":[{"headline":"string"}],"moderationStatus":"APPROVED"}]
+[{"creativeId":0,"adGroupId":0,"creativeType":"IMAGE","properties":{"headline":"string"},"moderationStatus":"APPROVED"}]
 """
 
 
