@@ -174,7 +174,9 @@ class SourceGithub(AbstractSource):
         return getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD"
 
     @staticmethod
-    def _get_branches_data(selected_branches: List, full_refresh_args: Dict[str, Any] = None) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
+    def _get_branches_data(
+        selected_branches: List, full_refresh_args: Dict[str, Any] = None
+    ) -> Tuple[Dict[str, str], Dict[str, List[str]]]:
         selected_branches = set(selected_branches)
 
         # Get the default branch for each repository
