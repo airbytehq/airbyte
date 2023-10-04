@@ -35,19 +35,27 @@ __installed_version__ = importlib.metadata.version("pipelines")
 
 def check_up_to_date() -> bool:
     """Check if the installed version of pipelines is up to date."""
-    # get the version of the latest release, which is just in the pyproject.toml file of the pipelines package
-    # as this is an internal tool, we don't need to check for the latest version on PyPI
     latest_version = get_latest_version()
     if latest_version != __installed_version__:
-        main_logger.warning(f"pipelines is not up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
-        main_logger.warning("Please run `pipx reinstall pipelines` to upgrade to the latest version.")
-        return False
+        upgrade_error_message = f"""
+        🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+
+        airbyte-ci is not up to date. Installed version: {__installed_version__}. Latest version: {latest_version}
+        Please run `pipx reinstall pipelines` to upgrade to the latest version.
+
+        🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+        """
+        raise Exception(upgrade_error_message)
 
     main_logger.info(f"pipelines is up to date. Installed version: {__installed_version__}. Latest version: {latest_version}")
     return True
 
 
 def get_latest_version() -> str:
+    """
+    Get the version of the latest release, which is just in the pyproject.toml file of the pipelines package
+    as this is an internal tool, we don't need to check for the latest version on PyPI
+    """
     path_to_pyproject_toml = LOCAL_PIPELINE_PACKAGE_PATH + "pyproject.toml"
     with open(path_to_pyproject_toml, "r") as f:
         for line in f.readlines():

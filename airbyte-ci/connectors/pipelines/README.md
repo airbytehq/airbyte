@@ -398,6 +398,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 |---------| --------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
+| 1.4.5   |                                                           | Throw error if airbyte-ci tools is out of date                                                            |
 | 1.4.4   | [#30743](https://github.com/airbytehq/airbyte/pull/30743) | Add `--disable-report-auto-open` and `--use-host-gradle-dist-tar` to allow gradle integration.            |
 | 1.4.3   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Add --version and version check                                                                           |
 | 1.4.2   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Remove directory name requirement                                                                         |
