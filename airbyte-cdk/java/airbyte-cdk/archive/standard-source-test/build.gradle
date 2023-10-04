@@ -6,7 +6,7 @@ buildscript {
 
 plugins {
     id 'application'
-    id 'airbyte-docker'
+    id 'airbyte-docker-legacy'
 }
 
 import org.jsoup.Jsoup;
