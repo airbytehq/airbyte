@@ -78,7 +78,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
         // Configure gradle python plugin.
         project.python {
             envPath = venvDirectoryName
-            minPythonVersion '3.9'
+            minPythonVersion '3.10'
 
             // Pyenv support.
             try {
@@ -95,7 +95,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
             scope 'VIRTUALENV'
             installVirtualenv = true
-            pip 'pip:21.3.1'
+            pip 'pip:23.2.1'
             pip 'mccabe:0.6.1'
             // https://github.com/csachs/pyproject-flake8/issues/13
             pip 'flake8:4.0.1'
@@ -122,6 +122,8 @@ class AirbytePythonPlugin implements Plugin<Project> {
             project.tasks.register('installLocalReqs', PythonTask) {
                 module = "pip"
                 command = "install .[dev,tests]"
+                inputs.file('setup.py')
+                outputs.file('build/installedlocalreqs.txt')
             }
         } else {
             return
