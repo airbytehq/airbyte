@@ -336,6 +336,8 @@ def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
+    if use_host_gradle_dist_tar and not ctx.obj["is_local"]:
+        raise Exception("flag --use-host-gradle-dist-tar requires --is-local")
     anyio.run(
         run_connectors_pipelines,
         connectors_contexts,

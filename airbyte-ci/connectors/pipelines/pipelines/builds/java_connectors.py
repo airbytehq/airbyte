@@ -52,12 +52,9 @@ class BuildConnectorImages(BuildConnectorImagesBase):
 async def run_connector_build(context: ConnectorContext) -> StepResult:
     """Create the java connector distribution tar file and build the connector image."""
 
-    if context.use_host_gradle_dist_tar:
+    if context.use_host_gradle_dist_tar and context.is_local:
         # Special case: use a local dist tar to speed up local development.
         dist_dir = await context.dagger_client.host().directory(dist_tar_directory_path(context), include=["*.tar"])
-        if not context.is_local:
-            # This should never happen.
-            raise Exception("flag --use-host-gradle-dist-tar requires --is-local")
         # Speed things up by only building for the local platform.
         return await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run(dist_dir)
 

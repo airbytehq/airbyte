@@ -20,8 +20,7 @@ class BuildConnectorImagesBase(Step, ABC):
 
     @property
     def title(self):
-        plural = "" if len(self.build_platforms) == 1 else "s"
-        return f"Build {self.context.connector.technical_name} docker image{plural} for platform{plural} {', '.join(self.build_platforms)}"
+        return f"Build {self.context.connector.technical_name} docker image for platform(s) {', '.join(self.build_platforms)}"
 
     def __init__(self, context: ConnectorContext, *build_platforms: List[Platform]) -> None:
         self.build_platforms = build_platforms if build_platforms else BUILD_PLATFORMS
@@ -41,10 +40,9 @@ class BuildConnectorImagesBase(Step, ABC):
                 build_results_per_platform[platform] = connector
             except QueryError as e:
                 return StepResult(self, StepStatus.FAILURE, stderr=f"Failed to build connector image for platform {platform}: {e}")
-        plural = "" if len(self.build_platforms) == 1 else "s"
         success_message = (
-            f"The {self.context.connector.technical_name} docker image{plural} "
-            f"were successfully built for platform{plural} {', '.join(self.build_platforms)}"
+            f"The {self.context.connector.technical_name} docker image "
+            f"was successfully built for platform(s) {', '.join(self.build_platforms)}"
         )
         return StepResult(self, StepStatus.SUCCESS, stdout=success_message, output_artifact=build_results_per_platform)
 
