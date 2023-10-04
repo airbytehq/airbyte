@@ -7,15 +7,16 @@ from abc import ABC
 from datetime import datetime
 from types import MappingProxyType
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import IncrementalMixin
-from airbyte_cdk.sources.streams.core import StreamData
+
 import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 from source_dz_zoho_books.auth import ZohoBooksAuthenticator
 from source_dz_zoho_books.datetimeutil import convert_to_utc
+
 from .api import ZohoBooksAPI
 
 
@@ -31,7 +32,7 @@ class DzZohoBooksStream(HttpStream, ABC):
         return self.base_url
     
     @property
-    def max_retries(self) -> int | None:
+    def max_retries(self) -> Union[int, None]:
         """
         Specifies maximum amount of retries for backoff policy. Return None for no limit.
         """
@@ -49,10 +50,7 @@ class DzZohoBooksStream(HttpStream, ABC):
         if (next_page is None) or (not next_page["has_more_page"]):
             return None
         else:
-            return {
-                "page": next_page["page"] + 1, 
-                "per_page": next_page["per_page"]
-            }
+            return {"page": next_page["page"] + 1, "per_page": next_page["per_page"]}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -83,6 +81,7 @@ class DzZohoBooksStream(HttpStream, ABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         return record
 
+
 class IncrementalDzZohoBooksStream(DzZohoBooksStream, IncrementalMixin):
     cursor_field = "last_modified_time"
 
@@ -94,28 +93,38 @@ class IncrementalDzZohoBooksStream(DzZohoBooksStream, IncrementalMixin):
     @property
     def state(self) -> Mapping[str, Any]:
         if self._cursor_value:
-            return  {self.cursor_field: self._cursor_value}
-        else :
-            return  {self.cursor_field: self.start_date}
+            return {self.cursor_field: self._cursor_value}
+        else:
+            return {self.cursor_field: self.start_date}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._cursor_value = datetime.strptime(str(value[self.cursor_field]), '%Y-%m-%dT%H:%M:%S')
+        self._cursor_value = datetime.strptime(str(value[self.cursor_field]), "%Y-%m-%dT%H:%M:%S")
 
-    def read_records(self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None) -> Iterable[StreamData]:
-        records =  list(super().read_records(sync_mode, cursor_field, stream_slice, stream_state))
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+        records = list(super().read_records(sync_mode, cursor_field, stream_slice, stream_state))
 
-        latest_cursor_value : datetime = None
+        latest_cursor_value: datetime = None
         if not self._cursor_value:
             for record in records:
                 current_record_cursor_value = convert_to_utc(record[self.cursor_field])
-                latest_cursor_value = max(current_record_cursor_value, latest_cursor_value) if latest_cursor_value else current_record_cursor_value
+                latest_cursor_value = (
+                    max(current_record_cursor_value, latest_cursor_value) if latest_cursor_value else current_record_cursor_value
+                )
                 yield record
         else:
             for record in records:
                 current_record_cursor_value = convert_to_utc(record[self.cursor_field])
                 if current_record_cursor_value > self._cursor_value:
-                    latest_cursor_value = max(current_record_cursor_value, latest_cursor_value) if latest_cursor_value else current_record_cursor_value
+                    latest_cursor_value = (
+                        max(current_record_cursor_value, latest_cursor_value) if latest_cursor_value else current_record_cursor_value
+                    )
                     yield record
                 else:
                     break
@@ -125,6 +134,7 @@ class IncrementalDzZohoBooksStream(DzZohoBooksStream, IncrementalMixin):
             yield from []
         else:
             yield from []
+
 
 class Contacts(IncrementalDzZohoBooksStream):
     primary_key = "contact_id"
@@ -205,7 +215,7 @@ class RecurringExpenses(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/recurringexpenses"
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -213,7 +223,11 @@ class RecurringExpenses(DzZohoBooksStream):
         data = response.json().get(self.name)
         if isinstance(data, list):
             for record in data:
-                date = convert_to_utc(record["last_modified_time"]) if record["last_modified_time"] != "" else convert_to_utc(record["created_time"])
+                date = (
+                    convert_to_utc(record["last_modified_time"])
+                    if record["last_modified_time"] != ""
+                    else convert_to_utc(record["created_time"])
+                )
                 if date >= self._start_date:
                     yield self.transform(record=record, **kwargs)
         else:
@@ -274,7 +288,7 @@ class Bankaccounts(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/bankaccounts"
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -294,7 +308,7 @@ class Banktransactions(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/banktransactions"
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -360,7 +374,7 @@ class TimeEntries(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/projects/timeentries"
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -393,7 +407,7 @@ class Users(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/users"
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -413,7 +427,7 @@ class Currencies(DzZohoBooksStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "v3/settings/currencies"
-    
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """
         :return an iterable containing each record in the response
@@ -446,25 +460,21 @@ class SourceDzZohoBooks(AbstractSource):
             token_refresh_endpoint="https://accounts.zoho.in/oauth/v2/token",
             client_id=config["client_id"],
             client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"]
+            refresh_token=config["refresh_token"],
         )
 
         start_date = convert_to_utc(config["start_date"])
-        
+
         _DC_REGION_TO_API_URL = MappingProxyType(
             {
                 "US": "https://www.zohoapis.com/books/",
                 "AU": "https://www.zohoapis.com.au/books/",
                 "EU": "https://www.zohoapis.eu/books/",
                 "IN": "https://www.zohoapis.in/books/",
-                "JP": "https://www.zohoapis.jp/books/"
+                "JP": "https://www.zohoapis.jp/books/",
             }
         )
-        init_params = {
-            "authenticator": auth,
-            "start_date": start_date,
-            "base_url": _DC_REGION_TO_API_URL[config['dc_region'].upper()]
-        }
+        init_params = {"authenticator": auth, "start_date": start_date, "base_url": _DC_REGION_TO_API_URL[config["dc_region"].upper()]}
 
         return [
             Contacts(**init_params),
