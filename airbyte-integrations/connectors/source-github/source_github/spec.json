@@ -83,6 +83,7 @@
           "type": "string",
           "pattern": "^([\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))\\s+)*[\\w.-]+/(\\*|[\\w.-]+(?<!\\.git))$"
         },
+        "minItems": 1,
         "examples": [
           "airbytehq/airbyte airbytehq/another-repo",
           "airbytehq/*",
