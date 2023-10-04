@@ -18,7 +18,6 @@
       "type": "object"
     },
     "bookingLines": {
-      "type": "object",
       "items": {
         "type": "array",
         "additionalProperties": true,
@@ -175,117 +174,118 @@
           }
         }
       },
-      "bookingType": {
-        "type": ["null", "string"]
-      },
-      "changeType": {
-        "type": ["null", "string"]
-      },
-      "classification": {
-        "additionalProperties": true,
-        "properties": {
-          "chartColor": {
-            "type": ["null", "string"]
-          },
-          "classificationType": {
-            "type": ["null", "string"]
-          },
-          "description": {
-            "type": ["null", "string"]
-          },
-          "isSystemClassification": {
-            "type": ["null", "boolean"]
-          },
-          "name": {
-            "type": ["null", "string"]
-          }
+      "type": "object"
+    },
+    "bookingType": {
+      "type": ["null", "string"]
+    },
+    "changeType": {
+      "type": ["null", "string"]
+    },
+    "classification": {
+      "additionalProperties": true,
+      "properties": {
+        "chartColor": {
+          "type": ["null", "string"]
         },
-        "type": "object"
-      },
-      "cmrr": {
-        "additionalProperties": true,
-        "properties": {
-          "amount": {
-            "type": ["null", "number"]
-          },
-          "amountInBaseCurrency": {
-            "type": ["null", "number"]
-          }
+        "classificationType": {
+          "type": ["null", "string"]
         },
-        "type": "object"
-      },
-      "created": {
-        "type": ["null", "string"]
-      },
-      "effectiveDate": {
-        "type": ["null", "string"]
-      },
-      "emrr": {
-        "additionalProperties": true,
-        "properties": {
-          "amount": {
-            "type": ["null", "number"]
-          },
-          "amountInBaseCurrency": {
-            "type": ["null", "number"]
-          }
+        "description": {
+          "type": ["null", "string"]
         },
-        "type": "object"
-      },
-      "fmrr": {
-        "additionalProperties": true,
-        "properties": {
-          "amount": {
-            "type": ["null", "number"]
-          },
-          "amountInBaseCurrency": {
-            "type": ["null", "number"]
-          }
+        "isSystemClassification": {
+          "type": ["null", "boolean"]
         },
-        "type": "object"
+        "name": {
+          "type": ["null", "string"]
+        }
       },
-      "id": {
-        "type": ["null", "string"]
-      },
-      "modified": {
-        "type": ["null", "string"]
-      },
-      "oneTimeFees": {
-        "additionalProperties": true,
-        "properties": {
-          "amount": {
-            "type": ["null", "number"]
-          },
-          "amountInBaseCurrency": {
-            "type": ["null", "number"]
-          }
+      "type": "object"
+    },
+    "cmrr": {
+      "additionalProperties": true,
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
         },
-        "type": "object"
+        "amountInBaseCurrency": {
+          "type": ["null", "number"]
+        }
       },
-      "order": {
-        "additionalProperties": true,
-        "properties": {
-          "id": {
-            "type": ["null", "string"]
-          },
-          "orderNumber": {
-            "type": ["null", "string"]
-          }
+      "type": "object"
+    },
+    "created": {
+      "type": ["null", "string"]
+    },
+    "effectiveDate": {
+      "type": ["null", "string"]
+    },
+    "emrr": {
+      "additionalProperties": true,
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
         },
-        "type": "object"
+        "amountInBaseCurrency": {
+          "type": ["null", "number"]
+        }
       },
-      "tcv": {
-        "additionalProperties": true,
-        "properties": {
-          "amount": {
-            "type": ["null", "number"]
-          },
-          "amountInBaseCurrency": {
-            "type": ["null", "number"]
-          }
+      "type": "object"
+    },
+    "fmrr": {
+      "additionalProperties": true,
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
         },
-        "type": "object"
-      }
+        "amountInBaseCurrency": {
+          "type": ["null", "number"]
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "modified": {
+      "type": ["null", "string"]
+    },
+    "oneTimeFees": {
+      "additionalProperties": true,
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "amountInBaseCurrency": {
+          "type": ["null", "number"]
+        }
+      },
+      "type": "object"
+    },
+    "order": {
+      "additionalProperties": true,
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "orderNumber": {
+          "type": ["null", "string"]
+        }
+      },
+      "type": "object"
+    },
+    "tcv": {
+      "additionalProperties": true,
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "amountInBaseCurrency": {
+          "type": ["null", "number"]
+        }
+      },
+      "type": "object"
     }
   }
 }
