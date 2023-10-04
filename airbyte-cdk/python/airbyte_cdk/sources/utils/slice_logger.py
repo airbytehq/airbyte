@@ -47,3 +47,8 @@ class DebugSliceLogger(SliceLogger):
 class AlwaysLogSliceLogger(SliceLogger):
     def should_log_slice_message(self, logger: logging.Logger) -> bool:
         return True
+
+
+class NeverLogSliceLogger(SliceLogger):
+    def should_log_slice_message(self, logger: logging.Logger) -> bool:
+        return False

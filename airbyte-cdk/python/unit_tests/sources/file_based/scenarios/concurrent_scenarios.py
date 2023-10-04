@@ -1,55 +1,28 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import json
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import StreamAvailability, StreamAvailable
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability, StreamAvailable
 from airbyte_cdk.sources.streams.concurrent.legacy import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
+from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_protocol.models import AirbyteStream, ConfiguredAirbyteStream
+from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
+from airbyte_cdk.sources.utils.slice_logger import NeverLogSliceLogger
+from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 
-class MockStream(AbstractStream):
-    def __init__(self, records, name, cursor_field):
-        self._records = records
-        self._name = name
-        self._cursor_field = cursor_field
-
-    def read(self) -> Iterable[Record]:
-        yield from self._records
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def cursor_field(self) -> Optional[str]:
-        return self._cursor_field
-
-    def check_availability(self) -> StreamAvailability:
-        return StreamAvailable()
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        return {}
-
-    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
-        pass
-
-    def as_airbyte_stream(self) -> AirbyteStream:
-        return AirbyteStream(name=self._name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
-
-    def log_stream_sync_configuration(self) -> None:
-        pass
-
-
 class ConcurrentCdkSource(AbstractSource):
-    def __init__(self, streams: List[AbstractStream]):
+    def __init__(self, streams: List[ThreadBasedConcurrentStream]):
         self._streams = streams
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -74,6 +47,35 @@ class ConcurrentCdkSource(AbstractSource):
         )
 
 
+class InMemoryPartitionGenerator(PartitionGenerator):
+    def __init__(self, partitions: List[Partition]):
+        self._partitions = partitions
+
+    def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
+        yield from self._partitions
+
+
+class InMemoryPartition(Partition):
+    def __init__(self, name, _slice, records):
+        self._name = name
+        self._slice = _slice
+        self._records = records
+
+    def read(self) -> Iterable[Record]:
+        yield from self._records
+
+    def to_slice(self) -> Optional[Mapping[str, Any]]:
+        return self._slice
+
+    def __hash__(self) -> int:
+        if self._slice:
+            # Convert the slice to a string so that it can be hashed
+            s = json.dumps(self._slice, sort_keys=True)
+            return hash((self._name, s))
+        else:
+            return hash(self._name)
+
+
 class ConcurrentSourceBuilder:
     def __init__(self):
         pass
@@ -86,6 +88,11 @@ class ConcurrentSourceBuilder:
         return self
 
 
+class AlwaysAvailableAvailabilityStrategy(AbstractAvailabilityStrategy):
+    def check_availability(self, logger: logging.Logger) -> StreamAvailability:
+        return StreamAvailable()
+
+
 test_concurrent_cdk = (
     TestScenarioBuilder()
     .set_name("test_concurrent_cdk")
@@ -93,7 +100,21 @@ test_concurrent_cdk = (
     .set_source_builder(
         ConcurrentSourceBuilder().set_streams(
             [
-                MockStream([Record({"id": "1"}), Record({"id": "2"})], "stream1", None),
+                ThreadBasedConcurrentStream(
+                    partition_generator=InMemoryPartitionGenerator(
+                        [InMemoryPartition("partition1", None, [Record({"id": "1"}), Record({"id": "2"})])]
+                    ),
+                    max_workers=1,
+                    name="stream1",
+                    json_schema={},
+                    availability_strategy=AlwaysAvailableAvailabilityStrategy(),
+                    primary_key=[],
+                    cursor_field=None,
+                    slice_logger=NeverLogSliceLogger(),
+                    logger=logging.getLogger("test_logger"),
+                    message_repository=InMemoryMessageRepository(),
+                    timeout_seconds=300,
+                )
             ]
         )
     )
