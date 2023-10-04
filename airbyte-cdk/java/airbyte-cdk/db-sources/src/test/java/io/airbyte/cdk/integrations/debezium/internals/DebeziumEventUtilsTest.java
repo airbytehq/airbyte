@@ -61,7 +61,6 @@ class DebeziumEventUtilsTest {
     deepCompare(expectedDelete, actualDelete);
   }
 
-  @Disabled("See https://github.com/airbytehq/airbyte/issues/31032")
   @Test
   void testConvertMongoDbChangeEvent() throws IOException {
     final String objectId = "64f24244f95155351c4185b1";
