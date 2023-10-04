@@ -16,12 +16,11 @@ class PaginationStrategy:
     """
 
     @property
+    @abstractmethod
     def initial_token(self) -> Optional[Any]:
         """
         Return the initial value of the token
         """
-
-        return None
 
     @abstractmethod
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:

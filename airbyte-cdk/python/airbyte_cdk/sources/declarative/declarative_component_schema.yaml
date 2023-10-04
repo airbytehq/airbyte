@@ -1630,7 +1630,7 @@ definitions:
         title: Inject Offset
         description: Using the `offset` with value `0` during the first request
         type: boolean
-        default: true
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -1661,9 +1661,9 @@ definitions:
           - 1
       inject_on_first_request:
         title: Inject Page Number
-        description: Using the `page number` with value `0` during the first request
+        description: Using the `page number` with value defined by `start_from_page` during the first request
         type: boolean
-        default: true
+        default: false
       $parameters:
         type: object
         additionalProperties: true
