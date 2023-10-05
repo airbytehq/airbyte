@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Baseline IG schema",
+  "additionalProperties": true,
+  "type": ["object", "null"],
+  "properties": {
+    "CompletionDate": {
+      "type": ["string", "null"]
+    },
+    "SubmissionDate": {
+      "type": ["string", "null"]
+    },
+    "starttime": {
+      "type": ["string", "null"]
+    },
+    "endtime": {
+      "type": ["string", "null"]
+    },
+    "deviceid": {
+      "type": ["string", "null"]
+    },
+    "devicephonenum": {
+      "type": ["string", "null"]
+    },
+    "username": {
+      "type": ["string", "null"]
+    },
+    "device_info": {
+      "type": ["string", "null"]
+    },
+    "duration": {
+      "type": ["string", "null"]
+    },
+    "caseid": {
+      "type": ["string", "null"]
+    },
+    "asd": {
+      "type": ["string", "null"]
+    },
+    "instanceID": {
+      "type": ["string", "null"]
+    },
+    "formdef_version": {
+      "type": ["string", "null"]
+    },
+    "review_quality": {
+      "type": ["string", "null"]
+    },
+    "review_status": {
+      "type": ["string", "null"]
+    },
+    "KEY": {
+      "type": ["string", "null"]
+    }
+  }
+}

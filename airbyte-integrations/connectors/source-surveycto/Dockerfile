@@ -1,16 +1,13 @@
-FROM python:3.10.8-slim-bullseye as base
+FROM python:3.9.11-alpine3.15 as base
 
 # build and load all requirements
 FROM base as builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
-RUN apt-get update && apt-get install -y && rm -rf /var/lib/apt/lists/* \
-    # apk --no-cache upgrade \
+RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
-    && python3 -m pip install --upgrade setuptools
-    
-RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
+    && apk --no-cache add tzdata build-base
 
 
 COPY setup.py ./
@@ -28,7 +25,7 @@ COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
 
 # bash is installed for more convenient debugging.
-#RUN apk --no-cache add bash
+RUN apk --no-cache add bash
 
 # copy payload code only
 COPY main.py ./
@@ -37,6 +34,5 @@ COPY source_surveycto ./source_surveycto
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.2
+LABEL io.airbyte.version=0.2.0
 LABEL io.airbyte.name=airbyte/source-surveycto
-

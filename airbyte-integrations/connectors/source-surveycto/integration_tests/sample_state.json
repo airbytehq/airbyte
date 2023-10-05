@@ -1,5 +1,9 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "value"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "CompletionDate": "Oct 5, 2023 6:16:47 PM" },
+      "stream_descriptor": { "name": "baseline_ig" }
+    }
   }
-}
+]
