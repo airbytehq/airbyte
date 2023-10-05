@@ -32,7 +32,7 @@ The Chargebee source connector supports the following [sync modes](https://docs.
 
 ## Supported streams
 
-Most supported streams can be synced regardless of your site's Product Catalog version, with a few exceptions.
+Most streams are supported regardless of your Chargebee site's [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html), with a few version-specific exceptions.
 
 | Stream                 | Product Catalog 1.0 | Product Catalog 2.0 |
 |------------------------|---------------------|---------------------|
@@ -60,7 +60,7 @@ Most supported streams can be synced regardless of your site's Product Catalog v
 | [Virtual Bank Accounts](https://apidocs.chargebee.com/docs/api/virtual_bank_accounts) | ✔ | ✔ |
 
 :::note
-When using incremental sync mode, the `Attached Items` stream behaves differently than the other streams. Whereas other incremental streams read and output _only new_ records, the `Attached Items` stream reads _all_ records but only outputs _new_ records, making it more demanding on your Chargebee API quota. Each sync incurs API calls equal to the total number of attached items in your Chargebee instance divided by 100, regardless of the actual number of `AttachedItems` changed or synced.
+When using incremental sync mode, the `Attached Items` stream behaves differently than the other streams. Whereas other incremental streams read and output _only new_ records, the `Attached Items` stream reads _all_ records but only outputs _new_ records, making it more demanding on your Chargebee API quota. Each sync incurs API calls equal to the total number of attached items in your Chargebee instance divided by 100, regardless of the actual number of `Attached Items` changed or synced.
 :::
 
 ## Performance considerations
