@@ -26,7 +26,11 @@ stream_json_schema = {
             "type": [
                 "number",
             ]
-        }
+        },
+        "updated_at": {"type": ["string", "null"]},
+        "data": {
+            "type": "object",
+        },
     },
 }
 
@@ -169,7 +173,11 @@ class GlificStream(HttpStream, ABC):
                     self.latest_updated_date = record["updated_at"]
             else:
                 self.latest_updated_date = record["updated_at"]
-            yield record
+            retval = {}
+            retval["id"] = record["id"]
+            retval["updated_at"] = record["updated_at"]
+            retval["data"] = record
+            yield retval
 
 
 class IncrementalGlificStream(GlificStream, IncrementalMixin, ABC):
