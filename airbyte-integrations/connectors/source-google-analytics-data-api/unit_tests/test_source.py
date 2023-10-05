@@ -97,12 +97,10 @@ def test_check(requests_mock, config_gen, config_values, is_successful, message)
         assert e.value.failure_type == FailureType.config_error
 
 
-def test_streams(mocker, patch_base_class):
+def test_streams(patch_base_class, config_gen):
+    config = config_gen(property_ids=["Prop1", "PropN"])
     source = SourceGoogleAnalyticsDataApi()
-
-    config_mock = MagicMock()
-    config_mock.__getitem__.side_effect = patch_base_class["config"].__getitem__
-
-    streams = source.streams(patch_base_class["config"])
-    expected_streams_number = 57
+    streams = source.streams(config)
+    expected_streams_number = 57 * 2
+    assert len([stream for stream in streams if "_property_" in stream.name]) == 57
     assert len(set(streams)) == expected_streams_number
