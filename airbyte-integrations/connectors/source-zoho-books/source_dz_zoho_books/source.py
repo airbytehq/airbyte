@@ -3,6 +3,7 @@
 #
 
 
+import time
 from abc import ABC
 from datetime import datetime
 from types import MappingProxyType
@@ -18,7 +19,7 @@ from source_dz_zoho_books.auth import ZohoBooksAuthenticator
 from source_dz_zoho_books.datetimeutil import convert_to_utc
 
 from .api import ZohoBooksAPI
-import time
+
 
 # Basic full refresh stream
 class DzZohoBooksStream(HttpStream, ABC):
