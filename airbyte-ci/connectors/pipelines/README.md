@@ -398,6 +398,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                        | Description                                                                                               |
 |---------| --------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
+| 1.4.4   | [#30743](https://github.com/airbytehq/airbyte/pull/30743) | Add `--disable-report-auto-open` and `--use-host-gradle-dist-tar` to allow gradle integration.            |
 | 1.4.3   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Add --version and version check                                                                           |
 | 1.4.2   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Remove directory name requirement                                                                         |
 | 1.4.1   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Load base migration guide into QA Test container for strict encrypt variants                              |
@@ -486,3 +487,4 @@ and when in doubt, you can reinstall the CLI with the `--force` option:
 ```bash
 $ pipx reinstall pipelines --force
 ```
+
