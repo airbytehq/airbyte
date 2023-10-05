@@ -6,7 +6,6 @@ connectionSpecification:
   required:
   - api_key
   - account_id
-  - cutoff_days
   additionalProperties: true
   properties:
     api_key:
@@ -24,19 +23,3 @@ connectionSpecification:
       default: https://app.harness.io
       examples:
       - https://my-harness-server.example.com
-    cutoff_days:
-      type: integer
-      title: Cutoff Days
-      default: 90
-      description: Only fetch deployments updated after cutoff
-    page_size:
-      type: integer
-      title: Page Size
-      default: 100
-      description: number of pipelines (builds) to fetch per call
-    deployment_timeout:
-      type: integer
-      title: Deployment Timeout
-      default: 24
-      description: Max number of hours to consider for a deployment to be running/queued
-        before giving up on syncing it
