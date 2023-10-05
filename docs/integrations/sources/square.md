@@ -68,6 +68,7 @@ The Square source connector supports the following [ sync modes](https://docs.ai
 - [List Team Member Wages](https://developer.squareup.com/explorer/square/labor-api/list-team-member-wages)
 - [Customers](https://developer.squareup.com/explorer/square/customers-api/list-customers)
 - [Shifts](https://developer.squareup.com/reference/square/labor-api/search-shifts)
+- [Inventory](https://developer.squareup.com/reference/square/inventory-api/batch-retrieve-inventory-counts)
 - [Orders](https://developer.squareup.com/reference/square/orders-api/search-orders)
 
 ## Connector-specific features & highlights
@@ -97,6 +98,7 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.1.3   | 2023-10-14 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Migrate to low code                                                       |
 | 1.1.2   | 2023-07-10 | [28019](https://github.com/airbytehq/airbyte/pull/28019) | fix display order of spec fields                                          |
 | 1.1.1   | 2023-06-28 | [27762](https://github.com/airbytehq/airbyte/pull/27762) | Update following state breaking changes                                   |
 | 1.1.0   | 2023-05-24 | [26485](https://github.com/airbytehq/airbyte/pull/26485) | Remove deprecated authSpecification in favour of advancedAuth             |

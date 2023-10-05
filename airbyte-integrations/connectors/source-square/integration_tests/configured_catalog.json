@@ -26,6 +26,18 @@
     },
     {
       "stream": {
+        "name": "inventory",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["catalog_object_id"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": ["catalog_object_id"],
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "discounts",
         "json_schema": {},
         "supported_sync_modes": ["incremental", "full_refresh"],
