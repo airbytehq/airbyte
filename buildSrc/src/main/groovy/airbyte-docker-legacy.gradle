@@ -19,8 +19,18 @@ import java.nio.file.Paths
 
 import org.apache.commons.text.StringSubstitutor
 
+/**
+ * AirbyteDockerLegacyTask is the task which builds a docker image based on a Dockerfile.
+ *
+ * It and the other classes in this file have "Legacy" in their name because we want to get rid of this plugin in favor
+ * of dagger-pipeline-based tooling like `airbyte-ci`. As of the time of this writing this is already the case for
+ * connectors. There are still a few remaining usages outside of connectors and they are useful to support a smooth
+ * local java-centric development experience with gradle, especially around integration tests.
+ *
+ * Issue https://github.com/airbytehq/airbyte/issues/30708 tracks the complete removal of this plugin.
+ */
 @CacheableTask
-abstract class AirbyteDockerBaseTask extends DefaultTask {
+abstract class AirbyteDockerLegacyTask extends DefaultTask {
 
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
@@ -30,15 +40,14 @@ abstract class AirbyteDockerBaseTask extends DefaultTask {
     Map<String, String> baseImageHashes
 
     @InputFile
+    @PathSensitive(PathSensitivity.RELATIVE)
     File dockerFile
 
     @OutputFile
     File idFileOutput
-}
-
-abstract class AirbyteDockerTask extends AirbyteDockerBaseTask {
 
     @InputFile
+    @PathSensitive(PathSensitivity.RELATIVE)
     File buildScript = project.rootProject.file('tools/bin/build_image.sh')
 
     @TaskAction
@@ -57,11 +66,11 @@ abstract class AirbyteDockerTask extends AirbyteDockerBaseTask {
 }
 
 /**
- * AirbyteDockerTaskFactory is a convenience object to avoid passing the current project around.
+ * AirbyteDockerLegacyTaskFactory is a convenience object to avoid passing the current project around.
  */
-class AirbyteDockerTaskFactory {
+class AirbyteDockerLegacyTaskFactory {
 
-    private AirbyteDockerTaskFactory() {}
+    private AirbyteDockerLegacyTaskFactory() {}
 
     Project project
     String dockerFileName
@@ -198,7 +207,6 @@ class AirbyteDockerTaskFactory {
                 logger.info "Skipping ${taskName} because ${dockerFile()} does not exist."
             }
         }
-        Class<? extends AirbyteDockerBaseTask> taskClass = AirbyteDockerTask
 
         // Tagged name of the image to be built by this task.
         def taggedImage = DockerHelpers.getDevTaggedImage(project.projectDir, dockerFileName)
@@ -208,7 +216,7 @@ class AirbyteDockerTaskFactory {
         // The ID file contains the hash of the image.
         def idFilePath = Paths.get(project.rootProject.rootDir.absolutePath, '.dockerversions', dockerfilePathHash())
         // Register the task (lazy creation).
-        def airbyteDockerTask = project.tasks.register(taskName, taskClass) { task ->
+        def airbyteDockerTask = project.tasks.register(taskName, AirbyteDockerLegacyTask) { task ->
             // Set inputs.
             task.filesInDockerImage = filteredProjectFiles()
             task.dockerFile = this.dockerFile()
@@ -283,7 +291,7 @@ class AirbyteDockerTaskFactory {
     }
 
     static def build(Project project, String taskName, String dockerFileName) {
-        def f = new AirbyteDockerTaskFactory()
+        def f = new AirbyteDockerLegacyTaskFactory()
         f.project = project
         f.dockerFileName = dockerFileName
         f.createTask(taskName)
@@ -291,20 +299,20 @@ class AirbyteDockerTaskFactory {
 }
 
 /**
- * AirbyteDockerPlugin creates an airbyteDocker task for the project when a Dockerfile is present.
+ * AirbyteDockerLegacyPlugin creates an airbyteDocker task for the project when a Dockerfile is present.
  *
  * Following the same logic, it creates airbyteDockerTest when Dockerfile.test is present, though
  * that behavior is not used anywhere except in the source-mongo connector and is therefore deprecated
  * through the use of airbyte-ci.
  */
-class AirbyteDockerPlugin implements Plugin<Project> {
+class AirbyteDockerLegacyPlugin implements Plugin<Project> {
 
     void apply(Project project) {
-        AirbyteDockerTaskFactory.build(project, 'airbyteDocker', 'Dockerfile')
+        AirbyteDockerLegacyTaskFactory.build(project, 'airbyteDocker', 'Dockerfile')
 
         // Used only for source-mongodb. Consider removing entirely.
         if (project.name.endsWith('source-mongodb')) {
-            AirbyteDockerTaskFactory.build(project, 'airbyteDockerTest', 'Dockerfile.test')
+            AirbyteDockerLegacyTaskFactory.build(project, 'airbyteDockerTest', 'Dockerfile.test')
         }
 
         // Used for base-normalization.
@@ -318,7 +326,7 @@ class AirbyteDockerPlugin implements Plugin<Project> {
              'airbyteDockerTiDB'      : 'tidb',
              'airbyteDockerDuckDB'    : 'duckdb'
             ].forEach {taskName, customConnector ->
-                AirbyteDockerTaskFactory.build(project, taskName, "${customConnector}.Dockerfile")
+                AirbyteDockerLegacyTaskFactory.build(project, taskName, "${customConnector}.Dockerfile")
             }
         }
     }

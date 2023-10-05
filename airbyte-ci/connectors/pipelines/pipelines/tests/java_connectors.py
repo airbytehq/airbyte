@@ -10,9 +10,9 @@ import anyio
 from dagger import File, QueryError
 from pipelines.actions import environments, secrets
 from pipelines.bases import StepResult, StepStatus
-from pipelines.builds import LOCAL_BUILD_PLATFORM
-from pipelines.builds.java_connectors import BuildConnectorDistributionTar, BuildConnectorImage
+from pipelines.builds.java_connectors import BuildConnectorDistributionTar, BuildConnectorImages, dist_tar_directory_path
 from pipelines.builds.normalization import BuildOrPullNormalization
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.contexts import ConnectorContext
 from pipelines.gradle import GradleTask
 from pipelines.tests.common import AcceptanceTests
@@ -23,7 +23,7 @@ class IntegrationTests(GradleTask):
     """A step to run integrations tests for Java connectors using the integrationTestJava Gradle task."""
 
     title = "Java Connector Integration Tests"
-    gradle_task_name = "integrationTestJava -x airbyteDocker -x assemble"
+    gradle_task_name = "integrationTestJava -x buildConnectorImage -x assemble"
     mount_connector_secrets = True
     bind_to_docker_host = True
 
@@ -81,9 +81,8 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     if build_distribution_tar_results.status is StepStatus.FAILURE:
         return step_results
 
-    build_connector_image_results = await BuildConnectorImage(context, LOCAL_BUILD_PLATFORM).run(
-        build_distribution_tar_results.output_artifact
-    )
+    dist_tar_dir = await build_distribution_tar_results.output_artifact.directory(dist_tar_directory_path(context))
+    build_connector_image_results = await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run(dist_tar_dir)
     step_results.append(build_connector_image_results)
     if build_connector_image_results.status is StepStatus.FAILURE:
         return step_results
@@ -105,7 +104,8 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     else:
         normalization_tar_file = None
 
-    connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
+    connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
+    connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
 
     integration_tests_results = await IntegrationTests(context).run(connector_image_tar_file, normalization_tar_file)
     step_results.append(integration_tests_results)
