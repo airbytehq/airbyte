@@ -314,7 +314,9 @@ class Comments(HttpSubStream, IncrementalNotionStream):
     def path(self, **kwargs) -> str:
         return f"comments"
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(
+        self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
         block_id = stream_slice.get("block_id")
         params = {"block_id": block_id, "page_size": self.page_size}
 
@@ -323,8 +325,10 @@ class Comments(HttpSubStream, IncrementalNotionStream):
 
         return params
 
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping]:
+
         # Get the parent's "last edited time" to compare against state
         page_last_edited_time = stream_slice.get("page_last_edited_time", "")
         records = response.json().get("results", [])
@@ -342,20 +346,16 @@ class Comments(HttpSubStream, IncrementalNotionStream):
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
 
         yield from IncrementalNotionStream.read_records(self, **kwargs)
-    
-    def stream_slices(
-        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-                
-        # Gather parent stream records in full
-        parent_records = self.parent.read_records(
-            sync_mode=SyncMode.full_refresh, cursor_field=self.parent.cursor_field
-        )
 
-        # The parent stream is the Pages stream, but we have to pass its id to the request_params as "block_id" 
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, **kwargs
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+
+        # Gather parent stream records in full
+        parent_records = self.parent.read_records(sync_mode=SyncMode.full_refresh, cursor_field=self.parent.cursor_field)
+
+        # The parent stream is the Pages stream, but we have to pass its id to the request_params as "block_id"
         # because pages are also blocks in the Notion API.
         # We also grab the last_edited_time from the parent record to use as the cursor field.
         for record in parent_records:
-            yield {
-                "block_id": record["id"], 
-                "page_last_edited_time": record["last_edited_time"]
-            }
+            yield {"block_id": record["id"], "page_last_edited_time": record["last_edited_time"]}
