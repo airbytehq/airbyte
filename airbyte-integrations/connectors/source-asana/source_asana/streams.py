@@ -172,6 +172,9 @@ class Tags(WorkspaceRequestParamsRelatedStream):
     def path(self, **kwargs) -> str:
         return "tags"
 
+class PortfolioMemberships(AsanaStream):
+    def path(self, **kwargs) -> str:
+        return "portfolio_memberships"
 
 class Tasks(ProjectRelatedStream):
     def path(self, **kwargs) -> str:
