@@ -69,6 +69,7 @@ The Square source connector supports the following [ sync modes](https://docs.ai
 - [Customers](https://developer.squareup.com/explorer/square/customers-api/list-customers)
 - [Shifts](https://developer.squareup.com/reference/square/labor-api/search-shifts)
 - [Orders](https://developer.squareup.com/reference/square/orders-api/search-orders)
+- [Loyalty](https://developer.squareup.com/explorer/square/loyalty-api/search-loyalty-accounts)
 
 ## Connector-specific features & highlights
 
@@ -97,7 +98,7 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
-| 1.1.3   | 2023-10-13 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add new stream Loyalty                                                    |
+| 1.1.3   | 2023-10-13 | [31106](https://github.com/airbytehq/airbyte/pull/31106) | Add new stream Loyalty                                                    |
 | 1.1.2   | 2023-07-10 | [28019](https://github.com/airbytehq/airbyte/pull/28019) | fix display order of spec fields                                          |
 | 1.1.1   | 2023-06-28 | [27762](https://github.com/airbytehq/airbyte/pull/27762) | Update following state breaking changes                                   |
 | 1.1.0   | 2023-05-24 | [26485](https://github.com/airbytehq/airbyte/pull/26485) | Remove deprecated authSpecification in favour of advancedAuth             |
