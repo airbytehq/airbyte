@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.27
+Fix parsing of UUID fields in avro files
+
 ## 0.51.26
 Vector DB CDK: Fix OpenAI embedder batch size
 
