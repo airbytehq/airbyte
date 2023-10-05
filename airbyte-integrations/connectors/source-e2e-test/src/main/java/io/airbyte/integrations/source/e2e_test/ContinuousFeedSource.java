@@ -35,8 +35,8 @@ import net.jimblackler.jsonschemafriend.Schema;
 import net.jimblackler.jsonschemafriend.SchemaStore;
 
 public class ContinuousFeedSource extends BaseConnector implements Source {
-  private static final Logger LOG = Logger.getLogger(ContinuousFeedSource.class.getName());
 
+  private static final Logger LOG = Logger.getLogger(ContinuousFeedSource.class.getName());
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode jsonConfig) {
