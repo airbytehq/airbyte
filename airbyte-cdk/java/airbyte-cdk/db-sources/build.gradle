@@ -16,9 +16,11 @@ plugins {
     id "java-library"
     id "java-test-fixtures"  // https://docs.gradle.org/current/userguide/java_testing.html#sec:java_test_fixtures
 }
-// TODO: Remove this after debugging
+
 test {
+    systemProperty 'user.timezone', 'UTC'
     testLogging {
+        // TODO: Remove this after debugging
         showStandardStreams = true
     }
 }

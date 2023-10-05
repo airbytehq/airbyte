@@ -96,7 +96,7 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 | STRING                              | STRING        |
 | BOOLEAN                             | BOOLEAN       |
 | INTEGER                             | INTEGER       |
-| STRING (BIG_NUMBER)                 | STRING        | 
+| STRING (BIG_NUMBER)                 | STRING        |
 | STRING (BIG_INTEGER)                | STRING        |
 | ARRAY                               | REPEATED      |
 | STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMP     |
@@ -125,9 +125,11 @@ Now that you have set up the BigQuery destination connector, check out the follo
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.22  | 2023-10-04 | [\#31082](https://github.com/airbytehq/airbyte/pull/31082) | Revert null PK checks                                                                                                                                           |
+| 2.0.21  | 2023-10-03 | [\#31028](https://github.com/airbytehq/airbyte/pull/31028) | Update timeout                                                                                                                                                  |
 | 2.0.20  | 2023-09-26 | [\#30779](https://github.com/airbytehq/airbyte/pull/30779) | Final table PK columns become non-null and skip check for null PKs in raw records (performance)                                                                 |
-| 2.0.19  | 2023-09-26 | [\#30775](https://github.com/airbytehq/airbyte/pull/30775  | Increase async block size                                                                                                                                       |
+| 2.0.19  | 2023-09-26 | [\#30775](https://github.com/airbytehq/airbyte/pull/30775) | Increase async block size                                                                                                                                       |
 | 2.0.18  | 2023-09-27 | [\#30739](https://github.com/airbytehq/airbyte/pull/30739) | Fix column name collision detection                                                                                                                             |
 | 2.0.17  | 2023-09-26 | [\#30696](https://github.com/airbytehq/airbyte/pull/30696) | Attempt unsafe typing operations with an exception clause                                                                                                       |
 | 2.0.16  | 2023-09-22 | [\#30697](https://github.com/airbytehq/airbyte/pull/30697) | Improve resiliency to unclean exit during schema change                                                                                                         |

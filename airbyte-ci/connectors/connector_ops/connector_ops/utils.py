@@ -314,12 +314,8 @@ class Connector:
             return ConnectorLanguage.LOW_CODE
         if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
             return ConnectorLanguage.PYTHON
-        try:
-            with open(self.code_directory / "Dockerfile") as dockerfile:
-                if "FROM airbyte/integration-base-java" in dockerfile.read():
-                    return ConnectorLanguage.JAVA
-        except FileNotFoundError:
-            pass
+        if Path(self.code_directory / "src" / "main" / "java").exists():
+            return ConnectorLanguage.JAVA
         return None
 
     @property
@@ -329,11 +325,14 @@ class Connector:
         return self.metadata["dockerImageTag"]
 
     @property
-    def version_in_dockerfile_label(self) -> str:
-        with open(self.code_directory / "Dockerfile") as f:
-            for line in f:
-                if "io.airbyte.version" in line:
-                    return line.split("=")[1].strip()
+    def version_in_dockerfile_label(self) -> Optional[str]:
+        try:
+            with open(self.code_directory / "Dockerfile") as f:
+                for line in f:
+                    if "io.airbyte.version" in line:
+                        return line.split("=")[1].strip()
+        except FileNotFoundError as e:
+            return None
         raise ConnectorVersionNotFound(
             """
             Could not find the connector version from its Dockerfile.

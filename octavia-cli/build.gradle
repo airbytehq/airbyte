@@ -3,7 +3,7 @@ import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 plugins {
     id "org.openapi.generator" version "5.3.1"
     id 'airbyte-python'
-    id 'airbyte-docker'
+    id 'airbyte-docker-legacy'
 }
 
 airbytePython {
