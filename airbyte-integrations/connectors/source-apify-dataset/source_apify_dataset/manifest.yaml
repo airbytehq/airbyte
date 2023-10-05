@@ -1,0 +1,109 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+  requester:
+    type: HttpRequester
+    url_base: "https://api.apify.com/v2/"
+    http_method: "GET"
+    authenticator:
+      type: NoAuth
+    request_parameters:
+      token: "{{ config['token'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "NoPagination"
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_paginator:
+    type: "DefaultPaginator"
+    page_size_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "limit"
+    pagination_strategy:
+      type: "OffsetIncrement"
+      page_size: 50
+    page_token_option:
+      type: "RequestOption"
+      field_name: "offset"
+      inject_into: "request_parameter"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  datasets_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "datasets"
+      primary_key: "id"
+      path: "datasets"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "items"]
+
+  datasets_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/datasets_stream"
+        parent_key: "id"
+        partition_field: "parent_id"
+
+  dataset_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "dataset"
+      primary_key: "id"
+      path: "datasets/{{ stream_partition.parent_id }}"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
+      partition_router:
+        $ref: "#/definitions/datasets_partition_router"
+
+  item_collection_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "item_collection"
+      path: "datasets/{{ stream_partition.parent_id }}/items"
+    retriever:
+      $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/base_paginator"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        $ref: "#/definitions/datasets_partition_router"
+
+streams:
+  - "#/definitions/datasets_stream"
+  - "#/definitions/dataset_stream"
+  - "#/definitions/item_collection_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "datasets"
+    - "dataset"
+    - "item_collection"

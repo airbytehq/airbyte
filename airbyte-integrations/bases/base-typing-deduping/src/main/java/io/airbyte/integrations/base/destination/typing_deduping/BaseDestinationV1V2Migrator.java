@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
-import static io.airbyte.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Collection;
@@ -64,12 +64,8 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
                       final StreamConfig streamConfig)
       throws TableNotMigratedException {
     final var namespacedTableName = convertToV1RawName(streamConfig);
-    final var migrateAndReset = String.join("\n\n",
-        sqlGenerator.migrateFromV1toV2(streamConfig.id(), namespacedTableName.namespace(),
-            namespacedTableName.tableName()),
-        sqlGenerator.softReset(streamConfig));
     try {
-      destinationHandler.execute(migrateAndReset);
+      destinationHandler.execute(sqlGenerator.migrateFromV1toV2(streamConfig.id(), namespacedTableName.namespace(), namespacedTableName.tableName()));
     } catch (Exception e) {
       final var message = "Attempted and failed to migrate stream %s".formatted(streamConfig.id().finalName());
       throw new TableNotMigratedException(message, e);

@@ -88,10 +88,13 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
         prefix: Optional[str],
         logger: logging.Logger,
     ) -> Iterable[RemoteFile]:
-        yield from self.filter_files_by_globs_and_start_date([
-            RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"))
-            for f, data in self.files.items()
-        ], globs)
+        yield from self.filter_files_by_globs_and_start_date(
+            [
+                RemoteFile(uri=f, last_modified=datetime.strptime(data["last_modified"], "%Y-%m-%dT%H:%M:%S.%fZ"))
+                for f, data in self.files.items()
+            ],
+            globs,
+        )
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         if self.file_type == "csv":

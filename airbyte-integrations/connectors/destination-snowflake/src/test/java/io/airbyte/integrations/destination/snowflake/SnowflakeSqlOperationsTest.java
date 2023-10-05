@@ -11,11 +11,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.DestinationConfig;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
@@ -37,15 +37,21 @@ class SnowflakeSqlOperationsTest {
 
   @Test
   void createTableQuery() {
-    String expectedQuery = String.format(
+    final String expectedQuery = String.format(
         """
-        CREATE TABLE IF NOT EXISTS %s.%s (
-          %s VARCHAR PRIMARY KEY,
-          %s VARIANT,
-          %s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()
+        CREATE TABLE IF NOT EXISTS "%s"."%s" (
+          "%s" VARCHAR PRIMARY KEY,
+          "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
+          "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+          "%s" VARIANT
         ) data_retention_time_in_days = 0;""",
-        SCHEMA_NAME, TABLE_NAME, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
-    String actualQuery = snowflakeSqlOperations.createTableQuery(db, SCHEMA_NAME, TABLE_NAME);
+        SCHEMA_NAME,
+        TABLE_NAME,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+        JavaBaseConstants.COLUMN_NAME_DATA);
+    final String actualQuery = snowflakeSqlOperations.createTableQuery(db, SCHEMA_NAME, TABLE_NAME);
     assertEquals(expectedQuery, actualQuery);
   }
 

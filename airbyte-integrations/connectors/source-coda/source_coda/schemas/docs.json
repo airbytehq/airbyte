@@ -1,153 +1,154 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "type": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "href": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "browserLink": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "icon": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "browserLink": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "owner": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "ownerName": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "docSize": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "totalRowCount": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "tableViewCount": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "pageCount": {
-          "type": "integer"
+          "type": ["null", "integer"]
         },
         "overApiSizeLimit": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         }
       }
     },
     "sourceDoc": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "totalRowCount": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "href": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "browserLink": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "createdAt": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updatedAt": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "published": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "description": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "browserLink": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "imageLink": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "discoverable": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "earnCredit": {
-          "type": "boolean"
+          "type": ["null", "boolean"]
         },
         "mode": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "categories": {
-          "type": "string",
+          "type": ["null", "string"],
           "items": {
-            "type": "string"
+            "type": ["null", "string"]
           }
         }
       }
     },
     "folder": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "browserLink": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "workspace": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "type": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "organizationId": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "browserLink": {
-          "type": "string"
+          "type": ["null", "string"]
         },
         "name": {
-          "type": "string"
+          "type": ["null", "string"]
         }
       }
     },
     "workspaceId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "folderId": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

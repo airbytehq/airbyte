@@ -31,8 +31,12 @@ poetry run pytest
 ```
 
 ## Validating Metadata Files
+To be considered valid, a connector must have a metadata.yaml file which must conform to the [ConnectorMetadataDefinitionV0](./metadata_service/models/src/ConnectorMetadataDefinitionV0.yaml) schema, and a documentation file.
+
+The paths to both files must be passed to the validate command.
+
 ```bash
-poetry run metadata_service validate tests/fixtures/valid/metadata_registry_override.yaml
+poetry run metadata_service validate tests/fixtures/metadata_validate/valid/metadata_simple.yaml tests/fixtures/doc.md
 ```
 
 ## Useful Commands
@@ -48,8 +52,17 @@ _⚠️ Warning: Its important to know that this will remove ANY files you have 
 TARGET_BUCKET=<YOUR-DEV_BUCKET> poetry poe replicate-prod
 ```
 
+### Copy specific connector version to your Development Bucket
+This will copy the specified connector version to your development bucket. This is useful for testing the metadata service with a specific version of a connector.
+
+_💡 Note: A prerequisite is you have [gsutil](https://cloud.google.com/storage/docs/gsutil) installed and have run `gsutil auth login`_
+
+```bash
+TARGET_BUCKET=<YOUR-DEV_BUCKET> CONNECTOR="airbyte/source-stripe" VERSION="3.17.0-dev.ea013c8741" poetry poe copy-connector-from-prod
+```
+
 ### Promote Connector Version to Latest
-This will promote the specified connector version to the latest version in the registry. This is useful for creating a mocked registry in which a prerelease connector is treated as if it was already published. 
+This will promote the specified connector version to the latest version in the registry. This is useful for creating a mocked registry in which a prerelease connector is treated as if it was already published.
 
 _💡 Note: A prerequisite is you have [gsutil](https://cloud.google.com/storage/docs/gsutil) installed and have run `gsutil auth login`_
 

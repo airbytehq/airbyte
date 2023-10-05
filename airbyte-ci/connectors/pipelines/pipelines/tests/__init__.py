@@ -9,16 +9,11 @@ from typing import List
 import anyio
 import asyncer
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
-
 from pipelines.bases import ConnectorReport, StepResult
 from pipelines.contexts import ConnectorContext
 from pipelines.pipelines.metadata import MetadataValidation
 from pipelines.tests import java_connectors, python_connectors
-from pipelines.tests.common import (
-    QaChecks,
-    VersionFollowsSemverCheck,
-    VersionIncrementCheck,
-)
+from pipelines.tests.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
 
 LANGUAGE_MAPPING = {
     "run_all_tests": {
@@ -42,7 +37,7 @@ async def run_metadata_validation(context: ConnectorContext) -> List[StepResult]
     Returns:
         List[StepResult]: The results of the metadata validation steps.
     """
-    return [await MetadataValidation(context, context.connector.code_directory / METADATA_FILE_NAME).run()]
+    return [await MetadataValidation(context).run()]
 
 
 async def run_version_checks(context: ConnectorContext) -> List[StepResult]:

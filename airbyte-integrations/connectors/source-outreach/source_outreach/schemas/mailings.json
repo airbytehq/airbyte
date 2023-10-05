@@ -6,6 +6,15 @@
     "id": {
       "type": "integer"
     },
+    "attachments": {
+      "type": ["null", "array"]
+    },
+    "attributableSequenceId": {
+      "type": ["null", "integer"]
+    },
+    "attributableSequenceName": {
+      "type": ["null", "string"]
+    },
     "bodyHtml": {
       "type": ["null", "string"]
     },
@@ -19,11 +28,18 @@
     "clickCount": {
       "type": ["null", "integer"]
     },
+    "calendar": {
+      "type": ["null", "array"]
+    },
     "clickedAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
     "deliveredAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "desiredAt": {
       "type": ["null", "string"],
       "format": "date-time"
     },
@@ -50,6 +66,18 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "meetingDescription": {
+      "type": ["null", "string"]
+    },
+    "meetingDuration": {
+      "type": ["null", "integer"]
+    },
+    "meetingLocation": {
+      "type": ["null", "string"]
+    },
+    "meetingTitle": {
+      "type": ["null", "string"]
+    },
     "messageId": {
       "type": ["null", "string"]
     },
@@ -60,6 +88,9 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "notifyThreadStatus": {
+      "type": ["null", "string"]
+    },
     "openCount": {
       "type": ["null", "integer"]
     },
@@ -67,15 +98,22 @@
       "type": ["null", "string"],
       "format": "date-time"
     },
+    "optimizedScheduledAt": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "overrideSafetySettings": {
       "type": ["null", "boolean"]
     },
     "references": {
-      "type": ["null", "string"]
+      "type": ["null", "array"]
     },
     "repliedAt": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "replySentiment": {
+      "type": ["null", "string"]
     },
     "retryAt": {
       "type": ["null", "string"],
@@ -85,6 +123,12 @@
       "type": ["null", "integer"]
     },
     "retryInterval": {
+      "type": ["null", "integer"]
+    },
+    "schedule": {
+      "type": ["null", "array"]
+    },
+    "scheduleId": {
       "type": ["null", "integer"]
     },
     "scheduledAt": {
@@ -125,6 +169,16 @@
       "items": {
         "type": ["null", "integer"]
       }
+    },
+    "followUpSequenceId": {
+      "type": ["null", "integer"]
+    },
+    "followUpSequenceName": {
+      "type": ["null", "string"]
+    },
+    "followUpSequenceStartingDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "mailbox": {
       "type": ["null", "array"],

@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - api.close.com
@@ -7,6 +10,7 @@ data:
   definitionId: dfffecb7-9a13-43e9-acdc-b92af7997ca9
   dockerImageTag: 0.4.2
   dockerRepository: airbyte/source-close-com
+  documentationUrl: https://docs.airbyte.com/integrations/sources/close-com
   githubIssueLabel: source-close-com
   icon: close.svg
   license: MIT
@@ -17,12 +21,8 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/close-com
+  supportLevel: community
   tags:
     - language:low-code
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
 metadataSpecVersion: "1.0"

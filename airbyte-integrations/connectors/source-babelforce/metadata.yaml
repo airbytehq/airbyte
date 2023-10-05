@@ -18,7 +18,6 @@ data:
   name: Babelforce
   releaseDate: 2022-05-09
   releaseStage: alpha
-  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/babelforce
   tags:
     - language:lowcode

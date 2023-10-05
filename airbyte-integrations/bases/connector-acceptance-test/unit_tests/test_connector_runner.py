@@ -51,6 +51,11 @@ class TestContainerRunner:
         runner = connector_runner.ConnectorRunner(dev_image_name, dagger_client, custom_environment_variables={"FOO": "BAR"})
         assert await runner.get_container_env_variable_value("FOO") == "BAR"
 
+    @pytest.mark.parametrize("deployment_mode", ["oss", "cloud"])
+    async def test_set_deployment_mode_env(self, dagger_client, dev_image_name, local_tar_image, deployment_mode):
+        runner = connector_runner.ConnectorRunner(dev_image_name, dagger_client, deployment_mode=deployment_mode)
+        assert await runner.get_container_env_variable_value("DEPLOYMENT_MODE") == deployment_mode.upper()
+
     def test_parse_airbyte_messages_from_command_output(self, mocker, tmp_path):
         old_configuration_path = tmp_path / "config.json"
         new_configuration = {"field_a": "new_value_a"}

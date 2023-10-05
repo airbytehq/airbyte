@@ -10,18 +10,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.ConnectionFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.TestingNamespaces;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.ConnectionFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
-import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -209,10 +210,11 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
   // for each test we create a new schema in the database. run the test in there and then remove it.
   @Override
   protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
-    final String schemaName = Strings.addRandomSuffix("integration_test", "_", 5);
+    final String schemaName = TestingNamespaces.generate();
     final String createSchemaQuery = String.format("CREATE SCHEMA %s", schemaName);
     baseConfig = getStaticConfig();
     database = createDatabase();
+    removeOldNamespaces();
     getDatabase().query(ctx -> ctx.execute(createSchemaQuery));
     final String createUser = String.format("create user %s with password '%s' SESSION TIMEOUT 60;",
         USER_WITHOUT_CREDS, baseConfig.get("password").asText());
@@ -221,7 +223,33 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     ((ObjectNode) configForSchema).put("schema", schemaName);
     TEST_SCHEMAS.add(schemaName);
     config = configForSchema;
-    this.testDestinationEnv = testEnv;
+    testDestinationEnv = testEnv;
+  }
+
+  private void removeOldNamespaces() {
+    final List<String> schemas;
+    try {
+      schemas = getDatabase().query(ctx -> ctx.fetch("SELECT schema_name FROM information_schema.schemata;"))
+          .stream()
+          .map(record -> record.get("schema_name").toString())
+          .toList();
+    } catch (final SQLException e) {
+      // if we can't fetch the schemas, just return.
+      return;
+    }
+
+    int schemasDeletedCount = 0;
+    for (final String schema : schemas) {
+      if (TestingNamespaces.isOlderThan2Days(schema)) {
+        try {
+          getDatabase().query(ctx -> ctx.execute(String.format("DROP SCHEMA IF EXISTS %s CASCADE", schema)));
+          schemasDeletedCount++;
+        } catch (final SQLException e) {
+          LOGGER.error("Failed to delete old dataset: {}", schema, e);
+        }
+      }
+    }
+    LOGGER.info("Deleted {} old schemas.", schemasDeletedCount);
   }
 
   @Override

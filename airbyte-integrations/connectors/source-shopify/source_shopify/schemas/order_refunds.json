@@ -393,6 +393,17 @@
         "type": ["null", "object"]
       }
     },
+    "return": {
+      "type": ["null", "object"],
+      "properties": {
+        "admin_graphql_api_id": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
     "transactions": {
       "type": ["null", "array"],
       "items": {

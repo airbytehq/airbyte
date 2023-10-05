@@ -4,16 +4,16 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_DEFAULT_CURSOR;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_FILE;
 import static io.airbyte.integrations.source.mysql.MySqlSource.CDC_LOG_POS;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.integrations.debezium.CdcMetadataInjector;
-import io.airbyte.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
+import io.airbyte.cdk.integrations.debezium.CdcMetadataInjector;
+import io.airbyte.cdk.integrations.debezium.internals.mysql.MySqlDebeziumStateUtil.MysqlDebeziumStateAttributes;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -59,6 +59,11 @@ public class MySqlCdcConnectorMetadataInjector implements CdcMetadataInjector<My
   @Override
   public String namespace(final JsonNode source) {
     return source.get("db").asText();
+  }
+
+  @Override
+  public String name(JsonNode source) {
+    return source.get("table").asText();
   }
 
   private Long getCdcDefaultCursor() {

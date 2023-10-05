@@ -13,6 +13,7 @@ from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from freezegun import freeze_time
 from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.avro_scenarios import (
@@ -24,7 +25,6 @@ from unit_tests.sources.file_based.scenarios.avro_scenarios import (
 )
 from unit_tests.sources.file_based.scenarios.check_scenarios import (
     error_empty_stream_scenario,
-    error_extension_mismatch_scenario,
     error_listing_files_scenario,
     error_multi_stream_scenario,
     error_reading_file_scenario,
@@ -309,7 +309,6 @@ def test_spec(capsys: CaptureFixture[str], scenario: TestScenario) -> None:
 
 check_scenarios = [
     error_empty_stream_scenario,
-    error_extension_mismatch_scenario,
     error_listing_files_scenario,
     error_reading_file_scenario,
     error_record_validation_user_provided_schema_scenario,
@@ -424,4 +423,6 @@ def make_file(path: Path, file_contents: Optional[Union[Mapping[str, Any], List[
 
 
 def get_error_message_from_exc(exc: ExceptionInfo[Any]) -> str:
+    if isinstance(exc.value, AirbyteTracedException):
+        return exc.value.message
     return str(exc.value.args[0])

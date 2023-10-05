@@ -2,11 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 
 import pytest
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
+
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 
 @pytest.fixture
@@ -17,6 +20,15 @@ def logger():
 @pytest.fixture
 def basic_config():
     return {"shop": "test_shop", "credentials": {"auth_method": "api_password", "api_password": "api_password"}}
+
+
+@pytest.fixture
+def auth_config():
+    return {
+        "shop": "test_shop",
+        "credentials": {"auth_method": "api_password", "api_password": "api_password"},
+        "authenticator": None,
+    }
 
 
 @pytest.fixture

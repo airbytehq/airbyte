@@ -11,7 +11,7 @@ from typing import List, Set, Tuple
 
 import anyio
 import click
-from connector_ops.utils import ConnectorLanguage, console, get_all_connectors_in_repo, SupportLevelEnum
+from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, console, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.bases import ConnectorWithModifiedFiles
 from pipelines.builds import run_connector_build_pipeline
@@ -21,11 +21,7 @@ from pipelines.github import update_global_commit_status_check_for_tests
 from pipelines.pipelines.connectors import run_connectors_pipelines
 from pipelines.publish import reorder_contexts, run_connector_publish_pipeline
 from pipelines.tests import run_connector_test_pipeline
-from pipelines.utils import (
-    DaggerPipelineCommand,
-    get_connector_modified_files,
-    get_modified_connectors,
-)
+from pipelines.utils import DaggerPipelineCommand, get_connector_modified_files, get_modified_connectors
 
 # HELPERS
 
@@ -35,8 +31,8 @@ ALL_CONNECTORS = get_all_connectors_in_repo()
 def validate_environment(is_local: bool, use_remote_secrets: bool):
     """Check if the required environment variables exist."""
     if is_local:
-        if not (os.getcwd().endswith("/airbyte") and Path(".git").is_dir()):
-            raise click.UsageError("You need to run this command from the airbyte repository root.")
+        if not Path(".git").is_dir():
+            raise click.UsageError("You need to run this command from the repository root.")
     else:
         required_env_vars_for_ci = [
             "GCP_GSM_CREDENTIALS",
@@ -58,6 +54,7 @@ def get_selected_connectors_with_modified_files(
     selected_languages: Tuple[str],
     modified: bool,
     metadata_changes_only: bool,
+    metadata_query: str,
     modified_files: Set[Path],
     enable_dependency_scanning: bool = False,
 ) -> List[ConnectorWithModifiedFiles]:
@@ -85,17 +82,22 @@ def get_selected_connectors_with_modified_files(
     selected_connectors_by_name = {c for c in ALL_CONNECTORS if c.technical_name in selected_names}
     selected_connectors_by_support_level = {connector for connector in ALL_CONNECTORS if connector.support_level in selected_support_levels}
     selected_connectors_by_language = {connector for connector in ALL_CONNECTORS if connector.language in selected_languages}
+    selected_connectors_by_query = (
+        {connector for connector in ALL_CONNECTORS if connector.metadata_query_match(metadata_query)} if metadata_query else set()
+    )
+
     non_empty_connector_sets = [
         connector_set
         for connector_set in [
             selected_connectors_by_name,
             selected_connectors_by_support_level,
             selected_connectors_by_language,
+            selected_connectors_by_query,
             selected_modified_connectors,
         ]
         if connector_set
     ]
-    # The selected connectors are the intersection of the selected connectors by name, support_level, language and modified.
+    # The selected connectors are the intersection of the selected connectors by name, support_level, language, simpleeval query and modified.
     selected_connectors = set.intersection(*non_empty_connector_sets) if non_empty_connector_sets else set()
 
     selected_connectors_with_modified_files = []
@@ -138,6 +140,11 @@ def get_selected_connectors_with_modified_files(
     default=False,
     type=bool,
 )
+@click.option(
+    "--metadata-query",
+    help="Filter connectors by metadata query using `simpleeval`. e.g. 'data.ab_internal.ql == 200'",
+    type=str,
+)
 @click.option("--concurrency", help="Number of connector tests pipeline to run in parallel.", default=5, type=int)
 @click.option(
     "--execute-timeout",
@@ -151,6 +158,20 @@ def get_selected_connectors_with_modified_files(
     default=False,
     type=bool,
 )
+@click.option(
+    "--use-local-cdk",
+    is_flag=True,
+    help=("Build with the airbyte-cdk from the local repository. " "This is useful for testing changes to the CDK."),
+    default=False,
+    type=bool,
+)
+@click.option(
+    "--enable-report-auto-open/--disable-report-auto-open",
+    is_flag=True,
+    help=("When enabled, finishes by opening a browser window to display an HTML report."),
+    default=True,
+    type=bool,
+)
 @click.pass_context
 def connectors(
     ctx: click.Context,
@@ -160,9 +181,12 @@ def connectors(
     support_levels: Tuple[str],
     modified: bool,
     metadata_changes_only: bool,
+    metadata_query: str,
     concurrency: int,
     execute_timeout: int,
     enable_dependency_scanning: bool,
+    use_local_cdk: bool,
+    enable_report_auto_open: bool,
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
@@ -171,8 +195,17 @@ def connectors(
     ctx.obj["use_remote_secrets"] = use_remote_secrets
     ctx.obj["concurrency"] = concurrency
     ctx.obj["execute_timeout"] = execute_timeout
+    ctx.obj["use_local_cdk"] = use_local_cdk
+    ctx.obj["open_report_in_browser"] = enable_report_auto_open
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
-        names, support_levels, languages, modified, metadata_changes_only, ctx.obj["modified_files"], enable_dependency_scanning
+        names,
+        support_levels,
+        languages,
+        modified,
+        metadata_changes_only,
+        metadata_query,
+        ctx.obj["modified_files"],
+        enable_dependency_scanning,
     )
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])
 
@@ -181,10 +214,7 @@ def connectors(
 @click.option(
     "--code-tests-only",
     is_flag=True,
-    help=(
-        "Only execute code tests. "
-        "Metadata checks, QA, and acceptance tests will be skipped."
-    ),
+    help=("Only execute code tests. " "Metadata checks, QA, and acceptance tests will be skipped."),
     default=False,
     type=bool,
 )
@@ -244,6 +274,7 @@ def test(
             fail_fast=fail_fast,
             fast_tests_only=fast_tests_only,
             code_tests_only=code_tests_only,
+            use_local_cdk=ctx.obj.get("use_local_cdk"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
@@ -273,8 +304,15 @@ def test(
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
+@click.option(
+    "--use-host-gradle-dist-tar",
+    is_flag=True,
+    help="Use gradle distTar output from host for java connectors.",
+    default=False,
+    type=bool,
+)
 @click.pass_context
-def build(ctx: click.Context) -> bool:
+def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
     """Runs a build pipeline for the selected connectors."""
 
     connectors_contexts = [
@@ -292,9 +330,14 @@ def build(ctx: click.Context) -> bool:
             pipeline_start_timestamp=ctx.obj.get("pipeline_start_timestamp"),
             ci_context=ctx.obj.get("ci_context"),
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
+            use_local_cdk=ctx.obj.get("use_local_cdk"),
+            open_report_in_browser=ctx.obj.get("open_report_in_browser"),
+            use_host_gradle_dist_tar=use_host_gradle_dist_tar,
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
+    if use_host_gradle_dist_tar and not ctx.obj["is_local"]:
+        raise Exception("flag --use-host-gradle-dist-tar requires --is-local")
     anyio.run(
         run_connectors_pipelines,
         connectors_contexts,
@@ -507,6 +550,6 @@ def format_code(ctx: click.Context) -> bool:
 def log_selected_connectors(selected_connectors_with_modified_files: List[ConnectorWithModifiedFiles]) -> None:
     if selected_connectors_with_modified_files:
         selected_connectors_names = [c.technical_name for c in selected_connectors_with_modified_files]
-        main_logger.info(f"Will run on the following connectors: {', '.join(selected_connectors_names)}.")
+        main_logger.info(f"Will run on the following {len(selected_connectors_names)} connectors: {', '.join(selected_connectors_names)}.")
     else:
         main_logger.info("No connectors to run.")
