@@ -18,7 +18,7 @@ from source_dz_zoho_books.auth import ZohoBooksAuthenticator
 from source_dz_zoho_books.datetimeutil import convert_to_utc
 
 from .api import ZohoBooksAPI
-
+import time
 
 # Basic full refresh stream
 class DzZohoBooksStream(HttpStream, ABC):
@@ -77,6 +77,9 @@ class DzZohoBooksStream(HttpStream, ABC):
             date = convert_to_utc(data["last_modified_time"])
             if date >= self._start_date:
                 yield self.transform(record=data, **kwargs)
+
+        # sleep for 4 secs to not reach rate limit: 30 requests per minute
+        time.sleep(4)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         return record
