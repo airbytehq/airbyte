@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.28
+Add functionality enabling Page Number/Offset to be set on the first request
+
 ## 0.51.27
 Fix parsing of UUID fields in avro files
 
