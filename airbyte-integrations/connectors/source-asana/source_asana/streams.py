@@ -139,6 +139,30 @@ class ProjectRelatedStream(AsanaStream, ABC):
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         yield from self.read_slices_from_records(stream_class=Projects, slice_field="project_gid")
 
+class ProjectBriefs(WorkspaceRequestParamsRelatedStream):
+    def path(self, **kwargs) -> str:
+        return "projects"
+
+class AttachmentsCompact(AsanaStream):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return "attachments"
+    
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["parent"] = stream_slice["parent_gid"]
+        return params
+    
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.read_slices_from_records(stream_class=Projects, slice_field="parent_gid")
+        yield from self.read_slices_from_records(stream_class=Tasks, slice_field="parent_gid")
+
+class Attachments(AsanaStream):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        attachment_gid = stream_slice["attachment_gid"]
+        return f"attachments/{attachment_gid}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.read_slices_from_records(stream_class=AttachmentsCompact, slice_field="attachment_gid")
 
 class CustomFields(WorkspaceRelatedStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
