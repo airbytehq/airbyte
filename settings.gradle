@@ -90,90 +90,6 @@ dependencyResolutionManagement {
     }
 }
 
-// SUB_BUILD is an enum of <blank>, PLATFORM, CONNECTORS_BASE, CDK, ALL_CONNECTORS and OCTAVIA_CLI.
-// Blank is equivalent to ALL_CONNECTORS.
-//
-// This is a relic from the days of the monorepo and we support it here to not break existing github workflows.
-// As soon as they are not referenced there (directly or indirectly) we can remove this whole if-block.
-if (System.getenv().containsKey("SUB_BUILD")) {
-    def subBuild = System.getenv().get("SUB_BUILD")
-    println("Building Airbyte Sub Build: " + subBuild)
-    switch(subBuild) {
-        case "ALL_CONNECTORS":
-            break
-
-        case "CDK":
-            include ':airbyte-commons' // this wouldn't be necessary if it wasn't from https://github.com/airbytehq/airbyte/blob/645558b74aab0b91fda1b4628b37b7095d92b4cc/build.gradle
-            include ':tools:code-generator'
-            include ':airbyte-cdk:python'
-            return
-
-        case "OCTAVIA_CLI":
-            include ':airbyte-commons'
-            include ':airbyte-api'
-            include ':octavia-cli'
-            return
-
-        case "CONNECTORS_BASE":
-            include ':airbyte-commons'
-            include ':airbyte-api'
-            include ':airbyte-commons-cli'
-            include ':airbyte-commons-protocol'
-            include ':airbyte-config-oss:init-oss'
-            include ':airbyte-config-oss:config-models-oss' // reused by acceptance tests in connector base.
-            include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
-            include ':airbyte-json-validation'
-            include ':airbyte-test-utils'
-
-            include ':airbyte-connector-test-harnesses:acceptance-test-harness'
-
-            include ':tools:code-generator'
-            include ':airbyte-cdk:python'
-            include ':airbyte-cdk:java:airbyte-cdk'
-            include ':airbyte-cdk:java:airbyte-cdk:core'
-            include ':airbyte-cdk:java:airbyte-cdk:db-destinations'
-            include ':airbyte-cdk:java:airbyte-cdk:db-sources'
-            include ':airbyte-integrations:bases:base'
-            include ':airbyte-integrations:bases:base-java'
-            include ':airbyte-integrations:bases:base-java-s3'
-            include ':airbyte-integrations:bases:base-normalization'
-            include ':airbyte-integrations:bases:base-typing-deduping'
-            include ':airbyte-integrations:bases:base-typing-deduping-test'
-            include ':airbyte-integrations:bases:bases-destination-jdbc' // needs to be lexicographically after base-java and base-normalization to avoid race condition
-            include ':airbyte-integrations:bases:base-standard-source-test-file'
-            include ':airbyte-integrations:bases:connector-acceptance-test'
-            include ':airbyte-integrations:bases:standard-destination-test'
-            include ':airbyte-integrations:bases:s3-destination-base-integration-test'
-            include ':airbyte-integrations:bases:standard-source-test'
-            include ':airbyte-integrations:connector-templates:generator'
-            include ':airbyte-integrations:bases:debezium'
-
-            // Needed by normalization integration tests
-            include ':airbyte-integrations:connectors:destination-bigquery'
-            include ':airbyte-integrations:connectors:destination-mysql'
-            include ':airbyte-integrations:connectors:destination-postgres'
-            include ':airbyte-integrations:connectors:destination-redshift'
-            include ':airbyte-integrations:connectors:destination-snowflake'
-            include ':airbyte-integrations:connectors:destination-oracle'
-            include ':airbyte-integrations:connectors:destination-mssql'
-            include ':airbyte-integrations:connectors:destination-clickhouse'
-            include ':airbyte-integrations:connectors:destination-tidb'
-            include ':airbyte-integrations:connectors:destination-duckdb'
-
-            //Needed by destination-bigquery
-            include ':airbyte-integrations:connectors:destination-s3'
-            include ':airbyte-integrations:connectors:destination-gcs'
-
-            include ':airbyte-integrations:connectors-performance:source-harness'
-            include ':airbyte-integrations:connectors-performance:destination-harness'
-
-            return
-
-        default:
-            throw new IllegalArgumentException(String.format("%s is invalid. Must be unset or CONNECTORS_BASE, CDK, ALL_CONNECTORS or OCTAVIA_CLI", subBuild))
-    }
-}
-
 include ':airbyte-commons'
 include ':airbyte-api'
 include ':airbyte-commons-cli'
@@ -187,6 +103,8 @@ include ':airbyte-test-utils'
 include ':airbyte-connector-test-harnesses:acceptance-test-harness'
 
 include ':tools:code-generator'
+include ':octavia-cli'
+
 include ':airbyte-cdk:python'
 include ':airbyte-cdk:java:airbyte-cdk'
 include ':airbyte-cdk:java:airbyte-cdk:core'
