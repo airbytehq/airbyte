@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Logger;
 import javax.annotation.CheckForNull;
 import net.jimblackler.jsongenerator.Generator;
 import net.jimblackler.jsongenerator.JsonGeneratorException;
@@ -34,6 +35,8 @@ import net.jimblackler.jsonschemafriend.Schema;
 import net.jimblackler.jsonschemafriend.SchemaStore;
 
 public class ContinuousFeedSource extends BaseConnector implements Source {
+  private static final Logger LOG = Logger.getLogger(ContinuousFeedSource.class.getName());
+
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode jsonConfig) {
@@ -62,7 +65,10 @@ public class ContinuousFeedSource extends BaseConnector implements Source {
       final Optional<Long> messageIntervalMs = feedConfig.getMessageIntervalMs();
 
       final SchemaStore schemaStore = new SchemaStore(true);
-      final Schema schema = schemaStore.loadSchemaJson(Jsons.serialize(stream.getStream().getJsonSchema()));
+      final String serialize = Jsons.serialize(stream.getStream().getJsonSchema());
+
+      LOG.info("schema: " + serialize);
+      final Schema schema = schemaStore.loadSchemaJson(serialize);
       final Random random = new Random(feedConfig.getSeed());
       final Generator generator = new Generator(ContinuousFeedConstants.MOCK_JSON_CONFIG, schemaStore, random);
 
