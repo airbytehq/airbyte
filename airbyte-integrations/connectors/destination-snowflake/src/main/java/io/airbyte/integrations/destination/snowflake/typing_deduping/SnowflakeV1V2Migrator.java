@@ -33,7 +33,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
 
   @SneakyThrows
   @Override
-  protected boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) throws Exception {
+  protected boolean doesAirbyteInternalNamespaceExist(final StreamConfig streamConfig) {
     return !database
         .queryJsons(
             """
@@ -54,15 +54,15 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
 
   @SneakyThrows
   @Override
-  protected Optional<SnowflakeTableDefinition> getTableIfExists(final String namespace, final String tableName) throws Exception {
+  protected Optional<SnowflakeTableDefinition> getTableIfExists(final String namespace, final String tableName) {
     // TODO this is mostly copied from SnowflakeDestinationHandler#findExistingTable, we should probably
     // reuse this logic
     // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
     // VARIANT as VARCHAR
-    final LinkedHashMap<String, SnowflakeColumnDefinition> columns =
+    LinkedHashMap<String, String> columns =
         database.queryJsons(
             """
-            SELECT column_name, data_type, is_nullable
+            SELECT column_name, data_type
             FROM information_schema.columns
             WHERE table_catalog = ?
               AND table_schema = ?
@@ -74,9 +74,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
             tableName)
             .stream()
             .collect(LinkedHashMap::new,
-                (map, row) -> map.put(
-                    row.get("COLUMN_NAME").asText(),
-                    new SnowflakeColumnDefinition(row.get("DATA_TYPE").asText(), fromSnowflakeBoolean(row.get("IS_NULLABLE").asText()))),
+                (map, row) -> map.put(row.get("COLUMN_NAME").asText(), row.get("DATA_TYPE").asText()),
                 LinkedHashMap::putAll);
     if (columns.isEmpty()) {
       return Optional.empty();
@@ -94,18 +92,10 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
   }
 
   @Override
-  protected boolean doesValidV1RawTableExist(final String namespace, final String tableName) throws Exception {
+  protected boolean doesValidV1RawTableExist(final String namespace, final String tableName) {
     // Previously we were not quoting table names and they were being implicitly upper-cased.
     // In v2 we preserve cases
     return super.doesValidV1RawTableExist(namespace.toUpperCase(), tableName.toUpperCase());
-  }
-
-  /**
-   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't
-   * know how to use
-   */
-  private boolean fromSnowflakeBoolean(final String input) {
-    return input.equalsIgnoreCase("yes");
   }
 
 }
