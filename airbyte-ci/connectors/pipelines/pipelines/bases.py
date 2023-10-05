@@ -624,8 +624,9 @@ class ConnectorReport(Report):
         absolute_path = await local_html_path.resolve()
         if self.pipeline_context.is_local:
             self.pipeline_context.logger.info(f"HTML report saved locally: {absolute_path}")
-            self.pipeline_context.logger.info("Opening HTML report in browser.")
-            webbrowser.open(absolute_path.as_uri())
+            if self.pipeline_context.open_report_in_browser:
+                self.pipeline_context.logger.info("Opening HTML report in browser.")
+                webbrowser.open(absolute_path.as_uri())
         if self.remote_storage_enabled:
             await self.save_remote(local_html_path, self.html_report_remote_storage_key, "text/html")
             self.pipeline_context.logger.info(f"HTML report uploaded to {self.html_report_url}")
