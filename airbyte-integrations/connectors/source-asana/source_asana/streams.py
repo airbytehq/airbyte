@@ -146,6 +146,18 @@ class CustomFields(WorkspaceRelatedStream):
         return f"workspaces/{workspace_gid}/custom_fields"
 
 
+class PortfoliosCompact(WorkspaceRequestParamsRelatedStream):
+    def path(self, **kwargs) -> str:
+        return "portfolios"
+    
+class Portfolios(AsanaStream):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        portfolio_gid = stream_slice["portfolio_gid"]
+        return f"portfolios/{portfolio_gid}"
+    
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.read_slices_from_records(stream_class=PortfoliosCompact, slice_field="portfolio_gid")
+
 class Projects(WorkspaceRequestParamsRelatedStream):
     use_cache = True
 
