@@ -15,6 +15,8 @@ import {
 } from "core/request/DaspireClient";
 import { useInitService } from "services/useInitService";
 
+import { useAnalyticsService } from "./Analytics";
+import { useCurrentWorkspace } from "./useWorkspace";
 import {
   ConnectionScheduleData,
   ConnectionScheduleType,
@@ -29,8 +31,6 @@ import {
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useAnalyticsService } from "./Analytics";
-import { useCurrentWorkspace } from "./useWorkspace";
 
 export const connectionsKeys = {
   all: [SCOPE_WORKSPACE, "connections"] as const,
@@ -125,7 +125,10 @@ export const useResetConnection = () => {
   return useMutation((connectionId: string) => service.reset(connectionId));
 };
 
-const useGetConnection = (connectionId: string, options?: { refetchInterval: number }): WebBackendConnectionRead => {
+const useGetConnection = (
+  connectionId: string,
+  options?: { refetchInterval?: number; enabled?: boolean }
+): WebBackendConnectionRead => {
   const service = useWebConnectionService();
 
   return useSuspenseQuery(connectionsKeys.detail(connectionId), () => service.getConnection(connectionId), options);
