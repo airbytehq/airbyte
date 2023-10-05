@@ -73,12 +73,7 @@
               "title": "Level",
               "description": "The granularity level for data retrieval of the custom insight from the API.",
               "default": "ad",
-              "enum": [
-                "ad",
-                "adset",
-                "campaign",
-                "account"
-              ],
+              "enum": ["ad", "adset", "campaign", "account"],
               "order": 1,
               "type": "string"
             },
@@ -299,11 +294,7 @@
               "title": "Action Report Time",
               "description": "This value determines the timing used to report action statistics. For example, if a user sees an ad on Jan 1st but converts on Jan 2nd, this value will determine how the action is reported. When set to impression, you see a conversion on Jan 1st. When set to conversion, you see a conversion on Jan 2nd. When set to mixed, view-through actions are reported at the time of the impression and click-through actions are reported at the time of conversion.",
               "default": "mixed",
-              "enum": [
-                "conversion",
-                "impression",
-                "mixed"
-              ],
+              "enum": ["conversion", "impression", "mixed"],
               "order": 5,
               "type": "string"
             },
@@ -320,9 +311,7 @@
               "title": "Start Date",
               "description": "The date from which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z. Leaving this field blank will replicate all data.",
               "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
-              "examples": [
-                "2017-01-25T00:00:00Z"
-              ],
+              "examples": ["2017-01-25T00:00:00Z"],
               "order": 7,
               "type": "string",
               "format": "date-time"

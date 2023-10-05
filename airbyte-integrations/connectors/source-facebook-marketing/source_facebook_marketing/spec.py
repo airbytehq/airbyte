@@ -228,7 +228,6 @@ class ConnectorConfig(BaseConfig):
         default=28,
     )
 
-
     action_breakdowns_allow_empty: bool = Field(
         description="Allows action_breakdowns to be an empty list",
         default=True,
