@@ -1,0 +1,451 @@
+spec:
+  type: Spec
+  documentation_url: https://example.org
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - project_id
+      - workspace_gid
+      - task_gid
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      team_id:
+        type: string
+        order: 4
+        title: team_id
+        default: '1205639043976533'
+      task_gid:
+        type: string
+        order: 3
+        title: task_gid
+        default: '1202229681545806'
+      project_id:
+        type: string
+        order: 1
+        title: project_id
+        default: '1205639043976528'
+      workspace_gid:
+        type: string
+        order: 2
+        title: workspace_gid
+        default: '1133846627463024'
+    additionalProperties: true
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - Projects
+streams:
+  - name: Projects
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: projects
+        type: HttpRequester
+        url_base: https://app.asana.com/api/1.0
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          data:
+            type: array
+            items:
+              type: object
+              properties:
+                gid:
+                  type: string
+                name:
+                  type: string
+                resource_type:
+                  type: string
+  - name: Sections
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 48
+      requester:
+        path: projects/{{ config['project_id'] }}/sections
+        type: HttpRequester
+        url_base: https://app.asana.com/api/1.0
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          data:
+            type: array
+            items:
+              type: object
+              properties:
+                gid:
+                  type: string
+                name:
+                  type: string
+                resource_type:
+                  type: string
+  - name: Stories
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /tasks/{{ config['task_gid'] }}/stories
+        type: HttpRequester
+        url_base: https://app.asana.com/api/1.0
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          data:
+            type: array
+            items:
+              type: object
+              properties:
+                gid:
+                  type: string
+                text:
+                  type: string
+                type:
+                  type: string
+                created_at:
+                  type: string
+                created_by:
+                  type: object
+                  properties:
+                    gid:
+                      type: string
+                    name:
+                      type: string
+                    resource_type:
+                      type: string
+                resource_type:
+                  type: string
+                resource_subtype:
+                  type: string
+  - name: Tags
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /workspaces/{{ config['workspace_gid'] }}/tags
+        type: HttpRequester
+        url_base: https://app.asana.com/api/1.0
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          data:
+            type: array
+  - name: Workspace
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /workspaces
+        type: HttpRequester
+        url_base: https://app.asana.com/api/1.0
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          data:
+            type: array
+            items:
+              type: object
+              properties:
+                gid:
+                  type: string
+                name:
+                  type: string
+                resource_type:
+                  type: string
+  - name: Users
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /users
+        type: HttpRequester
+        url_base: https://app.asana.com/api/1.0
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          data:
+            type: array
+            items:
+              type: object
+              properties:
+                gid:
+                  type: string
+                name:
+                  type: string
+                resource_type:
+                  type: string
+  - name: Team membership
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 48
+      requester:
+        path: /teams/{{ config['team_id'] }}/team_memberships
+        type: HttpRequester
+        url_base: https://app.asana.com/api/1.0
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          data:
+            type: array
+            items:
+              type: object
+              properties:
+                gid:
+                  type: string
+                team:
+                  type: object
+                  properties:
+                    gid:
+                      type: string
+                    name:
+                      type: string
+                    resource_type:
+                      type: string
+                user:
+                  type: object
+                  properties:
+                    gid:
+                      type: string
+                    name:
+                      type: string
+                    resource_type:
+                      type: string
+                resource_type:
+                  type: string
+  - name: Teams
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /organizations/{{ config['workspace_gid'] }}/teams
+        type: HttpRequester
+        url_base: https://app.asana.com/api/1.0
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          data:
+            type: array
+            items:
+              type: object
+              properties:
+                gid:
+                  type: string
+                name:
+                  type: string
+                resource_type:
+                  type: string
+  - name: Tasks
+    type: DeclarativeStream
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        path: /projects/{{ config['project_id'] }}/tasks
+        type: HttpRequester
+        url_base: https://app.asana.com/api/1.0
+        http_method: GET
+        authenticator:
+          type: BearerAuthenticator
+          api_token: '{{ config[''api_key''] }}'
+        request_headers: {}
+        request_body_json: {}
+        request_parameters: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: []
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          data:
+            type: array
+version: 0.51.16
+metadata:
+  autoImportSchema:
+    Tags: true
+    Tasks: true
+    Teams: true
+    Users: true
+    Stories: true
+    Projects: true
+    Sections: true
+    Workspace: true
+    Team membership: true
