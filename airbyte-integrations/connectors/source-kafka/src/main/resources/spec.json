@@ -266,6 +266,12 @@
         "description": "The Maximum to be processed per execution",
         "type": "integer",
         "default": 100000
+      },
+      "enable_kafka_checkpoint": {
+        "title": "Enable Kafka CheckPoint",
+        "description": "If true, kafka maintain the checkpoint otherwise, airbyte maintain checkpoint",
+        "type": "boolean",
+        "default": true
       }
     }
   }

@@ -28,5 +28,6 @@
   "enable_auto_commit": true,
   "request_timeout_ms": 30000,
   "receive_buffer_bytes": 32768,
-  "auto_commit_interval_ms": 5000
+  "auto_commit_interval_ms": 5000,
+  "enable_kafka_checkpoint": false
 }

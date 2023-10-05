@@ -45,15 +45,19 @@ public class KafkaSource extends BaseConnector implements Source {
   }
 
   @Override
-  public AutoCloseableIterator<AirbyteMessage> read(final JsonNode config, final ConfiguredAirbyteCatalog catalog, final JsonNode state)
-      throws Exception {
-    final AirbyteConnectionStatus check = check(config);
-    if (check.getStatus().equals(AirbyteConnectionStatus.Status.FAILED)) {
+  public AutoCloseableIterator<AirbyteMessage> read(JsonNode config, ConfiguredAirbyteCatalog catalog, JsonNode state) throws Exception {
+    AirbyteConnectionStatus check = this.check(config);
+    if (check.getStatus().equals(Status.FAILED)) {
       throw new RuntimeException("Unable establish a connection: " + check.getMessage());
+    } else {
+      List<String> topics = catalog.getStreams().stream().map((stream) -> {
+        return stream.getStream().getName();
+      }).toList();
+      KafkaFormat kafkaFormat = KafkaFormatFactory.getFormat(config);
+      return kafkaFormat.read(state, topics);
     }
-    KafkaFormat kafkaFormat = KafkaFormatFactory.getFormat(config);
-    return kafkaFormat.read();
   }
+
 
   public static void main(final String[] args) throws Exception {
     final Source source = new KafkaSource();

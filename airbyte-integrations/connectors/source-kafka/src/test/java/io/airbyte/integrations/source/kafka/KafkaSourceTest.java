@@ -23,4 +23,10 @@ public class KafkaSourceTest {
     assertInstanceOf(AvroFormat.class, kafkaFormat);
   }
 
+  @Test
+  public void testAirbyteoffset() throws IOException {
+    final JsonNode configJson = Jsons.deserialize(MoreResources.readResource("test_config.json"));
+    final KafkaFormat kafkaFormat = KafkaFormatFactory.getFormat(configJson);
+    assert(!kafkaFormat.iskafkaCheckpoint());
+  }
 }
