@@ -396,8 +396,9 @@ This command runs the Python tests for a airbyte-ci poetry package.
 `airbyte-ci tests airbyte-integrations/bases/connector-acceptance-test --test-directory=unit_tests`
 
 ## Changelog
-| Version | PR                                                        | Description                                                                                               |
-|---------| --------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
+| Version | PR                                                       | Description                                                                                               |
+|---------| -------------------------------------------------------- |-----------------------------------------------------------------------------------------------------------|
+| 1.5.0    |[#30984](https://github.com/airbytehq/airbyte/pull/30984) | Adds docker to python test containers                                                                     |
 | 1.4.6   |[ #31087](https://github.com/airbytehq/airbyte/pull/31087) | Throw error if airbyte-ci tools is out of date                                                            |
 | 1.4.5   | [#31133](https://github.com/airbytehq/airbyte/pull/31133) | Fix bug when building containers using `with_integration_base_java_and_normalization`.                    |
 | 1.4.4   | [#30743](https://github.com/airbytehq/airbyte/pull/30743) | Add `--disable-report-auto-open` and `--use-host-gradle-dist-tar` to allow gradle integration.            |
@@ -405,8 +406,8 @@ This command runs the Python tests for a airbyte-ci poetry package.
 | 1.4.2   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Remove directory name requirement                                                                         |
 | 1.4.1   | [#30595](https://github.com/airbytehq/airbyte/pull/30595) | Load base migration guide into QA Test container for strict encrypt variants                              |
 | 1.4.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330) | Add support for pyproject.toml as the prefered entry point for a connector package                        |
-| 1.3.0   | [#30461](https://github.com/airbytehq/airbyte/pull/30461) | Add `--use-local-cdk` flag to all connectors commands                                                      |
-| 1.2.3   | [#30477](https://github.com/airbytehq/airbyte/pull/30477) | Fix a test regression introduced the previous version.                                            |
+| 1.3.0   | [#30461](https://github.com/airbytehq/airbyte/pull/30461) | Add `--use-local-cdk` flag to all connectors commands                                                     |
+| 1.2.3   | [#30477](https://github.com/airbytehq/airbyte/pull/30477) | Fix a test regression introduced the previous version.                                                    |
 | 1.2.2   | [#30438](https://github.com/airbytehq/airbyte/pull/30438) | Add workaround to always stream logs properly with --is-local.                                            |
 | 1.2.1   | [#30384](https://github.com/airbytehq/airbyte/pull/30384) | Java connector test performance fixes.                                                                    |
 | 1.2.0   | [#30330](https://github.com/airbytehq/airbyte/pull/30330) | Add `--metadata-query` option to connectors command                                                       |
@@ -432,7 +433,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 | 0.2.1   | [#28767](https://github.com/airbytehq/airbyte/pull/28767) | Improve pytest step result evaluation to prevent false negative/positive.                                 |
 | 0.2.0   | [#28857](https://github.com/airbytehq/airbyte/pull/28857) | Add the `airbyte-ci tests` command to run the test suite on any `airbyte-ci` poetry package.              |
 | 0.1.1   | [#28858](https://github.com/airbytehq/airbyte/pull/28858) | Increase the max duration of Connector Package install to 20mn.                                           |
-| 0.1.0   |                                                           | Alpha version not in production yet. All the commands described in this doc are available.                |
+| 0.1.0   |                                                          | Alpha version not in production yet. All the commands described in this doc are available.                |
 
 ## More info
 This project is owned by the Connectors Operations team.
