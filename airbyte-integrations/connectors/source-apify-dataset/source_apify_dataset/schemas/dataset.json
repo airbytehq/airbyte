@@ -52,6 +52,9 @@
     "actRunId": {
       "type": ["null", "string"]
     },
+    "title": {
+      "type": ["null", "string"]
+    },
     "fields": {
       "anyOf": [
         {
