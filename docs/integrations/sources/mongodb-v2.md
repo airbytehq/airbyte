@@ -75,7 +75,11 @@ switched to db admin
 ```shell
 admin> db.createUser({user: "READ_ONLY_USER", pwd: "READ_ONLY_PASSWORD", roles: [{role: "read", db: "TARGET_DATABASE"}]})
 ```
-:::note Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated. :::
+
+:::note
+Replace `READ_ONLY_PASSWORD` with a password of your choice and `TARGET_DATABASE` with the name of the database to be replicated.
+:::
+
 4. Next, enable authentication, if not already enabled.  Start by editing the `/etc/mongodb.conf` by adding/editing these specific keys:
 ```yaml
 net:
@@ -84,7 +88,10 @@ net:
 security:
   authorization: enabled
 ```
-:::note Setting the `bindIp` key to `0.0.0.0` will allow connections to database from any IP address.  Setting the `security.authorization` key to `enabled` will enable security and only allow authenticated users to access the database. :::
+
+:::note 
+Setting the `bindIp` key to `0.0.0.0` will allow connections to database from any IP address.  Setting the `security.authorization` key to `enabled` will enable security and only allow authenticated users to access the database. 
+:::
 
 #### Step 2: Discover the MongoDB cluster connection string
 
@@ -183,6 +190,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------| :-------------------------------------------------------------------------------------------------------- |
+| 1.0.1   | 2023-10-03 | [31034](https://github.com/airbytehq/airbyte/pull/31034) | Fix field filtering logic related to nested documents
 | 1.0.0   | 2023-10-03 | [29969](https://github.com/airbytehq/airbyte/pull/29969) | General availability release using Change Data Capture (CDC)                                              |
 | 0.2.5   | 2023-07-27 | [28815](https://github.com/airbytehq/airbyte/pull/28815) | Revert back to version 0.2.0                                                                              |
 | 0.2.4   | 2023-07-26 | [28760](https://github.com/airbytehq/airbyte/pull/28760) | Fix bug preventing some syncs from succeeding when collecting stats                                       |

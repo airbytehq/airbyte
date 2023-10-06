@@ -138,12 +138,16 @@ def test_get_branches_data():
         ],
     )
 
-    default_branches, branches_to_pull = source._get_branches_data("", repository_args)
+    default_branches, branches_to_pull = source._get_branches_data([], repository_args)
     assert default_branches == {"airbytehq/integration-test": "master"}
     assert branches_to_pull == {"airbytehq/integration-test": ["master"]}
 
     default_branches, branches_to_pull = source._get_branches_data(
-        "airbytehq/integration-test/feature/branch_0 airbytehq/integration-test/feature/branch_1 airbytehq/integration-test/feature/branch_3",
+        [
+            "airbytehq/integration-test/feature/branch_0",
+            "airbytehq/integration-test/feature/branch_1",
+            "airbytehq/integration-test/feature/branch_3",
+        ],
         repository_args,
     )
 
@@ -170,7 +174,7 @@ def test_get_org_repositories():
         ],
     )
 
-    config = {"repository": "airbytehq/integration-test docker/*"}
+    config = {"repositories": ["airbytehq/integration-test", "docker/*"]}
     source = SourceGithub()
     config = source._ensure_default_values(config)
     organisations, repositories = source._get_org_repositories(config, authenticator=None)
@@ -186,15 +190,6 @@ def test_organization_or_repo_available(monkeypatch):
         config = {"access_token": "test_token", "repository": ""}
         source.streams(config=config)
     assert exc_info.value.args[0] == "No streams available. Please check permissions"
-
-
-def tests_get_and_prepare_repositories_config():
-    config = {"repository": "airbytehq/airbyte airbytehq/airbyte.test  airbytehq/integration-test"}
-    assert SourceGithub._get_and_prepare_repositories_config(config) == {
-        "airbytehq/airbyte",
-        "airbytehq/airbyte.test",
-        "airbytehq/integration-test",
-    }
 
 
 def test_check_config_repository():
@@ -226,32 +221,19 @@ def test_check_config_repository():
         "https://github.com/airbytehq/airbyte",
     ]
 
-    config["repository"] = ""
+    config["repositories"] = []
     with pytest.raises(AirbyteTracedException):
         assert command_check(source, config)
-    config["repository"] = " "
+    config["repositories"] = []
     with pytest.raises(AirbyteTracedException):
         assert command_check(source, config)
 
     for repos in repos_ok:
-        config["repository"] = repos
+        config["repositories"] = [repos]
         assert command_check(source, config)
 
     for repos in repos_fail:
-        config["repository"] = repos
-        with pytest.raises(AirbyteTracedException):
-            assert command_check(source, config)
-
-    config["repository"] = " ".join(repos_ok)
-    assert command_check(source, config)
-    config["repository"] = "    ".join(repos_ok)
-    assert command_check(source, config)
-    config["repository"] = ",".join(repos_ok)
-    with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config)
-
-    for repos in repos_fail:
-        config["repository"] = " ".join(repos_ok[: len(repos_ok) // 2] + [repos] + repos_ok[len(repos_ok) // 2 :])
+        config["repositories"] = [repos]
         with pytest.raises(AirbyteTracedException):
             assert command_check(source, config)
 
