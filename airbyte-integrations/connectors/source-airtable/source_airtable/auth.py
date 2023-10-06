@@ -48,7 +48,7 @@ class AirtableOAuth(SingleUseRefreshTokenOauth2Authenticator):
         if response.status_code == 400 and content.get("error") == "invalid_grant":
             raise AirbyteTracedException(
                 internal_message=content.get("error_description"),
-                message="Refresh token is invalid. Please update it in the config.",
+                message="Refresh token is invalid or expired. Please re-authenticate to restore access to Airtable.",
                 failure_type=FailureType.config_error,
             )
         response.raise_for_status()
