@@ -101,7 +101,7 @@ class JinjaInterpolation(Interpolation):
         elif valid_types and isinstance(evaluated, dict):
             # try to turn the evaluated object into a json-deserializable string
             try:
-                return json.dumps(evaluated, separators=(",", ":"))
+                return json.dumps(evaluated)
             except TypeError:
                 return result
         return result
