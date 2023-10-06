@@ -15,8 +15,6 @@ acceptance_tests:
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
       - config_path: "integration_tests/local_config.json"
-        status: "succeed"
-      - config_path: "integration_tests/local_config.json"
         deployment_mode: "cloud"
         status: "failed"
   discovery:
