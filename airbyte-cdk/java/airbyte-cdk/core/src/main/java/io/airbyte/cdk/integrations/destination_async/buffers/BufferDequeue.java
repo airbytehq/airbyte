@@ -20,6 +20,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager.BLOCK_SIZE_BYTES;
+
 /**
  * Represents the minimal interface over the underlying buffer queues required for dequeue
  * operations with the aim of minimizing lower-level queue access.
@@ -75,6 +77,11 @@ public class BufferDequeue {
       }
 
       queue.addMaxMemory(-bytesRead.get());
+
+      if (buffers.get(streamDescriptor).isEmpty()) {
+        bytesRead.addAndGet(BLOCK_SIZE_BYTES);
+        buffers.remove(streamDescriptor);
+      }
 
       return new MemoryAwareMessageBatch(
           output,
