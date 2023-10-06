@@ -65,7 +65,14 @@ class MockHttpStream(HttpStream):
 )
 @pytest.mark.parametrize("records_as_list", [True, False])
 def test_default_http_availability_strategy(
-    mocker, status_code, json_contents, expected_is_available, expected_messages, include_source, expected_docs_url_messages, records_as_list
+    mocker,
+    status_code,
+    json_contents,
+    expected_is_available,
+    expected_messages,
+    include_source,
+    expected_docs_url_messages,
+    records_as_list,
 ):
     class MockListHttpStream(MockHttpStream):
         def read_records(self, *args, **kvargs):
