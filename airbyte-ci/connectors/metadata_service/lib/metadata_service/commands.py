@@ -69,10 +69,19 @@ def upload(metadata_file_path: pathlib.Path, docs_path: pathlib.Path, bucket_nam
 @click.argument("bucket-name", type=click.STRING)
 def upload_all_metadata(airbyte_repo_path: pathlib.Path, docs_dir: pathlib.Path, bucket_name: str):
     connectors = get_all_connectors_in_repo()
+    failed_connectors = []
     for connector in connectors:
-        print(f"~~~~~~ Uploading metadata for {connector}")
-        metadata_file_path = airbyte_repo_path / connector.metadata_file_path
-        upload_metadata_to_gcs(bucket_name, metadata_file_path, ValidatorOptions(docs_path=str(docs_dir)))
-        # This break just makes the script upload docs for a single connector. Comment it out to upload docs for all connectors.
-        break
+        # failed_connectors.append(str(connector))
+        try:
+            print(f"~~~~~~ Uploading metadata for {connector}")
+            metadata_file_path = airbyte_repo_path / connector.metadata_file_path
+            upload_metadata_to_gcs(bucket_name, metadata_file_path, ValidatorOptions(docs_path=str(docs_dir)))
+            # This break just makes the script upload docs for a single connector. Comment it out to upload docs for all connectors.
+            # break
+            # raise Exception("This is a test exception")
+        except Exception as e:
+            failed_connectors.append([str(connector), str(e)])
+            pass
+        # break
+    print(f"Failed to upload metadata for the following connectors: {failed_connectors}")
     exit(0)
