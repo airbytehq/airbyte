@@ -76,12 +76,6 @@ public class DefaultBigQueryRecordFormatter extends BigQueryRecordFormatter {
     return Jsons.serialize(formattedData);
   }
 
-  /*
-   * protected Object getData(final PartialAirbyteRecordMessage recordMessage) { final JsonNode
-   * formattedData = StandardNameTransformer.formatJsonPath(recordMessage.getData()); return
-   * Jsons.serialize(formattedData); }
-   */
-
   @Override
   public Schema getBigQuerySchema(final JsonNode jsonSchema) {
     return SCHEMA_V2;

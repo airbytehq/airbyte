@@ -35,7 +35,6 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
         catalog,
         new BufferManager(),
         defaultNamespace);
-    log.info("____________________ Creating the new record consumer ____________________");
   }
 
 }

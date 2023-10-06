@@ -2,13 +2,10 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-<<<<<<< HEAD
-=======
 import json
 import sys
 from unittest.mock import Mock, mock_open, patch
 
->>>>>>> a1ca73a724e65afc290bd6054579505b12a3905a
 import pytest
 from source_google_analytics_data_api.utils import (
     get_source_defined_primary_key,

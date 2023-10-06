@@ -371,13 +371,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     final String bqNamespace = BigQueryUtils.getDatasetId(config);
 
-    LOGGER.error("BQ Namespace: " +  bqNamespace);
-
     return new BigQueryRecordStandardConsumer(
         outputRecordCollector,
         () -> {
           final boolean use1s1t = TypingAndDedupingFlag.isDestinationV2();
-          LOGGER.error("Is use1s1t in the on start: " + use1s1t);
           if (use1s1t) {
             // Set up our raw tables
             writeConfigs.get().forEach((streamId, uploader) -> {
@@ -387,7 +384,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                 // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
                 // 1s1t mode.
                 final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
-                LOGGER.error("++++++++++++++++++++ ___________");
                 bigquery.delete(rawTableId);
                 BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
               } else {
@@ -397,31 +393,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           }
         },
         (hasFailed) -> {
-          LOGGER.info("Started closing all connections");
-          final List<Exception> exceptionsThrown = new ArrayList<>();
-          /*writeConfigs.get().forEach((streamId, uploader) -> {
-            try {
-              uploader.close(hasFailed, outputRecordCollector, null);
-            } catch (final Exception e) {
-              exceptionsThrown.add(e);
-              LOGGER.error("Exception while closing uploader {}", uploader, e);
-            }
-          });*/
-          try {
-            LOGGER.error("Sleeping for 2 minutes");
-            Thread.sleep(1000 * 60 * 2);
-          } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-          }
           try {
             typerDeduper.typeAndDedupe();
             typerDeduper.commitFinalTables();
             typerDeduper.cleanup();
           } catch (Exception e) {
             throw new RuntimeException(e);
-          }
-          if (!exceptionsThrown.isEmpty()) {
-            throw new RuntimeException(String.format("Exceptions thrown while closing consumer: %s", Strings.join(exceptionsThrown, "\n")));
           }
         },
         bigquery,

@@ -94,14 +94,12 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     try {
       recordFormatter.printAndCleanFieldFails();
 
-      LOGGER.info("Closing connector: {}", this);
       this.writer.close(hasFailed);
 
       if (!hasFailed) {
         uploadData(outputRecordCollector, lastStateMessage);
       }
       this.postProcessAction(hasFailed);
-      LOGGER.info("Closed connector: {}", this);
     } catch (final Exception e) {
       LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
       printHeapMemoryConsumption();
@@ -111,27 +109,8 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
 
   public void closeAfterPush() {
     try {
-      this.writer.closeAfterPush();
+      this.writer.close(false);
     } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  public void close(final boolean hasFailed) {
-    try {
-      recordFormatter.printAndCleanFieldFails();
-
-      LOGGER.info("Closing connector: {}", this);
-      this.writer.close(hasFailed);
-
-      if (!hasFailed) {
-        uploadData();
-      }
-      this.postProcessAction(hasFailed);
-      LOGGER.info("Closed connector: {}", this);
-    } catch (final Exception e) {
-      LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
-      printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
   }
@@ -139,17 +118,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
   protected void uploadData(final Consumer<AirbyteMessage> outputRecordCollector, final AirbyteMessage lastStateMessage) throws Exception {
     try {
       outputRecordCollector.accept(lastStateMessage);
-      LOGGER.info("Final state message is accepted.");
-    } catch (final Exception e) {
-      LOGGER.error("Upload data is failed!");
-      throw e;
-    } finally {
-      dropTmpTable();
-    }
-  }
-
-  protected void uploadData() {
-    try {
       LOGGER.info("Final state message is accepted.");
     } catch (final Exception e) {
       LOGGER.error("Upload data is failed!");

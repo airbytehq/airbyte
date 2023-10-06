@@ -23,7 +23,6 @@ public class BigQueryTableWriter implements DestinationWriter {
   private final TableDataWriteChannel writeChannel;
 
   public BigQueryTableWriter(TableDataWriteChannel writeChannel) {
-    LOGGER.error("===================== CREATING WRITER ==========================");
     this.writeChannel = writeChannel;
   }
 
@@ -47,8 +46,6 @@ public class BigQueryTableWriter implements DestinationWriter {
 
   @Override
   public void close(boolean hasFailed) throws IOException {
-    LOGGER.error("===================== REGULAR CLOSING ==========================");
-
     this.writeChannel.close();
     if (writeChannel.getJob().getStatus().getError() != null) {
       LOGGER.error("Fail to complete a load job in big query, Job id: " + writeChannel.getJob().getJobId() +
@@ -58,17 +55,6 @@ public class BigQueryTableWriter implements DestinationWriter {
     }
   }
 
-  @Override
-  public void closeAfterPush() throws IOException {
-    LOGGER.error("===================== CLOSING AFTER PUSH ==========================");
-    this.writeChannel.close();
-    if (writeChannel.getJob().getStatus().getError() != null) {
-      LOGGER.error("Fail to complete a load job in big query, Job id: " + writeChannel.getJob().getJobId() +
-              ", with error: " + writeChannel.getJob().getStatus().getError());
-      throw new RuntimeException("Fail to complete a load job in big query, Job id: " + writeChannel.getJob().getJobId() +
-              ", with error: " + writeChannel.getJob().getStatus().getError());
-    }
-  }
 
   public TableDataWriteChannel getWriteChannel() {
     return writeChannel;

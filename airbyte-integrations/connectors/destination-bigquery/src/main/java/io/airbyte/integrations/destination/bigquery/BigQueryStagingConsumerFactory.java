@@ -75,13 +75,8 @@ public class BigQueryStagingConsumerFactory {
   }
 
   /**
-<<<<<<< HEAD
-   * Out BigQuery's uploader threads use a fair amount of memory. We believe this is largely
-   * due to the sdk client we use.
-=======
    * Out BigQuery's uploader threads use a fair amount of memory. We believe this is largely due to
    * the sdk client we use.
->>>>>>> a1ca73a724e65afc290bd6054579505b12a3905a
    *
    * @return number of bytes to make available for message buffering.
    */

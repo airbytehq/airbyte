@@ -17,9 +17,8 @@ class CdkImportTest {
    * expected pinned version.
    */
   @Test
-  @Disabled
   void cdkVersionShouldMatch() {
-    assertEquals("0.1.0", CDKConstants.VERSION.replace("-SNAPSHOT", ""));
+    assertEquals("0.1.4", CDKConstants.VERSION.replace("-SNAPSHOT", ""));
   }
 
 }
