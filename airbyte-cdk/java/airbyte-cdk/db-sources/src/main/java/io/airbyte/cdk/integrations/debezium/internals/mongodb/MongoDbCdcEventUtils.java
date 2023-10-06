@@ -151,7 +151,7 @@ public class MongoDbCdcEventUtils {
         } else if (ARRAY.equals(fieldType)) {
           jsonNodes.set(fieldName, readArray(reader, includedFields, fieldName));
         } else {
-          readField(reader, jsonNodes, includedFields, fieldName, fieldType, false);
+          readField(reader, jsonNodes, fieldName, fieldType);
         }
         transformToStringIfMarked(jsonNodes, includedFields, fieldName);
       } else {
@@ -176,7 +176,7 @@ public class MongoDbCdcEventUtils {
         // recursion is used to read inner array
         elements.add(readArray(reader, columnNames, fieldName));
       } else {
-        final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), columnNames, fieldName, currentBsonType, true);
+        final var element = readField(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), fieldName, currentBsonType);
         elements.add(element.get(fieldName));
       }
     }
@@ -186,30 +186,24 @@ public class MongoDbCdcEventUtils {
 
   private static ObjectNode readField(final BsonReader reader,
                                       final ObjectNode o,
-                                      final Set<String> includedFields,
                                       final String fieldName,
-                                      final BsonType fieldType,
-                                      final boolean allowAllFields) {
-    if (shouldIncludeField(fieldName, includedFields, allowAllFields)) {
-      switch (fieldType) {
-        case BOOLEAN -> o.put(fieldName, reader.readBoolean());
-        case INT32 -> o.put(fieldName, reader.readInt32());
-        case INT64 -> o.put(fieldName, reader.readInt64());
-        case DOUBLE -> o.put(fieldName, reader.readDouble());
-        case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
-        case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
-        case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
-        case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
-        case SYMBOL -> o.put(fieldName, reader.readSymbol());
-        case STRING -> o.put(fieldName, reader.readString());
-        case OBJECT_ID -> o.put(fieldName, toString(reader.readObjectId()));
-        case JAVASCRIPT -> o.put(fieldName, reader.readJavaScript());
-        case JAVASCRIPT_WITH_SCOPE -> readJavaScriptWithScope(o, reader, fieldName);
-        case REGULAR_EXPRESSION -> o.put(fieldName, readRegularExpression(reader.readRegularExpression()));
-        default -> reader.skipValue();
-      }
-    } else {
-      reader.skipValue();
+                                      final BsonType fieldType) {
+    switch (fieldType) {
+      case BOOLEAN -> o.put(fieldName, reader.readBoolean());
+      case INT32 -> o.put(fieldName, reader.readInt32());
+      case INT64 -> o.put(fieldName, reader.readInt64());
+      case DOUBLE -> o.put(fieldName, reader.readDouble());
+      case DECIMAL128 -> o.put(fieldName, toDouble(reader.readDecimal128()));
+      case TIMESTAMP -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readTimestamp().getValue()));
+      case DATE_TIME -> o.put(fieldName, DataTypeUtils.toISO8601StringWithMilliseconds(reader.readDateTime()));
+      case BINARY -> o.put(fieldName, toByteArray(reader.readBinaryData()));
+      case SYMBOL -> o.put(fieldName, reader.readSymbol());
+      case STRING -> o.put(fieldName, reader.readString());
+      case OBJECT_ID -> o.put(fieldName, toString(reader.readObjectId()));
+      case JAVASCRIPT -> o.put(fieldName, reader.readJavaScript());
+      case JAVASCRIPT_WITH_SCOPE -> readJavaScriptWithScope(o, reader, fieldName);
+      case REGULAR_EXPRESSION -> o.put(fieldName, readRegularExpression(reader.readRegularExpression()));
+      default -> reader.skipValue();
     }
 
     return o;
