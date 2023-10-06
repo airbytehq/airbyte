@@ -302,25 +302,24 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     // Columns that are typed differently than the StreamConfig
     final Set<String> columnsToChangeType = Stream.concat(
         streamSchema.keySet().stream()
-        // If it's not in the existing schema, it should already be in the columnsToAdd Set
-        .filter(name -> {
-          // Big Query Columns are case-insensitive, first find the correctly cased key if it exists
-          return matchingKey(existingSchema.keySet(), name)
-              // if it does exist, only include it in this set if the type (the value in each respective map)
-              // is different between the stream and existing schemas
-              .map(key -> !existingSchema.get(key).equals(streamSchema.get(name)))
-              // if there is no matching key, then don't include it because it is probably already in columnsToAdd
-              .orElse(false);
-        }),
+            // If it's not in the existing schema, it should already be in the columnsToAdd Set
+            .filter(name -> {
+              // Big Query Columns are case-insensitive, first find the correctly cased key if it exists
+              return matchingKey(existingSchema.keySet(), name)
+                  // if it does exist, only include it in this set if the type (the value in each respective map)
+                  // is different between the stream and existing schemas
+                  .map(key -> !existingSchema.get(key).equals(streamSchema.get(name)))
+                  // if there is no matching key, then don't include it because it is probably already in columnsToAdd
+                  .orElse(false);
+            }),
 
-          // OR columns that used to have a non-null constraint and shouldn't (https://github.com/airbytehq/airbyte/pull/31082)
-          existingTable.getSchema().getFields().stream()
-              .filter(field -> pks.contains(field.getName()))
-              .filter(field -> field.getMode() == Mode.REQUIRED)
-              .map(Field::getName)
-    ).collect(Collectors.toSet());
-
-
+        // OR columns that used to have a non-null constraint and shouldn't
+        // (https://github.com/airbytehq/airbyte/pull/31082)
+        existingTable.getSchema().getFields().stream()
+            .filter(field -> pks.contains(field.getName()))
+            .filter(field -> field.getMode() == Mode.REQUIRED)
+            .map(Field::getName))
+        .collect(Collectors.toSet());
 
     final boolean isDestinationV2Format = schemaContainAllFinalTableV2AirbyteColumns(existingSchema.keySet());
 

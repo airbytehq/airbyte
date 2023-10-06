@@ -22,13 +22,10 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -235,12 +232,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       // 12:34:56-08
       return new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
           """
-              CASE
-                WHEN NOT ((${expression})::TEXT REGEXP '\\\\d{1,2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z|[+\\\\-]\\\\d{1,2}(:?\\\\d{2})?)')
-                  THEN NULL
-                ELSE ${expression}
-              END
-              """);
+          CASE
+            WHEN NOT ((${expression})::TEXT REGEXP '\\\\d{1,2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z|[+\\\\-]\\\\d{1,2}(:?\\\\d{2})?)')
+              THEN NULL
+            ELSE ${expression}
+          END
+          """);
     } else {
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {
@@ -253,18 +250,18 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             // 2023-01-01T12:34:56.7890123-08
             // And the ELSE will try to handle everything else.
             """
-                CASE
-                  WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{4}'
-                    THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
-                  WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{2}'
-                    THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZH')
-                  WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{4}'
-                    THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
-                  WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{2}'
-                    THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
-                  ELSE TRY_CAST((${expression})::TEXT AS TIMESTAMP_TZ)
-                END
-                """);
+            CASE
+              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{4}'
+                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
+              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{2}'
+                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZH')
+              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{4}'
+                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
+              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{2}'
+                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
+              ELSE TRY_CAST((${expression})::TEXT AS TIMESTAMP_TZ)
+            END
+            """);
         // try_cast doesn't support variant/array/object, so handle them specially
         case "VARIANT" -> sqlExpression;
         // We need to validate that the struct is actually a struct.
@@ -273,21 +270,21 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         // JSON null).
         case "OBJECT" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
             """
-                CASE
-                  WHEN TYPEOF(${expression}) != 'OBJECT'
-                    THEN NULL
-                  ELSE ${expression}
-                END
-                """);
+            CASE
+              WHEN TYPEOF(${expression}) != 'OBJECT'
+                THEN NULL
+              ELSE ${expression}
+            END
+            """);
         // Much like the object case, arrays need special handling.
         case "ARRAY" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
             """
-                CASE
-                  WHEN TYPEOF(${expression}) != 'ARRAY'
-                    THEN NULL
-                  ELSE ${expression}
-                END
-                """);
+            CASE
+              WHEN TYPEOF(${expression}) != 'ARRAY'
+                THEN NULL
+              ELSE ${expression}
+            END
+            """);
         case "TEXT" -> "((" + sqlExpression + ")::text)"; // we don't need TRY_CAST on strings.
         default -> "TRY_CAST((" + sqlExpression + ")::text as " + dialectType + ")";
       };
@@ -556,4 +553,5 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .replace("\\", "\\\\")
         .replace("'", "\\'");
   }
+
 }
