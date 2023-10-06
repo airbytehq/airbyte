@@ -4,6 +4,8 @@
 
 package io.airbyte.cdk.integrations.destination_async.buffers;
 
+import static io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager.BLOCK_SIZE_BYTES;
+
 import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
 import io.airbyte.cdk.integrations.destination_async.buffers.MemoryBoundedLinkedBlockingQueue.MemoryItem;
 import io.airbyte.cdk.integrations.destination_async.buffers.StreamAwareQueue.MessageWithMeta;
@@ -19,8 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
-
-import static io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager.BLOCK_SIZE_BYTES;
 
 /**
  * Represents the minimal interface over the underlying buffer queues required for dequeue
