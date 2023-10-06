@@ -41,7 +41,7 @@ public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
       } catch (Exception e) {
         log.error("BQ async standard flush");
         log.error(aibyteMessage.toString());
-        throw e;
+        throw new RuntimeException(e);
       }
     });
     log.error("Record count for standard flush: " + recordCount.get());
