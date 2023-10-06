@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.51.28
+Add functionality enabling Page Number/Offset to be set on the first request
+
+## 0.51.27
+Fix parsing of UUID fields in avro files
+
+## 0.51.26
+Vector DB CDK: Fix OpenAI embedder batch size
+
+## 0.51.25
+Add  configurable OpenAI embedder to cdk and add cloud environment helper
+
+## 0.51.24
+Fix previous version of request_cache clearing
+
+## 0.51.23
+Fix request_cache clearing and move it to tmp folder
+
 ## 0.51.22
 Vector DB CDK: Adjust batch size for Azure embedder to current limits
 

@@ -92,7 +92,8 @@ public class AirbyteDebeziumHandler<T> {
     return AutoCloseableIterators.concatWithEagerClose(AutoCloseableIterators
         .transform(
             eventIterator,
-            (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, emittedAt)),
+            (event) -> DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, catalogContainingStreamsToSnapshot, emittedAt,
+                debeziumConnectorType)),
         AutoCloseableIterators
             .fromIterator(MoreIterators.singletonIteratorFromSupplier(cdcStateHandler::saveStateAfterCompletionOfSnapshotOfNewStreams)));
   }
@@ -139,7 +140,9 @@ public class AirbyteDebeziumHandler<T> {
         trackSchemaHistory,
         schemaHistoryManager.orElse(null),
         syncCheckpointDuration,
-        syncCheckpointRecords));
+        syncCheckpointRecords,
+        catalog,
+        debeziumConnectorType));
   }
 
   private Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager(final SchemaHistory<Optional<JsonNode>> schemaHistory,
