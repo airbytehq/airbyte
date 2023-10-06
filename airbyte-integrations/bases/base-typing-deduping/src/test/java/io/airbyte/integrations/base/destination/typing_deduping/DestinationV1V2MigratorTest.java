@@ -69,7 +69,7 @@ public class DestinationV1V2MigratorTest {
 
   @SneakyThrows
   @Test
-  public void testMigrate() {
+  public void testMigrate() throws Exception {
     final var sqlGenerator = new MockSqlGenerator();
     final StreamConfig stream = new StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null);
     final DestinationHandler<String> handler = Mockito.mock(DestinationHandler.class);

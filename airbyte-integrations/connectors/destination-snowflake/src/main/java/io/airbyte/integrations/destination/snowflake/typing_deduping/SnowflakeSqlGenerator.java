@@ -22,10 +22,13 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 
@@ -137,7 +140,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .filter(column -> JavaBaseConstants.V2_FINAL_TABLE_METADATA_COLUMNS.stream().map(String::toUpperCase)
             .noneMatch(airbyteColumnName -> airbyteColumnName.equals(column.getKey())))
         .collect(LinkedHashMap::new,
-            (map, column) -> map.put(column.getKey(), column.getValue()),
+            (map, column) -> map.put(column.getKey(), column.getValue().type()),
             LinkedHashMap::putAll);
     final boolean sameColumns = actualColumns.equals(intendedColumns)
         && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()))
@@ -153,10 +156,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
-    String validatePrimaryKeys = "";
-    if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns());
-    }
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
     String dedupFinalTable = "";
     String cdcDeletes = "";
@@ -170,7 +169,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final String commitRawTable = commitRawTable(stream.id());
 
     return new StringSubstitutor(Map.of(
-        "validate_primary_keys", validatePrimaryKeys,
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
         "cdc_deletes", cdcDeletes,
@@ -178,7 +176,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "commit_raw_table", commitRawTable)).replace(
             """
             BEGIN TRANSACTION;
-            ${validate_primary_keys}
             ${insert_new_records}
             ${dedup_final_table}
             ${dedupe_raw_table}
@@ -238,12 +235,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       // 12:34:56-08
       return new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
           """
-          CASE
-            WHEN NOT ((${expression})::TEXT REGEXP '\\\\d{1,2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z|[+\\\\-]\\\\d{1,2}(:?\\\\d{2})?)')
-              THEN NULL
-            ELSE ${expression}
-          END
-          """);
+              CASE
+                WHEN NOT ((${expression})::TEXT REGEXP '\\\\d{1,2}:\\\\d{2}:\\\\d{2}(\\\\.\\\\d+)?(Z|[+\\\\-]\\\\d{1,2}(:?\\\\d{2})?)')
+                  THEN NULL
+                ELSE ${expression}
+              END
+              """);
     } else {
       final String dialectType = toDialectType(airbyteType);
       return switch (dialectType) {
@@ -256,18 +253,18 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             // 2023-01-01T12:34:56.7890123-08
             // And the ELSE will try to handle everything else.
             """
-            CASE
-              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{4}'
-                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
-              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{2}'
-                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZH')
-              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{4}'
-                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
-              WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{2}'
-                THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
-              ELSE TRY_CAST((${expression})::TEXT AS TIMESTAMP_TZ)
-            END
-            """);
+                CASE
+                  WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{4}'
+                    THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
+                  WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}(\\\\+|-)\\\\d{2}'
+                    THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SSTZH')
+                  WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{4}'
+                    THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
+                  WHEN (${expression})::TEXT REGEXP '\\\\d{4}-\\\\d{2}-\\\\d{2}T(\\\\d{2}:){2}\\\\d{2}\\\\.\\\\d{1,7}(\\\\+|-)\\\\d{2}'
+                    THEN TO_TIMESTAMP_TZ((${expression})::TEXT, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
+                  ELSE TRY_CAST((${expression})::TEXT AS TIMESTAMP_TZ)
+                END
+                """);
         // try_cast doesn't support variant/array/object, so handle them specially
         case "VARIANT" -> sqlExpression;
         // We need to validate that the struct is actually a struct.
@@ -276,67 +273,25 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         // JSON null).
         case "OBJECT" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
             """
-            CASE
-              WHEN TYPEOF(${expression}) != 'OBJECT'
-                THEN NULL
-              ELSE ${expression}
-            END
-            """);
+                CASE
+                  WHEN TYPEOF(${expression}) != 'OBJECT'
+                    THEN NULL
+                  ELSE ${expression}
+                END
+                """);
         // Much like the object case, arrays need special handling.
         case "ARRAY" -> new StringSubstitutor(Map.of("expression", sqlExpression)).replace(
             """
-            CASE
-              WHEN TYPEOF(${expression}) != 'ARRAY'
-                THEN NULL
-              ELSE ${expression}
-            END
-            """);
+                CASE
+                  WHEN TYPEOF(${expression}) != 'ARRAY'
+                    THEN NULL
+                  ELSE ${expression}
+                END
+                """);
         case "TEXT" -> "((" + sqlExpression + ")::text)"; // we don't need TRY_CAST on strings.
         default -> "TRY_CAST((" + sqlExpression + ")::text as " + dialectType + ")";
       };
     }
-  }
-
-  @VisibleForTesting
-  String validatePrimaryKeys(final StreamId id,
-                             final List<ColumnId> primaryKeys,
-                             final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
-    if (primaryKeys.stream().anyMatch(c -> c.originalName().contains("`"))) {
-      // TODO why is snowflake throwing a bizarre error when we try to use a column with a backtick in it?
-      // E.g. even this trivial procedure fails: (it should return the string `'foo`bar')
-      // execute immediate 'BEGIN RETURN \'foo`bar\'; END;'
-      return "";
-    }
-
-    final String pkNullChecks = primaryKeys.stream().map(
-        pk -> {
-          final String jsonExtract = extractAndCastInsideScript(pk, streamColumns.get(pk));
-          return "AND " + jsonExtract + " IS NULL";
-        }).collect(joining("\n"));
-
-    final String script = new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "raw_table_id_for_string", escapeSingleQuotedString(id.rawTableId(QUOTE)),
-        "pk_null_checks", pkNullChecks)).replace(
-            // Wrap this inside a script block so that we can use the scripting language
-            """
-            DECLARE _ab_missing_primary_key EXCEPTION (-20001, 'Table ${raw_table_id_for_string} has rows missing a primary key');
-            BEGIN
-              LET missing_pk_count INTEGER := (
-                SELECT COUNT(1)
-                FROM ${raw_table_id}
-                WHERE
-                  "_airbyte_loaded_at" IS NULL
-                  ${pk_null_checks}
-              );
-
-              IF (missing_pk_count > 0) THEN
-                RAISE _ab_missing_primary_key;
-              END IF;
-              RETURN 'SUCCESS';
-            END;
-            """);
-    return "EXECUTE IMMEDIATE '" + escapeSingleQuotedString(script) + "';";
   }
 
   @VisibleForTesting
@@ -601,5 +556,4 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .replace("\\", "\\\\")
         .replace("'", "\\'");
   }
-
 }
