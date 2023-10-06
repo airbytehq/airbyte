@@ -27,7 +27,6 @@ import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
@@ -239,7 +238,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation);
 
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
-              "Please use the GCS upload mode if you are syncing a large amount of data.");
+          "Please use the GCS upload mode if you are syncing a large amount of data.");
       return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
     }
 
