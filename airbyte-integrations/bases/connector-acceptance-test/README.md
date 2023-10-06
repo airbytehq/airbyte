@@ -37,7 +37,7 @@ To learn how to set up `ci_credentials` and your GSM Service account see [here](
 export GCP_GSM_CREDENTIALS=`cat <path-to-gsm-service-account-key-file>`
 
 # Install the credentials tool
-pipx install airbyte-ci/connectors/ci_credentials/
+pipx install airbyte-ci/connectors/ci_credentials/ --force --editable
 ```
 
 **Retrieve a connectors sandbox secrets**
