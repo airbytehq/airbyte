@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.cdk.CDKConstants;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class CdkImportTest {

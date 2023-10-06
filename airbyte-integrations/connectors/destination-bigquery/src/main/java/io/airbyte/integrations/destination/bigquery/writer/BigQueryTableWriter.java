@@ -49,12 +49,11 @@ public class BigQueryTableWriter implements DestinationWriter {
     this.writeChannel.close();
     if (writeChannel.getJob().getStatus().getError() != null) {
       LOGGER.error("Fail to complete a load job in big query, Job id: " + writeChannel.getJob().getJobId() +
-              ", with error: " + writeChannel.getJob().getStatus().getError());
+          ", with error: " + writeChannel.getJob().getStatus().getError());
       throw new RuntimeException("Fail to complete a load job in big query, Job id: " + writeChannel.getJob().getJobId() +
-              ", with error: " + writeChannel.getJob().getStatus().getError());
+          ", with error: " + writeChannel.getJob().getStatus().getError());
     }
   }
-
 
   public TableDataWriteChannel getWriteChannel() {
     return writeChannel;
