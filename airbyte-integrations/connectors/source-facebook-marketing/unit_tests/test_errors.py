@@ -103,10 +103,10 @@ CONFIG_ERRORS = [
         #      remove all permissions
         #      re-generate access token
         # Re-authenticate (for cloud) or refresh access token (for oss) and check if all required permissions are granted
-        # Example: One of possible reasons why this error happen is an attempt to access `owner` field:
-        #   GET /act_<account-id>?fields=<field-1>,owner,...<field-n>
     ),
     (
+        # One of possible reasons why this error happen is an attempt to access `owner` field:
+        #   GET /act_<account-id>?fields=<field-1>,owner,...<field-n>
         "error_403_requires_permission",
         "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token with all required permissions.",
         {
