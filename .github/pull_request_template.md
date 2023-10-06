@@ -97,7 +97,7 @@ Before merging:
 - Smoke test the change on at least one affected connector
    - On Github: Run [this workflow](https://github.com/airbytehq/airbyte/actions/workflows/connectors_tests.yml), passing `--use-local-cdk --name=source-<connector>` as options
    - Locally: `airbyte-ci connectors --use-local-cdk --name=source-<connector> test`
-   PR is reviewed and approved
+- PR is reviewed and approved
       
 After merging:
 - [Publish the CDK](https://github.com/airbytehq/airbyte/actions/workflows/publish-cdk-command-manually.yml)
