@@ -17,9 +17,8 @@ definitions:
   selector_users:
     type: RecordSelector
     extractor:
-      class_name: source_pipedrive.extractor.NullCheckedDpathExtractor
-      field_path: ["data", "*"]
-      nullable_nested_field: data
+      type: DpathExtractor
+      field_path: ["data", "*", "data", "*"]
 
   requester:
     type: HttpRequester
