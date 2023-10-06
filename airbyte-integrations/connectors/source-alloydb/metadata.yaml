@@ -14,10 +14,9 @@ data:
   name: AlloyDB for PostgreSQL
   registries:
     cloud:
-      dockerRepository: airbyte/source-alloydb-strict-encrypt
-      enabled: true
+      enabled: false
     oss:
-      enabled: true
+      enabled: false
   releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   tags:
