@@ -140,6 +140,7 @@ export interface ConnectionFormProps {
   onBack?: () => void;
   onListenAfterSubmit?: (isSuccess: boolean) => void;
   onFormDirtyChanges?: (dirty: boolean) => void;
+  loading?: boolean;
 
   /** Should be passed when connection is updated with withRefreshCatalog flag */
   canSubmitUntouchedForm?: boolean;
@@ -178,7 +179,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
       // Set the scheduleType based on the schedule value
-      values["scheduleType"] = values.scheduleData?.basicSchedule
+      values["scheduleType"] = values?.scheduleData?.basicSchedule
         ? ConnectionScheduleType.basic
         : ConnectionScheduleType.manual;
 
@@ -211,7 +212,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const errorMessage = submitError ? generateMessageFromError(submitError) : null;
 
-  const frequencies = useFrequencyDropdownData(connection.scheduleData);
+  const frequencies = useFrequencyDropdownData(connection?.scheduleData);
 
   return (
     <Formik
@@ -354,6 +355,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 </FlexRow>
               )}
             </Field>
+
             <Field
               name="syncCatalog.streams"
               destinationSupportedSyncModes={destDefinition.supportedDestinationSyncModes}

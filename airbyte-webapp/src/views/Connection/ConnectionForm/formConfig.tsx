@@ -76,19 +76,22 @@ export function useDefaultTransformation(): OperationCreate {
 
 {
   /*
- scheduleData: yup
-      .object({
-        basicSchedule: yup
-          .object({
-            units: yup.number().required("form.empty.error"),
-            timeUnit: yup.string().required("form.empty.error"),
-          })
-          .nullable()
-          .defined("form.empty.error"),
+
+      scheduleData: yup
+      .mixed()
+      .test("is-valid-schedule-data", "Invalid schedule data", (value) => {
+        if (typeof value === "object") {
+          if (value.basicSchedule === "manual") {
+            return true; // Accept 'manual' as a string inside basicSchedule
+          }
+          if (value?.basicSchedule && value?.basicSchedule?.units && value?.basicSchedule?.timeUnit) {
+            return true; // Accept the object structure with units and timeUnit
+          }
+        }
+        return false; // Reject other cases
       })
       .nullable()
       .defined("form.empty.error")
-
 
 */
 }
@@ -97,17 +100,14 @@ export const connectionValidationSchema = yup
     name: yup.string().required("form.empty.error"),
     scheduleType: yup.string().oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic]),
     scheduleData: yup
-      .mixed()
-      .test("is-valid-schedule-data", "Invalid schedule data", (value) => {
-        if (typeof value === "object") {
-          if (value.basicSchedule === "manual") {
-            return true; // Accept 'manual' as a string inside basicSchedule
-          }
-          if (value.basicSchedule && value.basicSchedule.units && value.basicSchedule.timeUnit) {
-            return true; // Accept the object structure with units and timeUnit
-          }
-        }
-        return false; // Reject other cases
+      .object({
+        basicSchedule: yup
+          .object({
+            units: yup.number().required("form.empty.error"),
+            timeUnit: yup.string().required("form.empty.error"),
+          })
+          .nullable()
+          .defined("form.empty.error"),
       })
       .nullable()
       .defined("form.empty.error"),

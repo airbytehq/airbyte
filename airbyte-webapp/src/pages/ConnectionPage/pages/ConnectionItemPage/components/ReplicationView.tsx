@@ -2,6 +2,7 @@ import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useCallback, useRef, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useQueryClient } from "react-query";
 import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
 
@@ -16,6 +17,7 @@ import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useModalService } from "hooks/services/Modal";
 import {
+  connectionsKeys,
   useConnectionLoad,
   useConnectionService,
   useUpdateConnection,
@@ -108,6 +110,7 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const { push } = useRouter();
   const { openModal, closeModal } = useModalService();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const queryClient = useQueryClient();
   const connectionFormDirtyRef = useRef<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
@@ -149,6 +152,9 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       status: initialConnection.status || "",
       skipReset,
     });
+
+    queryClient.invalidateQueries(connectionsKeys.detail(connectionId));
+
     if (!equal(values.syncCatalog, initialSyncSchema)) {
       onAfterSaveSchema();
     }
