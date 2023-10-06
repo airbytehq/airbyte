@@ -25,7 +25,7 @@ dependencies {
     // https://github.com/airbytehq/jsongenerator
     implementation 'net.jimblackler.jsonschemafriend:core:0.12.0'
     implementation 'org.mozilla:rhino-engine:1.7.14'
-    implementation group: 'com.github.airbytehq', name: 'jsongenerator', version: '1.0.1'
+    implementation group: 'com.github.airbytehq', name: 'jsongenerator', version: '1.0.2'
 
     testImplementation project(":airbyte-json-validation")
 
