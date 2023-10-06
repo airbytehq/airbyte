@@ -79,7 +79,7 @@ public class BufferDequeue {
       queue.addMaxMemory(-bytesRead.get());
 
       if (buffers.get(streamDescriptor).isEmpty()) {
-        final long remainingBlockSize = BLOCK_SIZE_BYTES - bytesRead.get()  % BLOCK_SIZE_BYTES;
+        final long remainingBlockSize = BLOCK_SIZE_BYTES - bytesRead.get() % BLOCK_SIZE_BYTES;
         bytesRead.addAndGet(remainingBlockSize);
         buffers.remove(streamDescriptor);
       }
