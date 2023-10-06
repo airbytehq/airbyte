@@ -3,7 +3,7 @@
 The Facebook Marketing Connector by Airbyte is a Snowflake Native Application that allows you to extract data from your Facebook Marketing account and load records into a Snowflake database of your choice.
 
 :::info
-The Snowflake Native Apps platform is new and rapidly evolving. The Facebook Marketing Connector by Airbyte is in _private preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a full table refresh without deduplication is supported.  
+The Snowflake Native Apps platform is new and rapidly evolving. The Facebook Marketing Connector by Airbyte is in _private preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a [full table refresh](../understanding-airbyte/connections/full-refresh-overwrite.md) without deduplication is supported.  
 :::
 
 # Getting started
@@ -193,15 +193,15 @@ Once a connection is configured, go in `Connections List` and click on `Sync Now
 
 ### Supported Streams
 As of now, all supported streams perform a full refresh. Incremental syncs are not yet supported. Here are the list of supported streams:
-* Activities 
-* AdAccount 
-* AdCreatives 
-* AdSets 
-* Ads 
-* AdInsights 
-* Campaigns 
-* CustomConversions 
-* CustomAudiences
+* Activities
+* Ad Account
+* Ad Creatives
+* Ad Insights
+* Ad Sets
+* Ads
+* Campaigns
+* Custom Audiences
+* Custom Conversions
 
 # Contact Us
 snowflake-native-apps@airbyte.io
