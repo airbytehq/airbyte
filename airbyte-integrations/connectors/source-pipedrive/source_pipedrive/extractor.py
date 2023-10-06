@@ -15,6 +15,27 @@ from airbyte_cdk.sources.declarative.types import Config
 
 @dataclass
 class NullCheckedDpathExtractor(RecordExtractor):
+    """
+    Pipedrive requires a custom extractor because the format of its API responses is inconsistent.
+
+    Records are typically found in a nested "data" field, but sometimes the "data" field is null.
+    This extractor checks for null "data" fields and returns the parent object, which contains the record ID, instead.
+
+    Example faulty records:
+    ```
+      {
+        "item": "file",
+        "id": <an_id>,
+        "data": null
+      },
+      {
+        "item": "file",
+        "id": <another_id>,
+        "data": null
+      }
+    ```
+    """
+
     field_path: List[Union[InterpolatedString, str]]
     nullable_nested_field: Union[InterpolatedString, str]
     config: Config
