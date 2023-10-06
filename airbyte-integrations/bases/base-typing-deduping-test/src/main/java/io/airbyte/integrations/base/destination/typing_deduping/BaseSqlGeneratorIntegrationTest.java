@@ -928,7 +928,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Verify that the final table does not include NON-NULL PKs (after https://github.com/airbytehq/airbyte/pull/31082)
+   * Verify that the final table does not include NON-NULL PKs (after
+   * https://github.com/airbytehq/airbyte/pull/31082)
    */
   @Test
   public void ensurePKsAreIndexedUnique() throws Exception {
