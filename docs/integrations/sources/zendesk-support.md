@@ -53,8 +53,8 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
    - **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account.
    <!-- /env:oss -->
 
-6. For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
-7. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
+6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
+7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
 8. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -112,6 +112,18 @@ The Zendesk Support source connector supports the following streams:
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
 - [UserFields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
 
+### Deleted Records Support
+The Zendesk Support connector fetches deleted records in the following streams:
+
+| Stream                   | Deletion indicator field |
+|:-------------------------|:-------------------------|
+| **Brands**               | `is_deleted`             |
+| **Groups**               | `deleted`                |
+| **Organizations**        | `deleted_at`             |
+| **Ticket Metric Events** | `deleted`                |
+| **Tickets**              | `status`==`deleted`      |
+
+
 ## Performance considerations
 
 The connector is restricted by normal Zendesk [requests limitation](https://developer.zendesk.com/rest_api/docs/support/usage_limits).
@@ -122,6 +134,10 @@ The Zendesk connector ideally should not run into Zendesk API limitations under 
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `2.0.0`  | 2023-09-15 | [30440](https://github.com/airbytehq/airbyte/pull/30440) | Remove stream `Deleted Tickets`                                                                                                                                                                                                    |
+| `1.7.0`  | 2023-09-11 | [30259](https://github.com/airbytehq/airbyte/pull/30259) | Add stream `Deleted Tickets`                                                                                                                                                                                                       |
+| `1.6.0`  | 2023-09-09 | [30168](https://github.com/airbytehq/airbyte/pull/30168) | Make `start_date` field optional                                                                                                                                                                                                   |
+| `1.5.1`  | 2023-09-05 | [30142](https://github.com/airbytehq/airbyte/pull/30142) | Handle non-JSON Response                                                                                                                                                                                                           |
 | `1.5.0`  | 2023-09-04 | [30138](https://github.com/airbytehq/airbyte/pull/30138) | Add new Streams: `Article Votes`, `Article Comments`, `Article Comment Votes`                                                                                                                                                      |
 | `1.4.0`  | 2023-09-04 | [30134](https://github.com/airbytehq/airbyte/pull/30134) | Add incremental support for streams: `custom Roles`, `Schedules`, `SLA Policies`                                                                                                                                                   |
 | `1.3.0`  | 2023-08-30 | [30031](https://github.com/airbytehq/airbyte/pull/30031) | Add new streams: `Articles`, `Organization Fields`                                                                                                                                                                                 |

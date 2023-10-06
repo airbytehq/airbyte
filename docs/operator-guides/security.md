@@ -56,7 +56,7 @@ You can secure access to Airbyte using the following methods:
     }
   }
   ```
-- Change the default username and password in your environment's `.env` file:
+- *Only for docker compose deployments:* Change the default username and password in your environment's `.env` file:
   ```
   	# Proxy Configuration
   	# Set to empty values, e.g. "" to disable basic auth

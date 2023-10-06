@@ -65,10 +65,8 @@ class AirbyteStandardSourceTestFilePlugin implements Plugin<Project> {
             outputs.upToDateWhen { false }
         }
         standardSourceTestFile.configure {
-            dependsOn project.project(':airbyte-integrations:bases:base-standard-source-test-file').tasks.named('airbyteDocker')
-            dependsOn project.tasks.named('build')
-            dependsOn project.tasks.matching { it.name == 'airbyteDocker' }
-            dependsOn project.tasks.matching { it.name == 'airbyteDockerTest' }
+            dependsOn project.project(':airbyte-integrations:bases:base-standard-source-test-file').tasks.named('assemble')
+            dependsOn project.tasks.named('assemble')
         }
     }
 }

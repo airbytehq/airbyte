@@ -7,9 +7,9 @@ import logging
 from time import sleep
 
 import pinecone
+from airbyte_cdk.destinations.vector_db_based.embedder import OPEN_AI_VECTOR_SIZE
 from airbyte_cdk.models import DestinationSyncMode, Status
 from destination_langchain.destination import DestinationLangchain
-from destination_langchain.embedder import OPEN_AI_VECTOR_SIZE
 from integration_tests.base_integration_test import BaseIntegrationTest
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
@@ -76,9 +76,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         if is_starter_pod:
             # Documents might not be available right away because Pinecone is handling them async
             sleep(20)
-        result = self._index.query(
-            vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_record_id": "mystream_2"}, include_metadata=True
-        )
+        result = self._index.query(vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_record_id": "mystream_2"}, include_metadata=True)
         assert len(result.matches) == 1
         assert result.matches[0].metadata["text"] == "str_col: Cats are nice"
 

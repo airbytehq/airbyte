@@ -132,9 +132,7 @@
       "type": ["null", "string"]
     },
     "update_time": {
-      "type": ["null", "string"],
-      "format": "date-time",
-      "airbyte_type": "timestamp_without_timezone"
+      "type": ["null", "string"]
     },
     "add_time": {
       "type": ["null", "string"]
@@ -197,6 +195,12 @@
       "type": ["null", "string"]
     },
     "cc_email": {
+      "type": ["null", "string"]
+    },
+    "category_id": {
+      "type": ["null", "integer"]
+    },
+    "delete_time": {
       "type": ["null", "string"]
     }
   }

@@ -153,10 +153,16 @@
       "type": ["null", "integer"]
     },
     "ad_group_criterion.final_mobile_urls": {
-      "type": ["null", "string", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "ad_group_criterion.final_urls": {
-      "type": ["null", "string", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "metrics.gmail_forwards": {
       "type": ["null", "integer"]

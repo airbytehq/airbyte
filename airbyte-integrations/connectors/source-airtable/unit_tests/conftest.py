@@ -65,11 +65,11 @@ def json_response():
                 "id": "abc",
                 "fields": [
                     {
-                        'type': 'singleLineText',
-                        'id': '_fake_id_',
-                        'name': 'test',
+                        "type": "singleLineText",
+                        "id": "_fake_id_",
+                        "name": "test",
                     }
-                ]
+                ],
             }
         ]
     }
@@ -80,9 +80,9 @@ def streams_json_response():
     return {
         "records": [
             {
-                'id': 'some_id',
-                'createdTime': '2022-12-02T19:50:00.000Z',
-                'fields': {'field1': True, 'field2': "test", 'field3': 123},
+                "id": "some_id",
+                "createdTime": "2022-12-02T19:50:00.000Z",
+                "fields": {"field1": True, "field2": "test", "field3": 123},
             }
         ]
     }
@@ -92,11 +92,11 @@ def streams_json_response():
 def streams_processed_response():
     return [
         {
-            '_airtable_id': 'some_id',
-            '_airtable_created_time': '2022-12-02T19:50:00.000Z',
-            'field1': True,
-            'field2': 'test',
-            'field3': 123,
+            "_airtable_id": "some_id",
+            "_airtable_created_time": "2022-12-02T19:50:00.000Z",
+            "field1": True,
+            "field2": "test",
+            "field3": 123,
         }
     ]
 
@@ -115,7 +115,7 @@ def expected_json_schema():
     }
 
 
-@pytest.fixture(scope='function', autouse=True)
+@pytest.fixture(scope="function", autouse=True)
 def prepared_stream():
     return {
         "stream_path": "some_base_id/some_table_id",
@@ -126,29 +126,14 @@ def prepared_stream():
                 "type": "object",
                 "additionalProperties": True,
                 "properties": {
-                    "_airtable_id": {
-                        "type": [
-                            "null",
-                            "string"
-                        ]
-                    },
-                    "_airtable_created_time": {
-                        "type": [
-                            "null",
-                            "string"
-                        ]
-                    },
-                    "name": {
-                        "type": [
-                            "null",
-                            "string"
-                        ]
-                    }
-                }
+                    "_airtable_id": {"type": ["null", "string"]},
+                    "_airtable_created_time": {"type": ["null", "string"]},
+                    "name": {"type": ["null", "string"]},
+                },
             },
             supported_sync_modes=[SyncMode.full_refresh],
             supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
-        )
+        ),
     }
 
 
@@ -159,8 +144,9 @@ def make_airtable_stream(prepared_stream):
             stream_path=prepared_stream["stream_path"],
             stream_name=name,
             stream_schema=prepared_stream["stream"].json_schema,
-            authenticator=fake_auth
+            authenticator=fake_auth,
         )
+
     return make
 
 
@@ -176,8 +162,9 @@ def make_stream(prepared_stream):
                 supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append_dedup],
             ),
             "sync_mode": SyncMode.full_refresh,
-            "destination_sync_mode": DestinationSyncMode.overwrite
+            "destination_sync_mode": DestinationSyncMode.overwrite,
         }
+
     return make
 
 

@@ -8,8 +8,9 @@ repositories {
 
 dependencies {
     implementation 'ru.vyarus:gradle-use-python-plugin:2.3.0'
+    implementation 'org.apache.commons:commons-text:1.10.0'
 }
 
-tasks.withType(Jar) {
+tasks.withType(Jar).configureEach {
     duplicatesStrategy DuplicatesStrategy.INCLUDE
 }
