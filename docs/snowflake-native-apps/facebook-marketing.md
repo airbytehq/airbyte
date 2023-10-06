@@ -163,13 +163,13 @@ The window in days to revisit data during syncing to capture updated conversion 
 
 `Output Database`
 
-The database where the records will be saved. Snowflake's database naming restriction applies here.
+The database where the records will be saved. Snowflake's database [naming convention](https://docs.snowflake.com/en/sql-reference/identifiers-syntax) applies here.
 
 ---
 
 `Output Schema`
 
-The table where the schema will be saved. Snowflake's table naming restriction applies here. 
+The table where the schema will be saved. Snowflake's table [naming convention](https://docs.snowflake.com/en/sql-reference/identifiers-syntax) applies here. 
 
 --- 
 
