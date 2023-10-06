@@ -76,7 +76,7 @@ class SourceStripe(AbstractSource):
         stripe.api_key = config["client_secret"]
         try:
             stripe.Account.retrieve(config["account_id"])
-        except stripe.error.AuthenticationError as e:
+        except (stripe.error.AuthenticationError, stripe.error.PermissionError) as e:
             return False, str(e)
         return True, None
 

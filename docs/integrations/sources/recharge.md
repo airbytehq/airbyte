@@ -76,6 +76,7 @@ The Recharge connector should gracefully handle Recharge API limitations under n
 
 | Version | Date       | Pull Request                                             | Subject                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------|
+| 1.1.1   | 2023-09-26 | [30782](https://github.com/airbytehq/airbyte/pull/30782) | For the new style pagination, pass only limit along with cursor                           |
 | 1.1.0   | 2023-09-26 | [30756](https://github.com/airbytehq/airbyte/pull/30756) | Fix pagination and slicing                                                                |
 | 1.0.1   | 2023-08-30 | [29992](https://github.com/airbytehq/airbyte/pull/29992) | Revert for orders stream to use old API version 2021-01                                   |
 | 1.0.0   | 2023-06-22 | [27612](https://github.com/airbytehq/airbyte/pull/27612) | Change data type of the `shopify_variant_id_not_found` field of the `Charges` stream      |

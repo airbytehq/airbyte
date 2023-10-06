@@ -2989,4 +2989,3 @@ components:
       bearerFormat: JWT
       scheme: bearer
       type: http
-
