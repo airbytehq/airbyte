@@ -25,15 +25,13 @@ from source_pipedrive.extractor import NullCheckedDpathExtractor
 )
 def test_pipedrive_extractor(response_body, expected_records):
     extractor = NullCheckedDpathExtractor(field_path=["data", "*"], nullable_nested_field="data", config={}, parameters={})
-    response = create_response(response_body)
+    response = _create_response(response_body)
     records = extractor.extract_records(response)
-    print(f"records: {records}")
-    print(f"expected_records: {expected_records}")
 
     assert records == expected_records
 
 
-def create_response(body):
+def _create_response(body):
     response = requests.Response()
     response._content = json.dumps(body).encode("utf-8")
     return response
