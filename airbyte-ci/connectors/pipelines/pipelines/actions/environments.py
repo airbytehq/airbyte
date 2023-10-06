@@ -57,7 +57,7 @@ def with_python_base(context: PipelineContext, python_version: str = "3.10") -> 
             sh_dash_c(
                 [
                     "apt-get update",
-                    "apt-get install -y build-essential cmake g++ libffi-dev libstdc++6 git",
+                    "apt-get install -y build-essential cmake g++ libffi-dev libstdc++6 git curl",
                     "pip install pip==23.1.2",
                 ]
             )
@@ -82,6 +82,7 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
 
     return (
         python_environment.with_exec(["pip", "install"] + CONNECTOR_TESTING_REQUIREMENTS)
+        .with_exec(sh_dash_c(["curl -fsSL https://get.docker.com | sh"]))
         .with_file(f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file)
         .with_file(f"/{LICENSE_SHORT_FILE_PATH}", license_short_file)
     )
