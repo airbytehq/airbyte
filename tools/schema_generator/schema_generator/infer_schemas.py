@@ -64,7 +64,6 @@ def infer_schemas():
 
     builders = {}
     for line in sys.stdin:
-        print(line)
         message = AirbyteMessage.parse_raw(line)
         if message.type == Type.RECORD:
             stream_name = message.record.stream
