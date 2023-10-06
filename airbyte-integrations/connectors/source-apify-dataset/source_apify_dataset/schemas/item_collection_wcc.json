@@ -51,6 +51,9 @@
     },
     "url": {
       "type": ["null", "string"]
+    },
+    "screenshotUrl": {
+      "type": ["null", "string"]
     }
   }
 }

@@ -32,7 +32,7 @@
       }
     },
     "schema": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "object"]
     },
     "modifiedAt": {
       "type": ["null", "string"]
