@@ -44,5 +44,5 @@ jobs:
             > :warning: The publish slash command is now deprecated.<br>
             The connector publication happens on merge to the master branch.<br>
             Please use /legacy-publish if you need to publish normalization images.<br>
-            Please join the #publish-on-merge-updates slack channel to track ongoing publish pipelines.<br>
+            Please join the #connector-publish-updates slack channel to track ongoing publish pipelines.<br>
             Please reach out to the @dev-connector-ops team if you need support in publishing a connector.
