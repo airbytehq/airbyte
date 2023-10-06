@@ -840,10 +840,10 @@ def with_integration_base_java_and_normalization(context: PipelineContext, build
                 [
                     "python -m ensurepip --upgrade",
                     # Workaround for https://github.com/yaml/pyyaml/issues/601
-                    "pip3 install Cython<3.0 pyyaml~=5.4 --no-build-isolation",
+                    "pip3 install 'Cython<3.0' 'pyyaml~=5.4' --no-build-isolation",
                     f"pip3 install {dbt_adapter_package}",
                     # amazon linux 2 isn't compatible with urllib3 2.x, so force 1.x
-                    "pip3 install urllib3<2",
+                    "pip3 install 'urllib3<2'",
                 ]
             )
         )
