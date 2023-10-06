@@ -6,13 +6,12 @@ package io.airbyte.integrations.destination.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.cdk.db.mongodb.MongoUtils;
-import io.airbyte.cdk.db.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingDestination;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.destination.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import org.slf4j.Logger;
