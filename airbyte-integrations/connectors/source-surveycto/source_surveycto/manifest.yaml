@@ -53,6 +53,8 @@ definitions:
       primary_key: "KEY"
       incremental_cursor: "CompletionDate"
       path: "{{ config['form_id'] }}"
+    # incremental_sync:
+    #   $ref: "#/definitions/incremental_sync_base"
 
 streams:
   - "#/definitions/baseline_ig_stream"
