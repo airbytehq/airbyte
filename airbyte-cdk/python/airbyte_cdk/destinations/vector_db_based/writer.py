@@ -38,9 +38,6 @@ class Writer:
         self.number_of_documents = 0
 
     def _process_batch(self) -> None:
-        if self.number_of_documents == 0:
-            return
-
         for (namespace, stream), ids in self.ids_to_delete.items():
             self.indexer.delete(ids, namespace, stream)
 
