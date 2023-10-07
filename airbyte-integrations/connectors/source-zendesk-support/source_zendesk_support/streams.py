@@ -344,7 +344,12 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
         if self._ignore_pagination:
             return None
         response_json = response.json()
-        return None if response_json.get(END_OF_STREAM_KEY, True) else {"start_time": response_json.get("end_time")}
+        if response_json.get(END_OF_STREAM_KEY, True):
+            return None
+        if response_json.get("after_cursor"):
+            return {"cursor": response_json.get("after_cursor")}
+        else:
+            return {"start_time": response_json.get("end_time")}
 
     def request_params(
         self,
