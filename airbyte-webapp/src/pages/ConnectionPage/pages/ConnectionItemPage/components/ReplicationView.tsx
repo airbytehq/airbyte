@@ -2,10 +2,12 @@ import { faSyncAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useCallback, useRef, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useQueryClient } from "react-query";
 import { useAsyncFn, useUnmount } from "react-use";
 import styled from "styled-components";
 
 import { Button, LabeledSwitch, ModalBody } from "components";
+import Alert from "components/Alert";
 import { Tooltip } from "components/base/Tooltip";
 import LoadingSchema from "components/LoadingSchema";
 
@@ -15,6 +17,7 @@ import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useModalService } from "hooks/services/Modal";
 import {
+  connectionsKeys,
   useConnectionLoad,
   useConnectionService,
   useUpdateConnection,
@@ -107,7 +110,9 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
   const { push } = useRouter();
   const { openModal, closeModal } = useModalService();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const queryClient = useQueryClient();
   const connectionFormDirtyRef = useRef<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [activeUpdatingSchemaMode, setActiveUpdatingSchemaMode] = useState(false);
   const connectionService = useConnectionService();
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
@@ -147,6 +152,9 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
       status: initialConnection.status || "",
       skipReset,
     });
+
+    queryClient.invalidateQueries(connectionsKeys.detail(connectionId));
+
     if (!equal(values.syncCatalog, initialSyncSchema)) {
       onAfterSaveSchema();
     }
@@ -185,7 +193,14 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
         };
       }
       // Save the connection taking into account the correct skipRefresh value from the dialog choice.
-      await saveConnection(values, { skipReset: !result.reason });
+      try {
+        await saveConnection(values, { skipReset: !result.reason });
+      } catch (err) {
+        console.log(err?.response);
+        if (err?.response?.status === 705) {
+          setErrorMessage("Your free trial has expired");
+        }
+      }
     } else {
       // The catalog hasn't changed. We don't need to ask for any confirmation and can simply save.
       await saveConnection(values, { skipReset: true });
@@ -238,6 +253,14 @@ export const ReplicationView: React.FC<ReplicationViewProps> = ({ onAfterSaveSch
 
   return (
     <Content>
+      {errorMessage?.length > 0 && (
+        <Alert
+          formattedMessage={<FormattedMessage id="connection.sync.error" />}
+          onClose={() => {
+            setErrorMessage("");
+          }}
+        />
+      )}
       {!isRefreshingCatalog && connection ? (
         <ConnectionForm
           mode={connection?.status !== ConnectionStatus.deprecated ? "edit" : "readonly"}
