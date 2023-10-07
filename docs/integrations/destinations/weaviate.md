@@ -77,12 +77,13 @@ If a class doesn't exist in the schema of the cluster, it will be created using 
 
 You can also create the class in Weaviate in advance if you need more control over the schema in Weaviate. In this case, the text properies `_ab_stream` and `_ab_record_id` need to be created for bookkeeping reasons. In case a sync is run in `Overwrite` mode, the class will be deleted and recreated.
 
-As properties have to start will a lowercase letter in Weaviate, field names might be updated during the loading process.
+As properties have to start will a lowercase letter in Weaviate, field names might be updated during the loading process. The field names `id`, `_id` and `_additional` are reserved keywords in Weaviate, so they will be renamed to `raw_id`, `raw__id` and `raw_additional` respectively.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.1   | 2023-10-04 | [#31075](https://github.com/airbytehq/airbyte/pull/31075) | Fix OpenAI embedder batch size and conflict field name handling |
 | 0.2.0   | 2023-09-22 | [#30151](https://github.com/airbytehq/airbyte/pull/30151) | Add embedding capabilities, overwrite and dedup support and API key auth mode, make certified. 🚨 Breaking changes - check migrations guide. |
 | 0.1.1   | 2022-02-08 | [\#22527](https://github.com/airbytehq/airbyte/pull/22527) | Multiple bug fixes: Support String based IDs, arrays of uknown type and additionalProperties of type object and array of objects |
 | 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination                                                                                                         |
