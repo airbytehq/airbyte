@@ -272,7 +272,7 @@ class Connector:
 
     @property
     def name(self):
-        return self.metadata["name"]
+        return self._get_type_and_name_from_technical_name()[1]
 
     @property
     def connector_type(self) -> str:
