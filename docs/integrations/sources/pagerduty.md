@@ -48,6 +48,7 @@ Key](https://support.pagerduty.com/docs/generating-api-keys#section-generating-a
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.23 | 2021-11-12 | [125](https://github.com/faros-ai/airbyte-connectors/pull/125) | Add Pagerduty source and destination |
+| Version  | Date       | Pull Request                                                       | Subject                              |
+| :------- | :--------- | :----------------------------------------------------------------- | :----------------------------------- |
+| 0.2.0    | 2023-10-12 | [00000](https://github.com/faros-ai/airbyte-connectors/pull/00000) | Migrate to low code                  |
+| 0.1.23   | 2021-11-12 | [125](https://github.com/faros-ai/airbyte-connectors/pull/125)     | Add Pagerduty source and destination |
