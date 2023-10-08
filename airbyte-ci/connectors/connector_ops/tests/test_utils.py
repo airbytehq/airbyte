@@ -199,5 +199,7 @@ def test_get_all_gradle_dependencies(with_test_dependencies):
 def test_get_all_connectors_in_repo():
     all_connectors = utils.get_all_connectors_in_repo()
     assert len(all_connectors) > 0
-    assert all([isinstance(connector, utils.Connector) for connector in all_connectors])
-    assert all([connector.metadata is not None for connector in all_connectors])
+    for connector in all_connectors:
+        assert isinstance(connector, utils.Connector)
+        assert connector.metadata is not None
+        assert connector.documentation_file_path.exists()
