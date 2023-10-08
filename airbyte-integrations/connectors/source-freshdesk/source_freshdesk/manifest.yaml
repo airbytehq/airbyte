@@ -1,0 +1,342 @@
+version: 0.51.16
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - settings
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+  requester:
+    type: HttpRequester
+    url_base: "https://{{ config['domain'] }}/api/v2/"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+    request_parameters:
+      per_page: "100"
+    error_handler:
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    requester:
+      $ref: "#/definitions/requester"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ headers['link']['next']['url'] }}"
+        stop_condition: "{{ 'next' not in headers['link'] }}"
+      page_token_option:
+        type: RequestPath
+        field_name: "page"
+        inject_into: "request_parameter"
+  base_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+  base_incremental_stream:
+    type: "DatetimeBasedCursor"
+    start_datetime:
+      datetime: "{{ config['start_date'] if config['start_date'] else day_delta(-30, format='%Y-%m-%dT%H:%M:%SZ') }}"
+      datetime_format: "%Y-%m-%dt%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      field_name: "updated_since"
+      inject_into: "request_parameter"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    cursor_field: updated_at
+  agents_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "agents"
+      path: "agents"
+  business_hours_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "business_hours"
+      path: "business_hours"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["working_hours"]
+            value: "{{ record['business_hours'] }}"
+      - type: RemoveFields
+        field_pointers:
+          - [ "business_hours" ]
+  canned_response_folders_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "canned_response_folders"
+      path: "canned_response_folders"
+  canned_responses_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "canned_responses"
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "canned_response_folders/{{ stream_slice.parent_id }}/responses"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/canned_response_folders_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  companies_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "companies"
+      path: "companies"
+  contacts_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "contacts"
+      path: "contacts"
+    incremental_sync:
+      $ref: "#/definitions/base_incremental_stream"
+      start_time_option:
+        type: RequestOption
+        field_name: "_updated_since"
+        inject_into: "request_parameter"
+  discussion_categories_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "discussion_categories"
+      path: "discussions/categories"
+  discussion_forums_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "discussion_forums"
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "discussions/categories/{{ stream_slice.parent_id }}/forums"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/discussion_categories_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  discussion_topics_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "discussion_topics"
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "discussions/forums/{{ stream_slice.parent_id }}/topics"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/discussion_forums_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  discussion_comments_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "discussion_comments"
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "discussions/topics/{{ stream_slice.parent_id }}/comments"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/discussion_topics_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  email_configs_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "email_configs"
+      path: "email_configs"
+  email_mailboxes_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "email_mailboxes"
+      path: "email/mailboxes"
+  groups_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "groups"
+      path: "groups"
+  products_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "products"
+      path: "products"
+  roles_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "roles"
+      path: "roles"
+  scenario_automations_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "scenario_automations"
+      path: "scenario_automations"
+  settings_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "settings"
+      path: "settings/helpdesk"
+    primary_key: "primary_language"
+  skills_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "skills"
+      path: "skills"
+  sla_policies_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "sla_policies"
+      path: "sla_policies"
+  solutions_categories_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "solutions_categories"
+      path: "solutions/categories"
+  solutions_folders_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "solutions_folders"
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "solutions/categories/{{ stream_slice.parent_id }}/folders"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/solutions_categories_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["category_id"]
+            value: "{{ stream_slice.parent_id }}"
+  solutions_articles_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "solutions_articles"
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "solutions/folders/{{ stream_slice.parent_id }}/articles"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/solutions_folders_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  time_entries_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "time_entries"
+      path: "time_entries"
+  ticket_fields_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "ticket_fields"
+      path: "ticket_fields"
+  tickets_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "tickets"
+      path: "tickets"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          order_type: "asc"
+          order_by: "updated_at"
+          include: "description, requester, stats"
+          per_page: "1"
+    incremental_sync:
+      $ref: "#/definitions/base_incremental_stream"
+  conversations_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "conversations"
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "tickets/{{ stream_slice.parent_id }}/conversations"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/tickets_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  satisfaction_ratings_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "Satisfaction Ratings"
+      path: "surveys/satisfaction_ratings"
+    incremental_sync:
+      $ref: "#/definitions/base_incremental_stream"
+      start_time_option:
+        type: RequestOption
+        field_name: "created_since"
+        inject_into: "request_parameter"
+  surveys_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "surveys"
+      path: "surveys"
+  
+streams:
+  - "#/definitions/agents_stream"
+  - "#/definitions/business_hours_stream"
+  - "#/definitions/canned_response_folders_stream"
+  - "#/definitions/canned_responses_stream"
+  - "#/definitions/companies_stream"
+  - "#/definitions/contacts_stream"
+  - "#/definitions/discussion_categories_stream"
+  - "#/definitions/discussion_forums_stream"
+  - "#/definitions/discussion_topics_stream"
+  - "#/definitions/discussion_comments_stream"
+  - "#/definitions/email_configs_stream"
+  - "#/definitions/email_mailboxes_stream"
+  - "#/definitions/groups_stream"
+  - "#/definitions/products_stream"
+  - "#/definitions/roles_stream"
+  - "#/definitions/scenario_automations_stream"
+  - "#/definitions/settings_stream"
+  - "#/definitions/skills_stream"
+  - "#/definitions/sla_policies_stream"
+  - "#/definitions/solutions_categories_stream"
+  - "#/definitions/solutions_folders_stream"
+  - "#/definitions/solutions_articles_stream"
+  - "#/definitions/time_entries_stream"
+  - "#/definitions/ticket_fields_stream"
+  - "#/definitions/tickets_stream"
+  - "#/definitions/conversations_stream"
+  - "#/definitions/satisfaction_ratings_stream"
+  - "#/definitions/surveys_stream"
+metadata:
+  autoImportSchema:
+    settings: true
