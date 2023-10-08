@@ -12,6 +12,6 @@ WARNING: Do not modify this file.
 
 
 # Declarative Source
-class SourceGreenhouse(YamlDeclarativeSource):
+class SourceFreshdesk(YamlDeclarativeSource):
     def __init__(self):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})

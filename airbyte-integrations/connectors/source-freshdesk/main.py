@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_source_freshdesk_yaml import SourceSourceFreshdeskYaml
+from source_freshdesk import SourceFreshdesk
 
 if __name__ == "__main__":
-    source = SourceSourceFreshdeskYaml()
+    source = SourceFreshdesk()
     launch(source, sys.argv[1:])

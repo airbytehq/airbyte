@@ -210,12 +210,12 @@ definitions:
   solutions_categories_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "solutions_categories"
+      name: "solution_categories"
       path: "solutions/categories"
   solutions_folders_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "solutions_folders"
+      name: "solution_folders"
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
@@ -236,7 +236,7 @@ definitions:
   solutions_articles_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "solutions_articles"
+      name: "solution_articles"
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
@@ -272,7 +272,7 @@ definitions:
           order_type: "asc"
           order_by: "updated_at"
           include: "description, requester, stats"
-          per_page: "1"
+          per_page: "100"
     incremental_sync:
       $ref: "#/definitions/base_incremental_stream"
   conversations_stream:
@@ -294,7 +294,7 @@ definitions:
   satisfaction_ratings_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "Satisfaction Ratings"
+      name: "satisfaction_ratings"
       path: "surveys/satisfaction_ratings"
     incremental_sync:
       $ref: "#/definitions/base_incremental_stream"
