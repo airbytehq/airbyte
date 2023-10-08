@@ -20,7 +20,7 @@
             "type": ["null", "string"]
           },
           "value": {
-            "type": ["null", "string"]
+            "type": ["null", "string", "integer"]
           }
         }
       }
