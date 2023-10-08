@@ -27,7 +27,9 @@ OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_regist
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
-THIRD_PARTY_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/third_party/"
+
+THIRD_PARTY_GLOB = "third-party"
+THIRD_PARTY_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + f"/{THIRD_PARTY_GLOB}/"
 SCAFFOLD_CONNECTOR_GLOB = "-scaffold-"
 
 
@@ -541,7 +543,9 @@ def get_all_connectors_in_repo() -> Set[Connector]:
     return {
         Connector(Path(metadata_file).parent.name)
         for metadata_file in glob(f"{repo_path}/airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
-        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file
+        # HACK: The Connector util is not good at fetching metadata for third party connectors.
+        # We want to avoid picking a connector that does not have metadata.
+        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file and THIRD_PARTY_GLOB not in metadata_file
     }
 
 

@@ -13,9 +13,7 @@ def pick_a_random_connector(
     language: ConnectorLanguage = None, support_level: str = None, other_picked_connectors: list = None
 ) -> Connector:
     """Pick a random connector from the list of all connectors."""
-    # The Connector util is not good at fetching metadata for third party connectors.
-    # We want to avoid picking a connector that does not have metadata.
-    all_connectors = [c for c in list(ALL_CONNECTORS) if c.metadata is not None]
+    all_connectors = [c for c in list(ALL_CONNECTORS)]
     if language:
         all_connectors = [c for c in all_connectors if c.language is language]
     if support_level:
