@@ -10,7 +10,7 @@ from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigMode
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk, DocumentProcessor
 from airbyte_cdk.destinations.vector_db_based.embedder import Embedder
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from airbyte_cdk.models import AirbyteMessage, AirbyteRecordMessage, ConfiguredAirbyteCatalog, Type
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog, Type
 
 
 class Writer:
