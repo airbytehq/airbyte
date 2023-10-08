@@ -338,15 +338,16 @@ class SourceZendeskIncrementalExportStream(IncrementalZendeskSupportStream):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        Returns next_page_token based on `end_of_stream` parameter inside of response
-        We use time-based exports, so the next_page_token is the start_time of the next request
+        Some streams use cursor-based pagination, so the next_page_token we
+        return is after_cursor, but others use time-based pagination, so the
+        next_page_token is the end_time of the curent request
         """
         if self._ignore_pagination:
             return None
         response_json = response.json()
         if response_json.get(END_OF_STREAM_KEY, True):
             return None
-        if response_json.get("after_cursor"):
+        elif response_json.get("after_cursor"):
             return {"cursor": response_json.get("after_cursor")}
         else:
             return {"start_time": response_json.get("end_time")}
