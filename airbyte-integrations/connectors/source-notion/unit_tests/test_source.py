@@ -17,7 +17,10 @@ NO_ERROR_MESSAGE = "An unexpected error occured while connecting to Notion. Plea
 def test_check_connection(mocker, requests_mock):
     source = SourceNotion()
     logger_mock, config_mock = MagicMock(), {"access_token": "test_token", "start_date": "2021-01-01T00:00:00.000Z"}
-    requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"id": "aaa", "last_edited_time": "2022-01-01T00:00:00.000Z"}], "next_cursor": None})
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json={"results": [{"id": "aaa", "last_edited_time": "2022-01-01T00:00:00.000Z"}], "next_cursor": None},
+    )
     assert source.check_connection(logger_mock, config_mock) == (True, None)
 
 

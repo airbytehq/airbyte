@@ -186,10 +186,14 @@ def test_user_stream_handles_pagination_correctly(requests_mock):
 @pytest.mark.parametrize(
     "config, expected_start_date, current_time",
     [
-        ({"authenticator": "secret_token", "start_date": "2021-09-01T00:00:00.000Z"}, "2021-09-01T00:00:00.000Z", "2022-09-22T00:00:00.000Z"),
-        ({"authenticator": "super_secret_token", "start_date": None}, '2020-09-22T00:00:00.000Z', "2022-09-22T00:00:00.000Z"),
-        ({"authenticator": "even_more_secret_token"}, '2021-01-01T12:30:00.000Z', "2023-01-01T12:30:00.000Z"),
-    ]
+        (
+            {"authenticator": "secret_token", "start_date": "2021-09-01T00:00:00.000Z"},
+            "2021-09-01T00:00:00.000Z",
+            "2022-09-22T00:00:00.000Z",
+        ),
+        ({"authenticator": "super_secret_token", "start_date": None}, "2020-09-22T00:00:00.000Z", "2022-09-22T00:00:00.000Z"),
+        ({"authenticator": "even_more_secret_token"}, "2021-01-01T12:30:00.000Z", "2023-01-01T12:30:00.000Z"),
+    ],
 )
 def test_set_start_date(patch_base_class, config, expected_start_date, current_time):
     """

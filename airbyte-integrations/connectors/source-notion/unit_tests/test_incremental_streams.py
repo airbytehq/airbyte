@@ -67,7 +67,16 @@ def test_get_updated_state(stream):
 
 def test_stream_slices(blocks, requests_mock):
     stream = blocks
-    requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"id": "aaa", "last_edited_time": "2022-10-10T00:00:00.000Z"}, {"id": "bbb", "last_edited_time": "2022-10-10T00:00:00.000Z"}], "next_cursor": None})
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json={
+            "results": [
+                {"id": "aaa", "last_edited_time": "2022-10-10T00:00:00.000Z"},
+                {"id": "bbb", "last_edited_time": "2022-10-10T00:00:00.000Z"},
+            ],
+            "next_cursor": None,
+        },
+    )
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     expected_stream_slice = [{"page_id": "aaa"}, {"page_id": "bbb"}]
     assert list(stream.stream_slices(**inputs)) == expected_stream_slice
