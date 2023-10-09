@@ -9,6 +9,7 @@ from unittest.mock import Mock
 import pendulum
 import pytest
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 from pendulum import today
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
@@ -116,6 +117,29 @@ def test_streams_count(config, mock_account_info):
     streams = source.streams(config)
     expected_streams_number = 30
     assert len(streams) == expected_streams_number
+
+
+def test_read_missing_stream(config, mock_account_info):
+    source = SourceGoogleAds()
+
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="fake_stream",
+                    json_schema={},
+                    supported_sync_modes=[SyncMode.full_refresh],
+                ),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+        ]
+    )
+
+    try:
+        list(source.read(AirbyteLogger(), config=config, catalog=catalog))
+    except KeyError as error:
+        pytest.fail(str(error))
 
 
 @pytest.mark.parametrize(

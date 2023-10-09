@@ -1,8 +1,15 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.postgres_strict_encrypt.PostgresSourceStrictEncrypt'
@@ -10,26 +17,14 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-db:db-lib')
-
-    implementation project(':airbyte-integrations:bases:base-java')
     implementation project(':airbyte-integrations:connectors:source-postgres')
     implementation libs.airbyte.protocol
-    // todo (cgardens): why are these needed?
-    implementation project(':airbyte-integrations:connectors:source-jdbc')
-    implementation project(':airbyte-integrations:connectors:source-relational-db')
 
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation libs.postgresql
 
-    testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    testImplementation project(':airbyte-test-utils')
     testImplementation libs.junit.jupiter.system.stubs
 
     testImplementation libs.testcontainers.jdbc
     testImplementation libs.testcontainers.postgresql
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-
 }
-

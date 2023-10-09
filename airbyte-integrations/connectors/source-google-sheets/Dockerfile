@@ -5,10 +5,9 @@ FROM base as builder
 WORKDIR /airbyte/integration_code
 
 # upgrade pip to the latest version
-# Include socat binary in the connector image
 RUN apk --no-cache upgrade \
     && pip install --upgrade pip \
-    && apk --no-cache add tzdata build-base socat
+    && apk --no-cache add tzdata build-base
 
 
 COPY setup.py ./
@@ -26,7 +25,8 @@ COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
 
 # bash is installed for more convenient debugging.
-RUN apk --no-cache add bash && \
+# Include socat binary in the connector image
+RUN apk --no-cache add bash socat && \
     # upgrading openssl due to https://nvd.nist.gov/vuln/detail/CVE-2023-2650
     apk upgrade
 
@@ -37,5 +37,5 @@ COPY source_google_sheets ./source_google_sheets
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.3.8
+LABEL io.airbyte.version=0.3.9
 LABEL io.airbyte.name=airbyte/source-google-sheets
