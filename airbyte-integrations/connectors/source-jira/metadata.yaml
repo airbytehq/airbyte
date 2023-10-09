@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 68e63de2-bb83-4c7e-93fa-a8a9051e3993
-  dockerImageTag: 0.9.0
+  dockerImageTag: 1.0.0
   maxSecondsBetweenMessages: 21600
   dockerRepository: airbyte/source-jira
   githubIssueLabel: source-jira
@@ -18,6 +18,10 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "The types for `aggegatetimeoriginalestimate` and `timeoriginalestimate` in the `issues` stream have been changed to `string`. You may need to refresh the connection schema for this stream (skipping the reset), and running a sync. Alternatively, you can just run a reset."
   suggestedStreams:
     streams:
       - issues

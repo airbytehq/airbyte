@@ -124,6 +124,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                 |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
+| 1.0.0   | 2023-10-09 | [\#31080](https://github.com/airbytehq/airbyte/pull/31080) | Fix types in `issues` schema                                                                                            |
 | 0.9.0   | 2023-09-26 | [\#30688](https://github.com/airbytehq/airbyte/pull/30688) | Added `createdDate` field to sprints schema, Removed `Expand Issues stream` from spec                                   |
 | 0.8.0   | 2023-09-26 | [\#30755](https://github.com/airbytehq/airbyte/pull/30755) | Add new streams: `Issue custom field options`, `IssueTypes`, `Project Roles`                                            |
 | 0.7.2   | 2023-09-19 | [\#30675](https://github.com/airbytehq/airbyte/pull/30675) | Ensure invalid URL does not trigger Sentry alert                                                                        |
