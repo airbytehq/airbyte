@@ -21,7 +21,6 @@
     "action": { "type": ["null", "string"] },
     "parent": {
       "type": ["null", "object"],
-
       "properties": {
         "gid": { "type": ["null", "string"] },
         "resource_type": { "type": ["null", "string"] },
