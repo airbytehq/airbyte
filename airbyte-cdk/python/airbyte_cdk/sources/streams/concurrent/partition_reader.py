@@ -17,7 +17,7 @@ class PartitionReader:
         """
         :param queue: The queue to put the records in.
         """
-        self._output_queue = queue
+        self._queue = queue
 
     def process_partition(self, partition: Partition) -> None:
         """
@@ -29,5 +29,5 @@ class PartitionReader:
         :return: None
         """
         for record in partition.read():
-            self._output_queue.put(record)
-        self._output_queue.put(PartitionCompleteSentinel(partition))
+            self._queue.put(record)
+        self._queue.put(PartitionCompleteSentinel(partition))
