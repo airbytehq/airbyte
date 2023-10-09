@@ -74,7 +74,14 @@ public class BufferDequeue {
         }
       }
 
-      queue.addMaxMemory(-bytesRead.get());
+      if (queue.isEmpty()) {
+        buffers.remove(streamDescriptor);
+        // free the remainder, leaving the read bytes to be freed by the batch flush
+        final var slop = queue.getMaxMemoryUsage() - bytesRead.get();
+        memoryManager.free(slop);
+      } else {
+        queue.addMaxMemory(-bytesRead.get());
+      }
 
       return new MemoryAwareMessageBatch(
           output,
