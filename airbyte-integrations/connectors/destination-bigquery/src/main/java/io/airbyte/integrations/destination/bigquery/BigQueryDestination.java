@@ -393,6 +393,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         },
         (hasFailed) -> {
           try {
+            Thread.sleep(1 * 60 * 1000); // 1 minute
             typerDeduper.typeAndDedupe();
             typerDeduper.commitFinalTables();
             typerDeduper.cleanup();
