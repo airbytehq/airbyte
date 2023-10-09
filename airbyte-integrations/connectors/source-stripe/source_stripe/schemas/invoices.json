@@ -596,6 +596,22 @@
     },
     "is_deleted": {
       "type": ["null", "boolean"]
+    },
+    "rendering": {
+      "type": ["object", "null"],
+      "properties": {
+        "amount_tax_display": {
+          "type": ["null", "string"]
+        },
+        "pdf": {
+          "type": ["null", "object"],
+          "properties": {
+            "page_size": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
     }
   }
 }

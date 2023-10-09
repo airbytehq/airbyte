@@ -1,8 +1,15 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.kinesis.KinesisDestination'
@@ -16,16 +23,10 @@ def assertVersion = '3.21.0'
 dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
 
     // https://mvnrepository.com/artifact/software.amazon.awssdk/kinesis
     implementation "software.amazon.awssdk:kinesis:${kinesisVersion}"
 
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     testImplementation "org.testcontainers:localstack:${testContainersVersion}"
-    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
-
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-kinesis')
 }

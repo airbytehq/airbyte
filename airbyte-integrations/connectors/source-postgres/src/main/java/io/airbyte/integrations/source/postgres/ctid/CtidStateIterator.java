@@ -8,7 +8,7 @@ import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.CTID
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.AbstractIterator;
-import io.airbyte.integrations.debezium.DebeziumIteratorConstants;
+import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.integrations.source.postgres.internal.models.CtidStatus;
 import io.airbyte.integrations.source.postgres.internal.models.InternalModels.StateType;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;

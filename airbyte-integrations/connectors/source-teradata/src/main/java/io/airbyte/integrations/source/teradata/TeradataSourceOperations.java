@@ -4,12 +4,12 @@
 
 package io.airbyte.integrations.source.teradata;
 
-import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
+import static io.airbyte.cdk.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.db.DataTypeUtils;
-import io.airbyte.db.jdbc.DateTimeConverter;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
+import io.airbyte.cdk.db.DataTypeUtils;
+import io.airbyte.cdk.db.jdbc.DateTimeConverter;
+import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

@@ -7,8 +7,8 @@ package io.airbyte.integrations.destination.dev_null;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.Collections;

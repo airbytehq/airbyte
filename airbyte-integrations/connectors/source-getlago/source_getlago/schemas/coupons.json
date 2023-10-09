@@ -37,6 +37,30 @@
     },
     "expiration_date": {
       "type": ["null", "string"]
+    },
+    "billable_metric_codes": {
+      "type": ["null", "array"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "expiration_at": {
+      "type": ["null", "string"]
+    },
+    "limited_billable_metrics": {
+      "type": ["null", "boolean"]
+    },
+    "limited_plans": {
+      "type": ["null", "boolean"]
+    },
+    "plan_codes": {
+      "type": ["null", "array"]
+    },
+    "reusable": {
+      "type": ["null", "boolean"]
+    },
+    "terminated_at": {
+      "type": ["null", "string"]
     }
   }
 }
