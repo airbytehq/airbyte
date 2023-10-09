@@ -65,6 +65,7 @@ def chunk_date_range(
     logging.info(f"Logging Start date TypeError: {start_date}, {end_date}, {time_format}")
     logging.error(f"Logging Start date TypeError: {start_date}, {end_date}, {time_format}")
     print(f"Print Start date TypeError: {start_date}, {end_date}, {time_format}")
+    raise Exception("test prints")
     start_date = pendulum.parse(start_date, tz=time_zone)
     today = pendulum.today(tz=time_zone)
     end_date = pendulum.parse(end_date, tz=time_zone) if end_date else today
