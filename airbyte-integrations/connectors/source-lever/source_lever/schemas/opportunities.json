@@ -1,0 +1,209 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "applications": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "archived": {
+      "properties": {
+        "archivedAt": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "confidentiality": {
+      "type": "string"
+    },
+    "contact": {
+      "properties": {
+        "emails": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "headline": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": "string"
+        },
+        "isAnonymized": {
+          "type": "boolean"
+        },
+        "location": {
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "phones": {
+          "items": {
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "createdAt": {
+      "type": "number"
+    },
+    "dataProtection": {
+      "properties": {
+        "contact": {
+          "properties": {
+            "allowed": {
+              "type": "boolean"
+            },
+            "expiresAt": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "store": {
+          "properties": {
+            "allowed": {
+              "type": "boolean"
+            },
+            "expiresAt": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "emails": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "followers": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "headline": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "isAnonymized": {
+      "type": "boolean"
+    },
+    "lastAdvancedAt": {
+      "type": "number"
+    },
+    "lastInteractionAt": {
+      "type": "number"
+    },
+    "links": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "location": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "origin": {
+      "type": "string"
+    },
+    "owner": {
+      "type": ["null", "string"]
+    },
+    "phones": {
+      "items": {
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "sourcedBy": {
+      "type": ["null", "string"]
+    },
+    "sources": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "stage": {
+      "type": "string"
+    },
+    "stageChanges": {
+      "items": {
+        "properties": {
+          "toStageId": {
+            "type": "string"
+          },
+          "toStageIndex": {
+            "type": "number"
+          },
+          "updatedAt": {
+            "type": "number"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "tags": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "urls": {
+      "properties": {
+        "list": {
+          "type": "string"
+        },
+        "show": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "type": "object"
+}

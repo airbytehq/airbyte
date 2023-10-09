@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f20c575a-6d92-46b3-be9b-269074340169
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-lever
+  githubIssueLabel: source-lever
+  icon: lever.svg
+  license: MIT
+  name: Lever
+  releaseDate: TODO
+  supportLevel: community
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/lever
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

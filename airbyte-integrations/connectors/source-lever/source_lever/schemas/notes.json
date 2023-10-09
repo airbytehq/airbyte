@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "completedAt": {
+      "type": "number"
+    },
+    "createdAt": {
+      "type": "number"
+    },
+    "fields": {
+      "items": {
+        "properties": {
+          "createdAt": {
+            "type": "number"
+          },
+          "score": {
+            "type": ["null", "number"]
+          },
+          "stage": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "user": {
+            "type": "string"
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "id": {
+      "type": "string"
+    },
+    "secret": {
+      "type": "boolean"
+    },
+    "text": {
+      "type": "string"
+    },
+    "user": {
+      "type": "string"
+    },
+    "opportunity": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

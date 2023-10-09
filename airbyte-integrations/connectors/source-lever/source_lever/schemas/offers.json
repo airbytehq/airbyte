@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "createdAt": {
+      "type": ["number", "null"]
+    },
+    "creator": {
+      "type": ["string", "null"]
+    },
+    "fields": {
+      "items": {
+        "properties": {
+          "identifier": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "value": {
+            "type": ["boolean", "null", "number", "string"]
+          }
+        },
+        "type": "object"
+      },
+      "type": ["null", "array"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "posting": {
+      "type": ["string", "null"]
+    },
+    "signatures": {
+      "type": ["object", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "opportunity": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

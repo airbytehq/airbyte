@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "createdAt": {
+      "type": "number"
+    },
+    "date": {
+      "type": "number"
+    },
+    "duration": {
+      "type": "number"
+    },
+    "feedbackForms": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "feedbackReminder": {
+      "type": "string"
+    },
+    "feedbackTemplate": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "interviewers": {
+      "items": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "location": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string"
+    },
+    "panel": {
+      "type": "string"
+    },
+    "postings": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "stage": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "user": {
+      "type": "string"
+    },
+    "opportunity": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

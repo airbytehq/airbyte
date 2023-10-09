@@ -1,0 +1,198 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "approval": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "properties": {
+            "accountId": {
+              "type": "string"
+            },
+            "approvedAt": {
+              "type": ["null", "number"]
+            },
+            "createdBy": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "startedAt": {
+              "type": "number"
+            },
+            "status": {
+              "type": ["null", "string"]
+            },
+            "steps": {
+              "items": {
+                "properties": {
+                  "approvalsRequired": {
+                    "type": "number"
+                  },
+                  "approvers": {
+                    "items": {
+                      "properties": {
+                        "approved": {
+                          "type": "boolean"
+                        },
+                        "approvedAt": {
+                          "type": "number"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "isDynamic": {
+                          "type": "boolean"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "user": {
+                          "anyOf": [
+                            {
+                              "type": "string"
+                            },
+                            {
+                              "properties": {
+                                "email": {
+                                  "type": "string"
+                                },
+                                "userId": {
+                                  "type": "string"
+                                }
+                              },
+                              "type": "object"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "completed": {
+                    "type": "boolean"
+                  },
+                  "conditions": {
+                    "type": "array"
+                  },
+                  "outOfBandOnly": {
+                    "type": "boolean"
+                  },
+                  "status": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "backfill": {
+      "type": "boolean"
+    },
+    "closedAt": {
+      "type": ["null", "number"]
+    },
+    "compensationBand": {
+      "properties": {
+        "currency": {
+          "type": "string"
+        },
+        "interval": {
+          "type": "string"
+        },
+        "max": {
+          "type": "number"
+        },
+        "min": {
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "confidentiality": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "number"
+    },
+    "creator": {
+      "type": ["null", "string"]
+    },
+    "customFields": {
+      "type": "object"
+    },
+    "department": {
+      "type": ["null", "string"]
+    },
+    "employmentStatus": {
+      "type": "string"
+    },
+    "headcountHired": {
+      "type": "number"
+    },
+    "headcountInfinite": {
+      "type": "boolean"
+    },
+    "headcountTotal": {
+      "type": ["number", "string"]
+    },
+    "hiringManager": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "internalNotes": {
+      "type": "string"
+    },
+    "location": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "offerIds": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "postings": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "requisitionCode": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "team": {
+      "type": "string"
+    },
+    "timeToFillEndAt": {
+      "type": ["null", "number"]
+    },
+    "timeToFillStartAt": {
+      "type": ["null", "number"]
+    },
+    "updatedAt": {
+      "type": "number"
+    }
+  },
+  "type": "object"
+}

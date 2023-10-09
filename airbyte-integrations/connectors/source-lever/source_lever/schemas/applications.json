@@ -1,0 +1,163 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "archived": {
+      "properties": {
+        "archivedAt": {
+          "type": "number"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "candidateId": {
+      "type": "string"
+    },
+    "comments": {
+      "type": ["null", "string"]
+    },
+    "company": {
+      "type": ["null", "string"]
+    },
+    "createdAt": {
+      "type": "number"
+    },
+    "customQuestions": {
+      "items": {
+        "properties": {
+          "baseTemplateId": {
+            "type": "string"
+          },
+          "completedAt": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "number"
+          },
+          "fields": {
+            "items": {
+              "properties": {
+                "description": {
+                  "type": "string"
+                },
+                "id": {
+                  "type": "string"
+                },
+                "options": {
+                  "items": {
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                },
+                "prompt": {
+                  "type": "string"
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "value": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  ]
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "instructions": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": "string"
+    },
+    "links": {
+      "type": "array"
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "opportunityId": {
+      "type": "string"
+    },
+    "phone": {
+      "properties": {
+        "value": {
+          "type": "string"
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "posting": {
+      "type": "string"
+    },
+    "postingHiringManager": {
+      "type": ["null", "string"]
+    },
+    "postingOwner": {
+      "type": ["null", "string"]
+    },
+    "requisitionForHire": {
+      "properties": {
+        "hiringManagerOnHire": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "requisitionCode": {
+          "type": "string"
+        }
+      },
+      "type": ["object", "null"]
+    },
+    "type": {
+      "type": "string"
+    },
+    "user": {
+      "type": ["null", "string"]
+    },
+    "opportunity": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

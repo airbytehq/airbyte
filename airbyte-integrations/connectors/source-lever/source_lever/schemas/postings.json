@@ -1,0 +1,165 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "data": {
+      "items": {
+        "properties": {
+          "categories": {
+            "properties": {
+              "commitment": {
+                "type": ["null", "string"]
+              },
+              "department": {
+                "type": "string"
+              },
+              "location": {
+                "type": "string"
+              },
+              "team": {
+                "type": "string"
+              }
+            },
+            "type": "object"
+          },
+          "confidentiality": {
+            "type": "string"
+          },
+          "content": {
+            "properties": {
+              "closing": {
+                "type": "string"
+              },
+              "closingHtml": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "descriptionHtml": {
+                "type": "string"
+              },
+              "lists": {
+                "items": {
+                  "properties": {
+                    "content": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              }
+            },
+            "type": "object"
+          },
+          "country": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "number"
+          },
+          "distributionChannels": {
+            "items": {
+              "type": "string"
+            },
+            "type": ["array", "null"]
+          },
+          "followers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "hiringManager": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": "string"
+          },
+          "owner": {
+            "type": "string"
+          },
+          "reqCode": {
+            "type": ["null", "string"]
+          },
+          "requisitionCodes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "salaryDescription": {
+            "type": "string"
+          },
+          "salaryDescriptionHtml": {
+            "type": "string"
+          },
+          "salaryRange": {
+            "properties": {
+              "currency": {
+                "type": "string"
+              },
+              "interval": {
+                "type": "string"
+              },
+              "max": {
+                "type": "number"
+              },
+              "min": {
+                "type": "number"
+              }
+            },
+            "type": "object"
+          },
+          "state": {
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "text": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "number"
+          },
+          "urls": {
+            "properties": {
+              "apply": {
+                "type": "string"
+              },
+              "list": {
+                "type": "string"
+              },
+              "show": {
+                "type": "string"
+              }
+            },
+            "type": ["object", "null"]
+          },
+          "user": {
+            "type": "string"
+          },
+          "workplaceType": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "hasNext": {
+      "type": "boolean"
+    },
+    "next": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
