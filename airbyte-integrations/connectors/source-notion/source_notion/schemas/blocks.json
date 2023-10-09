@@ -45,7 +45,13 @@
         "pdf",
         "bookmark",
         "equation",
-        "unsupported"
+        "unsupported",
+        "table_of_contents",
+        "column_list",
+        "column",
+        "divider",
+        "link_to_page",
+        "quote"
       ]
     },
     "paragraph": { "$ref": "text_element.json" },
