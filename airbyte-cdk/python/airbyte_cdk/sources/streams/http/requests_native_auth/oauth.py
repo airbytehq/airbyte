@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, List, Mapping, Optional, Sequence, Tuple, Union
 
 import dpath
 import pendulum
@@ -78,12 +78,16 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
-    def set_token_expiry_date(self, value: int):
-        self._token_expiry_date = pendulum.now().add(seconds=value)
+    def set_token_expiry_date(self, value: Union[str, int]):
+        self._token_expiry_date = self._parse_token_lifespan(value)
 
     @property
     def token_expiry_is_time_of_expiration(self) -> bool:
         return self._token_expiry_is_time_of_expiration
+
+    @property
+    def token_expiry_date_format(self) -> Optional[str]:
+        return self._token_expiry_date_format
 
     @property
     def access_token(self) -> str:

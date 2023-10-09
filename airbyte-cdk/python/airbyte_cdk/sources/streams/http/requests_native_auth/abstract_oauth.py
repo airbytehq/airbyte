@@ -96,31 +96,29 @@ class AbstractOauth2Authenticator(AuthBase):
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
 
-    def refresh_access_token(self) -> Tuple[str, int]:
+    def refresh_access_token(self) -> Tuple[str, Union[str, int]]:
         """
-        Returns the refresh token and its lifespan in seconds
+        Returns the refresh token and its lifespan
 
-        :return: a tuple of (access_token, token_lifespan_in_seconds)
+        :return: a tuple of (access_token, token_lifespan)
         """
         response_json = self._get_refresh_access_token_response()
-        return response_json[self.get_access_token_name()], self.parse_token_lifespan(response_json)
 
-    def parse_token_lifespan(self, response_json: Mapping[str, Any]) -> int:
+        return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
+
+    def _parse_token_lifespan(self, value: Union[str, int]) -> pendulum.DateTime:
         """
         Return the lifespan of refresh token
 
-        :return: lifespan in seconds
+        :return: lifespan datetime
         """
-
-        expire_value = response_json[self.get_expires_in_name()]
 
         if self.token_expiry_is_time_of_expiration:
             if not self.token_expiry_date_format:
                 raise ValueError(f"Invalid token expiry date format {self.token_expiry_date_format}; a string is required.")
-            period = pendulum.from_format(expire_value, self.token_expiry_date_format) - pendulum.now()
-            expire_value = period.total_seconds()
-
-        return int(float(expire_value))
+            return pendulum.from_format(value, self.token_expiry_date_format)
+        else:
+            return pendulum.now().add(seconds=int(float(value)))
 
     @property
     def token_expiry_is_time_of_expiration(self) -> bool:
@@ -131,7 +129,7 @@ class AbstractOauth2Authenticator(AuthBase):
         return False
 
     @property
-    def token_expiry_date_format(self) -> Union[str, None]:
+    def token_expiry_date_format(self) -> Optional[str]:
         """
         Format of the datetime; provide it if expires_in is returned in datetime instead of seconds
         """
@@ -163,7 +161,7 @@ class AbstractOauth2Authenticator(AuthBase):
         """Expiration date of the access token"""
 
     @abstractmethod
-    def set_token_expiry_date(self, value: int):
+    def set_token_expiry_date(self, value: Union[str, int]):
         """Setter for access token expiration date"""
 
     @abstractmethod

@@ -105,9 +105,9 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
-    def set_token_expiry_date(self, value: int):
+    def set_token_expiry_date(self, value: Union[str, int]):
         try:
-            self._token_expiry_date = pendulum.now().add(seconds=value)
+            self._token_expiry_date = self._parse_token_lifespan(value)
         except ValueError:
             raise ValueError(f"Invalid token expiry value {value}; a number is required.")
 
