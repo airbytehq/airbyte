@@ -214,25 +214,11 @@ class TestOauth2Authenticator:
         resp.status_code = 200
         mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": expires_in_response})
         mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
-        token = oauth.get_access_token()
-        expires_datetime = oauth.get_token_expiry_date()
+        token, expire_in = oauth.refresh_access_token()
+        expires_datetime = oauth._parse_token_lifespan(expire_in)
 
         assert isinstance(expires_datetime, pendulum.DateTime)
         assert ("access_token", expected_token_expiry_date) == (token, expires_datetime)
-
-        # # Test with expires_in as str
-        # mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": "2000"})
-        # token, expires_in = oauth.refresh_access_token()
-        #
-        # assert isinstance(expires_in, str)
-        # assert ("access_token", "2000") == (token, expires_in)
-        #
-        # # Test with expires_in as str
-        # mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": "2022-04-24T00:00:00Z"})
-        # token, expires_in = oauth.refresh_access_token()
-        #
-        # assert isinstance(expires_in, str)
-        # assert ("access_token", "2022-04-24T00:00:00Z") == (token, expires_in)
 
     @pytest.mark.parametrize("error_code", (429, 500, 502, 504))
     def test_refresh_access_token_retry(self, error_code, requests_mock):
