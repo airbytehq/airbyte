@@ -336,7 +336,7 @@ class Comments(HttpSubStream, IncrementalNotionStream):
     cursor_field = "page_last_edited_time"
 
     def path(self, **kwargs) -> str:
-        return f"comments"
+        return "comments"
 
     def request_params(
         self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
