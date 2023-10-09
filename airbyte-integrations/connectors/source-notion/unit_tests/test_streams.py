@@ -36,11 +36,10 @@ def test_next_page_token(patch_base_class, requests_mock):
     assert stream.next_page_token(**inputs) == expected_token
 
 
-@pytest.mark.parametrize('response_json, expected_output', [
-    ({'next_cursor': 'some_cursor', 'has_more': True}, {'next_cursor': 'some_cursor'}),
-    ({'has_more': False}, None),
-    ({}, None)
-])
+@pytest.mark.parametrize(
+    "response_json, expected_output",
+    [({"next_cursor": "some_cursor", "has_more": True}, {"next_cursor": "some_cursor"}), ({"has_more": False}, None), ({}, None)],
+)
 def test_next_page_token_with_no_cursor(patch_base_class, response_json, expected_output):
     stream = NotionStream(config=MagicMock())
     mock_response = MagicMock()
@@ -186,12 +185,38 @@ def test_user_stream_handles_pagination_correctly(requests_mock):
 @pytest.mark.parametrize(
     "stream,parent,url,status_code,response_content,expected_availability,expected_reason_substring",
     [
-        (Users, None, "https://api.notion.com/v1/users", 403, b'{"object": "error", "status": 403, "code": "restricted_resource"}', False, "This is likely due to insufficient permissions for your Notion integration."),
-        (Blocks, Pages, "https://api.notion.com/v1/blocks/123/children", 403, b'{"object": "error", "status": 403, "code": "restricted_resource"}', False, "This is likely due to insufficient permissions for your Notion integration."),
-        (Users, None, "https://api.notion.com/v1/users", 200, b'{"object": "list", "results": [{"id": "123", "object": "user", "type": "person"}]}', True, None)
-    ]
+        (
+            Users,
+            None,
+            "https://api.notion.com/v1/users",
+            403,
+            b'{"object": "error", "status": 403, "code": "restricted_resource"}',
+            False,
+            "This is likely due to insufficient permissions for your Notion integration.",
+        ),
+        (
+            Blocks,
+            Pages,
+            "https://api.notion.com/v1/blocks/123/children",
+            403,
+            b'{"object": "error", "status": 403, "code": "restricted_resource"}',
+            False,
+            "This is likely due to insufficient permissions for your Notion integration.",
+        ),
+        (
+            Users,
+            None,
+            "https://api.notion.com/v1/users",
+            200,
+            b'{"object": "list", "results": [{"id": "123", "object": "user", "type": "person"}]}',
+            True,
+            None,
+        ),
+    ],
 )
-def test_403_error_handling(requests_mock, stream, parent, url, status_code, response_content, expected_availability, expected_reason_substring):
+def test_403_error_handling(
+    requests_mock, stream, parent, url, status_code, response_content, expected_availability, expected_reason_substring
+):
     """
     Test that availability strategy flags streams with 403 error as unavailable
     and returns custom Notion integration message.
