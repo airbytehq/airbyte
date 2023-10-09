@@ -8,6 +8,7 @@ import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABL
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.stream.Stream;
 import lombok.SneakyThrows;
@@ -52,14 +53,15 @@ public class DestinationV1V2MigratorTest {
 
   @ParameterizedTest
   @ArgumentsSource(ShouldMigrateTestArgumentProvider.class)
-  public void testShouldMigrate(final DestinationSyncMode destinationSyncMode, final BaseDestinationV1V2Migrator migrator, boolean expected) {
+  public void testShouldMigrate(final DestinationSyncMode destinationSyncMode, final BaseDestinationV1V2Migrator migrator, boolean expected)
+      throws SQLException {
     final StreamConfig config = new StreamConfig(STREAM_ID, null, destinationSyncMode, null, null, null);
     final var actual = migrator.shouldMigrate(config);
     Assertions.assertEquals(expected, actual);
   }
 
   @Test
-  public void testMismatchedSchemaThrowsException() {
+  public void testMismatchedSchemaThrowsException() throws SQLException {
     final StreamConfig config = new StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null);
     final var migrator = makeMockMigrator(true, true, false, false, false);
     UnexpectedSchemaException exception = Assertions.assertThrows(UnexpectedSchemaException.class,
@@ -89,7 +91,7 @@ public class DestinationV1V2MigratorTest {
                                                              final boolean v2TableExists,
                                                              final boolean v2RawSchemaMatches,
                                                              boolean v1RawTableExists,
-                                                             boolean v1RawTableSchemaMatches) {
+                                                             boolean v1RawTableSchemaMatches) throws SQLException {
     final BaseDestinationV1V2Migrator migrator = Mockito.spy(BaseDestinationV1V2Migrator.class);
     Mockito.when(migrator.doesAirbyteInternalNamespaceExist(Mockito.any())).thenReturn(v2NamespaceExists);
     final var existingTable = v2TableExists ? Optional.of("v2_raw") : Optional.empty();
@@ -103,7 +105,7 @@ public class DestinationV1V2MigratorTest {
     return migrator;
   }
 
-  public static BaseDestinationV1V2Migrator noIssuesMigrator() {
+  public static BaseDestinationV1V2Migrator noIssuesMigrator() throws SQLException {
     return makeMockMigrator(true, false, true, true, true);
   }
 
