@@ -11,7 +11,7 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMod
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.legacy import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
@@ -48,16 +48,16 @@ class _MockStream(Stream):
         return {}
 
 
-def _legacy_stream(slice_to_partition_mapping, slice_logger, logger, message_repository):
+def _stream(slice_to_partition_mapping, slice_logger, logger, message_repository):
     return _MockStream(slice_to_partition_mapping)
 
 
 def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message_repository):
-    legacy_stream = _legacy_stream(slice_to_partition_mapping, slice_logger, logger, message_repository)
+    legacy_stream = _stream(slice_to_partition_mapping, slice_logger, logger, message_repository)
     source = Mock()
     source._slice_logger = slice_logger
     source.message_repository = message_repository
-    stream = StreamFacade.create_from_legacy_stream(legacy_stream, source, 1)
+    stream = StreamFacade.create_from_legacy_stream(legacy_stream, source, logger, 1)
     stream.logger.setLevel(logger.level)
     return stream
 
@@ -65,12 +65,12 @@ def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message
 @pytest.mark.parametrize(
     "constructor",
     [
-        pytest.param(_legacy_stream, id="synchronous_reader"),
+        pytest.param(_stream, id="synchronous_reader"),
         pytest.param(_concurrent_stream, id="concurrent_reader"),
     ],
 )
 def test_full_refresh_read_a_single_slice_with_debug(constructor):
-    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
+    # This test verifies that a concurrent stream adapted from a Stream behaves the same as the Stream object.
     # It is done by running the same test cases on both streams
     records = [
         {"id": 1, "partition": 1},
@@ -101,12 +101,12 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
 @pytest.mark.parametrize(
     "constructor",
     [
-        pytest.param(_legacy_stream, id="synchronous_reader"),
+        pytest.param(_stream, id="synchronous_reader"),
         pytest.param(_concurrent_stream, id="concurrent_reader"),
     ],
 )
 def test_full_refresh_read_a_single_slice(constructor):
-    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
+    # This test verifies that a concurrent stream adapted from a Stream behaves the same as the Stream object.
     # It is done by running the same test cases on both streams
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
@@ -129,12 +129,12 @@ def test_full_refresh_read_a_single_slice(constructor):
 @pytest.mark.parametrize(
     "constructor",
     [
-        pytest.param(_legacy_stream, id="synchronous_reader"),
+        pytest.param(_stream, id="synchronous_reader"),
         pytest.param(_concurrent_stream, id="concurrent_reader"),
     ],
 )
 def test_full_refresh_read_a_two_slices(constructor):
-    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
+    # This test verifies that a concurrent stream adapted from a Stream behaves the same as the Stream object
     # It is done by running the same test cases on both streams
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()

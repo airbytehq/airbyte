@@ -9,15 +9,15 @@ import pytest
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, AirbyteStream, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.message import InMemoryMessageRepository
-from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
-from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
-from airbyte_cdk.sources.streams.concurrent.legacy import (
+from airbyte_cdk.sources.streams.concurrent.adapters import (
     AvailabilityStrategyFacade,
     LegacyAvailabilityStrategy,
     LegacyPartition,
     LegacyPartitionGenerator,
     StreamFacade,
 )
+from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
+from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 
 
@@ -318,3 +318,19 @@ class StreamFacadeTest(unittest.TestCase):
         display_message = facade.get_error_display_message(e)
 
         assert expected_display_message == display_message
+
+
+@pytest.mark.parametrize(
+    "exception, expected_display_message",
+    [
+        pytest.param(Exception("message"), None, id="test_no_display_message"),
+        pytest.param(ExceptionWithDisplayMessage("message"), "message", id="test_no_display_message"),
+    ],
+)
+def test_get_error_display_message(exception, expected_display_message):
+    stream = Mock()
+    facade = StreamFacade(stream)
+
+    display_message = facade.get_error_display_message(exception)
+
+    assert display_message == expected_display_message
