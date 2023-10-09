@@ -10,10 +10,7 @@
     },
     "assignee_(from_table_6)": {
       "items": {
-        "type": [
-          "null",
-          "number"
-        ]
+        "type": ["null", "number"]
       },
       "type": ["null", "array"]
     },
