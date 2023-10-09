@@ -14,13 +14,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-from dagger import CacheSharingMode, CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
     AMAZONCORRETTO_IMAGE,
-    CI_CREDENTIALS_SOURCE_PATH,
-    CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH,
     CONNECTOR_TESTING_REQUIREMENTS,
     DOCKER_HOST_NAME,
     DOCKER_HOST_PORT,
@@ -28,6 +26,7 @@ from pipelines.consts import (
     LICENSE_SHORT_FILE_PATH,
     PYPROJECT_TOML_FILE_PATH,
 )
+from pipelines.tools.internal import INTERNAL_TOOL_PATHS
 from pipelines.utils import check_path_in_workdir, get_file_contents, sh_dash_c
 
 if TYPE_CHECKING:
@@ -305,6 +304,42 @@ async def find_local_dependencies_in_pyproject_toml(
     return local_dependency_paths
 
 
+def _install_python_dependencies_from_setup_py(
+    container: Container,
+    additional_dependency_groups: Optional[List] = None,
+) -> Container:
+    install_connector_package_cmd = ["python", "-m", "pip", "install", "."]
+    container = container.with_exec(install_connector_package_cmd)
+
+    if additional_dependency_groups:
+        # e.g. .[dev,tests]
+        group_string = f".[{','.join(additional_dependency_groups)}]"
+        group_install_cmd = ["python", "-m", "pip", "install", group_string]
+
+        container = container.with_exec(group_install_cmd)
+
+    return container
+
+
+def _install_python_dependencies_from_requirements_txt(container: Container) -> Container:
+    install_requirements_cmd = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
+    return container.with_exec(install_requirements_cmd)
+
+
+def _install_python_dependencies_from_poetry(
+    container: Container,
+    additional_dependency_groups: Optional[List] = None,
+) -> Container:
+    pip_install_poetry_cmd = ["python", "-m", "pip", "install", "poetry"]
+    poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
+    poetry_install_no_venv_cmd = ["poetry", "install", "--no-root"]
+    if additional_dependency_groups:
+        for group in additional_dependency_groups:
+            poetry_install_no_venv_cmd += ["--with", group]
+
+    return container.with_exec(pip_install_poetry_cmd).with_exec(poetry_disable_virtual_env_cmd).with_exec(poetry_install_no_venv_cmd)
+
+
 async def with_installed_python_package(
     context: PipelineContext,
     python_environment: Container,
@@ -324,9 +359,6 @@ async def with_installed_python_package(
     Returns:
         Container: A python environment container with the python package installed.
     """
-    install_requirements_cmd = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
-    install_connector_package_cmd = ["python", "-m", "pip", "install", "."]
-
     container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude)
 
     local_dependencies = await find_local_python_dependencies(context, package_source_code_path)
@@ -334,19 +366,16 @@ async def with_installed_python_package(
     for dependency_directory in local_dependencies:
         container = container.with_mounted_directory("/" + dependency_directory, context.get_repo_dir(dependency_directory))
 
-    has_setup_py, has_requirements_txt = await check_path_in_workdir(container, "setup.py"), await check_path_in_workdir(
-        container, "requirements.txt"
-    )
+    has_setup_py = await check_path_in_workdir(container, "setup.py")
+    has_requirements_txt = await check_path_in_workdir(container, "requirements.txt")
+    has_pyproject_toml = await check_path_in_workdir(container, "pyproject.toml")
 
-    if has_setup_py:
-        container = container.with_exec(install_connector_package_cmd)
-    if has_requirements_txt:
-        container = container.with_exec(install_requirements_cmd)
-
-    if additional_dependency_groups:
-        container = container.with_exec(
-            install_connector_package_cmd[:-1] + [install_connector_package_cmd[-1] + f"[{','.join(additional_dependency_groups)}]"]
-        )
+    if has_pyproject_toml:
+        container = _install_python_dependencies_from_poetry(container)
+    elif has_setup_py:
+        container = _install_python_dependencies_from_setup_py(container, additional_dependency_groups)
+    elif has_requirements_txt:
+        container = _install_python_dependencies_from_requirements_txt(container)
 
     return container
 
@@ -363,6 +392,25 @@ def with_python_connector_source(context: ConnectorContext) -> Container:
     testing_environment: Container = with_testing_dependencies(context)
 
     return with_python_package(context, testing_environment, connector_source_path)
+
+
+async def apply_python_development_overrides(context: ConnectorContext, connector_container: Container) -> Container:
+    # Run the connector using the local cdk if flag is set
+    if context.use_local_cdk:
+        context.logger.info("Using local CDK")
+        # mount the local cdk
+        path_to_cdk = "airbyte-cdk/python/"
+        directory_to_mount = context.get_repo_dir(path_to_cdk)
+
+        context.logger.info(f"Mounting {directory_to_mount}")
+
+        # Install the airbyte-cdk package from the local directory
+        # We use --no-deps to avoid conflicts with the airbyte-cdk version required by the connector
+        connector_container = connector_container.with_mounted_directory(f"/{path_to_cdk}", directory_to_mount).with_exec(
+            ["pip", "install", "--no-deps", f"/{path_to_cdk}"], skip_entrypoint=True
+        )
+
+    return connector_container
 
 
 async def with_python_connector_installed(context: ConnectorContext) -> Container:
@@ -390,9 +438,13 @@ async def with_python_connector_installed(context: ConnectorContext) -> Containe
             ".dockerignore",
         ]
     ]
-    return await with_installed_python_package(
+    container = await with_installed_python_package(
         context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=exclude
     )
+
+    container = await apply_python_development_overrides(context, container)
+
+    return container
 
 
 async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> Container:
@@ -406,7 +458,7 @@ async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> C
         Container: A python environment with the ci_credentials package installed.
     """
     python_base_environment: Container = with_python_base(context)
-    ci_credentials = await with_installed_pipx_package(context, python_base_environment, CI_CREDENTIALS_SOURCE_PATH)
+    ci_credentials = await with_installed_pipx_package(context, python_base_environment, INTERNAL_TOOL_PATHS.CI_CREDENTIALS.value)
     ci_credentials = ci_credentials.with_env_variable("VERSION", "dagger_ci")
     return ci_credentials.with_secret_variable("GCP_GSM_CREDENTIALS", gsm_secret).with_workdir("/")
 
@@ -462,7 +514,7 @@ async def with_connector_ops(context: PipelineContext) -> Container:
     """
     python_base_environment: Container = with_python_base(context)
 
-    return await with_installed_pipx_package(context, python_base_environment, CONNECTOR_OPS_SOURCE_PATHSOURCE_PATH)
+    return await with_installed_pipx_package(context, python_base_environment, INTERNAL_TOOL_PATHS.CONNECTOR_OPS.value)
 
 
 def with_global_dockerd_service(dagger_client: Client) -> Container:
@@ -858,11 +910,15 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
 
 async def get_cdk_version_from_python_connector(python_connector: Container) -> Optional[str]:
     pip_freeze_stdout = await python_connector.with_entrypoint("pip").with_exec(["freeze"]).stdout()
-    pip_dependencies = [dep.split("==") for dep in pip_freeze_stdout.split("\n")]
-    for package_name, package_version in pip_dependencies:
-        if package_name == "airbyte-cdk":
-            return package_version
-    return None
+    cdk_dependency_line = next((line for line in pip_freeze_stdout.split("\n") if "airbyte-cdk" in line), None)
+    if not cdk_dependency_line:
+        return None
+
+    if "file://" in cdk_dependency_line:
+        return "LOCAL"
+
+    _, cdk_version = cdk_dependency_line.split("==")
+    return cdk_version
 
 
 async def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform) -> Container:
@@ -876,8 +932,12 @@ async def with_airbyte_python_connector(context: ConnectorContext, build_platfor
         .build(await context.get_connector_dir())
         .with_label("io.airbyte.name", context.metadata["dockerRepository"])
     )
+
+    connector_container = await apply_python_development_overrides(context, connector_container)
+
     cdk_version = await get_cdk_version_from_python_connector(connector_container)
     if cdk_version:
+        context.logger.info(f"Connector has a cdk dependency, using cdk version {cdk_version}")
         connector_container = connector_container.with_label("io.airbyte.cdk_version", cdk_version)
         context.cdk_version = cdk_version
     if not await connector_container.label("io.airbyte.version") == context.metadata["dockerImageTag"]:

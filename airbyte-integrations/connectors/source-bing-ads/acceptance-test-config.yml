@@ -34,10 +34,12 @@ acceptance_tests:
             bypass_reason: "Hourly reports are disabled, because sync is too long"
           - name: geographic_performance_report_hourly
             bypass_reason: "Hourly reports are disabled, because sync is too long"
+        timeout_seconds: 900
   full_refresh:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
+        timeout_seconds: 900
   incremental:
     tests:
     bypass_reason: "SAT doesn't support complex nested states used in incremental report streams"

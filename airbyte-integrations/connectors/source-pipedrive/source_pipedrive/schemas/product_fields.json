@@ -77,7 +77,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": ["null", "boolean", "integer"]
+            "type": ["null", "string", "boolean", "integer"]
           },
           "label": {
             "type": ["null", "string"]

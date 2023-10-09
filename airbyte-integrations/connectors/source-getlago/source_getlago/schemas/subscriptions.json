@@ -49,6 +49,12 @@
     },
     "downgrade_plan_date": {
       "type": ["null", "string"]
+    },
+    "ending_at": {
+      "type": ["null", "string"]
+    },
+    "subscription_at": {
+      "type": ["null", "string"]
     }
   }
 }

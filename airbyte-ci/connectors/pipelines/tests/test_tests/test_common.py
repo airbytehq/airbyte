@@ -167,6 +167,11 @@ class TestAcceptanceTests:
             - that the entrypoint is correctly set.
             - the current working directory is correctly set.
         """
+        # The mounted_connector_secrets behaves differently when the test is run locally or in CI.
+        # It is not masking the secrets when run locally.
+        # We want to confirm that the secrets are correctly masked when run in CI.
+        test_context.is_local = False
+        test_context.is_ci = True
         acceptance_test_step = self.get_patched_acceptance_test_step(dagger_client, mocker, test_context, test_input_dir)
         cat_container = await acceptance_test_step._build_connector_acceptance_test(dummy_connector_under_test_image_tar, test_input_dir)
         assert (await cat_container.with_exec(["pwd"]).stdout()).strip() == acceptance_test_step.CONTAINER_TEST_INPUT_DIRECTORY

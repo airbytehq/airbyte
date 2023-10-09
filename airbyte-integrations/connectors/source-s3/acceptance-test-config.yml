@@ -110,37 +110,37 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_custom_encoding_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_custom_format_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_user_schema_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_no_header_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_skip_rows_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_csv_with_nulls_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_parquet_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_avro_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_jsonl_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
       - config_path: secrets/v4_jsonl_newlines_config.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
   full_refresh:
     tests:
       - config_path: secrets/config.json
@@ -190,6 +190,6 @@ acceptance_tests:
     tests:
       - spec_path: integration_tests/spec.json
         backward_compatibility_tests_config:
-          disable_for_version: "3.1.11" # Switch to v4 changed config shape
+          disable_for_version: "4.0.3" # removing the `streams.*.file_type` field which was redundant with `streams.*.format`
 connector_image: airbyte/source-s3:dev
 test_strictness_level: high
