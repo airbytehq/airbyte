@@ -108,18 +108,18 @@ public class DetectStreamToFlush {
   Optional<StreamDescriptor> getNextStreamToFlush(final long queueSizeThresholdBytes) {
     for (final StreamDescriptor stream : orderStreamsByPriority(bufferDequeue.getBufferedStreams())) {
       final long latestFlushTimeMs = latestFlushTimeMsPerStream.computeIfAbsent(stream, _k -> nowProvider.millis());
-      // final ImmutablePair<Boolean, String> isTimeTriggeredResult = isTimeTriggered(latestFlushTimeMs);
+      final ImmutablePair<Boolean, String> isTimeTriggeredResult = isTimeTriggered(latestFlushTimeMs);
       final ImmutablePair<Boolean, String> isSizeTriggeredResult = isSizeTriggered(stream, queueSizeThresholdBytes);
 
       final String debugString = String.format(
           "trigger info: %s - %s, %s , %s",
           stream.getNamespace(),
           stream.getName(),
-          "nope", // isTimeTriggeredResult.getRight(),
+          isTimeTriggeredResult.getRight(),
           isSizeTriggeredResult.getRight());
       log.debug("computed: {}", debugString);
 
-      if (isSizeTriggeredResult.getLeft()/* || isTimeTriggeredResult.getLeft() */) {
+      if (isSizeTriggeredResult.getLeft() || isTimeTriggeredResult.getLeft()) {
         log.info("flushing: {}", debugString);
         latestFlushTimeMsPerStream.put(stream, nowProvider.millis());
         return Optional.of(stream);
