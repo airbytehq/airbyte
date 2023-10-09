@@ -206,7 +206,13 @@ class API:
         self, url: str, params: MutableMapping[str, Any] = None
     ) -> Tuple[Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]], requests.Response]:
         response = self._session.get(self.BASE_URL + url, params=params)
-        if any([m in response.json() for m in TOKEN_EXPIRED_ERROR]):
+        responseJson = None
+        try:
+            responseJson = response.json()
+        except json.decoder.JSONDecodeError as e:
+            logger.error(f"Failed to parse response: {response.text} with JSONDecodeError")
+            raise e
+        if any([m in responseJson for m in TOKEN_EXPIRED_ERROR]):
             logger.info("Oauth token expired. Re-fetching token")
             self._session.auth = self.get_authenticator()
         return self._parse_and_handle_errors(response), response
