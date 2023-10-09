@@ -50,11 +50,11 @@ To enroll, [email us](mailto:natalie@airbyte.io) with:
 2. **Recharge threshold** The number under what credit balance you would like the automatic top up to occur.
 3. **Recharge credit amount** The amount of credits you would like to refill to
 
-As an example, if the recharge threshold is 10 credits and recharge credit amount is 30 credits, anytime my credit balance dipped below 10 credits, Airbyte will automatically add enough credits to bring the balance back to 30 credits by charging the difference between your credit balance and 30 credits. 
+As an example, if the recharge threshold is 10 credits and recharge credit amount is 30 credits, anytime the credit balance dipped below 10 credits, Airbyte will automatically add enough credits to bring the balance back to 30 credits by charging the difference between your credit balance and 30 credits. 
 
 To take a real example, if:
 1. The credit balance reached 3 credits
-2. 27 credits are automatically charged to your card on file & added to your balance
+2. 27 credits are automatically charged to the card on file & added to the balance
 3. The ending credit balance is 30 credits
 
 Note that the difference between the recharge credit amount and recharge threshold must be at least 20 as our minimum purchase is 20 credits. 
