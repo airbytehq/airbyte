@@ -178,7 +178,7 @@
           {
             "title": "Standard Inserts",
             "required": ["method"],
-            "description": "<i>(not recommended)</i> Direct uploading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In almost all cases, you should use staging.",
+            "description": "<i>(not recommended)</i> Direct uploads using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In all other cases, you should use GCS staging.",
             "properties": {
               "method": {
                 "type": "string",
