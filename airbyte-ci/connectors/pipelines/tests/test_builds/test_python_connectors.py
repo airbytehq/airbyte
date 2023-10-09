@@ -71,20 +71,15 @@ class TestBuildConnectorImage:
 
     async def test__run_using_base_image_with_mocks(self, mocker, test_context_with_connector_with_base_image, current_platform):
         container_built_from_base = mocker.Mock()
-        overridden_container = mocker.Mock()
         mocker.patch.object(
             python_connectors.BuildConnectorImage, "_build_from_base_image", mocker.AsyncMock(return_value=container_built_from_base)
         )
         mocker.patch.object(python_connectors.BuildConnectorImage, "get_step_result", mocker.AsyncMock())
-        mocker.patch.object(python_connectors, "apply_python_development_overrides", mocker.AsyncMock(return_value=overridden_container))
         step = python_connectors.BuildConnectorImage(test_context_with_connector_with_base_image, current_platform)
         step_result = await step._run()
         step._build_from_base_image.assert_called_once()
-        step.get_step_result.assert_called_once_with(overridden_container.with_exec.return_value)
-        overridden_container.with_exec.assert_called_once_with(["spec"])
-        python_connectors.apply_python_development_overrides.assert_called_once_with(
-            test_context_with_connector_with_base_image, container_built_from_base
-        )
+        step.get_step_result.assert_called_once_with(container_built_from_base.with_exec.return_value)
+        container_built_from_base.with_exec.assert_called_once_with(["spec"])
         assert step_result == step.get_step_result.return_value
 
     async def test_building_from_base_image_for_real(self, test_context_with_real_connector_using_base_image, current_platform):
@@ -106,20 +101,15 @@ class TestBuildConnectorImage:
 
     async def test__run_using_base_dockerfile_with_mocks(self, mocker, test_context_with_connector_without_base_image, current_platform):
         container_built_from_dockerfile = mocker.Mock()
-        overridden_container = mocker.Mock()
         mocker.patch.object(
             python_connectors.BuildConnectorImage, "_build_from_dockerfile", mocker.AsyncMock(return_value=container_built_from_dockerfile)
         )
         mocker.patch.object(python_connectors.BuildConnectorImage, "get_step_result", mocker.AsyncMock())
-        mocker.patch.object(python_connectors, "apply_python_development_overrides", mocker.AsyncMock(return_value=overridden_container))
         step = python_connectors.BuildConnectorImage(test_context_with_connector_without_base_image, current_platform)
         step_result = await step._run()
         step._build_from_dockerfile.assert_called_once()
-        step.get_step_result.assert_called_once_with(overridden_container.with_exec.return_value)
-        overridden_container.with_exec.assert_called_once_with(["spec"])
-        python_connectors.apply_python_development_overrides.assert_called_once_with(
-            test_context_with_connector_without_base_image, container_built_from_dockerfile
-        )
+        step.get_step_result.assert_called_once_with(container_built_from_dockerfile.with_exec.return_value)
+        container_built_from_dockerfile.with_exec.assert_called_once_with(["spec"])
         assert step_result == step.get_step_result.return_value
 
     async def test_building_from_dockerfile_for_real(self, test_context_with_real_connector_without_base_image, current_platform):
