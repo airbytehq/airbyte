@@ -67,6 +67,23 @@
               {
                 "type": "object",
                 "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["rich_text"]
+                  },
+                  "rich_text": {
+                    "type": ["array"],
+                    "items": {
+                      "$ref": "rich_text.json"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
                   "id": { "type": "string" },
                   "type": { "enum": ["select"] },
                   "select": { "$ref": "options.json" }

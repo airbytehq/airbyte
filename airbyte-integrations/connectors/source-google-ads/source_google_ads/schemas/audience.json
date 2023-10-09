@@ -2,11 +2,17 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "customer.id": {
+      "type": ["null", "integer"]
+    },
     "audience.description": {
       "type": ["null", "string"]
     },
     "audience.dimensions": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "audience.exclusion_dimension": {
       "type": ["null", "string"]

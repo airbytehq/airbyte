@@ -72,7 +72,16 @@ def test_get_updated_state(stream):
 
 def test_stream_slices(blocks, requests_mock):
     stream = blocks
-    requests_mock.post("https://api.notion.com/v1/search", json={"results": [{"id": "aaa"}, {"id": "bbb"}], "next_cursor": None})
+    requests_mock.post(
+        "https://api.notion.com/v1/search",
+        json={
+            "results": [
+                {"id": "aaa", "last_edited_time": "2022-10-10T00:00:00.000Z"},
+                {"id": "bbb", "last_edited_time": "2022-10-10T00:00:00.000Z"},
+            ],
+            "next_cursor": None,
+        },
+    )
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     expected_stream_slice = [{"page_id": "aaa"}, {"page_id": "bbb"}]
     assert list(stream.stream_slices(**inputs)) == expected_stream_slice
@@ -183,10 +192,10 @@ def test_recursive_read(blocks, requests_mock):
     #      |-> record4
 
     root = "aaa"
-    record1 = {"id": "id1", "type": "heading_1", "has_children": True, "last_edited_time": ""}
-    record2 = {"id": "id2", "type": "heading_1", "has_children": True, "last_edited_time": ""}
-    record3 = {"id": "id3", "type": "heading_1", "has_children": False, "last_edited_time": ""}
-    record4 = {"id": "id4", "type": "heading_1", "has_children": False, "last_edited_time": ""}
+    record1 = {"id": "id1", "type": "heading_1", "has_children": True, "last_edited_time": "2022-10-10T00:00:00.000Z"}
+    record2 = {"id": "id2", "type": "heading_1", "has_children": True, "last_edited_time": "2022-10-10T00:00:00.000Z"}
+    record3 = {"id": "id3", "type": "heading_1", "has_children": False, "last_edited_time": "2022-10-10T00:00:00.000Z"}
+    record4 = {"id": "id4", "type": "heading_1", "has_children": False, "last_edited_time": "2022-10-10T00:00:00.000Z"}
     requests_mock.get(f"https://api.notion.com/v1/blocks/{root}/children", json={"results": [record1, record4], "next_cursor": None})
     requests_mock.get(f"https://api.notion.com/v1/blocks/{record1['id']}/children", json={"results": [record2], "next_cursor": None})
     requests_mock.get(f"https://api.notion.com/v1/blocks/{record2['id']}/children", json={"results": [record3], "next_cursor": None})
@@ -199,9 +208,11 @@ def test_recursive_read(blocks, requests_mock):
 def test_invalid_start_cursor(parent, requests_mock, caplog):
     stream = parent
     error_message = "The start_cursor provided is invalid: wrong_start_cursor"
-    search_endpoint = requests_mock.post("https://api.notion.com/v1/search", status_code=400,
-                                         json={"object": "error", "status": 400, "code": "validation_error",
-                                               "message": error_message})
+    search_endpoint = requests_mock.post(
+        "https://api.notion.com/v1/search",
+        status_code=400,
+        json={"object": "error", "status": 400, "code": "validation_error", "message": error_message},
+    )
 
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     with patch.object(stream, "backoff_time", return_value=0.1):

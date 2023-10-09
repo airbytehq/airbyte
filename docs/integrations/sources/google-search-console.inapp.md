@@ -21,7 +21,7 @@
    <!-- /env:oss -->
 
 5. (Optional) For **End Date**, you may optionally provide a date in the format `YYYY-MM-DD`. Any data created between the defined Start Date and End Date will be replicated. Leaving this field blank will replicate all data created on or after the Start Date to the present.
-6. (Optional) For **Custom Reports**, you may optionally provide an array of JSON objects representing any custom reports you wish to query the API with. Refer to the [Custom reports](https://docs.airbyte.com/integrations/sources/google-search-console#custom-reports) section in our full documentation for more information on formulating these reports.
+6. (Optional) For **Custom Reports**, you may optionally provide a custom report representing any additional report you wish to query the API with. Refer to the [Custom reports](https://docs.airbyte.com/integrations/sources/google-search-console#custom-reports) section in our full documentation for more information on formulating these reports.
 7. (Optional) For **Data Freshness**, you may choose whether to include "fresh" data that has not been finalized by Google, and may be subject to change. Please note that if you are using Incremental sync mode, we highly recommend leaving this option to its default value of `final`. Refer to the [Data Freshness](https://docs.airbyte.com/integrations/sources/google-search-console#data-freshness) section in our full documentation for more information on this parameter.
 8. Click **Set up source** and wait for the tests to complete.
 

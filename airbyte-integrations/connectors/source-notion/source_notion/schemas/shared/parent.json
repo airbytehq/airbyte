@@ -12,6 +12,9 @@
     "page_id": {
       "type": "string"
     },
+    "block_id": {
+      "type": "string"
+    },
     "workspace": {
       "type": "boolean"
     },

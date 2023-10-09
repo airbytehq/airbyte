@@ -78,16 +78,6 @@
         "order": 3,
         "oneOf": [
           {
-            "title": "Standard Inserts",
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "Standard"
-              }
-            }
-          },
-          {
             "title": "GCS Staging",
             "required": [
               "method",
@@ -176,6 +166,16 @@
                 "description": "Number of file buffers allocated for writing data. Increasing this number is beneficial for connections using Change Data Capture (CDC) and up to the number of streams within a connection. Increasing the number of file buffers past the maximum number of streams has deteriorating effects",
                 "examples": ["10"],
                 "order": 5
+              }
+            }
+          },
+          {
+            "title": "Standard Inserts",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Standard"
               }
             }
           }

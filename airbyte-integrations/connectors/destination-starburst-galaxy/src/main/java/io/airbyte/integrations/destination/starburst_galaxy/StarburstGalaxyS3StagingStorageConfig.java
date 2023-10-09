@@ -4,16 +4,16 @@
 
 package io.airbyte.integrations.destination.starburst_galaxy;
 
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_ACCESS_KEY_ID;
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_NAME;
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_PATH;
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_REGION;
-import static io.airbyte.integrations.destination.s3.constant.S3Constants.S_3_SECRET_ACCESS_KEY;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_ACCESS_KEY_ID;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_NAME;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_PATH;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_BUCKET_REGION;
+import static io.airbyte.cdk.integrations.destination.s3.constant.S3Constants.S_3_SECRET_ACCESS_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.parquet.S3ParquetFormatConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.parquet.S3ParquetFormatConfig;
 
 public class StarburstGalaxyS3StagingStorageConfig
     extends StarburstGalaxyStagingStorageConfig {
