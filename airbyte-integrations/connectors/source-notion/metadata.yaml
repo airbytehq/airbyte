@@ -20,7 +20,7 @@ data:
   releases:
     breakingChanges:
       2.0.0:
-        message: "Version 2.0.0 introduces connector-wide schema changes. These changes were introduced to reflect updates to the Notion API. A full schema refresh and data reset are required to upgrade to this version."
+        message: "Version 2.0.0 introduces schema changes to multiple properties shared by the blocks, databases and pages streams. These changes were introduced to reflect updates to the Notion API. A full schema refresh and data reset are required to upgrade to this version."
         upgradeDeadline: "2023-11-09"
   suggestedStreams:
     streams:
