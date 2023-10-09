@@ -53,7 +53,7 @@ If you are building a connector in any of the following languages/frameworks, th
 #### Sources
 
 * **Python Source Connector**
-* [**Singer**](https://singer.io)**-based Python Source Connector**. [Singer.io](https://singer.io/) is an open source framework with a large community and many available connectors \(known as taps & targets\). To build an Airbyte connector from a Singer tap, wrap the tap in a thin Python package to make it Airbyte Protocol-compatible. See the [Github Connector](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-github-singer) for an example of an Airbyte Connector implemented on top of a Singer tap.
+* [**Singer**](https://singer.io)**-based Python Source Connector**. [Singer.io](https://singer.io/) is an open source framework with a large community and many available connectors \(known as taps & targets\). To build an Airbyte connector from a Singer tap, wrap the tap in a thin Python package to make it Airbyte Protocol-compatible. See the [Github Connector](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-github) for an example of an Airbyte Connector implemented on top of a Singer tap.
 * **Generic Connector**: This template provides a basic starting point for any language.
 
 #### Destinations

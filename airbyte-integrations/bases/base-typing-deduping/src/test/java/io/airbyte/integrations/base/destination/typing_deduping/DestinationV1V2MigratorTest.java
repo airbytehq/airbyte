@@ -27,7 +27,7 @@ public class DestinationV1V2MigratorTest {
   public static class ShouldMigrateTestArgumentProvider implements ArgumentsProvider {
 
     @Override
-    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
+    public Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
 
       // Don't throw an exception
       final boolean v2SchemaMatches = true;
@@ -52,25 +52,24 @@ public class DestinationV1V2MigratorTest {
 
   @ParameterizedTest
   @ArgumentsSource(ShouldMigrateTestArgumentProvider.class)
-  public void testShouldMigrate(final DestinationSyncMode destinationSyncMode, final BaseDestinationV1V2Migrator migrator, final boolean expected)
-      throws Exception {
+  public void testShouldMigrate(final DestinationSyncMode destinationSyncMode, final BaseDestinationV1V2Migrator migrator, boolean expected) {
     final StreamConfig config = new StreamConfig(STREAM_ID, null, destinationSyncMode, null, null, null);
     final var actual = migrator.shouldMigrate(config);
     Assertions.assertEquals(expected, actual);
   }
 
   @Test
-  public void testMismatchedSchemaThrowsException() throws Exception {
+  public void testMismatchedSchemaThrowsException() {
     final StreamConfig config = new StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null);
     final var migrator = makeMockMigrator(true, true, false, false, false);
-    final UnexpectedSchemaException exception = Assertions.assertThrows(UnexpectedSchemaException.class,
+    UnexpectedSchemaException exception = Assertions.assertThrows(UnexpectedSchemaException.class,
         () -> migrator.shouldMigrate(config));
     Assertions.assertEquals("Destination V2 Raw Table does not match expected Schema", exception.getMessage());
   }
 
   @SneakyThrows
   @Test
-  public void testMigrate() throws Exception {
+  public void testMigrate() {
     final var sqlGenerator = new MockSqlGenerator();
     final StreamConfig stream = new StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null);
     final DestinationHandler<String> handler = Mockito.mock(DestinationHandler.class);
@@ -81,7 +80,7 @@ public class DestinationV1V2MigratorTest {
     Mockito.verify(handler).execute(sql);
     // Exception thrown when executing sql, TableNotMigratedException thrown
     Mockito.doThrow(Exception.class).when(handler).execute(Mockito.anyString());
-    final TableNotMigratedException exception = Assertions.assertThrows(TableNotMigratedException.class,
+    TableNotMigratedException exception = Assertions.assertThrows(TableNotMigratedException.class,
         () -> migrator.migrate(sqlGenerator, handler, stream));
     Assertions.assertEquals("Attempted and failed to migrate stream final_table", exception.getMessage());
   }
@@ -89,9 +88,8 @@ public class DestinationV1V2MigratorTest {
   public static BaseDestinationV1V2Migrator makeMockMigrator(final boolean v2NamespaceExists,
                                                              final boolean v2TableExists,
                                                              final boolean v2RawSchemaMatches,
-                                                             final boolean v1RawTableExists,
-                                                             final boolean v1RawTableSchemaMatches)
-      throws Exception {
+                                                             boolean v1RawTableExists,
+                                                             boolean v1RawTableSchemaMatches) {
     final BaseDestinationV1V2Migrator migrator = Mockito.spy(BaseDestinationV1V2Migrator.class);
     Mockito.when(migrator.doesAirbyteInternalNamespaceExist(Mockito.any())).thenReturn(v2NamespaceExists);
     final var existingTable = v2TableExists ? Optional.of("v2_raw") : Optional.empty();
@@ -105,7 +103,7 @@ public class DestinationV1V2MigratorTest {
     return migrator;
   }
 
-  public static BaseDestinationV1V2Migrator noIssuesMigrator() throws Exception {
+  public static BaseDestinationV1V2Migrator noIssuesMigrator() {
     return makeMockMigrator(true, false, true, true, true);
   }
 
