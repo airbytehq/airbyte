@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 
@@ -18,6 +18,8 @@ from .google_ads import GoogleAds
 from .models import Customer
 from .utils import REPORT_MAPPING, ExpiredPageTokenError, traced_exception
 
+
+logger = logging.getLogger("airbyte")
 
 def parse_dates(stream_slice):
     start_date = pendulum.parse(stream_slice["start_date"])
@@ -58,7 +60,14 @@ def chunk_date_range(
         - The function adjusts the start date based on `days_of_data_storage` and `conversion_window` to adhere to certain data retrieval policies, such as Google Ads' policy of only retrieving data not older than a certain number of days.
         - The method returns `start_date` and `end_date` with a difference typically spanning 15 days to avoid token expiration issues.
     """
-    start_date = pendulum.parse(start_date, tz=time_zone)
+    try:
+        start_date = pendulum.parse(start_date, tz=time_zone)
+    except TypeError:
+        logger.info(f"Logger Start date TypeError: {start_date}, {end_date}, {time_format}")
+        logger.error(f"Logger Start date TypeError: {start_date}, {end_date}, {time_format}")
+        logging.info(f"Logging Start date TypeError: {start_date}, {end_date}, {time_format}")
+        logging.error(f"Logging Start date TypeError: {start_date}, {end_date}, {time_format}")
+        print(f"Print Start date TypeError: {start_date}, {end_date}, {time_format}")
     today = pendulum.today(tz=time_zone)
     end_date = pendulum.parse(end_date, tz=time_zone) if end_date else today
 
