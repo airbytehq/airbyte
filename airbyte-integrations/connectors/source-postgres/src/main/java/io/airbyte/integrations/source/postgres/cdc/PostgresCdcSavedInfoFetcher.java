@@ -5,9 +5,9 @@
 package io.airbyte.integrations.source.postgres.cdc;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.debezium.CdcSavedInfoFetcher;
-import io.airbyte.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
-import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.cdk.integrations.debezium.CdcSavedInfoFetcher;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
+import io.airbyte.cdk.integrations.source.relationaldb.models.CdcState;
 import java.util.Optional;
 
 public class PostgresCdcSavedInfoFetcher implements CdcSavedInfoFetcher {

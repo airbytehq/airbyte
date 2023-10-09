@@ -1,8 +1,15 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.starburst_galaxy.StarburstGalaxyDestination'
@@ -11,10 +18,6 @@ application {
 dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:bases-destination-jdbc')
-    implementation project(path: ':airbyte-db:db-lib')
-    implementation project(path: ':airbyte-integrations:bases:base-java-s3')
     implementation project(path: ':airbyte-integrations:connectors:destination-s3')
 
     implementation ('io.trino:trino-iceberg:411') {exclude group: 'commons-cli', module: 'commons-cli'}
@@ -35,9 +38,6 @@ dependencies {
     implementation 'software.amazon.awssdk:url-connection-client:2.20.20'
 
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-starburst-galaxy')
 
     implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
 }

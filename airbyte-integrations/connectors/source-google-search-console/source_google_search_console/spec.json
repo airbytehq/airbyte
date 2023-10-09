@@ -135,14 +135,15 @@
             },
             "dimensions": {
               "title": "Dimensions",
-              "description": "A list of dimensions (country, date, device, page, query)",
+              "description": "A list of available dimensions. Please note, that for technical reasons `date` is the default dimension which will be included in your query whether you specify it or not. Primary key will consist of your custom dimensions and the default dimension along with `site_url` and `search_type`.",
               "type": "array",
               "items": {
                 "title": "ValidEnums",
                 "description": "An enumeration of dimensions.",
                 "enum": ["country", "date", "device", "page", "query"]
               },
-              "minItems": 1
+              "default": ["date"],
+              "minItems": 0
             }
           },
           "required": ["name", "dimensions"]

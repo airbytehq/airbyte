@@ -1,10 +1,10 @@
 # Add a Source
 
-Setting up a new source in Airbyte is a quick and simple process! When viewing the Airbyte UI, you'll see the main navigation bar on the left side of your screen. Click the `Sources` tab to bring up a list of all available sources.
+Setting up a new source in Airbyte is a quick and simple process! When viewing the Airbyte UI, you'll see the main navigation bar on the left side of your screen. Click the **Sources** tab to bring up a list of all available sources.
 
 ![](../.gitbook/assets/add-a-source/getting-started-source-list.png)
 
-You can use the provided search bar, or simply scroll down the list to find the source you want to replicate data from. Let's use Google Sheets as an example. Clicking on the Google Sheets card will bring us to its setup page.
+You can use the provided search bar, or simply scroll down the list to find the source you want to replicate data from. Let's use Google Sheets as an example. Clicking on the **Google Sheets** card will bring us to its setup page.
 
 ![](../.gitbook/assets/add-a-source/getting-started-source-page.png)
 
