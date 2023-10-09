@@ -191,6 +191,14 @@ def test_value_dictionary() -> None:
     assert py_value == {"indices": [0, 1, 2, 0, 1], "values": ["apple", "banana", "cherry"]}
 
 
+def test_value_none_binary() -> None:
+    none_binary_scalar = pa.scalar(None, type=pa.binary())
+    try:
+        ParquetParser._to_output_value(none_binary_scalar, _default_parquet_format)
+    except AttributeError:
+        assert False, "`None` type binary should be handled properly"
+
+
 @pytest.mark.parametrize(
     "file_format",
     [

@@ -140,7 +140,7 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
         .setFormatOptions(FormatOptions.csv())
         .setSchema(tableSchema)
         .setWriteDisposition(WriteDisposition.WRITE_APPEND)
-        .setJobTimeoutMs(60000L)
+        .setJobTimeoutMs(180000L)
         .build();
 
     final Job loadJob = this.bigQuery.create(JobInfo.of(configuration));
