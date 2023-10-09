@@ -2,26 +2,24 @@
 
 ## Upgrading to 2.0.0
 
-A major update of most streams to avoid having duplicate stream names. This is relevant for the connections having more than one property ID.
-Resetting a connector is needed if you have more than one property ID in your config.
+This version update only affects the schema of GA4 connections that sync <b>more than one property</b>. 
 
-Let's say you have three property IDs - `0001`, `0002`, `0003`. Two of them will be included in the stream names:
+Version 2.0.0 prevents the duplication of stream names by renaming some property streams with a new stream name that includes the property ID. 
+
+ <b>If you only are syncing from one property, no changes will occur when you upgrade to the new version. </b> The stream names will continue to appear as:
+ - "daily_active_users",
+ - "weekly_active_users"
+
+If you are syncing more than one property, any property after the first will have the property ID appended to the stream name. 
+
+For example, if your property IDs are: `0001`, `0002`, `0003`, the streams related to properties `0002` and `0003` will have the property ID appended to the end of the stream name.
  - "daily_active_users",
  - "daily_active_users_property_0002",
  - "daily_active_users_property_0003",
  - "weekly_active_users",
  - "weekly_active_users_property_0002"
  - "weekly_active_users_property_0003"
-...
 
-If the number of properties in your config does not exceed one, you will not see changes to your stream names, and the reset is not required:
- - "daily_active_users",
- - "weekly_active_users"
+If you are syncing more than one property ID, you will need to reset those streams to ensure syncing continues accurately.
 
-Once you add the second property ID, new streams will have names with the new property ID included. Existing streams will not be affected:
- - "daily_active_users",
- - "daily_active_users_property_0002",
- - "weekly_active_users",
- - "weekly_active_users_property_0002"
-
-If you add the second+ property after running the upgrade, the reset is not required.
+In the future, if you add an additional property ID, all new streams will append the property ID to the stream name without affecting existing streams. A reset is not required if you add the consecutive property after upgrading to 2.0.0.
