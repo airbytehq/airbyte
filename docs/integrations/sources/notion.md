@@ -106,8 +106,9 @@ The connector is restricted by Notion [request limits](https://developers.notion
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
-| :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------- |
-| 1.1.2   | 2023-08-30 | [29999](https://github.com/airbytehq/airbyte/pull/29999) | Update error handling during connection check
+|:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------|
+| 1.2.0   | 2023-10-04 | [31053](https://github.com/airbytehq/airbyte/pull/31053) | Add undeclared fields for blocks and pages streams                           |
+| 1.1.2   | 2023-08-30 | [29999](https://github.com/airbytehq/airbyte/pull/29999) | Update error handling during connection check                                |
 | 1.1.1   | 2023-06-14 | [26535](https://github.com/airbytehq/airbyte/pull/26535) | Migrate from deprecated `authSpecification` to `advancedAuth`                |
 | 1.1.0   | 2023-06-08 | [27170](https://github.com/airbytehq/airbyte/pull/27170) | Fix typo in `blocks` schema                                                  |
 | 1.0.9   | 2023-06-08 | [27062](https://github.com/airbytehq/airbyte/pull/27062) | Skip streams with `invalid_start_cursor` error                               |
