@@ -44,9 +44,9 @@ class StreamFacade(Stream):
     """
 
     @classmethod
-    def create_from_legacy_stream(cls, stream: Stream, source: AbstractSource, logger: logging.Logger, max_workers: int) -> Stream:
+    def create_from_stream(cls, stream: Stream, source: AbstractSource, logger: logging.Logger, max_workers: int) -> Stream:
         """
-        Create a ConcurrentStream from a legacy Stream.
+        Create a ConcurrentStream from a Stream object.
         :param source: The source
         :param stream: The stream
         :param max_workers: The maximum number of worker thread to use
@@ -63,11 +63,11 @@ class StreamFacade(Stream):
         message_repository = source.message_repository
         return StreamFacade(
             ThreadBasedConcurrentStream(
-                partition_generator=LegacyPartitionGenerator(stream, message_repository),
+                partition_generator=StreamPartitionGenerator(stream, message_repository),
                 max_workers=max_workers,
                 name=stream.name,
                 json_schema=stream.get_json_schema(),
-                availability_strategy=LegacyAvailabilityStrategy(stream, source),
+                availability_strategy=StreamAvailabilityStrategy(stream, source),
                 primary_key=pk,
                 cursor_field=cursor_field,
                 slice_logger=source._slice_logger,
@@ -106,7 +106,7 @@ class StreamFacade(Stream):
         """
         :param stream: The underlying AbstractStream
         """
-        self._stream = stream
+        self._abstract_stream = stream
 
     def read_full_refresh(
         self,
@@ -121,7 +121,7 @@ class StreamFacade(Stream):
         :param slice_logger: (ignored)
         :return: Iterable of StreamData
         """
-        for record in self._stream.read():
+        for record in self._abstract_stream.read():
             yield record.data
 
     def read_records(
@@ -132,7 +132,7 @@ class StreamFacade(Stream):
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         if sync_mode == SyncMode.full_refresh:
-            for record in self._stream.read():
+            for record in self._abstract_stream.read():
                 yield record.data
         else:
             # Incremental reads are not supported
@@ -140,7 +140,7 @@ class StreamFacade(Stream):
 
     @property
     def name(self) -> str:
-        return self._stream.name
+        return self._abstract_stream.name
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -149,10 +149,10 @@ class StreamFacade(Stream):
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
-        if self._stream.cursor_field is None:
+        if self._abstract_stream.cursor_field is None:
             return []
         else:
-            return self._stream.cursor_field
+            return self._abstract_stream.cursor_field
 
     @property
     def source_defined_cursor(self) -> bool:
@@ -161,7 +161,7 @@ class StreamFacade(Stream):
 
     @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
-        return self._stream.get_json_schema()
+        return self._abstract_stream.get_json_schema()
 
     @property
     def supports_incremental(self) -> bool:
@@ -175,7 +175,7 @@ class StreamFacade(Stream):
         :param source:  (ignored)
         :return:
         """
-        availability = self._stream.check_availability()
+        availability = self._abstract_stream.check_availability()
         return availability.is_available(), availability.message()
 
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
@@ -194,17 +194,17 @@ class StreamFacade(Stream):
             return None
 
     def as_airbyte_stream(self) -> AirbyteStream:
-        return self._stream.as_airbyte_stream()
+        return self._abstract_stream.as_airbyte_stream()
 
     def log_stream_sync_configuration(self):
-        self._stream.log_stream_sync_configuration()
+        self._abstract_stream.log_stream_sync_configuration()
 
 
-class LegacyPartition(Partition):
+class StreamPartition(Partition):
     """
-    This class acts as an adapter between the new Partition interface and the legacy stream_slice "interface"
+    This class acts as an adapter between the new Partition interface and the Stream's stream_slice interface
 
-    LegacyPartitions are instantiated from a Stream and a stream_slice.
+    StreamPartitions are instantiated from a Stream and a stream_slice.
 
     This class can be used to help enable concurrency on existing connectors without having to rewrite everything as AbstractStream.
     In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
@@ -252,10 +252,10 @@ class LegacyPartition(Partition):
             return hash(self._stream.name)
 
     def __repr__(self) -> str:
-        return f"LegacyPartition({self._stream.name}, {self._slice})"
+        return f"StreamPartition({self._stream.name}, {self._slice})"
 
 
-class LegacyPartitionGenerator(PartitionGenerator):
+class StreamPartitionGenerator(PartitionGenerator):
     """
     This class acts as an adapter between the new PartitionGenerator and Stream.stream_slices
 
@@ -273,7 +273,7 @@ class LegacyPartitionGenerator(PartitionGenerator):
 
     def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
         for s in self._stream.stream_slices(sync_mode=sync_mode):
-            yield LegacyPartition(self._stream, copy.deepcopy(s), self.message_repository)
+            yield StreamPartition(self._stream, copy.deepcopy(s), self.message_repository)
 
 
 @deprecated("This class is experimental. Use at your own risk.")
@@ -296,10 +296,10 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
         return stream_availability.is_available(), stream_availability.message()
 
 
-class LegacyAvailabilityStrategy(AbstractAvailabilityStrategy):
+class StreamAvailabilityStrategy(AbstractAvailabilityStrategy):
     """
     This class acts as an adapter between the existing AvailabilityStrategy and the new AbstractAvailabilityStrategy.
-    LegacyAvailabilityStrategy is instantiated with a Stream and a Source to allow the existing AvailabilityStrategy to be used with the new AbstractAvailabilityStrategy interface.
+    StreamAvailabilityStrategy is instantiated with a Stream and a Source to allow the existing AvailabilityStrategy to be used with the new AbstractAvailabilityStrategy interface.
 
     A more convenient implementation would not depend on the docs URL instead of the Source itself, and would support running on an AbstractStream instead of only on a Stream.
 

@@ -7,7 +7,7 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.concurrent.adapters import LegacyPartition
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamPartition
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL
 
@@ -21,7 +21,7 @@ def test_partition_generator(slices):
 
     stream = Mock()
     message_repository = Mock()
-    partitions = [LegacyPartition(stream, s, message_repository) for s in slices]
+    partitions = [StreamPartition(stream, s, message_repository) for s in slices]
     stream.generate.return_value = iter(partitions)
 
     sync_mode = SyncMode.full_refresh
