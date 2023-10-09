@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 import random
 from http import HTTPStatus
 from unittest.mock import MagicMock
@@ -9,7 +10,7 @@ from unittest.mock import MagicMock
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
-from source_notion.streams import Blocks, NotionStream, Users
+from source_notion.streams import Blocks, NotionStream, Pages, Users
 
 
 @pytest.fixture
@@ -33,6 +34,18 @@ def test_next_page_token(patch_base_class, requests_mock):
     inputs = {"response": requests.get("https://dummy")}
     expected_token = {"next_cursor": "aaa"}
     assert stream.next_page_token(**inputs) == expected_token
+
+
+@pytest.mark.parametrize(
+    "response_json, expected_output",
+    [({"next_cursor": "some_cursor", "has_more": True}, {"next_cursor": "some_cursor"}), ({"has_more": False}, None), ({}, None)],
+)
+def test_next_page_token_with_no_cursor(patch_base_class, response_json, expected_output):
+    stream = NotionStream(config=MagicMock())
+    mock_response = MagicMock()
+    mock_response.json.return_value = response_json
+    result = stream.next_page_token(mock_response)
+    assert result == expected_output
 
 
 def test_parse_response(patch_base_class, requests_mock):
@@ -167,3 +180,62 @@ def test_user_stream_handles_pagination_correctly(requests_mock):
     records = stream.read_records(sync_mode=SyncMode.full_refresh)
     records_length = sum(1 for _ in records)
     assert records_length == 220
+
+
+@pytest.mark.parametrize(
+    "stream,parent,url,status_code,response_content,expected_availability,expected_reason_substring",
+    [
+        (
+            Users,
+            None,
+            "https://api.notion.com/v1/users",
+            403,
+            b'{"object": "error", "status": 403, "code": "restricted_resource"}',
+            False,
+            "This is likely due to insufficient permissions for your Notion integration.",
+        ),
+        (
+            Blocks,
+            Pages,
+            "https://api.notion.com/v1/blocks/123/children",
+            403,
+            b'{"object": "error", "status": 403, "code": "restricted_resource"}',
+            False,
+            "This is likely due to insufficient permissions for your Notion integration.",
+        ),
+        (
+            Users,
+            None,
+            "https://api.notion.com/v1/users",
+            200,
+            b'{"object": "list", "results": [{"id": "123", "object": "user", "type": "person"}]}',
+            True,
+            None,
+        ),
+    ],
+)
+def test_403_error_handling(
+    requests_mock, stream, parent, url, status_code, response_content, expected_availability, expected_reason_substring
+):
+    """
+    Test that availability strategy flags streams with 403 error as unavailable
+    and returns custom Notion integration message.
+    """
+
+    requests_mock.get(url=url, status_code=status_code, content=response_content)
+
+    if parent:
+        stream = stream(parent=parent, config=MagicMock())
+        stream.parent.stream_slices = MagicMock(return_value=[{"id": "123"}])
+        stream.parent.read_records = MagicMock(return_value=[{"id": "123", "object": "page"}])
+    else:
+        stream = stream(config=MagicMock())
+
+    is_available, reason = stream.check_availability(logger=logging.Logger, source=MagicMock())
+
+    assert is_available is expected_availability
+
+    if expected_reason_substring:
+        assert expected_reason_substring in reason
+    else:
+        assert reason is None
