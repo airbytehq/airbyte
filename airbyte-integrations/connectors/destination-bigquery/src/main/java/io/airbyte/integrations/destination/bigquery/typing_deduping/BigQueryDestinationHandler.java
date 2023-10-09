@@ -60,7 +60,7 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
   public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
     final TableResult queryResult = bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(Map.of(
         "raw_table", id.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
-        """
+            """
             SELECT COALESCE(
               (
                 SELECT MIN(_airbyte_extracted_at)
@@ -72,8 +72,8 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
                 FROM ${raw_table}
               )
             )
-            """
-    )).build());
+            """))
+        .build());
     final FieldValue value = queryResult.iterateAll().iterator().next().get(0);
     if (value.isNull()) {
       return Optional.empty();
