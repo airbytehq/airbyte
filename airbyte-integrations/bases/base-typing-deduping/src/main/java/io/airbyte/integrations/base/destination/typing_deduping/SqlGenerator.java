@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import java.time.Instant;
+import java.util.Optional;
+
 public interface SqlGenerator<DialectTableDefinition> {
 
   String SOFT_RESET_SUFFIX = "_ab_soft_reset";
@@ -69,7 +72,11 @@ public interface SqlGenerator<DialectTableDefinition> {
    *        final table directly. Useful for full refresh overwrite syncs, where we write the entire
    *        sync to a temp table and then swap it into the final table at the end.
    */
-  String updateTable(final StreamConfig stream, String finalSuffix);
+  String updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp);
+
+  default String updateTable(final StreamConfig stream, final String finalSuffix) {
+    return updateTable(stream, finalSuffix, Optional.empty());
+  }
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
