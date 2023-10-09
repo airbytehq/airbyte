@@ -38,4 +38,4 @@ def test_check_connection_exception(config):
 def test_streams(config):
     streams = SourceAsana().streams(config)
 
-    assert len(streams) == 10
+    assert len(streams) == 11
