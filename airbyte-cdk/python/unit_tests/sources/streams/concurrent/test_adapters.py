@@ -5,9 +5,9 @@
 from unittest.mock import Mock
 
 import pytest
+from airbyte_cdk.sources.streams.concurrent.adapters import AvailabilityStrategyFacade, StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
-from airbyte_cdk.sources.streams.concurrent.legacy import AvailabilityStrategyFacade, StreamFacade
 
 
 @pytest.mark.parametrize(

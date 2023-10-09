@@ -46,18 +46,18 @@ class _MockStream(Stream):
         return {}
 
 
-def _legacy_stream(slice_to_partition_mapping, slice_logger, logger):
+def _stream(slice_to_partition_mapping, slice_logger, logger):
     return _MockStream(slice_to_partition_mapping)
 
 
 @pytest.mark.parametrize(
     "constructor",
     [
-        pytest.param(_legacy_stream, id="synchronous_reader"),
+        pytest.param(_stream, id="synchronous_reader"),
     ],
 )
 def test_full_refresh_read_a_single_slice_with_debug(constructor):
-    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
+    # This test verifies that a concurrent stream adapted from a Stream behaves the same as the Stream object.
     # It is done by running the same test cases on both streams
     records = [
         {"id": 1, "partition": 1},
@@ -87,11 +87,11 @@ def test_full_refresh_read_a_single_slice_with_debug(constructor):
 @pytest.mark.parametrize(
     "constructor",
     [
-        pytest.param(_legacy_stream, id="synchronous_reader"),
+        pytest.param(_stream, id="synchronous_reader"),
     ],
 )
 def test_full_refresh_read_a_single_slice(constructor):
-    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
+    # This test verifies that a concurrent stream adapted from a Stream behaves the same as the Stream object.
     # It is done by running the same test cases on both streams
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()
@@ -113,11 +113,11 @@ def test_full_refresh_read_a_single_slice(constructor):
 @pytest.mark.parametrize(
     "constructor",
     [
-        pytest.param(_legacy_stream, id="synchronous_reader"),
+        pytest.param(_stream, id="synchronous_reader"),
     ],
 )
 def test_full_refresh_read_a_two_slices(constructor):
-    # This test verifies that a concurrent stream adapted from a legacy stream behaves the same as the legacy stream
+    # This test verifies that a concurrent stream adapted from a Stream behaves the same as the Stream object
     # It is done by running the same test cases on both streams
     logger = _mock_logger()
     slice_logger = DebugSliceLogger()

@@ -18,7 +18,7 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from deprecated.classic import deprecated
 
 """
-This module contains adapters to help enabling concurrency on existing Stream without needing to migrate to AbstractStream
+This module contains adapters to help enabling concurrency on Stream objects without needing to migrate to AbstractStream
 """
 
 
