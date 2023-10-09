@@ -12,7 +12,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_asana.oauth import AsanaOauth2Authenticator
 
-from .streams import CustomFields, Projects, SectionsCompact, Sections, Stories, Tags, Tasks, TeamMemberships, Teams, Users, Workspaces
+from .streams import CustomFields, Projects, Sections, SectionsCompact, Stories, Tags, Tasks, TeamMemberships, Teams, Users, Workspaces
 
 
 class SourceAsana(AbstractSource):
