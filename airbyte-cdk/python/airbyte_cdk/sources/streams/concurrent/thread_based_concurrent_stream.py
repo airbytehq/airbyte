@@ -3,11 +3,12 @@
 #
 
 import concurrent
+import time
 from concurrent.futures import Future
 from functools import lru_cache
 from logging import Logger
 from queue import Queue
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.message import MessageRepository
@@ -25,6 +26,8 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 class ThreadBasedConcurrentStream(AbstractStream):
 
     DEFAULT_TIMEOUT_SECONDS = 300
+    DEFAULT_MAX_QUEUE_SIZE = 10_000
+    DEFAULT_SLEEP_TIME = 0.1
 
     def __init__(
         self,
@@ -39,6 +42,8 @@ class ThreadBasedConcurrentStream(AbstractStream):
         logger: Logger,
         message_repository: MessageRepository,
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
+        max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
+        sleep_time: float = DEFAULT_SLEEP_TIME,
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -52,6 +57,8 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._logger = logger
         self._message_repository = message_repository
         self._timeout_seconds = timeout_seconds
+        self._max_concurrent_tasks = max_concurrent_tasks
+        self._sleep_time = sleep_time
 
     def read(self) -> Iterable[Record]:
         """
@@ -71,15 +78,17 @@ class ThreadBasedConcurrentStream(AbstractStream):
             - Update the value in partitions_to_done to True so we know the partition is completed
         """
         self._logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
-        futures = []
+        futures: List[Future[Any]] = []
         queue: Queue[QueueItem] = Queue()
         partition_generator = PartitionEnqueuer(queue, PARTITIONS_GENERATED_SENTINEL)
         partition_reader = PartitionReader(queue)
 
         # Submit partition generation tasks
-        futures.append(
-            self._threadpool.submit(partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh)
-        )
+        # self._wait_while_too_many_pending_futures(futures)
+        # futures.append(
+        #     self._threadpool.submit(partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh)
+        # )
+        self._submit_task(futures, partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh)
 
         # True -> partition is done
         # False -> partition is not done
@@ -105,11 +114,25 @@ class ThreadBasedConcurrentStream(AbstractStream):
                 partitions_to_done[record_or_partition] = False
                 if self._slice_logger.should_log_slice_message(self._logger):
                     self._message_repository.emit_message(self._slice_logger.create_slice_log_message(record_or_partition.to_slice()))
-                futures.append(self._threadpool.submit(partition_reader.process_partition, record_or_partition))
+                self._submit_task(futures, partition_reader.process_partition, record_or_partition)
             if finished_partitions and all(partitions_to_done.values()):
                 # All partitions were generated and process. We're done here
                 break
         self._check_for_errors(futures)
+
+    def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
+        # Submit a task to the threadpool, waiting if there are too many pending tasks
+        self._wait_while_too_many_pending_futures(futures)
+        futures.append(self._threadpool.submit(function, *args))
+
+    def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
+        # Wait until the number of pending tasks is < self._max_concurrent_tasks
+        while True:
+            pending_futures = [f for f in futures if not f.done()]
+            if len(pending_futures) < self._max_concurrent_tasks:
+                break
+            self._logger.info("Main thread is sleeping because the task queue is full...")
+            time.sleep(self._sleep_time)
 
     def _check_for_errors(self, futures: List[Future[Any]]) -> None:
         exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]

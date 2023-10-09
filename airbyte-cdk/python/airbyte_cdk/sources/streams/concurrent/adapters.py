@@ -145,7 +145,7 @@ class StreamFacade(Stream):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         # This method is not expected to be called directly. It is only implemented for backward compatibility with the old interface
-        return self.as_airbyte_stream().source_defined_primary_key
+        return self.as_airbyte_stream().source_defined_primary_key  # type: ignore # source_defined_primary_key is known to be an Optional[List[List[str]]]
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -196,7 +196,7 @@ class StreamFacade(Stream):
     def as_airbyte_stream(self) -> AirbyteStream:
         return self._abstract_stream.as_airbyte_stream()
 
-    def log_stream_sync_configuration(self):
+    def log_stream_sync_configuration(self) -> None:
         self._abstract_stream.log_stream_sync_configuration()
 
 
@@ -321,7 +321,7 @@ class StreamAvailabilityStrategy(AbstractAvailabilityStrategy):
             if available:
                 return StreamAvailable()
             else:
-                return StreamUnavailable(message)
+                return StreamUnavailable(str(message))
         except Exception as e:
             display_message = self._stream.get_error_display_message(e)
             if display_message:
