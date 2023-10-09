@@ -16,9 +16,9 @@ class SourceOdnoklassnikiGroups(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         credentials = self._get_auth(config)()
         date_from, date_to = self._prepare_dates(config)
-        gid = config.get("gid")
+        gids = config.get("gids")
         return [
-            GetStatTrendsStream(credentials=credentials, gid=gid, date_from=date_from, date_to=date_to),
+            GetStatTrendsStream(credentials=credentials, gids=gids, date_from=date_from, date_to=date_to),
         ]
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[IsSuccess, Message | None]:
@@ -65,6 +65,10 @@ class SourceOdnoklassnikiGroups(AbstractSource):
 
     @staticmethod
     def _check_config(config: Mapping[str, Any], credentials: OKCredentials) -> Tuple[IsSuccess, Message | None]:
+        # Check gids
+        if not config.get("gids"):
+            return False, "Group IDs not set"
+
         # Check dates config
         date_from = config.get("date_from")
         date_to = config.get("date_to")
@@ -73,7 +77,7 @@ class SourceOdnoklassnikiGroups(AbstractSource):
                 return False, "'Date from' exceeds 'Date to' in config"
 
         # Check connection
-        is_success, message = check_group_stream_connection(credentials=credentials, gid=config.get("gid"))
+        is_success, message = check_group_stream_connection(credentials=credentials, gid=config.get("gids")[0])
         if not is_success:
             return is_success, message
 

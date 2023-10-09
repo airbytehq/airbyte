@@ -57,9 +57,9 @@ class GetStatTrendsStream(Stream):
     URL: str = "https://api.ok.ru/fb.do"
     METHOD: str = "group.getStatTrends"
 
-    def __init__(self, credentials: OKCredentials, gid: str, date_from: date | None, date_to: date | None):
+    def __init__(self, credentials: OKCredentials, gids: List[str], date_from: date | None, date_to: date | None):
         self.credentials = credentials
-        self.gid = gid
+        self.gids = gids
         self.date_from = date_from
         self.date_to = date_to
 
@@ -116,15 +116,14 @@ class GetStatTrendsStream(Stream):
             return
         return str(self._end_timestamp).ljust(13, "0")
 
-    @property
-    def url(self) -> str:
+    def get_url(self, gid: str) -> str:
         params = {
             "application_key": self.credentials.application_key.get_secret_value(),
             "fields": self._fields_str,
             "format": "json",
-            "gid": self.gid,
+            "gid": gid,
             "method": self.METHOD,
-            "sig": self._calculate_sig(),
+            "sig": self._calculate_sig(gid),
             "access_token": self.credentials.access_token.get_secret_value(),
         }
         if self._start_timestamp:
@@ -133,13 +132,13 @@ class GetStatTrendsStream(Stream):
             params["end_time"] = self.end_time
         return f"{self.URL}?{urlencode(params)}"
 
-    def _calculate_sig(self) -> str:
+    def _calculate_sig(self, gid: str) -> str:
         secret_key = self.credentials.session_secret_key.get_secret_value()
         request_data = {
             "application_key": self.credentials.application_key.get_secret_value(),
             "fields": self._fields_str,
             "format": "json",
-            "gid": self.gid,
+            "gid": gid,
             "method": self.METHOD,
         }
         if self._start_timestamp:
@@ -158,25 +157,29 @@ class GetStatTrendsStream(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        attempts_count = 0
-        while attempts_count < 3:
-            try:
-                response = requests.get(self.url)
-            except Exception as e:
-                log.error(f"Request to OKAPI failed: {str(e)}")
-                attempts_count += 1
-                sleep(20)
-                continue
-
-            if response.status_code == 200:
+        for gid in self.gids:
+            is_success = False
+            attempts_count = 0
+            while attempts_count < 3:
                 try:
-                    if record := response.json():
-                        yield self.SCHEMA(**record).dict()
-                except JSONDecodeError:
-                    pass
-                return
+                    response = requests.get(self.get_url(gid))
+                except Exception as e:
+                    log.error(f"Request to OKAPI failed: {str(e)}")
+                    attempts_count += 1
+                    sleep(20)
+                    continue
 
-            else:
-                raise Exception(f"Status code: {response.status_code}. Body: {response.text}")
+                if response.status_code == 200:
+                    try:
+                        if record := response.json():
+                            yield self.SCHEMA(gid=gid, **record).dict()
+                    except JSONDecodeError:
+                        pass
+                    is_success = True
+                    break
 
-        raise Exception(f"Failed to load data from OKAPI in 3 attempts")
+                else:
+                    raise Exception(f"Gid: '{gid}'. Status code: {response.status_code}. Body: {response.text}")
+
+            if not is_success:
+                raise Exception(f"Failed to load data from OKAPI in 3 attempts for gid '{gid}'")

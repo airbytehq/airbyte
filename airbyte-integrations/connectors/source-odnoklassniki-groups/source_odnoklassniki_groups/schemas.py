@@ -9,6 +9,7 @@ class StatData(BaseModel):
 
 
 class GetStatTrends(BaseModel):
+    gid: str
     comments: Optional[List[StatData]]
     complaints: Optional[List[StatData]]
     content_opens: Optional[List[StatData]]

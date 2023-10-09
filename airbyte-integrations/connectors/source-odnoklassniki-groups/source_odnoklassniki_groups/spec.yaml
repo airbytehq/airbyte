@@ -5,7 +5,7 @@ connectionSpecification:
   type: object
   required:
     - credentials
-    - gid
+    - gids
   additionalProperties: false
   properties:
     credentials:
@@ -40,11 +40,11 @@ connectionSpecification:
               description: StaticToken ID in CredentialsCraft for Odnoklassniki
               examples:
                 - 100
-    gid:
-      title: Group ID
-      type: string
-      examples:
-        - 597307567859781
+    gids:
+      title: Group IDs
+      type: array
+      items:
+        type: string
     date_from:
       title: Date from
       type: string

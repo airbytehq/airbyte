@@ -7,6 +7,10 @@
           "title" : "GetStatTrends",
           "type" : "object",
           "properties" : {
+            "gid" : {
+              "title" : "Gid",
+              "type" : "string"
+            },
             "comments" : {
               "title" : "Comments",
               "type" : "array",
@@ -204,6 +208,9 @@
               }
             }
           },
+          "required" : [
+            "gid"
+          ],
           "definitions" : {
             "StatData" : {
               "title" : "StatData",
