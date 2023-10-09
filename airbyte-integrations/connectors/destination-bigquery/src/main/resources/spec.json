@@ -8,12 +8,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "BigQuery Destination Spec",
     "type": "object",
-    "required": [
-      "project_id",
-      "dataset_location",
-      "dataset_id",
-      "loading_method"
-    ],
+    "required": ["project_id", "dataset_location", "dataset_id"],
     "additionalProperties": true,
     "properties": {
       "project_id": {
