@@ -10,6 +10,8 @@ from pytest import fixture
 from responses import matchers
 from source_jira.streams import Projects
 
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+
 
 @fixture
 def config():
@@ -18,7 +20,7 @@ def config():
         "domain": "domain",
         "email": "email@email.com",
         "start_date": "2021-01-01T00:00:00Z",
-        "projects": ["Project1"]
+        "projects": ["Project1"],
     }
 
 
@@ -276,12 +278,20 @@ def mock_issues_responses(config, issues_response):
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/search",
-        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (1)"})],
+        match=[
+            matchers.query_param_matcher(
+                {"maxResults": 50, "fields": "*all", "jql": "project in (1)", "expand": "renderedFields,transitions,changelog"}
+            )
+        ],
         json=issues_response,
     )
     responses.add(
         responses.GET,
         f"https://{config['domain']}/rest/api/3/search",
-        match=[matchers.query_param_matcher({"maxResults": 50, "fields": '*all', "jql": "project in (2)"})],
+        match=[
+            matchers.query_param_matcher(
+                {"maxResults": 50, "fields": "*all", "jql": "project in (2)", "expand": "renderedFields,transitions,changelog"}
+            )
+        ],
         json={},
     )

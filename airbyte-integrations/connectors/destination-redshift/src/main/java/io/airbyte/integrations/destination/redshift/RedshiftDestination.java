@@ -9,11 +9,11 @@ import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.fin
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Map;
 import org.slf4j.Logger;

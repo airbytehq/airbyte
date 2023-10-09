@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.mysql;
 
-import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
