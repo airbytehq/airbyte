@@ -53,11 +53,11 @@ def _stream(slice_to_partition_mapping, slice_logger, logger, message_repository
 
 
 def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message_repository):
-    legacy_stream = _stream(slice_to_partition_mapping, slice_logger, logger, message_repository)
+    stream = _stream(slice_to_partition_mapping, slice_logger, logger, message_repository)
     source = Mock()
     source._slice_logger = slice_logger
     source.message_repository = message_repository
-    stream = StreamFacade.create_from_stream(legacy_stream, source, logger, 1)
+    stream = StreamFacade.create_from_stream(stream, source, logger, 1)
     stream.logger.setLevel(logger.level)
     return stream
 
