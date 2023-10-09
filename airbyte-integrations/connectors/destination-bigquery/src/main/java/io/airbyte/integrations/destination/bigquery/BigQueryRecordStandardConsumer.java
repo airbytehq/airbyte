@@ -36,10 +36,10 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
         catalog,
         new BufferManager(getMaxMemoryLimit()),
         defaultNamespace,
-            Executors.newFixedThreadPool(1));
+            Executors.newFixedThreadPool(4));
   }
 
   private static long getMaxMemoryLimit() {
-    return 1024 * 1024 * 25; // 25 MB
+    return 1024 * 1024 * 500; // 500 MB
   }
 }
