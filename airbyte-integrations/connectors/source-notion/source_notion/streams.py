@@ -3,19 +3,38 @@
 #
 
 from abc import ABC
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
+import pendulum
 import pydantic
 import requests
+from airbyte_cdk.logger import AirbyteLogger as Logger
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources import Source
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
+from requests import HTTPError
 
 from .utils import transform_properties
 
 # maximum block hierarchy recursive request depth
 MAX_BLOCK_DEPTH = 30
+
+
+class NotionAvailabilityStrategy(HttpAvailabilityStrategy):
+    """
+    Inherit from HttpAvailabilityStrategy with slight modification to 403 error message.
+    """
+
+    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: Logger, source: Source, error: HTTPError) -> Dict[int, str]:
+
+        reasons_for_codes: Dict[int, str] = {
+            requests.codes.FORBIDDEN: "This is likely due to insufficient permissions for your Notion integration. "
+            "Please make sure your integration has read access for the resources you are trying to sync"
+        }
+        return reasons_for_codes
 
 
 class NotionStream(HttpStream, ABC):
@@ -30,11 +49,16 @@ class NotionStream(HttpStream, ABC):
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
-        self.start_date = config["start_date"]
+        self.start_date = config.get("start_date")
+
+        # If start_date is not found in config, set it to 2 years ago and update value in config for use in next stream
+        if not self.start_date:
+            self.start_date = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
+            config["start_date"] = self.start_date
 
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+    def availability_strategy(self) -> HttpAvailabilityStrategy:
+        return NotionAvailabilityStrategy()
 
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):
@@ -70,9 +94,9 @@ class NotionStream(HttpStream, ABC):
             "has_more": true,
             "results": [ ... ]
         }
-        Doc: https://developers.notion.com/reference/pagination
+        Doc: https://developers.notion.com/reference/intro#pagination
         """
-        next_cursor = response.json()["next_cursor"]
+        next_cursor = response.json().get("next_cursor")
         if next_cursor:
             return {"next_cursor": next_cursor}
 
@@ -158,7 +182,7 @@ class IncrementalNotionStream(NotionStream, ABC):
             state_lmd = stream_state.get(self.cursor_field, "")
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
-            if not stream_state or record_lmd >= state_lmd:
+            if (not stream_state or record_lmd >= state_lmd) and record_lmd >= self.start_date:
                 yield from transform_properties(record)
 
     def get_updated_state(
