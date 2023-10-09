@@ -1,0 +1,12 @@
+{
+    "properties": {
+         "country": {
+          "type":["string", "null"]
+       }
+     },
+     "required": [
+       "date_start",
+       "account_id",
+       "ad_id" 
+     ]
+ }

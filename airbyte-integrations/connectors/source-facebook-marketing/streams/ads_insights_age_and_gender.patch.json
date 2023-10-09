@@ -1,0 +1,15 @@
+{
+    "properties": {
+         "age": {
+          "type":["string", "null"]
+       },
+       "gender": {
+        "type":["string", "null"]
+     }
+     },
+     "required": [
+       "date_start",
+       "account_id",
+       "ad_id" 
+     ]
+ }
