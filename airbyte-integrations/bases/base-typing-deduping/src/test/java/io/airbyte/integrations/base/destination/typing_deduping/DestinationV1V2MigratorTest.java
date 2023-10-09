@@ -91,7 +91,8 @@ public class DestinationV1V2MigratorTest {
                                                              final boolean v2TableExists,
                                                              final boolean v2RawSchemaMatches,
                                                              boolean v1RawTableExists,
-                                                             boolean v1RawTableSchemaMatches) throws SQLException {
+                                                             boolean v1RawTableSchemaMatches)
+      throws SQLException {
     final BaseDestinationV1V2Migrator migrator = Mockito.spy(BaseDestinationV1V2Migrator.class);
     Mockito.when(migrator.doesAirbyteInternalNamespaceExist(Mockito.any())).thenReturn(v2NamespaceExists);
     final var existingTable = v2TableExists ? Optional.of("v2_raw") : Optional.empty();
