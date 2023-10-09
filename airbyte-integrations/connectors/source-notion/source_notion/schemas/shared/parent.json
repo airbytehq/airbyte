@@ -17,6 +17,9 @@
     },
     "workspace": {
       "type": "boolean"
+    },
+    "block_id": {
+      "type": "string"
     }
   }
 }
