@@ -115,11 +115,11 @@ public class DetectStreamToFlush {
           "trigger info: %s - %s, %s , %s",
           stream.getNamespace(),
           stream.getName(),
-          "nope",// isTimeTriggeredResult.getRight(),
+          "nope", // isTimeTriggeredResult.getRight(),
           isSizeTriggeredResult.getRight());
       log.debug("computed: {}", debugString);
 
-      if (isSizeTriggeredResult.getLeft()/* || isTimeTriggeredResult.getLeft()*/) {
+      if (isSizeTriggeredResult.getLeft()/* || isTimeTriggeredResult.getLeft() */) {
         log.info("flushing: {}", debugString);
         latestFlushTimeMsPerStream.put(stream, nowProvider.millis());
         return Optional.of(stream);
