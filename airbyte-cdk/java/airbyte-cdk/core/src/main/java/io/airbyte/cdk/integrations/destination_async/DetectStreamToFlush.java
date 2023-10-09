@@ -115,7 +115,7 @@ public class DetectStreamToFlush {
           "trigger info: %s - %s, %s , %s",
           stream.getNamespace(),
           stream.getName(),
-          "nope"// isTimeTriggeredResult.getRight(),
+          "nope",// isTimeTriggeredResult.getRight(),
           isSizeTriggeredResult.getRight());
       log.debug("computed: {}", debugString);
 
