@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,8 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
         new BigQueryAsyncStandardFlush(bigQuery, uploaderMap),
         catalog,
         new BufferManager(),
-        defaultNamespace);
+        defaultNamespace,
+            Executors.newFixedThreadPool(1));
   }
 
 }
