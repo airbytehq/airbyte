@@ -196,7 +196,7 @@ class TiktokStream(HttpStream, ABC):
         """
         data = response.json()
         if data["code"]:
-            raise TiktokException(data)
+            raise TiktokException(data, response.url)
         data = data["data"]
         if self.response_list_field in data:
             data = data[self.response_list_field]
