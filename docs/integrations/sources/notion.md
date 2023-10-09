@@ -72,7 +72,7 @@ If you are authenticating via OAuth2.0 for Airbyte Open Source, you will need to
 - **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your Notion integration's page.
 - **OAuth2.0**: Copy and paste the Client ID, Client Secret and Access Token you acquired.
 
-6. Enter the **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. All data generated after this date will be replicated.
+6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. When using incremental syncs, only data generated after this date will be replicated. If left blank, Airbyte will set the start date two years from the current date by default.
 7. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
@@ -107,6 +107,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| 1.2.2   | 2023-10-09 | [30780](https://github.com/airbytehq/airbyte/pull/30780) | Update Start Date in config to optional field                                |
 | 1.2.1   | 2023-10-08 | [30750](https://github.com/airbytehq/airbyte/pull/30750) | Add availability strategy                                                    |
 | 1.2.0   | 2023-10-04 | [31053](https://github.com/airbytehq/airbyte/pull/31053) | Add undeclared fields for blocks and pages streams                           |
 | 1.1.2   | 2023-08-30 | [29999](https://github.com/airbytehq/airbyte/pull/29999) | Update error handling during connection check                                |

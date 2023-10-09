@@ -5,6 +5,7 @@
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
+import pendulum
 import pydantic
 import requests
 from airbyte_cdk.logger import AirbyteLogger as Logger
@@ -48,7 +49,12 @@ class NotionStream(HttpStream, ABC):
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
-        self.start_date = config["start_date"]
+        self.start_date = config.get("start_date")
+
+        # If start_date is not found in config, set it to 2 years ago and update value in config for use in next stream
+        if not self.start_date:
+            self.start_date = pendulum.now().subtract(years=2).in_timezone("UTC").format("YYYY-MM-DDTHH:mm:ss.SSS[Z]")
+            config["start_date"] = self.start_date
 
     @property
     def availability_strategy(self) -> HttpAvailabilityStrategy:
@@ -176,7 +182,7 @@ class IncrementalNotionStream(NotionStream, ABC):
             state_lmd = stream_state.get(self.cursor_field, "")
             if isinstance(state_lmd, StateValueWrapper):
                 state_lmd = state_lmd.value
-            if not stream_state or record_lmd >= state_lmd:
+            if (not stream_state or record_lmd >= state_lmd) and record_lmd >= self.start_date:
                 yield from transform_properties(record)
 
     def get_updated_state(
