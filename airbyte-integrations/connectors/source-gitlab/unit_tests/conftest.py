@@ -14,6 +14,22 @@ def config(request):
     }
 
 
+@pytest.fixture
+def oauth_config():
+    return {
+        "api_url": "gitlab.com",
+        "credentials": {
+            "auth_type": "oauth2.0",
+            "client_id": "client_id",
+            "client_secret": "client_secret",
+            "access_token": "access_token",
+            "token_expiry_date": "2021-01-01T00:00:00Z",
+            "refresh_token": "refresh_token",
+        },
+        "start_date": "2021-01-01T00:00:00Z",
+    }
+
+
 @pytest.fixture(autouse=True)
 def disable_cache(mocker):
     mocker.patch("source_gitlab.streams.Projects.use_cache", new_callable=mocker.PropertyMock, return_value=False)

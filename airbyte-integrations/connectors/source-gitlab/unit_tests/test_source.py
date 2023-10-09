@@ -64,3 +64,11 @@ def test_connection_fail_due_to_config_error(mocker, api_url, deployment_env, ex
     }
     status, msg = source.check_connection(logging.getLogger(), config)
     assert (status, msg) == (False, expected_message)
+
+
+def test_connection_fail_due_to_invalid_oauth_refresh_token(oauth_config, requests_mock):
+    content = {"error": "invalid_grant", "error_description": "error_description"}
+    requests_mock.post(f"https://{oauth_config['api_url']}/oauth/token", status_code=400, json=content)
+    source = SourceGitlab()
+    status, msg = source.check_connection(logging.getLogger(), oauth_config)
+    assert status is False, msg.startswith("Unable to connect to Gitlab API with the provided credentials - AirbyteTracedException")

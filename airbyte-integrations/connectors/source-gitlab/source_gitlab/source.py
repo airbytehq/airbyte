@@ -8,12 +8,14 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
+from airbyte_cdk.utils import AirbyteTracedException
 from requests.auth import AuthBase
+from requests.exceptions import HTTPError
 
 from .streams import (
     Branches,
@@ -69,7 +71,17 @@ class SingleUseRefreshTokenGitlabOAuth2Authenticator(SingleUseRefreshTokenOauth2
         return pendulum.from_timestamp(access_token_created_at + access_token_expires_in)
 
     def refresh_access_token(self) -> Tuple[str, int, int, str]:
-        response_json = self._get_refresh_access_token_response()
+        try:
+            response_json = self._get_refresh_access_token_response()
+        except HTTPError as e:
+            content = e.response.json()
+            if e.response.status_code == 400 and content.get("error") == "invalid_grant":
+                raise AirbyteTracedException(
+                    internal_message=content.get("error_description"),
+                    message="Refresh token is invalid or expired. Please re-authenticate to restore access to Gitlab.",
+                    failure_type=FailureType.config_error,
+                )
+            raise
         return (
             response_json[self.get_access_token_name()],
             response_json[self.get_expires_in_name()],
