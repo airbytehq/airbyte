@@ -65,11 +65,13 @@
             "id": "seleFjJiXuyLDHNUM",
             "name": "Todo",
             "color": "redLight2"
-          }, {
+          },
+          {
             "id": "selskIXEljPBrKHLz",
             "name": "In progress",
             "color": "yellowLight2"
-          }, {
+          },
+          {
             "id": "selg4w4LeypED2gpW",
             "name": "Done",
             "color": "greenLight2"
@@ -94,7 +96,8 @@
       },
       "id": "fldsjTjrIkKTv6KjG",
       "name": "Integer"
-    }, {
+    },
+    {
       "type": "barcode",
       "id": "fld899obV6ycadgWS",
       "name": "Barcode"

@@ -31,9 +31,9 @@ def test_get_airbyte_stream(table, expected_json_schema):
 
 
 def test_table_with_formulas():
-    table = load_file('sample_table_with_formulas.json')
+    table = load_file("sample_table_with_formulas.json")
 
     stream_schema = SchemaHelpers.get_json_schema(table)
 
-    expected_schema = load_file('expected_schema_for_sample_table.json')
+    expected_schema = load_file("expected_schema_for_sample_table.json")
     assert stream_schema == expected_schema
