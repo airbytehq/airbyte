@@ -60,12 +60,8 @@ def chunk_date_range(
         - The function adjusts the start date based on `days_of_data_storage` and `conversion_window` to adhere to certain data retrieval policies, such as Google Ads' policy of only retrieving data not older than a certain number of days.
         - The method returns `start_date` and `end_date` with a difference typically spanning 15 days to avoid token expiration issues.
     """
-    logger.info(f"Logger Start date TypeError: {start_date}, {end_date}, {time_format}")
-    logger.error(f"Logger Start date TypeError: {start_date}, {end_date}, {time_format}")
-    logging.info(f"Logging Start date TypeError: {start_date}, {end_date}, {time_format}")
-    logging.error(f"Logging Start date TypeError: {start_date}, {end_date}, {time_format}")
-    print(f"Print Start date TypeError: {start_date}, {end_date}, {time_format}")
-    raise Exception("test prints")
+    logger.info(f"Logger Start date info TypeError: {start_date}, {end_date}, {time_format}")
+    logger.error(f"Logger Start date error TypeError: {start_date}, {end_date}, {time_format}")
     start_date = pendulum.parse(start_date, tz=time_zone)
     today = pendulum.today(tz=time_zone)
     end_date = pendulum.parse(end_date, tz=time_zone) if end_date else today
