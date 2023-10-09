@@ -234,7 +234,6 @@ class StreamPartition(Partition):
                     self._message_repository.emit_message(record_data)
         except Exception as e:
             display_message = self._stream.get_error_display_message(e)
-            print(f"display_message: {display_message}")
             if display_message:
                 raise ExceptionWithDisplayMessage(display_message) from e
             else:
