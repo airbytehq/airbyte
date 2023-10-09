@@ -5,6 +5,7 @@
 package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.BigQuery;
+import com.google.common.util.concurrent.RateLimiter;
 import io.airbyte.cdk.integrations.destination_async.DestinationFlushFunction;
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
@@ -19,26 +20,30 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
 
+  // TODO remove this once the async framework supports rate-limiting/backpressuring
+  private static final RateLimiter rateLimiter = RateLimiter.create(0.5);
+
   private final BigQuery bigQuery;
   private final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap;
 
-  public BigQueryAsyncStandardFlush(BigQuery bigQuery,
-                                    Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap) {
+  public BigQueryAsyncStandardFlush(final BigQuery bigQuery,
+                                    final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap) {
     this.bigQuery = bigQuery;
     this.uploaderMap = uploaderMap;
   }
 
   @Override
   public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
-    ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMapSupplied = uploaderMap.get();
-    AtomicInteger recordCount = new AtomicInteger();
+    rateLimiter.acquire();
+    final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMapSupplied = uploaderMap.get();
+    final AtomicInteger recordCount = new AtomicInteger();
     stream.forEach(aibyteMessage -> {
       try {
-        AirbyteStreamNameNamespacePair sd = new AirbyteStreamNameNamespacePair(aibyteMessage.getRecord().getStream(),
+        final AirbyteStreamNameNamespacePair sd = new AirbyteStreamNameNamespacePair(aibyteMessage.getRecord().getStream(),
             aibyteMessage.getRecord().getNamespace());
         uploaderMapSupplied.get(sd).upload(aibyteMessage);
         recordCount.getAndIncrement();
-      } catch (Exception e) {
+      } catch (final Exception e) {
         log.error("BQ async standard flush");
         log.error(aibyteMessage.toString());
         throw e;
