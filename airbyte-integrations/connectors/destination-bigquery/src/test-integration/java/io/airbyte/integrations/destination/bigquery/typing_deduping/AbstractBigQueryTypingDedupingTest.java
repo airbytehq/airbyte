@@ -4,9 +4,13 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
@@ -121,6 +125,30 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+  }
+
+  @Test
+  public void testRemovingPKNonNullIndexes() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.FULL_REFRESH)
+            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withStream(new AirbyteStream()
+                .withNamespace(streamNamespace)
+                .withName(streamName)
+                .withJsonSchema(SCHEMA)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id1", "id2"))))));;
+
+    // First sync
+    final List<AirbyteMessage> messages = readMessages("dat/sync_null_pk.jsonl");
+    assertThrows(
+        BigQueryException.class,
+        () -> runSync(catalog, messages, "airbyte/destination-bigquery:2.0.20")); // this version introduced non-null PKs to the final tables
+
+    // Second sync
+    runSync(catalog, messages); // does not throw with latest version
+    assertEquals(3, dumpRawTableRecords(streamNamespace, streamName).toArray().length);
+    assertEquals(1, dumpFinalTableRecords(streamNamespace, streamName).toArray().length);
   }
 
   /**
