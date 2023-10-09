@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 6e00b415-b02e-4160-bf02-58176a0ae687
-  dockerImageTag: 1.3.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-notion
   githubIssueLabel: source-notion
   icon: notion.svg
@@ -17,6 +17,11 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "Version 2.0.0 introduces schema changes to multiple properties shared by the blocks, databases and pages streams. These changes were introduced to reflect updates to the Notion API. A full schema refresh and data reset are required to upgrade to this version."
+        upgradeDeadline: "2023-11-09"
   suggestedStreams:
     streams:
       - blocks
