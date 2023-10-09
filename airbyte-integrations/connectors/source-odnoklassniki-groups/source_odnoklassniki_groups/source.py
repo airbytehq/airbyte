@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from datetime import date, timedelta, datetime
-from typing import Mapping, Any, List, Tuple
+from typing import Mapping, Any, List, Tuple, Callable
 
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -39,15 +39,25 @@ class SourceOdnoklassnikiGroups(AbstractSource):
         return True, None
 
     @staticmethod
-    def _get_auth(config: Mapping[str, Any]) -> CredentialsCraftAuthenticator:
+    def _get_auth(config: Mapping[str, Any]) -> Callable:
         credentials = config["credentials"]
         auth_type = credentials["auth_type"]
+
         if auth_type == "credentials_craft_auth":
             return CredentialsCraftAuthenticator(
                 host=credentials["credentials_craft_host"],
                 bearer_token=credentials["credentials_craft_token"],
                 token_id=credentials["credentials_craft_odnoklassniki_token_id"],
             )
+        if auth_type == "token_auth":
+            return lambda: OKCredentials(
+                application_id=credentials["application_id"],
+                application_key=credentials["application_key"],
+                application_secret_key=credentials["application_secret_key"],
+                access_token=credentials["access_token"],
+                session_secret_key=credentials["session_secret_key"],
+            )
+
         raise ValueError(f"Unknown auth type: '{auth_type}'")
 
     @staticmethod

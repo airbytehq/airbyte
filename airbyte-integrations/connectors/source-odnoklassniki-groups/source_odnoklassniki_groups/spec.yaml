@@ -40,6 +40,39 @@ connectionSpecification:
               description: StaticToken ID in CredentialsCraft for Odnoklassniki
               examples:
                 - 100
+        - title: Token Auth
+          type: object
+          required:
+            - auth_type
+            - access_token
+            - application_id
+            - application_key
+            - application_secret_key
+            - session_secret_key
+          properties:
+            auth_type:
+              title: Auth Type
+              type: string
+              const: token_auth
+            access_token:
+              title: Access token
+              type: string
+              airbyte_secret: true
+            application_id:
+              title: Application ID
+              type: string
+            application_key:
+              title: Application key
+              type: string
+              airbyte_secret: true
+            application_secret_key:
+              title: Application secret key
+              type: string
+              airbyte_secret: true
+            session_secret_key:
+              title: Session secret key
+              type: string
+              airbyte_secret: true
     gids:
       title: Group IDs
       type: array
