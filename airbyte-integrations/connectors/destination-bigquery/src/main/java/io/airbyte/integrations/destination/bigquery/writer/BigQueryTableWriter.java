@@ -5,6 +5,8 @@
 package io.airbyte.integrations.destination.bigquery.writer;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.Job;
+import com.google.cloud.bigquery.JobStatus;
 import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.common.base.Charsets;
 import io.airbyte.cdk.integrations.destination.s3.writer.DestinationWriter;
@@ -47,9 +49,18 @@ public class BigQueryTableWriter implements DestinationWriter {
   @Override
   public void close(boolean hasFailed) throws IOException {
     this.writeChannel.close();
-    if (writeChannel.getJob().getStatus().getError() != null) {
-      throw new RuntimeException("Fail to complete a load job in big query, Job id: " + writeChannel.getJob().getJobId() +
-          ", with error: " + writeChannel.getJob().getStatus().getError());
+    try {
+      Job job = writeChannel.getJob();
+      while (JobStatus.State.DONE.equals(writeChannel.getJob().getStatus())) {
+        Thread.sleep(1000L);
+        job = job.reload();
+      }
+      if (job.getStatus().getError() != null) {
+        throw new RuntimeException("Fail to complete a load job in big query, Job id: " + writeChannel.getJob().getJobId() +
+                ", with error: " + writeChannel.getJob().getStatus().getError());
+      }
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
   }
 
