@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination_async.buffers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.integrations.destination_async.AirbyteFileUtils;
 import io.airbyte.cdk.integrations.destination_async.FlushWorkers;
 import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
@@ -59,6 +60,11 @@ public class BufferManager {
 
   public GlobalAsyncStateManager getStateManager() {
     return stateManager;
+  }
+
+  @VisibleForTesting
+  protected GlobalMemoryManager getMemoryManager() {
+    return memoryManager;
   }
 
   public BufferEnqueue getBufferEnqueue() {
