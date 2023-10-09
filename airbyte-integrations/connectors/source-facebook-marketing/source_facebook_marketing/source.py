@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -94,7 +94,8 @@ class SourceFacebookMarketing(AbstractSource):
             if config.start_date and config.end_date < config.start_date:
                 return False, "End date must be equal or after start date."
 
-            api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
+            api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size,
+                      google_service_account=config.google_service_account)
 
             record_iterator = AdAccount(api=api).read_records(sync_mode=SyncMode.full_refresh, stream_state={})
             account_info = list(record_iterator)[0]
@@ -131,7 +132,8 @@ class SourceFacebookMarketing(AbstractSource):
             config.start_date = validate_start_date(config.start_date)
             config.end_date = validate_end_date(config.start_date, config.end_date)
 
-        api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size)
+        api = API(account_id=config.account_id, access_token=config.access_token, page_size=config.page_size,
+                  google_service_account=config.google_service_account)
 
         # if start_date not specified then set default start_date for report streams to 2 years ago
         report_start_date = config.start_date or pendulum.now().add(years=-2)

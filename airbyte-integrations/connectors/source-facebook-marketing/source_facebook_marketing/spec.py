@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -114,9 +114,8 @@ class ConnectorConfig(BaseConfig):
             'bar of your <a href="https://adsmanager.facebook.com/adsmanager/">Meta Ads Manager</a>. '
             'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
         ),
-        pattern="^[0-9]+$",
         pattern_descriptor="1234567890",
-        examples=["111111111111111"],
+        examples=[""],
     )
 
     access_token: str = Field(
@@ -153,6 +152,13 @@ class ConnectorConfig(BaseConfig):
         pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
         default_factory=lambda: datetime.now(tz=timezone.utc),
+    )
+
+    google_service_account: str = Field(
+        title="Google Service Account",
+        order=3,
+        description="Service account to connect to BigQuery for fetching list of accounts",
+        airbyte_secret=True
     )
 
     include_deleted: bool = Field(

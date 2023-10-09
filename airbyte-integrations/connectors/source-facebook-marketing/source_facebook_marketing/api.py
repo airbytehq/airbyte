@@ -6,15 +6,20 @@ import json
 import logging
 from dataclasses import dataclass
 from time import sleep
+from typing import List
 
 import backoff
 import pendulum
 from cached_property import cached_property
 from facebook_business import FacebookAdsApi
+from facebook_business.adobjects import user as fb_user
 from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.api import FacebookResponse
 from facebook_business.exceptions import FacebookRequestError
 from source_facebook_marketing.streams.common import retry_pattern
+
+from google.cloud import bigquery
+from google.oauth2 import service_account
 
 logger = logging.getLogger("airbyte")
 
@@ -173,8 +178,9 @@ class MyFacebookAdsApi(FacebookAdsApi):
 class API:
     """Simple wrapper around Facebook API"""
 
-    def __init__(self, account_id: str, access_token: str, page_size: int = 100):
+    def __init__(self, account_id: str, access_token: str, google_service_account: str, page_size: int = 100):
         self._account_id = account_id
+        self._google_service_account = google_service_account
         # design flaw in MyFacebookAdsApi requires such strange set of new default api instance
         self.api = MyFacebookAdsApi.init(access_token=access_token, crash_log=False)
         # adding the default page size from config to the api base class
@@ -186,7 +192,37 @@ class API:
     @cached_property
     def account(self) -> AdAccount:
         """Find current account"""
-        return self._find_account(self._account_id)
+        return next(iter(self.accounts), None)
+
+    @cached_property
+    def accounts(self) -> List[AdAccount]:
+        """Find current accounts"""
+        if len(self._account_id):
+            return [self._find_account(acc.strip()) for acc in self._account_id.split(",")]
+        else:
+            ad_accounts = []
+            missing_permissions = []
+            google_service_account = json.loads(self._google_service_account)
+            bq_credentials = service_account.Credentials.from_service_account_info(google_service_account)
+            bq_client = bigquery.Client(credentials=bq_credentials)
+
+            query = bq_client.query(query="SELECT DISTINCT publisher_account_id "
+                                          "FROM `dolead-gsp-2020.dbt_mart.new_core_ppc_accounts` "
+                                          "WHERE publisher = 'FB_ADS' "
+                                          "AND is_active = TRUE "
+                                          "LIMIT 1")
+            results = query.result()
+            for res in results:
+                id = str(res.publisher_account_id)
+                try:
+                    account = self._find_account(id)
+                    ad_accounts.append(account)
+                except FacebookRequestError as e:
+                    missing_permissions.append(id)
+
+            logger.info("Missing permissions on following accounts : " + str(missing_permissions))
+
+            return ad_accounts
 
     @staticmethod
     def _find_account(account_id: str) -> AdAccount:

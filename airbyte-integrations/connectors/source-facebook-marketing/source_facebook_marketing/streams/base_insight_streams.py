@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -178,14 +178,15 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         return self.state
 
-    def _date_intervals(self) -> Iterator[pendulum.Date]:
+    def _date_intervals(self, account_id: str = None) -> Iterator[pendulum.Date]:
         """Get date period to sync"""
-        if self._end_date < self._next_cursor_value:
+        next_cursor_value = self._next_cursor_value.get(account_id, self._next_cursor_value.get(None))
+        if self._end_date < next_cursor_value:
             return
-        date_range = self._end_date - self._next_cursor_value
+        date_range = self._end_date - next_cursor_value
         yield from date_range.range("days", self.time_increment)
 
-    def _advance_cursor(self):
+    def _advance_cursor(self, account_id: str = None):
         """Iterate over state, find continuing sequence of slices. Get last value, advance cursor there and remove slices from state"""
         for ts_start in self._date_intervals():
             if ts_start not in self._completed_slices:
@@ -200,14 +201,14 @@ class AdsInsights(FBMarketingIncrementalStream):
         :param params:
         :return:
         """
-
-        self._next_cursor_value = self._get_start_date()
-        for ts_start in self._date_intervals():
-            if ts_start in self._completed_slices:
-                continue
-            ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
-            interval = pendulum.Period(ts_start, ts_end)
-            yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
+        for account in self._api.accounts:
+            self._next_cursor_value = self._get_start_date()
+            for ts_start in self._date_intervals(account_id=account.get("account_id")):
+                if ts_start in self._completed_slices:
+                    continue
+                ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
+                interval = pendulum.Period(ts_start, ts_end)
+                yield InsightAsyncJob(api=self._api.api, edge_object=account, interval=interval, params=params)
 
     def check_breakdowns(self):
         """
@@ -246,7 +247,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         except FacebookRequestError as exc:
             raise traced_exception(exc)
 
-    def _get_start_date(self) -> pendulum.Date:
+    def _get_start_date(self, account_id: str = None) -> pendulum.Date:
         """Get start date to begin sync with. It is not that trivial as it might seem.
         There are few rules:
             - don't read data older than start_date
@@ -261,8 +262,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         today = pendulum.today().date()
         oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
         refresh_date = today - self.insights_lookback_period
-        if self._cursor_value:
-            start_date = self._cursor_value + pendulum.duration(days=self.time_increment)
+        if (self._cursor_value or {}).get(account_id):
+            start_date = self._cursor_value.get(account_id) + pendulum.duration(days=self.time_increment)
             if start_date > refresh_date:
                 logger.info(
                     f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead."
@@ -276,7 +277,8 @@ class AdsInsights(FBMarketingIncrementalStream):
             start_date = self._start_date
         if start_date < oldest_date:
             logger.warning(f"Loading insights older then {self.INSIGHTS_RETENTION_PERIOD} is not possible. Start sync from {oldest_date}.")
-        return max(oldest_date, start_date)
+
+        return {account_id: max(oldest_date, start_date)}
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
         return {
