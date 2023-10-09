@@ -320,10 +320,10 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("numeric")
-            .fullSourceDataType("NUMERIC(38)")
+            .fullSourceDataType("NUMERIC(38,0)")
             .airbyteType(JsonSchemaType.INTEGER)
-            .addInsertValues("'33'")
-            .addExpectedValues("33")
+            .addInsertValues("'33'", "'123'")
+            .addExpectedValues("33", "123")
             .build());
 
     addDataTypeTestData(
@@ -336,7 +336,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             // Postgres source does not support these special values yet
             // https://github.com/airbytehq/airbyte/issues/8902
             // "'infinity'", "'-infinity'", "'nan'"
-            .addExpectedValues("123", null, "14525.22")
+            .addExpectedValues("123.0", null, "14525.22")
             .build());
 
     // Blocked by https://github.com/airbytehq/airbyte/issues/8902
@@ -351,7 +351,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               // Postgres source does not support these special values yet
               // https://github.com/airbytehq/airbyte/issues/8902
               // "'infinity'", "'-infinity'", "'nan'"
-              .addExpectedValues("123", null, "1.2345678901234567E9")
+              .addExpectedValues("123.0", null, "1.2345678901234567E9")
               .build());
     }
 
