@@ -353,7 +353,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTable.get()),
         "Altering a column was not detected as a schema change.");
   }
-  
+
   /**
    * Test that T+D supports streams whose name and namespace are the same.
    */
