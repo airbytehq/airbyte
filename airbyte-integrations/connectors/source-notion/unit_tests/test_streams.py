@@ -7,6 +7,7 @@ import random
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
+import freezegun
 import pytest
 import requests
 from airbyte_cdk.models import SyncMode
@@ -180,6 +181,29 @@ def test_user_stream_handles_pagination_correctly(requests_mock):
     records = stream.read_records(sync_mode=SyncMode.full_refresh)
     records_length = sum(1 for _ in records)
     assert records_length == 220
+
+
+@pytest.mark.parametrize(
+    "config, expected_start_date, current_time",
+    [
+        (
+            {"authenticator": "secret_token", "start_date": "2021-09-01T00:00:00.000Z"},
+            "2021-09-01T00:00:00.000Z",
+            "2022-09-22T00:00:00.000Z",
+        ),
+        ({"authenticator": "super_secret_token", "start_date": None}, "2020-09-22T00:00:00.000Z", "2022-09-22T00:00:00.000Z"),
+        ({"authenticator": "even_more_secret_token"}, "2021-01-01T12:30:00.000Z", "2023-01-01T12:30:00.000Z"),
+    ],
+)
+def test_set_start_date(patch_base_class, config, expected_start_date, current_time):
+    """
+    Test that start_date in config is either:
+      1. set to the value provided by the user
+      2. defaults to two years from the present date set by the test environment.
+    """
+    with freezegun.freeze_time(current_time):
+        stream = NotionStream(config=config)
+        assert stream.start_date == expected_start_date
 
 
 @pytest.mark.parametrize(
