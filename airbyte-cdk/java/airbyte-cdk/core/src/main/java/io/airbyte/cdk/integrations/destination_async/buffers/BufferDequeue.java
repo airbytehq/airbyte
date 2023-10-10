@@ -75,10 +75,15 @@ public class BufferDequeue {
       }
 
       if (queue.isEmpty()) {
-        buffers.remove(streamDescriptor);
-        // free the remainder, leaving the read bytes to be freed by the batch flush
-        final var slop = queue.getMaxMemoryUsage() - bytesRead.get();
-        memoryManager.free(slop);
+        final var batchSizeBytes = bytesRead.get();
+        final var allocatedBytes = queue.getMaxMemoryUsage();
+
+        // Free unused allocation for the queue.
+        // When the batch flushes it will flush its allocation.
+        memoryManager.free(allocatedBytes - batchSizeBytes);
+
+        // Shrink queue to 0 — any new messages will reallocate.
+        queue.addMaxMemory(-allocatedBytes);
       } else {
         queue.addMaxMemory(-bytesRead.get());
       }

@@ -156,12 +156,14 @@ public class BufferDequeueTest {
 
       final var totalBatchSize = RECORD_SIZE_20_BYTES * 4;
 
+      // read the whole queue
       try (final var batch = dequeue.take(STREAM_DESC, totalBatchSize)) {
         // slop allocation gets cleaned up
         assertEquals(BLOCK_SIZE_BYTES + totalBatchSize, memoryManager.getCurrentMemoryBytes());
         batch.close();
         // back to initial state after flush clears the batch
         assertEquals(BLOCK_SIZE_BYTES, memoryManager.getCurrentMemoryBytes());
+        assertEquals(0, bufferManager.getBuffers().get(STREAM_DESC).getMaxMemoryUsage());
       }
   }
 
