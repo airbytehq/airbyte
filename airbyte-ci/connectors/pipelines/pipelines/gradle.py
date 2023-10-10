@@ -90,7 +90,7 @@ class GradleTask(Step, ABC):
             "findutils",  # gradle requires xargs, which is shipped in findutils.
             "jq",  # required by :airbyte-connector-test-harnesses:acceptance-test-harness to inspect docker images.
             "npm",  # required by :format.
-            "pip",  # required by :format.
+            "python3.11-pip",  # required by :format.
             "rsync",  # required for gradle cache synchronization.
         ]
 

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.30
+Add new token_expiry_is_time_of_expiration property for AbstractOauth2Authenticator for indicate that token's expiry_in is a time of expiration
+
 ## 0.51.29
 Coerce read_records to iterable in http availabilty strategy
 
