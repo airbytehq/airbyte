@@ -3,14 +3,15 @@
 #
 
 from typing import List, Optional, Union
-from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
-from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
-from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
-from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from pydantic import AnyUrl, Field, ValidationError, root_validator, BaseModel
+from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
+from pydantic import AnyUrl, BaseModel, Field, ValidationError, root_validator
+
 
 class UnstructuredFormat(BaseModel):
     class Config:
@@ -21,11 +22,13 @@ class UnstructuredFormat(BaseModel):
         const=True,
     )
 
+
 class S3FileBasedStreamConfig(FileBasedStreamConfig):
     format: Union[AvroFormat, CsvFormat, JsonlFormat, ParquetFormat, UnstructuredFormat] = Field(
         title="Format",
         description="The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
     )
+
 
 class Config(AbstractFileBasedSpec):
     """
