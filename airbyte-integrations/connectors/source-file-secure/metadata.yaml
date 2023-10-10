@@ -2,8 +2,6 @@ data:
   allowedHosts:
     hosts:
       - "*"
-  connectorBuildOptions:
-    baseImage: airbyte/airbyte-python-connectors-base:0.1.0
   connectorSubtype: file
   connectorType: source
   definitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
