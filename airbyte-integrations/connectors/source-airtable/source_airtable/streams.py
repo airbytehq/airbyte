@@ -71,7 +71,11 @@ class AirtableBases(HttpStream):
             }
         """
         records = response.json().get(self.name)
-        yield from records
+        for base in records:
+            if base.get("permissionLevel") == "none":
+                self.logger.warning(f"Skipping base `{base.get('name')}` with id `{base.get('id')}`: Not sufficient permissions")
+            else:
+                yield base
 
 
 class AirtableTables(AirtableBases):
