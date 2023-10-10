@@ -160,6 +160,9 @@ python {
     minPythonVersion = '3.10' // should be 3.10 for local development
 
     // Amazon Linux support.
+    // The airbyte-ci tool runs gradle tasks in AL2023-based containers.
+    // In AL2023, `python3` is necessarily v3.9, and later pythons need to be installed and named explicitly.
+    // See https://github.com/amazonlinux/amazon-linux-2023/issues/459 for details.
     try {
         if ("python3.11 --version".execute().waitFor() == 0) {
             // python3.11 definitely exists at this point, use it instead of 'python3'.
