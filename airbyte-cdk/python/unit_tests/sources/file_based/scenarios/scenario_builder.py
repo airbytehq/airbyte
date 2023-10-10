@@ -1,10 +1,10 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, Generic, List, Mapping, Optional, Tuple, Type, TypeVar
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -89,7 +89,19 @@ class TestScenario:
             return []
 
 
-class FileBasedSourceBuilder:
+SourceType = TypeVar("SourceType", bound=AbstractSource)
+
+
+class SourceBuilder(ABC, Generic[SourceType]):
+    @abstractmethod
+    def build(self, configured_catalog) -> SourceType:
+        raise NotImplementedError()
+
+
+SourceBuilderType = TypeVar("SourceBuilderType", bound=SourceBuilder)
+
+
+class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
     def __init__(self) -> None:
         self._files: Mapping[str, Any] = {}
         self._file_type: Optional[str] = None
@@ -101,7 +113,7 @@ class FileBasedSourceBuilder:
         self._file_write_options: Mapping[str, Any] = {}
         self._cursor_cls: Optional[Type[AbstractFileBasedCursor]] = None
 
-    def build(self, configured_catalog) -> AbstractSource:
+    def build(self, configured_catalog) -> InMemoryFilesSource:
         if self._file_type is None:
             raise ValueError("file_type is not set")
         return InMemoryFilesSource(
@@ -157,7 +169,7 @@ class FileBasedSourceBuilder:
         return deepcopy(self)
 
 
-class TestScenarioBuilder:
+class TestScenarioBuilder(Generic[SourceBuilderType]):
     def __init__(self) -> None:
         self._name = ""
         self._config: Mapping[str, Any] = {}
@@ -170,7 +182,7 @@ class TestScenarioBuilder:
         self._expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
-        self.source_builder = None
+        self.source_builder: Optional[SourceBuilderType] = None
 
     def set_name(self, name: str) -> "TestScenarioBuilder":
         self._name = name
@@ -216,7 +228,7 @@ class TestScenarioBuilder:
         self._expected_read_error = error, message
         return self
 
-    def set_source_builder(self, source_builder):
+    def set_source_builder(self, source_builder: SourceBuilderType) -> "TestScenarioBuilder":
         self.source_builder = source_builder
         return self
 
