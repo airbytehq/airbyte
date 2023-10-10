@@ -10,13 +10,24 @@
       "type": "string"
     },
     "created_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
+    },
+    "created_by": {
+      "$ref": "user.json"
     },
     "last_edited_time": {
-      "type": "string"
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_edited_by": {
+      "$ref": "user.json"
     },
     "archived": {
       "type": "boolean"
+    },
+    "icon": {
+      "$ref": "icon.json"
     },
     "cover": {
       "$ref": "file.json"
@@ -26,6 +37,9 @@
     },
     "url": {
       "type": "string"
+    },
+    "public_url": {
+      "type": ["null", "string"]
     },
     "properties": {
       "type": "array",
@@ -61,7 +75,10 @@
                   "type": {
                     "enum": ["rich_text"]
                   },
-                  "rich_text": { "$ref": "rich_text.json" }
+                  "rich_text": {
+                    "type": ["null", "array"],
+                    "items": { "$ref": "rich_text.json" }
+                  }
                 }
               },
               {
@@ -213,7 +230,7 @@
                 "properties": {
                   "id": { "type": "string" },
                   "type": { "enum": ["phone_number"] },
-                  "phone_number": { "type": "string" }
+                  "phone_number": { "type": "object" }
                 }
               },
               {
@@ -246,6 +263,62 @@
                   "id": { "type": "string" },
                   "type": { "enum": ["last_edited_by"] },
                   "last_edited_by": { "$ref": "user.json" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["number"] },
+                  "number": {
+                    "type": "object",
+                    "properties": {
+                      "format": { "type": "string" }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["status"] },
+                  "status": { "$ref": "options.json" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "enum": ["unique_id"] },
+                  "unique_id": {
+                    "type": "object",
+                    "properties": {
+                      "number": { "type": "number" },
+                      "prefix": { "type": ["null", "string"] }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["verification"]
+                  },
+                  "verification": {
+                    "type": "object",
+                    "properties": {
+                      "state": {
+                        "enum": ["verified", "unverified"]
+                      },
+                      "verified_by": { "$ref": "user.json" },
+                      "date": { "$ref": "date.json" }
+                    }
+                  }
                 }
               }
             ]
