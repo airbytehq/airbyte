@@ -126,6 +126,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 | :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.0.26  | 2023-10-09 | [\#31198](https://github.com/airbytehq/airbyte/pull/31198) | Clarify configuration groups                                                                                                                                    |
 | 2.0.25  | 2023-10-09 | [\#31185](https://github.com/airbytehq/airbyte/pull/31185) | Increase staging file upload timeout to 5 minutes                                                                                                               |
 | 2.0.24  | 2023-10-06 | [\#31139](https://github.com/airbytehq/airbyte/pull/31139) | Bump CDK version                                                                                                                                                |
 | 2.0.23  | 2023-10-06 | [\#31129](https://github.com/airbytehq/airbyte/pull/31129) | Reduce async buffer size                                                                                                                                        |
