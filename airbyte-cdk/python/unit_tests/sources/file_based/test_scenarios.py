@@ -26,7 +26,7 @@ def verify_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: 
             discover(capsys, tmp_path, scenario)
         if expected_msg:
             assert expected_msg in get_error_message_from_exc(exc)
-    else:
+    elif scenario.expected_catalog:
         output = discover(capsys, tmp_path, scenario)
         catalog, logs = output["catalog"], output["logs"]
         assert catalog == scenario.expected_catalog

@@ -17,6 +17,26 @@ from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_str
 
 _base_concurrent_scenario = ()
 
+
+_id_only_stream = ThreadBasedConcurrentStream(
+    partition_generator=InMemoryPartitionGenerator([InMemoryPartition("partition1", None, [Record({"id": "1"}), Record({"id": "2"})])]),
+    max_workers=1,
+    name="stream1",
+    json_schema={
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "string"]},
+        },
+    },
+    availability_strategy=AlwaysAvailableAvailabilityStrategy(),
+    primary_key=[],
+    cursor_field=None,
+    slice_logger=NeverLogSliceLogger(),
+    logger=logging.getLogger("test_logger"),
+    message_repository=InMemoryMessageRepository(),
+    timeout_seconds=300,
+)
+
 test_concurrent_cdk_single_stream = (
     TestScenarioBuilder()
     .set_name("test_concurrent_cdk_single_stream")
@@ -24,26 +44,7 @@ test_concurrent_cdk_single_stream = (
     .set_source_builder(
         ConcurrentSourceBuilder().set_streams(
             [
-                ThreadBasedConcurrentStream(
-                    partition_generator=InMemoryPartitionGenerator(
-                        [InMemoryPartition("partition1", None, [Record({"id": "1"}), Record({"id": "2"})])]
-                    ),
-                    max_workers=1,
-                    name="stream1",
-                    json_schema={
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": ["null", "string"]},
-                        },
-                    },
-                    availability_strategy=AlwaysAvailableAvailabilityStrategy(),
-                    primary_key=[],
-                    cursor_field=None,
-                    slice_logger=NeverLogSliceLogger(),
-                    logger=logging.getLogger("test_logger"),
-                    message_repository=InMemoryMessageRepository(),
-                    timeout_seconds=300,
-                )
+                _id_only_stream,
             ]
         )
     )
@@ -53,7 +54,6 @@ test_concurrent_cdk_single_stream = (
             {"data": {"id": "2"}, "stream": "stream1"},
         ]
     )
-    .set_expected_check_status("SUCCEEDED")
     .set_expected_catalog(
         {
             "streams": [
@@ -80,26 +80,7 @@ test_concurrent_cdk_multiple_streams = (
     .set_source_builder(
         ConcurrentSourceBuilder().set_streams(
             [
-                ThreadBasedConcurrentStream(
-                    partition_generator=InMemoryPartitionGenerator(
-                        [InMemoryPartition("partition1", None, [Record({"id": "1"}), Record({"id": "2"})])]
-                    ),
-                    max_workers=1,
-                    name="stream1",
-                    json_schema={
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": ["null", "string"]},
-                        },
-                    },
-                    availability_strategy=AlwaysAvailableAvailabilityStrategy(),
-                    primary_key=[],
-                    cursor_field=None,
-                    slice_logger=NeverLogSliceLogger(),
-                    logger=logging.getLogger("test_logger"),
-                    message_repository=InMemoryMessageRepository(),
-                    timeout_seconds=300,
-                ),
+                _id_only_stream,
                 ThreadBasedConcurrentStream(
                     partition_generator=InMemoryPartitionGenerator(
                         [InMemoryPartition("partition1", None, [Record({"id": "10", "key": "v1"}), Record({"id": "20", "key": "v2"})])]
@@ -132,7 +113,6 @@ test_concurrent_cdk_multiple_streams = (
             {"data": {"id": "20", "key": "v2"}, "stream": "stream2"},
         ]
     )
-    .set_expected_check_status("SUCCEEDED")
     .set_expected_catalog(
         {
             "streams": [

@@ -23,6 +23,7 @@ class ConcurrentCdkSource(AbstractSource):
         self._streams = streams
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        # Check is not verified because it is up to the source to implement this method
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
