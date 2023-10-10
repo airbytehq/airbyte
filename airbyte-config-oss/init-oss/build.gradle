@@ -14,7 +14,10 @@ dependencies {
     implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
     implementation libs.lombok
-    implementation libs.micronaut.cache.caffeine
+    implementation (libs.micronaut.cache.caffeine) {
+        // Figure out how to stop this transitive coming from log4j-bom
+        exclude(group: "org.apache.logging.log4j")
+    }
 
     testImplementation project(':airbyte-test-utils')
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'

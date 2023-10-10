@@ -96,7 +96,7 @@ dependencies {
     testImplementation libs.junit.jupiter.system.stubs
 
     implementation libs.jackson.annotations
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-layout-template-json', version: '2.17.2'
+//    implementation group: 'org.apache.logging.log4j', name: 'log4j-layout-template-json', version: '2.17.2'
 
     implementation group: 'com.hadoop.gplcompression', name: 'hadoop-lzo', version: '0.4.20'
 
