@@ -110,14 +110,23 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         for customer in self.customers:
             stream_state = stream_state or {}
+            logger.info("Start date: " + str(self._start_date))
+            logger.info("Stream state: " + str(stream_state))
+            logger.info("Customer id: " + str(customer.id))
+            logger.info("Cursor field: " + str(self.cursor_field))
+            logger.info("Customers: " + str(self.customers))
+            logger.info("Value: " + str(stream_state.get(self.cursor_field)))
             if stream_state.get(customer.id):
                 start_date = stream_state[customer.id].get(self.cursor_field) or self._start_date
+                logger.info("DEBUG 1 " + str(start_date))
 
             # We should keep backward compatibility with the previous version
-            elif stream_state.get(self.cursor_field) and len(self.customers) == 1:
+            elif stream_state.get(self.cursor_field) and len(self.customers) > 0:
                 start_date = stream_state.get(self.cursor_field) or self._start_date
+                logger.info("DEBUG 2 " + str(start_date))
             else:
                 start_date = self._start_date
+                logger.info("DEBUG 3 " + str(start_date))
 
             end_date = self._end_date
 
