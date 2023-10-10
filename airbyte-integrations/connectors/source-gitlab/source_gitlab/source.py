@@ -164,11 +164,11 @@ class SourceGitlab(AbstractSource):
             except Exception as e:
                 raise Exception(f"Unknown error occured while refreshing the `access_token`, details: {e}")
 
-    def _handle_expired_access_token_error(self, logger, config, http_error: HTTPError) -> Tuple[bool, Any]:
+    def _handle_expired_access_token_error(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             return self.check_connection(logger, self._try_refresh_access_token(logger, config))
         except HTTPError as http_error:
-            return False, f"Unable to refresh the `access_token`, please re-auth in Source > Settings. Details: {http_error}"
+            return False, f"Unable to refresh the `access_token`, please re-authenticate in Sources > Settings. Details: {http_error}"
 
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
         config = self._ensure_default_values(config)
@@ -186,7 +186,7 @@ class SourceGitlab(AbstractSource):
         except HTTPError as http_error:
             if config["credentials"]["auth_type"] == "oauth2.0":
                 if http_error.response.status_code == 401:
-                    return self._handle_expired_access_token_error(logger, config, http_error)
+                    return self._handle_expired_access_token_error(logger, config)
                 elif http_error.response.status_code == 500:
                     return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(http_error)}"
             else:
