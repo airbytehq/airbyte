@@ -37,6 +37,54 @@ _id_only_stream = ThreadBasedConcurrentStream(
     timeout_seconds=300,
 )
 
+_id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
+    partition_generator=InMemoryPartitionGenerator(
+        [
+            InMemoryPartition("partition1", {"p": "1"}, [Record({"id": "1"}), Record({"id": "2"})]),
+            InMemoryPartition("partition2", {"p": "2"}, [Record({"id": "3"}), Record({"id": "4"})]),
+        ]
+    ),
+    max_workers=1,
+    name="stream1",
+    json_schema={
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "string"]},
+        },
+    },
+    availability_strategy=AlwaysAvailableAvailabilityStrategy(),
+    primary_key=[],
+    cursor_field=None,
+    slice_logger=NeverLogSliceLogger(),
+    logger=logging.getLogger("test_logger"),
+    message_repository=InMemoryMessageRepository(),
+    timeout_seconds=300,
+)
+
+_id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurrentStream(
+    partition_generator=InMemoryPartitionGenerator(
+        [
+            InMemoryPartition("partition1", {"p": "1"}, [Record({"id": "1"}), Record({"id": "2"})]),
+            InMemoryPartition("partition2", {"p": "2"}, [Record({"id": "3"}), Record({"id": "4"})]),
+        ]
+    ),
+    max_workers=2,
+    name="stream1",
+    json_schema={
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "string"]},
+        },
+    },
+    availability_strategy=AlwaysAvailableAvailabilityStrategy(),
+    primary_key=[],
+    cursor_field=None,
+    slice_logger=NeverLogSliceLogger(),
+    logger=logging.getLogger("test_logger"),
+    message_repository=InMemoryMessageRepository(),
+    timeout_seconds=300,
+)
+
 test_concurrent_cdk_single_stream = (
     TestScenarioBuilder()
     .set_name("test_concurrent_cdk_single_stream")
@@ -137,6 +185,82 @@ test_concurrent_cdk_multiple_streams = (
                     "name": "stream2",
                     "supported_sync_modes": ["full_refresh"],
                 },
+            ]
+        }
+    )
+    .build()
+)
+
+test_concurrent_cdk_single_stream_multiple_partitions = (
+    TestScenarioBuilder()
+    .set_name("test_concurrent_cdk_single_stream_multiple_partitions")
+    .set_config({})
+    .set_source_builder(
+        ConcurrentSourceBuilder().set_streams(
+            [
+                _id_only_stream_multiple_partitions,
+            ]
+        )
+    )
+    .set_expected_records(
+        [
+            {"data": {"id": "1"}, "stream": "stream1"},
+            {"data": {"id": "2"}, "stream": "stream1"},
+            {"data": {"id": "3"}, "stream": "stream1"},
+            {"data": {"id": "4"}, "stream": "stream1"},
+        ]
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": ["null", "string"]},
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            ]
+        }
+    )
+    .build()
+)
+
+test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_two = (
+    TestScenarioBuilder()
+    .set_name("test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_2")
+    .set_config({})
+    .set_source_builder(
+        ConcurrentSourceBuilder().set_streams(
+            [
+                _id_only_stream_multiple_partitions_concurrency_level_two,
+            ]
+        )
+    )
+    .set_expected_records(
+        [
+            {"data": {"id": "1"}, "stream": "stream1"},
+            {"data": {"id": "2"}, "stream": "stream1"},
+            {"data": {"id": "3"}, "stream": "stream1"},
+            {"data": {"id": "4"}, "stream": "stream1"},
+        ]
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": ["null", "string"]},
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh"],
+                }
             ]
         }
     )

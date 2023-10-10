@@ -12,11 +12,15 @@ from unit_tests.sources.file_based.test_scenarios import verify_discover, verify
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_scenarios import (
     test_concurrent_cdk_multiple_streams,
     test_concurrent_cdk_single_stream,
+    test_concurrent_cdk_single_stream_multiple_partitions,
+    test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_two,
 )
 
 scenarios = [
     test_concurrent_cdk_single_stream,
     test_concurrent_cdk_multiple_streams,
+    test_concurrent_cdk_single_stream_multiple_partitions,
+    test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_two,
 ]
 
 
