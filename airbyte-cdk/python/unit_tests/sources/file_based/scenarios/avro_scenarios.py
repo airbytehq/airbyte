@@ -7,6 +7,7 @@ import decimal
 import uuid
 
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryAvroFilesStreamReader
+from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 _single_avro_file = {
@@ -124,7 +125,7 @@ _avro_all_types_file = {
                 {"lead_singer": "Matty Healy", "lead_guitar": "Adam Hann", "bass_guitar": "Ross MacDonald", "drummer": "George Daniel"},
                 b"\x12\x34\x56\x78",
                 decimal.Decimal("1234.56789"),
-                uuid.UUID('123e4567-e89b-12d3-a456-426655440000').bytes,
+                uuid.UUID("123e4567-e89b-12d3-a456-426655440000").bytes,
                 datetime.date(2022, 5, 29),
                 datetime.time(6, 0, 0, 456000),
                 datetime.time(12, 0, 0, 456789),
@@ -210,8 +211,11 @@ single_avro_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_single_avro_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_single_avro_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_check_status("SUCCEEDED")
     .set_expected_records(
         [
@@ -273,8 +277,11 @@ multiple_avro_combine_schema_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {
@@ -369,8 +376,11 @@ avro_all_types_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_avro_all_types_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_avro_all_types_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {
@@ -431,7 +441,11 @@ avro_all_types_scenario = (
                             "col_long": {"type": ["null", "integer"]},
                             "col_map": {"additionalProperties": {"type": ["null", "string"]}, "type": ["null", "object"]},
                             "col_record": {
-                                "properties": {"artist": {"type": ["null", "string"]}, "song": {"type": ["null", "string"]}, "year": {"type": ["null", "integer"]}},
+                                "properties": {
+                                    "artist": {"type": ["null", "string"]},
+                                    "song": {"type": ["null", "string"]},
+                                    "year": {"type": ["null", "integer"]},
+                                },
                                 "type": ["null", "object"],
                             },
                             "col_string": {"type": ["null", "string"]},
@@ -476,8 +490,11 @@ multiple_streams_avro_scenario = (
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_stream_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_stream_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {
@@ -586,7 +603,10 @@ multiple_streams_avro_scenario = (
                         "type": "object",
                         "properties": {
                             "col_title": {"type": ["null", "string"]},
-                            "col_album": {"type": ["null", "string"], "enum": ["SUMMERS_GONE", "IN_RETURN", "A_MOMENT_APART", "THE_LAST_GOODBYE"]},
+                            "col_album": {
+                                "type": ["null", "string"],
+                                "enum": ["SUMMERS_GONE", "IN_RETURN", "A_MOMENT_APART", "THE_LAST_GOODBYE"],
+                            },
                             "col_year": {"type": ["null", "integer"]},
                             "col_vocals": {"type": ["null", "boolean"]},
                             "_ab_source_file_last_modified": {"type": "string"},
@@ -604,7 +624,11 @@ multiple_streams_avro_scenario = (
                         "properties": {
                             "col_name": {"type": ["null", "string"]},
                             "col_location": {
-                                "properties": {"country": {"type": ["null", "string"]}, "state": {"type": ["null", "string"]}, "city": {"type": ["null", "string"]}},
+                                "properties": {
+                                    "country": {"type": ["null", "string"]},
+                                    "state": {"type": ["null", "string"]},
+                                    "city": {"type": ["null", "string"]},
+                                },
                                 "type": ["null", "object"],
                             },
                             "col_attendance": {"type": ["null", "integer"]},
@@ -631,16 +655,16 @@ avro_file_with_double_as_number_scenario = (
                     "name": "stream1",
                     "globs": ["*"],
                     "validation_policy": "Emit Record",
-                    "format": {
-                        "filetype": "avro",
-                        "double_as_string": False
-                    }
+                    "format": {"filetype": "avro", "double_as_string": False},
                 }
             ]
         }
     )
-    .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
-    .set_file_type("avro")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryAvroFilesStreamReader(files=_multiple_avro_combine_schema_file, file_type="avro"))
+        .set_file_type("avro")
+    )
     .set_expected_records(
         [
             {
