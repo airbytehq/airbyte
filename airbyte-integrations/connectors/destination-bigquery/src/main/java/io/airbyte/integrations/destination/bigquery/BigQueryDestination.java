@@ -280,46 +280,48 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         BigQueryUtils.getDatasetId(config));
   }
 
-  protected ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(
+  protected Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> getUploaderMap(
                                                                                                                 final BigQuery bigquery,
                                                                                                                 final JsonNode config,
                                                                                                                 final ConfiguredAirbyteCatalog catalog,
                                                                                                                 final ParsedCatalog parsedCatalog)
       throws IOException {
-      final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new ConcurrentHashMap<>();
-      for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
-        final AirbyteStream stream = configStream.getStream();
-        final StreamConfig parsedStream;
+      return () -> {
+        final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new ConcurrentHashMap<>();
+        for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
+          final AirbyteStream stream = configStream.getStream();
+          final StreamConfig parsedStream;
 
-        randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
+          randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
 
-        String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
-        final String streamName = stream.getName();
-        final String targetTableName;
+          String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
+          final String streamName = stream.getName();
+          final String targetTableName;
 
-        parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
-        targetTableName = parsedStream.id().rawName();
+          parsedStream = parsedCatalog.getStream(stream.getNamespace(), stream.getName());
+          targetTableName = parsedStream.id().rawName();
 
-        final UploaderConfig uploaderConfig = UploaderConfig
-            .builder()
-            .bigQuery(bigquery)
-            .configStream(configStream)
-            .parsedStream(parsedStream)
-            .config(config)
-            .formatterMap(getFormatterMap(stream.getJsonSchema()))
-            .tmpTableName(namingResolver.getTmpTableName(streamName, randomSuffix))
-            .targetTableName(targetTableName)
-            // This refers to whether this is BQ denormalized or not
-            .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
-            .build();
+          final UploaderConfig uploaderConfig = UploaderConfig
+                  .builder()
+                  .bigQuery(bigquery)
+                  .configStream(configStream)
+                  .parsedStream(parsedStream)
+                  .config(config)
+                  .formatterMap(getFormatterMap(stream.getJsonSchema()))
+                  .tmpTableName(namingResolver.getTmpTableName(streamName, randomSuffix))
+                  .targetTableName(targetTableName)
+                  // This refers to whether this is BQ denormalized or not
+                  .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
+                  .build();
 
-        try {
-          putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
-        } catch (IOException e) {
-          throw new RuntimeException(e);
+          try {
+            putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
+          } catch (IOException e) {
+            throw new RuntimeException(e);
+          }
         }
-      }
-      return uploaderMap;
+        return uploaderMap;
+      };
   }
 
   protected void putStreamIntoUploaderMap(final AirbyteStream stream,
@@ -360,7 +362,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                      final TyperDeduper typerDeduper)
       throws Exception {
     typerDeduper.prepareTables();
-    final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
+    final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> writeConfigs = getUploaderMap(
         bigquery,
         config,
         catalog,
@@ -374,7 +376,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           final boolean use1s1t = TypingAndDedupingFlag.isDestinationV2();
           if (use1s1t) {
             // Set up our raw tables
-            writeConfigs.forEach((streamId, uploader) -> {
+            writeConfigs.get().forEach((streamId, uploader) -> {
               final StreamConfig stream = parsedCatalog.getStream(streamId);
               if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
                 // For streams in overwrite mode, truncate the raw table.
@@ -391,7 +393,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         },
         (hasFailed) -> {
           try {
-            writeConfigs.forEach((streamId, uploader) -> uploader.closeWithoutState(hasFailed));
+            // writeConfigs.forEach((streamId, uploader) -> uploader.closeWithoutState(hasFailed));
             Thread.sleep(30 * 1000); // 30 seconds
             typerDeduper.typeAndDedupe();
             typerDeduper.commitFinalTables();

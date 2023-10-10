@@ -24,10 +24,10 @@ public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
   private static final RateLimiter rateLimiter = RateLimiter.create(0.017);
 
   private final BigQuery bigQuery;
-  private final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
+  private final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap;
 
   public BigQueryAsyncStandardFlush(final BigQuery bigQuery,
-                                    final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) {
+                                    final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap) {
     this.bigQuery = bigQuery;
     this.uploaderMap = uploaderMap;
   }
@@ -35,12 +35,13 @@ public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
   @Override
   public void flush(final StreamDescriptor decs, final Stream<PartialAirbyteMessage> stream) throws Exception {
     rateLimiter.acquire();
+    final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMapSupplied = uploaderMap.get();
     final AtomicInteger recordCount = new AtomicInteger();
     stream.forEach(aibyteMessage -> {
       try {
         final AirbyteStreamNameNamespacePair sd = new AirbyteStreamNameNamespacePair(aibyteMessage.getRecord().getStream(),
             aibyteMessage.getRecord().getNamespace());
-        uploaderMap.get(sd).upload(aibyteMessage);
+        uploaderMapSupplied.get(sd).upload(aibyteMessage);
         recordCount.getAndIncrement();
       } catch (final Exception e) {
         log.error("BQ async standard flush");
@@ -49,6 +50,7 @@ public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
       }
     });
     log.error("Record count for standard flush: " + recordCount.get());
+    uploaderMapSupplied.values().forEach(test -> test.closeAfterPush());
   }
 
   @Override

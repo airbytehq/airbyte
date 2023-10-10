@@ -28,7 +28,7 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
                                         BigQuery bigQuery,
                                         ConfiguredAirbyteCatalog catalog,
                                         String defaultNamespace,
-                                        ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap) {
+                                        Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap) {
     super(outputRecordCollector,
         onStart,
         onClose,
