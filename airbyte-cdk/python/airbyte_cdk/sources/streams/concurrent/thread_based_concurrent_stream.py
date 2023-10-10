@@ -84,10 +84,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
         partition_reader = PartitionReader(queue)
 
         # Submit partition generation tasks
-        # self._wait_while_too_many_pending_futures(futures)
-        # futures.append(
-        #     self._threadpool.submit(partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh)
-        # )
         self._submit_task(futures, partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh)
 
         # True -> partition is done
