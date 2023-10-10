@@ -59,8 +59,7 @@
     },
     "end_of_life": {
       "type": ["null", "string"],
-      "format":"%Y-%m-%d"
+      "format": "%Y-%m-%d"
     }
   }
 }
-

@@ -19,8 +19,8 @@ from airbyte_cdk.connector_builder.models import (
     StreamReadSlices,
 )
 from airbyte_cdk.entrypoint import AirbyteEntrypoint
-from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils import AirbyteTracedException
 from airbyte_cdk.utils.datetime_format_inferrer import DatetimeFormatInferrer
@@ -67,10 +67,10 @@ class MessageGrouper:
         latest_config_update: AirbyteControlMessage = None
         auxiliary_requests = []
         for message_group in self._get_message_groups(
-                self._read_stream(source, config, configured_catalog),
-                schema_inferrer,
-                datetime_format_inferrer,
-                record_limit,
+            self._read_stream(source, config, configured_catalog),
+            schema_inferrer,
+            datetime_format_inferrer,
+            record_limit,
         ):
             if isinstance(message_group, AirbyteLogMessage):
                 log_messages.append(LogMessage(**{"message": message_group.message, "level": message_group.level.value}))
@@ -101,7 +101,11 @@ class MessageGrouper:
         )
 
     def _get_message_groups(
-            self, messages: Iterator[AirbyteMessage], schema_inferrer: SchemaInferrer, datetime_format_inferrer: DatetimeFormatInferrer, limit: int
+        self,
+        messages: Iterator[AirbyteMessage],
+        schema_inferrer: SchemaInferrer,
+        datetime_format_inferrer: DatetimeFormatInferrer,
+        limit: int,
     ) -> Iterable[Union[StreamReadPages, AirbyteControlMessage, AirbyteLogMessage, AirbyteTraceMessage, AuxiliaryRequest]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
@@ -136,12 +140,16 @@ class MessageGrouper:
                 current_page_request = None
                 current_page_response = None
 
-            if at_least_one_page_in_group and message.type == MessageType.LOG and message.log.message.startswith(AbstractSource.SLICE_LOG_PREFIX):
+            if (
+                at_least_one_page_in_group
+                and message.type == MessageType.LOG
+                and message.log.message.startswith(SliceLogger.SLICE_LOG_PREFIX)
+            ):
                 yield StreamReadSlices(pages=current_slice_pages, slice_descriptor=current_slice_descriptor)
                 current_slice_descriptor = self._parse_slice_description(message.log.message)
                 current_slice_pages = []
                 at_least_one_page_in_group = False
-            elif message.type == MessageType.LOG and message.log.message.startswith(AbstractSource.SLICE_LOG_PREFIX):
+            elif message.type == MessageType.LOG and message.log.message.startswith(SliceLogger.SLICE_LOG_PREFIX):
                 # parsing the first slice
                 current_slice_descriptor = self._parse_slice_description(message.log.message)
             elif message.type == MessageType.LOG:
@@ -153,9 +161,7 @@ class MessageGrouper:
                         stream = airbyte_cdk.get("stream", {})
                         if not isinstance(stream, dict):
                             raise ValueError(f"Expected stream to be a dict, got {stream} of type {type(stream)}")
-                        title_prefix = (
-                           "Parent stream: " if stream.get("is_substream", False) else ""
-                        )
+                        title_prefix = "Parent stream: " if stream.get("is_substream", False) else ""
                         http = json_message.get("http", {})
                         if not isinstance(http, dict):
                             raise ValueError(f"Expected http to be a dict, got {http} of type {type(http)}")
@@ -220,7 +226,12 @@ class MessageGrouper:
         return is_http and message.get("http", {}).get("is_auxiliary", False)
 
     @staticmethod
-    def _close_page(current_page_request: Optional[HttpRequest], current_page_response: Optional[HttpResponse], current_slice_pages: List[StreamReadPages], current_page_records: List[Mapping[str, Any]]) -> None:
+    def _close_page(
+        current_page_request: Optional[HttpRequest],
+        current_page_response: Optional[HttpResponse],
+        current_slice_pages: List[StreamReadPages],
+        current_page_records: List[Mapping[str, Any]],
+    ) -> None:
         """
         Close a page when parsing message groups
         """
@@ -229,7 +240,9 @@ class MessageGrouper:
         )
         current_page_records.clear()
 
-    def _read_stream(self, source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog) -> Iterator[AirbyteMessage]:
+    def _read_stream(
+        self, source: DeclarativeSource, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog
+    ) -> Iterator[AirbyteMessage]:
         # the generator can raise an exception
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage
         try:
@@ -285,7 +298,7 @@ class MessageGrouper:
         return False
 
     def _parse_slice_description(self, log_message: str) -> Dict[str, Any]:
-        return json.loads(log_message.replace(AbstractSource.SLICE_LOG_PREFIX, "", 1))  # type: ignore
+        return json.loads(log_message.replace(SliceLogger.SLICE_LOG_PREFIX, "", 1))  # type: ignore
 
     @staticmethod
     def _clean_config(config: Dict[str, Any]) -> Dict[str, Any]:

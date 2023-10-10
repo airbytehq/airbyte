@@ -89,4 +89,5 @@ class IcebergRESTCatalogServerManagedConfigTest {
     Map<String, String> properties = config.getStorageConfig().catalogInitializeProperties();
     assertThat(properties).isEmpty();
   }
+
 }

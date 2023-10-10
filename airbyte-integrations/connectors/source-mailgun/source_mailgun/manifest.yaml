@@ -82,7 +82,7 @@ definitions:
       paginator:
         $ref: "#/definitions/base_paginator"
     incremental_sync:
-      $ref: "#/definitions/incremental_sync_base"  
+      $ref: "#/definitions/incremental_sync_base"
 
 streams:
   - "#/definitions/domains_stream"
@@ -93,4 +93,3 @@ check:
   stream_names:
     - "domains"
     - "events"
-

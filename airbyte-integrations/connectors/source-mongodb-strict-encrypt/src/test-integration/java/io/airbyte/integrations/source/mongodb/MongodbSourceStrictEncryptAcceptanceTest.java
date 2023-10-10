@@ -13,14 +13,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mongodb.client.MongoCollection;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.mongodb.MongoDatabase;
+import io.airbyte.cdk.db.mongodb.MongoUtils.MongoInstanceType;
+import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.mongodb.MongoDatabase;
-import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
-import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -70,10 +70,10 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
     ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, DATABASE_NAME);
 
     final String connectionString = String.format("mongodb+srv://%s:%s@%s/%s?authSource=admin&retryWrites=true&w=majority&tls=true",
-            config.get("user").asText(),
-            config.get(JdbcUtils.PASSWORD_KEY).asText(),
-            config.get("instance_type").get("cluster_url").asText(),
-            config.get(JdbcUtils.DATABASE_KEY).asText());
+        config.get("user").asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        config.get("instance_type").get("cluster_url").asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     database = new MongoDatabase(connectionString, DATABASE_NAME);
 

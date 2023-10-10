@@ -161,17 +161,11 @@
         "type": "string",
         "order": 7
       },
-      "use_1s1t_format": {
-        "type": "boolean",
-        "description": "(Beta) Use <a href=\"https://github.com/airbytehq/airbyte/issues/26028\" target=\"_blank\">Destinations V2</a>. Contact Airbyte Support to participate in the beta program.",
-        "title": "Use Destinations V2 (Early Access)",
-        "order": 10
-      },
       "raw_data_schema": {
         "type": "string",
-        "description": "(Beta) The schema to write raw tables into",
-        "title": "Destinations V2 Raw Table Schema (Early Access)",
-        "order": 11
+        "description": "The schema to write raw tables into",
+        "title": "Destinations V2 Raw Table Schema",
+        "order": 10
       }
     }
   },

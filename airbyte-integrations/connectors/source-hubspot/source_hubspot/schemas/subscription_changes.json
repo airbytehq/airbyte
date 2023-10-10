@@ -12,7 +12,7 @@
       "type": ["null", "string"]
     },
     "normalizedEmailId": {
-      "type" : ["null", "string"]
+      "type": ["null", "string"]
     },
     "changes": {
       "type": ["null", "array"],

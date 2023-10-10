@@ -124,8 +124,8 @@
                 }
               }
             },
-            "offset": {"type": ["null", "string", "integer"]},
-            "limit": {"type":  ["string", "integer"]},
+            "offset": { "type": ["null", "string", "integer"] },
+            "limit": { "type": ["string", "integer"] },
             "metricAggregations": {
               "type": ["null", "string"],
               "enum": ["COUNT", "TOTAL", "MAXIMUM", "MINIMUM"]

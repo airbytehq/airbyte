@@ -11,7 +11,7 @@ connectionSpecification:
     gcs_bucket:
       type: string
       title: GCS bucket
-      description: GCS bucket name 
+      description: GCS bucket name
     gcs_path:
       type: string
       title: GCS Path
@@ -23,4 +23,3 @@ connectionSpecification:
       airbyte_secret: true
       examples:
         - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
-

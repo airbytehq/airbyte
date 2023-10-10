@@ -55,7 +55,6 @@ definitions:
     $parameters:
       path: "/accounts"
 
-
   conversations_stream:
     $ref: "#/definitions/base_stream"
     retriever:
@@ -111,7 +110,6 @@ definitions:
           field_path: ["data", "messages"]
       partition_router:
         $ref: "#/definitions/messages_partition_router"
-
 
 streams:
   - "#/definitions/accounts_stream"

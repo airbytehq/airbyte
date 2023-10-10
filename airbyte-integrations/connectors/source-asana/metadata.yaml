@@ -1,4 +1,7 @@
 data:
+  ab_internal:
+    ql: 300
+    sl: 100
   allowedHosts:
     hosts:
       - app.asana.com
@@ -7,6 +10,7 @@ data:
   definitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
   dockerImageTag: 0.1.7
   dockerRepository: airbyte/source-asana
+  documentationUrl: https://docs.airbyte.com/integrations/sources/asana
   githubIssueLabel: source-asana
   icon: asana.svg
   license: MIT
@@ -17,11 +21,7 @@ data:
     oss:
       enabled: true
   releaseStage: beta
-  documentationUrl: https://docs.airbyte.com/integrations/sources/asana
+  supportLevel: community
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 300
-  supportLevel: certified
 metadataSpecVersion: "1.0"

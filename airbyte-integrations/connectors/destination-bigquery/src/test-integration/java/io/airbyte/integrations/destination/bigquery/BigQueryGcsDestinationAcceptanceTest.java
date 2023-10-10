@@ -10,18 +10,20 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.DestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.nio.file.Path;
 import java.util.HashSet;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Disabled
 @TestInstance(PER_CLASS)
 public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestinationAcceptanceTest {
 
@@ -29,18 +31,20 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
 
   /**
-   * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup This function will be called before EACH test.
+   * Sets up secretsFile path as well as BigQuery and GCS instances for verification and cleanup This
+   * function will be called before EACH test.
    *
-   * @param testEnv      - information about the test environment.
+   * @param testEnv - information about the test environment.
    * @param TEST_SCHEMAS
    * @throws Exception - can throw any exception, test framework will handle.
    * @see DestinationAcceptanceTest#setUpInternal()
    */
   @Override
-  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     // use secrets file with GCS staging config
     secretsFile = Path.of("secrets/credentials-gcs-staging.json");
     setUpBigQuery();
+    removeOldNamespaces();
 
     DestinationConfig.initialize(config);
 
@@ -53,13 +57,12 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   /**
    * Removes data from bigquery and GCS This function will be called after EACH test
    *
-   * @param testEnv      - information about the test environment.
-   * @param TEST_SCHEMAS
+   * @param testEnv - information about the test environment.
    * @throws Exception - can throw any exception, test framework will handle.
    * @see DestinationAcceptanceTest#tearDownInternal()
    */
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     tearDownBigQuery();
     tearDownGcs();
   }

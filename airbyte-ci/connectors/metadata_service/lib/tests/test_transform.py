@@ -1,11 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import pathlib
-import yaml
 
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+import pathlib
+
+import yaml
 from metadata_service.models import transform
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
 
 def get_all_dict_key_paths(dict_to_traverse, key_path=""):

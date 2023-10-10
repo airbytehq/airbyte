@@ -1,16 +1,20 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.CatalogHelpers;
@@ -123,9 +127,9 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME, SCHEMA_NAME,
-                    Field.of("id", JsonSchemaType.NUMBER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME, SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
@@ -133,9 +137,9 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME2, SCHEMA_NAME,
-                    Field.of("id", JsonSchemaType.NUMBER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME2, SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id")))),
@@ -143,11 +147,12 @@ public class XminPostgresSourceAcceptanceTest extends AbstractPostgresSourceAcce
             .withSyncMode(SyncMode.INCREMENTAL)
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME_MATERIALIZED_VIEW, SCHEMA_NAME,
-                    Field.of("id", JsonSchemaType.NUMBER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME_MATERIALIZED_VIEW, SCHEMA_NAME,
+                Field.of("id", JsonSchemaType.NUMBER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.INCREMENTAL))
                 .withSourceDefinedCursor(true)
                 .withSourceDefinedPrimaryKey(List.of(List.of("id"))))));
   }
+
 }

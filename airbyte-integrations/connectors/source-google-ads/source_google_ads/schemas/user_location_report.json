@@ -39,6 +39,9 @@
     "user_location_view.country_criterion_id": {
       "type": ["null", "integer"]
     },
+    "user_location_view.targeting_location": {
+      "type": ["null", "boolean"]
+    },
     "user_location_view.resource_name": {
       "type": ["null", "string"]
     },
@@ -115,7 +118,10 @@
       "type": ["null", "number"]
     },
     "metrics.interaction_event_types": {
-      "type": ["null", "array"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "metrics.interaction_rate": {
       "type": ["null", "number"]

@@ -11,7 +11,12 @@ from typing import Any, Dict, List, Mapping, Optional
 import requests
 
 SCOPES_MAPPING = {
-    "read_customers": ["Customers", "MetafieldCustomers", "CustomerSavedSearch", "CustomerAddress"],
+    "read_customers": [
+        "Customers",
+        "MetafieldCustomers",
+        "CustomerSavedSearch",
+        "CustomerAddress",
+    ],
     "read_orders": [
         "Orders",
         "AbandonedCheckouts",
@@ -22,7 +27,10 @@ SCOPES_MAPPING = {
         "OrderRisks",
         "MetafieldOrders",
     ],
-    "read_draft_orders": ["DraftOrders", "MetafieldDraftOrders"],
+    "read_draft_orders": [
+        "DraftOrders",
+        "MetafieldDraftOrders",
+    ],
     "read_products": [
         "Products",
         "ProductsGraphQl",
@@ -38,14 +46,31 @@ SCOPES_MAPPING = {
         "SmartCollections",
         "MetafieldSmartCollections",
     ],
-    "read_content": ["Pages", "MetafieldPages"],
+    "read_content": [
+        "Pages",
+        "MetafieldPages",
+    ],
     "read_price_rules": ["PriceRules"],
     "read_discounts": ["DiscountCodes"],
-    "read_locations": ["Locations", "MetafieldLocations"],
-    "read_inventory": ["InventoryItems", "InventoryLevels"],
+    "read_locations": [
+        "Locations",
+        "MetafieldLocations",
+    ],
+    "read_inventory": [
+        "InventoryItems",
+        "InventoryLevels",
+    ],
     "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
-    "read_shopify_payments_payouts": ["BalanceTransactions", "Disputes"],
-    "read_online_store_pages": ["Articles", "MetafieldArticles", "Blogs", "MetafieldBlogs"],
+    "read_shopify_payments_payouts": [
+        "BalanceTransactions",
+        "Disputes",
+    ],
+    "read_online_store_pages": [
+        "Articles",
+        "MetafieldArticles",
+        "Blogs",
+        "MetafieldBlogs",
+    ],
 }
 
 

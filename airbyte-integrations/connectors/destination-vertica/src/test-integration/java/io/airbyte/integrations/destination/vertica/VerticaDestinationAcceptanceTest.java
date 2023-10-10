@@ -6,14 +6,14 @@ package io.airbyte.integrations.destination.vertica;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -125,7 +125,7 @@ public class VerticaDestinationAcceptanceTest extends JdbcDestinationAcceptanceT
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(TestDestinationEnv testEnv) {
     // TODO Implement this method to run any cleanup actions needed after every test case
   }
 

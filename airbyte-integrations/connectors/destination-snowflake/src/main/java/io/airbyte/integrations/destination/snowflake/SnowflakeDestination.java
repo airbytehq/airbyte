@@ -5,11 +5,10 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.base.SerializedAirbyteMessageConsumer;
-import io.airbyte.integrations.destination.jdbc.copy.SwitchingDestination;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination.jdbc.copy.SwitchingDestination;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;

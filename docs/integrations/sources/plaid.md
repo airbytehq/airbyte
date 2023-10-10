@@ -47,7 +47,7 @@ This guide will walk through how to create the credentials you need to run this 
           --data-raw '{
               "client_id": "<your-client-id>",
               "secret": "<your-sandbox-api-key>",
-              "institution_id": "ins_43",
+              "institution_id": "ins_127287",
               "initial_products": ["auth", "transactions"]
           }'
     ```

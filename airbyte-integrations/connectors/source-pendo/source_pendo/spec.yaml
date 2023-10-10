@@ -10,5 +10,3 @@ connectionSpecification:
       title: API Key
       airbyte_secret: true
   additionalProperties: true
-
-

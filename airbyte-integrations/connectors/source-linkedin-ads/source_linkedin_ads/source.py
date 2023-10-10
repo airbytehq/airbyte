@@ -6,7 +6,6 @@
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
@@ -28,6 +27,7 @@ from source_linkedin_ads.streams import (
     AdMemberSeniorityAnalytics,
     CampaignGroups,
     Campaigns,
+    Conversions,
     Creatives,
 )
 
@@ -73,11 +73,8 @@ class SourceLinkedinAds(AbstractSource):
         self._validate_ad_analytics_reports(config)
         config["authenticator"] = self.get_authenticator(config)
         stream = Accounts(config)
-        # need to load the first item only
-        stream.records_limit = 1
         try:
-            next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
-            return True, None
+            return stream.check_availability(logger)
         except Exception as e:
             return False, e
 
@@ -105,6 +102,7 @@ class SourceLinkedinAds(AbstractSource):
             CampaignGroups(config=config),
             Campaigns(config=config),
             Creatives(config=config),
+            Conversions(config=config),
         ]
 
         return streams + self.get_custom_ad_analytics_reports(config)

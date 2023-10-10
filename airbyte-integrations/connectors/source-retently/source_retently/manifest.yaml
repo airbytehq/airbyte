@@ -83,7 +83,6 @@ definitions:
     $parameters:
       path_extractor: "subscribers"
       path: "nps/customers"
-  
 
   feedback_stream:
     $ref: "#/definitions/base_stream"

@@ -84,25 +84,25 @@
       "type": ["string", "null"]
     },
     "attachments": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "additionalProperties": true
       }
     },
     "impacted_services": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "additionalProperties": true
       }
     },
     "workspace_id": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     },
     "change_window_id": {
-      "type": ["null","integer"]
+      "type": ["null", "integer"]
     },
     "assets": {
-      "type": ["null","array"],
+      "type": ["null", "array"],
       "items": {
         "additionalProperties": true
       }

@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
-import static io.airbyte.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.LEGACY_RAW_TABLE_COLUMNS;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.V2_RAW_TABLE_COLUMN_NAMES;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.Optional;
@@ -73,8 +73,7 @@ public class DestinationV1V2MigratorTest {
     final var sqlGenerator = new MockSqlGenerator();
     final StreamConfig stream = new StreamConfig(STREAM_ID, null, DestinationSyncMode.APPEND_DEDUP, null, null, null);
     final DestinationHandler<String> handler = Mockito.mock(DestinationHandler.class);
-    final var sql = String.join("\n\n", sqlGenerator.migrateFromV1toV2(STREAM_ID, "v1_raw_namespace", "v1_raw_table"),
-        sqlGenerator.softReset(stream));
+    final var sql = sqlGenerator.migrateFromV1toV2(STREAM_ID, "v1_raw_namespace", "v1_raw_table");
     // All is well
     final var migrator = noIssuesMigrator();
     migrator.migrate(sqlGenerator, handler, stream);

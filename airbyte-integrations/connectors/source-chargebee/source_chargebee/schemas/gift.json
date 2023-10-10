@@ -72,7 +72,13 @@
         "properties": {
           "status": {
             "type": ["string", "null"],
-            "enum": ["scheduled", "unclaimed", "claimed", "cancelled", "expired"]
+            "enum": [
+              "scheduled",
+              "unclaimed",
+              "claimed",
+              "cancelled",
+              "expired"
+            ]
           },
           "occurred_at": {
             "type": ["integer", "null"]

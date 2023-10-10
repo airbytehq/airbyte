@@ -1,5 +1,6 @@
 plugins {
-    id "java-library"
+    id 'java-library'
+    id 'de.undercouch.download' version "5.4.0"
 }
 
 dependencies {
@@ -10,4 +11,9 @@ dependencies {
     implementation 'com.jayway.jsonpath:json-path:2.7.0'
 }
 
-Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
+def downloadSpecSecretMask = tasks.register('downloadSpecSecretMask', Download) {
+    src 'https://connectors.airbyte.com/files/registries/v0/specs_secrets_mask.yaml'
+    dest new File(projectDir, 'src/main/resources/seed/specs_secrets_mask.yaml')
+    overwrite true
+}
+tasks.named('processResources').configure { dependsOn downloadSpecSecretMask }

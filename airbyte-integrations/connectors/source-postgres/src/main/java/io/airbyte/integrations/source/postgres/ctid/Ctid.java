@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.postgres.ctid;
 
 import java.util.Objects;
@@ -5,13 +9,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class represents a postgres ctid record in the form of "(number,number)"
- * Used to simplify code dealing with ctid calculations.
+ * Class represents a postgres ctid record in the form of "(number,number)" Used to simplify code
+ * dealing with ctid calculations.
  */
 public class Ctid {
 
   final Long page;
   final Long tuple;
+  public static final Ctid ZERO = Ctid.of(0, 0);
 
   public static Ctid of(final long page, final long tuple) {
     return new Ctid(page, tuple);
@@ -66,4 +71,9 @@ public class Ctid {
   public int hashCode() {
     return Objects.hash(page, tuple);
   }
+
+  public static Ctid inc(final Ctid ctid, final long maxTuple) {
+    return (ctid.tuple + 1 > maxTuple) ? Ctid.of(ctid.page + 1, 1) : Ctid.of(ctid.page, ctid.tuple + 1);
+  }
+
 }

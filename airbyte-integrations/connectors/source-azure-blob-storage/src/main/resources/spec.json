@@ -44,17 +44,13 @@
         "title": "Azure Blob Storage blobs prefix",
         "description": "The Azure blob storage prefix to be applied",
         "type": "string",
-        "examples": [
-          "FolderA/FolderB/"
-        ]
+        "examples": ["FolderA/FolderB/"]
       },
       "azure_blob_storage_schema_inference_limit": {
         "title": "Azure Blob Storage schema inference limit",
         "description": "The Azure blob storage blobs to scan for inferring the schema, useful on large amounts of data with consistent structure",
         "type": "integer",
-        "examples": [
-          "500"
-        ]
+        "examples": ["500"]
       },
       "format": {
         "title": "Input Format",

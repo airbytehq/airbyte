@@ -148,7 +148,9 @@
                 "title": "A Bearer token which will be used for interaction with the server.",
                 "type": "string",
                 "airbyte_secret": true,
-                "examples": ["eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"],
+                "examples": [
+                  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                ],
                 "order": 3
               }
             }
@@ -261,19 +263,14 @@
             "title": "Server-managed",
             "type": "object",
             "description": "Server-managed object storage",
-            "required": [
-              "storage_type",
-              "managed_warehouse_name"
-            ],
+            "required": ["storage_type", "managed_warehouse_name"],
             "properties": {
-              "storage_type" : {
-                "title" : "Storage Type",
-                "type" : "string",
-                "default" : "MANAGED",
-                "enum" : [
-                  "MANAGED"
-                ],
-                "order" : 0
+              "storage_type": {
+                "title": "Storage Type",
+                "type": "string",
+                "default": "MANAGED",
+                "enum": ["MANAGED"],
+                "order": 0
               },
               "managed_warehouse_name": {
                 "type": "string",

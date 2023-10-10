@@ -11,8 +11,8 @@ import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITHOUT_TIME
 import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.Set;
@@ -845,6 +845,17 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                 .build())
             .addInsertValues("'{131070.237689,231072.476596593}'")
             .addExpectedValues("[131070.237689,231072.476596593]")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("jsonb_array")
+            .fullSourceDataType("JSONB[]")
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+                .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING).build())
+                .build())
+            .addInsertValues("ARRAY['{\"foo\":\"bar\"}'::JSONB, NULL]")
+            .addExpectedValues("[\"{\\\"foo\\\": \\\"bar\\\"}\",null]")
             .build());
 
     addDataTypeTestData(

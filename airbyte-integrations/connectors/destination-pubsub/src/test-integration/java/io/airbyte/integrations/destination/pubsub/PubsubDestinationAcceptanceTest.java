@@ -35,12 +35,12 @@ import com.google.pubsub.v1.ReceivedMessage;
 import com.google.pubsub.v1.Subscription;
 import com.google.pubsub.v1.Topic;
 import com.google.pubsub.v1.TopicName;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -186,7 +186,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) throws Exception {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws Exception {
     if (!Files.exists(CREDENTIALS_PATH)) {
       throw new IllegalStateException(
           "Must provide path to a gcp service account credentials file. By default {module-root}/"
@@ -244,7 +244,7 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     // delete subscription
     if (subscriptionAdminClient != null && subscriptionName != null) {
       subscriptionAdminClient.deleteSubscription(subscriptionName);

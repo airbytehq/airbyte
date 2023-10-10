@@ -18,20 +18,21 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.IncrementalUtils;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
+import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Database;
-import io.airbyte.db.IncrementalUtils;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -47,7 +48,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
-import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -799,6 +799,57 @@ class PostgresSourceTest {
         .withCursorField(List.of("id"))
         .withDestinationSyncMode(DestinationSyncMode.APPEND)
         .withPrimaryKey(new ArrayList<>());
+  }
+
+  @Test
+  void testParseJdbcParameters() {
+    final String jdbcPropertiesString = "foo=bar&options=-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000&baz=quux";
+    Map<String, String> parameters = PostgresSource.parseJdbcParameters(jdbcPropertiesString, "&");
+    assertEquals("-c%20search_path=test,public,pg_catalog%20-c%20statement_timeout=90000", parameters.get("options"));
+    assertEquals("bar", parameters.get("foo"));
+    assertEquals("quux", parameters.get("baz"));
+  }
+
+  @Test
+  public void testJdbcOptionsParameter() throws Exception {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+
+      // Populate DB.
+      final JsonNode dbConfig = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(dbConfig)) {
+        final Database database = getDatabase(dslContext);
+        database.query(ctx -> {
+          ctx.fetch("CREATE TABLE id_and_bytes (id INTEGER, bytes BYTEA);");
+          ctx.fetch("INSERT INTO id_and_bytes (id, bytes) VALUES (1, decode('DEADBEEF', 'hex'));");
+          return null;
+        });
+      }
+
+      // Read the table contents using the non-default 'escape' format for bytea values.
+      final JsonNode sourceConfig = Jsons.jsonNode(ImmutableMap.builder()
+          .putAll(Jsons.flatten(dbConfig))
+          .put(JdbcUtils.JDBC_URL_PARAMS_KEY, "options=-c%20statement_timeout=90000%20-c%20bytea_output=escape")
+          .build());
+      final AirbyteStream airbyteStream = CatalogHelpers.createAirbyteStream(
+          "id_and_bytes",
+          SCHEMA_NAME,
+          Field.of("id", JsonSchemaType.NUMBER),
+          Field.of("bytes", JsonSchemaType.STRING))
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+          .withSourceDefinedPrimaryKey(List.of(List.of("id")));
+      final AirbyteCatalog airbyteCatalog = new AirbyteCatalog().withStreams(List.of(airbyteStream));
+      final Set<AirbyteMessage> actualMessages =
+          MoreIterators.toSet(new PostgresSource().read(sourceConfig, CatalogHelpers.toDefaultConfiguredCatalog(airbyteCatalog), null));
+      setEmittedAtToNull(actualMessages);
+
+      // Check that the 'options' JDBC URL parameter was parsed correctly
+      // and that the bytea value is not in the default 'hex' format.
+      assertEquals(1, actualMessages.size());
+      final AirbyteMessage actualMessage = actualMessages.stream().findFirst().get();
+      assertTrue(actualMessage.getRecord().getData().has("bytes"));
+      assertEquals("\\336\\255\\276\\357", actualMessage.getRecord().getData().get("bytes").asText());
+    }
   }
 
 }
