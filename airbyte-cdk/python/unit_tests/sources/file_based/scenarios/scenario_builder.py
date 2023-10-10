@@ -16,12 +16,25 @@ class IncrementalScenarioConfig:
     expected_output_state: Optional[Mapping[str, Any]] = None
 
 
-class TestScenario:
+SourceType = TypeVar("SourceType", bound=AbstractSource)
+
+
+class SourceBuilder(ABC, Generic[SourceType]):
+    """
+    A builder that creates a source instance of type SourceType
+    """
+
+    @abstractmethod
+    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> SourceType:
+        raise NotImplementedError()
+
+
+class TestScenario(Generic[SourceType]):
     def __init__(
         self,
         name: str,
         config: Mapping[str, Any],
-        source: AbstractSource,
+        source: SourceType,
         expected_spec: Optional[Mapping[str, Any]],
         expected_check_status: Optional[str],
         expected_catalog: Optional[Mapping[str, Any]],
@@ -58,13 +71,11 @@ class TestScenario:
         assert expected_streams <= streams
 
     def configured_catalog(self, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:
-        if not self.expected_catalog:
-            return None
         catalog: Mapping[str, Any] = {"streams": []}
-        for stream in self.expected_catalog["streams"]:
+        for stream in self.source.streams(self.config):
             catalog["streams"].append(
                 {
-                    "stream": stream,
+                    "stream": stream.name,
                     "sync_mode": sync_mode.value,
                     "destination_sync_mode": "append",
                 }
@@ -77,19 +88,6 @@ class TestScenario:
             return self.incremental_scenario_config.input_state
         else:
             return []
-
-
-SourceType = TypeVar("SourceType", bound=AbstractSource)
-
-
-class SourceBuilder(ABC, Generic[SourceType]):
-    """
-    A builder that creates a source instance of type SourceType
-    """
-
-    @abstractmethod
-    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> SourceType:
-        raise NotImplementedError()
 
 
 class TestScenarioBuilder(Generic[SourceType]):
