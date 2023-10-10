@@ -107,6 +107,20 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     }
   }
 
+  public void closeWithoutState(final boolean hasFailed) {
+    try {
+      recordFormatter.printAndCleanFieldFails();
+
+      this.writer.close(hasFailed);
+
+      this.postProcessAction(hasFailed);
+    } catch (final Exception e) {
+      LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
+      printHeapMemoryConsumption();
+      throw new RuntimeException(e);
+    }
+  }
+
   public void closeAfterPush() {
     try {
       this.writer.close(false);
