@@ -94,11 +94,8 @@ SourceType = TypeVar("SourceType", bound=AbstractSource)
 
 class SourceBuilder(ABC, Generic[SourceType]):
     @abstractmethod
-    def build(self, configured_catalog) -> SourceType:
+    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> SourceType:
         raise NotImplementedError()
-
-
-SourceBuilderType = TypeVar("SourceBuilderType", bound=SourceBuilder)
 
 
 class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
@@ -113,7 +110,7 @@ class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
         self._file_write_options: Mapping[str, Any] = {}
         self._cursor_cls: Optional[Type[AbstractFileBasedCursor]] = None
 
-    def build(self, configured_catalog) -> InMemoryFilesSource:
+    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> InMemoryFilesSource:
         if self._file_type is None:
             raise ValueError("file_type is not set")
         return InMemoryFilesSource(
@@ -169,7 +166,7 @@ class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
         return deepcopy(self)
 
 
-class TestScenarioBuilder(Generic[SourceBuilderType]):
+class TestScenarioBuilder(Generic[SourceType]):
     def __init__(self) -> None:
         self._name = ""
         self._config: Mapping[str, Any] = {}
@@ -182,57 +179,57 @@ class TestScenarioBuilder(Generic[SourceBuilderType]):
         self._expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
-        self.source_builder: Optional[SourceBuilderType] = None
+        self.source_builder: Optional[SourceBuilder[SourceType]] = None
 
-    def set_name(self, name: str) -> "TestScenarioBuilder":
+    def set_name(self, name: str) -> "TestScenarioBuilder[SourceType]":
         self._name = name
         return self
 
-    def set_config(self, config: Mapping[str, Any]) -> "TestScenarioBuilder":
+    def set_config(self, config: Mapping[str, Any]) -> "TestScenarioBuilder[SourceType]":
         self._config = config
         return self
 
-    def set_expected_spec(self, expected_spec: Mapping[str, Any]) -> "TestScenarioBuilder":
+    def set_expected_spec(self, expected_spec: Mapping[str, Any]) -> "TestScenarioBuilder[SourceType]":
         self._expected_spec = expected_spec
         return self
 
-    def set_expected_check_status(self, expected_check_status: str) -> "TestScenarioBuilder":
+    def set_expected_check_status(self, expected_check_status: str) -> "TestScenarioBuilder[SourceType]":
         self._expected_check_status = expected_check_status
         return self
 
-    def set_expected_catalog(self, expected_catalog: Mapping[str, Any]) -> "TestScenarioBuilder":
+    def set_expected_catalog(self, expected_catalog: Mapping[str, Any]) -> "TestScenarioBuilder[SourceType]":
         self._expected_catalog = expected_catalog
         return self
 
-    def set_expected_logs(self, expected_logs: Mapping[str, List[Mapping[str, Any]]]) -> "TestScenarioBuilder":
+    def set_expected_logs(self, expected_logs: Mapping[str, List[Mapping[str, Any]]]) -> "TestScenarioBuilder[SourceType]":
         self._expected_logs = expected_logs
         return self
 
-    def set_expected_records(self, expected_records: List[Mapping[str, Any]]) -> "TestScenarioBuilder":
+    def set_expected_records(self, expected_records: List[Mapping[str, Any]]) -> "TestScenarioBuilder[SourceType]":
         self._expected_records = expected_records
         return self
 
-    def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig) -> "TestScenarioBuilder":
+    def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig) -> "TestScenarioBuilder[SourceType]":
         self._incremental_scenario_config = incremental_scenario_config
         return self
 
-    def set_expected_check_error(self, error: Optional[Type[Exception]], message: str) -> "TestScenarioBuilder":
+    def set_expected_check_error(self, error: Optional[Type[Exception]], message: str) -> "TestScenarioBuilder[SourceType]":
         self._expected_check_error = error, message
         return self
 
-    def set_expected_discover_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder":
+    def set_expected_discover_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder[SourceType]":
         self._expected_discover_error = error, message
         return self
 
-    def set_expected_read_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder":
+    def set_expected_read_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder[SourceType]":
         self._expected_read_error = error, message
         return self
 
-    def set_source_builder(self, source_builder: SourceBuilderType) -> "TestScenarioBuilder":
+    def set_source_builder(self, source_builder: SourceBuilder[SourceType]) -> "TestScenarioBuilder[SourceType]":
         self.source_builder = source_builder
         return self
 
-    def copy(self) -> "TestScenarioBuilder":
+    def copy(self) -> "TestScenarioBuilder[SourceType]":
         return deepcopy(self)
 
     def build(self) -> TestScenario:
