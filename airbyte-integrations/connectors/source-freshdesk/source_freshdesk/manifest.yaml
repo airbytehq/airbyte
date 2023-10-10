@@ -11,7 +11,8 @@ definitions:
       type: DpathExtractor
       field_path: []
   requester:
-    type: HttpRequester
+    type: CustomRequester
+    class_name: source_freshdesk.components.FreshDeskRequester
     url_base: "https://{{ config['domain'] }}/api/v2/"
     http_method: "GET"
     authenticator:
@@ -20,9 +21,23 @@ definitions:
     request_parameters:
       per_page: "100"
     error_handler:
+      type: "DefaultErrorHandler"
+      response_filters:
+        - http_codes: [429]
+          action: RETRY
       backoff_strategies:
-        - type: WaitTimeFromHeader
+        - type: "WaitTimeFromHeader"
           header: "Retry-After"
+  default_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ headers['link']['next']['url'] }}"
+      stop_condition: "{{ 'next' not in headers['link'] }}"
+    page_token_option:
+      type: RequestPath
+      field_name: "page"
+      inject_into: "request_parameter"
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -30,18 +45,12 @@ definitions:
     requester:
       $ref: "#/definitions/requester"
     paginator:
-      type: DefaultPaginator
-      pagination_strategy:
-        type: "CursorPagination"
-        cursor_value: "{{ headers['link']['next']['url'] }}"
-        stop_condition: "{{ 'next' not in headers['link'] }}"
-      page_token_option:
-        type: RequestPath
-        field_name: "page"
-        inject_into: "request_parameter"
+      $ref: "#/definitions/default_paginator"
   base_stream:
     retriever:
       $ref: "#/definitions/retriever"
+    $parameter:
+      call_credit: 1
   base_incremental_stream:
     type: "DatetimeBasedCursor"
     start_datetime:
@@ -77,21 +86,19 @@ definitions:
       name: "canned_response_folders"
       path: "canned_response_folders"
   canned_responses_stream:
-    $ref: "#/definitions/base_stream"
     $parameters:
       name: "canned_responses"
+      path: "canned_response_folders/{{ stream_slice.parent_id }}/responses"
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        path: "canned_response_folders/{{ stream_slice.parent_id }}/responses"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
           - stream: "#/definitions/canned_response_folders_stream"
             parent_key: "id"
             partition_field: "parent_id"
+    transformations: []
   companies_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -259,6 +266,7 @@ definitions:
     $parameters:
       name: "ticket_fields"
       path: "ticket_fields"
+      call_credit: 3
   tickets_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -272,7 +280,14 @@ definitions:
           order_type: "asc"
           order_by: "updated_at"
           include: "description, requester, stats"
-          per_page: "100"
+          per_page: "1"
+      paginator:
+        $ref: "#/definitions/default_paginator"
+        pagination_strategy:
+          type: "CustomPaginationStrategy"
+          class_name: "source_freshdesk.components.TicketsPaginationStrategy"
+          cursor_value: "{{ headers['link']['next']['url'] }}"
+          stop_condition: "{{ 'next' not in headers['link'] }}"
     incremental_sync:
       $ref: "#/definitions/base_incremental_stream"
   conversations_stream:

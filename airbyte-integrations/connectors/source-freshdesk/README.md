@@ -1,6 +1,6 @@
-# Source Freshdesk Yaml Source
+# Freshdesk Source
 
-This is the repository for the Source Freshdesk Yaml configuration based source connector.
+This is the repository for the Freshdesk Yaml configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/freshdesk).
 
 ## Local development
