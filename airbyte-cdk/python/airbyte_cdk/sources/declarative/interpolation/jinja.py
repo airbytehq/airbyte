@@ -3,7 +3,6 @@
 #
 
 import ast
-import json
 from typing import Any, Optional, Tuple, Type
 
 from airbyte_cdk.sources.declarative.interpolation.filters import filters
@@ -98,12 +97,6 @@ class JinjaInterpolation(Interpolation):
             return result
         if not valid_types or (valid_types and isinstance(evaluated, valid_types)):
             return evaluated
-        elif valid_types and isinstance(evaluated, dict):
-            # try to turn the evaluated object into a json-deserializable string
-            try:
-                return json.dumps(evaluated)
-            except TypeError:
-                return result
         return result
 
     def _eval(self, s: str, context):

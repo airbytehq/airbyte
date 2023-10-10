@@ -357,7 +357,8 @@ def test_send_request_params(provider_params, param_params, authenticator_params
         pytest.param(
             {"k": '{{ config["k"] }}'},
             {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
-            "k=%7B%22updatedDateFrom%22%3A+%222023-08-20T00%3A00%3A00Z%22%2C+%22updatedDateTo%22%3A+%222023-08-20T23%3A59%3A59Z%22%7D",
+            # {'updatedDateFrom': '2023-08-20T00:00:00Z', 'updatedDateTo': '2023-08-20T23:59:59Z'}
+            "k=%7B%27updatedDateFrom%27%3A+%272023-08-20T00%3A00%3A00Z%27%2C+%27updatedDateTo%27%3A+%272023-08-20T23%3A59%3A59Z%27%7D",
             id="test-request-parameter-from-config-object",
         ),
         pytest.param(
@@ -438,57 +439,8 @@ def test_request_param_interpolation(request_parameters, config, expected_query_
         pytest.param(
             {"k": '{{ config["k"] }}'},
             {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
-            # k={"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}
-            "k=%7B%22updatedDateFrom%22%3A+%222023-08-20T00%3A00%3A00Z%22%2C+%22updatedDateTo%22%3A+%222023-08-20T23%3A59%3A59Z%22%7D",
-            id="test-request-body-from-config-object",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": [1, 2]},
-            "k=1&k=2",
-            id="test-request-body-from-config-list-of-numbers",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": ["a", "b"]},
-            "k=a&k=b",
-            id="test-request-body-from-config-list-of-strings",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": ["a,b"]},
-            "k=a%2Cb",  # k=a,b
-            id="test-request-body-from-config-comma-separated-strings",
-        ),
-        pytest.param(
-            {"k": "1,2"},
-            {},
-            "k=1%2C2",  # k=1,2
-            id="test-request-body-comma-separated-numbers",
-        ),
-        pytest.param(
-            {"k": "a,b"},
-            {},
-            "k=a%2Cb",  # k=a,b
-            id="test-request-body-comma-separated-strings",
-        ),
-        pytest.param(
-            {"k": "[1,2]"},
-            {},
-            "k=1&k=2",
-            id="test-request-body-list-of-numbers",
-        ),
-        pytest.param(
-            {"k": '["a", "b"]'},
-            {},
-            "k=a&k=b",
-            id="test-request-body-list-of-strings",
-        ),
-        pytest.param(
-            {"k": '{{ config["k"] }}'},
-            {"k": {"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}},
-            # k={"updatedDateFrom": "2023-08-20T00:00:00Z", "updatedDateTo": "2023-08-20T23:59:59Z"}
-            "k=%7B%22updatedDateFrom%22%3A+%222023-08-20T00%3A00%3A00Z%22%2C+%22updatedDateTo%22%3A+%222023-08-20T23%3A59%3A59Z%22%7D",
+            # k={'updatedDateFrom': '2023-08-20T00:00:00Z', 'updatedDateTo': '2023-08-20T23:59:59Z'}
+            "k=%7B%27updatedDateFrom%27%3A+%272023-08-20T00%3A00%3A00Z%27%2C+%27updatedDateTo%27%3A+%272023-08-20T23%3A59%3A59Z%27%7D",
             id="test-request-body-from-config-object",
         ),
         pytest.param(
@@ -512,8 +464,15 @@ def test_request_param_interpolation(request_parameters, config, expected_query_
         pytest.param(
             {'["a", "b"]': '{{ config["k"] }}'},
             {"k": [1, 2]},
-            "%5B%22a%22%2C+%22b%22%5D=1&%5B%22a%22%2C+%22b%22%5D=2",
+            "%5B%22a%22%2C+%22b%22%5D=1&%5B%22a%22%2C+%22b%22%5D=2",  # ["a", "b"]=1&["a", "b"]=2
             id="test-key-with-list-is-not-interpolated",
+        ),
+        pytest.param(
+            {"k": "{'updatedDateFrom': '2023-08-20T00:00:00Z', 'updatedDateTo': '2023-08-20T23:59:59Z'}"},
+            {},
+            # k={'updatedDateFrom': '2023-08-20T00:00:00Z', 'updatedDateTo': '2023-08-20T23:59:59Z'}
+            "k=%7B%27updatedDateFrom%27%3A+%272023-08-20T00%3A00%3A00Z%27%2C+%27updatedDateTo%27%3A+%272023-08-20T23%3A59%3A59Z%27%7D",
+            id="test-single-quotes-are-retained",
         ),
     ],
 )
