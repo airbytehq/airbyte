@@ -37,6 +37,6 @@ public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
         new BufferManager(),
         defaultNamespace,
         Executors.newFixedThreadPool(1),
-            false);
+            true);
   }
 }
