@@ -232,12 +232,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String columnsAndTypes(final StreamConfig stream) {
-    final Set<String> pks = getPks(stream);
     return stream.columns().entrySet().stream()
-        .map(column -> String.join(
-            " ",
-            column.getKey().name(QUOTE),
-            toDialectType(column.getValue()).name(), pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
+        .map(column -> String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()))
         .collect(joining(",\n"));
   }
 
@@ -255,7 +251,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     LOGGER.info("Alter Table Report {} {} {}; Clustering {}; Partitioning {}",
         alterTableReport.columnsToAdd(),
         alterTableReport.columnsToRemove(),
-        alterTableReport.columnsToChange(),
+        alterTableReport.columnsToChangeType(),
         tableClusteringMatches,
         tablePartitioningMatches);
 
@@ -304,7 +300,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .collect(Collectors.toSet());
 
     // Columns that are typed differently than the StreamConfig
-    final Set<String> columnsToChange = Stream.concat(
+    final Set<String> columnsToChangeType = Stream.concat(
         streamSchema.keySet().stream()
             // If it's not in the existing schema, it should already be in the columnsToAdd Set
             .filter(name -> {
@@ -316,16 +312,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                   // if there is no matching key, then don't include it because it is probably already in columnsToAdd
                   .orElse(false);
             }),
-        // Find any PK columns which do not have a Non-Null requirement
+
+        // OR columns that used to have a non-null constraint and shouldn't
+        // (https://github.com/airbytehq/airbyte/pull/31082)
         existingTable.getSchema().getFields().stream()
             .filter(field -> pks.contains(field.getName()))
-            .filter(field -> field.getMode() != Mode.REQUIRED)
+            .filter(field -> field.getMode() == Mode.REQUIRED)
             .map(Field::getName))
         .collect(Collectors.toSet());
 
     final boolean isDestinationV2Format = schemaContainAllFinalTableV2AirbyteColumns(existingSchema.keySet());
 
-    return new AlterTableReport(columnsToAdd, columnsToRemove, columnsToChange, isDestinationV2Format);
+    return new AlterTableReport(columnsToAdd, columnsToRemove, columnsToChangeType, isDestinationV2Format);
   }
 
   /**
@@ -690,13 +688,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .replace("'", "\\'");
   }
 
-  private static Set<String> getPks(StreamConfig stream) {
-    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
-  }
-
   private static String cast(final String content, final String asType, boolean useSafeCast) {
     final var open = useSafeCast ? "SAFE_CAST(" : "CAST(";
     return wrap(open, content + " as " + asType, ")");
+  }
+
+  private static Set<String> getPks(StreamConfig stream) {
+    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
   private static String wrap(final String open, final String content, final String close) {
