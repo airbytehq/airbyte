@@ -60,10 +60,12 @@ class TestScenario:
         assert self.name
         if not self.expected_catalog:
             return
-        # FIXME
-        # streams = {s["name"] for s in self.config["streams"]}
-        # expected_streams = {s["name"] for s in self.expected_catalog["streams"]}
-        # assert expected_streams <= streams
+        if self.expected_read_error or self.expected_check_error:
+            return
+        # Only verify the streams if no errors are expected
+        streams = set([s.name for s in self.source.streams(self.config)])
+        expected_streams = {s["name"] for s in self.expected_catalog["streams"]}
+        assert expected_streams <= streams
 
     def configured_catalog(self, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:
         if not self.expected_catalog:
