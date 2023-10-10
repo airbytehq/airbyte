@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeSourceOperations extends JdbcSourceOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSourceOperations.class);
+  public static final String SQL_DIALECT = "snowflake";
 
   @Override
   protected void putDouble(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
@@ -80,6 +81,16 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
 
   protected void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     preparedStatement.setString(parameterIndex, value);
+  }
+
+  public JsonNode getAirbyteSourceType(final JDBCType jdbcType) {
+    // Return a json node containing the database dialect and the source type
+    return Jsons.jsonNode(
+      ImmutableMap.builder()
+      .put("dialect", SQL_DIALECT)
+      .put("type", jdbcType.getName())
+      .build()
+    );
   }
 
   @Override
