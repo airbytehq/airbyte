@@ -148,20 +148,21 @@ class SourceGitlab(AbstractSource):
         """
         # get currernt authenticator
         authenticator: Union[SingleUseRefreshTokenOauth2Authenticator, TokenAuthenticator] = self.__auth_params.get("authenticator")
-        try:
-            creds = authenticator.refresh_access_token()
-            # update the actual config values
-            config["credentials"]["access_token"] = creds[0]
-            config["credentials"]["refresh_token"] = creds[3]
-            config["credentials"]["token_expiry_date"] = authenticator.get_new_token_expiry_date(creds[1], creds[2]).to_rfc3339_string()
-            # update the config
-            emit_configuration_as_airbyte_control_message(config)
-            logger.info("The `access_token` was successfully refreshed.")
-            return config
-        except HTTPError as http_error:
-            raise http_error
-        except Exception as e:
-            raise Exception(f"Unknown error occured while refreshing the `access_token`, details: {e}")
+        if isinstance(authenticator, SingleUseRefreshTokenOauth2Authenticator):
+            try:
+                creds = authenticator.refresh_access_token()
+                # update the actual config values
+                config["credentials"]["access_token"] = creds[0]
+                config["credentials"]["refresh_token"] = creds[3]
+                config["credentials"]["token_expiry_date"] = authenticator.get_new_token_expiry_date(creds[1], creds[2]).to_rfc3339_string()
+                # update the config
+                emit_configuration_as_airbyte_control_message(config)
+                logger.info("The `access_token` was successfully refreshed.")
+                return config
+            except HTTPError as http_error:
+                raise http_error
+            except Exception as e:
+                raise Exception(f"Unknown error occured while refreshing the `access_token`, details: {e}")
 
     def _handle_expired_access_token_error(self, logger, config, http_error: HTTPError) -> Tuple[bool, Any]:
         try:
@@ -183,10 +184,13 @@ class SourceGitlab(AbstractSource):
                 return True, None
             return True, None  # in case there's no projects
         except HTTPError as http_error:
-            if http_error.response.status_code == 401:
-                return self._handle_expired_access_token_error(logger, config, http_error)
-            elif http_error.response.status_code == 500:
-                return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(http_error)}"
+            if config["credentials"]["auth_type"] == "oauth2.0":
+                if http_error.response.status_code == 401:
+                    return self._handle_expired_access_token_error(logger, config, http_error)
+                elif http_error.response.status_code == 500:
+                    return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(http_error)}"
+            else:
+                return False, f"Unable to connect to Gitlab API with the provided Private Access Token - {repr(http_error)}"
         except Exception as error:
             return False, f"Unknown error occured while checking the connection - {repr(error)}"
 
