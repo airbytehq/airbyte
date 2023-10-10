@@ -157,7 +157,7 @@ class ReportsAmazonSPStream(Stream, ABC):
 
     primary_key = None
     path_prefix = f"reports/{REPORTS_API_VERSION}"
-    sleep_seconds = 30
+    sleep_seconds = 3
     data_field = "payload"
     result_key = None
     availability_sla_days = (
