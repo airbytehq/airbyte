@@ -12,11 +12,13 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import PYTHON_TYPE_MAPPING, SchemaType, merge_schemas
 from unstructured.partition.auto import partition
+from unstructured.partition.md import optional_decode
 from unstructured.documents.elements import Element, Title, ListItem, Formula
+from unstructured.file_utils.filetype import detect_filetype, FileType, optional_decode
 
 class UnstructuredParser(FileTypeParser):
 
-    MAX_SIZE_PER_CHUNK = 500
+    MAX_SIZE_PER_CHUNK = 4_000_000
 
     async def infer_schema(
         self,
@@ -55,7 +57,13 @@ class UnstructuredParser(FileTypeParser):
         # set name to none, otherwise unstructured will try to get the modified date from the local file system
         file_name = file.name
         file.name = None
-        ## TODO - do not partition markdown but pass through as-is
+        filetype = detect_filetype(
+            file=file,
+            file_filename=file_name,
+        )
+        if filetype == FileType.MD:
+            return optional_decode(file.read())
+        # TODO: limit to file types that should be supported
         elements = partition(file=file, metadata_filename=file_name)
         return self.render_markdown(elements)
 
