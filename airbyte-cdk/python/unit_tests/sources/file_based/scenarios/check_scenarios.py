@@ -8,7 +8,8 @@ from unit_tests.sources.file_based.helpers import (
     TestErrorListMatchingFilesInMemoryFilesStreamReader,
     TestErrorOpenFileInMemoryFilesStreamReader,
 )
-from unit_tests.sources.file_based.scenarios.scenario_builder import FileBasedSourceBuilder, TestScenarioBuilder
+from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
+from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 _base_success_scenario = (
     TestScenarioBuilder()
@@ -44,10 +45,7 @@ _base_success_scenario = (
 )
 
 
-success_csv_scenario = (
-    _base_success_scenario.copy()
-    .set_name("success_csv_scenario")
-).build()
+success_csv_scenario = (_base_success_scenario.copy().set_name("success_csv_scenario")).build()
 
 
 success_multi_stream_scenario = (

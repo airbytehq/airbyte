@@ -3,7 +3,8 @@
 #
 
 from unit_tests.sources.file_based.helpers import LowHistoryLimitCursor
-from unit_tests.sources.file_based.scenarios.scenario_builder import FileBasedSourceBuilder, IncrementalScenarioConfig, TestScenarioBuilder
+from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
+from unit_tests.sources.file_based.scenarios.scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 
 single_csv_input_state_is_earlier_scenario = (
     TestScenarioBuilder()
