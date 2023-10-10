@@ -548,6 +548,7 @@ def get_changed_connectors(
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
 
+
 def _get_relative_connector_folder_name_from_metadata_path(metadata_file_path: str) -> str:
     """Get the relative connector folder name from the metadata file path.
 
@@ -566,6 +567,7 @@ def _get_relative_connector_folder_name_from_metadata_path(metadata_file_path: s
     # remove leading and trailing slashes
     metadata_file_path = metadata_file_path.strip("/")
     return metadata_file_path
+
 
 def get_all_connectors_in_repo() -> Set[Connector]:
     """Retrieve a set of all Connectors in the repo.
