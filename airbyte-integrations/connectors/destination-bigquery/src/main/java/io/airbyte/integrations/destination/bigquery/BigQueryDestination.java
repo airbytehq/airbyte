@@ -393,8 +393,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         },
         (hasFailed) -> {
           try {
-            // writeConfigs.forEach((streamId, uploader) -> uploader.closeWithoutState(hasFailed));
-            Thread.sleep(30 * 1000); // 30 seconds
             typerDeduper.typeAndDedupe();
             typerDeduper.commitFinalTables();
             typerDeduper.cleanup();

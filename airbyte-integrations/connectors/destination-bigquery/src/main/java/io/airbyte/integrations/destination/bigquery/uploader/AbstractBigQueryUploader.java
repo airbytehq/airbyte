@@ -67,9 +67,8 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     } catch (final IOException | RuntimeException e) {
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
       LOGGER.error(String.format(
-          "Failed to process a message for job: \n%s, \nAirbyteMessage: %s",
-          writer.toString(),
-          airbyteMessage.getRecord()));
+              "Failed to process a message for job: %s",
+              writer.toString()));
       printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
@@ -79,12 +78,10 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     try {
       writer.write(recordFormatter.formatRecord(airbyteMessage));
     } catch (final IOException | RuntimeException e) {
-      LOGGER.error(airbyteMessage.toString());
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
       LOGGER.error(String.format(
-          "Failed to process a message for job: \n%s, \nAirbyteMessage: %s",
-          writer.toString(),
-          airbyteMessage.getRecord()));
+          "Failed to process a message for job: %s",
+          writer.toString()));
       printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
@@ -99,20 +96,6 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
       if (!hasFailed) {
         uploadData(outputRecordCollector, lastStateMessage);
       }
-      this.postProcessAction(hasFailed);
-    } catch (final Exception e) {
-      LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));
-      printHeapMemoryConsumption();
-      throw new RuntimeException(e);
-    }
-  }
-
-  public void closeWithoutState(final boolean hasFailed) {
-    try {
-      recordFormatter.printAndCleanFieldFails();
-
-      this.writer.close(hasFailed);
-
       this.postProcessAction(hasFailed);
     } catch (final Exception e) {
       LOGGER.error(String.format("Failed to close %s writer, \n details: %s", this, e.getMessage()));

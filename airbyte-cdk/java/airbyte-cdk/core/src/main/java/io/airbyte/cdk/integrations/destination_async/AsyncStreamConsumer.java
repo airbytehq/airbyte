@@ -51,7 +51,6 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
   private boolean hasStarted;
   private boolean hasClosed;
   private boolean hasFailed = false;
-  private PartialAirbyteMessage lastState;
   // This is to account for the references when deserialization to a PartialAirbyteMessage. The
   // calculation is as follows:
   // PartialAirbyteMessage (4) + Max( PartialRecordMessage(4), PartialStateMessage(6)) with
@@ -153,8 +152,6 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
         message.getRecord().setNamespace(defaultNamespace);
       }
       validateRecord(message);
-    } else if (Type.STATE.equals(message.getType())) {
-      lastState = message;
     }
     bufferEnqueue.addRecord(message, sizeInBytes + PARTIAL_DESERIALIZE_REF_BYTES);
   }

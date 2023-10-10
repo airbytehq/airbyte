@@ -44,12 +44,10 @@ public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
         uploaderMapSupplied.get(sd).upload(aibyteMessage);
         recordCount.getAndIncrement();
       } catch (final Exception e) {
-        log.error("BQ async standard flush");
-        log.error(aibyteMessage.toString());
+        log.error("An error happened while trying to flush a record to big query", e);
         throw e;
       }
     });
-    log.error("Record count for standard flush: " + recordCount.get());
     uploaderMapSupplied.values().forEach(test -> test.closeAfterPush());
   }
 
