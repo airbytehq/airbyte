@@ -7,18 +7,15 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability, StreamAvailable
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
-from airbyte_cdk.sources.utils.slice_logger import NeverLogSliceLogger
 from airbyte_protocol.models import ConfiguredAirbyteStream
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 
 
 class ConcurrentCdkSource(AbstractSource):
@@ -76,14 +73,14 @@ class InMemoryPartition(Partition):
             return hash(self._name)
 
 
-class ConcurrentSourceBuilder:
+class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
     def __init__(self):
-        pass
+        self._streams: List[ThreadBasedConcurrentStream] = []
 
-    def build(self, configured_catalog) -> AbstractSource:
+    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> ConcurrentCdkSource:
         return ConcurrentCdkSource(self._streams)
 
-    def set_streams(self, streams: List[AbstractStream]) -> "ConcurrentSourceBuilder":
+    def set_streams(self, streams: List[ThreadBasedConcurrentStream]) -> "ConcurrentSourceBuilder":
         self._streams = streams
         return self
 
@@ -91,54 +88,3 @@ class ConcurrentSourceBuilder:
 class AlwaysAvailableAvailabilityStrategy(AbstractAvailabilityStrategy):
     def check_availability(self, logger: logging.Logger) -> StreamAvailability:
         return StreamAvailable()
-
-
-test_concurrent_cdk = (
-    TestScenarioBuilder()
-    .set_name("test_concurrent_cdk")
-    .set_config({})
-    .set_source_builder(
-        ConcurrentSourceBuilder().set_streams(
-            [
-                ThreadBasedConcurrentStream(
-                    partition_generator=InMemoryPartitionGenerator(
-                        [InMemoryPartition("partition1", None, [Record({"id": "1"}), Record({"id": "2"})])]
-                    ),
-                    max_workers=1,
-                    name="stream1",
-                    json_schema={},
-                    availability_strategy=AlwaysAvailableAvailabilityStrategy(),
-                    primary_key=[],
-                    cursor_field=None,
-                    slice_logger=NeverLogSliceLogger(),
-                    logger=logging.getLogger("test_logger"),
-                    message_repository=InMemoryMessageRepository(),
-                    timeout_seconds=300,
-                )
-            ]
-        )
-    )
-    .set_expected_records(
-        [
-            {"data": {"id": "1"}, "stream": "stream1"},
-            {"data": {"id": "2"}, "stream": "stream1"},
-        ]
-    )
-    .set_expected_catalog(
-        {
-            "streams": [
-                {
-                    "json_schema": {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": ["null", "string"]},
-                        },
-                    },
-                    "name": "stream1",
-                    "supported_sync_modes": ["full_refresh"],
-                }
-            ]
-        }
-    )
-    .build()
-)

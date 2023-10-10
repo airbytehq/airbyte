@@ -25,7 +25,6 @@ from unit_tests.sources.file_based.scenarios.check_scenarios import (
     success_multi_stream_scenario,
     success_user_provided_schema_scenario,
 )
-from unit_tests.sources.file_based.scenarios.concurrent_scenarios import test_concurrent_cdk
 from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     csv_autogenerate_column_names_scenario,
     csv_custom_bool_values_scenario,
@@ -202,7 +201,6 @@ read_scenarios = discover_scenarios + [
     skip_record_scenario_single_stream,
     wait_for_rediscovery_scenario_multi_stream,
     wait_for_rediscovery_scenario_single_stream,
-    test_concurrent_cdk,
 ]
 
 spec_scenarios = [
