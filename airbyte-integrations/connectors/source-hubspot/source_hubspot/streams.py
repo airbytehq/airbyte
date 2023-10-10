@@ -78,6 +78,8 @@ def retry_connection_handler(**kwargs):
         if (isinstance(exc, HubspotInvalidAuth) or isinstance(exc, HTTPError)) \
                 and any([m in exc.response.text.lower() for m in TOKEN_EXPIRED_ERROR]):
             return False
+        if isinstance(exc, JSONDecodeError):
+            return False
         if TOKEN_REFRESH_RETRIES_EXCEEDED_ERROR.lower() in exc.response.text.lower():
             return False
         if isinstance(exc, (HubspotInvalidAuth, HubspotAccessDenied)):
@@ -86,7 +88,7 @@ def retry_connection_handler(**kwargs):
 
     return backoff.on_exception(
         backoff.expo,
-        requests.exceptions.RequestException,
+        (requests.exceptions.RequestException, JSONDecodeError),
         jitter=None,
         on_backoff=log_retry_attempt,
         giveup=giveup_handler,
@@ -206,22 +208,14 @@ class API:
     def get(
         self, url: str, params: MutableMapping[str, Any] = None
     ) -> Tuple[Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]], requests.Response]:
+        response = self._session.get(self.BASE_URL + url, params=params)
         responseJson = None
-        MAX_RETRIES = 5
-
-        for retries in range(MAX_RETRIES):
-            response = self._session.get(self.BASE_URL + url, params=params)
-            try:
-                responseJson = response.json()
-                break  # Success, exit the loop
-            except JSONDecodeError as e:
-                err_msg = f"Failed to parse response text: {response.text} with JSONDecodeError. Retrying ({retries+1}/{MAX_RETRIES})..."
-                logger.warn(err_msg)
-                retries += 1
-
-                if retries == MAX_RETRIES:
-                    logger.error(f"Failed to parse response: {response.text} with JSONDecodeError")
-                    raise JSONDecodeError("Unable to parse response", e.doc, e.pos)
+        try:
+            responseJson = response.json()
+        except JSONDecodeError as e:
+            err_msg = f"Failed to parse response text: {response.text} with JSONDecodeError."
+            logger.warn(err_msg)
+            raise JSONDecodeError(err_msg, e.doc, e.pos)
         
         if any([m in responseJson for m in TOKEN_EXPIRED_ERROR]):
             logger.info("Oauth token expired. Re-fetching token")
