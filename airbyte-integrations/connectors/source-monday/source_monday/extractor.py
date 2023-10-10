@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 from dataclasses import InitVar, dataclass, field
 from datetime import datetime
 from typing import Any, List, Mapping, Union
@@ -14,6 +15,8 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.types import Config, Record
+
+logger = logging.getLogger("airbyte")
 
 
 @dataclass
@@ -89,6 +92,9 @@ class MondayIncrementalItemsExtractor(RecordExtractor):
             extracted = dpath.util.get(response_body, path, default=[])
 
         if extracted:
+            if isinstance(extracted, list) and None in extracted:
+                logger.warning(f"Record with null value received; errors: {response_body.get('errors')}")
+                return [x for x in extracted if x]
             return extracted if isinstance(extracted, list) else [extracted]
         return []
 

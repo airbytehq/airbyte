@@ -9,7 +9,12 @@
     "title": "SelectDB Destination Spec",
     "type": "object",
     "required": [
-      "load_url", "jdbc_url", "cluster_name", "user_name", "password", "database"
+      "load_url",
+      "jdbc_url",
+      "cluster_name",
+      "user_name",
+      "password",
+      "database"
     ],
     "properties": {
       "load_url": {

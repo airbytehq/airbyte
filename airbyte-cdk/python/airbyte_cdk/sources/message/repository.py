@@ -6,14 +6,14 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from collections import deque
-from typing import Callable, Iterable, Union
+from typing import Callable, Deque, Iterable, List, Optional
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, Type
+from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
 _LOGGER = logging.getLogger("MessageRepository")
 _SUPPORTED_MESSAGE_TYPES = {Type.CONTROL, Type.LOG}
-JsonType = Union[dict[str, "JsonType"], list["JsonType"], str, int, float, bool, None]
 LogMessage = dict[str, JsonType]
 
 _SEVERITY_BY_LOG_LEVEL = {
@@ -26,7 +26,7 @@ _SEVERITY_BY_LOG_LEVEL = {
 }
 
 
-def _is_severe_enough(threshold: Level, level: Level):
+def _is_severe_enough(threshold: Level, level: Level) -> bool:
     if threshold not in _SEVERITY_BY_LOG_LEVEL:
         _LOGGER.warning(f"Log level {threshold} for threshold is not supported. This is probably a CDK bug. Please contact Airbyte.")
         return True
@@ -70,8 +70,8 @@ class NoopMessageRepository(MessageRepository):
 
 
 class InMemoryMessageRepository(MessageRepository):
-    def __init__(self, log_level=Level.INFO):
-        self._message_queue = deque()
+    def __init__(self, log_level: Level = Level.INFO) -> None:
+        self._message_queue: Deque[AirbyteMessage] = deque()
         self._log_level = log_level
 
     def emit_message(self, message: AirbyteMessage) -> None:
@@ -95,7 +95,7 @@ class InMemoryMessageRepository(MessageRepository):
 
 
 class LogAppenderMessageRepositoryDecorator(MessageRepository):
-    def __init__(self, dict_to_append: LogMessage, decorated: MessageRepository, log_level=Level.INFO):
+    def __init__(self, dict_to_append: LogMessage, decorated: MessageRepository, log_level: Level = Level.INFO):
         self._dict_to_append = dict_to_append
         self._decorated = decorated
         self._log_level = log_level
@@ -112,14 +112,14 @@ class LogAppenderMessageRepositoryDecorator(MessageRepository):
     def consume_queue(self) -> Iterable[AirbyteMessage]:
         return self._decorated.consume_queue()
 
-    def _append_second_to_first(self, first, second, path=None):
+    def _append_second_to_first(self, first: LogMessage, second: LogMessage, path: Optional[List[str]] = None) -> LogMessage:
         if path is None:
             path = []
 
         for key in second:
             if key in first:
                 if isinstance(first[key], dict) and isinstance(second[key], dict):
-                    self._append_second_to_first(first[key], second[key], path + [str(key)])
+                    self._append_second_to_first(first[key], second[key], path + [str(key)])  # type: ignore # type is verified above
                 else:
                     if first[key] != second[key]:
                         _LOGGER.warning("Conflict at %s" % ".".join(path + [str(key)]))

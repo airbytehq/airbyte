@@ -115,11 +115,11 @@ definitions:
     $parameters:
       path: "/users"
 
-  user_availablity_stream:
+  user_availability_stream:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/user_retriever"
-    name: "user_availablity"
+    name: "user_availability"
     primary_key: "id"
     $parameters:
       path: "/users/availabilities"
@@ -165,7 +165,7 @@ streams:
   - "#/definitions/contacts_stream"
   - "#/definitions/numbers_stream"
   - "#/definitions/tags_stream"
-  - "#/definitions/user_availablity_stream"
+  - "#/definitions/user_availability_stream"
   - "#/definitions/users_stream"
   - "#/definitions/teams_stream"
   - "#/definitions/webhooks_stream"
@@ -178,7 +178,7 @@ check:
     - "contacts"
     - "numbers"
     - "tags"
-    - "user_availablity"
+    - "user_availability"
     - "users"
     - "teams"
     - "webhooks"

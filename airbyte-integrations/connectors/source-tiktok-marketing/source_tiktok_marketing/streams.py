@@ -51,6 +51,17 @@ NOT_AUDIENCE_METRICS = [
     "real_time_app_install",
     "real_time_app_install_cost",
     "app_install",
+    "total_purchase_value",
+    "total_onsite_shopping_value",
+    "onsite_shopping",
+    "vta_purchase",
+    "cta_purchase",
+    "vta_conversion",
+    "cta_conversion",
+    "total_pageview",
+    "complete_payment",
+    "value_per_complete_payment",
+    "total_complete_payment_rate",
 ]
 
 T = TypeVar("T")
@@ -502,6 +513,7 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def __init__(self, **kwargs):
         report_granularity = kwargs.pop("report_granularity", None)
         self.attribution_window = kwargs.get("attribution_window") or 0
+        self.include_deleted = kwargs.get("include_deleted", False)
         super().__init__(**kwargs)
 
         # Important:
@@ -509,6 +521,16 @@ class BasicReports(IncrementalTiktokStream, ABC):
         # for < 0.1.13 - granularity is set via init param
         if report_granularity:
             self.report_granularity = report_granularity
+
+    @property
+    def filters(self) -> List[MutableMapping[str, Any]]:
+        if self.include_deleted:
+            return [
+                {"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"},
+                {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"},
+                {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"},
+            ]
+        return []
 
     @property
     @abstractmethod
@@ -656,7 +678,24 @@ class BasicReports(IncrementalTiktokStream, ABC):
             )
 
         if self.report_level == ReportLevel.AD:
-            result.extend(["adgroup_id", "ad_name", "ad_text"])
+            result.extend(
+                [
+                    "adgroup_id",
+                    "ad_name",
+                    "ad_text",
+                    "total_purchase_value",
+                    "total_onsite_shopping_value",
+                    "onsite_shopping",
+                    "vta_purchase",
+                    "vta_conversion",
+                    "cta_purchase",
+                    "cta_conversion",
+                    "total_pageview",
+                    "complete_payment",
+                    "value_per_complete_payment",
+                    "total_complete_payment_rate",
+                ]
+            )
 
         return result
 
@@ -696,6 +735,8 @@ class BasicReports(IncrementalTiktokStream, ABC):
             params["start_date"] = stream_slice["start_date"]
             params["end_date"] = stream_slice["end_date"]
 
+        if self.filters:
+            params["filters"] = json.dumps(self.filters)
         return params
 
     def get_json_schema(self) -> Mapping[str, Any]:

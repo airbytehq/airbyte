@@ -14,6 +14,7 @@ import static io.airbyte.integrations.destination.iceberg.IcebergConstants.ICEBE
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.destination.iceberg.config.format.FormatConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.S3Config;
+import io.airbyte.integrations.destination.iceberg.config.storage.ServerManagedStorageConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.StorageConfig;
 import io.airbyte.integrations.destination.iceberg.config.storage.StorageType;
 import javax.annotation.Nonnull;
@@ -55,6 +56,8 @@ public class IcebergCatalogConfigFactory {
     switch (storageType) {
       case S3:
         return S3Config.fromDestinationConfig(storageConfigJson);
+      case MANAGED:
+        return ServerManagedStorageConfig.fromDestinationConfig(storageConfigJson);
       case HDFS:
       default:
         throw new RuntimeException("Unexpected storage config: " + storageTypeStr);

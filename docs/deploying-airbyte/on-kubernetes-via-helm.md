@@ -1,4 +1,4 @@
-# Deploy Airbyte on Kubernetes using Helm (Beta)
+# Deploy Airbyte on Kubernetes using Helm
 
 ## Overview
 
@@ -16,10 +16,10 @@ Alternatively, you can deploy Airbyte on [Restack](https://www.restack.io) to pr
 
 For local testing we recommend following one of the following setup guides:
 
-* [Docker Desktop \(Mac\)](https://docs.docker.com/desktop/kubernetes)
-* [Minikube](https://minikube.sigs.k8s.io/docs/start)
-  * NOTE: Start Minikube with at least 4gb RAM with `minikube start --memory=4000`
-* [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
+- [Docker Desktop \(Mac\)](https://docs.docker.com/desktop/kubernetes)
+- [Minikube](https://minikube.sigs.k8s.io/docs/start)
+  - NOTE: Start Minikube with at least 4gb RAM with `minikube start --memory=4000`
+- [Kind](https://kind.sigs.k8s.io/docs/user/quick-start/)
 
 For testing on GKE you can [create a cluster with the command line or the Cloud Console UI](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-zonal-cluster).
 
@@ -40,7 +40,7 @@ For GKE:
 1. Configure `gcloud` with `gcloud auth login`.
 2. On the Google Cloud Console, the cluster page will have a `Connect` button, which will give a command to run locally that looks like
 
-    `gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME`.
+   `gcloud container clusters get-credentials $CLUSTER_NAME --zone $ZONE_NAME --project $PROJECT_NAME`.
 
 3. Use `kubectl config get-contexts` to show the contexts available.
 4. Run `kubectl config use-context $GKE_CONTEXT` to access the cluster from `kubectl`.
@@ -58,8 +58,8 @@ For EKS:
 To install helm simply run:
 
 For MacOS:
-  
-  `brew install helm`
+
+`brew install helm`
 
 For Linux:
 
@@ -82,14 +82,14 @@ After this you can browse all charts uploaded to repository by running `helm sea
 It'll produce the output below:
 
 ```text
-NAME                            CHART VERSION   APP VERSION     DESCRIPTION                             
-airbyte-oss/airbyte             0.30.23         0.39.37-alpha   Helm chart to deploy airbyte            
-airbyte-oss/airbyte-bootloader  0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-bootloader 
+NAME                            CHART VERSION   APP VERSION     DESCRIPTION
+airbyte-oss/airbyte             0.30.23         0.39.37-alpha   Helm chart to deploy airbyte
+airbyte-oss/airbyte-bootloader  0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-bootloader
 airbyte-oss/pod-sweeper         0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-pod-sweeper
-airbyte-oss/server              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-server     
-airbyte-oss/temporal            0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-temporal   
-airbyte-oss/webapp              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-webapp     
-airbyte-oss/worker              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-worker  
+airbyte-oss/server              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-server
+airbyte-oss/temporal            0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-temporal
+airbyte-oss/webapp              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-webapp
+airbyte-oss/worker              0.30.23         0.39.37-alpha   Helm chart to deploy airbyte-worker
 ```
 
 ## Deploy Airbyte
@@ -98,7 +98,8 @@ airbyte-oss/worker              0.30.23         0.39.37-alpha   Helm chart to de
 
 If you don't intend to customise your deployment, you can deploy airbyte as is with default values.
 
-In order to do so, run the command: 
+In order to do so, run the command:
+
 ```
 helm install %release_name% airbyte/airbyte
 ```
@@ -115,6 +116,41 @@ After specifying your own configuration, run the following command:
 helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 ```
 
+### (Early Access) Airbyte Enterprise deployment
+
+[Airbyte Enterprise](/airbyte-enterprise) is in an early access stage, so this section will likely evolve. That said, if you have an Airbyte Enterprise license key and wish to install Airbyte Enterprise via helm, follow these steps:
+
+1. Checkout the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
+
+2. Add your Airbyte Enterprise license key and [auth configuration details](/airbyte-enterprise#single-sign-on-sso) to a file called `airbyte.yml` in the `configs` directory of `airbyte-platform`. You can copy `airbyte.sample.yml` to use as a template:
+
+```sh
+cp configs/airbyte.sample.yml configs/airbyte.yml
+```
+
+Then, open up `airbyte.yml` in your text editor to fill in the indicated fields.
+
+:::caution
+
+For now, auth configurations aren't easy to modify once initially installed, so please double check them to make sure they're accurate before proceeding! This will be improved in the near future.
+
+:::
+
+3. Make sure your helm repository is up to date:
+
+```text
+helm repo update
+```
+
+4. Install Airbyte Enterprise on helm using the following command:
+
+```text
+./tools/bin/install_airbyte_pro_on_helm.sh
+```
+
+The default release name is `airbyte-pro`. You can change this via the `RELEASE_NAME` environment
+variable.
+
 ## Migrate from old charts to new ones
 
 Starting from `0.39.37-alpha` we've revisited helm charts structure and separated all components of airbyte into their own independent charts, thus by allowing our developers to test single component without deploying airbyte as a whole and by upgrading single component at a time.
@@ -128,12 +164,15 @@ Since the latest release of bitnami/minio chart, they've changed the way of sett
 Going forward in new version you need to specify the following values in values yaml for user/password instead old one
 
 Before:
+
 ```text
 minio:
   rootUser: airbyte-user
   rootPassword: airbyte-password-123
 ```
+
 After:
+
 ```text
 minio:
   auth:
@@ -144,9 +183,9 @@ minio:
 
 Before upgrading the chart update values.yaml as stated above and then run:
 
-* Get the old rootPassword by running `export ROOT_PASSWORD=$(kubectl get secret --namespace "default" %release_name%-minio -o jsonpath="{.data.root-password}" | base64 -d)`
-* Perform upgrade of chart by running `helm upgrade %release_name% airbyte/airbyte --set auth.rootPassword=$ROOT_PASSWORD`
-  * If you get an error about setting the auth.rootPassword, then you forgot to update the `values.yaml` file
+- Get the old rootPassword by running `export ROOT_PASSWORD=$(kubectl get secret --namespace "default" %release_name%-minio -o jsonpath="{.data.root-password}" | base64 -d)`
+- Perform upgrade of chart by running `helm upgrade %release_name% airbyte/airbyte --set auth.rootPassword=$ROOT_PASSWORD`
+  - If you get an error about setting the auth.rootPassword, then you forgot to update the `values.yaml` file
 
 ### Custom logging and jobs configuration
 
@@ -162,7 +201,8 @@ global:
         %your_jobs_options_here%
 ```
 
-After updating `values.yaml` simply upgrade your chart by running command: 
+After updating `values.yaml` simply upgrade your chart by running command:
+
 ```shell
 helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
 ```
@@ -179,7 +219,8 @@ If you're using external DB secrets, then provide them in `values.yaml` under gl
     port: "5432"
 ```
 
-And upgrade the chart by running: 
+And upgrade the chart by running:
+
 ```shell
 helm upgrade -f path/to/values.yaml %release_name% airbyte/airbyte
 ```

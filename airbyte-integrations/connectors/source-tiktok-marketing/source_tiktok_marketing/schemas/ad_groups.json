@@ -293,6 +293,9 @@
     "is_new_structure": {
       "type": "boolean"
     },
+    "is_smart_performance_campaign": {
+      "type": ["null", "boolean"]
+    },
     "catalog_id": {
       "type": ["null", "integer"]
     },

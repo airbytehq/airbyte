@@ -27,6 +27,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "currency": {
       "type": ["null", "string"]
     },
@@ -148,6 +151,31 @@
     },
     "status": {
       "type": ["null", "string"]
+    },
+    "payment_intent": {
+      "type": ["null", "string"]
+    },
+    "balance_transaction": {
+      "type": ["null", "string"]
+    },
+    "payment_method_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "card": {
+          "type": ["null", "object"],
+          "properties": {
+            "brand": {
+              "type": ["null", "string"]
+            },
+            "network_reason_code": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "type": {
+          "type": ["null", "string"]
+        }
+      }
     }
   }
 }

@@ -60,7 +60,7 @@ class AttributionReport(AmazonAdsStream):
     page_size = 300
 
     report_type = ""
-    metrics = ""
+    custom_metrics = []
     group_by = ""
 
     _next_page_token_field = "cursorId"
@@ -75,11 +75,21 @@ class AttributionReport(AmazonAdsStream):
         super().__init__(config, *args, **kwargs)
 
     @property
+    def metrics(self):
+        return METRICS_MAP[self.report_type] + self.custom_metrics
+
+    @property
     def http_method(self) -> str:
         return "POST"
 
     def path(self, **kvargs) -> str:
         return "/attribution/report"
+
+    def get_json_schema(self):
+        schema = super().get_json_schema()
+        metrics_type_map = {metric: {"type": ["null", "string"]} for metric in self.metrics}
+        schema["properties"].update(metrics_type_map)
+        return schema
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -135,7 +145,7 @@ class AttributionReport(AmazonAdsStream):
         body = {
             "reportType": self.report_type,
             "count": self.page_size,
-            "metrics": self.metrics,
+            "metrics": ",".join(self.metrics),
             "startDate": stream_slice["startDate"],
             "endDate": stream_slice["endDate"],
             self._next_page_token_field: "",
@@ -152,35 +162,21 @@ class AttributionReport(AmazonAdsStream):
 
 class AttributionReportProducts(AttributionReport):
     report_type = "PRODUCTS"
-
-    metrics = ",".join(METRICS_MAP[report_type])
-
     group_by = ""
 
 
 class AttributionReportPerformanceCreative(AttributionReport):
     report_type = "PERFORMANCE"
-
-    metrics = ",".join(METRICS_MAP[report_type])
-
     group_by = "CREATIVE"
 
 
 class AttributionReportPerformanceAdgroup(AttributionReport):
     report_type = "PERFORMANCE"
-
-    metrics_list = METRICS_MAP[report_type]
-    metrics_list.append(BRAND_REFERRAL_BONUS)
-    metrics = ",".join(metrics_list)
-
+    custom_metrics = [BRAND_REFERRAL_BONUS]
     group_by = "ADGROUP"
 
 
 class AttributionReportPerformanceCampaign(AttributionReport):
     report_type = "PERFORMANCE"
-
-    metrics_list = METRICS_MAP[report_type]
-    metrics_list.append(BRAND_REFERRAL_BONUS)
-    metrics = ",".join(metrics_list)
-
+    custom_metrics = [BRAND_REFERRAL_BONUS]
     group_by = "CAMPAIGN"

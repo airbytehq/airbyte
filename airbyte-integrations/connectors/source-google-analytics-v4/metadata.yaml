@@ -16,11 +16,15 @@ data:
   name: Google Analytics (Universal Analytics)
   registries:
     cloud:
-      enabled: true
+      enabled: false
     oss:
       enabled: true
   releaseStage: generally_available
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-v4
   tags:
     - language:python
+  ab_internal:
+    sl: 200
+    ql: 400
+  supportLevel: certified
 metadataSpecVersion: "1.0"

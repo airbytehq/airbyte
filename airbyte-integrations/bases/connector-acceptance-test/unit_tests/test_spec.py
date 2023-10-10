@@ -5,7 +5,7 @@
 from typing import Any, Callable, Dict
 
 import pytest
-from airbyte_cdk.models import ConnectorSpecification
+from airbyte_protocol.models import ConnectorSpecification
 from connector_acceptance_test import conftest
 from connector_acceptance_test.tests.test_core import TestSpec as _TestSpec
 
@@ -414,6 +414,76 @@ def parametrize_test_case(*test_cases: Dict[str, Any]) -> Callable:
                 }
             },
         },
+        "should_fail": False,
+    },
+    {
+        "test_id": "different_default_in_common_property",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "credentials": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "common": {"type": "string", "const": "option1", "default": "optionX"},
+                                "option1": {"type": "string"},
+                            },
+                        }
+                    ],
+                }
+            },
+        },
+        "should_fail": True,
+    },
+    {
+        "test_id": "enum_keyword_in_common_property",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "credentials": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "common": {"type": "string", "const": "option1", "enum": ["option1"]},
+                                "option1": {"type": "string"},
+                            },
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "common": {"type": "string", "const": "option2", "enum": ["option2"]},
+                                "option2": {"type": "string"},
+                            },
+                        },
+                    ],
+                }
+            },
+        },
+        "should_fail": False,
+    },
+    {
+        "test_id": "different_enum_in_common_property",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "credentials": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "common": {"type": "string", "const": "option1", "enum": ["option1", "option2"]},
+                                "option1": {"type": "string"},
+                            },
+                        }
+                    ],
+                }
+            },
+        },
         "should_fail": True,
     },
 )
@@ -472,24 +542,28 @@ def test_enum_usage(connector_spec, should_fail):
 @pytest.mark.parametrize(
     "connector_spec, expected_error",
     [
-        # SUCCESS: no authSpecification specified
+        # SUCCESS: no advancedAuth specified
         (ConnectorSpecification(connectionSpecification={}), ""),
-        # FAIL: Field specified in root object does not exist
+        # SUCCESS: empty predicate_key and oauth_config_specification
         (
             ConnectorSpecification(
                 connectionSpecification={"type": "object"},
-                authSpecification={
+                advanced_auth={"auth_type": "oauth2.0", "oauth_config_specification": {}},
+            ),
+            "",
+        ),
+        # FAIL: Field specified in predicate_key does not exist
+        (
+            ConnectorSpecification(
+                connectionSpecification={"type": "object"},
+                advanced_auth={
                     "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
+                    "predicate_key": ["credentials", "auth_type"],
                 },
             ),
             "Specified oauth fields are missed from spec schema:",
         ),
-        # SUCCESS: Empty root object
+        # FAIL: Field specified in oauth_user_input_from_connector_config_specification does not exist
         (
             ConnectorSpecification(
                 connectionSpecification={
@@ -501,178 +575,108 @@ def test_enum_usage(connector_spec, should_fail):
                         "refresh_token": {"type": "string"},
                     },
                 },
-                authSpecification={
+                advanced_auth={
                     "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": [],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "",
-        ),
-        # FAIL: Some oauth fields missed
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
+                    "oauth_config_specification": {
+                        "oauth_user_input_from_connector_config_specification": {
                             "type": "object",
-                            "properties": {
-                                "client_id": {"type": "string"},
-                                "client_secret": {"type": "string"},
-                                "access_token": {"type": "string"},
-                            },
+                            "properties": {"api_url": {"type": "string", "path_in_connector_config": ["api_url"]}},
                         }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
                     },
                 },
             ),
             "Specified oauth fields are missed from spec schema:",
         ),
-        # SUCCESS: case w/o oneOf property
+        # FAIL: Field specified in complete_oauth_output_specification does not exist
+        (
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {"authentication": {"type": "object", "properties": {"client_id": {"type": "string"}}}},
+                },
+                advanced_auth={
+                    "auth_type": "oauth2.0",
+                    "oauth_config_specification": {
+                        "complete_oauth_output_specification": {
+                            "type": "object",
+                            "properties": {"client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]}},
+                        }
+                    },
+                },
+            ),
+            "Specified oauth fields are missed from spec schema:",
+        ),
+        # FAIL: Field specified in complete_oauth_server_output_specification does not exist
+        (
+            ConnectorSpecification(
+                connectionSpecification={
+                    "type": "object",
+                    "properties": {"authentication": {"type": "object", "properties": {"client_id": {"type": "string"}}}},
+                },
+                advanced_auth={
+                    "auth_type": "oauth2.0",
+                    "oauth_config_specification": {
+                        "complete_oauth_server_output_specification": {
+                            "type": "object",
+                            "properties": {"client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]}},
+                        }
+                    },
+                },
+            ),
+            "Specified oauth fields are missed from spec schema:",
+        ),
+        # SUCCESS: Fields specified in advanced_auth exist in spec
         (
             ConnectorSpecification(
                 connectionSpecification={
                     "type": "object",
                     "properties": {
+                        "api_url": {"type": "object"},
                         "credentials": {
                             "type": "object",
                             "properties": {
+                                "auth_type": {"type": "string", "const": "oauth2.0"},
                                 "client_id": {"type": "string"},
                                 "client_secret": {"type": "string"},
                                 "access_token": {"type": "string"},
                                 "refresh_token": {"type": "string"},
+                                "token_expiry_date": {"type": "string", "format": "date-time"},
                             },
-                        }
+                        },
                     },
                 },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials"],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "",
-        ),
-        # SUCCESS: case w/ oneOf property
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
+                advanced_auth={
+                    "auth_flow_type": "oauth2.0",
+                    "predicate_key": ["credentials", "auth_type"],
+                    "predicate_value": "oauth2.0",
+                    "oauth_config_specification": {
+                        "oauth_user_input_from_connector_config_specification": {
                             "type": "object",
-                            "oneOf": [
-                                {
-                                    "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
-                                },
-                                {
-                                    "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 0],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "",
-        ),
-        # FAIL: Wrong root object index
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
+                            "properties": {"domain": {"type": "string", "path_in_connector_config": ["api_url"]}},
+                        },
+                        "complete_oauth_output_specification": {
                             "type": "object",
-                            "oneOf": [
-                                {
-                                    "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
+                            "properties": {
+                                "access_token": {"type": "string", "path_in_connector_config": ["credentials", "access_token"]},
+                                "refresh_token": {"type": "string", "path_in_connector_config": ["credentials", "refresh_token"]},
+                                "token_expiry_date": {
+                                    "type": "string",
+                                    "format": "date-time",
+                                    "path_in_connector_config": ["credentials", "token_expiry_date"],
                                 },
-                                {
-                                    "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 1],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
-                    },
-                },
-            ),
-            "Specified oauth fields are missed from spec schema:",
-        ),
-        # SUCCESS: root object index equal to 1
-        (
-            ConnectorSpecification(
-                connectionSpecification={
-                    "type": "object",
-                    "properties": {
-                        "credentials": {
+                            },
+                        },
+                        "complete_oauth_server_input_specification": {
                             "type": "object",
-                            "oneOf": [
-                                {
-                                    "properties": {
-                                        "api_key": {"type": "string"},
-                                    }
-                                },
-                                {
-                                    "properties": {
-                                        "client_id": {"type": "string"},
-                                        "client_secret": {"type": "string"},
-                                        "access_token": {"type": "string"},
-                                        "refresh_token": {"type": "string"},
-                                    }
-                                },
-                            ],
-                        }
-                    },
-                },
-                authSpecification={
-                    "auth_type": "oauth2.0",
-                    "oauth2Specification": {
-                        "rootObject": ["credentials", 1],
-                        "oauthFlowInitParameters": [["client_id"], ["client_secret"]],
-                        "oauthFlowOutputParameters": [["access_token"], ["refresh_token"]],
+                            "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
+                        },
+                        "complete_oauth_server_output_specification": {
+                            "type": "object",
+                            "properties": {
+                                "client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]},
+                                "client_secret": {"type": "string", "path_in_connector_config": ["credentials", "client_secret"]},
+                            },
+                        },
                     },
                 },
             ),
@@ -1012,40 +1016,123 @@ def test_nested_group(mocker, connector_spec, should_fail):
 @pytest.mark.parametrize(
     "connector_spec, should_fail",
     (
-        ({"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}, False),
-        ({"type": "object", "properties": {"prop": {"type": "boolean", "airbyte_secret": True, "always_show": True}}}, False),
+        # SUCCESS: no display_type specified
         (
             {
                 "type": "object",
-                "required": ["prop"],
-                "properties": {"prop": {"type": "boolean", "airbyte_secret": True, "always_show": True}},
+                "properties": {
+                    "select_type": {
+                        "type": "object",
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "first option"},
+                                    "something": {"type": "string"},
+                                },
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                    "some_field": {"type": "boolean"},
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+            False,
+        ),
+        # SUCCESS: display_type is set to a valid value on a field with oneOf set
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "select_type": {
+                        "type": "object",
+                        "display_type": "radio",
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "first option"},
+                                    "something": {"type": "string"},
+                                },
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                    "some_field": {"type": "boolean"},
+                                },
+                            },
+                        ],
+                    },
+                },
+            },
+            False,
+        ),
+        # SUCCESS: display_type is the name of the property
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "display_type": {
+                        "type": "string",
+                    },
+                },
+            },
+            False,
+        ),
+        # FAILURE: display_type is set to an invalid value
+        (
+            {
+                "type": "object",
+                "properties": {
+                    "select_type": {
+                        "type": "object",
+                        "display_type": "invalid",
+                        "oneOf": [
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "first option"},
+                                    "something": {"type": "string"},
+                                },
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "option_title": {"type": "string", "title": "Title", "const": "second option"},
+                                    "some_field": {"type": "boolean"},
+                                },
+                            },
+                        ],
+                    },
+                },
             },
             True,
         ),
-        (
-            {"type": "object", "properties": {"jwt": {"type": "object", "properties": {"a": {"type": "string", "always_show": True}}}}},
-            False,
-        ),
+        # FAILURE: display_type is set on a non-oneOf field
         (
             {
                 "type": "object",
-                "properties": {"jwt": {"type": "object", "required": ["a"], "properties": {"a": {"type": "string", "always_show": True}}}},
+                "properties": {
+                    "select_type": {
+                        "type": "string",
+                        "display_type": "dropdown",
+                    },
+                },
             },
             True,
-        ),
-        (
-            {
-                "type": "object",
-                "properties": {"jwt": {"type": "object", "required": ["always_show"], "properties": {"always_show": {"type": "string"}}}},
-            },
-            False,
         ),
     ),
 )
-def test_required_always_show(mocker, connector_spec, should_fail):
+def test_display_type(mocker, connector_spec, should_fail):
     mocker.patch.object(conftest.pytest, "fail")
     t = _TestSpec()
-    t.test_required_always_show(ConnectorSpecification(connectionSpecification=connector_spec))
+    t.test_display_type(ConnectorSpecification(connectionSpecification=connector_spec))
     if should_fail:
         conftest.pytest.fail.assert_called_once()
     else:

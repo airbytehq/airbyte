@@ -8,8 +8,9 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = ["airbyte-cdk~=0.2", "google-cloud-storage==2.5.0", "pandas==1.5.3"]
 
 TEST_REQUIREMENTS = [
+    "requests-mock~=1.9.3",
+    "pytest-mock~=3.6.1",
     "pytest~=6.2",
-    "connector-acceptance-test",
 ]
 
 setup(

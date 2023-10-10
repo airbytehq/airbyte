@@ -33,6 +33,7 @@ CONFIG = {
     "end_date": END_DATE,
     "app_id": 1234,
     "advertiser_id": 0,
+    "include_deleted": True,
 }
 CONFIG_SANDBOX = {
     "access_token": "access_token",
@@ -127,7 +128,7 @@ def test_stream_slices_report(advertiser_ids, granularity, slices_expected, pend
 @pytest.mark.parametrize(
     "stream, metrics_number",
     [
-        (AdsReports, 54),
+        (AdsReports, 65),
         (AdGroupsReports, 51),
         (AdvertisersReports, 29),
         (CampaignsReports, 28),
@@ -143,7 +144,7 @@ def test_basic_reports_get_metrics_day(stream, metrics_number):
 @pytest.mark.parametrize(
     "stream, metrics_number",
     [
-        (AdsReports, 54),
+        (AdsReports, 65),
         (AdGroupsReports, 51),
         (AdvertisersReports, 27),
         (CampaignsReports, 28),
@@ -208,6 +209,7 @@ def test_request_params():
         "dimensions": '["advertiser_id", "stat_time_day", "gender", "age"]',
         "end_date": "2021",
         "metrics": '["spend", "cpc", "cpm", "impressions", "clicks", "ctr"]',
+        "filters": '[{"filter_value": ["STATUS_ALL"], "field_name": "ad_status", "filter_type": "IN"}, {"filter_value": ["STATUS_ALL"], "field_name": "campaign_status", "filter_type": "IN"}, {"filter_value": ["STATUS_ALL"], "field_name": "adgroup_status", "filter_type": "IN"}]',
         "page_size": 1000,
         "report_type": "AUDIENCE",
         "service_type": "AUCTION",
@@ -232,5 +234,6 @@ def test_get_updated_state():
         # state should be updated only when all records have been read (is_finished = True)
         is_finished.return_value = True
         state2 = ads.get_updated_state(current_stream_state=state, latest_record={})
-        state2_modify_time = state2["modify_time"]  # state2_modify_time is JsonUpdatedState object
+        # state2_modify_time is JsonUpdatedState object
+        state2_modify_time = state2["modify_time"]
         assert state2_modify_time.dict() == "2020-01-08 00:00:00"

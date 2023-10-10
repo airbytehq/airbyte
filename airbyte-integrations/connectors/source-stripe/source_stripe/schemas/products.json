@@ -81,6 +81,26 @@
     },
     "url": {
       "type": ["null", "string"]
+    },
+    "default_price": {
+      "type": ["null", "string"]
+    },
+    "tax_code": {
+      "type": ["null", "string"]
+    },
+    "features": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

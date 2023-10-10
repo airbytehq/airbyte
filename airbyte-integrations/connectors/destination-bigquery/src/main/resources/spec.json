@@ -78,16 +78,6 @@
         "order": 3,
         "oneOf": [
           {
-            "title": "Standard Inserts",
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "Standard"
-              }
-            }
-          },
-          {
             "title": "GCS Staging",
             "required": [
               "method",
@@ -178,6 +168,16 @@
                 "order": 5
               }
             }
+          },
+          {
+            "title": "Standard Inserts",
+            "required": ["method"],
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Standard"
+              }
+            }
           }
         ]
       },
@@ -206,6 +206,12 @@
         "default": 15,
         "examples": ["15"],
         "order": 6
+      },
+      "raw_data_dataset": {
+        "type": "string",
+        "description": "The dataset to write raw tables into",
+        "title": "Destinations V2 Raw Table Dataset",
+        "order": 7
       }
     }
   }

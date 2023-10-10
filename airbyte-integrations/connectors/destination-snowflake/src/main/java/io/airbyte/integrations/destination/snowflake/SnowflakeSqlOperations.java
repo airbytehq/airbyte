@@ -5,12 +5,12 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.jdbc.JdbcSqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperations;
+import io.airbyte.cdk.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.commons.exceptions.ConfigErrorException;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.integrations.destination.jdbc.SqlOperationsUtils;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.SQLException;
 import java.util.List;
@@ -32,23 +32,53 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   private static final String IP_NOT_IN_WHITE_LIST_ERR_MSG = "not allowed to access Snowflake";
 
   @Override
+  public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
+    try {
+      if (!schemaSet.contains(schemaName) && !isSchemaExists(database, schemaName)) {
+        // 1s1t is assuming a lowercase airbyte_internal schema name, so we need to quote it
+        database.execute(String.format("CREATE SCHEMA IF NOT EXISTS \"%s\";", schemaName));
+        schemaSet.add(schemaName);
+      }
+    } catch (final Exception e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
+  }
+
+  @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
     return String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s VARCHAR PRIMARY KEY,\n"
-            + "%s VARIANT,\n"
-            + "%s TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp()\n"
-            + ") data_retention_time_in_days = 0;",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+        """
+        CREATE TABLE IF NOT EXISTS "%s"."%s" (
+          "%s" VARCHAR PRIMARY KEY,
+          "%s" TIMESTAMP WITH TIME ZONE DEFAULT current_timestamp(),
+          "%s" TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+          "%s" VARIANT
+        ) data_retention_time_in_days = 0;""",
+        schemaName,
+        tableName,
+        JavaBaseConstants.COLUMN_NAME_AB_RAW_ID,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT,
+        JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT,
+        JavaBaseConstants.COLUMN_NAME_DATA);
   }
 
   @Override
   public boolean isSchemaExists(final JdbcDatabase database, final String outputSchema) throws Exception {
     try (final Stream<JsonNode> results = database.unsafeQuery(SHOW_SCHEMAS)) {
-      return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equalsIgnoreCase);
-    } catch (Exception e) {
+      return results.map(schemas -> schemas.get(NAME).asText()).anyMatch(outputSchema::equals);
+    } catch (final Exception e) {
       throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
     }
+  }
+
+  @Override
+  public String truncateTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
+    return String.format("TRUNCATE TABLE \"%s\".\"%s\";\n", schemaName, tableName);
+  }
+
+  @Override
+  public String dropTableIfExistsQuery(final String schemaName, final String tableName) {
+    return String.format("DROP TABLE IF EXISTS \"%s\".\"%s\";\n", schemaName, tableName);
   }
 
   @Override
@@ -65,9 +95,13 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
     // FROM VALUES
     // (?, ?, ?),
     // ...
-    final String insertQuery = String.format(
-        "INSERT INTO %s.%s (%s, %s, %s) SELECT column1, parse_json(column2), column3 FROM VALUES\n",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    final String insertQuery;
+    // Note that the column order is weird here - that's intentional, to avoid needing to change
+    // SqlOperationsUtils.insertRawRecordsInSingleQuery to support a different column order.
+    insertQuery = String.format(
+        "INSERT INTO \"%s\".\"%s\" (\"%s\", \"%s\", \"%s\") SELECT column1, parse_json(column2), column3 FROM VALUES\n",
+        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
+        JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT);
     final String recordQuery = "(?, ?, ?),\n";
     SqlOperationsUtils.insertRawRecordsInSingleQuery(insertQuery, recordQuery, database, records);
   }
@@ -84,7 +118,7 @@ class SnowflakeSqlOperations extends JdbcSqlOperations implements SqlOperations 
   }
 
   @Override
-  protected Optional<ConfigErrorException> checkForKnownConfigExceptions(Exception e) {
+  protected Optional<ConfigErrorException> checkForKnownConfigExceptions(final Exception e) {
     if (e instanceof SnowflakeSQLException && e.getMessage().contains(NO_PRIVILEGES_ERROR_MESSAGE)) {
       return Optional.of(new ConfigErrorException(
           "Encountered Error with Snowflake Configuration: Current role does not have permissions on the target schema please verify your privileges",

@@ -36,7 +36,7 @@ def test_check_wrong_date_connection(wrong_date_config):
     logger_mock = MagicMock()
     with pytest.raises(AirbyteTracedException) as e:
         source.check_connection(logger_mock, wrong_date_config)
-    assert e.value.message == 'Entered `Start Date` does not match format YYYY-MM-DD'
+    assert e.value.message == "Entered `Start Date` does not match format YYYY-MM-DD"
 
 
 @responses.activate
@@ -44,7 +44,7 @@ def test_streams(test_config):
     setup_responses()
     source = SourcePinterest()
     streams = source.streams(test_config)
-    expected_streams_number = 13
+    expected_streams_number = 14
     assert len(streams) == expected_streams_number
 
 

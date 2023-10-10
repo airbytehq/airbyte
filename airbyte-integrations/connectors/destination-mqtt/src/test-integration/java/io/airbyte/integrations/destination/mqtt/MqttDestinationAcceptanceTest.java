@@ -11,10 +11,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import com.google.common.net.InetAddresses;
 import com.hivemq.testcontainer.junit5.HiveMQTestContainerExtension;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -22,6 +22,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -133,13 +134,13 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
           .map(InetAddress::getHostAddress)
           .filter(InetAddresses::isUriInetAddress)
           .findFirst().orElse(InetAddress.getLocalHost().getHostAddress());
-    } catch (SocketException e) {
+    } catch (final SocketException e) {
       return InetAddress.getLocalHost().getHostAddress();
     }
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) throws MqttException {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) throws MqttException {
     recordsPerTopic.clear();
     client = new MqttClient("tcp://" + extension.getHost() + ":" + extension.getMqttPort(), UUID.randomUUID().toString(), new MemoryPersistence());
 
@@ -149,7 +150,7 @@ public class MqttDestinationAcceptanceTest extends DestinationAcceptanceTest {
     client.connect(options);
 
     client.subscribe(TOPIC_PREFIX + "#", (topic, msg) -> {
-      List<JsonNode> records = recordsPerTopic.getOrDefault(topic, new ArrayList<>());
+      final List<JsonNode> records = recordsPerTopic.getOrDefault(topic, new ArrayList<>());
       records.add(READER.readTree(msg.getPayload()).get(MqttDestination.COLUMN_NAME_DATA));
       recordsPerTopic.put(topic, records);
     });

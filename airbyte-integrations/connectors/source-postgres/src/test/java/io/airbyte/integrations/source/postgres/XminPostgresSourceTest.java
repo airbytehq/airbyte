@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.createRecord;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.extractStateMessage;
 import static io.airbyte.integrations.source.postgres.utils.PostgresUnitTestsUtil.filterRecords;
@@ -17,15 +18,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -38,7 +40,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
-import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,7 +67,7 @@ class XminPostgresSourceTest {
   @SystemStub
   private EnvironmentVariables environmentVariables;
   private static final String SCHEMA_NAME = "public";
-  private static final String STREAM_NAME = "id_and_name";
+  protected static final String STREAM_NAME = "id_and_name";
   private static final AirbyteCatalog CATALOG = new AirbyteCatalog().withStreams(List.of(
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
@@ -95,19 +96,19 @@ class XminPostgresSourceTest {
           .withSourceDefinedCursor(true)
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
 
-  private static final ConfiguredAirbyteCatalog CONFIGURED_XMIN_CATALOG = toConfiguredXminCatalog(CATALOG);
+  protected static final ConfiguredAirbyteCatalog CONFIGURED_XMIN_CATALOG = toConfiguredXminCatalog(CATALOG);
 
-  private static final List<AirbyteMessage> INITIAL_RECORD_MESSAGES = Arrays.asList(
+  protected static final List<AirbyteMessage> INITIAL_RECORD_MESSAGES = Arrays.asList(
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", null, "name", "piccolo", "power", null)));
 
-  private static final List<AirbyteMessage> NEXT_RECORD_MESSAGES = Arrays.asList(
+  protected static final List<AirbyteMessage> NEXT_RECORD_MESSAGES = Arrays.asList(
       createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("3.0"), "name", "gohan", "power", 222.1)));
 
-  private static PostgreSQLContainer<?> PSQL_DB;
+  protected static PostgreSQLContainer<?> PSQL_DB;
 
-  private String dbName;
+  protected String dbName;
 
   @BeforeAll
   static void init() {
@@ -148,11 +149,11 @@ class XminPostgresSourceTest {
     }
   }
 
-  private static Database getDatabase(final DSLContext dslContext) {
+  protected static Database getDatabase(final DSLContext dslContext) {
     return new Database(dslContext);
   }
 
-  private static DSLContext getDslContext(final JsonNode config) {
+  protected static DSLContext getDslContext(final JsonNode config) {
     return DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
@@ -164,7 +165,7 @@ class XminPostgresSourceTest {
         SQLDialect.POSTGRES);
   }
 
-  private JsonNode getXminConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
+  protected JsonNode getXminConfig(final PostgreSQLContainer<?> psqlDb, final String dbName) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
         .put(JdbcUtils.PORT_KEY, psqlDb.getFirstMappedPort())
@@ -174,7 +175,7 @@ class XminPostgresSourceTest {
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .put(JdbcUtils.SSL_KEY, false)
         .put("replication_method", getReplicationMethod())
-        .put("sync_checkpoint_records", 1)
+        .put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build());
   }
 
@@ -322,7 +323,7 @@ class XminPostgresSourceTest {
   }
 
   // Assert that the state message is the last message to be emitted.
-  private static void assertMessageSequence(final List<AirbyteMessage> messages) {
+  protected static void assertMessageSequence(final List<AirbyteMessage> messages) {
     assertEquals(Type.STATE, messages.get(messages.size() - 1).getType());
   }
 

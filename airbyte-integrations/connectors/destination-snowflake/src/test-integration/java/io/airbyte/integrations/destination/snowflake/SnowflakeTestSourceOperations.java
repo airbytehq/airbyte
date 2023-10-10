@@ -4,20 +4,27 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
-import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLDate;
-import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.putJavaSQLDate;
+import static io.airbyte.cdk.db.jdbc.DateTimeConverter.putJavaSQLTime;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTestUtils;
+import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
+import io.airbyte.commons.json.Jsons;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class SnowflakeTestSourceOperations extends JdbcSourceOperations {
 
   @Override
-  protected void putString(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    DestinationAcceptanceTestUtils.putStringIntoJson(resultSet.getString(index), columnName, node);
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+    final String columnName = resultSet.getMetaData().getColumnName(colIndex);
+    final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
+
+    switch (columnTypeName) {
+      // jdbc converts VARIANT columns to serialized JSON, so we need to deserialize these.
+      case "variant", "array", "object" -> json.set(columnName, Jsons.deserializeExact(resultSet.getString(colIndex)));
+      default -> super.copyToJsonField(resultSet, colIndex, json);
+    }
   }
 
   @Override

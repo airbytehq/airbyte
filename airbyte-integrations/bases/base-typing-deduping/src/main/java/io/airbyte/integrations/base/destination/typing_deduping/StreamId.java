@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+
 /**
  * In general, callers should not directly instantiate this class. Use
  * {@link SqlGenerator#buildStreamId(String, String, String)} instead.
@@ -34,7 +36,7 @@ public record StreamId(String finalNamespace,
     return quote + finalNamespace + quote + "." + quote + finalName + quote;
   }
 
-  public String finalTableId(String suffix, String quote) {
+  public String finalTableId(String quote, String suffix) {
     return quote + finalNamespace + quote + "." + quote + finalName + suffix + quote;
   }
 
@@ -48,6 +50,10 @@ public record StreamId(String finalNamespace,
 
   public String finalNamespace(final String quote) {
     return quote + finalNamespace + quote;
+  }
+
+  public AirbyteStreamNameNamespacePair asPair() {
+    return new AirbyteStreamNameNamespacePair(originalName, originalNamespace);
   }
 
   /**
@@ -65,7 +71,8 @@ public record StreamId(String finalNamespace,
    */
   public static String concatenateRawTableName(String namespace, String name) {
     String plainConcat = namespace + name;
-    int longestUnderscoreRun = 0;
+    // Pretend we always have at least one underscore, so that we never generate `_raw_stream_`
+    int longestUnderscoreRun = 1;
     for (int i = 0; i < plainConcat.length(); i++) {
       // If we've found an underscore, count the number of consecutive underscores
       int underscoreRun = 0;
@@ -76,7 +83,7 @@ public record StreamId(String finalNamespace,
       longestUnderscoreRun = Math.max(longestUnderscoreRun, underscoreRun);
     }
 
-    return namespace + "_ab" + "_".repeat(longestUnderscoreRun + 1) + "ab_" + name;
+    return namespace + "_raw" + "_".repeat(longestUnderscoreRun + 1) + "stream_" + name;
   }
 
 }

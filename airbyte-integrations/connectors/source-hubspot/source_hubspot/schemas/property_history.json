@@ -28,6 +28,12 @@
     },
     "vid": {
       "type": ["null", "integer"]
+    },
+    "source-vids": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["null", "integer"]
+      }
     }
   }
 }

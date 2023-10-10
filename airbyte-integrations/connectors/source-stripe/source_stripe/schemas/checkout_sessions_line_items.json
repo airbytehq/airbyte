@@ -7,6 +7,8 @@
     "checkout_session_expires_at": { "type": ["null", "integer"] },
     "object": { "type": ["null", "string"] },
     "amount_subtotal": { "type": ["null", "integer"] },
+    "amount_tax": { "type": ["null", "integer"] },
+    "amount_discount": { "type": ["null", "integer"] },
     "amount_total": { "type": ["null", "integer"] },
     "currency": { "type": ["null", "string"] },
     "description": { "type": ["null", "string"] },

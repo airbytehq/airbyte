@@ -4,7 +4,7 @@
       "stream": {
         "name": "campaigns",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object"
         },
         "supported_sync_modes": ["full_refresh"]
@@ -16,7 +16,7 @@
       "stream": {
         "name": "reports",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object"
         },
         "supported_sync_modes": ["full_refresh"]
@@ -28,7 +28,7 @@
       "stream": {
         "name": "customers",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object"
         },
         "supported_sync_modes": ["full_refresh"]
@@ -40,7 +40,7 @@
       "stream": {
         "name": "nps",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object"
         },
         "supported_sync_modes": ["full_refresh"]
@@ -52,7 +52,7 @@
       "stream": {
         "name": "feedback",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object"
         },
         "supported_sync_modes": ["full_refresh"]
@@ -64,7 +64,7 @@
       "stream": {
         "name": "outbox",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object"
         },
         "supported_sync_modes": ["full_refresh"]
@@ -76,7 +76,7 @@
       "stream": {
         "name": "companies",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object"
         },
         "supported_sync_modes": ["full_refresh"]
@@ -88,7 +88,7 @@
       "stream": {
         "name": "templates",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-04/schema#",
+          "$schema": "http://json-schema.org/draft-07/schema#",
           "type": "object"
         },
         "supported_sync_modes": ["full_refresh"]

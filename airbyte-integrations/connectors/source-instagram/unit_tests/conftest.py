@@ -129,7 +129,6 @@ def user_insights():
         # reference Issue:
         # https://github.com/airbytehq/airbyte/issues/24697
         class UserInsight:
-
             def __init__(self, values: dict):
                 self.data = {
                     "description": "test_insight",

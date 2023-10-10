@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Literal, Mapping, Optional, Tuple, Type, Uni
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError, SchemaInferenceError
 
 JsonSchemaSupportedType = Union[List[str], Literal["string"], str]
-SchemaType = Dict[str, Dict[str, JsonSchemaSupportedType]]
+SchemaType = Mapping[str, Mapping[str, JsonSchemaSupportedType]]
 
 schemaless_schema = {"type": "object", "properties": {"data": {"type": "object"}}}
 
@@ -99,7 +99,7 @@ def merge_schemas(schema1: SchemaType, schema2: SchemaType) -> SchemaType:
         if not isinstance(t, dict) or "type" not in t or not _is_valid_type(t["type"]):
             raise SchemaInferenceError(FileBasedSourceError.UNRECOGNIZED_TYPE, key=k, type=t)
 
-    merged_schema: Dict[str, Any] = deepcopy(schema1)
+    merged_schema: Dict[str, Any] = deepcopy(schema1)  # type: ignore  # as of 2023-08-08, deepcopy can copy Mapping
     for k2, t2 in schema2.items():
         t1 = merged_schema.get(k2)
         if t1 is None:
@@ -116,7 +116,7 @@ def _is_valid_type(t: JsonSchemaSupportedType) -> bool:
     return t == "array" or get_comparable_type(t) is not None
 
 
-def _choose_wider_type(key: str, t1: Dict[str, Any], t2: Dict[str, Any]) -> Dict[str, Any]:
+def _choose_wider_type(key: str, t1: Mapping[str, Any], t2: Mapping[str, Any]) -> Mapping[str, Any]:
     if (t1["type"] == "array" or t2["type"] == "array") and t1 != t2:
         raise SchemaInferenceError(
             FileBasedSourceError.SCHEMA_INFERENCE_ERROR,
@@ -176,7 +176,9 @@ def conforms_to_schema(record: Mapping[str, Any], schema: Mapping[str, Any]) -> 
         value = record.get(column)
 
         if value is not None:
-            if expected_type == "object":
+            if isinstance(expected_type, list):
+                return any(is_equal_or_narrower_type(value, e) for e in expected_type)
+            elif expected_type == "object":
                 return isinstance(value, dict)
             elif expected_type == "array":
                 if not isinstance(value, list):

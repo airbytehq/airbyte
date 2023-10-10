@@ -16,18 +16,15 @@ CONNECTOR_DIR="$ROOT_DIR/airbyte-integrations/connectors/$CONNECTOR_NAME"
 
 if [ -n "$FETCH_SECRETS" ]; then
   cd $ROOT_DIR
-  VERSION=dev $ROOT_DIR/tools/.venv/bin/ci_credentials $CONNECTOR_NAME write-to-storage || true
+  pip install pipx
+  pipx ensurepath
+  pipx install airbyte-ci/connectors/ci_credentials
+  VERSION=dev ci_credentials $CONNECTOR_NAME write-to-storage || true
   cd -
 fi
 
-if [ -n "$LOCAL_CDK" ] && [ -f "$CONNECTOR_DIR/setup.py" ]; then
-  echo "Building Connector image with local CDK from $ROOT_DIR/airbyte-cdk"
-  echo "Building docker image $CONNECTOR_TAG."
-  CONNECTOR_NAME="$CONNECTOR_NAME" CONNECTOR_TAG="$CONNECTOR_TAG" QUIET_BUILD="$QUIET_BUILD" sh "$ROOT_DIR/airbyte-integrations/scripts/build-connector-image-with-local-cdk.sh"
-else
-  # Build latest connector image
-  docker build -t "$CONNECTOR_TAG" .
-fi
+# Build latest connector image
+docker build -t "$CONNECTOR_TAG" .
 
 # Pull latest acctest image
 docker pull airbyte/connector-acceptance-test:latest

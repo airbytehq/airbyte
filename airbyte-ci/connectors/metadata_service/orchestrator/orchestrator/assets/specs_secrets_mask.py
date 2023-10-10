@@ -1,18 +1,22 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from typing import List, Set
 
 import dpath.util
+import sentry_sdk
 import yaml
-from dagster import MetadataValue, Output, asset
+from dagster import MetadataValue, OpExecutionContext, Output, asset
 from metadata_service.models.generated.ConnectorRegistryV0 import ConnectorRegistryV0
+from orchestrator.logging import sentry
 
 GROUP_NAME = "specs_secrets_mask"
 
 # HELPERS
 
 
+@sentry_sdk.trace
 def get_secrets_properties_from_registry_entry(registry_entry: dict) -> List[str]:
     """Traverse a registry entry to spot properties in a spec that have the "airbyte_secret" field set to true.
 
@@ -46,7 +50,10 @@ def get_secrets_properties_from_registry_entry(registry_entry: dict) -> List[str
 
 
 @asset(group_name=GROUP_NAME)
-def all_specs_secrets(persisted_oss_registry: ConnectorRegistryV0, persisted_cloud_registry: ConnectorRegistryV0) -> Set[str]:
+@sentry.instrument_asset_op
+def all_specs_secrets(
+    context: OpExecutionContext, persisted_oss_registry: ConnectorRegistryV0, persisted_cloud_registry: ConnectorRegistryV0
+) -> Set[str]:
     oss_registry_from_metadata_dict = persisted_oss_registry.dict()
     cloud_registry_from_metadata_dict = persisted_cloud_registry.dict()
 
@@ -63,7 +70,8 @@ def all_specs_secrets(persisted_oss_registry: ConnectorRegistryV0, persisted_clo
 
 
 @asset(required_resource_keys={"registry_directory_manager"}, group_name=GROUP_NAME)
-def specs_secrets_mask_yaml(context, all_specs_secrets: Set[str]) -> Output:
+@sentry.instrument_asset_op
+def specs_secrets_mask_yaml(context: OpExecutionContext, all_specs_secrets: Set[str]) -> Output:
     yaml_string = yaml.dump({"properties": list(all_specs_secrets)})
     registry_directory_manager = context.resources.registry_directory_manager
     file_handle = registry_directory_manager.write_data(yaml_string.encode(), ext="yaml", key="specs_secrets_mask")

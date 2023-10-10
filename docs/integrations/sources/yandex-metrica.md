@@ -34,7 +34,6 @@ This page contains the setup guide and reference information for the Yandex Metr
 7. Enter the Start Date in format `YYYY-MM-DD`.
 8. Enter the End Date in format `YYYY-MM-DD` (Optional).
 
-
 #### For Airbyte Open Source:
 
 1. Navigate to the Airbyte Open Source dashboard.
@@ -50,15 +49,15 @@ This page contains the setup guide and reference information for the Yandex Metr
 
 The Yandex Metrica source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
-* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
 
-* [Views](https://yandex.com/dev/metrika/doc/api2/logs/fields/hits.html) \(Incremental\).
-* [Sessions](https://yandex.com/dev/metrika/doc/api2/logs/fields/visits.html) \(Incremental\).
+- [Views](https://yandex.com/dev/metrika/doc/api2/logs/fields/hits.html) \(Incremental\).
+- [Sessions](https://yandex.com/dev/metrika/doc/api2/logs/fields/visits.html) \(Incremental\).
 
 ## Performance considerations
 
@@ -79,7 +78,7 @@ Because of the way API works some syncs may take a long time to finish. Timeout 
 ## Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
-|:-----------------|:-------------|:------|
+| :--------------- | :----------- | :---- |
 | `string`         | `string`     |       |
 | `integer`        | `integer`    |       |
 | `number`         | `number`     |       |
@@ -89,6 +88,6 @@ Because of the way API works some syncs may take a long time to finish. Timeout 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                 |
-|:--------|:-----------|:---------------------------------------------------------|:----------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------- |
 | 1.0.0   | 2023-03-20 | [24188](https://github.com/airbytehq/airbyte/pull/24188) | Migrate to Beta; Change state structure |
 | 0.1.0   | 2022-09-09 | [15061](https://github.com/airbytehq/airbyte/pull/15061) | 🎉 New Source: Yandex metrica           |

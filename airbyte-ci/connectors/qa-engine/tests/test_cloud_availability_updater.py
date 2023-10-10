@@ -26,7 +26,7 @@ def eligible_connectors():
         models.ConnectorQAReport(
             connector_type="source",
             connector_name="PokeAPI",
-            release_stage="alpha",
+            support_level="community",
             is_on_cloud=False,
             is_appropriate_for_cloud_use=True,
             latest_build_is_successful=True,
@@ -52,7 +52,7 @@ def excluded_connectors():
         models.ConnectorQAReport(
             connector_type="source",
             connector_name="excluded",
-            release_stage="alpha",
+            support_level="community",
             is_on_cloud=False,
             is_appropriate_for_cloud_use=True,
             latest_build_is_successful=True,

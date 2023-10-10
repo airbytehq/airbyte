@@ -5,7 +5,7 @@ info:
     [https://airbyte.io](https://airbyte.io).
 
     The Configuration API is an internal Airbyte API that is designed for communications between different Airbyte components.
-    * It's main purpose is to enable the Airbyte Engineering team to configure the internal state of [Airbyte Cloud](https://airbyte.com/airbyte-cloud)
+    * Its main purpose is to enable the Airbyte Engineering team to configure the internal state of [Airbyte Cloud](https://airbyte.com/airbyte-cloud)
     * It is also sometimes used by OSS users to configure their own Self-Hosted Airbyte deployment (internal state, etc)
 
     WARNING
@@ -19,7 +19,7 @@ info:
     Here are some conventions that this API follows:
     * All endpoints are http POST methods.
     * All endpoints accept data via `application/json` request bodies. The API does not accept any data via query params.
-    * The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8000/v1/connections/create`.
+    * The naming convention for endpoints is: localhost:8000/api/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8000/api/v1/connections/create`.
     * For all `update` methods, the whole object must be passed in, even the fields that did not change.
 
     Authentication (OSS):
@@ -3347,64 +3347,6 @@ components:
       description: The specification for what values are required to configure the sourceDefinition.
       type: object
       example: { user: { type: string } }
-    SourceAuthSpecification:
-      $ref: "#/components/schemas/AuthSpecification"
-    AuthSpecification:
-      type: object
-      properties:
-        auth_type:
-          type: string
-          enum: ["oauth2.0"] # Future auth types should be added here
-        oauth2Specification:
-          "$ref": "#/components/schemas/OAuth2Specification"
-    OAuth2Specification:
-      description: An object containing any metadata needed to describe this connector's Oauth flow
-      type: object
-      required:
-        - rootObject
-        - oauthFlowInitParameters
-        - oauthFlowOutputParameters
-      properties:
-        rootObject:
-          description:
-            "A list of strings representing a pointer to the root object which contains any oauth parameters in the ConnectorSpecification.
-
-            Examples:
-
-            if oauth parameters were contained inside the top level, rootObject=[]
-            If they were nested inside another object {'credentials': {'app_id' etc...}, rootObject=['credentials']
-            If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch', 0]
-            "
-          type: array
-          items: {} # <--- using generic any type. Build fails with oneOf (https://github.com/OpenAPITools/openapi-generator/issues/6161)
-          example:
-            - path
-            - 1
-        oauthFlowInitParameters:
-          description:
-            "Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow.
-            Each inner array represents the path in the rootObject of the referenced field.
-            For example.
-            Assume the rootObject contains params 'app_secret', 'app_id' which are needed to get the initial refresh token.
-            If they are not nested in the rootObject, then the array would look like this [['app_secret'], ['app_id']]
-            If they are nested inside an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']]"
-          type: array
-          items:
-            description: A list of strings denoting a pointer into the rootObject for where to find this property
-            type: array
-            items:
-              type: string
-        oauthFlowOutputParameters:
-          description:
-            "Pointers to the fields in the rootObject which can be populated from successfully completing the oauth flow using the init parameters.
-            This is typically a refresh/access token.
-            Each inner array represents the path in the rootObject of the referenced field."
-          type: array
-          items:
-            description: A list of strings denoting a pointer into the rootObject for where to find this property
-            type: array
-            items:
-              type: string
     SourceDefinitionSpecificationRead:
       type: object
       required:
@@ -3417,8 +3359,6 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/SourceDefinitionSpecification"
-        authSpecification:
-          $ref: "#/components/schemas/SourceAuthSpecification"
         advancedAuth:
           $ref: "#/components/schemas/AdvancedAuth"
         jobInfo:
@@ -3658,8 +3598,6 @@ components:
     DestinationDefinitionId:
       type: string
       format: uuid
-    DestinationAuthSpecification:
-      $ref: "#/components/schemas/AuthSpecification"
     DestinationDefinitionIdRequestBody:
       type: object
       required:
@@ -3806,8 +3744,6 @@ components:
           type: string
         connectionSpecification:
           $ref: "#/components/schemas/DestinationDefinitionSpecification"
-        authSpecification:
-          $ref: "#/components/schemas/DestinationAuthSpecification"
         advancedAuth:
           $ref: "#/components/schemas/AdvancedAuth"
         jobInfo:

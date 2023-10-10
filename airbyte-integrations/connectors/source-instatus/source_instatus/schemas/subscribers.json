@@ -26,19 +26,19 @@
     "components": {
       "type": ["null", "object"],
       "properties": {
-        "id": {"type": ["null", "string"]},
-        "name": {"type": ["null", "string"]},
-        "status": {"type": ["null", "string"]},
-        "showUptime": {"type": ["null", "boolean"]},
+        "id": { "type": ["null", "string"] },
+        "name": { "type": ["null", "string"] },
+        "status": { "type": ["null", "string"] },
+        "showUptime": { "type": ["null", "boolean"] },
         "site": {
           "type": ["null", "object"],
           "properties": {
-            "id": {"type": ["null", "string"]},
-            "name": {"type": ["null", "string"]},
-            "subdomain": {"type": ["null", "string"]},
-            "color": {"type": ["null", "boolean"]},
-            "logoUrl": {"type": ["null", "boolean"]},
-            "publicEmail": {"type": ["null", "boolean"]}
+            "id": { "type": ["null", "string"] },
+            "name": { "type": ["null", "string"] },
+            "subdomain": { "type": ["null", "string"] },
+            "color": { "type": ["null", "boolean"] },
+            "logoUrl": { "type": ["null", "boolean"] },
+            "publicEmail": { "type": ["null", "boolean"] }
           }
         }
       }

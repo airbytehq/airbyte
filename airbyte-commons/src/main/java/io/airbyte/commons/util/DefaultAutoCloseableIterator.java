@@ -17,7 +17,7 @@ import java.util.Optional;
  *
  * @param <T> type
  */
-class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T>, AirbyteStreamAware {
+class DefaultAutoCloseableIterator<T> extends AbstractIterator<T> implements AutoCloseableIterator<T> {
 
   private final AirbyteStreamNameNamespacePair airbyteStream;
   private final Iterator<T> iterator;
