@@ -8,6 +8,9 @@
     "_airtable_id": {
       "type": ["null", "string"]
     },
+    "_airtable_table_name": {
+      "type": ["null", "string"]
+    },
     "assignee_(from_table_6)": {
       "items": {
         "type": ["null", "number"]

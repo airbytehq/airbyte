@@ -86,6 +86,7 @@ class SourceAirtable(AbstractSource):
                             f"{base_name}/{SchemaHelpers.clean_name(table.get('name'))}/{table.get('id')}",
                             SchemaHelpers.get_json_schema(table),
                         ),
+                        "table_name": table.get("name"),
                     }
                 )
         return AirbyteCatalog(streams=[stream["stream"] for stream in self.streams_catalog])
@@ -101,5 +102,6 @@ class SourceAirtable(AbstractSource):
                 stream_path=stream["stream_path"],
                 stream_name=stream["stream"].name,
                 stream_schema=stream["stream"].json_schema,
+                table_name=stream["table_name"],
                 authenticator=self._auth,
             )
