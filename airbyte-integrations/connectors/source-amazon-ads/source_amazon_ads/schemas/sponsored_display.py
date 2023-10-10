@@ -48,53 +48,11 @@ class DisplayTargeting(Targeting):
     resolvedExpression: List[Dict[str, str]]
 
 
-class DisplayCreativesHeadlineCreativeProperties(CatalogModel):
-    headline: Optional[str] = None
-
-
-class DisplayCreativesCreativePropertiesCroppingCoordinates(CatalogModel):
-    top: Decimal
-    left: Decimal
-    width: Decimal
-    height: Decimal
-
-
-class DisplayCreativesLogoCustomImageCreativeProperties(CatalogModel):
-    assetId: str
-    assetVersion: str
-    croppingCoordinates: Optional[DisplayCreativesCreativePropertiesCroppingCoordinates] = None
-
-
-class DisplayCreativesLogoCreativeProperties(CatalogModel):
-    brandLogo: Optional[DisplayCreativesLogoCustomImageCreativeProperties] = None
-
-
-class DisplayCreativesCustomImageCreativeProperties(CatalogModel):
-    rectCustomImage: Optional[DisplayCreativesLogoCustomImageCreativeProperties] = None
-    squareCustomImage: Optional[DisplayCreativesLogoCustomImageCreativeProperties] = None
-
-
-class DisplayCreativesVideoCreativePropertiesVideo(CatalogModel):
-    assetId: str
-    assetVersion: str
-
-
-class DisplayCreativesVideoCreativeProperties(CatalogModel):
-    video: Optional[DisplayCreativesVideoCreativePropertiesVideo] = None
-
-
-class DisplayCreativesProperties(CatalogModel):
-    HeadlineCreativeProperties: Optional[Dict[str, str]] = None
-    LogoCreativeProperties: Optional[DisplayCreativesLogoCreativeProperties] = None
-    CustomImageCreativeProperties: Optional[DisplayCreativesCustomImageCreativeProperties] = None
-    VideoCreativeProperties: Optional[DisplayCreativesVideoCreativeProperties] = None
-
-
 class DisplayCreatives(CatalogModel):
     adGroupId: Decimal
     creativeId: Decimal
     creativeType: str
-    properties: Optional[DisplayCreativesProperties] = None
+    properties: Dict[str, Any]
     moderationStatus: str
 
 
