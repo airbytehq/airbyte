@@ -18,7 +18,7 @@ def config(request):
 def disable_cache(mocker):
     mocker.patch("source_gitlab.streams.Projects.use_cache", new_callable=mocker.PropertyMock, return_value=False)
     mocker.patch("source_gitlab.streams.Groups.use_cache", new_callable=mocker.PropertyMock, return_value=False)
-    
+
 
 @pytest.fixture
 def oauth_config():

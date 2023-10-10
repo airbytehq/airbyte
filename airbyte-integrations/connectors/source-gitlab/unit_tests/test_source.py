@@ -48,7 +48,7 @@ def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
 
 
 def test_connection_fail_due_to_expired_access_token_error(oauth_config, mocker, requests_mock):
-    expected = 'Unable to refresh the `access_token`, please re-auth in Source > Settings.'
+    expected = "Unable to refresh the `access_token`, please re-auth in Source > Settings."
     requests_mock.post("https://gitlab.com/oauth/token", status_code=401)
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger("airbyte"), oauth_config)
