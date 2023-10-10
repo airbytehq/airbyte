@@ -76,8 +76,9 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
                              final ConfiguredAirbyteCatalog catalog,
                              final BufferManager bufferManager,
                              final String defaultNamespace,
-                             final ExecutorService workerPool) {
-    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, new FlushFailure(), defaultNamespace, workerPool);
+                             final ExecutorService workerPool,
+                             final boolean withStateFlushing) {
+    this(outputRecordCollector, onStart, onClose, flusher, catalog, bufferManager, new FlushFailure(), defaultNamespace, workerPool, withStateFlushing);
   }
 
   @VisibleForTesting
@@ -89,7 +90,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
                              final BufferManager bufferManager,
                              final FlushFailure flushFailure,
                              final String defaultNamespace,
-                             final ExecutorService workerPool) {
+                             final ExecutorService workerPool,
+                             final boolean withStateFlushing) {
     this.defaultNamespace = defaultNamespace;
     hasStarted = false;
     hasClosed = false;
@@ -100,7 +102,7 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     this.bufferManager = bufferManager;
     bufferEnqueue = bufferManager.getBufferEnqueue();
     this.flushFailure = flushFailure;
-    flushWorkers = new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager(), workerPool);
+    flushWorkers = new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager(), workerPool, withStateFlushing);
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
   }
 

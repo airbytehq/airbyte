@@ -280,13 +280,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         BigQueryUtils.getDatasetId(config));
   }
 
-  protected Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> getUploaderMap(
+  protected ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> getUploaderMap(
                                                                                                                 final BigQuery bigquery,
                                                                                                                 final JsonNode config,
                                                                                                                 final ConfiguredAirbyteCatalog catalog,
                                                                                                                 final ParsedCatalog parsedCatalog)
       throws IOException {
-    return () -> {
       final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new ConcurrentHashMap<>();
       for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
         final AirbyteStream stream = configStream.getStream();
@@ -321,7 +320,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         }
       }
       return uploaderMap;
-    };
   }
 
   protected void putStreamIntoUploaderMap(final AirbyteStream stream,
@@ -362,7 +360,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                      final TyperDeduper typerDeduper)
       throws Exception {
     typerDeduper.prepareTables();
-    final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> writeConfigs = getUploaderMap(
+    final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(
         bigquery,
         config,
         catalog,
@@ -376,7 +374,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           final boolean use1s1t = TypingAndDedupingFlag.isDestinationV2();
           if (use1s1t) {
             // Set up our raw tables
-            writeConfigs.get().forEach((streamId, uploader) -> {
+            writeConfigs.forEach((streamId, uploader) -> {
               final StreamConfig stream = parsedCatalog.getStream(streamId);
               if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
                 // For streams in overwrite mode, truncate the raw table.
@@ -393,6 +391,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
         },
         (hasFailed) -> {
           try {
+            writeConfigs.forEach((streamId, uploader) -> {
+              uploader.closeAfterPush();
+            });
             Thread.sleep(30 * 1000); // 30 seconds
             typerDeduper.typeAndDedupe();
             typerDeduper.commitFinalTables();
