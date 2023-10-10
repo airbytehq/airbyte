@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.DatasetId;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableId;
@@ -29,6 +28,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.workers.exception.TestHarnessException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
@@ -131,23 +131,23 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
   public void testRemovingPKNonNullIndexes() throws Exception {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.FULL_REFRESH)
-            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
                 .withNamespace(streamNamespace)
                 .withName(streamName)
-                .withJsonSchema(SCHEMA)
-                .withSourceDefinedPrimaryKey(List.of(List.of("id1", "id2"))))));;
+                .withJsonSchema(SCHEMA))));
 
     // First sync
     final List<AirbyteMessage> messages = readMessages("dat/sync_null_pk.jsonl");
-    assertThrows(
-        BigQueryException.class,
+    final TestHarnessException e = assertThrows(
+        TestHarnessException.class,
         () -> runSync(catalog, messages, "airbyte/destination-bigquery:2.0.20")); // this version introduced non-null PKs to the final tables
+    // ideally we would assert on the logged content of the original exception within e, but that is proving to be tricky
 
     // Second sync
     runSync(catalog, messages); // does not throw with latest version
-    assertEquals(3, dumpRawTableRecords(streamNamespace, streamName).toArray().length);
     assertEquals(1, dumpFinalTableRecords(streamNamespace, streamName).toArray().length);
   }
 

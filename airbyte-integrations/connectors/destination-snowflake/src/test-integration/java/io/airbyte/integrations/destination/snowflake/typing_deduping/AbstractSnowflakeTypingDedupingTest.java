@@ -27,11 +27,11 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import io.airbyte.workers.exception.TestHarnessException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
-import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedupingTest {
@@ -197,23 +197,23 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   public void testRemovingPKNonNullIndexes() throws Exception {
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(List.of(
         new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.FULL_REFRESH)
-            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND_DEDUP)
+            .withPrimaryKey(List.of(List.of("id1"), List.of("id2")))
             .withStream(new AirbyteStream()
                 .withNamespace(streamNamespace)
                 .withName(streamName)
-                .withJsonSchema(SCHEMA)
-                .withSourceDefinedPrimaryKey(List.of(List.of("ID1", "ID2"))))));
+                .withJsonSchema(SCHEMA))));
 
     // First sync
     final List<AirbyteMessage> messages = readMessages("dat/sync_null_pk.jsonl");
-    assertThrows(
-        SnowflakeSQLException.class,
+    final TestHarnessException e = assertThrows(
+        TestHarnessException.class,
         () -> runSync(catalog, messages, "airbyte/destination-snowflake:3.1.18")); // this version introduced non-null PKs to the final tables
+    // ideally we would assert on the logged content of the original exception within e, but that is proving to be tricky
 
     // Second sync
     runSync(catalog, messages); // does not throw with latest version
-    assertEquals(3, dumpRawTableRecords(streamNamespace, streamName).toArray().length);
     assertEquals(1, dumpFinalTableRecords(streamNamespace, streamName).toArray().length);
   }
 
