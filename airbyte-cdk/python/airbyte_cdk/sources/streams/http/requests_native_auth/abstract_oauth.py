@@ -98,7 +98,7 @@ class AbstractOauth2Authenticator(AuthBase):
 
     def refresh_access_token(self) -> Tuple[str, Union[str, int]]:
         """
-        Returns the refresh token and its lifespan
+        Returns the refresh token and its expiration datetime
 
         :return: a tuple of (access_token, token_lifespan)
         """
@@ -106,16 +106,18 @@ class AbstractOauth2Authenticator(AuthBase):
 
         return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
 
-    def _parse_token_lifespan(self, value: Union[str, int]) -> pendulum.DateTime:
+    def _parse_token_expiration_date(self, value: Union[str, int]) -> pendulum.DateTime:
         """
-        Return the lifespan of refresh token
+        Return the expiration datetime of the refresh token
 
-        :return: lifespan datetime
+        :return: expiration datetime
         """
 
         if self.token_expiry_is_time_of_expiration:
             if not self.token_expiry_date_format:
-                raise ValueError(f"Invalid token expiry date format {self.token_expiry_date_format}; a string is required.")
+                raise ValueError(
+                    f"Invalid token expiry date format {self.token_expiry_date_format}; a string representing the format is required."
+                )
             return pendulum.from_format(value, self.token_expiry_date_format)
         else:
             return pendulum.now().add(seconds=int(float(value)))
@@ -131,7 +133,7 @@ class AbstractOauth2Authenticator(AuthBase):
     @property
     def token_expiry_date_format(self) -> Optional[str]:
         """
-        Format of the datetime; provide it if expires_in is returned in datetime instead of seconds
+        Format of the datetime; exists it if expires_in is returned as the expiration datetime instead of seconds until it expires
         """
 
         return None

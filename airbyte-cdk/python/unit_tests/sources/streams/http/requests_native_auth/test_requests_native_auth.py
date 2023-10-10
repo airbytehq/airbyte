@@ -215,7 +215,7 @@ class TestOauth2Authenticator:
         mocker.patch.object(resp, "json", return_value={"access_token": "access_token", "expires_in": expires_in_response})
         mocker.patch.object(requests, "request", side_effect=mock_request, autospec=True)
         token, expire_in = oauth.refresh_access_token()
-        expires_datetime = oauth._parse_token_lifespan(expire_in)
+        expires_datetime = oauth._parse_token_expiration_date(expire_in)
 
         assert isinstance(expires_datetime, pendulum.DateTime)
         assert ("access_token", expected_token_expiry_date) == (token, expires_datetime)

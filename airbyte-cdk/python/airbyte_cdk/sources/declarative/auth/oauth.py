@@ -32,7 +32,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         scopes (Optional[List[str]]): The scopes to request
         token_expiry_date (Optional[Union[InterpolatedString, str]]): The access token expiration date
         token_expiry_date_format str: format of the datetime; provide it if expires_in is returned in datetime instead of seconds
-        token_expiry_is_time_of_expiration bool: set True it if expires_in is returned as time of expiration instead of seconds
+        token_expiry_is_time_of_expiration bool: set True it if expires_in is returned as time of expiration instead of the number seconds until expiration
         refresh_request_body (Optional[Mapping[str, Any]]): The request body to send in the refresh request
         grant_type: The grant_type to request for access_token. If set to refresh_token, the refresh_token parameter has to be provided
         message_repository (MessageRepository): the message repository used to emit logs on HTTP requests
@@ -106,10 +106,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
         return self._token_expiry_date
 
     def set_token_expiry_date(self, value: Union[str, int]):
-        try:
-            self._token_expiry_date = self._parse_token_lifespan(value)
-        except ValueError:
-            raise ValueError(f"Invalid token expiry value {value}; a number is required.")
+        self._token_expiry_date = self._parse_token_expiration_date(value)
 
     @property
     def access_token(self) -> str:
