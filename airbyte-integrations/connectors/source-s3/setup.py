@@ -14,6 +14,8 @@ MAIN_REQUIREMENTS = [
     "pytz",
     "fastavro==1.4.11",
     "python-snappy==0.6.1",
+    "unstructured==0.10.19",
+    "unstructured[pdf]==0.10.19",
 ]
 
 TEST_REQUIREMENTS = [
