@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
 
   // TODO remove this once the async framework supports rate-limiting/backpressuring
-  private static final RateLimiter rateLimiter = RateLimiter.create(0.4);
+  private static final RateLimiter rateLimiter = RateLimiter.create(0.3);
 
   private final BigQuery bigQuery;
   private final Supplier<ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>>> uploaderMap;
