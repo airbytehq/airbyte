@@ -67,14 +67,12 @@ public class FlushWorkers implements AutoCloseable {
   private final AtomicBoolean isClosing;
   private final GlobalAsyncStateManager stateManager;
 
-  private final boolean withStateFlushing;
-
   public FlushWorkers(final BufferDequeue bufferDequeue,
                       final DestinationFlushFunction flushFunction,
                       final Consumer<AirbyteMessage> outputRecordCollector,
                       final FlushFailure flushFailure,
                       final GlobalAsyncStateManager stateManager) {
-    this(bufferDequeue, flushFunction, outputRecordCollector, flushFailure, stateManager, Executors.newFixedThreadPool(5), true);
+    this(bufferDequeue, flushFunction, outputRecordCollector, flushFailure, stateManager, Executors.newFixedThreadPool(5));
   }
 
   public FlushWorkers(final BufferDequeue bufferDequeue,
@@ -82,14 +80,12 @@ public class FlushWorkers implements AutoCloseable {
                       final Consumer<AirbyteMessage> outputRecordCollector,
                       final FlushFailure flushFailure,
                       final GlobalAsyncStateManager stateManager,
-                      final ExecutorService workerPool,
-                      final boolean withStateFlushing) {
+                      final ExecutorService workerPool) {
     this.bufferDequeue = bufferDequeue;
     this.outputRecordCollector = outputRecordCollector;
     this.flushFailure = flushFailure;
     this.stateManager = stateManager;
     this.workerPool = workerPool;
-    this.withStateFlushing = withStateFlushing;
     flusher = flushFunction;
     debugLoop = Executors.newSingleThreadScheduledExecutor();
     supervisorThread = Executors.newScheduledThreadPool(1);
@@ -174,9 +170,7 @@ public class FlushWorkers implements AutoCloseable {
               AirbyteFileUtils.byteCountToDisplaySize(batch.getSizeInBytes()));
 
           flusher.flush(desc, batch.getData().stream().map(MessageWithMeta::message));
-          if (withStateFlushing) {
-            emitStateMessages(batch.flushStates(stateIdToCount));
-          }
+          emitStateMessages(batch.flushStates(stateIdToCount));
         }
 
         log.info("Flush Worker ({}) -- Worker finished flushing. Current queue size: {}",
