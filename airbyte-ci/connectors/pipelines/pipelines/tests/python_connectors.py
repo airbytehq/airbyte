@@ -11,8 +11,8 @@ import asyncer
 from dagger import Container
 from pipelines.actions import environments, secrets
 from pipelines.bases import Step, StepResult, StepStatus
-from pipelines.builds import LOCAL_BUILD_PLATFORM
-from pipelines.builds.python_connectors import BuildConnectorImage
+from pipelines.builds.python_connectors import BuildConnectorImages
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.contexts import ConnectorContext
 from pipelines.helpers.steps import run_steps
 from pipelines.tests.common import AcceptanceTests, PytestStep
@@ -126,13 +126,14 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     step_results = await run_steps(
         [
             ConnectorPackageInstall(context),
-            BuildConnectorImage(context, LOCAL_BUILD_PLATFORM),
+            BuildConnectorImages(context, LOCAL_BUILD_PLATFORM),
         ]
     )
     if any([step_result.status is StepStatus.FAILURE for step_result in step_results]):
         return step_results
     connector_package_install_results, build_connector_image_results = step_results[0], step_results[1]
-    connector_image_tar_file, _ = await export_container_to_tarball(context, build_connector_image_results.output_artifact)
+    connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
+    connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
     connector_container = connector_package_install_results.output_artifact
 
     context.connector_secrets = await secrets.get_connector_secrets(context)
