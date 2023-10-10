@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from functools import cached_property, lru_cache
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from json.decoder import JSONDecodeError
 
 import backoff
 import pendulum as pendulum
@@ -205,13 +206,23 @@ class API:
     def get(
         self, url: str, params: MutableMapping[str, Any] = None
     ) -> Tuple[Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]], requests.Response]:
-        response = self._session.get(self.BASE_URL + url, params=params)
         responseJson = None
-        try:
-            responseJson = response.json()
-        except json.decoder.JSONDecodeError as e:
-            logger.error(f"Failed to parse response: {response.text} with JSONDecodeError")
-            raise e
+        MAX_RETRIES = 5
+
+        for retries in range(MAX_RETRIES):
+            response = self._session.get(self.BASE_URL + url, params=params)
+            try:
+                responseJson = response.json()
+                break  # Success, exit the loop
+            except JSONDecodeError as e:
+                err_msg = f"Failed to parse response text: {response.text} with JSONDecodeError. Retrying ({retries+1}/{MAX_RETRIES})..."
+                logger.warn(err_msg)
+                retries += 1
+
+                if retries == MAX_RETRIES:
+                    logger.error(f"Failed to parse response: {response.text} with JSONDecodeError")
+                    raise JSONDecodeError("Unable to parse response", e.doc, e.pos)
+        
         if any([m in responseJson for m in TOKEN_EXPIRED_ERROR]):
             logger.info("Oauth token expired. Re-fetching token")
             self._session.auth = self.get_authenticator()
