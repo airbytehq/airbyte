@@ -4,7 +4,7 @@ acceptance_tests:
     tests:
       - spec_path: "source_apify_dataset/spec.yaml"
         backward_compatibility_tests_config:
-          disable_for_version: 0.2.0
+          disable_for_version: 2.0.0
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -15,7 +15,7 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: 0.2.0
+          disable_for_version: 2.0.0
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -32,7 +32,7 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         ignored_fields:
-          datasets:
+          dataset_collection:
             - name: "accessedAt"
               bypass_reason: "Change everytime"
             - name: "stats/readCount"

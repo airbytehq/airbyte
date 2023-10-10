@@ -76,6 +76,8 @@ COMPLEX_AIRTABLE_TYPES: Dict = {
     "rollup": SchemaTypes.array_with_any,
 }
 
+ARRAY_FORMULAS = ("ARRAYCOMPACT", "ARRAYFLATTEN", "ARRAYUNIQUE", "ARRAYSLICE")
+
 
 class SchemaHelpers:
     @staticmethod
@@ -106,7 +108,11 @@ class SchemaHelpers:
                 # Other edge cases, if `field_type` not in SIMPLE_AIRTABLE_TYPES, fall back to "simpleText" == `string`
                 # reference issue: https://github.com/airbytehq/oncall/issues/1432#issuecomment-1412743120
                 if complex_type == SchemaTypes.array_with_any:
-                    if field_type in SIMPLE_AIRTABLE_TYPES:
+                    if original_type == "formula" and field_type in ("number", "currency", "percent", "duration"):
+                        complex_type = SchemaTypes.number
+                    elif original_type == "formula" and not any((options.get("formula").startswith(x) for x in ARRAY_FORMULAS)):
+                        complex_type = SchemaTypes.string
+                    elif field_type in SIMPLE_AIRTABLE_TYPES:
                         complex_type["items"] = deepcopy(SIMPLE_AIRTABLE_TYPES.get(field_type))
                     else:
                         complex_type["items"] = SchemaTypes.string

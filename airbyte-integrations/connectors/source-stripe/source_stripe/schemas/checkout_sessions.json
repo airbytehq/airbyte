@@ -448,6 +448,9 @@
         }
       }
     },
-    "status": { "type": ["null", "string"] }
+    "status": { "type": ["null", "string"] },
+    "payment_method_configuration_details": {
+      "$ref": "payment_method_configuration_details.json"
+    }
   }
 }

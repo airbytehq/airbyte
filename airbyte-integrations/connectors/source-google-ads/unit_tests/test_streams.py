@@ -6,6 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.errors.types.errors import ErrorCode, GoogleAdsError, GoogleAdsFailure
 from google.ads.googleads.v11.errors.types.request_error import RequestErrorEnum
@@ -13,15 +14,6 @@ from google.api_core.exceptions import DataLoss, InternalServerError, ResourceEx
 from grpc import RpcError
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import Accounts, ClickView
-
-from .common import MockGoogleAdsClient as MockGoogleAdsClient
-
-
-@pytest.fixture
-def mock_ads_client(mocker, config):
-    """Mock google ads library method, so it returns mocked Client"""
-    mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", return_value=MockGoogleAdsClient(config))
-
 
 # EXPIRED_PAGE_TOKEN exception will be raised when page token has expired.
 exception = GoogleAdsException(
@@ -66,7 +58,7 @@ class MockGoogleAds(GoogleAds):
             return mock_response_2()
 
 
-def test_page_token_expired_retry_succeeds(mock_ads_client, config, customers):
+def test_page_token_expired_retry_succeeds(config, customers):
     """
     Page token expired while reading records on date 2021-01-03
     The latest read record is {"segments.date": "2021-01-03", "click_view.gclid": "4"}
@@ -125,7 +117,7 @@ class MockGoogleAdsFails(MockGoogleAds):
             return mock_response_fails_2()
 
 
-def test_page_token_expired_retry_fails(mock_ads_client, config, customers):
+def test_page_token_expired_retry_fails(config, customers):
     """
     Page token has expired while reading records within date "2021-01-03", it should raise error,
     because Google Ads API doesn't allow filter by datetime.
@@ -145,8 +137,12 @@ def test_page_token_expired_retry_fails(mock_ads_client, config, customers):
     stream.get_query = Mock()
     stream.get_query.return_value = "query"
 
-    with pytest.raises(GoogleAdsException):
+    with pytest.raises(AirbyteTracedException) as exception:
         list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
+    assert exception.value.message == (
+        "Page token has expired during processing response. "
+        "Please contact the Airbyte team with the link of your connection for assistance."
+    )
 
     stream.get_query.assert_called_with({"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-15"})
     assert stream.get_query.call_count == 2
@@ -168,7 +164,7 @@ class MockGoogleAdsFailsOneDate(MockGoogleAds):
         return mock_response_fails_one_date()
 
 
-def test_page_token_expired_it_should_fail_date_range_1_day(mock_ads_client, config, customers):
+def test_page_token_expired_it_should_fail_date_range_1_day(config, customers):
     """
     Page token has expired while reading records within date "2021-01-03",
     it should raise error, because Google Ads API doesn't allow filter by datetime.
@@ -189,9 +185,12 @@ def test_page_token_expired_it_should_fail_date_range_1_day(mock_ads_client, con
     stream.get_query = Mock()
     stream.get_query.return_value = "query"
 
-    with pytest.raises(GoogleAdsException):
+    with pytest.raises(AirbyteTracedException) as exception:
         list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
-
+    assert exception.value.message == (
+        "Page token has expired during processing response. "
+        "Please contact the Airbyte team with the link of your connection for assistance."
+    )
     stream.get_query.assert_called_with({"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04"})
     assert stream.get_query.call_count == 1
 
@@ -214,8 +213,10 @@ def test_retry_transient_errors(mocker, config, customers, error_cls):
     customer_id = next(iter(customers)).id
     stream_slice = {"customer_id": customer_id, "start_date": "2021-01-03", "end_date": "2021-01-04"}
     records = []
-    with pytest.raises(error_cls):
+    with pytest.raises(error_cls) as exception:
         records = list(stream.read_records(sync_mode=SyncMode.incremental, cursor_field=["segments.date"], stream_slice=stream_slice))
+    assert exception.value.message == "Error message"
+
     assert mocked_search.call_count == 5
     assert records == []
 

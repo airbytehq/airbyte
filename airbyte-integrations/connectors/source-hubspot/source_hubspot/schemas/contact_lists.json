@@ -25,6 +25,27 @@
         }
       }
     },
+    "metaData_processing": {
+      "type": ["null", "string"]
+    },
+    "metaData_size": {
+      "type": ["null", "integer"]
+    },
+    "metaData_error": {
+      "type": ["null", "string"]
+    },
+    "metaData_lastProcessingStateChangeAt": {
+      "type": ["null", "integer"]
+    },
+    "metaData_lastSizeChangeAt": {
+      "type": ["null", "integer"]
+    },
+    "metaData_listReferencesCount": {
+      "type": ["null", "integer"]
+    },
+    "metaData_parentFolderId": {
+      "type": ["null", "integer"]
+    },
     "dynamic": {
       "type": ["null", "boolean"]
     },

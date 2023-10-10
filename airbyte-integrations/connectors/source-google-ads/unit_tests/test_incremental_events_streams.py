@@ -11,14 +11,6 @@ from airbyte_cdk.utils import AirbyteTracedException
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.streams import CampaignCriterion, ChangeStatus
 
-from .common import MockGoogleAdsClient as MockGoogleAdsClient
-
-
-@pytest.fixture
-def mock_ads_client(mocker, config):
-    """Mock google ads library method, so it returns mocked Client"""
-    mocker.patch("source_google_ads.google_ads.GoogleAdsClient.load_from_dict", return_value=MockGoogleAdsClient(config))
-
 
 def mock_response_parent():
     yield [
@@ -67,7 +59,7 @@ class MockGoogleAds(GoogleAds):
             return mock_response_child()
 
 
-def test_change_status_stream(mock_ads_client, config, customers):
+def test_change_status_stream(config, customers):
     """ """
     customer_id = next(iter(customers)).id
     stream_slice = {"customer_id": customer_id}
@@ -87,7 +79,7 @@ def test_change_status_stream(mock_ads_client, config, customers):
     stream.get_query.assert_called_with({"customer_id": customer_id})
 
 
-def test_child_incremental_events_read(mock_ads_client, config, customers):
+def test_child_incremental_events_read(config, customers):
     """
     Page token expired while reading records on date 2021-01-03
     The latest read record is {"segments.date": "2021-01-03", "click_view.gclid": "4"}
@@ -254,7 +246,7 @@ def copy_call_args(mock):
     return new_mock
 
 
-def test_query_limit_hit(mock_ads_client, config, customers):
+def test_query_limit_hit(config, customers):
     """
     Test the behavior of the `read_records` method in the `ChangeStatus` stream when the query limit is hit.
 
@@ -300,7 +292,7 @@ class MockGoogleAdsLimitException(MockGoogleAdsLimit):
             return mock_response_4()
 
 
-def test_query_limit_hit_exception(mock_ads_client, config, customers):
+def test_query_limit_hit_exception(config, customers):
     """
     Test the behavior of the `read_records` method in the `ChangeStatus` stream when the query limit is hit.
 
@@ -330,7 +322,7 @@ def test_query_limit_hit_exception(mock_ads_client, config, customers):
     assert e.value.message == expected_message
 
 
-def test_change_status_get_query(mocker, mock_ads_client, config, customers):
+def test_change_status_get_query(mocker, config, customers):
     """
     Test the get_query method of ChangeStatus stream.
 
@@ -376,7 +368,7 @@ def are_queries_equivalent(query1, query2):
     return query1_sorted == query2_sorted
 
 
-def test_incremental_events_stream_get_query(mocker, mock_ads_client, config, customers):
+def test_incremental_events_stream_get_query(mocker, config, customers):
     """
     Test the get_query method of the IncrementalEventsStream class.
 

@@ -76,9 +76,7 @@ class PineconeIntegrationTest(BaseIntegrationTest):
         if is_starter_pod:
             # Documents might not be available right away because Pinecone is handling them async
             sleep(20)
-        result = self._index.query(
-            vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_record_id": "mystream_2"}, include_metadata=True
-        )
+        result = self._index.query(vector=[0] * OPEN_AI_VECTOR_SIZE, top_k=10, filter={"_record_id": "mystream_2"}, include_metadata=True)
         assert len(result.matches) == 1
         assert result.matches[0].metadata["text"] == "str_col: Cats are nice"
 

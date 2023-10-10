@@ -42,6 +42,8 @@ following[ sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 | Incremental - Append + Deduped | No                   |       |
 | Namespaces                     | Yes                  |       |
 
+The Teradata destination connector supports [ DBT custom transformation](https://docs.airbyte.com/operator-guides/transformation-and-normalization/transformations-with-airbyte/) type. Teradata DBT Docker image is available at https://hub.docker.com/r/teradata/dbt-teradata.
+
 ### Performance considerations
 
 ## Getting started
@@ -84,6 +86,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 | Version | Date       | Pull Request                                    | Subject                          |
 | :------ | :--------- | :---------------------------------------------- | :------------------------------- |
+| 0.1.3   | 2023-08-17 | https://github.com/airbytehq/airbyte/pull/30740 | Enable custom DBT transformation |
 | 0.1.2   | 2023-08-09 | https://github.com/airbytehq/airbyte/pull/29174 | Small internal refactor          |
 | 0.1.1   | 2023-03-03 | https://github.com/airbytehq/airbyte/pull/21760 | Added SSL support                |
 | 0.1.0   | 2022-12-13 | https://github.com/airbytehq/airbyte/pull/20428 | New Destination Teradata Vantage |
