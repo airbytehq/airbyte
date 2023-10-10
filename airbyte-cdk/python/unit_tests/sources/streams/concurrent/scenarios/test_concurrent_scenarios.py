@@ -8,13 +8,34 @@ from _pytest.capture import CaptureFixture
 from freezegun import freeze_time
 from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
-from unit_tests.sources.file_based.test_scenarios import verify_read
-from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_scenarios import test_concurrent_cdk
+from unit_tests.sources.file_based.test_scenarios import verify_check, verify_discover, verify_read
+from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_scenarios import (
+    test_concurrent_cdk_multiple_streams,
+    test_concurrent_cdk_single_stream,
+)
 
-read_scenarios = [test_concurrent_cdk]
+scenarios = [
+    test_concurrent_cdk_single_stream,
+    test_concurrent_cdk_multiple_streams,
+]
 
 
-@pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
+@pytest.mark.parametrize("scenario", scenarios, ids=[s.name for s in scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
-def test_file_based_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
+def test_concurrent_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
     verify_read(capsys, caplog, tmp_path, scenario)
+
+
+@pytest.mark.parametrize("scenario", scenarios, ids=[s.name for s in scenarios])
+def test_concurrent_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
+    verify_discover(capsys, tmp_path, scenario)
+
+
+# @pytest.mark.parametrize("scenario", scenarios, ids=[c.name for c in spec_scenarios])
+# def test_file_based_spec(capsys: CaptureFixture[str], scenario: TestScenario) -> None:
+#     verify_spec(capsys, scenario)
+
+
+@pytest.mark.parametrize("scenario", scenarios, ids=[c.name for c in scenarios])
+def test_file_based_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
+    verify_check(capsys, tmp_path, scenario)
