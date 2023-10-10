@@ -21,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
 
   // TODO remove this once the async framework supports rate-limiting/backpressuring
-  private static final RateLimiter rateLimiter = RateLimiter.create(0.5);
+  private static final RateLimiter rateLimiter = RateLimiter.create(0.017);
 
   private final BigQuery bigQuery;
   private final ConcurrentMap<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
@@ -58,7 +58,7 @@ public class BigQueryAsyncStandardFlush implements DestinationFlushFunction {
     // resource the connector will usually at most fill up around 150 MB in a single queue. By lowering
     // the batch size, the AsyncFlusher will flush in smaller batches which allows for memory to be
     // freed earlier similar to a sliding window effect
-    return 25 * 1024 * 1024;
+    return 300 * 1024 * 1024;
   }
 
 }
