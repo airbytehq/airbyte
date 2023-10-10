@@ -11,10 +11,9 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import PYTHON_TYPE_MAPPING, SchemaType, merge_schemas
 from source_s3.v4.config import S3FileBasedStreamConfig
 from unstructured.documents.elements import Element, Formula, ListItem, Title
+from unstructured.file_utils.filetype import FileType, detect_filetype, optional_decode
 from unstructured.partition.auto import partition
 from unstructured.partition.md import optional_decode
-from unstructured.documents.elements import Element, Title, ListItem, Formula
-from unstructured.file_utils.filetype import detect_filetype, FileType, optional_decode
 
 
 class UnstructuredParser(FileTypeParser):
