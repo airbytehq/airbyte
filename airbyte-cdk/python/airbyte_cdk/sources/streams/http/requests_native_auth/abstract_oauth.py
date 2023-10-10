@@ -9,9 +9,10 @@ from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 import backoff
 import pendulum
 import requests
-from airbyte_cdk.models import Level
+from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
+from airbyte_cdk.utils import AirbyteTracedException
 from requests.auth import AuthBase
 
 from ..exceptions import DefaultBackoffException
@@ -92,6 +93,15 @@ class AbstractOauth2Authenticator(AuthBase):
         except requests.exceptions.RequestException as e:
             if e.response.status_code == 429 or e.response.status_code >= 500:
                 raise DefaultBackoffException(request=e.response.request, response=e.response)
+
+            error_content = e.response.json()
+            if e.response.status_code == 400 and error_content.get("error") == "invalid_grant":
+                raise AirbyteTracedException(
+                    internal_message=error_content.get("error_description"),
+                    message="Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings.",
+                    failure_type=FailureType.config_error,
+                )
+
             raise
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e

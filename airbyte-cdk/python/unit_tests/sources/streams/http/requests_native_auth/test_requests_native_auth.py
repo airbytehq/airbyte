@@ -10,7 +10,7 @@ import freezegun
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.models import OrchestratorType, Type
+from airbyte_cdk.models import FailureType, OrchestratorType, Type
 from airbyte_cdk.sources.streams.http.requests_native_auth import (
     BasicHttpAuthenticator,
     MultipleTokenAuthenticator,
@@ -18,6 +18,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import (
     SingleUseRefreshTokenOauth2Authenticator,
     TokenAuthenticator,
 )
+from airbyte_cdk.utils import AirbyteTracedException
 from requests import Response
 
 LOGGER = logging.getLogger(__name__)
@@ -204,6 +205,22 @@ class TestOauth2Authenticator:
         oauth(prepared_request)
 
         assert {"Authorization": "Bearer access_token"} == prepared_request.headers
+
+    def test_refresh_access_token_invalid(self, requests_mock):
+        oauth = Oauth2Authenticator(
+            f"https://{TestOauth2Authenticator.refresh_endpoint}",
+            TestOauth2Authenticator.client_id,
+            TestOauth2Authenticator.client_secret,
+            TestOauth2Authenticator.refresh_token,
+        )
+        error_content = {"error": "invalid_grant", "error_description": "Refresh token error"}
+        requests_mock.post(f"https://{TestOauth2Authenticator.refresh_endpoint}", status_code=400, json=error_content)
+
+        with pytest.raises(AirbyteTracedException) as error:
+            oauth.refresh_access_token()
+            assert error.internal_message == error_content["error_description"]
+            assert error.message == "Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
+            assert error.failure_type == FailureType.config_error
 
 
 class TestSingleUseRefreshTokenOauth2Authenticator:
