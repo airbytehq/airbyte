@@ -56,6 +56,11 @@ def custom_environment_variables_fixture(acceptance_test_config: Config) -> Mapp
     return acceptance_test_config.custom_environment_variables
 
 
+@pytest.fixture(name="deployment_mode")
+def deployment_mode_fixture(inputs) -> Optional[str]:
+    return getattr(inputs, "deployment_mode", None)
+
+
 @pytest.fixture(name="connector_config_path")
 def connector_config_path_fixture(inputs, base_path) -> Path:
     """Fixture with connector's config path. The path to the latest updated configurations will be returned if any."""
@@ -162,12 +167,15 @@ async def dagger_client(anyio_backend):
 
 
 @pytest.fixture(name="docker_runner", autouse=True)
-async def docker_runner_fixture(image_tag, connector_config_path, custom_environment_variables, dagger_client) -> ConnectorRunner:
+async def docker_runner_fixture(
+    image_tag, connector_config_path, custom_environment_variables, dagger_client, deployment_mode
+) -> ConnectorRunner:
     runner = ConnectorRunner(
         image_tag,
         dagger_client,
         connector_configuration_path=connector_config_path,
         custom_environment_variables=custom_environment_variables,
+        deployment_mode=deployment_mode,
     )
     await runner.load_container()
     return runner
@@ -180,12 +188,12 @@ def previous_connector_image_name_fixture(image_tag, inputs) -> str:
 
 
 @pytest.fixture(name="previous_connector_docker_runner")
-async def previous_connector_docker_runner_fixture(previous_connector_image_name, dagger_client) -> ConnectorRunner:
+async def previous_connector_docker_runner_fixture(previous_connector_image_name, dagger_client, deployment_mode) -> ConnectorRunner:
     """Fixture to create a connector runner with the previous connector docker image.
     Returns None if the latest image was not found, to skip downstream tests if the current connector is not yet published to the docker registry.
     Raise not found error if the previous connector image is not latest and expected to be published.
     """
-    runner = ConnectorRunner(previous_connector_image_name, dagger_client)
+    runner = ConnectorRunner(previous_connector_image_name, dagger_client, deployment_mode=deployment_mode)
     await runner.load_container()
     return runner
 

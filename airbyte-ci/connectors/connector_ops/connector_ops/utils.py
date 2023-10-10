@@ -27,7 +27,9 @@ OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_regist
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
-THIRD_PARTY_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/third_party/"
+
+THIRD_PARTY_GLOB = "third-party"
+THIRD_PARTY_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + f"/{THIRD_PARTY_GLOB}/"
 SCAFFOLD_CONNECTOR_GLOB = "-scaffold-"
 
 
@@ -314,12 +316,8 @@ class Connector:
             return ConnectorLanguage.LOW_CODE
         if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
             return ConnectorLanguage.PYTHON
-        try:
-            with open(self.code_directory / "Dockerfile") as dockerfile:
-                if "FROM airbyte/integration-base-java" in dockerfile.read():
-                    return ConnectorLanguage.JAVA
-        except FileNotFoundError:
-            pass
+        if Path(self.code_directory / "src" / "main" / "java").exists():
+            return ConnectorLanguage.JAVA
         return None
 
     @property
@@ -329,11 +327,14 @@ class Connector:
         return self.metadata["dockerImageTag"]
 
     @property
-    def version_in_dockerfile_label(self) -> str:
-        with open(self.code_directory / "Dockerfile") as f:
-            for line in f:
-                if "io.airbyte.version" in line:
-                    return line.split("=")[1].strip()
+    def version_in_dockerfile_label(self) -> Optional[str]:
+        try:
+            with open(self.code_directory / "Dockerfile") as f:
+                for line in f:
+                    if "io.airbyte.version" in line:
+                        return line.split("=")[1].strip()
+        except FileNotFoundError:
+            return None
         raise ConnectorVersionNotFound(
             """
             Could not find the connector version from its Dockerfile.
@@ -541,7 +542,9 @@ def get_all_connectors_in_repo() -> Set[Connector]:
     return {
         Connector(Path(metadata_file).parent.name)
         for metadata_file in glob(f"{repo_path}/airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
-        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file
+        # HACK: The Connector util is not good at fetching metadata for third party connectors.
+        # We want to avoid picking a connector that does not have metadata.
+        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file and THIRD_PARTY_GLOB not in metadata_file
     }
 
 

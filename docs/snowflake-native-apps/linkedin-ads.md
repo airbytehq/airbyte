@@ -3,7 +3,7 @@
 The LinkedIn Ads Connector by Airbyte is a Snowflake Native Application that allows you to extract data from your LinkedIn Ads account and load records into a Snowflake database of your choice.
 
 :::info
-The Snowflake Native Apps platform is new and rapidly evolving.  The LinkedIn Ads Connector by Airbyte is in _private preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a full table refresh without dedupe is supported.  
+The Snowflake Native Apps platform is new and rapidly evolving. The LinkedIn Ads Connector by Airbyte is in _private preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a [full table refresh](../understanding-airbyte/connections/full-refresh-overwrite.md) without deduplication is supported.  
 :::
 
 # Getting started
@@ -132,13 +132,13 @@ Leave empty, if you want to pull the data from all associated accounts. To speci
 
 `Output Database`
 
-The database where the records will be saved. Snowflake's database naming restriction applies here.
+The database where the records will be saved. Snowflake's database [naming convention](https://docs.snowflake.com/en/sql-reference/identifiers-syntax) applies here.
 
 ---
 
 `Output Schema`
 
-The table where the schema will be saved. Snowflake's table naming restriction applies here. 
+The table where the schema will be saved. Snowflake's table [naming convention](https://docs.snowflake.com/en/sql-reference/identifiers-syntax) applies here. 
 
 --- 
 
@@ -153,6 +153,9 @@ How the connection will be referred in the Streamlit app.
 How often records are fetched.
 
 ---
+
+## Enabling Logging and Event Sharing for an Application
+Sharing the logging and telemetry data of your installed application helps us improve the application and can allow us to better triage problems that your run into. To configure your application for logging and telemetry data please refer to the documentation for [Enabling Logging and Event Sharing](event-sharing.md).
 
 ## Run a sync
 Once a connection is configured, go in `Connections List` and click on `Sync Now` for the connection you want to sync. Once the sync is complete, you should be able to validate that the records have been stored in `<your_database>.<your_schema>`

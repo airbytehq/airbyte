@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.51.30
+Add new token_expiry_is_time_of_expiration property for AbstractOauth2Authenticator for indicate that token's expiry_in is a time of expiration
+
+## 0.51.29
+Coerce read_records to iterable in http availabilty strategy
+
+## 0.51.28
+Add functionality enabling Page Number/Offset to be set on the first request
+
+## 0.51.27
+Fix parsing of UUID fields in avro files
+
+## 0.51.26
+Vector DB CDK: Fix OpenAI embedder batch size
+
 ## 0.51.25
 Add  configurable OpenAI embedder to cdk and add cloud environment helper
 
