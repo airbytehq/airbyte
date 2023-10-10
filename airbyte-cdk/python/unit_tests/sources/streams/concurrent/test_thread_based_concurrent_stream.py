@@ -3,7 +3,7 @@
 #
 
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
@@ -36,6 +36,8 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             self._logger,
             self._message_repository,
             1,
+            2,
+            0,
         )
 
     def test_get_json_schema(self):
@@ -114,3 +116,16 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         actual_airbyte_stream = self._stream.as_airbyte_stream()
 
         assert expected_airbyte_stream == actual_airbyte_stream
+
+    def test_wait_while_task_queue_is_full(self):
+        f1 = Mock()
+        f2 = Mock()
+
+        # Verify that the done() method will be called until only one future is still running
+        f1.done.side_effect = [False, False]
+        f2.done.side_effect = [False, True]
+        futures = [f1, f2]
+        self._stream._wait_while_too_many_pending_futures(futures)
+
+        f1.done.assert_has_calls([call(), call()])
+        f2.done.assert_has_calls([call(), call()])
