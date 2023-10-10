@@ -92,6 +92,18 @@ class AirbytePythonPlugin implements Plugin<Project> {
             } catch (IOException _) {
                 // Swallow exception if pyenv is not installed.
             }
+            // Amazon Linux support.
+            if (pythonBinary == 'python3') {
+                try {
+                    def py311Version = "python3.11 --version".execute()
+                    if (py311Version.waitFor() == 0) {
+                        // python3.11 definitely exists at this point, use it instead of 'python3'.
+                        pythonBinary "python3.11"
+                    }
+                } catch (IOException _) {
+                    // Swallow exception if python3.11 is not installed.
+                }
+            }
 
             scope 'VIRTUALENV'
             installVirtualenv = true
