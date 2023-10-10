@@ -233,10 +233,6 @@ allprojects {
         excludes.addAll excludes.collectMany {
             it.startsWith("${project.name}/") ? [it, it.substring("${project.name}/".length())] : [it]
         }
-        // TODO: remove this once SUB_BUILD is no longer a thing, here for github workflow backwards compatibility.
-        if (System.getenv().containsKey("SUB_BUILD")) {
-            excludes.add("airbyte-integrations/connectors")
-        }
         // Prefix everything with double-globs because we only care about path suffixes.
         excludes = excludes.collect { "**/${it}" }
         // Remove whatever's covered by the project's subprojects, so that each file is targeted by at most one task.

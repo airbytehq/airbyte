@@ -406,7 +406,7 @@ def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
     help="The Slack webhook URL to send notifications to.",
     type=click.STRING,
     envvar="SLACK_CHANNEL",
-    default="#publish-on-merge-updates",
+    default="#connector-publish-updates",
 )
 @click.pass_context
 def publish(
