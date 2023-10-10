@@ -131,7 +131,7 @@ If you have written downstream transformations directly from the output of raw t
 
 - Multiple column names are being updated (from `airbyte_ab_id` to `airbyte_raw_id`, and `airbyte_emitted_at` to `airbyte_extracted_at`).
 - The location of raw tables will from now on default to an `airbyte` schema in your destination.
-- When you upgrade to a [Destinations V2 compatible version](#destinations-v2-effective-versions) of your destination, we will never alter your existing raw data. Although existing downstream dashboards will go stale, they will never be broken.
+- When you upgrade to a [Destinations V2 compatible version](#destinations-v2-effective-versions) of your destination, we will leave a copy of your existing raw tables as they are, and new syncs will work from a new copy we make in the new `airbyte_internal` schema. Although existing downstream dashboards will go stale, they will not be broken.  
 - You can dual write by following the [steps above](#upgrading-connections-one-by-one-with-dual-writing) and copying your raw data to the schema of your newly created connection.
 
 We may make further changes to raw tables in the future, as these tables are intended to be a staging ground for Airbyte to optimize the performance of your syncs. We cannot guarantee the same level of stability as for final tables in your destination schema, nor will features like error handling be implemented in the raw tables.

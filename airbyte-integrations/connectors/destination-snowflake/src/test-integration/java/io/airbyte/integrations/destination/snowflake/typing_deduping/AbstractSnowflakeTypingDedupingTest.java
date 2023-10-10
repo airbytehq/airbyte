@@ -6,12 +6,12 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseTypingDedupingTest;
 import io.airbyte.integrations.base.destination.typing_deduping.SqlGenerator;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
@@ -26,11 +26,18 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 
 public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedupingTest {
 
+  public static final Map<String, String> FINAL_METADATA_COLUMN_NAMES = Map.of(
+      "_airbyte_raw_id", "_AIRBYTE_RAW_ID",
+      "_airbyte_extracted_at", "_AIRBYTE_EXTRACTED_AT",
+      "_airbyte_loaded_at", "_AIRBYTE_LOADED_AT",
+      "_airbyte_data", "_AIRBYTE_DATA",
+      "_airbyte_meta", "_AIRBYTE_META");
   private String databaseName;
   private JdbcDatabase database;
   private DataSource dataSource;
@@ -98,6 +105,11 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
   @Override
   protected SqlGenerator<?> getSqlGenerator() {
     return new SnowflakeSqlGenerator();
+  }
+
+  @Override
+  protected Map<String, String> getFinalMetadataColumnNames() {
+    return FINAL_METADATA_COLUMN_NAMES;
   }
 
   /**

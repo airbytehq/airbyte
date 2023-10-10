@@ -43,12 +43,11 @@ class FBMarketingStream(Stream, ABC):
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         return None
 
-    def __init__(self, api: "API", include_deleted: bool = False, page_size: int = 100, max_batch_size: int = 50, **kwargs):
+    def __init__(self, api: "API", include_deleted: bool = False, page_size: int = 100, **kwargs):
         super().__init__(**kwargs)
         self._api = api
         self.page_size = page_size if page_size is not None else 100
         self._include_deleted = include_deleted if self.enable_deleted else False
-        self.max_batch_size = self._initial_max_batch_size = max_batch_size if max_batch_size is not None else 50
 
     @cached_property
     def fields(self) -> List[str]:

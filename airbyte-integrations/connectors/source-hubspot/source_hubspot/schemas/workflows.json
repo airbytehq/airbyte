@@ -43,6 +43,24 @@
         }
       }
     },
+    "contactListIds_enrolled": {
+      "type": ["null", "integer"]
+    },
+    "contactListIds_active": {
+      "type": ["null", "integer"]
+    },
+    "contactListIds_completed": {
+      "type": ["null", "integer"]
+    },
+    "contactListIds_succeeded": {
+      "type": ["null", "integer"]
+    },
+    "contactListIds_steps": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "lastUpdatedByUserId": {
       "type": ["null", "integer"]
     },

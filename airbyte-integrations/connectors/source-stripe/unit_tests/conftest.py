@@ -2,15 +2,18 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
+
 import pytest
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.streams import IncrementalStripeStream, StripeLazySubStream
 
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+
 
 @pytest.fixture(name="config")
 def config_fixture():
-    config = {"client_secret": "sk_test(live)_<secret>",
-              "account_id": "<account_id>", "start_date": "2020-05-01T00:00:00Z"}
+    config = {"client_secret": "sk_test(live)_<secret>", "account_id": "<account_id>", "start_date": "2020-05-01T00:00:00Z"}
     return config
 
 
@@ -28,10 +31,7 @@ def stream_args_fixture():
 
 @pytest.fixture(name="incremental_stream_args")
 def incremental_args_fixture(stream_args):
-    return {
-        "lookback_window_days": 14,
-        **stream_args
-    }
+    return {"lookback_window_days": 14, **stream_args}
 
 
 @pytest.fixture(name="invoices")
@@ -40,7 +40,7 @@ def invoices_fixture(stream_args):
         return IncrementalStripeStream(
             name="invoices",
             path="invoices",
-            use_cache=True,
+            use_cache=False,
             event_types=[
                 "invoice.created",
                 "invoice.finalization_failed",
@@ -55,8 +55,9 @@ def invoices_fixture(stream_args):
                 "invoice.updated",
                 "invoice.voided",
             ],
-            **args
+            **args,
         )
+
     return mocker
 
 
@@ -74,4 +75,5 @@ def invoice_line_items_fixture(invoices, stream_args):
             add_parent_id=True,
             **args,
         )
+
     return mocker

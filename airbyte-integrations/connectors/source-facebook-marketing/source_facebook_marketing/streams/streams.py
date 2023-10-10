@@ -82,7 +82,7 @@ class CustomConversions(FBMarketingStream):
 
 
 class CustomAudiences(FBMarketingStream):
-    """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-conversion"""
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-audience"""
 
     entity_prefix = "customaudience"
     enable_deleted = False

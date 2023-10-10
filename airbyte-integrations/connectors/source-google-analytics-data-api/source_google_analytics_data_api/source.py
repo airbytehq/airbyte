@@ -34,6 +34,7 @@ from .utils import (
     get_source_defined_primary_key,
     metrics_type_to_python,
     serialize_to_date_string,
+    transform_json,
 )
 
 # set the quota handler globaly since limitations are the same for all streams
@@ -292,6 +293,14 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             "limit": str(self.page_size),
         }
 
+        dimension_filter = self.config.get("dimensionFilter")
+        if dimension_filter:
+            payload.update({"dimensionFilter": dimension_filter})
+
+        metrics_filter = self.config.get("metricsFilter")
+        if metrics_filter:
+            payload.update({"metricsFilter": metrics_filter})
+
         if next_page_token and next_page_token.get("offset") is not None:
             payload.update({"offset": str(next_page_token["offset"])})
         return payload
@@ -406,37 +415,37 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
 
         return start_date
 
-    def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
-        if "custom_reports" in config:
-            if isinstance(config["custom_reports"], str):
+    def _validate_custom_reports(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        if "custom_reports_array" in config:
+            if isinstance(config["custom_reports_array"], str):
                 try:
-                    config["custom_reports"] = json.loads(config["custom_reports"])
-                    if not isinstance(config["custom_reports"], list):
+                    config["custom_reports_array"] = json.loads(config["custom_reports_array"])
+                    if not isinstance(config["custom_reports_array"], list):
                         raise ValueError
                 except ValueError:
                     raise ConfigurationError(WRONG_JSON_SYNTAX)
         else:
-            config["custom_reports"] = []
+            config["custom_reports_array"] = []
+
+        return config
+
+    def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
+        config = self._validate_custom_reports(config)
 
         schema = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/custom_reports_schema.json"))
         try:
-            jsonschema.validate(instance=config["custom_reports"], schema=schema)
+            jsonschema.validate(instance=config["custom_reports_array"], schema=schema)
         except jsonschema.ValidationError as e:
             if message := check_no_property_error(e):
                 raise ConfigurationError(message)
             if message := check_invalid_property_error(e):
-                report_name = dpath.util.get(config["custom_reports"], str(e.absolute_path[0])).get("name")
+                report_name = dpath.util.get(config["custom_reports_array"], str(e.absolute_path[0])).get("name")
                 raise ConfigurationError(message.format(fields=e.message, report_name=report_name))
 
-            key_path = "custom_reports"
-            if e.path:
-                key_path += "." + ".".join(map(str, e.path))
-            raise ConfigurationError(f"{key_path}: {e.message}")
-
-        existing_names = {r["name"] for r in config["custom_reports"]} & report_names
+        existing_names = {r["name"] for r in config["custom_reports_array"]} & report_names
         if existing_names:
             existing_names = ", ".join(existing_names)
-            raise ConfigurationError(f"custom_reports: {existing_names} already exist as a default report(s).")
+            raise ConfigurationError(f"Custom reports: {existing_names} already exist as a default report(s).")
 
         if "credentials_json" in config["credentials"]:
             try:
@@ -494,7 +503,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             dimensions = {d["apiName"] for d in metadata["dimensions"]}
             metrics = {d["apiName"] for d in metadata["metrics"]}
 
-            for report in _config["custom_reports"]:
+            for report in _config["custom_reports_array"]:
                 # Check if custom report dimensions supported. Compare them with dimensions provided by GA API
                 invalid_dimensions = set(report["dimensions"]) - dimensions
                 if invalid_dimensions:
@@ -507,7 +516,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
                     invalid_metrics = ", ".join(invalid_metrics)
                     return False, WRONG_METRICS.format(fields=invalid_metrics, report_name=report["name"])
 
-                report_stream = self.instantiate_report_class(report, _config, page_size=100)
+                report_stream = self.instantiate_report_class(report, False, _config, page_size=100)
                 # check if custom_report dimensions + metrics can be combined and report generated
                 stream_slice = next(report_stream.stream_slices(sync_mode=SyncMode.full_refresh))
                 next(report_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice), None)
@@ -518,19 +527,31 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
         config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
         config["authenticator"] = self.get_authenticator(config)
-        return [stream for report in reports + config["custom_reports"] for stream in self.instantiate_report_streams(report, config)]
+        return [stream for report in reports + config["custom_reports_array"] for stream in self.instantiate_report_streams(report, config)]
 
     def instantiate_report_streams(self, report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
+        add_name_suffix = False
         for property_id in config["property_ids"]:
-            yield self.instantiate_report_class(report=report, config={**config, "property_id": property_id})
+            yield self.instantiate_report_class(
+                report=report, add_name_suffix=add_name_suffix, config={**config, "property_id": property_id}
+            )
+            # Append property ID to stream name only for the second and subsequent properties.
+            # This will make a release non-breaking for users with a single property.
+            # This is a temporary solution until https://github.com/airbytehq/airbyte/issues/30926 is implemented.
+            add_name_suffix = True
 
-    def instantiate_report_class(self, report: dict, config: Mapping[str, Any], **extra_kwargs) -> GoogleAnalyticsDataApiBaseStream:
+    @staticmethod
+    def instantiate_report_class(
+        report: dict, add_name_suffix: bool, config: Mapping[str, Any], **extra_kwargs
+    ) -> GoogleAnalyticsDataApiBaseStream:
         cohort_spec = report.get("cohortSpec")
         pivots = report.get("pivots")
         stream_config = {
             **config,
             "metrics": report["metrics"],
             "dimensions": report["dimensions"],
+            "dimensionFilter": transform_json(report.get("dimensionFilter", {})),
+            "metricsFilter": transform_json(report.get("metricsFilter", {})),
         }
         report_class_tuple = (GoogleAnalyticsDataApiBaseStream,)
         if pivots:
@@ -539,4 +560,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if cohort_spec:
             stream_config["cohort_spec"] = cohort_spec
             report_class_tuple = (CohortReportMixin, *report_class_tuple)
-        return type(report["name"], report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"], **extra_kwargs)
+        name = report["name"]
+        if add_name_suffix:
+            name = f"{name}Property{config['property_id']}"
+        return type(name, report_class_tuple, {})(config=stream_config, authenticator=config["authenticator"], **extra_kwargs)

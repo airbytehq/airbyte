@@ -1,8 +1,15 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-destinations']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.destination.pulsar.PulsarDestination'
@@ -12,14 +19,8 @@ application {
 dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
-
 
     implementation 'org.apache.pulsar:pulsar-client:2.8.1'
 
     testImplementation libs.testcontainers.pulsar
-    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
-
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-pulsar')
 }
