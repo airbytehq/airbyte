@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 14c6e7ea-97ed-4f5e-a7b5-25e9a80b8212
-  dockerImageTag: 4.0.0
+  dockerImageTag: 4.1.0
   dockerRepository: airbyte/source-airtable
   githubIssueLabel: source-airtable
   icon: airtable.svg
