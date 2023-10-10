@@ -144,7 +144,8 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     final TestHarnessException e = assertThrows(
         TestHarnessException.class,
         () -> runSync(catalog, messages, "airbyte/destination-bigquery:2.0.20")); // this version introduced non-null PKs to the final tables
-    // ideally we would assert on the logged content of the original exception within e, but that is proving to be tricky
+    // ideally we would assert on the logged content of the original exception within e, but that is
+    // proving to be tricky
 
     // Second sync
     runSync(catalog, messages); // does not throw with latest version
