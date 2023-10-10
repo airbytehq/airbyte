@@ -67,8 +67,8 @@ class AdCreatives(FBMarketingStream):
                     record["thumbnail_data_url"] = fetch_thumbnail_data_url(thumbnail_url)
             yield record
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_creatives(params=params, fields=self.fields)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_ad_creatives(params=params, fields=self.fields)
 
 
 class CustomConversions(FBMarketingStream):
