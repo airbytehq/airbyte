@@ -33,7 +33,6 @@ ConvexConfig = TypedDict(
     {
         "deployment_url": str,
         "access_key": str,
-        "fmt": str,
     },
 )
 
@@ -49,27 +48,12 @@ ConvexState = TypedDict(
 CONVEX_CLIENT_VERSION = "0.3.0"
 
 
-def parse_config(config: Mapping[str, Any]) -> ConvexConfig:
-    deployment_url = config["deployment_url"]
-    access_key = config["access_key"]
-    fmt = config.get("fmt", "json")
-    assert isinstance(deployment_url, str)
-    assert isinstance(access_key, str)
-    assert isinstance(fmt, str)
-    return ConvexConfig(
-        deployment_url=deployment_url,
-        access_key=access_key,
-        fmt=fmt,
-    )
-
-
 # Source
 class SourceConvex(AbstractSource):
     def _json_schemas(self, config: ConvexConfig) -> requests.Response:
         deployment_url = config["deployment_url"]
         access_key = config["access_key"]
-        fmt = config["fmt"]
-        url = f"{deployment_url}/api/json_schemas?deltaSchema=true&format={fmt}"
+        url = f"{deployment_url}/api/json_schemas?deltaSchema=true&format=json"
         headers = {
             "Authorization": f"Convex {access_key}",
             "Convex-Client": f"airbyte-export-{CONVEX_CLIENT_VERSION}",
@@ -86,7 +70,7 @@ class SourceConvex(AbstractSource):
         :param logger:  logger object
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
-        config = parse_config(config)
+        config = cast(ConvexConfig, config)
         resp = self._json_schemas(config)
         if resp.status_code == 200:
             return True, None
@@ -99,7 +83,7 @@ class SourceConvex(AbstractSource):
         """
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        config = parse_config(config)
+        config = cast(ConvexConfig, config)
         resp = self._json_schemas(config)
         if resp.status_code != 200:
             raise Exception(format_http_error("Failed request to json_schemas", resp))
@@ -109,7 +93,7 @@ class SourceConvex(AbstractSource):
             ConvexStream(
                 config["deployment_url"],
                 config["access_key"],
-                config["fmt"],
+                "json",  # Use `json` export format
                 table_name,
                 json_schemas[table_name],
             )
