@@ -15,7 +15,10 @@ from pydantic import AnyUrl, BaseModel, Field, ValidationError, root_validator
 
 class UnstructuredFormat(BaseModel):
     class Config:
-        title = "Markdown/PDF/Word Format (Experimental)"
+        title = "Markdown/PDF/Docx Format (Experimental)"
+        schema_extra = {
+            "description": "Extract text from document formats and emit as one record per file."
+        }
 
     filetype: str = Field(
         "unstructured",

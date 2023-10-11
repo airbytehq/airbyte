@@ -40,7 +40,7 @@ class UnstructuredParser(FileTypeParser):
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
         with stream_reader.open_file(file, self.file_read_mode, None, logger) as fp:
-            markdown = self.read_file(fp)
+            markdown = self.read_file(fp, logger)
             if not markdown:
                 return []
             chunks = [markdown[i : i + self.MAX_SIZE_PER_CHUNK] for i in range(0, len(markdown), self.MAX_SIZE_PER_CHUNK)]
@@ -54,7 +54,7 @@ class UnstructuredParser(FileTypeParser):
                 for i, chunk in enumerate(chunks)
             ]
 
-    def read_file(self, file: IOBase) -> Optional[str]:
+    def read_file(self, file: IOBase, logger: logging.Logger) -> Optional[str]:
         from unstructured.partition.auto import partition
         from unstructured.partition.md import optional_decode
         from unstructured.file_utils.filetype import detect_filetype, FileType
@@ -67,7 +67,8 @@ class UnstructuredParser(FileTypeParser):
         )
         if filetype == FileType.MD:
             return optional_decode(file.read())
-        if not filetype in [FileType.PDF, FileType.DOC, FileType.DOCX]:
+        if not filetype in [FileType.PDF, FileType.DOCX]:
+            logger.warn(f"Skipping {file_name}, unsupported file type {str(filetype)}")
             return None
         elements = partition(file=file, metadata_filename=file_name)
         return self.render_markdown(elements)
