@@ -4,7 +4,9 @@ connector_image: airbyte/source-gcs:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_gcs/spec.yaml"
+      - spec_path: "source_gcs/spec.py"
+        backward_compatibility_tests_config:
+          disable_for_version: 0.2.0
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -18,7 +20,6 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams: []
   incremental:
     bypass_reason: "This connector does not implement incremental sync"
   full_refresh:

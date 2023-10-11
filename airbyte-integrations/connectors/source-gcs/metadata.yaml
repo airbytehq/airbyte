@@ -18,6 +18,11 @@ data:
     oss:
       enabled: true
   releaseStage: alpha
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "This version changes the connector’s implementation to file based CDK."
+        upgradeDeadline: "2023-10-23"
   supportLevel: community
   tags:
     - language:python
