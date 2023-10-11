@@ -141,7 +141,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 ## Data type mapping
 
 | Redshift Type         | Airbyte Type              | Notes |
-| :-------------------- | :------------------------ | :---- |
+|:----------------------|:--------------------------|:------|
 | `boolean`             | `boolean`                 |       |
 | `int`                 | `integer`                 |       |
 | `float`               | `number`                  |       |
@@ -155,7 +155,8 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
-| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.6.9   | 2023-10-10 | [\#31083](https://github.com/airbytehq/airbyte/pull/31083) | Fix precision of numeric values in async destinations                                                                                                                                                            |
 | 0.6.8   | 2023-10-10 | [\#31218](https://github.com/airbytehq/airbyte/pull/31218) | Clarify configuration groups                                                                                                                                                                                     |
 | 0.6.7   | 2023-10-06 | [\#31153](https://github.com/airbytehq/airbyte/pull/31153) | Increase jvm GC retries                                                                                                                                                                                          |
 | 0.6.6   | 2023-10-06 | [\#31129](https://github.com/airbytehq/airbyte/pull/31129) | Reduce async buffer size                                                                                                                                                                                         |
@@ -180,7 +181,7 @@ Each stream will be output into its own raw table in Redshift. Each table will c
 | 0.3.55  | 2023-01-26 | [\#20631](https://github.com/airbytehq/airbyte/pull/20631) | Added support for destination checkpointing with staging                                                                                                                                                         |
 | 0.3.54  | 2023-01-18 | [\#21087](https://github.com/airbytehq/airbyte/pull/21087) | Wrap Authentication Errors as Config Exceptions                                                                                                                                                                  |
 | 0.3.53  | 2023-01-03 | [\#17273](https://github.com/airbytehq/airbyte/pull/17273) | Flatten JSON arrays to fix maximum size check for SUPER field                                                                                                                                                    |
-| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                      |
+| 0.3.52  | 2022-12-30 | [\#20879](https://github.com/airbytehq/airbyte/pull/20879) | Added configurable parameter for number of file buffers (⛔ this version has a bug and will not work; use `0.3.56` instead)                                                                                       |
 | 0.3.51  | 2022-10-26 | [\#18434](https://github.com/airbytehq/airbyte/pull/18434) | Fix empty S3 bucket path handling                                                                                                                                                                                |
 | 0.3.50  | 2022-09-14 | [\#15668](https://github.com/airbytehq/airbyte/pull/15668) | Wrap logs in AirbyteLogMessage                                                                                                                                                                                   |
 | 0.3.49  | 2022-09-01 | [\#16243](https://github.com/airbytehq/airbyte/pull/16243) | Fix Json to Avro conversion when there is field name clash from combined restrictions (`anyOf`, `oneOf`, `allOf` fields)                                                                                         |
