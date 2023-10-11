@@ -10,13 +10,14 @@ from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from facebook_business import FacebookAdsApi, FacebookSession
 from source_facebook_marketing.api import API
-from source_facebook_marketing.streams import AdCreatives, AdsInsights
+from source_facebook_marketing.streams import AdAccount, AdCreatives, AdsInsights
 
 FB_API_VERSION = FacebookAdsApi.API_VERSION
 
 account_id = "unknown_account"
 some_config = {"start_date": "2021-01-23T00:00:00Z", "account_id": account_id, "access_token": "unknown_token"}
-act_url = f"{FacebookSession.GRAPH}/{FB_API_VERSION}/act_{account_id}/"
+base_url = f"{FacebookSession.GRAPH}/{FB_API_VERSION}/"
+act_url = f"{base_url}act_{account_id}/"
 
 ad_account_response = {
     "json": {
@@ -105,6 +106,8 @@ CONFIG_ERRORS = [
         # Re-authenticate (for cloud) or refresh access token (for oss) and check if all required permissions are granted
     ),
     (
+        # One of possible reasons why this error happen is an attempt to access `owner` field:
+        #   GET /act_<account-id>?fields=<field-1>,owner,...<field-n>
         "error_403_requires_permission",
         "Credentials don't have enough permissions. Re-authenticate if FB oauth is used or refresh access token with all required permissions.",
         {
@@ -371,3 +374,40 @@ class TestRealErrors:
             assert isinstance(error, AirbyteTracedException)
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
+
+    def test_adaccount_list_objects_retry(self, requests_mock):
+        """
+        Sometimes we get an error: "Requires business_management permission to manage the object" when account has all the required permissions:
+            [
+                'ads_management',
+                'ads_read',
+                'business_management',
+                'public_profile'
+            ]
+        As a workaround for this case we can retry the API call excluding `owner` from `?fields=` GET query param.
+        """
+        api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
+        stream = AdAccount(api=api)
+
+        business_user = {"account_id": account_id, "business": {"id": "1", "name": "TEST"}}
+        requests_mock.register_uri("GET", f"{base_url}me/business_users", status_code=200, json=business_user)
+
+        assigend_users = {"account_id": account_id, "tasks": ["TASK"]}
+        requests_mock.register_uri("GET", f"{act_url}assigned_users", status_code=200, json=assigend_users)
+
+        responses = [
+            {
+                "status_code": 403,
+                "json": {
+                    "message": "(#200) Requires business_management permission to manage the object",
+                    "type": "OAuthException",
+                    "code": 200,
+                    "fbtrace_id": "AOm48i-YaiRlzqnNEnECcW8",
+                },
+            },
+            {"status_code": 200, "json": {"account_id": account_id}},
+        ]
+        requests_mock.register_uri("GET", f"{act_url}", responses)
+
+        record_gen = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=None, stream_state={})
+        assert list(record_gen) == [{"account_id": "unknown_account", "id": "act_unknown_account"}]
