@@ -7,9 +7,9 @@ on:
         type: choice
         required: true
         options:
-          - connnectors/source-postgres
-          - connnectors/source-mysql
-          - connnectors/destination-snowflake
+          - connectors/source-postgres
+          - connectors/source-mysql
+          - connectors/destination-snowflake
         default: "connectors/source-postgres"
       repo:
         description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
