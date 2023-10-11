@@ -1,10 +1,14 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import abc
 from typing import Any, Optional
 
 import requests
-
-from pyrate_limiter import Limiter, InMemoryBucket
-from pyrate_limiter import Rate as OrgRate, Duration as OrgDuration
+from pyrate_limiter import Duration as OrgDuration
+from pyrate_limiter import InMemoryBucket, Limiter
+from pyrate_limiter import Rate as OrgRate
 
 Duration = OrgDuration
 Rate = OrgRate
@@ -19,7 +23,7 @@ class AbstractCallRatePolicy(abc.ABC):
 
     @abc.abstractmethod
     def try_acquire(self, request: Any, weight: int):
-        """ Try to acquire request
+        """Try to acquire request
 
         :param request: request object representing single call to API
         :param weight: number of requests to deduct from credit
@@ -35,8 +39,9 @@ class CallRatePolicy(AbstractCallRatePolicy):
     TODO: support static window strategy, not only moving window
     TODO: support policy without limitations
     """
+
     def __init__(self, rates: list[Rate]):
-        """ Constructor
+        """Constructor
 
         :param rates: list of rates, the order is important and must be ascending
         """
@@ -44,20 +49,34 @@ class CallRatePolicy(AbstractCallRatePolicy):
         self._limiter = Limiter(self._bucket)
 
     def try_acquire(self, request: Any, weight: int = 1):
-        self._limiter.try_acquire(request)
+        self._limiter.try_acquire(request, weight=weight)
 
 
 class RequestMatcher:
     """Callable that help to match request object with call rate policies."""
-    def __call__(self, request: Any):
+
+    def __call__(self, request: Any) -> bool:
         pass
 
 
 class HttpRequestMatcher(RequestMatcher):
     """Simple implementation of RequestMatcher for http requests case"""
-    def __init__(self, method: str = None, url: str = None):
+
+    def __init__(self, method: str = None, url: str = None, params: Optional[dict] = None, headers: Optional[dict] = None):
         self._method = method
         self._url = url
+        self._params = params
+        self._headers = headers
+
+    @staticmethod
+    def _match_dict(obj: dict, pattern: dict) -> bool:
+        """ Check that all elements from pattern dict present and have the same values in obj dict
+
+        :param obj:
+        :param pattern:
+        :return:
+        """
+        return pattern.items() <= obj.items()
 
     def __call__(self, request: Any) -> bool:
         if isinstance(request, (requests.Request, requests.PreparedRequest)):
@@ -67,13 +86,19 @@ class HttpRequestMatcher(RequestMatcher):
             if self._url is not None:
                 if request.url != self._url:
                     return False
+            if self._params is not None:
+                if not self._match_dict(request.params, self._params):
+                    return False
+            if self._headers is not None:
+                if not self._match_dict(request.headers, self._headers):
+                    return False
             return True
 
         return False
 
 
 class AbstractAPIBudget(abc.ABC):
-    """ Interface to some API where client allowed to have N calls per T interval.
+    """Interface to some API where client allowed to have N calls per T interval.
 
     Important: APIBudget is not doing any API calls, the end user code is responsible to call this interface
         to respect call rate limitation of the API.
@@ -81,9 +106,10 @@ class AbstractAPIBudget(abc.ABC):
     It supports multiple policies applied to different group of requests. To distinct these groups we use RequestMatchers.
     Individual policy represented by CallRatePolicy and currently supports only moving window strategy.
     """
+
     @abc.abstractmethod
     def add_policy(self, request_matcher: RequestMatcher, policy: CallRatePolicy):
-        """ Add policy for calls
+        """Add policy for calls
 
         :param request_matcher: callable to match request object with corresponding policy
         :param policy: to acquire calls
@@ -92,7 +118,7 @@ class AbstractAPIBudget(abc.ABC):
 
     @abc.abstractmethod
     def acquire_call(self, request: Any, wait: Optional[int] = None) -> bool:
-        """ Try to get a call from budget
+        """Try to get a call from budget
 
         :param request:
         :param wait: if set >0 will wait number of seconds; if wait == 0 - will return immediately; if wait is None (default) - will block
@@ -112,4 +138,4 @@ class APIBudget(AbstractAPIBudget):
             if matcher(request):
                 if policy.try_acquire(request):
                     return True
-        return False
+        return True
