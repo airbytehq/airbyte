@@ -22,7 +22,7 @@ data:
     breakingChanges:
       1.0.0:
         message: "This version changes the connector’s implementation to file based CDK."
-        upgradeDeadline: "2023-10-23"
+        upgradeDeadline: "2023-10-30"
   supportLevel: community
   tags:
     - language:python
