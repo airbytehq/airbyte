@@ -41,7 +41,7 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new PostgreSQLContainer<>("postgres:14-alpine")
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
-            "/etc/postgresql/postgresql.conf")
+                                 "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
 
@@ -51,31 +51,31 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
      * a result no test in this class runs through the cdc path.
      */
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("method", "CDC")
-        .put("replication_slot", SLOT_NAME_BASE)
-        .put("publication", PUBLICATION)
-        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-        .build());
+                                                          .put("method", "CDC")
+                                                          .put("replication_slot", SLOT_NAME_BASE)
+                                                          .put("publication", PUBLICATION)
+                                                          .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
+                                                          .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
-        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
-        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
-        .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
-        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
-        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
-        .put("replication_method", replicationMethod)
-        .put("is_test", true)
-        .put(JdbcUtils.SSL_KEY, false)
-        .build());
+                                .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+                                .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
+                                .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
+                                .put(JdbcUtils.SCHEMAS_KEY, List.of(SCHEMA_NAME))
+                                .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+                                .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
+                                .put("replication_method", replicationMethod)
+                                .put("is_test", true)
+                                .put(JdbcUtils.SSL_KEY, false)
+                                .build());
 
     dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.POSTGRESQL.getDriverClassName(),
         String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
-            container.getHost(),
-            container.getFirstMappedPort(),
-            config.get(JdbcUtils.DATABASE_KEY).asText()),
+                      container.getHost(),
+                      container.getFirstMappedPort(),
+                      config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
     final Database database = new Database(dslContext);
 
@@ -90,10 +90,10 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
     database.query(ctx -> ctx.fetch("CREATE SCHEMA TEST;"));
     database.query(ctx -> ctx.fetch("CREATE TYPE mood AS ENUM ('sad', 'ok', 'happy');"));
     database.query(ctx -> ctx.fetch("CREATE TYPE inventory_item AS (\n"
-        + "    name            text,\n"
-        + "    supplier_id     integer,\n"
-        + "    price           numeric\n"
-        + ");"));
+                                        + "    name            text,\n"
+                                        + "    supplier_id     integer,\n"
+                                        + "    price           numeric\n"
+                                        + ");"));
 
     database.query(ctx -> ctx.fetch("SET TIMEZONE TO 'MST'"));
     return database;
@@ -111,52 +111,19 @@ public class CdcInitialSnapshotPostgresSourceDatatypeTest extends AbstractPostgr
 
   @Override
   protected void addHstoreTest() {
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("hstore")
-//            .airbyteType(JsonSchemaType.STRING)
-//            .addInsertValues("""
-//                             '"paperback" => "243","publisher" => "postgresqltutorial.com",
-//                             "language"  => "English","ISBN-13" => "978-1449370000",
-//                             "weight"    => "11.2 ounces"'
-//                             """, null)
-//            .addExpectedValues(
-//                //
-//                "\"weight\"=>\"11.2 ounces\", \"ISBN-13\"=>\"978-1449370000\", \"language\"=>\"English\", \"paperback\"=>\"243\", \"publisher\"=>\"postgresqltutorial.com\"",
-//                null)
-//            .build());
-  }
-
-  @Override
-  protected void initTests() {
     addDataTypeTestData(
         TestDataHolder.builder()
-            .sourceType("numeric")
-            .airbyteType(JsonSchemaType.INTEGER)
-            .fullSourceDataType("NUMERIC(38)")
-            .addInsertValues("'70000'")
-            .addExpectedValues("70000")
+            .sourceType("hstore")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("""
+                             '"paperback" => "243","publisher" => "postgresqltutorial.com",
+                             "language"  => "English","ISBN-13" => "978-1449370000",
+                             "weight"    => "11.2 ounces"'
+                             """, null)
+            .addExpectedValues(
+                //
+                "\"weight\"=>\"11.2 ounces\", \"ISBN-13\"=>\"978-1449370000\", \"language\"=>\"English\", \"paperback\"=>\"243\", \"publisher\"=>\"postgresqltutorial.com\"",
+                null)
             .build());
-
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("numeric")
-//            .fullSourceDataType("NUMERIC")
-//            .airbyteType(JsonSchemaType.NUMBER)
-//            .addInsertValues("'33.345'")
-//            .addExpectedValues("33.345")
-//            .build());
-//
-//    // case of a column type being a NUMERIC data type
-//    // with precision but no decimal
-//    addDataTypeTestData(
-//        TestDataHolder.builder()
-//            .sourceType("numeric")
-//            .fullSourceDataType("NUMERIC(38)")
-//            .airbyteType(JsonSchemaType.INTEGER)
-//            .addInsertValues("'33'")
-//            .addExpectedValues("33")
-//            .build());
   }
-
 }
