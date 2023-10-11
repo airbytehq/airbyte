@@ -124,7 +124,7 @@ jobs:
           which python
           mkdir -p /root/.local/bin
           pipx ensurepath
-          export PATH="$PATH:/root/.local/bin:~/.local/bin"
+          export PATH="$PATH:/root/.local/bin"
           echo $PATH
           pipx install airbyte-ci/connectors/ci_credentials
           pipx install airbyte-ci/connectors/connector_ops
@@ -136,8 +136,8 @@ jobs:
           echo "harness_type=$the_harness" >> "$GITHUB_OUTPUT"
       - name: Write harness credentials
         run: |
+          export PATH="$PATH:/root/.local/bin"
           echo $PATH
-          whoami
           ls /root/.local/bin
           ls ~/.local/bin
           ci_credentials connectors-performance/$HARNESS_TYPE write-to-storage
