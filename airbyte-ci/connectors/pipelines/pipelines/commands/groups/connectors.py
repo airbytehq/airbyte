@@ -412,6 +412,7 @@ def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
     "--use-local-cdk",
     help="Use this flag if you want to build the image with the local version of the CDK. Only acceptable if pre-release is also true.",
     default=False,
+    is_flag=True,
     type=bool,
 )
 @click.pass_context
