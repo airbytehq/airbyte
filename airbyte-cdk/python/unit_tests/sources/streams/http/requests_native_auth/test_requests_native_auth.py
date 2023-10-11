@@ -20,6 +20,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import (
 )
 from airbyte_cdk.utils import AirbyteTracedException
 from requests import Response
+from requests.exceptions import RequestException
 
 LOGGER = logging.getLogger(__name__)
 
@@ -213,14 +214,48 @@ class TestOauth2Authenticator:
             TestOauth2Authenticator.client_secret,
             TestOauth2Authenticator.refresh_token,
         )
-        error_content = {"error": "invalid_grant", "error_description": "Refresh token error"}
+        error_content = {"error": "invalid_grant"}
         requests_mock.post(f"https://{TestOauth2Authenticator.refresh_endpoint}", status_code=400, json=error_content)
 
-        with pytest.raises(AirbyteTracedException) as error:
+        with pytest.raises(AirbyteTracedException) as exc_info:
             oauth.refresh_access_token()
-            assert error.internal_message == error_content["error_description"]
-            assert error.message == "Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
-            assert error.failure_type == FailureType.config_error
+
+        error_message = "Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
+        assert exc_info.value.internal_message == error_message
+        assert exc_info.value.message == error_message
+        assert exc_info.value.failure_type == FailureType.config_error
+
+    @pytest.mark.parametrize(
+        ("config_codes", "response_code", "config_key", "response_key", "config_values", "response_value", "wrapped"),
+        (
+            ((400,), 400, "error", "error", ("invalid_grant",), "invalid_grant", True),
+            ((401,), 400, "error", "error", ("invalid_grant",), "invalid_grant", False),
+            ((400,), 400, "error", "error", ("invalid_grant",), "valid_grant", False),
+            ((400,), 400, "error_error", "error", ("invalid_grant",), "invalid_grant", False),
+            (None, 400, "error", "error", ("invalid_grant",), "invalid_grant", False),
+            ((400,), 400, None, "error", ("invalid_grant",), "valid_grant", True),
+            ((400,), 400, "error_error", "error", None, "invalid_grant", True),
+            ((400,), 400, None, "error", None, "invalid_grant", True),
+        ),
+    )
+    def test_refresh_access_token_wrapped(
+        self, mocker, requests_mock, config_codes, response_code, config_key, response_key, config_values, response_value, wrapped
+    ):
+        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_status_codes", config_codes)
+        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_key", config_key)
+        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_values", config_values)
+        oauth = Oauth2Authenticator(
+            f"https://{TestOauth2Authenticator.refresh_endpoint}",
+            TestOauth2Authenticator.client_id,
+            TestOauth2Authenticator.client_secret,
+            TestOauth2Authenticator.refresh_token,
+        )
+        error_content = {response_key: response_value}
+        requests_mock.post(f"https://{TestOauth2Authenticator.refresh_endpoint}", status_code=response_code, json=error_content)
+
+        exception_to_raise = AirbyteTracedException if wrapped else RequestException
+        with pytest.raises(exception_to_raise):
+            oauth.refresh_access_token()
 
 
 class TestSingleUseRefreshTokenOauth2Authenticator:

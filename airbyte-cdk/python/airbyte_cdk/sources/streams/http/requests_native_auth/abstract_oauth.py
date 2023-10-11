@@ -76,6 +76,30 @@ class AbstractOauth2Authenticator(AuthBase):
 
         return payload
 
+    @property
+    def refresh_token_error_status_codes(self) -> Tuple[int]:
+        return (400,)
+
+    @property
+    def refresh_token_error_key(self) -> str:
+        return "error"
+
+    @property
+    def refresh_token_error_values(self) -> Tuple[str]:
+        return ("invalid_grant",)
+
+    def _wrap_refresh_token_exception(self, exception: requests.exceptions.RequestException) -> bool:
+        exception_content = exception.response.json()
+        return (
+            self.refresh_token_error_status_codes
+            and exception.response.status_code in self.refresh_token_error_status_codes
+            and (
+                not self.refresh_token_error_key
+                or not self.refresh_token_error_values
+                or exception_content.get(self.refresh_token_error_key) in self.refresh_token_error_values
+            )
+        )
+
     @backoff.on_exception(
         backoff.expo,
         DefaultBackoffException,
@@ -93,15 +117,9 @@ class AbstractOauth2Authenticator(AuthBase):
         except requests.exceptions.RequestException as e:
             if e.response.status_code == 429 or e.response.status_code >= 500:
                 raise DefaultBackoffException(request=e.response.request, response=e.response)
-
-            error_content = e.response.json()
-            if e.response.status_code == 400 and error_content.get("error") == "invalid_grant":
-                raise AirbyteTracedException(
-                    internal_message=error_content.get("error_description"),
-                    message="Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings.",
-                    failure_type=FailureType.config_error,
-                )
-
+            if self._wrap_refresh_token_exception(e):
+                message = "Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
+                raise AirbyteTracedException(internal_message=message, message=message, failure_type=FailureType.config_error)
             raise
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
