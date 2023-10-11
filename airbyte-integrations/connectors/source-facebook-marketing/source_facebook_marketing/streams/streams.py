@@ -201,10 +201,16 @@ class AdAccount(FBMarketingStream):
         try:
             return [FBAdAccount(self._api.account.get_id()).api_get(fields=fields)]
         except FacebookRequestError as e:
-            # This is a workaround for cases when account seem have all the required permissions
+            # This is a workaround for cases when account seem to have all the required permissions
             # but despite of that is not allowed to get `owner` field. See (https://github.com/airbytehq/oncall/issues/3167)
             if e.api_error_code() == 200 and e.api_error_message() == "(#200) Requires business_management permission to manage the object":
                 fields.remove("owner")
+                return [FBAdAccount(self._api.account.get_id()).api_get(fields=fields)]
+            # FB api returns a non-obvious error when accessing the `funding_source_details` field
+            # even though user is granted all the required permissions (`MANAGE`)
+            # https://github.com/airbytehq/oncall/issues/3031
+            if e.api_error_code() == 100 and e.api_error_message() == "Unsupported request - method type: get":
+                fields.remove("funding_source_details")
                 return [FBAdAccount(self._api.account.get_id()).api_get(fields=fields)]
             raise e
 
