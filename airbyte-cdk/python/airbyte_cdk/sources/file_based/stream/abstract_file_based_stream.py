@@ -38,7 +38,7 @@ class AbstractFileBasedStream(Stream):
     def __init__(
         self,
         config: FileBasedStreamConfig,
-        catalog_schema: Optional[Mapping[str, Any]],
+        catalog_schema: Optional[Mapping],
         stream_reader: AbstractFileBasedStreamReader,
         availability_strategy: AbstractFileBasedAvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,
