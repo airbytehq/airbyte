@@ -38,13 +38,13 @@ Once pyenv and pipx is installed then run the following:
 
 ```bash
 # install airbyte-ci
-pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/
+pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/
 ```
 
 This command installs `airbyte-ci` and makes it globally available in your terminal.
 
 _Note: `--force` is required to ensure updates are applied on subsequent installs._
-_Note: `--version=python3.10` is required to ensure the correct python version is used._
+_Note: `--python=python3.10` is required to ensure the correct python version is used._
 _Note: `--editable` is required to ensure the correct python version is used._
 
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
@@ -454,9 +454,9 @@ To fix this, you can either:
 
 
 ## python3.10 not found
-If you get the following error when running `pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/`:
+If you get the following error when running `pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/`:
 ```bash
-$ pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/
+$ pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/
 Error: Python 3.10 not found on your system.
 ```
 
