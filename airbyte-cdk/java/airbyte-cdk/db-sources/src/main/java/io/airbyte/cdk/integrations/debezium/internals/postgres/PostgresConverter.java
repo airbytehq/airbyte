@@ -65,7 +65,6 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
 
   @Override
   public void converterFor(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
-    System.out.println("CONVERTER FOR+++++++");
     if (Arrays.stream(DATE_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
       registerDate(field, registration);
     } else if (Arrays.stream(TEXT_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))
@@ -125,8 +124,8 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       // one.
       // The code below strips trailing zeros for integer numbers and represents number with exponent
       // if this number has decimals point.
-      final double doubleValue = Double.parseDouble(x.toString());
-      final String valueWithTruncatedZero = BigDecimal.valueOf(doubleValue).stripTrailingZeros().toString();
+      final double doubleValue = Double.valueOf(x.toString());
+      final String valueWithTruncatedZero = BigDecimal.valueOf(doubleValue).stripTrailingZeros().toPlainString();
       return valueWithTruncatedZero.contains(".") ? String.valueOf(doubleValue) : valueWithTruncatedZero;
     });
   }
