@@ -115,7 +115,8 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
         )),
         record -> record.getString("MIN_TIMESTAMP")
     );
-    return Optional.ofNullable(Instant.parse(queryResult.get(0)));
+    // The query will always return exactly one record, so use .get(0)
+    return Optional.ofNullable(queryResult.get(0)).map(Instant::parse);
   }
 
   @Override

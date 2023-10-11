@@ -399,7 +399,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                                          final String finalSuffix,
                                          final boolean forceSafeCasting,
                                          final Optional<Instant> minRawTimestamp) {
-    // TODO
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), forceSafeCasting, minRawTimestamp);
     String dedupFinalTable = "";
     String cdcDeletes = "";
