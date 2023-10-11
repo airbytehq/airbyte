@@ -408,6 +408,12 @@ def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
     envvar="SLACK_CHANNEL",
     default="#connector-publish-updates",
 )
+@click.option(
+    "--use-local-cdk",
+    help="Use this flag if you want to build the image with the local version of the CDK. Only acceptable if pre-release is also true.",
+    default=False,
+    type=bool,
+)
 @click.pass_context
 def publish(
     ctx: click.Context,
@@ -420,7 +426,10 @@ def publish(
     docker_hub_password: str,
     slack_webhook: str,
     slack_channel: str,
+    use_local_cdk: bool,
 ):
+    if use_local_cdk and not pre_release:
+        raise Exception("flag --use-local-cdk requires --pre-release")
     ctx.obj["spec_cache_gcs_credentials"] = spec_cache_gcs_credentials
     ctx.obj["spec_cache_bucket_name"] = spec_cache_bucket_name
     ctx.obj["metadata_service_bucket_name"] = metadata_service_bucket_name
@@ -455,6 +464,7 @@ def publish(
                 ci_context=ctx.obj.get("ci_context"),
                 ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
                 pull_request=ctx.obj.get("pull_request"),
+                use_local_cdk=use_local_cdk,
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
