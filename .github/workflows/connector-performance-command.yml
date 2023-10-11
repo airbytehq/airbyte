@@ -120,10 +120,14 @@ jobs:
       - name: Install CI scripts
         run: |
           pip install pipx
+          echo $PATH
+          which python
           mkdir -p /root/.local/bin
           pipx ensurepath
+          echo $PATH
           pipx install airbyte-ci/connectors/ci_credentials
           pipx install airbyte-ci/connectors/connector_ops
+          echo $PATH
       - name: Source or Destination harness
         id: which-harness
         run: |
