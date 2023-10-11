@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
 import java.sql.Date;
