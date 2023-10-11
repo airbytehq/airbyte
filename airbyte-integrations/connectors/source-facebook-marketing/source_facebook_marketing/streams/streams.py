@@ -77,8 +77,8 @@ class CustomConversions(FBMarketingStream):
     entity_prefix = "customconversion"
     enable_deleted = False
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_custom_conversions(params=params, fields=self.fields)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_custom_conversions(params=params, fields=self.fields)
 
 
 class CustomAudiences(FBMarketingStream):
@@ -99,8 +99,8 @@ class Ads(FBMarketingIncrementalStream):
 
     entity_prefix = "ad"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ads(params=params, fields=self.fields)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_ads(params=params, fields=self.fields)
 
 
 class AdSets(FBMarketingIncrementalStream):
@@ -108,8 +108,8 @@ class AdSets(FBMarketingIncrementalStream):
 
     entity_prefix = "adset"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_sets(params=params, fields=self.fields)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_ad_sets(params=params, fields=self.fields)
 
 
 class Campaigns(FBMarketingIncrementalStream):
@@ -117,8 +117,8 @@ class Campaigns(FBMarketingIncrementalStream):
 
     entity_prefix = "campaign"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_campaigns(params=params, fields=self.fields)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_campaigns(params=params, fields=self.fields)
 
 
 class Activities(FBMarketingIncrementalStream):
@@ -128,10 +128,10 @@ class Activities(FBMarketingIncrementalStream):
     cursor_field = "event_time"
     primary_key = None
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_activities(fields=self.fields, params=params)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_activities(fields=self.fields, params=params)
 
-    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Additional filters associated with state if any set"""
         state_value = stream_state.get(self.cursor_field)
         if stream_state:
@@ -159,9 +159,9 @@ class Videos(FBMarketingReversedIncrementalStream):
 
     entity_prefix = "video"
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
         # Remove filtering as it is not working for this stream since 2023-01-13
-        return self._api.account.get_ad_videos(params=params, fields=self.fields)
+        yield from stream_slice.get("account").get_ad_videos(params=params, fields=self.fields)
 
 
 class AdAccount(FBMarketingStream):
@@ -193,16 +193,18 @@ class AdAccount(FBMarketingStream):
             properties.remove("is_prepay_account")
         return properties
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
         """noop in case of AdAccount"""
-        return [FBAdAccount(self._api.account.get_id()).api_get(fields=self.fields)]
+        # return [FBAdAccount(self._api.account.get_id()).api_get(fields=self.fields)]
+        account = stream_slice.get("account")
+        yield account
 
 
 class Images(FBMarketingReversedIncrementalStream):
     """See: https://developers.facebook.com/docs/marketing-api/reference/ad-image"""
 
-    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
-        return self._api.account.get_ad_images(params=params, fields=self.fields)
+    def list_objects(self, stream_slice: dict, params: Mapping[str, Any]) -> Iterable:
+        yield from stream_slice.get("account").get_ad_images(params=params, fields=self.fields)
 
     def get_record_deleted_status(self, record) -> bool:
         return record[AdImage.Field.status] == AdImage.Status.deleted

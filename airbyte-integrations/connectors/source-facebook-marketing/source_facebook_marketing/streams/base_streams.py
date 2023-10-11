@@ -167,10 +167,14 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         if potentially_new_records_in_the_past:
             max_cursor = record_value
 
-        return {
-            self.cursor_field: str(max_cursor),
-            "include_deleted": self._include_deleted,
-        }
+        updated_state = deep_merge(current_stream_state, {
+            account_id: {
+                self.cursor_field: str(max_cursor),
+                "include_deleted": self._include_deleted,
+            }
+        })
+
+        return updated_state
 
     def request_params(self, stream_slice: dict, stream_state: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         """Include state filter"""
@@ -183,13 +187,7 @@ class FBMarketingIncrementalStream(FBMarketingStream, ABC):
         account_id = stream_slice.get("account", {}).get("account_id")
         account_stream_state = stream_state.get(account_id, {})
         state_value = account_stream_state.get(self.cursor_field)
-        if stream_state:
-            filter_value = pendulum.parse(state_value)
-        elif self._start_date:
-            filter_value = self._start_date
-        else:
-            # if start_date is not specified then do not use date filters
-            return {}
+        filter_value = self._start_date if not state_value else pendulum.parse(state_value)
 
         potentially_new_records_in_the_past = self._include_deleted and not account_stream_state.get("include_deleted", False)
         if potentially_new_records_in_the_past:

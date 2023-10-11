@@ -170,11 +170,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._completed_slices = set(pendulum.parse(v).date() for v in value.get("slices", []))
         self._next_cursor_value = self._get_start_date()
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+    def get_updated_state(self,
+                          current_stream_state: MutableMapping[str, Any],
+                          latest_record: Mapping[str, Any],
+                          account_id: str):
         """Update stream state from latest record
 
         :param current_stream_state: latest state returned
         :param latest_record: latest record that we read
+        :param account_id
+
         """
         return self.state
 
