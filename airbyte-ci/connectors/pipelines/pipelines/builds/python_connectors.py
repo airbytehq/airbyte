@@ -31,7 +31,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     def _get_base_container(self, platform: Platform) -> Container:
         base_image_name = self.context.connector.metadata["connectorBuildOptions"]["baseImage"]
         self.logger.info(f"Building connector from base image {base_image_name}")
-        return self.dagger_client.container().from_(base_image_name)
+        return self.dagger_client.container(platform=platform).from_(base_image_name)
 
     async def _create_builder_container(self, base_container: Container) -> Container:
         """Pre install the connector dependencies in a builder container.
@@ -58,7 +58,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         Returns:
             Container: The connector container built from the base image.
         """
-        self.logger.info("Building connector from base image in metadata")
+        self.logger.info(f"Building connector from base image in metadata for {platform}")
         base = self._get_base_container(platform)
         customized_base = await build_customization.pre_install_hooks(self.context.connector, base, self.logger)
         entrypoint = build_customization.get_entrypoint(self.context.connector)
