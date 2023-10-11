@@ -387,7 +387,7 @@ class TestRealErrors:
                     "type": "OAuthException",
                     "code": 200,
                     "fbtrace_id": "AOm48i-YaiRlzqnNEnECcW8",
-                }
+                },
             },
             {
                 "status_code": 400,
@@ -396,9 +396,9 @@ class TestRealErrors:
                     "type": "GraphMethodException",
                     "code": 100,
                     "fbtrace_id": "AOm48i-YaiRlzqnNEnECcW8",
-               }
-            }
-        )
+                },
+            },
+        ),
     )
     def test_adaccount_list_objects_retry(self, requests_mock, failure_response):
         """
