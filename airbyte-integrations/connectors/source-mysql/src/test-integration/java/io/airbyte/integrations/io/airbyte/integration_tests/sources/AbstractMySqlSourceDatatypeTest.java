@@ -235,15 +235,6 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
-            .airbyteType(JsonSchemaType.NUMBER)
-            .fullSourceDataType("decimal(19,2)")
-            .addInsertValues("1700000.01", "'123'")
-            .addExpectedValues("1700000.01", "123.0")
-            .build());
-
-    addDataTypeTestData(
-        TestDataHolder.builder()
-            .sourceType("decimal")
             .airbyteType(JsonSchemaType.INTEGER)
             .fullSourceDataType("decimal(32,0)")
             .addInsertValues("1700000.01", "123")
@@ -451,6 +442,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues(null, "xs,s", "m,xl")
             .build());
 
+    addDecimalValuesTest();
   }
 
   protected void addJsonDataTypeTest() {
@@ -492,4 +484,14 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     return null;
   }
 
+  protected void addDecimalValuesTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("decimal")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .fullSourceDataType("decimal(19,2)")
+            .addInsertValues("1700000.01", "'123'")
+            .addExpectedValues("1700000.01", "123.0")
+            .build());
+  }
 }
