@@ -12,10 +12,7 @@ from typing import Iterable, List, Optional
 import pytz
 import smart_open
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import (
-    AbstractFileBasedStreamReader,
-    FileReadMode,
-)
+from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -51,15 +48,11 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         if self.config is None:
             raise ValueError("Source config is missing; cannot create the GCS client.")
         if self._gcs_client is None:
-            credentials = service_account.Credentials.from_service_account_info(
-                json.loads(self.config.service_account)
-            )
+            credentials = service_account.Credentials.from_service_account_info(json.loads(self.config.service_account))
             self._gcs_client = storage.Client(credentials=credentials)
         return self._gcs_client
 
-    def get_matching_files(
-        self, globs: List[str], prefix: Optional[str], logger: logging.Logger
-    ) -> Iterable[RemoteFile]:
+    def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Retrieve all files matching the specified glob patterns in GCS.
         """
@@ -70,12 +63,8 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             for remote_file in remote_files:
                 if FILE_FORMAT in remote_file.name.lower():
                     yield RemoteFile(
-                        uri=remote_file.generate_signed_url(
-                            expiration=timedelta(hours=1), version="v4"
-                        ),
-                        last_modified=remote_file.updated.astimezone(pytz.utc).replace(
-                            tzinfo=None
-                        ),
+                        uri=remote_file.generate_signed_url(expiration=timedelta(hours=1), version="v4"),
+                        last_modified=remote_file.updated.astimezone(pytz.utc).replace(tzinfo=None),
                     )
 
         except Exception as exc:
@@ -88,9 +77,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             ) from exc
 
     @contextmanager
-    def open_file(
-        self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger
-    ) -> IOBase:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         """
         Open and yield a remote file from GCS for reading.
         """

@@ -3,8 +3,10 @@
 #
 
 from typing import Any, Dict, Mapping
-from .helpers import get_gcs_blobs, get_stream_name
+
 from source_gcs.spec import SourceGCSSpec
+
+from .helpers import get_gcs_blobs, get_stream_name
 
 
 class LegacyConfigTransformer:
@@ -26,7 +28,7 @@ class LegacyConfigTransformer:
             "name": get_stream_name(blob),
             "legacy_prefix": f"{legacy_prefix}/{blob.name.split('/')[-1]}",
             "validation_policy": "Emit Record",
-            "format": {"filetype": "csv"}
+            "format": {"filetype": "csv"},
         }
 
     @classmethod
@@ -40,8 +42,4 @@ class LegacyConfigTransformer:
         blobs = get_gcs_blobs(legacy_config)
         streams = [cls._create_stream(blob, legacy_config.gcs_path) for blob in blobs]
 
-        return {
-            "bucket": legacy_config.gcs_bucket,
-            "service_account": legacy_config.service_account,
-            "streams": streams
-        }
+        return {"bucket": legacy_config.gcs_bucket, "service_account": legacy_config.service_account, "streams": streams}

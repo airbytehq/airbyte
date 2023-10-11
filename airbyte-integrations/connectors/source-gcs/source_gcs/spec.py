@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from pydantic import AnyUrl, BaseModel, Field
+from pydantic import BaseModel, Field
 
 
 class SourceGCSSpec(BaseModel):
@@ -33,6 +33,6 @@ class SourceGCSSpec(BaseModel):
         description=(
             'Enter your Google Cloud <a href="https://cloud.google.com/iam/docs/'
             'creating-managing-service-account-keys#creating_service_account_keys">'
-            'service account key</a> in JSON format'
+            "service account key</a> in JSON format"
         ),
     )
