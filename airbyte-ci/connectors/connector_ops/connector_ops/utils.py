@@ -24,7 +24,6 @@ console = Console()
 
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
 OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_registry.json"
-BASE_AIRBYTE_DOCS_URL = "https://docs.airbyte.com"
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
@@ -252,8 +251,7 @@ class ConnectorLanguageError(Exception):
 class Connector:
     """Utility class to gather metadata about a connector."""
 
-    # The technical name of the connector, e.g. source-google-sheets or third-party/farosai/airbyte-pagerduty-source
-    _relative_connector_path: str
+    technical_name: str
 
     def _get_type_and_name_from_technical_name(self) -> Tuple[str, str]:
         if "-" not in self.technical_name:
@@ -263,52 +261,34 @@ class Connector:
         return _type, name
 
     @property
-    def technical_name(self) -> str:
-        """
-        Return the technical name of the connector from the given _relative_connector_path
-        e.g. source-google-sheets -> google-sheets or third-party/farosai/airbyte-pagerduty-source -> airbyte-pagerduty-source
-        """
-        return self._relative_connector_path.split("/")[-1]
-
-    @property
     def name(self):
         return self._get_type_and_name_from_technical_name()[1]
 
     @property
     def connector_type(self) -> str:
-        return self.metadata["connectorType"]
-
-    @property
-    def is_third_party(self) -> bool:
-        return THIRD_PARTY_GLOB in self._relative_connector_path
+        return self._get_type_and_name_from_technical_name()[0]
 
     @property
     def documentation_directory(self) -> Path:
-        if self.has_external_documentation:
-            return None
         return Path(f"./docs/integrations/{self.connector_type}s")
 
     @property
-    def relative_documentation_path_str(self) -> str:
-        documentation_url = self.metadata["documentationUrl"]
-        relative_documentation_path = documentation_url.replace(BASE_AIRBYTE_DOCS_URL, "")
-
-        # strip leading and trailing slashes
-        relative_documentation_path = relative_documentation_path.strip("/")
-
-        return f"./docs/{relative_documentation_path}"
-
-    @property
     def documentation_file_path(self) -> Path:
-        return Path(f"{self.relative_documentation_path_str}.md")
+        readme_file_name = f"{self.name}.md"
+        return self.documentation_directory / readme_file_name
 
     @property
     def inapp_documentation_file_path(self) -> Path:
-        return Path(f"{self.relative_documentation_path_str}.inapp.md")
+        readme_file_name = f"{self.name}.inapp.md"
+        return self.documentation_directory / readme_file_name
+
+    @property
+    def migration_guide_file_name(self) -> str:
+        return f"{self.name}-migrations.md"
 
     @property
     def migration_guide_file_path(self) -> Path:
-        return Path(f"{self.relative_documentation_path_str}-migrations.md")
+        return self.documentation_directory / self.migration_guide_file_name
 
     @property
     def icon_path(self) -> Path:
@@ -317,7 +297,7 @@ class Connector:
 
     @property
     def code_directory(self) -> Path:
-        return Path(f"./{CONNECTOR_PATH_PREFIX}/{self._relative_connector_path}")
+        return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
 
     @property
     def has_dockerfile(self) -> bool:
@@ -556,26 +536,6 @@ def get_changed_connectors(
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
 
 
-def _get_relative_connector_folder_name_from_metadata_path(metadata_file_path: str) -> str:
-    """Get the relative connector folder name from the metadata file path.
-
-    Args:
-        metadata_file_path (Path): Path to the metadata file.
-
-    Returns:
-        str: The relative connector folder name.
-    """
-    # remove CONNECTOR_PATH_PREFIX and anything before
-    metadata_file_path = metadata_file_path.split(CONNECTOR_PATH_PREFIX)[-1]
-
-    # remove metadata.yaml
-    metadata_file_path = metadata_file_path.replace(METADATA_FILE_NAME, "")
-
-    # remove leading and trailing slashes
-    metadata_file_path = metadata_file_path.strip("/")
-    return metadata_file_path
-
-
 def get_all_connectors_in_repo() -> Set[Connector]:
     """Retrieve a set of all Connectors in the repo.
     We globe the connectors folder for metadata.yaml files and construct Connectors from the directory name.
@@ -587,9 +547,11 @@ def get_all_connectors_in_repo() -> Set[Connector]:
     repo_path = repo.working_tree_dir
 
     return {
-        Connector(_get_relative_connector_folder_name_from_metadata_path(metadata_file))
-        for metadata_file in glob(f"{repo_path}/{CONNECTOR_PATH_PREFIX}/**/metadata.yaml", recursive=True)
-        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file
+        Connector(Path(metadata_file).parent.name)
+        for metadata_file in glob(f"{repo_path}/airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
+        # HACK: The Connector util is not good at fetching metadata for third party connectors.
+        # We want to avoid picking a connector that does not have metadata.
+        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file and THIRD_PARTY_GLOB not in metadata_file
     }
 
 
