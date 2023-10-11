@@ -5,10 +5,10 @@
 package io.airbyte.cdk.integrations.destination_async.buffers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import io.airbyte.cdk.integrations.destination_async.partial_messages.PartialAirbyteMessage;
 import org.junit.jupiter.api.Test;
