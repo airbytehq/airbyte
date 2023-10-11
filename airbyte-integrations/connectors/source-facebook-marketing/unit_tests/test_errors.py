@@ -212,6 +212,8 @@ CONFIG_ERRORS = [
     #
     # # https://developers.facebook.com/community/threads/1232870724022634/
     # # I observed that if I remove preview_shareable_link field from the request, the code is working properly.
+    # # Update (Denys Davydov): same for me, but removing the `funding_source_details` field helps, so
+    # # we do remove it and do not raise errors; this is tested by a different unit test - see `test_adaccount_list_objects_retry`.
     #
     # ),
 ]
@@ -375,7 +377,30 @@ class TestRealErrors:
             assert error.failure_type == FailureType.config_error
             assert friendly_msg in error.message
 
-    def test_adaccount_list_objects_retry(self, requests_mock):
+    @pytest.mark.parametrize(
+        "failure_response",
+        (
+            {
+                "status_code": 403,
+                "json": {
+                    "message": "(#200) Requires business_management permission to manage the object",
+                    "type": "OAuthException",
+                    "code": 200,
+                    "fbtrace_id": "AOm48i-YaiRlzqnNEnECcW8",
+                },
+            },
+            {
+                "status_code": 400,
+                "json": {
+                    "message": "Unsupported request - method type: get",
+                    "type": "GraphMethodException",
+                    "code": 100,
+                    "fbtrace_id": "AOm48i-YaiRlzqnNEnECcW8",
+                },
+            },
+        ),
+    )
+    def test_adaccount_list_objects_retry(self, requests_mock, failure_response):
         """
         Sometimes we get an error: "Requires business_management permission to manage the object" when account has all the required permissions:
             [
@@ -395,19 +420,8 @@ class TestRealErrors:
         assigend_users = {"account_id": account_id, "tasks": ["TASK"]}
         requests_mock.register_uri("GET", f"{act_url}assigned_users", status_code=200, json=assigend_users)
 
-        responses = [
-            {
-                "status_code": 403,
-                "json": {
-                    "message": "(#200) Requires business_management permission to manage the object",
-                    "type": "OAuthException",
-                    "code": 200,
-                    "fbtrace_id": "AOm48i-YaiRlzqnNEnECcW8",
-                },
-            },
-            {"status_code": 200, "json": {"account_id": account_id}},
-        ]
-        requests_mock.register_uri("GET", f"{act_url}", responses)
+        success_response = {"status_code": 200, "json": {"account_id": account_id}}
+        requests_mock.register_uri("GET", f"{act_url}", [failure_response, success_response])
 
         record_gen = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=None, stream_state={})
         assert list(record_gen) == [{"account_id": "unknown_account", "id": "act_unknown_account"}]

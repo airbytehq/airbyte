@@ -803,7 +803,7 @@ class ModelToComponentFactory:
             scopes=model.scopes,
             token_expiry_date=model.token_expiry_date,
             token_expiry_date_format=model.token_expiry_date_format,  # type: ignore
-            token_expiry_is_time_of_expiration=bool(model.token_expiry_date),
+            token_expiry_is_time_of_expiration=bool(model.token_expiry_date_format),
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters or {},
