@@ -51,10 +51,10 @@ public class BigQueryTableWriter implements DestinationWriter {
     this.writeChannel.close();
     try {
       Job job = writeChannel.getJob();
-      while (!JobStatus.State.DONE.equals(job.getStatus())) {
+      /* while (!JobStatus.State.DONE.equals(job.getStatus())) {
         Thread.sleep(1000L);
         job = job.reload();
-      }
+      } */
       if (job.getStatus().getError() != null) {
         throw new RuntimeException("Fail to complete a load job in big query, Job id: " + writeChannel.getJob().getJobId() +
                 ", with error: " + writeChannel.getJob().getStatus().getError());
