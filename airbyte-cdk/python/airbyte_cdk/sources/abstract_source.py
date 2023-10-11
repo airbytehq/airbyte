@@ -92,7 +92,7 @@ class AbstractSource(Source, ABC):
         state: Optional[Union[List[AirbyteStateMessage], MutableMapping[str, Any]]] = None,
     ) -> Iterator[AirbyteMessage]:
         """Implements the Read operation from the Airbyte Specification. See https://docs.airbyte.com/understanding-airbyte/airbyte-protocol/."""
-        logger.info(f"Starting syncing {self.name}")
+        logger.info(f"Starting syncing with local cdk {self.name}")
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
