@@ -20,7 +20,7 @@ This page contains the setup guide and reference information for the Apple Searc
 5. For **Org Id**, enter the Id of your organization (found in the Apple Search Ads UI).
 6. Enter the **Client ID** and the **Client Secret** from [Step 1](#step-1-set-up-apple-search-ads).
 7. For **Start Date** and **End Date**, enter the date in YYYY-MM-DD format. For DAILY reports, the Start Date can't be earlier than 90 days from today. If the End Date field is left blank, Airbyte will replicate data to today.
-8. You can also set the timezone to determine how the report data is aggregated
+8. You can also set the timezone to determine how the report data is aggregated. Default value is UTC
 9. Click **Set up source**.
 
 ## Supported sync modes
