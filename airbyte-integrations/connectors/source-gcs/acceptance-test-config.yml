@@ -4,7 +4,7 @@ connector_image: airbyte/source-gcs:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_gcs/spec.py"
+      - spec_path: "source_gcs/spec.yaml"
         backward_compatibility_tests_config:
           disable_for_version: 0.2.0
   connection:
