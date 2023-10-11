@@ -348,9 +348,18 @@ def test_streams_config_start_date(config, expected):
 @pytest.mark.parametrize(
     "error_message, expected_user_friendly_message",
     [
-        ("404 Client Error: Not Found for url: https://api.github.com/repos/repo_name", 'Repo name: "repo_name" is unknown, "repository" config option should use existing full repo name <organization>/<repository>',),
-        ("404 Client Error: Not Found for url: https://api.github.com/orgs/org_name", 'Organization name: "org_name" is unknown, "repository" config option should be updated. Please validate your repository config.'),
-        ("401 Client Error: Unauthorized for url", "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token.")
+        (
+            "404 Client Error: Not Found for url: https://api.github.com/repos/repo_name",
+            'Repo name: "repo_name" is unknown, "repository" config option should use existing full repo name <organization>/<repository>',
+        ),
+        (
+            "404 Client Error: Not Found for url: https://api.github.com/orgs/org_name",
+            'Organization name: "org_name" is unknown, "repository" config option should be updated. Please validate your repository config.',
+        ),
+        (
+            "401 Client Error: Unauthorized for url",
+            "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token.",
+        ),
     ],
 )
 def test_user_friendly_message(error_message, expected_user_friendly_message):

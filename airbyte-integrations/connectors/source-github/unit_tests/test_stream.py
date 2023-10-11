@@ -1333,14 +1333,18 @@ def test_stream_projects_v2_graphql_query():
     }
     stream = ProjectsV2(**repository_args_with_start_date)
     query = stream.request_body_json(stream_state={}, stream_slice={"repository": "airbytehq/airbyte"})
-    responses.add(responses.POST, "https://api.github.com/graphql",json=json.load(open(Path(__file__).parent / "responses/projects_v2_response.json")))
+    responses.add(
+        responses.POST,
+        "https://api.github.com/graphql",
+        json=json.load(open(Path(__file__).parent / "responses/projects_v2_response.json")),
+    )
     f = Path(__file__).parent / "projects_v2_pull_requests_query.json"
     expected_query = json.load(open(f))
 
     records = list(read_full_refresh(stream))
     assert query == expected_query
-    assert records[0].get('owner_id')
-    assert records[0].get('repository')
+    assert records[0].get("owner_id")
+    assert records[0].get("repository")
 
 
 @responses.activate
@@ -1364,7 +1368,7 @@ def test_stream_contributor_activity_parse_empty_response(caplog):
 
 
 @responses.activate
-@patch('time.sleep', return_value=0)
+@patch("time.sleep", return_value=0)
 def test_stream_contributor_activity_accepted_response(caplog):
     repository_args = {
         "page_size_for_large_streams": 20,
@@ -1392,7 +1396,7 @@ def test_stream_contributor_activity_parse_response():
     responses.add(
         responses.GET,
         "https://api.github.com/repos/airbytehq/airbyte/stats/contributors",
-        json=json.load(open(Path(__file__).parent / "responses/contributor_activity_response.json"))
+        json=json.load(open(Path(__file__).parent / "responses/contributor_activity_response.json")),
     )
     records = list(read_full_refresh(stream))
     assert len(records) == 1
@@ -1423,7 +1427,11 @@ def test_pull_request_stats():
     }
     stream = PullRequestStats(**repository_args)
     query = stream.request_body_json(stream_state={}, stream_slice={"repository": "airbytehq/airbyte"})
-    responses.add(responses.POST, "https://api.github.com/graphql", json=json.load(open(Path(__file__).parent / "responses/pull_request_stats_response.json")))
+    responses.add(
+        responses.POST,
+        "https://api.github.com/graphql",
+        json=json.load(open(Path(__file__).parent / "responses/pull_request_stats_response.json")),
+    )
     f = Path(__file__).parent / "pull_request_stats_query.json"
     expected_query = json.load(open(f))
 

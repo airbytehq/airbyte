@@ -37,7 +37,8 @@
               ]
             },
             "merged_by": null
-          }, {
+          },
+          {
             "node_id": "MDExOlB1bGxSZXF1ZXN0NzIxNDM1NDA3",
             "id": 721435407,
             "number": 2,
@@ -67,7 +68,8 @@
               ]
             },
             "merged_by": null
-          }, {
+          },
+          {
             "node_id": "MDExOlB1bGxSZXF1ZXN0NzIxNDM1NDQw",
             "id": 721435440,
             "number": 3,
@@ -105,7 +107,8 @@
               "html_url": "https://github.com/gaart",
               "site_admin": false
             }
-          }, {
+          },
+          {
             "node_id": "MDExOlB1bGxSZXF1ZXN0NzIxNDM1NDY2",
             "id": 721435466,
             "number": 4,
@@ -131,11 +134,13 @@
                   "comments": {
                     "totalCount": 0
                   }
-                }, {
+                },
+                {
                   "comments": {
                     "totalCount": 0
                   }
-                }, {
+                },
+                {
                   "comments": {
                     "totalCount": 1
                   }
@@ -143,7 +148,8 @@
               ]
             },
             "merged_by": null
-          }, {
+          },
+          {
             "node_id": "PR_kwDOF9hP9c4xmEi6",
             "id": 832063674,
             "number": 12,
@@ -181,7 +187,8 @@
               "html_url": "https://github.com/marcosmarxm",
               "site_admin": false
             }
-          }, {
+          },
+          {
             "node_id": "MDExOlB1bGxSZXF1ZXN0NzIxNDM1Mzcz",
             "id": 721435373,
             "number": 1,
@@ -211,7 +218,8 @@
               ]
             },
             "merged_by": null
-          }, {
+          },
+          {
             "node_id": "PR_kwDOF9hP9c46s2Qa",
             "id": 984835098,
             "number": 14,
@@ -241,7 +249,8 @@
               ]
             },
             "merged_by": null
-          }, {
+          },
+          {
             "node_id": "PR_kwDOF9hP9c41Vftv",
             "id": 894827375,
             "number": 13,
@@ -265,7 +274,8 @@
               "nodes": []
             },
             "merged_by": null
-          }, {
+          },
+          {
             "node_id": "PR_kwDOF9hP9c5PqZhG",
             "id": 1336514630,
             "number": 15,
