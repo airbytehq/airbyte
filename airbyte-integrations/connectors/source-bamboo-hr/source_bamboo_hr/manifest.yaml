@@ -1,0 +1,89 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+  requester:
+    type: HttpRequester
+    url_base: "https://api.bamboohr.com/api/gateway.php/{{config['subdomain']}}/v1/"
+    http_method: "GET"
+    request_options_provider:
+      request_headers:
+        accept: "application/json"
+    authenticator:
+      type: BasicHttpAuthenticator
+      user_name: "{{ config['api_key'] }}"
+      password: "{{ config['subdomain'] }}"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+  custom_reports_stream:
+    $ref: "#/definitions/base_stream"
+    name: "custom_reports"
+    primary_key: "None"
+    $parameters:
+      path: "/reports/custom"
+    requester:
+      http_method: "POST"
+  employees_directory_stream:
+    $ref: "#/definitions/base_stream"
+    name: "employees_directory"
+    primary_key: "id"
+    $parameters:
+      path: "/employees/directory"
+    retriever:
+      record_selector:
+        extractor:
+          type: DpathExtractor
+          field_path: [ "employees" ]
+
+streams:
+  - "#/definitions/custom_reports_stream"
+  - "#/definitions/employees_directory_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "custom_reports"
+    - "employees_directory"
+
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.com/integrations/sources/bamboo-hr
+  connection_specification:
+    "$schema": http://json-schema.org/draft-07/schema#
+    title: Bamboo HR Spec
+    type: object
+    required:
+    - subdomain
+    - api_key
+    additionalProperties: true
+    properties:
+      subdomain:
+        type: string
+        description: Sub Domain of bamboo hr
+      api_key:
+        type: string
+        description: Api key of bamboo hr
+        airbyte_secret: true
+      custom_reports_fields:
+        type: string
+        default: ''
+        description: Comma-separated list of fields to include in custom reports.
+      custom_reports_include_default_fields:
+        type: boolean
+        default: true
+        description: 'If true, the custom reports endpoint will include the default
+          fields defined here: https://documentation.bamboohr.com/docs/list-of-field-names.'

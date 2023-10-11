@@ -1,6 +1,5 @@
 *
 !Dockerfile
-!Dockerfile.test
 !main.py
 !source_bamboo_hr
 !setup.py
