@@ -88,7 +88,7 @@ Airbyte converts any invalid characters into `_` characters when writing data. H
 ## Data type map
 
 | Airbyte type                        | BigQuery type |
-| :---------------------------------- | :------------ |
+|:------------------------------------|:--------------|
 | DATE                                | DATE          |
 | STRING (BASE64)                     | STRING        |
 | NUMBER                              | FLOAT         |
@@ -125,8 +125,9 @@ Now that you have set up the BigQuery destination connector, check out the follo
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2.1.0   | 2023-10-09 | [\#31149](https://github.com/airbytehq/airbyte/pull/31149) | No longer fail syncs when PKs are null - try do dedupe anyway                                                                                                    |
+|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.1   | 2023-10-10 | [\#31083](https://github.com/airbytehq/airbyte/pull/31083) | Fix precision of numeric values in async destinations                                                                                                           |
+| 2.1.0   | 2023-10-09 | [\#31149](https://github.com/airbytehq/airbyte/pull/31149) | No longer fail syncs when PKs are null - try do dedupe anyway                                                                                                   |
 | 2.0.26  | 2023-10-09 | [\#31198](https://github.com/airbytehq/airbyte/pull/31198) | Clarify configuration groups                                                                                                                                    |
 | 2.0.25  | 2023-10-09 | [\#31185](https://github.com/airbytehq/airbyte/pull/31185) | Increase staging file upload timeout to 5 minutes                                                                                                               |
 | 2.0.24  | 2023-10-06 | [\#31139](https://github.com/airbytehq/airbyte/pull/31139) | Bump CDK version                                                                                                                                                |
