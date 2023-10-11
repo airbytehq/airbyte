@@ -220,7 +220,10 @@
                             "received_events_url": { "type": "string" },
                             "type": { "type": "string" },
                             "site_admin": { "type": "boolean" },
-                            "starred_at": { "type": "string", "format": "date-time" }
+                            "starred_at": {
+                              "type": "string",
+                              "format": "date-time"
+                            }
                           }
                         }
                       ]
@@ -350,7 +353,10 @@
                         "received_events_url": { "type": "string" },
                         "type": { "type": "string" },
                         "site_admin": { "type": "boolean" },
-                        "starred_at": { "type": "string", "format": "date-time" }
+                        "starred_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
                       }
                     }
                   ]
@@ -659,7 +665,10 @@
                               "received_events_url": { "type": "string" },
                               "type": { "type": "string" },
                               "site_admin": { "type": "boolean" },
-                              "starred_at": { "type": "string", "format": "date-time" }
+                              "starred_at": {
+                                "type": "string",
+                                "format": "date-time"
+                              }
                             }
                           }
                         ]
