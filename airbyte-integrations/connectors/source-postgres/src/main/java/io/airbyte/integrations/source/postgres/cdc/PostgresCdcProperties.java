@@ -57,7 +57,6 @@ public class PostgresCdcProperties {
 
     props.setProperty("converters", "datetime");
     props.setProperty("datetime.type", PostgresConverter.class.getName());
-    props.setProperty("value.converter", PostgresConverter.class.getName());
     props.setProperty("include.unknown.datatypes", "true");
     props.setProperty("heartbeat.interval.ms", Long.toString(Duration.ofSeconds(HEARTBEAT_FREQUENCY_SEC).toMillis()));
     if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
