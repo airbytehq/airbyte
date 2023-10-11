@@ -22,6 +22,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ProtocolConverters;
 import io.airbyte.workers.temporal.TemporalClient.ManualOperationResult;
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -68,11 +69,12 @@ public class WebBackendConnectionsHandler {
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-
+      log.info("inside webBackendListConnectionsForWorkspace() : Start time -> {}", OffsetDateTime.now());
     final List<WebBackendConnectionRead> reads = Lists.newArrayList();
     for (final ConnectionRead connection : connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody).getConnections()) {
       reads.add(buildWebBackendConnectionRead(connection));
     }
+    log.info("inside webBackendListConnectionsForWorkspace() : End time -> {}", OffsetDateTime.now());
     return new WebBackendConnectionReadList().connections(reads);
   }
 

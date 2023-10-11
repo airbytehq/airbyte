@@ -612,10 +612,12 @@ public class ConfigRepository {
   }
 
   public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId) throws IOException {
+    LOGGER.info("inside listWorkspaceStandardSyncs() Start time -> {}", OffsetDateTime.now());
     final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
         .from(CONNECTION)
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
+    LOGGER.info("inside listWorkspaceStandardSyncs() END time -> {}", OffsetDateTime.now());
     return getStandardSyncsFromResult(result);
   }
 
@@ -683,6 +685,7 @@ public class ConfigRepository {
   }
 
   private List<StandardSync> getStandardSyncsFromResult(final Result<Record> result) throws IOException {
+    LOGGER.info("inside getStandardSyncsFromResult() Start time -> {}", OffsetDateTime.now());
     final List<StandardSync> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
       final UUID connectionId = record.get(CONNECTION.ID);
@@ -695,6 +698,7 @@ public class ConfigRepository {
           connectionOperationRecords.stream().map(r -> r.get(CONNECTION_OPERATION.OPERATION_ID)).collect(Collectors.toList());
       standardSyncs.add(DbConverter.buildStandardSync(record, connectionOperationIds));
     }
+    LOGGER.info("inside getStandardSyncsFromResult() End time -> {}", OffsetDateTime.now());
     return standardSyncs;
   }
 
