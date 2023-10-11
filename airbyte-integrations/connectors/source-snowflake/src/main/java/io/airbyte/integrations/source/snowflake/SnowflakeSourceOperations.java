@@ -86,11 +86,10 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   public JsonNode getAirbyteSourceType(final JDBCType jdbcType) {
     // Return a json node containing the database dialect and the source type
     return Jsons.jsonNode(
-      ImmutableMap.builder()
-      .put("dialect", SQL_DIALECT)
-      .put("type", jdbcType.getName())
-      .build()
-    );
+        ImmutableMap.builder()
+            .put("dialect", SQL_DIALECT)
+            .put("type", jdbcType.getName())
+            .build());
   }
 
   @Override
