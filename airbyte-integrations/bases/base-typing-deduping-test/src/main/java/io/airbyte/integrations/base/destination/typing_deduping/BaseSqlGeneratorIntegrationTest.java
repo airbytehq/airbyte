@@ -20,6 +20,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -351,43 +352,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     assertFalse(
         generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTable.get()),
         "Altering a column was not detected as a schema change.");
-  }
-
-  /**
-   * Test that T+D throws an error for an incremental-dedup sync where at least one record has a null
-   * primary key, and that we don't write any final records.
-   */
-  @Test
-  public void incrementalDedupInvalidPrimaryKey() throws Exception {
-    createRawTable(streamId);
-    createFinalTable(incrementalDedupStream, "");
-    insertRawTableRecords(
-        streamId,
-        List.of(
-            Jsons.deserialize(
-                """
-                {
-                  "_airbyte_raw_id": "10d6e27d-ae7a-41b5-baf8-c4c277ef9c11",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {}
-                }
-                """),
-            Jsons.deserialize(
-                """
-                {
-                  "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {"id1": 1, "id2": 100}
-                }
-                """)));
-
-    final String sql = generator.updateTable(incrementalDedupStream, "");
-    assertThrows(
-        Exception.class,
-        () -> destinationHandler.execute(sql));
-    DIFFER.diffFinalTableRecords(
-        emptyList(),
-        dumpFinalTableRecords(streamId, ""));
   }
 
   /**
@@ -924,6 +888,46 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     DIFFER.diffFinalTableRecords(
         BaseTypingDedupingTest.readRecords("sqlgenerator/reservedkeywords_expectedrecords_final.jsonl"),
         dumpFinalTableRecords(streamId, ""));
+  }
+
+  /**
+   * Verify that the final table does not include NON-NULL PKs (after
+   * https://github.com/airbytehq/airbyte/pull/31082)
+   */
+  @Test
+  public void ensurePKsAreIndexedUnique() throws Exception {
+    createRawTable(streamId);
+    insertRawTableRecords(
+        streamId,
+        List.of(Jsons.deserialize(
+            """
+            {
+              "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {
+                "id1": 1,
+                "id2": 2
+              }
+            }
+            """)));
+
+    final String createTable = generator.createTable(incrementalDedupStream, "", false);
+
+    // should be OK with new tables
+    destinationHandler.execute(createTable);
+    final Optional<DialectTableDefinition> existingTableA = destinationHandler.findExistingTable(streamId);
+    assertTrue(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableA.get()));
+    destinationHandler.execute("DROP TABLE " + streamId.finalTableId(""));
+
+    // Hack the create query to add NOT NULLs to emulate the old behavior
+    final String createTableModified = Arrays.stream(createTable.split(System.lineSeparator()))
+        .map(line -> !line.contains("CLUSTER") && (line.contains("id1") || line.contains("id2") || line.contains("ID1") || line.contains("ID2"))
+            ? line.replace(",", " NOT NULL,")
+            : line)
+        .collect(Collectors.joining("\r\n"));
+    destinationHandler.execute(createTableModified);
+    final Optional<DialectTableDefinition> existingTableB = destinationHandler.findExistingTable(streamId);
+    assertFalse(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableB.get()));
   }
 
   /**

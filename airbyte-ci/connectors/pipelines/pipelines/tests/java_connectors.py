@@ -55,7 +55,7 @@ class UnitTests(GradleTask):
     """A step to run unit tests for Java connectors."""
 
     title = "Java Connector Unit Tests"
-    gradle_task_name = "check"
+    gradle_task_name = "test"
     bind_to_docker_host = True
 
 
