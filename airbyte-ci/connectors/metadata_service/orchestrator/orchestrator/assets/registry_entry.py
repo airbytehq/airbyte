@@ -214,13 +214,19 @@ def get_connector_type_from_registry_entry(registry_entry: dict) -> TaggedRegist
         raise Exception("Could not determine connector type from registry entry")
 
 
-def get_registry_entry_write_path(metadata_entry: LatestMetadataEntry, registry_name: str):
+def get_registry_entry_write_path(registry_entry: PolymorphicRegistryEntry, metadata_entry: LatestMetadataEntry, registry_name: str) -> str:
     metadata_path = metadata_entry.file_path
     if metadata_path is None:
         raise Exception(f"Metadata entry {metadata_entry} does not have a file path")
 
-    metadata_folder = os.path.dirname(metadata_path)
-    return os.path.join(metadata_folder, registry_name)
+    if metadata_entry.is_latest_version_path:
+        # if the metadata entry is the latest version, write the registry entry to the same path as the metadata entry
+        metadata_folder = os.path.dirname(metadata_path)
+        return os.path.join(metadata_folder, registry_name)
+    else:
+        # if the metadata entry is not the latest version, write the registry entry to its own version specific path
+        # this is handle the case when a dockerImageTag is overridden
+        return HACKS.construct_registry_entry_write_path(registry_entry, registry_name)
 
 
 @sentry_sdk.trace
@@ -241,10 +247,9 @@ def persist_registry_entry_to_json(
     Returns:
         GCSFileHandle: The registry_entry directory manager.
     """
-    registry_entry_write_path = get_registry_entry_write_path(metadata_entry, registry_name)
+    registry_entry_write_path = get_registry_entry_write_path(registry_entry, metadata_entry, registry_name)
     registry_entry_json = registry_entry.json(exclude_none=True)
     file_handle = registry_directory_manager.write_data(registry_entry_json.encode("utf-8"), ext="json", key=registry_entry_write_path)
-    HACKS.write_registry_to_overrode_file_paths(registry_entry, registry_name, metadata_entry, registry_directory_manager)
     return file_handle
 
 

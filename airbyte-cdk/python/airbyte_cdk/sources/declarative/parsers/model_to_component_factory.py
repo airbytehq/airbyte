@@ -791,7 +791,7 @@ class ModelToComponentFactory:
                 token_expiry_date_format=model.token_expiry_date_format,
                 message_repository=self._message_repository,
             )
-        # ignore type error beause fixing it would have a lot of dependencies, revisit later
+        # ignore type error because fixing it would have a lot of dependencies, revisit later
         return DeclarativeOauth2Authenticator(  # type: ignore
             access_token_name=model.access_token_name or "access_token",
             client_id=model.client_id,
@@ -803,6 +803,7 @@ class ModelToComponentFactory:
             scopes=model.scopes,
             token_expiry_date=model.token_expiry_date,
             token_expiry_date_format=model.token_expiry_date_format,  # type: ignore
+            token_expiry_is_time_of_expiration=bool(model.token_expiry_date),
             token_refresh_endpoint=model.token_refresh_endpoint,
             config=config,
             parameters=model.parameters or {},
