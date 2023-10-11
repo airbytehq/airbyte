@@ -72,9 +72,9 @@ public interface SqlGenerator<DialectTableDefinition> {
    *        final table directly. Useful for full refresh overwrite syncs, where we write the entire
    *        sync to a temp table and then swap it into the final table at the end.
    * @param minRawTimestamp The latest _airbyte_extracted_at for which all raw records with that
-   *                        timestamp have already been typed+deduped. Implementations MAY use this
-   *                        value in a {@code _airbyte_extracted_at > minRawTimestamp} filter on the
-   *                        raw table to improve query performance.
+   *        timestamp have already been typed+deduped. Implementations MAY use this value in a
+   *        {@code _airbyte_extracted_at > minRawTimestamp} filter on the raw table to improve query
+   *        performance.
    */
   String updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp);
 

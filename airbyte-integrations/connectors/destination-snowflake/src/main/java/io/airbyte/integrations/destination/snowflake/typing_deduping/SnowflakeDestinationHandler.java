@@ -95,8 +95,8 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
     final List<String> queryResult = database.queryStrings(
         conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
-            // snowflake timestamps have nanosecond precision
-            """
+                // snowflake timestamps have nanosecond precision
+                """
                 SELECT to_varchar(
                   COALESCE(
                     (
@@ -111,10 +111,8 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
                   ),
                   'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
                 ) AS MIN_TIMESTAMP
-                """
-        )),
-        record -> record.getString("MIN_TIMESTAMP")
-    );
+                """)),
+        record -> record.getString("MIN_TIMESTAMP"));
     // The query will always return exactly one record, so use .get(0)
     return Optional.ofNullable(queryResult.get(0)).map(Instant::parse);
   }

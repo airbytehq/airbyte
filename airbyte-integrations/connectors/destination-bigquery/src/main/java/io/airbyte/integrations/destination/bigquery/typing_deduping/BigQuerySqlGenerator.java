@@ -351,7 +351,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String dropTempTable = dropTableIfExists(stream, SOFT_RESET_SUFFIX);
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
-    // We just unset loaded_at on all raw records, so we need to process all of them (i.e. should not filter on extracted_at)
+    // We just unset loaded_at on all raw records, so we need to process all of them (i.e. should not
+    // filter on extracted_at)
     final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, Optional.empty());
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
     return String.join("\n", dropTempTable, createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);

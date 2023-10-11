@@ -464,9 +464,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Identical to {@link #allTypes()}, but queries for the min raw timestamp first.
-   * This verifies that if a previous sync doesn't fully type-and-dedupe a table, we still get those
-   * records on the next sync.
+   * Identical to {@link #allTypes()}, but queries for the min raw timestamp first. This verifies that
+   * if a previous sync doesn't fully type-and-dedupe a table, we still get those records on the next
+   * sync.
    */
   @Test
   public void handlePreexistingRecords() throws Exception {
@@ -490,8 +490,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Identical to {@link #handlePreexistingRecords()}, but queries for the min timestamp
-   * before inserting any raw records. This emulates a sync starting with an empty table.
+   * Identical to {@link #handlePreexistingRecords()}, but queries for the min timestamp before
+   * inserting any raw records. This emulates a sync starting with an empty table.
    */
   @Test
   public void handleNoPreexistingRecords() throws Exception {

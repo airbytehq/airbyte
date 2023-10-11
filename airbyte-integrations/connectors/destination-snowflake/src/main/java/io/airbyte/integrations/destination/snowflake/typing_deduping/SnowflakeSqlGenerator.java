@@ -298,7 +298,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns, final Optional<Instant> minRawTimestamp) {
+  String insertNewRecords(final StreamConfig stream,
+                          final String finalSuffix,
+                          final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
+                          final Optional<Instant> minRawTimestamp) {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
