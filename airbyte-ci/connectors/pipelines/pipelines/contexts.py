@@ -333,6 +333,8 @@ class ConnectorContext(PipelineContext):
         fail_fast: bool = False,
         fast_tests_only: bool = False,
         code_tests_only: bool = False,
+        use_host_gradle_dist_tar: bool = False,
+        open_report_in_browser: bool = True,
         use_local_cdk: bool = False,
     ):
         """Initialize a connector context.
@@ -355,6 +357,9 @@ class ConnectorContext(PipelineContext):
             fail_fast (bool, optional): Whether to fail fast. Defaults to False.
             fast_tests_only (bool, optional): Whether to run only fast tests. Defaults to False.
             code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
+            use_host_gradle_dist_tar (bool, optional): Used when developing java connectors with gradle. Defaults to False.
+            open_report_in_browser (bool, optional): Open HTML report in browser window. Defaults to True.
+            use_local_cdk (bool, optional): Whether to use the local CDK. Defaults to False.
         """
 
         self.pipeline_name = pipeline_name
@@ -369,6 +374,8 @@ class ConnectorContext(PipelineContext):
         self.fail_fast = fail_fast
         self.fast_tests_only = fast_tests_only
         self.code_tests_only = code_tests_only
+        self.use_host_gradle_dist_tar = use_host_gradle_dist_tar
+        self.open_report_in_browser = open_report_in_browser
         self.use_local_cdk = use_local_cdk
 
         super().__init__(
