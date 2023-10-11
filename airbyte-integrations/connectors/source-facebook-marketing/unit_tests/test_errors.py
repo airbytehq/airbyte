@@ -384,43 +384,30 @@ class TestRealErrors:
                 'business_management',
                 'public_profile'
             ]
-        As a workaround for this case we can retry the API call excluding `owner` from `?fields=` GET query param. 
+        As a workaround for this case we can retry the API call excluding `owner` from `?fields=` GET query param.
         """
         api = API(account_id=some_config["account_id"], access_token=some_config["access_token"], page_size=100)
         stream = AdAccount(api=api)
 
-        business_user = {
-            "account_id": account_id,
-            "business": {"id": "1", "name": "TEST"}
-        }
+        business_user = {"account_id": account_id, "business": {"id": "1", "name": "TEST"}}
         requests_mock.register_uri("GET", f"{base_url}me/business_users", status_code=200, json=business_user)
 
-        assigend_users = {
-            'account_id': account_id,
-            "tasks": ["TASK"]
-        }
+        assigend_users = {"account_id": account_id, "tasks": ["TASK"]}
         requests_mock.register_uri("GET", f"{act_url}assigned_users", status_code=200, json=assigend_users)
 
         responses = [
             {
                 "status_code": 403,
                 "json": {
-                    'message': '(#200) Requires business_management permission to manage the object',
-                    'type': 'OAuthException',
-                    'code': 200,
-                    'fbtrace_id': 'AOm48i-YaiRlzqnNEnECcW8'
-                }
+                    "message": "(#200) Requires business_management permission to manage the object",
+                    "type": "OAuthException",
+                    "code": 200,
+                    "fbtrace_id": "AOm48i-YaiRlzqnNEnECcW8",
+                },
             },
-            {
-                "status_code": 200,
-                "json": {'account_id': account_id}
-            }
+            {"status_code": 200, "json": {"account_id": account_id}},
         ]
         requests_mock.register_uri("GET", f"{act_url}", responses)
 
-        record_gen = stream.read_records(
-            sync_mode=SyncMode.full_refresh,
-            stream_slice=None,
-            stream_state={}
-        )
-        assert list(record_gen) == [{'account_id': 'unknown_account', 'id': 'act_unknown_account'}]
+        record_gen = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=None, stream_state={})
+        assert list(record_gen) == [{"account_id": "unknown_account", "id": "act_unknown_account"}]
