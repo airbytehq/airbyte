@@ -58,12 +58,17 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
 
   @Override
   public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
+    final Table rawTable = bq.getTable(TableId.of(id.rawNamespace(), id.rawName()));
+    if (rawTable == null) {
+      return Optional.empty();
+    }
     final TableResult queryResult = bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(Map.of(
         "raw_table", id.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
+            // bigquery timestamps have microsecond precision
             """
             SELECT COALESCE(
               (
-                SELECT MIN(_airbyte_extracted_at)
+                SELECT TIMESTAMP_SUB(MIN(_airbyte_extracted_at), INTERVAL 1 MICROSECOND)
                 FROM ${raw_table}
                 WHERE _airbyte_loaded_at IS NULL
               ),

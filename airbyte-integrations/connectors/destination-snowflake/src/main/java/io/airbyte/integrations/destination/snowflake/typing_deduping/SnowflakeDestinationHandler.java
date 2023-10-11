@@ -8,10 +8,14 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import net.snowflake.client.jdbc.SnowflakeSQLException;
+import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +74,48 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
         id.finalNamespace().toUpperCase(),
         id.finalName().toUpperCase());
     return rowCount == 0;
+  }
+
+  @Override
+  public Optional<Instant> getMinTimestampForSync(final StreamId id) throws Exception {
+    final boolean rawTableExists = database.queryInt(
+        """
+        SELECT count(1)
+        FROM information_schema.tables
+        WHERE table_catalog = ?
+          AND table_schema = ?
+          AND table_name = ?
+        """,
+        databaseName.toUpperCase(),
+        id.rawNamespace(),
+        id.rawName()) == 1;
+    if (!rawTableExists) {
+      return Optional.empty();
+    }
+    final List<String> queryResult = database.queryStrings(
+        conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
+            "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
+            // snowflake timestamps have nanosecond precision
+            """
+                SELECT to_varchar(
+                  COALESCE(
+                    (
+                      SELECT TIMESTAMPADD(NANOSECOND, -1, MIN("_airbyte_extracted_at"))
+                      FROM ${raw_table}
+                      WHERE "_airbyte_loaded_at" IS NULL
+                    ),
+                    (
+                      SELECT MAX("_airbyte_extracted_at")
+                      FROM ${raw_table}
+                    )
+                  ),
+                  'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
+                ) AS MIN_TIMESTAMP
+                """
+        )),
+        record -> record.getString("MIN_TIMESTAMP")
+    );
+    return Optional.ofNullable(Instant.parse(queryResult.get(0)));
   }
 
   @Override

@@ -13,6 +13,10 @@ public interface DestinationHandler<DialectTableDefinition> {
 
   boolean isFinalTableEmpty(StreamId id) throws Exception;
 
+  /**
+   * Returns the highest timestamp such that all records with _airbyte_extracted equal to or earlier
+   * than that timestamp have non-null _airbyte_loaded_at.
+   */
   Optional<Instant> getMinTimestampForSync(StreamId id) throws Exception;
 
   void execute(final String sql) throws Exception;

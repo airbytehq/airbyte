@@ -74,9 +74,9 @@ public interface SqlGenerator<DialectTableDefinition> {
    */
   String updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp);
 
-  default String updateTable(final StreamConfig stream, final String finalSuffix) {
-    return updateTable(stream, finalSuffix, Optional.empty());
-  }
+//  default String updateTable(final StreamConfig stream, final String finalSuffix) {
+//    return updateTable(stream, finalSuffix, Optional.empty());
+//  }
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.
