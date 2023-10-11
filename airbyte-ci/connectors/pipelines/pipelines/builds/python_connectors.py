@@ -6,7 +6,6 @@
 from dagger import Container, Platform
 from pipelines.actions.environments import apply_python_development_overrides, with_python_connector_installed
 from pipelines.bases import StepResult
-from pipelines.builds import build_customization
 from pipelines.builds.common import BuildConnectorImagesBase
 from pipelines.contexts import ConnectorContext
 
@@ -17,6 +16,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
     A spec command is run on the container to validate it was built successfully.
     """
 
+    DEFAULT_ENTRYPOINT = ["python", "/airbyte/integration_code/main.py"]
     PATH_TO_INTEGRATION_CODE = "/airbyte/integration_code"
 
     async def _build_connector(self, platform: Platform):
@@ -35,6 +35,8 @@ class BuildConnectorImages(BuildConnectorImagesBase):
 
     async def _create_builder_container(self, base_container: Container) -> Container:
         """Pre install the connector dependencies in a builder container.
+        If a python connectors depends on another local python connector, we need to mount its source in the container
+        This occurs for the source-file-secure connector for example, which depends on source-file
 
         Args:
             base_container (Container): The base container to use to build the connector.
@@ -60,11 +62,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
         """
         self.logger.info("Building connector from base image in metadata")
         base = self._get_base_container(platform)
-        customized_base = await build_customization.pre_install_hooks(self.context.connector, base, self.logger)
-        entrypoint = build_customization.get_entrypoint(self.context.connector)
-        main_file_name = build_customization.get_main_file_name(self.context.connector)
-
-        builder = await self._create_builder_container(customized_base)
+        builder = await self._create_builder_container(base)
 
         # The snake case name of the connector corresponds to the python package name of the connector
         # We want to mount it to the container under PATH_TO_INTEGRATION_CODE/connector_snake_case_name
@@ -72,20 +70,19 @@ class BuildConnectorImages(BuildConnectorImagesBase):
 
         connector_container = (
             # copy python dependencies from builder to connector container
-            customized_base.with_directory("/usr/local", builder.directory("/usr/local"))
+            base.with_directory("/usr/local", builder.directory("/usr/local"))
             .with_workdir(self.PATH_TO_INTEGRATION_CODE)
-            .with_file(main_file_name, (await self.context.get_connector_dir(include=main_file_name)).file(main_file_name))
+            .with_file("main.py", (await self.context.get_connector_dir(include="main.py")).file("main.py"))
             .with_directory(
                 connector_snake_case_name,
                 (await self.context.get_connector_dir(include=connector_snake_case_name)).directory(connector_snake_case_name),
             )
-            .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
-            .with_entrypoint(entrypoint)
+            .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(self.DEFAULT_ENTRYPOINT))
+            .with_entrypoint(self.DEFAULT_ENTRYPOINT)
             .with_label("io.airbyte.version", self.context.connector.metadata["dockerImageTag"])
             .with_label("io.airbyte.name", self.context.connector.metadata["dockerRepository"])
         )
-        customized_connector = await build_customization.post_install_hooks(self.context.connector, connector_container, self.logger)
-        return customized_connector
+        return connector_container
 
     async def _build_from_dockerfile(self, platform: Platform) -> Container:
         """Build the connector container using its Dockerfile.
