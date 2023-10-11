@@ -51,7 +51,7 @@ public class BigQueryTableWriter implements DestinationWriter {
     this.writeChannel.close();
     try {
       Job job = writeChannel.getJob();
-      while (JobStatus.State.DONE.equals(writeChannel.getJob().getStatus())) {
+      while (!JobStatus.State.DONE.equals(writeChannel.getJob().getStatus())) {
         Thread.sleep(1000L);
         job = job.reload();
       }
