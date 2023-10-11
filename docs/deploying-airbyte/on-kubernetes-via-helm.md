@@ -116,9 +116,9 @@ After specifying your own configuration, run the following command:
 helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 ```
 
-### (Early Access for Qualified Customers) Airbyte Enterprise deployment
+### (Early Access) Airbyte Enterprise deployment
 
-[Airbyte Enterprise](/airbyte-enterprise) is in an early access stage for select priority users. Once you [are qualified for an early access Airbyte Enterprise license key](https://airbyte.com/company/talk-to-sales), you can install Airbyte Enterprise via helm by following these steps:
+[Airbyte Enterprise](/airbyte-enterprise) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Enterprise license key](https://airbyte.com/company/talk-to-sales), you can install Airbyte Enterprise via helm by following these steps:
 
 1. Checkout the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
 
