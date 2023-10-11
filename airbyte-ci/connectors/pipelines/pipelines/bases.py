@@ -23,8 +23,8 @@ from dagger import Container, DaggerError
 from jinja2 import Environment, PackageLoader, select_autoescape
 from pipelines import sentry_utils
 from pipelines.actions import remote_storage
-from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT, PYPROJECT_TOML_FILE_PATH
-from pipelines.utils import METADATA_FILE_NAME, check_path_in_workdir, format_duration, get_exec_result
+from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT
+from pipelines.utils import METADATA_FILE_NAME, format_duration, get_exec_result
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
@@ -274,42 +274,6 @@ class Step(ABC):
             StepStatus.FAILURE,
             stdout=f"Timed out after the max duration of {format_duration(self.max_duration)}. Please checkout the Dagger logs to see what happened.",
         )
-
-
-class PytestStep(Step, ABC):
-    """An abstract class to run pytest tests and evaluate success or failure according to pytest logs."""
-
-    skipped_exit_code = 5
-
-    async def _run_tests_in_directory(self, connector_under_test: Container, test_directory: str) -> StepResult:
-        """Run the pytest tests in the test_directory that was passed.
-
-        A StepStatus.SKIPPED is returned if no tests were discovered.
-
-        Args:
-            connector_under_test (Container): The connector under test container.
-            test_directory (str): The directory in which the python test modules are declared
-
-        Returns:
-            Tuple[StepStatus, Optional[str], Optional[str]]: Tuple of StepStatus, stderr and stdout.
-        """
-        test_config = "pytest.ini" if await check_path_in_workdir(connector_under_test, "pytest.ini") else "/" + PYPROJECT_TOML_FILE_PATH
-        if await check_path_in_workdir(connector_under_test, test_directory):
-            tester = connector_under_test.with_exec(
-                [
-                    "python",
-                    "-m",
-                    "pytest",
-                    "-s",
-                    test_directory,
-                    "-c",
-                    test_config,
-                ]
-            )
-            return await self.get_step_result(tester)
-
-        else:
-            return StepResult(self, StepStatus.SKIPPED)
 
 
 class NoOpStep(Step):

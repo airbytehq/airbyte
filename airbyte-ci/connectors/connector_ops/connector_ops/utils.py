@@ -492,6 +492,10 @@ class Connector:
         if self.supports_normalization:
             return f"{self.metadata['normalizationConfig']['normalizationTag']}"
 
+    @property
+    def is_using_poetry(self) -> bool:
+        return Path(self.code_directory / "pyproject.toml").exists()
+
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
 
