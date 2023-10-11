@@ -15,7 +15,7 @@ public class TypingAndDedupingFlag {
 
   public static Optional<String> getRawNamespaceOverride(String option) {
     return Optional.ofNullable(DestinationConfig.getInstance().getTextValue(option))
-                   .filter(Predicate.not(String::isEmpty));
+        .filter(Predicate.not(String::isEmpty));
   }
 
 }

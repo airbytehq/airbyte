@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.redshift.typing_deduping;
 
 import io.airbyte.integrations.destination.NamingConventionTransformer;
@@ -26,4 +30,5 @@ public class RedshiftSqlGenerator extends JdbcSqlGenerator {
     // Vendor specific stuff I don't think matters for us since we're just pulling out the name
     return new CustomSqlType("SUPER", vendorId(), 123);
   }
+
 }

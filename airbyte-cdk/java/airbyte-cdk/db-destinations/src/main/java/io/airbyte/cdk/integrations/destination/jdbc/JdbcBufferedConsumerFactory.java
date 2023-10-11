@@ -4,10 +4,10 @@
 
 package io.airbyte.cdk.integrations.destination.jdbc;
 
+import static io.airbyte.cdk.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
 import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 import static io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination.RAW_SCHEMA_OVERRIDE;
 import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
-import static io.airbyte.cdk.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
@@ -143,7 +143,8 @@ public class JdbcBufferedConsumerFactory {
                                         final String defaultDestSchema,
                                         final NamingConventionTransformer namingResolver) {
     if (TypingAndDedupingFlag.isDestinationV2()) {
-      return namingResolver.getNamespace(TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).orElse(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
+      return namingResolver
+          .getNamespace(TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE).orElse(DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
     } else {
       return namingResolver.getNamespace(Optional.ofNullable(stream.getNamespace()).orElse(defaultDestSchema));
     }
@@ -158,9 +159,9 @@ public class JdbcBufferedConsumerFactory {
    * <p>
    * 3. <Optional>Truncates table if sync mode is in OVERWRITE
    *
-   * @param database      JDBC database to connect to
+   * @param database JDBC database to connect to
    * @param sqlOperations interface for execution SQL queries
-   * @param writeConfigs  settings for each stream
+   * @param writeConfigs settings for each stream
    * @param typerDeduper
    * @return
    */

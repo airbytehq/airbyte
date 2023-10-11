@@ -89,7 +89,7 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
       attemptTableOperations(outputSchema, database, namingResolver, sqlOperations, false);
       if (TypingAndDedupingFlag.isDestinationV2()) {
         final var v2RawSchema = namingResolver.getIdentifier(TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
-                                                                                  .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
+            .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
         attemptTableOperations(v2RawSchema, database, namingResolver, sqlOperations, false);
       }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
@@ -231,19 +231,17 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     if (TypingAndDedupingFlag.isDestinationV2()) {
       final JdbcSqlGenerator sqlGenerator = new JdbcSqlGenerator(getNamingResolver(), sqlOperations, dataSource);
       final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
-                                                               .map(override -> new CatalogParser(sqlGenerator, override))
-                                                               .orElse(new CatalogParser(sqlGenerator))
-                                                               .parseCatalog(catalog);
+          .map(override -> new CatalogParser(sqlGenerator, override))
+          .orElse(new CatalogParser(sqlGenerator))
+          .parseCatalog(catalog);
       // TODO make a migrator
       final var migrator = new NoOpDestinationV1V2Migrator<JdbcDatabase>();
       final TyperDeduper typerDeduper = new DefaultTyperDeduper<JdbcDatabase>(sqlGenerator, new JdbcDestinationHandler(), parsedCatalog, migrator, 8);
       return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(dataSource), sqlOperations, namingResolver, config,
-                                                catalog, typerDeduper
-      );
+          catalog, typerDeduper);
     }
     return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(dataSource), sqlOperations, namingResolver, config,
-                                              catalog, new NoopTyperDeduper()
-    );
+        catalog, new NoopTyperDeduper());
   }
 
 }
