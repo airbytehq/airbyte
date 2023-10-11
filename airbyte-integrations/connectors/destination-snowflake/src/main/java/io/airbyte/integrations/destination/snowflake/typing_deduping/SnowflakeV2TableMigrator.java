@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 import static io.airbyte.integrations.destination.snowflake.SnowflakeInternalStagingDestination.RAW_SCHEMA_OVERRIDE;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.TypingAndDedupingFlag;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.base.destination.typing_deduping.V2TableMigrator;
@@ -91,9 +91,9 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
   public Optional<SnowflakeTableDefinition> findExistingTable_caseSensitive(final StreamId id) throws SQLException {
     // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
     // VARIANT as VARCHAR
-    final LinkedHashMap<String, String> columns = database.queryJsons(
+    final LinkedHashMap<String, SnowflakeColumnDefinition> columns = database.queryJsons(
         """
-        SELECT column_name, data_type
+        SELECT column_name, data_type, is_nullable
         FROM information_schema.columns
         WHERE table_catalog = ?
           AND table_schema = ?
@@ -104,15 +104,23 @@ public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableD
         id.finalNamespace(),
         id.finalName()).stream()
         .collect(LinkedHashMap::new,
-            (map, row) -> map.put(row.get("COLUMN_NAME").asText(), row.get("DATA_TYPE").asText()),
+            (map, row) -> map.put(
+                row.get("COLUMN_NAME").asText(),
+                new SnowflakeColumnDefinition(row.get("DATA_TYPE").asText(), fromSnowflakeBoolean(row.get("IS_NULLABLE").asText()))),
             LinkedHashMap::putAll);
-    // TODO query for indexes/partitioning/etc
-
     if (columns.isEmpty()) {
       return Optional.empty();
     } else {
       return Optional.of(new SnowflakeTableDefinition(columns));
     }
+  }
+
+  /**
+   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't
+   * know how to use
+   */
+  private boolean fromSnowflakeBoolean(String input) {
+    return input.equalsIgnoreCase("yes");
   }
 
 }

@@ -9,15 +9,15 @@ import static io.airbyte.integrations.io.airbyte.integration_tests.sources.utils
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -178,6 +178,18 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'{\"a\":10,\"b\":15}'", "'{\"fóo\":\"bär\"}'", "'{\"春江潮水连海平\":\"海上明月共潮生\"}'")
             .addExpectedValues(null, "{\"a\":10,\"b\":15}", "{\"fóo\":\"bär\"}", "{\"春江潮水连海平\":\"海上明月共潮生\"}")
+            .build());
+  }
+
+  @Override
+  protected void addDecimalValuesTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("decimal")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .fullSourceDataType("decimal(19,2)")
+            .addInsertValues("1700000.01", "'123'")
+            .addExpectedValues("1700000.01", "123.00")
             .build());
   }
 

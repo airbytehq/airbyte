@@ -49,12 +49,22 @@ class TestMilvusIndexer(unittest.TestCase):
             "fields": [{"name": "vector", "type": DataType.FLOAT_VECTOR, "params": {"dim": 128}}],
         }
         test_cases = [
-            ("cloud", "http://example.org", TokenAuth(mode="token", token="abc"), "Host must start with https:// and authentication must be enabled on cloud deployment."),
-            ("cloud", "https://example.org", NoAuth(mode="no_auth"), "Host must start with https:// and authentication must be enabled on cloud deployment."),
+            (
+                "cloud",
+                "http://example.org",
+                TokenAuth(mode="token", token="abc"),
+                "Host must start with https:// and authentication must be enabled on cloud deployment.",
+            ),
+            (
+                "cloud",
+                "https://example.org",
+                NoAuth(mode="no_auth"),
+                "Host must start with https:// and authentication must be enabled on cloud deployment.",
+            ),
             ("cloud", "https://example.org", TokenAuth(mode="token", token="abc"), None),
             ("", "http://example.org", TokenAuth(mode="token", token="abc"), None),
             ("", "https://example.org", TokenAuth(mode="token", token="abc"), None),
-            ("", "https://example.org", NoAuth(mode="no_auth"), None)
+            ("", "https://example.org", NoAuth(mode="no_auth"), None),
         ]
         for deployment_mode, uri, auth, expected_error_message in test_cases:
             os.environ["DEPLOYMENT_MODE"] = deployment_mode
@@ -102,9 +112,7 @@ class TestMilvusIndexer(unittest.TestCase):
             "fields": [{"name": self.mock_config.vector_field, "type": DataType.FLOAT_VECTOR, "params": {"dim": 64}}],
         }
         result = self.milvus_indexer.check()
-        self.assertEqual(
-            result, f"Vector field {self.mock_config.vector_field} is not a 128-dimensional vector"
-        )
+        self.assertEqual(result, f"Vector field {self.mock_config.vector_field} is not a 128-dimensional vector")
 
     def test_pre_sync_calls_delete(self):
         mock_iterator = Mock()
@@ -134,11 +142,9 @@ class TestMilvusIndexer(unittest.TestCase):
 
     def test_index_calls_insert(self):
         self.milvus_indexer._primary_key = "id"
-        self.milvus_indexer.index([Mock(metadata={"key": "value", "id": 5}, page_content="some content", embedding=[1,2,3])], [])
+        self.milvus_indexer.index([Mock(metadata={"key": "value", "id": 5}, page_content="some content", embedding=[1, 2, 3])], [])
 
-        self.milvus_indexer._collection.insert.assert_called_with(
-            [{"key": "value", "vector": [1,2,3], "text": "some content", "_id": 5}]
-        )
+        self.milvus_indexer._collection.insert.assert_called_with([{"key": "value", "vector": [1, 2, 3], "text": "some content", "_id": 5}])
 
     def test_index_calls_delete(self):
         mock_iterator = Mock()

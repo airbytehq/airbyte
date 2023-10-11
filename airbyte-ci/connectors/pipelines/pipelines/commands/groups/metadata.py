@@ -9,10 +9,8 @@ from pipelines.pipelines.metadata import (
     run_metadata_lib_test_pipeline,
     run_metadata_orchestrator_deploy_pipeline,
     run_metadata_orchestrator_test_pipeline,
-    run_metadata_upload_pipeline,
-    run_metadata_validation_pipeline,
 )
-from pipelines.utils import DaggerPipelineCommand, get_all_metadata_files, get_expected_metadata_files, get_modified_metadata_files
+from pipelines.utils import DaggerPipelineCommand
 
 # MAIN GROUP
 
@@ -21,69 +19,6 @@ from pipelines.utils import DaggerPipelineCommand, get_all_metadata_files, get_e
 @click.pass_context
 def metadata(ctx: click.Context):
     pass
-
-
-# VALIDATE COMMAND
-
-
-@metadata.command(cls=DaggerPipelineCommand, help="Commands related to validating the metadata files.")
-@click.option("--modified-only/--all", default=True)
-@click.pass_context
-def validate(ctx: click.Context, modified_only: bool) -> bool:
-    if modified_only:
-        metadata_to_validate = get_expected_metadata_files(ctx.obj["modified_files"])
-    else:
-        click.secho("Will run metadata validation on all the metadata files found in the repo.")
-        metadata_to_validate = get_all_metadata_files()
-
-    click.secho(f"Will validate {len(metadata_to_validate)} metadata files.")
-
-    return anyio.run(
-        run_metadata_validation_pipeline,
-        ctx.obj["is_local"],
-        ctx.obj["git_branch"],
-        ctx.obj["git_revision"],
-        ctx.obj.get("gha_workflow_run_url"),
-        ctx.obj.get("dagger_logs_url"),
-        ctx.obj.get("pipeline_start_timestamp"),
-        ctx.obj.get("ci_context"),
-        metadata_to_validate,
-    )
-
-
-# UPLOAD COMMAND
-
-
-@metadata.command(cls=DaggerPipelineCommand, help="Commands related to uploading the metadata files to remote storage.")
-@click.argument("gcs-bucket-name", type=click.STRING)
-@click.option("--modified-only/--all", default=True)
-@click.pass_context
-def upload(ctx: click.Context, gcs_bucket_name: str, modified_only: bool) -> bool:
-    if modified_only:
-        if ctx.obj["ci_context"] is not CIContext.MASTER and ctx.obj["git_branch"] != "master":
-            click.secho("Not on the master branch. Skipping metadata upload.")
-            return True
-        metadata_to_upload = get_modified_metadata_files(ctx.obj["modified_files"])
-        if not metadata_to_upload:
-            click.secho("No modified metadata found. Skipping metadata upload.")
-            return True
-    else:
-        metadata_to_upload = get_all_metadata_files()
-
-    click.secho(f"Will upload {len(metadata_to_upload)} metadata files.")
-
-    return anyio.run(
-        run_metadata_upload_pipeline,
-        ctx.obj["is_local"],
-        ctx.obj["git_branch"],
-        ctx.obj["git_revision"],
-        ctx.obj.get("gha_workflow_run_url"),
-        ctx.obj.get("dagger_logs_url"),
-        ctx.obj.get("pipeline_start_timestamp"),
-        ctx.obj.get("ci_context"),
-        metadata_to_upload,
-        gcs_bucket_name,
-    )
 
 
 # DEPLOY GROUP

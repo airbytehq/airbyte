@@ -6,7 +6,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
-  dockerImageTag: 0.1.41
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-mixpanel
   githubIssueLabel: source-mixpanel
   icon: mixpanel.svg
@@ -18,6 +18,11 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: In this release, the datetime field of stream engage has had its type changed from date-time to string due to inconsistent data from Mixpanel. Additionally, the primary key for stream export has been fixed to uniquely identify records. Users will need to refresh the source schema and reset affected streams after upgrading.
+        upgradeDeadline: "2023-10-31"
   suggestedStreams:
     streams:
       - export

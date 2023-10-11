@@ -71,7 +71,7 @@ cmd_build() {
 
     if test "$path" == "airbyte-integrations/bases/base-normalization"; then
       export RANDOM_TEST_SCHEMA="true"
-      ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:airbyteDocker
+      ./gradlew --no-daemon --scan :airbyte-integrations:bases:base-normalization:assemble
     fi
 
     ./gradlew --no-daemon --scan "$(_to_gradle_path "$path" integrationTest)"
