@@ -91,7 +91,7 @@ class BuildConnectorImages(BuildConnectorImagesBase):
             Container: The connector container built from its Dockerfile.
         """
         self.logger.warn(
-            "This connector is built from its Dockerfile. This is now deprecated. Please set connectorBuildOptions.baseImage metadata field to use or new build process."
+            "This connector is built from its Dockerfile. This is now deprecated. Please set connectorBuildOptions.baseImage metadata field to use our new build process."
         )
         container = self.dagger_client.container(platform=platform).build(await self.context.get_connector_dir())
         container = await apply_python_development_overrides(self.context, container)

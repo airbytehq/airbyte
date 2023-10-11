@@ -333,7 +333,7 @@ def _install_python_dependencies_from_poetry(
 ) -> Container:
     pip_install_poetry_cmd = ["pip", "install", "poetry"]
     poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
-    poetry_install_no_venv_cmd = ["poetry", "install", "--no-root"]
+    poetry_install_no_venv_cmd = ["poetry", "install"]
     if additional_dependency_groups:
         for group in additional_dependency_groups:
             poetry_install_no_venv_cmd += ["--with", group]
@@ -373,7 +373,7 @@ async def with_installed_python_package(
     has_pyproject_toml = await check_path_in_workdir(container, "pyproject.toml")
 
     if has_pyproject_toml:
-        container = _install_python_dependencies_from_poetry(container)
+        container = _install_python_dependencies_from_poetry(container, additional_dependency_groups)
     elif has_setup_py:
         container = _install_python_dependencies_from_setup_py(container, additional_dependency_groups)
     elif has_requirements_txt:
@@ -434,38 +434,6 @@ async def with_python_connector_installed(
     )
 
     container = await apply_python_development_overrides(context, container)
-
-    return container
-
-
-async def with_test_python_connector_installed(context: ConnectorContext) -> Container:
-    """Install an airbyte connector python package in a testing environment.
-
-    Args:
-        context (ConnectorContext): The current test context, providing the repository directory from which the connector sources will be pulled.
-    Returns:
-        Container: A python environment container (with the connector installed).
-    """
-    connector_source_path = str(context.connector.code_directory)
-    testing_environment: Container = with_testing_dependencies(context)
-    exclude = [
-        f"{context.connector.code_directory}/{item}"
-        for item in [
-            "secrets",
-            "metadata.yaml",
-            "bootstrap.md",
-            "icon.svg",
-            "README.md",
-            "Dockerfile",
-            "acceptance-test-docker.sh",
-            "build.gradle",
-            ".hypothesis",
-            ".dockerignore",
-        ]
-    ]
-    container = await with_python_connector_installed(
-        context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=exclude
-    )
 
     return container
 
@@ -1032,7 +1000,7 @@ async def mounted_connector_secrets(context: PipelineContext, secret_directory_p
             contents[secret_file_name] = await secret.plaintext()
 
         def with_secrets_mounted_as_regular_files(container: Container) -> Container:
-            container = container.with_exec(["mkdir", secret_directory_path], skip_entrypoint=True)
+            container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
             for secret_file_name, secret_content_str in contents.items():
                 container = container.with_new_file(f"{secret_directory_path}/{secret_file_name}", secret_content_str, permissions=0o600)
             return container
@@ -1040,7 +1008,7 @@ async def mounted_connector_secrets(context: PipelineContext, secret_directory_p
         return with_secrets_mounted_as_regular_files
 
     def with_secrets_mounted_as_dagger_secrets(container: Container) -> Container:
-        container = container.with_exec(["mkdir", secret_directory_path], skip_entrypoint=True)
+        container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
         for secret_file_name, secret in context.connector_secrets.items():
             container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
         return container
