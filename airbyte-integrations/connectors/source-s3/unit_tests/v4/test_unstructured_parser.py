@@ -14,11 +14,12 @@ from unstructured.file_utils.filetype import FileType
 async def test_infer_schema():
     schema = await UnstructuredParser().infer_schema(MagicMock(), MagicMock(), MagicMock(), MagicMock())
     assert schema == {
-            "content": {"type": "string"},
-            "chunk_number": {"type": "integer"},
-            "no_of_chunks": {"type": "integer"},
-            "id": {"type": "string"},
-        }
+        "content": {"type": "string"},
+        "chunk_number": {"type": "integer"},
+        "no_of_chunks": {"type": "integer"},
+        "id": {"type": "string"},
+    }
+
 
 @pytest.mark.parametrize(
     "filetype, parse_result, expected_records",
@@ -80,43 +81,43 @@ async def test_infer_schema():
         ),
         pytest.param(
             FileType.MD,
-            "a"*4_000_005,
+            "a" * 4_000_005,
             [
                 {
-                    "content": "a"*4_000_000,
+                    "content": "a" * 4_000_000,
                     "chunk_number": 0,
                     "no_of_chunks": 2,
                     "id": "path/to/file.xyz_0",
                 },
                 {
-                    "content": "a"*5,
+                    "content": "a" * 5,
                     "chunk_number": 1,
                     "no_of_chunks": 2,
                     "id": "path/to/file.xyz_1",
-                }
+                },
             ],
             id="multi-chunk markdown",
         ),
         pytest.param(
             FileType.PDF,
-            [Text("a"*4_000_005)],
+            [Text("a" * 4_000_005)],
             [
                 {
-                    "content": "a"*4_000_000,
+                    "content": "a" * 4_000_000,
                     "chunk_number": 0,
                     "no_of_chunks": 2,
                     "id": "path/to/file.xyz_0",
                 },
                 {
-                    "content": "a"*5,
+                    "content": "a" * 5,
                     "chunk_number": 1,
                     "no_of_chunks": 2,
                     "id": "path/to/file.xyz_1",
-                }
+                },
             ],
             id="multi-chunk markdown",
         ),
-    ]
+    ],
 )
 @patch("unstructured.partition.auto.partition")
 @patch("unstructured.partition.md.optional_decode")
