@@ -61,7 +61,7 @@ public class GlobalMemoryManager {
    * @return the size of the allocated block, in bytes
    */
   public synchronized long requestMemory() {
-    // todo(davin): what happens if the incoming record is larger than 10MB?
+    // todo(davin): what happens if the incoming record is larger than 30MB?
     if (currentMemoryBytes.get() >= maxMemoryBytes) {
       return 0L;
     }

@@ -27,11 +27,14 @@ A_CONTROL = AirbyteControlMessage(
     emitted_at=0,
     connectorConfig=AirbyteControlConnectorConfigMessage(config={"a config": "value"}),
 )
-ANY_MESSAGE = AirbyteMessage(type=Type.CONTROL, control=AirbyteControlMessage(
-    type=OrchestratorType.CONNECTOR_CONFIG,
-    emitted_at=0,
-    connectorConfig=AirbyteControlConnectorConfigMessage(config={"any message": "value"}),
-))
+ANY_MESSAGE = AirbyteMessage(
+    type=Type.CONTROL,
+    control=AirbyteControlMessage(
+        type=OrchestratorType.CONNECTOR_CONFIG,
+        emitted_at=0,
+        connectorConfig=AirbyteControlConnectorConfigMessage(config={"any message": "value"}),
+    ),
+)
 ANOTHER_CONTROL = AirbyteControlMessage(
     type=OrchestratorType.CONNECTOR_CONFIG,
     emitted_at=0,
@@ -135,10 +138,7 @@ class TestLogAppenderMessageRepositoryDecorator:
         repo = LogAppenderMessageRepositoryDecorator({"a": {"dict_to_append": "appended value"}}, decorated, Level.DEBUG)
         repo.log_message(Level.INFO, lambda: {"a": {"original": "original value"}})
         assert decorated.log_message.call_args_list[0].args[1]() == {
-            "a": {
-                "dict_to_append": "appended value",
-                "original": "original value"
-            }
+            "a": {"dict_to_append": "appended value", "original": "original value"}
         }
 
     def test_given_value_clash_when_log_message_then_overwrite_value(self, decorated):

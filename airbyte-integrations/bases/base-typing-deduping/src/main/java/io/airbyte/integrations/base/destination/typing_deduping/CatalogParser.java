@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
@@ -66,7 +67,10 @@ public class CatalogParser {
     return new ParsedCatalog(streamConfigs);
   }
 
-  private StreamConfig toStreamConfig(final ConfiguredAirbyteStream stream) {
+  // TODO maybe we should extract the column collision stuff to a separate method, since that's the
+  // interesting bit
+  @VisibleForTesting
+  public StreamConfig toStreamConfig(final ConfiguredAirbyteStream stream) {
     final AirbyteType schema = AirbyteType.fromJsonSchema(stream.getStream().getJsonSchema());
     final LinkedHashMap<String, AirbyteType> airbyteColumns;
     if (schema instanceof final Struct o) {
