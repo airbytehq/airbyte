@@ -9,6 +9,8 @@ import static io.airbyte.integrations.base.destination.typing_deduping.Collectio
 import static io.airbyte.integrations.base.destination.typing_deduping.CollectionUtils.matchingKey;
 import static java.util.stream.Collectors.joining;
 
+import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.Field.Mode;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableDefinition;
@@ -31,6 +33,7 @@ import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -273,6 +276,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   public AlterTableReport buildAlterTableReport(final StreamConfig stream, final TableDefinition existingTable) {
+    final Set<String> pks = getPks(stream);
+
     final Map<String, StandardSQLTypeName> streamSchema = stream.columns().entrySet().stream()
         .collect(Collectors.toMap(
             entry -> entry.getKey().name(),
@@ -295,17 +300,25 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .collect(Collectors.toSet());
 
     // Columns that are typed differently than the StreamConfig
-    final Set<String> columnsToChangeType = streamSchema.keySet().stream()
-        // If it's not in the existing schema, it should already be in the columnsToAdd Set
-        .filter(name -> {
-          // Big Query Columns are case-insensitive, first find the correctly cased key if it exists
-          return matchingKey(existingSchema.keySet(), name)
-              // if it does exist, only include it in this set if the type (the value in each respective map)
-              // is different between the stream and existing schemas
-              .map(key -> !existingSchema.get(key).equals(streamSchema.get(name)))
-              // if there is no matching key, then don't include it because it is probably already in columnsToAdd
-              .orElse(false);
-        })
+    final Set<String> columnsToChangeType = Stream.concat(
+        streamSchema.keySet().stream()
+            // If it's not in the existing schema, it should already be in the columnsToAdd Set
+            .filter(name -> {
+              // Big Query Columns are case-insensitive, first find the correctly cased key if it exists
+              return matchingKey(existingSchema.keySet(), name)
+                  // if it does exist, only include it in this set if the type (the value in each respective map)
+                  // is different between the stream and existing schemas
+                  .map(key -> !existingSchema.get(key).equals(streamSchema.get(name)))
+                  // if there is no matching key, then don't include it because it is probably already in columnsToAdd
+                  .orElse(false);
+            }),
+
+        // OR columns that used to have a non-null constraint and shouldn't
+        // (https://github.com/airbytehq/airbyte/pull/31082)
+        existingTable.getSchema().getFields().stream()
+            .filter(field -> pks.contains(field.getName()))
+            .filter(field -> field.getMode() == Mode.REQUIRED)
+            .map(Field::getName))
         .collect(Collectors.toSet());
 
     final boolean isDestinationV2Format = schemaContainAllFinalTableV2AirbyteColumns(existingSchema.keySet());
@@ -369,10 +382,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                                          final String finalSuffix,
                                          final boolean verifyPrimaryKeys,
                                          final boolean forceSafeCasting) {
-    String validatePrimaryKeys = "";
-    if (verifyPrimaryKeys && stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      validatePrimaryKeys = validatePrimaryKeys(stream.id(), stream.primaryKey(), stream.columns(), forceSafeCasting);
-    }
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), forceSafeCasting);
     String dedupFinalTable = "";
     String cdcDeletes = "";
@@ -386,28 +395,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String commitRawTable = commitRawTable(stream.id());
 
     return new StringSubstitutor(Map.of(
-        "validate_primary_keys", validatePrimaryKeys,
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
         "cdc_deletes", cdcDeletes,
         "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
             """
-
             BEGIN TRANSACTION;
-
-            ${validate_primary_keys}
-
             ${insert_new_records}
-
             ${dedup_final_table}
-
             ${dedupe_raw_table}
-
             ${cdc_deletes}
-
             ${commit_raw_table}
-
             COMMIT TRANSACTION;
             """);
   }
@@ -432,36 +431,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         END;
 
         """);
-  }
-
-  @VisibleForTesting
-  String validatePrimaryKeys(final StreamId id,
-                             final List<ColumnId> primaryKeys,
-                             final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
-                             final boolean forceSafeCasting) {
-    final String pkNullChecks = primaryKeys.stream().map(
-        pk -> {
-          final String jsonExtract = extractAndCast(pk, streamColumns.get(pk), forceSafeCasting);
-          return "AND " + jsonExtract + " IS NULL";
-        }).collect(joining("\n"));
-
-    return new StringSubstitutor(Map.of(
-        "project_id", '`' + projectId + '`',
-        "raw_table_id", id.rawTableId(QUOTE),
-        "pk_null_checks", pkNullChecks)).replace(
-            """
-            SET missing_pk_count = (
-              SELECT COUNT(1)
-              FROM ${project_id}.${raw_table_id}
-              WHERE
-                `_airbyte_loaded_at` IS NULL
-                ${pk_null_checks}
-              );
-
-            IF missing_pk_count > 0 THEN
-              RAISE USING message = FORMAT('Raw table has %s rows missing a primary key', CAST(missing_pk_count AS STRING));
-            END IF
-            ;""");
   }
 
   @VisibleForTesting
@@ -722,6 +691,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   private static String cast(final String content, final String asType, boolean useSafeCast) {
     final var open = useSafeCast ? "SAFE_CAST(" : "CAST(";
     return wrap(open, content + " as " + asType, ")");
+  }
+
+  private static Set<String> getPks(StreamConfig stream) {
+    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
   private static String wrap(final String open, final String content, final String close) {
