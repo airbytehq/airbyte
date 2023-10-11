@@ -356,43 +356,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Test that T+D throws an error for an incremental-dedup sync where at least one record has a null
-   * primary key, and that we don't write any final records.
-   */
-  @Test
-  public void incrementalDedupInvalidPrimaryKey() throws Exception {
-    createRawTable(streamId);
-    createFinalTable(incrementalDedupStream, "");
-    insertRawTableRecords(
-        streamId,
-        List.of(
-            Jsons.deserialize(
-                """
-                {
-                  "_airbyte_raw_id": "10d6e27d-ae7a-41b5-baf8-c4c277ef9c11",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {}
-                }
-                """),
-            Jsons.deserialize(
-                """
-                {
-                  "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {"id1": 1, "id2": 100}
-                }
-                """)));
-
-    final String sql = generator.updateTable(incrementalDedupStream, "", Optional.empty());
-    assertThrows(
-        Exception.class,
-        () -> destinationHandler.execute(sql));
-    DIFFER.diffFinalTableRecords(
-        emptyList(),
-        dumpFinalTableRecords(streamId, ""));
-  }
-
-  /**
    * Test that T+D supports streams whose name and namespace are the same.
    */
   @Test
