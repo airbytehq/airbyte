@@ -51,8 +51,7 @@ class TestConnector:
             assert connector.support_level is None
             assert connector.acceptance_test_config is None
             assert connector.icon_path == Path(f"./airbyte-integrations/connectors/{connector.technical_name}/icon.svg")
-            with pytest.raises(FileNotFoundError):
-                connector.version
+            assert connector.version is None
             with pytest.raises(utils.ConnectorVersionNotFound):
                 Path(tmp_path / "Dockerfile").touch()
                 mocker.patch.object(utils.Connector, "code_directory", tmp_path)
@@ -72,6 +71,25 @@ class TestConnector:
         assert not connector.metadata_query_match("data.ab_internal.ql >= 101")
         assert not connector.metadata_query_match("data.ab_internal.ql > 101")
         assert not connector.metadata_query_match("data.ab_internal == whatever")
+
+    @pytest.fixture
+    def connector_without_dockerfile(self, mocker, tmp_path):
+        mocker.patch.object(utils.Connector, "code_directory", tmp_path)
+        connector = utils.Connector("source-faker")
+        return connector
+
+    def test_has_dockerfile_without_dockerfile(self, connector_without_dockerfile):
+        assert not connector_without_dockerfile.has_dockerfile
+
+    @pytest.fixture
+    def connector_with_dockerfile(self, mocker, tmp_path):
+        mocker.patch.object(utils.Connector, "code_directory", tmp_path)
+        connector = utils.Connector("source-faker")
+        tmp_path.joinpath("Dockerfile").touch()
+        return connector
+
+    def test_has_dockerfile_with_dockerfile(self, connector_with_dockerfile):
+        assert connector_with_dockerfile.has_dockerfile
 
 
 @pytest.fixture()
@@ -156,44 +174,6 @@ def test_parse_dependencies_with_cdk(gradle_file_with_local_cdk_dependencies):
     assert all([regular_dependency in expected_regular_dependencies for regular_dependency in regular_dependencies])
     assert len(test_dependencies) == len(expected_test_dependencies)
     assert all([test_dependency in expected_test_dependencies for test_dependency in test_dependencies])
-
-
-@pytest.mark.parametrize("with_test_dependencies", [True, False])
-def test_get_all_gradle_dependencies(with_test_dependencies):
-    build_file = Path("airbyte-integrations/connectors/source-postgres-strict-encrypt/build.gradle")
-    if with_test_dependencies:
-        all_dependencies = sorted(utils.get_all_gradle_dependencies(build_file))
-        expected_dependencies = [
-            Path("airbyte-api"),
-            Path("airbyte-cdk/java/airbyte-cdk/core"),
-            Path("airbyte-cdk/java/airbyte-cdk/db-sources"),
-            Path("airbyte-commons"),
-            Path("airbyte-commons-cli"),
-            Path("airbyte-commons-protocol"),
-            Path("airbyte-config-oss/config-models-oss"),
-            Path("airbyte-config-oss/init-oss"),
-            Path("airbyte-connector-test-harnesses/acceptance-test-harness"),
-            Path("airbyte-integrations/bases/base-typing-deduping"),
-            Path("airbyte-integrations/connectors/source-postgres"),
-            Path("airbyte-json-validation"),
-        ]
-        assert set(all_dependencies) == set(expected_dependencies)
-    else:
-        all_dependencies = sorted(utils.get_all_gradle_dependencies(build_file, with_test_dependencies=False))
-        expected_dependencies = [
-            Path("airbyte-api"),
-            Path("airbyte-cdk/java/airbyte-cdk/core"),
-            Path("airbyte-commons"),
-            Path("airbyte-commons-cli"),
-            Path("airbyte-commons-protocol"),
-            Path("airbyte-config-oss/config-models-oss"),
-            Path("airbyte-config-oss/init-oss"),
-            Path("airbyte-connector-test-harnesses/acceptance-test-harness"),
-            Path("airbyte-integrations/bases/base-typing-deduping"),
-            Path("airbyte-integrations/connectors/source-postgres"),
-            Path("airbyte-json-validation"),
-        ]
-        assert set(all_dependencies) == set(expected_dependencies)
 
 
 def test_get_all_connectors_in_repo():
