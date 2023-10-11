@@ -27,7 +27,9 @@ OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_regist
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
-THIRD_PARTY_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/third_party/"
+
+THIRD_PARTY_GLOB = "third-party"
+THIRD_PARTY_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + f"/{THIRD_PARTY_GLOB}/"
 SCAFFOLD_CONNECTOR_GLOB = "-scaffold-"
 
 
@@ -35,7 +37,14 @@ ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 AIRBYTE_DOCKER_REPO = "airbyte"
 AIRBYTE_REPO_DIRECTORY_NAME = "airbyte"
 GRADLE_PROJECT_RE_PATTERN = r"project\((['\"])(.+?)\1\)"
-TEST_GRADLE_DEPENDENCIES = ["testImplementation", "integrationTestJavaImplementation", "performanceTestJavaImplementation"]
+TEST_GRADLE_DEPENDENCIES = [
+    "testImplementation",
+    "testCompileOnly",
+    "integrationTestJavaImplementation",
+    "performanceTestJavaImplementation",
+    "testFixturesCompileOnly",
+    "testFixturesImplementation",
+]
 
 
 def download_catalog(catalog_url):
@@ -93,6 +102,26 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
 
 
+def has_local_cdk_ref(build_file: Path) -> bool:
+    """Return true if the build file uses the local CDK.
+
+    Args:
+        build_file (Path): Path to the build.gradle file of the project.
+
+    Returns:
+        bool: True if using local CDK.
+    """
+    contents = "\n".join(
+        [
+            # Return contents without inline code comments
+            line.split("//")[0]
+            for line in build_file.read_text().split("\n")
+        ]
+    )
+    contents = contents.replace(" ", "")
+    return "useLocalCdk=true" in contents
+
+
 def get_gradle_dependencies_block(build_file: Path) -> str:
     """Get the dependencies block of a Gradle file.
 
@@ -136,7 +165,7 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
 
     # Find all matches for test dependencies and regular dependencies
     matches = re.findall(
-        r"(testImplementation|integrationTestJavaImplementation|performanceTestJavaImplementation|implementation|api).*?project\(['\"](.*?)['\"]\)",
+        r"(compileOnly|testCompileOnly|testFixturesCompileOnly|testFixturesImplementation|testImplementation|integrationTestJavaImplementation|performanceTestJavaImplementation|implementation|api).*?project\(['\"](.*?)['\"]\)",
         dependencies_block,
     )
     if matches:
@@ -151,8 +180,31 @@ def parse_gradle_dependencies(build_file: Path) -> Tuple[List[Path], List[Path]]
             else:
                 project_dependencies.append(path)
 
-    project_dependencies.append(Path("airbyte-cdk", "java", "airbyte-cdk"))
+    # Dedupe dependencies:
+    project_dependencies = list(set(project_dependencies))
+    test_dependencies = list(set(test_dependencies))
+
     return project_dependencies, test_dependencies
+
+
+def get_local_cdk_gradle_dependencies(with_test_dependencies: bool) -> List[Path]:
+    """Recursively retrieve all transitive dependencies of a Gradle project.
+
+    Args:
+        with_test_dependencies: True to include test dependencies.
+
+    Returns:
+        List[Path]: All dependencies of the project.
+    """
+    base_path = Path("airbyte-cdk/java/airbyte-cdk")
+    found: List[Path] = [base_path]
+    for submodule in ["core", "db-sources", "db-destinations"]:
+        found.append(base_path / submodule)
+        project_dependencies, test_dependencies = parse_gradle_dependencies(base_path / Path(submodule) / Path("build.gradle"))
+        found += project_dependencies
+        if with_test_dependencies:
+            found += test_dependencies
+    return list(set(found))
 
 
 def get_all_gradle_dependencies(
@@ -170,6 +222,12 @@ def get_all_gradle_dependencies(
     if found_dependencies is None:
         found_dependencies = []
     project_dependencies, test_dependencies = parse_gradle_dependencies(build_file)
+
+    # Since first party project folders are transitive (compileOnly) in the
+    # CDK, we always need to add them as the project dependencies.
+    project_dependencies += get_local_cdk_gradle_dependencies(False)
+    test_dependencies += get_local_cdk_gradle_dependencies(with_test_dependencies=True)
+
     all_dependencies = project_dependencies + test_dependencies if with_test_dependencies else project_dependencies
     for dependency_path in all_dependencies:
         if dependency_path not in found_dependencies and Path(dependency_path / "build.gradle").exists():
@@ -220,6 +278,11 @@ class Connector:
         return self.documentation_directory / readme_file_name
 
     @property
+    def inapp_documentation_file_path(self) -> Path:
+        readme_file_name = f"{self.name}.inapp.md"
+        return self.documentation_directory / readme_file_name
+
+    @property
     def migration_guide_file_name(self) -> str:
         return f"{self.name}-migrations.md"
 
@@ -237,6 +300,10 @@ class Connector:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
 
     @property
+    def has_dockerfile(self) -> bool:
+        return (self.code_directory / "Dockerfile").is_file()
+
+    @property
     def metadata_file_path(self) -> Path:
         return self.code_directory / METADATA_FILE_NAME
 
@@ -251,24 +318,22 @@ class Connector:
     def language(self) -> ConnectorLanguage:
         if Path(self.code_directory / self.technical_name.replace("-", "_") / "manifest.yaml").is_file():
             return ConnectorLanguage.LOW_CODE
-        if Path(self.code_directory / "setup.py").is_file():
+        if Path(self.code_directory / "setup.py").is_file() or Path(self.code_directory / "pyproject.toml").is_file():
             return ConnectorLanguage.PYTHON
-        try:
-            with open(self.code_directory / "Dockerfile") as dockerfile:
-                if "FROM airbyte/integration-base-java" in dockerfile.read():
-                    return ConnectorLanguage.JAVA
-        except FileNotFoundError:
-            pass
+        if Path(self.code_directory / "src" / "main" / "java").exists():
+            return ConnectorLanguage.JAVA
         return None
 
     @property
-    def version(self) -> str:
+    def version(self) -> Optional[str]:
         if self.metadata is None:
             return self.version_in_dockerfile_label
         return self.metadata["dockerImageTag"]
 
     @property
-    def version_in_dockerfile_label(self) -> str:
+    def version_in_dockerfile_label(self) -> Optional[str]:
+        if not self.has_dockerfile:
+            return None
         with open(self.code_directory / "Dockerfile") as f:
             for line in f:
                 if "io.airbyte.version" in line:
@@ -427,6 +492,10 @@ class Connector:
         if self.supports_normalization:
             return f"{self.metadata['normalizationConfig']['normalizationTag']}"
 
+    @property
+    def is_using_poetry(self) -> bool:
+        return Path(self.code_directory / "pyproject.toml").exists()
+
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
 
@@ -480,7 +549,9 @@ def get_all_connectors_in_repo() -> Set[Connector]:
     return {
         Connector(Path(metadata_file).parent.name)
         for metadata_file in glob(f"{repo_path}/airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
-        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file
+        # HACK: The Connector util is not good at fetching metadata for third party connectors.
+        # We want to avoid picking a connector that does not have metadata.
+        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file and THIRD_PARTY_GLOB not in metadata_file
     }
 
 

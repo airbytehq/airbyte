@@ -58,6 +58,12 @@
           "readOnly": true
         }
       }
+    },
+    "scope": {
+      "type": ["null", "object"]
+    },
+    "untranslatedName": {
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": true,

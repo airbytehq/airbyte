@@ -4,19 +4,21 @@
 
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
-import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.destination.typing_deduping.DestinationHandler;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.UUID;
+import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SnowflakeDestinationHandler implements DestinationHandler<SnowflakeTableDefinition> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestinationHandler.class);
+  public static final String EXCEPTION_COMMON_PREFIX = "JavaScript execution error: Uncaught Execution of multiple statements failed on statement";
 
   private final String databaseName;
   private final JdbcDatabase database;
@@ -30,9 +32,9 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
   public Optional<SnowflakeTableDefinition> findExistingTable(final StreamId id) throws SQLException {
     // The obvious database.getMetaData().getColumns() solution doesn't work, because JDBC translates
     // VARIANT as VARCHAR
-    final LinkedHashMap<String, String> columns = database.queryJsons(
+    final LinkedHashMap<String, SnowflakeColumnDefinition> columns = database.queryJsons(
         """
-        SELECT column_name, data_type
+        SELECT column_name, data_type, is_nullable
         FROM information_schema.columns
         WHERE table_catalog = ?
           AND table_schema = ?
@@ -43,10 +45,10 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
         id.finalNamespace().toUpperCase(),
         id.finalName().toUpperCase()).stream()
         .collect(LinkedHashMap::new,
-            (map, row) -> map.put(row.get("COLUMN_NAME").asText(), row.get("DATA_TYPE").asText()),
+            (map, row) -> map.put(
+                row.get("COLUMN_NAME").asText(),
+                new SnowflakeColumnDefinition(row.get("DATA_TYPE").asText(), fromSnowflakeBoolean(row.get("IS_NULLABLE").asText()))),
             LinkedHashMap::putAll);
-    // TODO query for indexes/partitioning/etc
-
     if (columns.isEmpty()) {
       return Optional.empty();
     } else {
@@ -79,9 +81,31 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
     LOGGER.info("Executing sql {}: {}", queryId, sql);
     final long startTime = System.currentTimeMillis();
 
-    database.execute(sql);
+    try {
+      database.execute(sql);
+    } catch (final SnowflakeSQLException e) {
+      LOGGER.error("Sql {} failed", queryId, e);
+      // Snowflake SQL exceptions by default may not be super helpful, so we try to extract the relevant
+      // part of the message.
+      final String trimmedMessage;
+      if (e.getMessage().startsWith(EXCEPTION_COMMON_PREFIX)) {
+        // The first line is a pretty generic message, so just remove it
+        trimmedMessage = e.getMessage().substring(e.getMessage().indexOf("\n") + 1);
+      } else {
+        trimmedMessage = e.getMessage();
+      }
+      throw new RuntimeException(trimmedMessage, e);
+    }
 
     LOGGER.info("Sql {} completed in {} ms", queryId, System.currentTimeMillis() - startTime);
+  }
+
+  /**
+   * In snowflake information_schema tables, booleans return "YES" and "NO", which DataBind doesn't
+   * know how to use
+   */
+  private boolean fromSnowflakeBoolean(String input) {
+    return input.equalsIgnoreCase("yes");
   }
 
 }

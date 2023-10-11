@@ -14,6 +14,7 @@ from connector_ops.utils import ConnectorLanguage
 from dagger import Config
 from pipelines.actions import environments
 from pipelines.bases import NoOpStep, Report, StepResult, StepStatus
+from pipelines.consts import DOCKER_CLI_IMAGE, DOCKER_HOST_NAME, DOCKER_HOST_PORT
 from pipelines.contexts import ConnectorContext, ContextState
 from pipelines.utils import create_and_open_file
 
@@ -90,7 +91,13 @@ async def run_connectors_pipelines(
         dockerd_service = environments.with_global_dockerd_service(dagger_client)
         async with anyio.create_task_group() as tg_main:
             tg_main.start_soon(dockerd_service.sync)
-            await anyio.sleep(10)  # Wait for the docker service to be ready
+            await (  # Wait for the docker service to be ready
+                dagger_client.container()
+                .from_(DOCKER_CLI_IMAGE)
+                .with_env_variable("DOCKER_HOST", f"tcp://{DOCKER_HOST_NAME}:{DOCKER_HOST_PORT}")
+                .with_service_binding(DOCKER_HOST_NAME, dockerd_service)
+                .with_exec(["docker", "info"])
+            )
             async with anyio.create_task_group() as tg_connectors:
                 for context in contexts:
                     context.dagger_client = dagger_client.pipeline(f"{pipeline_name} - {context.connector.technical_name}")

@@ -5,23 +5,20 @@
 package io.airbyte.integrations.destination.snowflake.typing_deduping;
 
 import static io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.timestampToString;
-import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import autovalue.shaded.com.google.common.collect.ImmutableMap;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.BaseSqlGeneratorIntegrationTest;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamId;
 import io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts;
@@ -37,7 +34,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
-import net.snowflake.client.jdbc.SnowflakeSQLException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringSubstitutor;
 import org.junit.jupiter.api.AfterAll;
@@ -237,6 +233,11 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
   }
 
   @Override
+  protected Map<String, String> getFinalMetadataColumnNames() {
+    return AbstractSnowflakeTypingDedupingTest.FINAL_METADATA_COLUMN_NAMES;
+  }
+
+  @Override
   @Test
   public void testCreateTableIncremental() throws Exception {
     final String sql = generator.createTable(incrementalDedupStream, "", false);
@@ -294,48 +295,6 @@ public class SnowflakeSqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegr
                 .put("UNKNOWN", "VARIANT")
                 .build(),
             columns));
-  }
-
-  /**
-   * We test this for Snowflake because we made a special exception class, _ab_missing_primary_key and
-   * a custom error message
-   */
-  @Override
-  @Test
-  public void incrementalDedupInvalidPrimaryKey() throws Exception {
-    createRawTable(streamId);
-    createFinalTable(incrementalDedupStream, "");
-    insertRawTableRecords(
-        streamId,
-        List.of(
-            Jsons.deserialize(
-                """
-                {
-                  "_airbyte_raw_id": "10d6e27d-ae7a-41b5-baf8-c4c277ef9c11",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {}
-                }
-                """),
-            Jsons.deserialize(
-                """
-                {
-                  "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {"id1": 1, "id2": 100}
-                }
-                """)));
-
-    final String sql = generator.updateTable(incrementalDedupStream, "");
-    final Exception exception = assertThrows(
-        SnowflakeSQLException.class,
-        () -> destinationHandler.execute(sql));
-
-    assertTrue(exception.getMessage().contains("_AB_MISSING_PRIMARY_KEY"));
-    assertTrue(exception.getMessage().contains("\"users_raw\" has rows missing a primary key"));
-
-    DIFFER.diffFinalTableRecords(
-        emptyList(),
-        dumpFinalTableRecords(streamId, ""));
   }
 
   @Override

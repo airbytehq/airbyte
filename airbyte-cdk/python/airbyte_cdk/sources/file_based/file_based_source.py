@@ -33,7 +33,7 @@ class FileBasedSource(AbstractSource, ABC):
         catalog_path: Optional[str] = None,
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
         discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy(),
-        parsers: Mapping[str, FileTypeParser] = default_parsers,
+        parsers: Mapping[Type[Any], FileTypeParser] = default_parsers,
         validation_policies: Mapping[ValidationPolicy, AbstractSchemaValidationPolicy] = DEFAULT_SCHEMA_VALIDATION_POLICIES,
         cursor_cls: Type[AbstractFileBasedCursor] = DefaultFileBasedCursor,
     ):

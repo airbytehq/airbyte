@@ -20,6 +20,8 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -165,6 +167,20 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   protected abstract void teardownNamespace(String namespace) throws Exception;
 
   /**
+   * Identical to {@link BaseTypingDedupingTest#getRawMetadataColumnNames()}.
+   */
+  protected Map<String, String> getRawMetadataColumnNames() {
+    return new HashMap<>();
+  }
+
+  /**
+   * Identical to {@link BaseTypingDedupingTest#getFinalMetadataColumnNames()}.
+   */
+  protected Map<String, String> getFinalMetadataColumnNames() {
+    return new HashMap<>();
+  }
+
+  /**
    * This test implementation is extremely destination-specific, but all destinations must implement
    * it. This test should verify that creating a table using {@link #incrementalDedupStream} works as
    * expected, including column types, indexing, partitioning, etc.
@@ -204,6 +220,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     cdcColumns.put(generator.buildColumnId("_ab_cdc_deleted_at"), AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE);
 
     DIFFER = new RecordDiffer(
+        getRawMetadataColumnNames(),
+        getFinalMetadataColumnNames(),
         Pair.of(id1, AirbyteProtocolType.INTEGER),
         Pair.of(id2, AirbyteProtocolType.INTEGER),
         Pair.of(cursor, AirbyteProtocolType.TIMESTAMP_WITH_TIMEZONE));
@@ -337,40 +355,38 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Test that T+D throws an error for an incremental-dedup sync where at least one record has a null
-   * primary key, and that we don't write any final records.
+   * Test that T+D supports streams whose name and namespace are the same.
    */
   @Test
-  public void incrementalDedupInvalidPrimaryKey() throws Exception {
+  public void incrementalDedupSameNameNamespace() throws Exception {
+    final StreamId streamId = buildStreamId(namespace, namespace, namespace + "_raw");
+    final StreamConfig stream = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND_DEDUP,
+        incrementalDedupStream.primaryKey(),
+        incrementalDedupStream.cursor(),
+        incrementalDedupStream.columns());
+
     createRawTable(streamId);
-    createFinalTable(incrementalDedupStream, "");
+    createFinalTable(stream, "");
     insertRawTableRecords(
         streamId,
-        List.of(
-            Jsons.deserialize(
-                """
-                {
-                  "_airbyte_raw_id": "10d6e27d-ae7a-41b5-baf8-c4c277ef9c11",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {}
-                }
-                """),
-            Jsons.deserialize(
-                """
-                {
-                  "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {"id1": 1, "id2": 100}
-                }
-                """)));
+        List.of(Jsons.deserialize(
+            """
+            {
+              "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {"id1": 1, "id2": 100}
+            }
+            """)));
 
-    final String sql = generator.updateTable(incrementalDedupStream, "");
-    assertThrows(
-        Exception.class,
-        () -> destinationHandler.execute(sql));
-    DIFFER.diffFinalTableRecords(
-        emptyList(),
-        dumpFinalTableRecords(streamId, ""));
+    final String sql = generator.updateTable(stream, "");
+    destinationHandler.execute(sql);
+
+    final List<JsonNode> rawRecords = dumpRawTableRecords(streamId);
+    final List<JsonNode> finalRecords = dumpFinalTableRecords(streamId, "");
+    verifyRecordCounts(1, rawRecords, 1, finalRecords);
   }
 
   /**
@@ -797,9 +813,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * primary key, or cursor.
    */
   @ParameterizedTest
-  @ValueSource(strings = {"$", "\"", "'", "`", ".", "$$", "\\"})
+  @ValueSource(strings = {"$", "${", "${${", "${foo}", "\"", "'", "`", ".", "$$", "\\", "{", "}"})
   public void noCrashOnSpecialCharacters(final String specialChars) throws Exception {
-    final String str = namespace + "_" + specialChars;
+    final String str = specialChars + "_" + namespace + "_" + specialChars;
     final StreamId originalStreamId = generator.buildStreamId(str, str, "unused");
     final StreamId modifiedStreamId = buildStreamId(
         originalStreamId.finalNamespace(),
@@ -837,6 +853,81 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     } finally {
       teardownNamespace(modifiedStreamId.finalNamespace());
     }
+  }
+
+  /**
+   * Verify column names that are reserved keywords are handled successfully. Each destination should
+   * always have at least 1 column in the record data that is a reserved keyword.
+   */
+  @Test
+  public void testReservedKeywords() throws Exception {
+    createRawTable(streamId);
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/reservedkeywords_inputrecords_raw.jsonl"));
+    final StreamConfig stream = new StreamConfig(
+        streamId,
+        SyncMode.INCREMENTAL,
+        DestinationSyncMode.APPEND,
+        null,
+        Optional.empty(),
+        new LinkedHashMap<>() {
+
+          {
+            put(generator.buildColumnId("current_date"), AirbyteProtocolType.STRING);
+            put(generator.buildColumnId("join"), AirbyteProtocolType.STRING);
+          }
+
+        });
+
+    final String createTable = generator.createTable(stream, "", false);
+    destinationHandler.execute(createTable);
+    final String updateTable = generator.updateTable(stream, "");
+    destinationHandler.execute(updateTable);
+
+    DIFFER.diffFinalTableRecords(
+        BaseTypingDedupingTest.readRecords("sqlgenerator/reservedkeywords_expectedrecords_final.jsonl"),
+        dumpFinalTableRecords(streamId, ""));
+  }
+
+  /**
+   * Verify that the final table does not include NON-NULL PKs (after
+   * https://github.com/airbytehq/airbyte/pull/31082)
+   */
+  @Test
+  public void ensurePKsAreIndexedUnique() throws Exception {
+    createRawTable(streamId);
+    insertRawTableRecords(
+        streamId,
+        List.of(Jsons.deserialize(
+            """
+            {
+              "_airbyte_raw_id": "14ba7c7f-e398-4e69-ac22-28d578400dbc",
+              "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
+              "_airbyte_data": {
+                "id1": 1,
+                "id2": 2
+              }
+            }
+            """)));
+
+    final String createTable = generator.createTable(incrementalDedupStream, "", false);
+
+    // should be OK with new tables
+    destinationHandler.execute(createTable);
+    final Optional<DialectTableDefinition> existingTableA = destinationHandler.findExistingTable(streamId);
+    assertTrue(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableA.get()));
+    destinationHandler.execute("DROP TABLE " + streamId.finalTableId(""));
+
+    // Hack the create query to add NOT NULLs to emulate the old behavior
+    final String createTableModified = Arrays.stream(createTable.split(System.lineSeparator()))
+        .map(line -> !line.contains("CLUSTER") && (line.contains("id1") || line.contains("id2") || line.contains("ID1") || line.contains("ID2"))
+            ? line.replace(",", " NOT NULL,")
+            : line)
+        .collect(Collectors.joining("\r\n"));
+    destinationHandler.execute(createTableModified);
+    final Optional<DialectTableDefinition> existingTableB = destinationHandler.findExistingTable(streamId);
+    assertFalse(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableB.get()));
   }
 
   /**
@@ -888,6 +979,25 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final List<JsonNode> v1RawRecords = dumpV1RawTableRecords(v1RawTableStreamId);
     final List<JsonNode> v2RawRecords = dumpRawTableRecords(streamId);
     migrationAssertions(v1RawRecords, v2RawRecords);
+  }
+
+  /**
+   * Sometimes, a sync doesn't delete its soft reset temp table. (it's not entirely clear why this
+   * happens.) In these cases, the next sync should not crash.
+   */
+  @Test
+  public void softResetIgnoresPreexistingTempTable() throws Exception {
+    createRawTable(incrementalDedupStream.id());
+
+    // Create a soft reset table. Use incremental append mode, in case the destination connector uses
+    // different
+    // indexing/partitioning/etc.
+    final String createOldTempTable = generator.createTable(incrementalAppendStream, SqlGenerator.SOFT_RESET_SUFFIX, false);
+    destinationHandler.execute(createOldTempTable);
+
+    // Execute a soft reset. This should not crash.
+    final String softReset = generator.softReset(incrementalDedupStream);
+    destinationHandler.execute(softReset);
   }
 
   protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {

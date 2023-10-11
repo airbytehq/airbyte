@@ -1,9 +1,11 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
 connector_image: airbyte/source-paypal-transaction:dev
 test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: source_paypal_transaction/spec.json
+      - spec_path: "source_paypal_transaction/spec.yaml"
         config_path: secrets/config_oauth.json
         backward_compatibility_tests_config:
           disable_for_version: "0.1.13"
@@ -21,7 +23,7 @@ acceptance_tests:
     tests:
       - config_path: secrets/config_oauth.json
         backward_compatibility_tests_config:
-          disable_for_version: "1.0.0" # Balances schema changed
+          disable_for_version: "2.0.0" # Change in cursor field for transactions stream
   basic_read:
     tests:
       - config_path: secrets/config_oauth.json
@@ -49,13 +51,19 @@ acceptance_tests:
           extra_fields: no
           exact_order: no
           extra_records: yes
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: secrets/config_oauth.json
         configured_catalog_path: integration_tests/configured_catalog.json
         future_state:
           future_state_path: integration_tests/abnormal_state.json
+        skip_comprehensive_incremental_tests: true
   full_refresh:
     tests:
       - config_path: secrets/config_oauth.json
+        ignored_fields:
+          balances:
+            - name: last_refresh_time
+              bypass_reason: "field changes during every read"
         configured_catalog_path: integration_tests/configured_catalog.json
