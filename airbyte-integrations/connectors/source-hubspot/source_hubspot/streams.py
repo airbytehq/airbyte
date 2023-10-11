@@ -10,6 +10,7 @@ from abc import ABC, abstractmethod
 from functools import cached_property, lru_cache
 from http import HTTPStatus
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
+from json.decoder import JSONDecodeError
 
 import backoff
 import pendulum as pendulum
@@ -77,6 +78,8 @@ def retry_connection_handler(**kwargs):
         if (isinstance(exc, HubspotInvalidAuth) or isinstance(exc, HTTPError)) \
                 and any([m in exc.response.text.lower() for m in TOKEN_EXPIRED_ERROR]):
             return False
+        if isinstance(exc, JSONDecodeError):
+            return False
         if TOKEN_REFRESH_RETRIES_EXCEEDED_ERROR.lower() in exc.response.text.lower():
             return False
         if isinstance(exc, (HubspotInvalidAuth, HubspotAccessDenied)):
@@ -85,7 +88,7 @@ def retry_connection_handler(**kwargs):
 
     return backoff.on_exception(
         backoff.expo,
-        requests.exceptions.RequestException,
+        (requests.exceptions.RequestException, JSONDecodeError),
         jitter=None,
         on_backoff=log_retry_attempt,
         giveup=giveup_handler,
@@ -206,7 +209,15 @@ class API:
         self, url: str, params: MutableMapping[str, Any] = None
     ) -> Tuple[Union[MutableMapping[str, Any], List[MutableMapping[str, Any]]], requests.Response]:
         response = self._session.get(self.BASE_URL + url, params=params)
-        if any([m in response.json() for m in TOKEN_EXPIRED_ERROR]):
+        responseJson = None
+        try:
+            responseJson = response.json()
+        except JSONDecodeError as e:
+            err_msg = f"Failed to parse response text: {response.text} with JSONDecodeError."
+            logger.warn(err_msg)
+            raise JSONDecodeError(err_msg, e.doc, e.pos)
+        
+        if any([m in responseJson for m in TOKEN_EXPIRED_ERROR]):
             logger.info("Oauth token expired. Re-fetching token")
             self._session.auth = self.get_authenticator()
         return self._parse_and_handle_errors(response), response
