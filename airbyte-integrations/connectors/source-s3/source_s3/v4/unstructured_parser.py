@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 import json
 import logging
 from io import IOBase
@@ -28,7 +31,6 @@ class UnstructuredParser(FileTypeParser):
             "chunk_number": {"type": "integer"},
             "no_of_chunks": {"type": "integer"},
             "id": {"type": "string"},
-            # todo add meta data
         }
 
     def parse_records(
@@ -55,9 +57,10 @@ class UnstructuredParser(FileTypeParser):
             ]
 
     def read_file(self, file: IOBase, logger: logging.Logger) -> Optional[str]:
+        from unstructured.file_utils.filetype import FileType, detect_filetype
         from unstructured.partition.auto import partition
         from unstructured.partition.md import optional_decode
-        from unstructured.file_utils.filetype import detect_filetype, FileType
+
         # set name to none, otherwise unstructured will try to get the modified date from the local file system
         file_name = file.name
         file.name = None
@@ -71,13 +74,14 @@ class UnstructuredParser(FileTypeParser):
             logger.warn(f"Skipping {file_name}, unsupported file type {str(filetype)}")
             return None
         elements = partition(file=file, metadata_filename=file_name)
-        return self.render_markdown(elements)
+        return self._render_markdown(elements)
 
-    def render_markdown(self, elements: List[Any]) -> str:
-        return "\n\n".join([self.convert_to_markdown(el) for el in elements])
+    def _render_markdown(self, elements: List[Any]) -> str:
+        return "\n\n".join([self._convert_to_markdown(el) for el in elements])
 
-    def convert_to_markdown(self, el: Any) -> str:
+    def _convert_to_markdown(self, el: Any) -> str:
         from unstructured.documents.elements import Formula, ListItem, Title
+
         if type(el) == Title:
             return f"# {el.text}"
         elif type(el) == ListItem:

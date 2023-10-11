@@ -17,7 +17,7 @@ MAIN_REQUIREMENTS = [
     "unstructured==0.10.19",
     "unstructured[pdf]==0.10.19",
     "unstructured[docx]==0.10.19",
-    "markdown"
+    "markdown",
 ]
 
 TEST_REQUIREMENTS = [
