@@ -192,4 +192,5 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
             .addExpectedValues("1700000.01", "123.00")
             .build());
   }
+
 }

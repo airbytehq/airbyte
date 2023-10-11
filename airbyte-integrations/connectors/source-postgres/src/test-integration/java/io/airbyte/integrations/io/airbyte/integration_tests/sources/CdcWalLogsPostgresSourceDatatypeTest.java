@@ -246,4 +246,5 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
               .build());
     }
   }
+
 }

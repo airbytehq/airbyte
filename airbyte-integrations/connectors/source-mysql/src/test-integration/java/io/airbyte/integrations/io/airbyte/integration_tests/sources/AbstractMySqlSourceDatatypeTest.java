@@ -494,4 +494,5 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .addExpectedValues("1700000.01", "123.0")
             .build());
   }
+
 }
