@@ -158,17 +158,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-<<<<<<< HEAD
-  public String updateTable(final StreamConfig stream, final String finalSuffix) {
-    return updateTable(stream, finalSuffix, true);
-  }
-
-  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
-=======
   public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp) {
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), minRawTimestamp);
->>>>>>> 2bbc7c99d62 (implement filter)
     String dedupFinalTable = "";
     String cdcDeletes = "";
     String dedupRawTable = "";
