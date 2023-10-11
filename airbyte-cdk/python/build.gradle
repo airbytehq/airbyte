@@ -19,6 +19,11 @@ tasks.register('validateSourceYamlManifest', Exec) {
     commandLine 'bin/validate-yaml-schema.sh'
 }
 
+task runMypyOnModifiedFiles(type: Exec) {
+    environment 'ROOT_DIR', rootDir.absolutePath
+    commandLine 'bin/run-mypy-on-modified-files.sh'
+}
+
 tasks.register('runLowCodeConnectorUnitTests', Exec) {
     environment 'ROOT_DIR', rootDir.absolutePath
     commandLine 'bin/low-code-unit-tests.sh'
