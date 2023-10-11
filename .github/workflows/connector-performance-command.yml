@@ -4,7 +4,13 @@ on:
     inputs:
       connector:
         description: "Airbyte Connector"
+        type: choice
         required: true
+        options:
+          - connnectors/source-postgres
+          - connnectors/source-mysql
+          - connnectors/destination-snowflake
+        default: "connectors/source-postgres"
       repo:
         description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
         required: false
@@ -114,6 +120,7 @@ jobs:
       - name: Install CI scripts
         run: |
           pip install pipx
+          mkdir -p /root/.local/bin
           pipx ensurepath
           pipx install airbyte-ci/connectors/ci_credentials
           pipx install airbyte-ci/connectors/connector_ops
