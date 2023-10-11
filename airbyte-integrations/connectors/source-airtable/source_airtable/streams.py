@@ -89,11 +89,12 @@ class AirtableTables(AirtableBases):
 
 
 class AirtableStream(HttpStream, ABC):
-    def __init__(self, stream_path: str, stream_name: str, stream_schema, **kwargs):
+    def __init__(self, stream_path: str, stream_name: str, stream_schema, table_name: str, **kwargs):
         super().__init__(**kwargs)
         self.stream_path = stream_path
         self.stream_name = stream_name
         self.stream_schema = stream_schema
+        self.table_name = table_name
 
     url_base = URL_BASE
     primary_key = "id"
@@ -146,6 +147,7 @@ class AirtableStream(HttpStream, ABC):
                 yield {
                     "_airtable_id": record.get("id"),
                     "_airtable_created_time": record.get("createdTime"),
+                    "_airtable_table_name": self.table_name,
                     **{SchemaHelpers.clean_name(k): v for k, v in data.items()},
                 }
 
