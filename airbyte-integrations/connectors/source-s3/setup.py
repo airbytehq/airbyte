@@ -16,6 +16,8 @@ MAIN_REQUIREMENTS = [
     "python-snappy==0.6.1",
     "unstructured==0.10.19",
     "unstructured[pdf]==0.10.19",
+    "unstructured[docx]==0.10.19",
+    "markdown"
 ]
 
 TEST_REQUIREMENTS = [

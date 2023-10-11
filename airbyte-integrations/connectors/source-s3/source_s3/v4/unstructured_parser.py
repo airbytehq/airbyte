@@ -10,11 +10,6 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import PYTHON_TYPE_MAPPING, SchemaType, merge_schemas
 from source_s3.v4.config import S3FileBasedStreamConfig
-from unstructured.documents.elements import Element, Formula, ListItem, Title
-from unstructured.partition.auto import partition
-from unstructured.partition.md import optional_decode
-from unstructured.documents.elements import Element, Title, ListItem, Formula
-from unstructured.file_utils.filetype import detect_filetype, FileType, optional_decode
 
 
 class UnstructuredParser(FileTypeParser):
@@ -46,6 +41,8 @@ class UnstructuredParser(FileTypeParser):
     ) -> Iterable[Dict[str, Any]]:
         with stream_reader.open_file(file, self.file_read_mode, None, logger) as fp:
             markdown = self.read_file(fp)
+            if not markdown:
+                return []
             chunks = [markdown[i : i + self.MAX_SIZE_PER_CHUNK] for i in range(0, len(markdown), self.MAX_SIZE_PER_CHUNK)]
             yield from [
                 {
@@ -57,7 +54,10 @@ class UnstructuredParser(FileTypeParser):
                 for i, chunk in enumerate(chunks)
             ]
 
-    def read_file(self, file: IOBase) -> str:
+    def read_file(self, file: IOBase) -> Optional[str]:
+        from unstructured.partition.auto import partition
+        from unstructured.partition.md import optional_decode
+        from unstructured.file_utils.filetype import detect_filetype, FileType
         # set name to none, otherwise unstructured will try to get the modified date from the local file system
         file_name = file.name
         file.name = None
@@ -67,14 +67,16 @@ class UnstructuredParser(FileTypeParser):
         )
         if filetype == FileType.MD:
             return optional_decode(file.read())
-        # TODO: limit to file types that should be supported
+        if not filetype in [FileType.PDF, FileType.DOC, FileType.DOCX]:
+            return None
         elements = partition(file=file, metadata_filename=file_name)
         return self.render_markdown(elements)
 
-    def render_markdown(self, elements: List[Element]) -> str:
+    def render_markdown(self, elements: List[Any]) -> str:
         return "\n\n".join([self.convert_to_markdown(el) for el in elements])
 
-    def convert_to_markdown(self, el: Element) -> str:
+    def convert_to_markdown(self, el: Any) -> str:
+        from unstructured.documents.elements import Formula, ListItem, Title
         if type(el) == Title:
             return f"# {el.text}"
         elif type(el) == ListItem:
