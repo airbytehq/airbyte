@@ -44,7 +44,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
 
         For the stream:
         - Verify that we can list files from the stream using the configured globs.
-        - Verify that we can read one file from the stream.
+        - Verify that we can read one file from the stream as long as the stream parser is not setting override_max_n_files_for_parsability to 0.
 
         This method will also check that the files and their contents are consistent
         with the configured options, as follows:
@@ -55,7 +55,8 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         """
         try:
             files = self._check_list_files(stream)
-            self._check_parse_record(stream, files[0], logger)
+            if not stream.get_parser().override_max_n_files_for_parsability == 0:
+                self._check_parse_record(stream, files[0], logger)
         except CheckAvailabilityError:
             return False, "".join(traceback.format_exc())
 
