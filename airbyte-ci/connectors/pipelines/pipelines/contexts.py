@@ -357,6 +357,7 @@ class ConnectorContext(PipelineContext):
             fail_fast (bool, optional): Whether to fail fast. Defaults to False.
             fast_tests_only (bool, optional): Whether to run only fast tests. Defaults to False.
             code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
+            use_local_cdk (bool, optional): Whether to use the local cdk. Defaults to False.
             use_host_gradle_dist_tar (bool, optional): Used when developing java connectors with gradle. Defaults to False.
             open_report_in_browser (bool, optional): Open HTML report in browser window. Defaults to True.
         """
@@ -542,6 +543,9 @@ class PublishConnectorContext(ConnectorContext):
         self.metadata_service_gcs_credentials = sanitize_gcs_credentials(metadata_service_gcs_credentials)
         self.docker_hub_username = docker_hub_username
         self.docker_hub_password = docker_hub_password
+
+        if use_local_cdk and not pre_release:
+            raise ValueError("Cannot use local CDK for non-pre-release connector")
 
         pipeline_name = f"Publish {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
