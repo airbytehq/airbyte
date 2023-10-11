@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 from source_s3.v4.unstructured_parser import UnstructuredParser
-from unstructured.documents.elements import CheckBox, Formula, ListItem, Text, Title
+from unstructured.documents.elements import Formula, ListItem, Text, Title
 from unstructured.file_utils.filetype import FileType
 
 
