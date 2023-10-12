@@ -63,7 +63,7 @@ SIMPLE_AIRTABLE_TYPES: Dict = {
     "singleSelect": SchemaTypes.string,
     "externalSyncSource": SchemaTypes.string,
     "url": SchemaTypes.string,
-    # referal default type
+    # referral default type
     "simpleText": SchemaTypes.string,
 }
 
@@ -89,6 +89,7 @@ class SchemaHelpers:
         properties: Dict = {
             "_airtable_id": SchemaTypes.string,
             "_airtable_created_time": SchemaTypes.string,
+            "_airtable_table_name": SchemaTypes.string,
         }
 
         fields: Dict = table.get("fields", {})

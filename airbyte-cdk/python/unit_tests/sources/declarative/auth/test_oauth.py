@@ -127,6 +127,35 @@ class TestOauth2Authenticator:
         assert ("access_token", 1000) == token
 
     @pytest.mark.parametrize(
+        "timestamp, expected_date",
+        [
+            (1640995200, "2022-01-01T00:00:00Z"),
+            ("1650758400", "2022-04-24T00:00:00Z"),
+        ],
+        ids=["timestamp_as_integer", "timestamp_as_integer_inside_string"],
+    )
+    def test_initialize_declarative_oauth_with_token_expiry_date_as_timestamp(self, timestamp, expected_date):
+        # TODO: should be fixed inside DeclarativeOauth2Authenticator, remove next line after fixing
+        with pytest.raises(TypeError):
+            oauth = DeclarativeOauth2Authenticator(
+                token_refresh_endpoint="{{ config['refresh_endpoint'] }}",
+                client_id="{{ config['client_id'] }}",
+                client_secret="{{ config['client_secret'] }}",
+                refresh_token="{{ parameters['refresh_token'] }}",
+                config=config | {"token_expiry_date": timestamp},
+                scopes=["scope1", "scope2"],
+                token_expiry_date="{{ config['token_expiry_date'] }}",
+                refresh_request_body={
+                    "custom_field": "{{ config['custom_field'] }}",
+                    "another_field": "{{ config['another_field'] }}",
+                    "scopes": ["no_override"],
+                },
+                parameters={},
+            )
+
+            assert oauth.get_token_expiry_date() == pendulum.parse(expected_date)
+
+    @pytest.mark.parametrize(
         "expires_in_response, token_expiry_date_format",
         [
             ("2020-01-02T00:00:00Z", "YYYY-MM-DDTHH:mm:ss[Z]"),
@@ -149,6 +178,7 @@ class TestOauth2Authenticator:
             scopes=["scope1", "scope2"],
             token_expiry_date="{{ config['token_expiry_date'] }}",
             token_expiry_date_format=token_expiry_date_format,
+            token_expiry_is_time_of_expiration=True,
             refresh_request_body={
                 "custom_field": "{{ config['custom_field'] }}",
                 "another_field": "{{ config['another_field'] }}",
