@@ -158,7 +158,7 @@
     },
     {
       "stream": {
-        "name": "cash_drawers_stream",
+        "name": "cash_drawers",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": true,
