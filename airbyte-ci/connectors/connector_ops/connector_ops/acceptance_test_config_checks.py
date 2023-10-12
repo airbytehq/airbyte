@@ -13,6 +13,7 @@ BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-operations", "connector-extensibi
 TEST_STRICTNESS_LEVEL_REVIEWERS = {"connector-operations"}
 GA_BYPASS_REASON_REVIEWERS = {"connector-operations"}
 GA_CONNECTOR_REVIEWERS = {"gl-python"}
+BREAKING_CHANGE_REVIEWERS = {"kats-group"}
 REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
 
 
@@ -63,16 +64,22 @@ def find_mandatory_reviewers() -> List[Union[str, Dict[str, List]]]:
     backward_compatibility_changes = utils.get_changed_acceptance_test_config(diff_regex="disable_for_version")
     test_strictness_level_changes = utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level")
     ga_bypass_reason_changes = get_bypass_reason_changes()
+    breaking_change_changes = [] # TODO: look to see if new breaking change releases are added
+
+    required_reviewers = []
 
     if backward_compatibility_changes:
-        return [{"any-of": list(BACKWARD_COMPATIBILITY_REVIEWERS)}]
+        required_reviewers.append({"any-of": list(BACKWARD_COMPATIBILITY_REVIEWERS)})
     if test_strictness_level_changes:
-        return [{"any-of": list(TEST_STRICTNESS_LEVEL_REVIEWERS)}]
+        required_reviewers.append({"any-of": list(TEST_STRICTNESS_LEVEL_REVIEWERS)})
     if ga_bypass_reason_changes:
-        return [{"any-of": list(GA_BYPASS_REASON_REVIEWERS)}]
+        required_reviewers.append({"any-of": list(GA_BYPASS_REASON_REVIEWERS)})
     if important_connector_changes:
-        return list(GA_CONNECTOR_REVIEWERS)
-    return []
+        required_reviewers.append({"any-of": list(GA_CONNECTOR_REVIEWERS)})
+    if breaking_change_changes:
+        required_reviewers.append({"any-of": list(BREAKING_CHANGE_REVIEWERS)})
+
+    return required_reviewers
 
 
 def check_test_strictness_level():
