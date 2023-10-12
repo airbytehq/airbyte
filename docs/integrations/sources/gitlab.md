@@ -94,6 +94,7 @@ This connector outputs the following streams:
 - [Group and Project members](https://docs.gitlab.com/ee/api/members.html)
 - [Tags](https://docs.gitlab.com/ee/api/tags.html)
 - [Releases](https://docs.gitlab.com/ee/api/releases/index.html)
+- [Deployments](https://docs.gitlab.com/ee/api/deployments/index.html)
 - [Group Labels](https://docs.gitlab.com/ee/api/group_labels.html)
 - [Project Labels](https://docs.gitlab.com/ee/api/labels.html)
 - [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts\)
@@ -111,6 +112,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------- |
+| 1.7.0   | 2023-08-08 | [27869](https://github.com/airbytehq/airbyte/pull/29203) | Add Deployments stream                                                                     |
 | 1.6.0   | 2023-06-30 | [27869](https://github.com/airbytehq/airbyte/pull/27869) | Add `shared_runners_setting` field to groups                                               |
 | 1.5.1   | 2023-06-24 | [27679](https://github.com/airbytehq/airbyte/pull/27679) | Fix formatting                                                                             |
 | 1.5.0   | 2023-06-15 | [27392](https://github.com/airbytehq/airbyte/pull/27392) | Make API URL an optional parameter in spec.                                                |

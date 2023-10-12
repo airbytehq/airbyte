@@ -146,7 +146,7 @@ class WeaviateIndexer(Indexer):
             normalized_key = key[0].lower() + key[1:]
             # "id" and "additional" are reserved properties in Weaviate, prefix to disambiguate
             if key == "id" or key == "_id" or key == "_additional":
-                normalized_key = f"__{key}"
+                normalized_key = f"raw_{key}"
             if isinstance(value, list) and len(value) == 0:
                 # Handling of empty list that's not part of defined schema otherwise Weaviate throws invalid string property
                 continue
