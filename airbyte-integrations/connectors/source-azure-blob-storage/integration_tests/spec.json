@@ -35,7 +35,8 @@
               "type": "array",
               "items": {
                 "type": "string"
-              }},
+              }
+            },
             "legacy_prefix": {
               "title": "Legacy Prefix",
               "description": "The path prefix configured in v3 versions of the S3 connector. This option is deprecated in favor of a single glob.",
@@ -291,7 +292,9 @@
         "title": "Azure Blob Storage account key",
         "description": "The Azure blob storage account key.",
         "airbyte_secret": true,
-        "examples": ["Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="],
+        "examples": [
+          "Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="
+        ],
         "order": 3,
         "type": "string"
       },
@@ -310,6 +313,11 @@
         "type": "string"
       }
     },
-    "required": ["streams", "azure_blob_storage_account_name", "azure_blob_storage_account_key", "azure_blob_storage_container_name"]
+    "required": [
+      "streams",
+      "azure_blob_storage_account_name",
+      "azure_blob_storage_account_key",
+      "azure_blob_storage_container_name"
+    ]
   }
 }

@@ -9,7 +9,7 @@ def test_config_convertation():
         "azure_blob_storage_container_name": "airbyte-source-azure-blob-storage-test",
         "azure_blob_storage_blobs_prefix": "subfolder/",
         "azure_blob_storage_schema_inference_limit": 500,
-        "format": "jsonl"
+        "format": "jsonl",
     }
     new_config = LegacyConfigTransformer.convert(legacy_config)
     assert new_config == {
@@ -22,7 +22,7 @@ def test_config_convertation():
                 "format": {"filetype": "jsonl"},
                 "legacy_prefix": "subfolder/",
                 "name": "airbyte-source-azure-blob-storage-test",
-                "validation_policy": "Emit Record"
+                "validation_policy": "Emit Record",
             }
         ],
     }
