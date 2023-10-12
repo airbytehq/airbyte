@@ -28,7 +28,7 @@ class FileTypeParser(ABC):
         return None
 
     @property
-    def override_max_n_files_for_parsability(self) -> Optional[int]:
+    def parser_max_n_files_for_parsability(self) -> Optional[int]:
         """
         The availability policy decides how many files are loaded for checking whether parsing works correctly. This method can provide a parser-specific override. If it's defined, the smaller of the two values will be used.
         """

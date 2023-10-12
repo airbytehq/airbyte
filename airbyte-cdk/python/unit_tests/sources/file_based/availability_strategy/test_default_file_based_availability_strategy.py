@@ -51,11 +51,11 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
 
         assert is_available
 
-    def test_parse_records_is_not_called_with_override_max_n_files_for_parsability_set(self) -> None:
+    def test_parse_records_is_not_called_with_parser_max_n_files_for_parsability_set(self) -> None:
         """
-        If the stream parser sets override_max_n_files_for_parsability to 0, then we should not call parse_records on it
+        If the stream parser sets parser_max_n_files_for_parsability to 0, then we should not call parse_records on it
         """
-        self._parser.override_max_n_files_for_parsability = 0
+        self._parser.parser_max_n_files_for_parsability = 0
         self._stream.list_files.return_value = [_FILE_WITH_UNKNOWN_EXTENSION]
 
         is_available, reason = self._strategy.check_availability_and_parsability(self._stream, Mock(), Mock())
