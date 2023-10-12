@@ -124,7 +124,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       // one.
       // The code below strips trailing zeros for integer numbers and represents number with exponent
       // if this number has decimals point.
-      final double doubleValue = Double.valueOf(x.toString());
+      final double doubleValue = Double.parseDouble(x.toString());
       final String valueWithTruncatedZero = BigDecimal.valueOf(doubleValue).stripTrailingZeros().toPlainString();
       return valueWithTruncatedZero.contains(".") ? String.valueOf(doubleValue) : valueWithTruncatedZero;
     });
