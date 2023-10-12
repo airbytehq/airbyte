@@ -4,8 +4,7 @@
 import time
 
 import pytest
-
-from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRatePolicy, Duration, HttpRequestMatcher, Rate, CallRateLimitHit
+from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRateLimitHit, CallRatePolicy, Duration, HttpRequestMatcher, Rate
 from requests import Request
 
 

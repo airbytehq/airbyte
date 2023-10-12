@@ -97,8 +97,9 @@ class RequestMatcher(abc.ABC):
 class HttpRequestMatcher(RequestMatcher):
     """Simple implementation of RequestMatcher for http requests case"""
 
-    def __init__(self, method: Optional[str] = None, url: Optional[str] = None, params: Optional[dict] = None,
-                 headers: Optional[dict] = None):
+    def __init__(
+        self, method: Optional[str] = None, url: Optional[str] = None, params: Optional[dict] = None, headers: Optional[dict] = None
+    ):
         """Constructor
 
         :param method:
@@ -113,7 +114,7 @@ class HttpRequestMatcher(RequestMatcher):
 
     @staticmethod
     def _match_dict(obj: dict, pattern: dict) -> bool:
-        """ Check that all elements from pattern dict present and have the same values in obj dict
+        """Check that all elements from pattern dict present and have the same values in obj dict
 
         :param obj:
         :param pattern:
