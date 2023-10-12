@@ -169,7 +169,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                 logger.info("DEBUG 1 " + str(start_date))
 
             # We should keep backward compatibility with the previous version
-            elif stream_state.get(self.cursor_field) and len(self.customers) == 1:
+            elif stream_state.get(self.cursor_field) and len(self.customers) > 0:
                 start_date = stream_state.get(self.cursor_field) or self._start_date
                 logger.info("DEBUG 2 " + str(start_date))
             else:
