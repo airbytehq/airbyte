@@ -3,6 +3,45 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         status: succeed
+      - config_path: secrets/csv_custom_encoding_config.json
+        status: succeed
+      - config_path: secrets/csv_custom_format_config.json
+        status: succeed
+      - config_path: secrets/csv_user_schema_config.json
+        status: succeed
+      - config_path: secrets/csv_no_header_config.json
+        status: succeed
+      - config_path: secrets/csv_skip_rows_config.json
+        status: succeed
+      - config_path: secrets/csv_skip_rows_no_header_config.json
+        status: succeed
+      - config_path: secrets/csv_with_nulls_config.json
+        status: succeed
+      - config_path: secrets/csv_with_null_bools_config.json
+        status: succeed
+      - config_path: secrets/parquet_config.json
+        status: succeed
+      - config_path: secrets/avro_config.json
+        status: succeed
+      - config_path: secrets/jsonl_config.json
+        status: succeed
+      - config_path: secrets/jsonl_newlines_config.json
+        status: succeed
+  discovery:
+    tests:
+      - config_path: secrets/config.json
+      - config_path: secrets/csv_custom_encoding_config.json
+      - config_path: secrets/csv_custom_format_config.json
+      - config_path: secrets/csv_user_schema_config.json
+      - config_path: secrets/csv_no_header_config.json
+      - config_path: secrets/csv_skip_rows_config.json
+      - config_path: secrets/csv_skip_rows_no_header_config.json
+      - config_path: secrets/csv_with_nulls_config.json
+      - config_path: secrets/csv_with_null_bools_config.json
+      - config_path: secrets/parquet_config.json
+      - config_path: secrets/avro_config.json
+      - config_path: secrets/jsonl_config.json
+      - config_path: secrets/jsonl_newlines_config.json
   spec:
     tests:
       - spec_path: integration_tests/spec.json
