@@ -207,15 +207,23 @@ class TestOauth2Authenticator:
 
         assert {"Authorization": "Bearer access_token"} == prepared_request.headers
 
-    def test_refresh_access_token_invalid(self, requests_mock):
+    def test_refresh_access_token_invalid(self, requests_mock, mocker):
+        error_status_codes = (400,)
+        error_key = "error_key"
+        error_values = ("error_value_1", "error_value_2")
+
+        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_status_codes", error_status_codes)
+        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_key", error_key)
+        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_values", error_values)
         oauth = Oauth2Authenticator(
             f"https://{TestOauth2Authenticator.refresh_endpoint}",
             TestOauth2Authenticator.client_id,
             TestOauth2Authenticator.client_secret,
             TestOauth2Authenticator.refresh_token,
         )
-        error_content = {"error": "invalid_grant"}
-        requests_mock.post(f"https://{TestOauth2Authenticator.refresh_endpoint}", status_code=400, json=error_content)
+        requests_mock.post(
+            f"https://{TestOauth2Authenticator.refresh_endpoint}", status_code=error_status_codes[0], json={error_key: error_values[1]}
+        )
 
         with pytest.raises(AirbyteTracedException) as exc_info:
             oauth.refresh_access_token()
@@ -230,12 +238,9 @@ class TestOauth2Authenticator:
         (
             ((400,), 400, "error", "error", ("invalid_grant",), "invalid_grant", True),
             ((401,), 400, "error", "error", ("invalid_grant",), "invalid_grant", False),
+            ((400,), 400, "error_key", "error", ("invalid_grant",), "invalid_grant", False),
             ((400,), 400, "error", "error", ("invalid_grant",), "valid_grant", False),
-            ((400,), 400, "error_error", "error", ("invalid_grant",), "invalid_grant", False),
-            (None, 400, "error", "error", ("invalid_grant",), "invalid_grant", False),
-            ((400,), 400, None, "error", ("invalid_grant",), "valid_grant", True),
-            ((400,), 400, "error_error", "error", None, "invalid_grant", True),
-            ((400,), 400, None, "error", None, "invalid_grant", True),
+            ((), 400, "", "error", (), "valid_grant", False),
         ),
     )
     def test_refresh_access_token_wrapped(

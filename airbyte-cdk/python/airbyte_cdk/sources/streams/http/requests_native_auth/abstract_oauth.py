@@ -4,6 +4,7 @@
 
 import logging
 from abc import abstractmethod
+from json import JSONDecodeError
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
@@ -77,27 +78,37 @@ class AbstractOauth2Authenticator(AuthBase):
         return payload
 
     @property
-    def refresh_token_error_status_codes(self) -> Tuple[int]:
-        return (400,)
+    def refresh_token_error_status_codes(self) -> Tuple[int, ...]:
+        """
+        Override if needed. If all of refresh_token_error_status_codes, refresh_token_error_key, and refresh_token_error_values are set,
+        then http errors with such params will be wrapped in AirbyteTracedException.
+        """
+        return ()
 
     @property
     def refresh_token_error_key(self) -> str:
-        return "error"
+        """
+        Override if needed. If all of refresh_token_error_status_codes, refresh_token_error_key, and refresh_token_error_values are set,
+        then http errors with such params will be wrapped in AirbyteTracedException.
+        """
+        return ""
 
     @property
-    def refresh_token_error_values(self) -> Tuple[str]:
-        return ("invalid_grant",)
+    def refresh_token_error_values(self) -> Tuple[str, ...]:
+        """
+        Override if needed. If all of refresh_token_error_status_codes, refresh_token_error_key, and refresh_token_error_values are set,
+        then http errors with such params will be wrapped in AirbyteTracedException.
+        """
+        return ()
 
     def _wrap_refresh_token_exception(self, exception: requests.exceptions.RequestException) -> bool:
-        exception_content = exception.response.json()
+        try:
+            exception_content = exception.response.json()
+        except JSONDecodeError:
+            return False
         return (
-            self.refresh_token_error_status_codes
-            and exception.response.status_code in self.refresh_token_error_status_codes
-            and (
-                not self.refresh_token_error_key
-                or not self.refresh_token_error_values
-                or exception_content.get(self.refresh_token_error_key) in self.refresh_token_error_values
-            )
+            exception.response.status_code in self.refresh_token_error_status_codes
+            and exception_content.get(self.refresh_token_error_key) in self.refresh_token_error_values
         )
 
     @backoff.on_exception(
