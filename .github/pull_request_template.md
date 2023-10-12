@@ -1,6 +1,5 @@
 <!--
 Thanks for your contribution! 
-
 Before you submit the pull request, 
 I'd like to kindly remind you to take a moment and read through our guidelines
 to ensure that your contribution aligns with the type of contributions our project accepts.
