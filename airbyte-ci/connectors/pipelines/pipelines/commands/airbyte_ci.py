@@ -5,9 +5,8 @@
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
 import importlib
-import os
-import subprocess
 from typing import List
+import sys
 
 import click
 from github import PullRequest
@@ -27,6 +26,30 @@ from pipelines.utils import (
 from .groups.connectors import connectors
 from .groups.metadata import metadata
 from .groups.tests import test
+
+
+import segment.analytics as analytics
+
+analytics.write_key = 'ER8EjdRVFut7n05XPaaTKrSEnjLscyKr'
+analytics.send = False
+def on_error(error, items):
+    print("An error occurred:", error)
+
+
+analytics.debug = True
+analytics.on_error = on_error
+
+def track_command(f):
+    def wrapper(*args, **kwargs):
+        full_cmd = " ".join(sys.argv)
+        is_local = kwargs.get('is_local', False)
+        user_id = 'local-user' if is_local else 'ci-user'
+
+        # IMPORTANT! do not log kwargs as they may contain secrets
+        analytics.track(user_id=user_id, event=f.__name__, properties={'command': full_cmd})
+
+        return f(*args, **kwargs)
+    return wrapper
 
 # HELPERS
 
@@ -119,6 +142,7 @@ def get_modified_files(
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click.pass_context
+@track_command
 def airbyte_ci(
     ctx: click.Context,
     is_local: bool,
