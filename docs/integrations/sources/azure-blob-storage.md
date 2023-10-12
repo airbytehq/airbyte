@@ -178,5 +178,5 @@ There are currently no options for JSONL parsing.
 
 | Version | Date       | Pull Request                                    | Subject                                                                 |
 |:--------|:-----------|:------------------------------------------------|:------------------------------------------------------------------------|
-| 0.2.0   | 2023-10-10 | https://github.com/airbytehq/airbyte/pull/00000 | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files   |
+| 0.2.0   | 2023-10-10 | https://github.com/airbytehq/airbyte/pull/31336 | Migrate to File-based CDK. Add support of CSV, Parquet and Avro files   |
 | 0.1.0   | 2023-02-17 | https://github.com/airbytehq/airbyte/pull/23222 | Initial release with full-refresh and incremental sync with JSONL files |
