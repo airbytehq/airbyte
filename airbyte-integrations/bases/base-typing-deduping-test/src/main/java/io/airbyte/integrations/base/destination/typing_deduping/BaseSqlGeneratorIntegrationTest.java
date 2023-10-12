@@ -473,7 +473,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     // If we insert another raw record with older extracted_at than the typed records, we should fetch a
     // timestamp earlier than this new record.
     // This emulates a sync inserting some records out of order, running T+D on newer records, inserting
-    // an older record,  and then crashing before it can execute T+D. The next sync should recognize
+    // an older record, and then crashing before it can execute T+D. The next sync should recognize
     // that older record as still needing to be processed.
     insertRawTableRecords(
         streamId,
