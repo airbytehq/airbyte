@@ -182,7 +182,7 @@ This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Erro
 
 #### Incremental sync recommendations
 
-For the smoothest experience with `Incremental Refresh`, the following is recommended:
+For the smoothest experience with Incremental Refresh sync mode, the following is recommended:
 
 - The `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
 - `Discount Codes` should be synced along with `Price Rules` stream.
