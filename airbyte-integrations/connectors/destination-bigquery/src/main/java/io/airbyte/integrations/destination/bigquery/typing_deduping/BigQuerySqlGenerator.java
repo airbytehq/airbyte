@@ -168,15 +168,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // Special case String to only use json value for type string and parse the json for others
       return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
-              (CASE
-                    WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL 
-                      OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')) != 'string' 
-                      THEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
-                  ELSE
-                  JSON_VALUE(`_airbyte_data`, '$."${column_name}"')
-                END)
-              """
-      );
+          (CASE
+                WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
+                  OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')) != 'string'
+                  THEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
+              ELSE
+              JSON_VALUE(`_airbyte_data`, '$."${column_name}"')
+            END)
+          """);
     }
 
     final StandardSQLTypeName dialectType = toDialectType(airbyteType);

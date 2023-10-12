@@ -274,7 +274,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         new StringSubstitutor(Map.of(
             "raw_table_id", streamId.rawTableId(BigQuerySqlGenerator.QUOTE),
             "records", recordsText)).replace(
-                //TODO: Perform a normal insert - edward
+                // TODO: Perform a normal insert - edward
                 """
                 INSERT INTO ${raw_table_id} (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data)
                 SELECT _airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data FROM UNNEST([

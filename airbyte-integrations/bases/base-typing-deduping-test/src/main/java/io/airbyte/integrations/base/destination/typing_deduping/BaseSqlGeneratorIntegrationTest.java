@@ -431,8 +431,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     createFinalTable(incrementalDedupStream, "_foo");
     insertRawTableRecords(
         streamId,
-        BaseTypingDedupingTest.readRecords("sqlgenerator/json_types_in_string_inputrecords.jsonl")
-    );
+        BaseTypingDedupingTest.readRecords("sqlgenerator/json_types_in_string_inputrecords.jsonl"));
     final String sql = generator.updateTable(incrementalDedupStream, "_foo");
     destinationHandler.execute(sql);
     verifyRecords(
