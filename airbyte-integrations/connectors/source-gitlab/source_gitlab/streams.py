@@ -404,3 +404,17 @@ class EpicIssues(GitlabChildStream):
     flatten_id_keys = ["milestone", "assignee", "author"]
     flatten_list_keys = ["assignees"]
     path_template = "groups/{group_id}/epics/{iid}/issues"
+
+
+class Deployments(GitlabChildStream):
+    primary_key = "id"
+    flatten_id_keys = ["user", "environment"]
+    path_template = "projects/{id}/deployments"
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        super().transform(record, stream_slice, **kwargs)
+        record["user_username"] = record["user"]["username"]
+        record["user_full_name"] = record["user"]["name"]
+        record["environment_name"] = record["environment"]["name"]
+        record["project_id"] = stream_slice["id"]
+        return record
