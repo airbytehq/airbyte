@@ -176,14 +176,8 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         def mypyCheck = project.tasks.register('mypyCheck', PythonTask) {
             module = "mypy"
-            def configFile = project.rootProject.file('pyproject.toml')
-            if (extension.hasProperty('mypyConfigFile') && extension.mypyConfigFile != null) {
-                configFile = project.file(extension.mypyConfigFile)
-            }
-            command = "-p ${extension.mypyDirectory} --config-file ${configFile.absolutePath} --install-types --non-interactive"
-            onlyIf {
-                extension.hasProperty('mypyDirectory') && extension.mypyDirectory != null
-            }
+            environment 'ROOT_DIR', rootDir.absolutePath
+            commandLine 'bin/run-mypy-on-modified-files.sh'
         }
         mypyCheck.configure {
             dependsOn installTestReqs
