@@ -12,6 +12,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     FromFieldEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
+    OpenAICompatibleEmbeddingConfigModel,
 )
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
@@ -78,6 +79,7 @@ class ConfigModel(BaseModel):
         FakeEmbeddingConfigModel,
         FromFieldEmbeddingConfigModel,
         AzureOpenAIEmbeddingConfigModel,
+        OpenAICompatibleEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     indexing: MilvusIndexingConfigModel
 

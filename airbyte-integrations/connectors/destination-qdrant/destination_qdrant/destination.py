@@ -7,12 +7,8 @@ from typing import Any, Iterable, Mapping
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.destinations.vector_db_based.embedder import (
-    AzureOpenAIEmbedder,
-    CohereEmbedder,
+    create_from_config,
     Embedder,
-    FakeEmbedder,
-    FromFieldEmbedder,
-    OpenAIEmbedder,
 )
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
@@ -23,24 +19,12 @@ from destination_qdrant.indexer import QdrantIndexer
 
 BATCH_SIZE = 256
 
-embedder_map = {
-    "openai": OpenAIEmbedder,
-    "azure_openai": AzureOpenAIEmbedder,
-    "cohere": CohereEmbedder,
-    "fake": FakeEmbedder,
-    "from_field": FromFieldEmbedder,
-}
-
-
 class DestinationQdrant(Destination):
     indexer: Indexer
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
-        if config.embedding.mode == "azure_openai" or config.embedding.mode == "openai":
-            self.embedder = embedder_map[config.embedding.mode](config.embedding, config.processing.chunk_size)
-        else:
-            self.embedder = embedder_map[config.embedding.mode](config.embedding)
+        self.embedder = create_from_config(config.embedding, config.processing)
         self.indexer = QdrantIndexer(config.indexing, self.embedder.embedding_dimensions)
 
     def write(

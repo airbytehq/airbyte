@@ -11,6 +11,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     FakeEmbeddingConfigModel,
     FromFieldEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
+    OpenAICompatibleEmbeddingConfigModel,
     ProcessingConfigModel,
 )
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
@@ -113,6 +114,7 @@ class ConfigModel(BaseModel):
         CohereEmbeddingConfigModel,
         FromFieldEmbeddingConfigModel,
         FakeEmbeddingConfigModel,
+        OpenAICompatibleEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     indexing: WeaviateIndexingConfigModel
 

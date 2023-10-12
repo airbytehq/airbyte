@@ -14,6 +14,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     FakeEmbeddingConfigModel,
     FromFieldEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
+    OpenAICompatibleEmbeddingConfigModel,
     ProcessingConfigModel,
 )
 from jsonschema import RefResolver
@@ -67,6 +68,7 @@ class ConfigModel(BaseModel):
         FakeEmbeddingConfigModel,
         FromFieldEmbeddingConfigModel,
         AzureOpenAIEmbeddingConfigModel,
+        OpenAICompatibleEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     indexing: QdrantIndexingConfigModel
 
