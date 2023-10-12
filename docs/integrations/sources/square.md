@@ -69,6 +69,7 @@ The Square source connector supports the following [ sync modes](https://docs.ai
 - [Customers](https://developer.squareup.com/explorer/square/customers-api/list-customers)
 - [Shifts](https://developer.squareup.com/reference/square/labor-api/search-shifts)
 - [Orders](https://developer.squareup.com/reference/square/orders-api/search-orders)
+- [Cash drawers](https://developer.squareup.com/explorer/square/cash-drawers-api/list-cash-drawer-shifts)
 
 ## Connector-specific features & highlights
 
@@ -97,6 +98,7 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------|
+| 1.2.0   | 2023-10-10 | [31065](https://github.com/airbytehq/airbyte/pull/31065) | Add new stream Cash drawers shifts                                        |
 | 1.1.3   | 2023-10-10 | [30960](https://github.com/airbytehq/airbyte/pull/30960) | Update `airbyte-cdk` version to `>=0.51.31`                               |
 | 1.1.2   | 2023-07-10 | [28019](https://github.com/airbytehq/airbyte/pull/28019) | fix display order of spec fields                                          |
 | 1.1.1   | 2023-06-28 | [27762](https://github.com/airbytehq/airbyte/pull/27762) | Update following state breaking changes                                   |
