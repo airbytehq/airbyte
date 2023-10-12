@@ -22,12 +22,11 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
-import java.util.Set;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
 import net.snowflake.client.jdbc.SnowflakeType;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

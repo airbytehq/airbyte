@@ -14,7 +14,6 @@ import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
-import io.airbyte.cdk.db.SourceOperations;
 import io.airbyte.cdk.db.jdbc.AbstractJdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.commons.json.Jsons;
@@ -44,7 +43,7 @@ public class SnowflakeSourceOperations extends AbstractJdbcCompatibleSourceOpera
                              final int parameterIndex,
                              final SnowflakeType cursorFieldType,
                              final String value)
-          throws SQLException {
+      throws SQLException {
     switch (cursorFieldType) {
       case BOOLEAN -> setBoolean(preparedStatement, parameterIndex, value);
       case INTEGER -> setInteger(preparedStatement, parameterIndex, value);
@@ -125,10 +124,10 @@ public class SnowflakeSourceOperations extends AbstractJdbcCompatibleSourceOpera
       return getDatabaseFieldType(typeName);
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
-              field.get(INTERNAL_COLUMN_NAME),
-              field.get(INTERNAL_SCHEMA_NAME),
-              field.get(INTERNAL_TABLE_NAME),
-              field.get(INTERNAL_COLUMN_TYPE)));
+          field.get(INTERNAL_COLUMN_NAME),
+          field.get(INTERNAL_SCHEMA_NAME),
+          field.get(INTERNAL_TABLE_NAME),
+          field.get(INTERNAL_COLUMN_TYPE)));
       return SnowflakeType.TEXT;
     }
   }
@@ -215,7 +214,8 @@ public class SnowflakeSourceOperations extends AbstractJdbcCompatibleSourceOpera
         case TIME -> putTime(json, columnName, resultSet, colIndex);
         case TIMESTAMP_LTZ, TIMESTAMP_TZ -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
 
-        // Note: TIMESTAMP type is configurable by the user, defaults to NTZ: https://docs.snowflake.com/en/sql-reference/data-types-datetime#timestamp
+        // Note: TIMESTAMP type is configurable by the user, defaults to NTZ:
+        // https://docs.snowflake.com/en/sql-reference/data-types-datetime#timestamp
         case TIMESTAMP_NTZ, TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
 
         // TODO: Improve handling of complex types:

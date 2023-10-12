@@ -24,7 +24,6 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.sql.DataSource;
-
 import net.snowflake.client.jdbc.SnowflakeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
