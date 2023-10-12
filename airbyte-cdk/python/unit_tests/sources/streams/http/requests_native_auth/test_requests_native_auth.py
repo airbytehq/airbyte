@@ -207,32 +207,6 @@ class TestOauth2Authenticator:
 
         assert {"Authorization": "Bearer access_token"} == prepared_request.headers
 
-    def test_refresh_access_token_invalid(self, requests_mock, mocker):
-        error_status_codes = (400,)
-        error_key = "error_key"
-        error_values = ("error_value_1", "error_value_2")
-
-        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_status_codes", error_status_codes)
-        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_key", error_key)
-        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_values", error_values)
-        oauth = Oauth2Authenticator(
-            f"https://{TestOauth2Authenticator.refresh_endpoint}",
-            TestOauth2Authenticator.client_id,
-            TestOauth2Authenticator.client_secret,
-            TestOauth2Authenticator.refresh_token,
-        )
-        requests_mock.post(
-            f"https://{TestOauth2Authenticator.refresh_endpoint}", status_code=error_status_codes[0], json={error_key: error_values[1]}
-        )
-
-        with pytest.raises(AirbyteTracedException) as exc_info:
-            oauth.refresh_access_token()
-
-        error_message = "Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
-        assert exc_info.value.internal_message == error_message
-        assert exc_info.value.message == error_message
-        assert exc_info.value.failure_type == FailureType.config_error
-
     @pytest.mark.parametrize(
         ("config_codes", "response_code", "config_key", "response_key", "config_values", "response_value", "wrapped"),
         (
@@ -259,8 +233,14 @@ class TestOauth2Authenticator:
         requests_mock.post(f"https://{TestOauth2Authenticator.refresh_endpoint}", status_code=response_code, json=error_content)
 
         exception_to_raise = AirbyteTracedException if wrapped else RequestException
-        with pytest.raises(exception_to_raise):
+        with pytest.raises(exception_to_raise) as exc_info:
             oauth.refresh_access_token()
+
+        if wrapped:
+            error_message = "Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
+            assert exc_info.value.internal_message == error_message
+            assert exc_info.value.message == error_message
+            assert exc_info.value.failure_type == FailureType.config_error
 
 
 class TestSingleUseRefreshTokenOauth2Authenticator:
