@@ -67,8 +67,8 @@ acceptance_tests:
         status: succeed
       - config_path: secrets/csv_skip_rows_config.json
         status: succeed
-#      - config_path: secrets/csv_skip_rows_no_header_config.json
-#        status: succeed
+      #      - config_path: secrets/csv_skip_rows_no_header_config.json
+      #        status: succeed
       - config_path: secrets/csv_with_nulls_config.json
         status: succeed
       - config_path: secrets/csv_with_null_bools_config.json
