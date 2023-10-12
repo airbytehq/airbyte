@@ -15,6 +15,7 @@ from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
 
@@ -104,6 +105,23 @@ class Stream(ABC):
         :return: A user-friendly message that indicates the cause of the error
         """
         return None
+
+    def read_full_refresh(
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+    ) -> Iterable[StreamData]:
+        slices = self.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=cursor_field)
+        logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)", extra={"stream_slices": slices})
+        for _slice in slices:
+            if slice_logger.should_log_slice_message(logger):
+                yield slice_logger.create_slice_log_message(_slice)
+            yield from self.read_records(
+                stream_slice=_slice,
+                sync_mode=SyncMode.full_refresh,
+                cursor_field=cursor_field,
+            )
 
     @abstractmethod
     def read_records(
@@ -251,6 +269,18 @@ class Stream(ABC):
         :return: An updated state object
         """
         return {}
+
+    def log_stream_sync_configuration(self) -> None:
+        """
+        Logs the configuration of this stream.
+        """
+        self.logger.debug(
+            f"Syncing stream instance: {self.name}",
+            extra={
+                "primary_key": self.primary_key,
+                "cursor_field": self.cursor_field,
+            },
+        )
 
     @staticmethod
     def _wrapped_primary_key(keys: Optional[Union[str, List[str], List[List[str]]]]) -> Optional[List[List[str]]]:
