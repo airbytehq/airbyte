@@ -245,16 +245,16 @@ public class ConnectionsHandler {
       throws JsonValidationException, IOException, ConfigNotFoundException {
     LOGGER.info("inside listConnectionsForWorkspace() : Start time -> {}", OffsetDateTime.now());
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
-
+    int i = 0;
     for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId())) {
+      LOGGER.info("listConnectionsForWorkspace() inside for loop:  count -> {},time -> {}", i++, OffsetDateTime.now());
       if (standardSync.getStatus() == StandardSync.Status.DEPRECATED && !includeDeleted) {
         continue;
       }
-
       connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
       LOGGER.info("inside listConnectionsForWorkspace() : End time -> {}", OffsetDateTime.now());
     }
-
+    LOGGER.info("listConnectionsForWorkspace() outside for loop:  time -> {}", OffsetDateTime.now());
     return new ConnectionReadList().connections(connectionReads);
   }
   public ConnectionReadList pageConnectionsForWorkspace(final WorkspaceIdPageRequestBody workspaceIdRequestBody)
