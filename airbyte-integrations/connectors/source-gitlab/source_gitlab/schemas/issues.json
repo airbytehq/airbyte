@@ -100,7 +100,7 @@
     },
     "author": {
       "type": ["null", "object"],
-      "properties" : {
+      "properties": {
         "state": {
           "type": ["null", "string"]
         },
@@ -126,7 +126,7 @@
     },
     "assignee": {
       "type": ["null", "object"],
-      "properties" : {
+      "properties": {
         "state": {
           "type": ["null", "string"]
         },
@@ -149,7 +149,7 @@
     },
     "closed_by": {
       "type": ["null", "object"],
-      "properties" : {
+      "properties": {
         "state": {
           "type": ["null", "string"]
         },
