@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 
+
 class AbstractDiscoveryPolicy(ABC):
     """
     Used during discovery; allows the developer to configure the number of concurrent

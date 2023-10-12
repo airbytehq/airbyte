@@ -8,6 +8,7 @@ from airbyte_cdk.sources.file_based.discovery_policy.default_discovery_policy im
 
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 
+
 class DefaultDiscoveryPolicyTest(unittest.TestCase):
     def setUp(self) -> None:
         self._policy = DefaultDiscoveryPolicy()
