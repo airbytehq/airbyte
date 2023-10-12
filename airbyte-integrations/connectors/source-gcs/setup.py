@@ -11,7 +11,7 @@ MAIN_REQUIREMENTS = [
     "pandas==1.5.3",
     "pyarrow==12.0.1",
     "fastavro==1.4.11",
-    "smart-open[s3]==5.1.0"
+    "smart-open[s3]==5.1.0",
 ]
 
 TEST_REQUIREMENTS = [

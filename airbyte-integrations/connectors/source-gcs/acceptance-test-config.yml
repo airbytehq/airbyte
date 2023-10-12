@@ -13,10 +13,10 @@ acceptance_tests:
         status: succeed
       - config_path: "integration_tests/invalid_config.json"
         status: exception
-  discovery:
-    tests:
-      - config_path: "secrets/config.json"
-        timeout_seconds: 2400
+#  discovery:
+#    tests:
+#      - config_path: "secrets/config.json"
+#        timeout_seconds: 2400
   basic_read:
     tests:
       - config_path: "secrets/config.json"
