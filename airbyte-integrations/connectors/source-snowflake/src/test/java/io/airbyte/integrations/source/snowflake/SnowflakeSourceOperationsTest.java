@@ -12,7 +12,6 @@ import org.junit.jupiter.params.provider.EnumSource;
 import java.sql.JDBCType;
 import java.util.Map;
 
-import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
 import static io.airbyte.integrations.source.snowflake.SnowflakeSourceOperations.SQL_DIALECT;
 
 public class SnowflakeSourceOperationsTest {
@@ -27,17 +26,6 @@ public class SnowflakeSourceOperationsTest {
         Assertions.assertNotNull(airbyteSourceType);
         Assertions.assertEquals(SQL_DIALECT, airbyteSourceType.get("dialect").asText());
         Assertions.assertEquals(jdbcType.getName(), airbyteSourceType.get("type").asText());
-    }
-
-    private SnowflakeType getJdbcTypeFromInternalTypeName(String internalTypeName) {
-        ObjectMapper mapper = new ObjectMapper();
-        final SnowflakeType databaseFieldType;
-        databaseFieldType = sourceOps.getDatabaseFieldType(
-                mapper.valueToTree(
-                        Map.of(INTERNAL_COLUMN_TYPE_NAME, internalTypeName)
-                )
-        );
-        return databaseFieldType;
     }
 
     @Test
