@@ -24,11 +24,10 @@ from pipelines.utils import (
     transform_strs_to_paths,
 )
 
+from .groups.check import core_group
 from .groups.connectors import connectors
 from .groups.metadata import metadata
 from .groups.tests import test
-from .groups.check import core_group
-
 
 # HELPERS
 
