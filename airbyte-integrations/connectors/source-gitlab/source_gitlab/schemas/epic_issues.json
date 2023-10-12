@@ -75,7 +75,8 @@
       "type": ["null", "integer"]
     },
     "due_date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "confidential": {
       "type": ["null", "boolean"]
