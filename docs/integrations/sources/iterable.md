@@ -75,13 +75,13 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 ## Additional notes
 
 [List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream when meet `500 - Generic Error` will skip a broken slice and keep going with the next one. This is related to unexpected failures when trying to get users list for specific list ids. See #[24968](https://github.com/airbytehq/airbyte/issues/24968) issue for more details.
-[List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream may fail with `InvalidChunkLength(got length b'', 0 bytes read`. This problem is been investigated by Iterable, so [List Users](https://api.iterable.com/api/docs#lists_getLists_0) and [Events](https://api.iterable.com/api/docs#events_User_events) streams may not work. See #[3096](https://github.com/airbytehq/oncall/issues/3096) issue for more details.
+[List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream may fail with `InvalidChunkLength(got length b'', 0 bytes read` error. This problem is been investigated by Iterable, so [List Users](https://api.iterable.com/api/docs#lists_getLists_0) and [Events](https://api.iterable.com/api/docs#events_User_events) streams may not work. See #[3096](https://github.com/airbytehq/oncall/issues/3096) issue for more details.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
-| 0.1.31  | 2023-10-12 | [31331](https://github.com/airbytehq/airbyte/pull/31331) | Fixed InvalidChunkLength error during discovery                                                                |
+| 0.1.31  | 2023-10-12 | [31331](https://github.com/airbytehq/airbyte/pull/31331) | Fixed InvalidChunkLength error during discovery                                                              |
 | 0.1.30  | 2023-07-19 | [28457](https://github.com/airbytehq/airbyte/pull/28457) | Fixed TypeError for StreamSlice in debug mode                                                                |
 | 0.1.29  | 2023-05-24 | [26459](https://github.com/airbytehq/airbyte/pull/26459) | Added requests reading timeout 300 seconds                                                                   |
 | 0.1.28  | 2023-05-12 | [26014](https://github.com/airbytehq/airbyte/pull/26014) | Improve 500 handling for Events stream                                                                       |
