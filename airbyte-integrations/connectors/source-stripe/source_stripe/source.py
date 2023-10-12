@@ -33,6 +33,9 @@ from source_stripe.streams import (
 
 
 class SourceStripe(AbstractSource):
+    def __init__(self, use_concurrent_cdk: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        self._use_concurrent_cdk = use_concurrent_cdk
 
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
@@ -163,7 +166,7 @@ class SourceStripe(AbstractSource):
             ],
             **args,
         )
-        legacy_streams = [
+        streams = [
             CheckoutSessionsLineItems(**incremental_args),
             CustomerBalanceTransactions(**args),
             Events(**incremental_args),
@@ -419,5 +422,7 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
         ]
-        # return legacy_streams
-        return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, 4) for stream in legacy_streams]
+        if self._use_concurrent_cdk:
+            return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, 4) for stream in streams]
+        else:
+            return streams

@@ -27,6 +27,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
 
 """
@@ -229,7 +230,10 @@ class StreamPartition(Partition):
         try:
             for record_data in self._stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=copy.deepcopy(self._slice)):
                 if isinstance(record_data, Mapping):
-                    yield Record(record_data)
+                    # Transform the data from the partition instead of the AbstractStream.
+                    data_to_return = dict(record_data)
+                    self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
+                    yield Record(data_to_return)
                 else:
                     self._message_repository.emit_message(record_data)
         except Exception as e:
@@ -279,6 +283,8 @@ class StreamPartitionGenerator(PartitionGenerator):
 class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
 
     def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
         """
