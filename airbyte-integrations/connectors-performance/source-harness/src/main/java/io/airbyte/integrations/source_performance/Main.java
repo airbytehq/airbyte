@@ -75,7 +75,7 @@ public class Main {
       throw new IllegalStateException("Missing harness configuration: config [%s] catalog [%s] image [%s]".formatted(config, catalog, image));
     }
 
-    log.info("Starting performance harness for {} ({})", image, dataset);
+    log.info("Starting performance harness for {} ({}) with catalog {}", image, dataset, catalog);
     try {
       final PerformanceTest test = new PerformanceTest(
           image,
