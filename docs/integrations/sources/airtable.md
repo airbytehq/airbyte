@@ -111,7 +111,8 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------|
-| 4.1.0   | 2023-10-10 | [31044](https://github.com/airbytehq/airbyte/pull/31044) | Add source table name to output records    |
+| 4.1.1   | 2023-10-10 | [31119](https://github.com/airbytehq/airbyte/pull/31119) | Add user-friendly error message when refresh token has expired                         |
+| 4.1.0   | 2023-10-10 | [31044](https://github.com/airbytehq/airbyte/pull/31044) | Add source table name to output records                                                |
 | 4.0.0   | 2023-10-09 | [31181](https://github.com/airbytehq/airbyte/pull/31181) | Additional schema processing for the FORMULA schema type: Convert to simple data types |
 | 3.0.1   | 2023-05-10 | [25946](https://github.com/airbytehq/airbyte/pull/25946) | Skip stream if it does not appear in catalog                                           |
 | 3.0.0   | 2023-03-20 | [22704](https://github.com/airbytehq/airbyte/pull/22704) | Fix for stream name uniqueness                                                         |

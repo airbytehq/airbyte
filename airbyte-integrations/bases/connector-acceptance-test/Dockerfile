@@ -6,7 +6,7 @@ ENV DOCKER_VERSION = "24.0.2"
 
 RUN apt-get update \
     && pip install --upgrade pip \
-    && apt-get install tzdata bash curl
+    && apt-get -y install tzdata bash curl
 
 # Docker is required for the dagger in docker use case.
 RUN curl -fsSL https://get.docker.com | sh
