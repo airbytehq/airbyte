@@ -37,14 +37,13 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 
 Authentication to the Shopify API requires a [custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). Follow these instructions to create a custom app and find your Admin API Access Token.
 
-1. Navigate to **Settings** > **App and sales channels** > **Develop apps** > **Create an app**.
-2. Select a name for your new app.
-3. Select **Configure Admin API scopes**.
-4. Grant access to the [following list of scopes](#scopes-required-for-custom-app). Only select scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc ).
-5. Click **Install app** to give this app access to your data.
-6. Once installed, go to **API Credentials** to copy the **Admin API Access Token**.
-
-You're ready to set up Shopify in Airbyte!
+1. Log in to your Shopify account.
+2. In the dashboard, navigate to **Settings** > **App and sales channels** > **Develop apps** > **Create an app**.
+3. Select a name for your new app.
+4. Select **Configure Admin API scopes**.
+5. Grant access to the [following list of scopes](#scopes-required-for-custom-app). Only select scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc ).
+6. Click **Install app** to give this app access to your data.
+7. Once installed, go to **API Credentials** to copy the **Admin API Access Token**. You are now ready to set up the source in Airbyte!
 
 #### Connect using API Password
 
@@ -54,7 +53,7 @@ You're ready to set up Shopify in Airbyte!
 4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
 5. Click **Set up source** and wait for the connection test to complete.
 
-### Scopes required for custom app
+### Custom app scopes
 
 Add the following scopes to your custom app to ensure Airbyte can sync all available data. For more information on access scopes, see the [Shopify docs](https://shopify.dev/docs/api/usage/access-scopes).
 
@@ -97,11 +96,6 @@ The Shopify source supports both Full Refresh and Incremental syncs. You can cho
 
 This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQl API](https://shopify.dev/api/admin-graphql).
 
-## Troubleshooting tips
-
-* If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the Client's store first. Once the access is granted, you should be able to proceed with `OAuth2.0` authentication method.
-* Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
-
 ## Supported streams
 
 - [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2022-01/resources/abandoned-checkouts#top)
@@ -137,15 +131,6 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 - [Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/transaction#top)
 - [Tender Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/tendertransaction)
 
-### Stream sync recommendations
-
-For better experience with `Incremental Refresh` the following is recommended:
-
-- `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
-- `Discount Codes` should be synced along with `Price Rules` stream.
-
-If child streams are synced alone from the parent stream - the full sync will take place, and the records are filtered out afterwards.
-
 ## Capturing deleted records
 
 The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, `PriceRules` and `Products` streams. 
@@ -172,15 +157,44 @@ Check the following Shopify documentation for more information about [retrieving
 | Incremental - Append Sync | Yes                  |
 | Namespaces                | No                   |
 
-## Performance considerations
+
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+
+Expand to see details about Shopify connector limitations and troubleshooting
+
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
 
 Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, you may encounter the following warning message:
 
 ```text
-"Caught retryable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
+"Caught retryable error '<some_error> or null' after <some_number> tries. 
+Waiting <some_number> seconds then retrying..."
 ```
 
 This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Error. The sync operation will continue successfully after a short backoff period.
+
+#### Incremental sync recommendations
+
+For the smoothest experience with `Incremental Refresh`, the following is recommended:
+
+- The `Order Refunds`, `Order Risks`, `Transactions` should be synced along with `Orders` stream.
+- `Discount Codes` should be synced along with `Price Rules` stream.
+
+If a child stream is synced independently of its parent stream, a full sync will occur, followed by a filtering out of records. This process may be less efficient compared to syncing child streams alongside their respective parent streams.
+
+### Troubleshooting
+
+* If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
+* Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
 
 ## Changelog
 
