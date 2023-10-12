@@ -38,6 +38,25 @@ _id_only_stream = ThreadBasedConcurrentStream(
     timeout_seconds=300,
 )
 
+_id_only_stream_with_primary_key = ThreadBasedConcurrentStream(
+    partition_generator=InMemoryPartitionGenerator([InMemoryPartition("partition1", None, [Record({"id": "1"}), Record({"id": "2"})])]),
+    max_workers=1,
+    name="stream1",
+    json_schema={
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "string"]},
+        },
+    },
+    availability_strategy=AlwaysAvailableAvailabilityStrategy(),
+    primary_key=["id"],
+    cursor_field=None,
+    slice_logger=NeverLogSliceLogger(),
+    logger=logging.getLogger("test_logger"),
+    message_repository=InMemoryMessageRepository(),
+    timeout_seconds=300,
+)
+
 _id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
         [
@@ -115,6 +134,43 @@ test_concurrent_cdk_single_stream = (
                     },
                     "name": "stream1",
                     "supported_sync_modes": ["full_refresh"],
+                }
+            ]
+        }
+    )
+    .build()
+)
+
+test_concurrent_cdk_single_stream_with_primary_key = (
+    TestScenarioBuilder()
+    .set_name("test_concurrent_cdk_single_stream_with_primary_key")
+    .set_config({})
+    .set_source_builder(
+        ConcurrentSourceBuilder().set_streams(
+            [
+                _id_only_stream_with_primary_key,
+            ]
+        )
+    )
+    .set_expected_records(
+        [
+            {"data": {"id": "1"}, "stream": "stream1"},
+            {"data": {"id": "2"}, "stream": "stream1"},
+        ]
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": ["null", "string"]},
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh"],
+                    "source_defined_primary_key": [["id"]],
                 }
             ]
         }
