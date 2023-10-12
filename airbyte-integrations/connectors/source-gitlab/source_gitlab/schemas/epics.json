@@ -50,7 +50,7 @@
     },
     "start_date_fixed": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "start_date_from_inherited_source": {
       "type": ["null", "string", "boolean"]
@@ -66,7 +66,7 @@
     },
     "due_date_fixed": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "due_date_from_inherited_source": {
       "type": ["null", "string"]
