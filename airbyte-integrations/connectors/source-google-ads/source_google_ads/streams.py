@@ -60,8 +60,7 @@ def chunk_date_range(
         - The function adjusts the start date based on `days_of_data_storage` and `conversion_window` to adhere to certain data retrieval policies, such as Google Ads' policy of only retrieving data not older than a certain number of days.
         - The method returns `start_date` and `end_date` with a difference typically spanning 15 days to avoid token expiration issues.
     """
-    logger.info(f"Logger Start date info TypeError: {start_date}, {end_date}, {time_format}")
-    logger.error(f"Logger Start date error TypeError: {start_date}, {end_date}, {time_format}")
+    logger.info(f"Start date : {start_date}, {end_date}, {time_format}")
     start_date = pendulum.parse(start_date, tz=time_zone)
     today = pendulum.today(tz=time_zone)
     end_date = pendulum.parse(end_date, tz=time_zone) if end_date else today
@@ -159,6 +158,11 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[MutableMapping[str, any]]]:
         for customer in self.customers:
             stream_state = stream_state or {}
+            logger.info("Start date: " + str(self._start_date))
+            logger.info("Stream state: " + str(stream_state))
+            logger.info("Customer id: " + str(customer.id))
+            logger.info("Cursor field: " + str(self.cursor_field))
+            logger.info("Customers: " + str(self.customers))
             if stream_state.get(customer.id):
                 start_date = stream_state[customer.id].get(self.cursor_field) or self._start_date
 
