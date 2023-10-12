@@ -75,6 +75,7 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 ## Additional notes
 
 [List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream when meet `500 - Generic Error` will skip a broken slice and keep going with the next one. This is related to unexpected failures when trying to get users list for specific list ids. See #[24968](https://github.com/airbytehq/airbyte/issues/24968) issue for more details.
+[List Users](https://api.iterable.com/api/docs#lists_getLists_0) Stream may fail with `InvalidChunkLength(got length b'', 0 bytes read`. This problem is been investigated by Iterable, so [List Users](https://api.iterable.com/api/docs#lists_getLists_0) and [Events](https://api.iterable.com/api/docs#events_User_events) streams may not work. See #[3096](https://github.com/airbytehq/oncall/issues/3096) issue for more details.
 
 ## Changelog
 
