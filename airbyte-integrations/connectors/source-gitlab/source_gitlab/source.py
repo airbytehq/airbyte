@@ -160,22 +160,23 @@ class SourceGitlab(AbstractSource):
     def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
         config = self._ensure_default_values(config)
         auth_params = self._auth_params(config)
+        start_date = config.get("start_date")
 
         groups, projects = self._groups_stream(config), self._projects_stream(config)
-        pipelines = Pipelines(parent_stream=projects, start_date=config["start_date"], **auth_params)
-        merge_requests = MergeRequests(parent_stream=projects, start_date=config["start_date"], **auth_params)
+        pipelines = Pipelines(parent_stream=projects, start_date=start_date, **auth_params)
+        merge_requests = MergeRequests(parent_stream=projects, start_date=start_date, **auth_params)
         epics = Epics(parent_stream=groups, **auth_params)
 
         streams = [
             groups,
             projects,
             Branches(parent_stream=projects, repository_part=True, **auth_params),
-            Commits(parent_stream=projects, repository_part=True, start_date=config["start_date"], **auth_params),
+            Commits(parent_stream=projects, repository_part=True, start_date=start_date, **auth_params),
             epics,
             Deployments(parent_stream=projects, **auth_params),
             EpicIssues(parent_stream=epics, **auth_params),
             GroupIssueBoards(parent_stream=groups, **auth_params),
-            Issues(parent_stream=projects, start_date=config["start_date"], **auth_params),
+            Issues(parent_stream=projects, start_date=start_date, **auth_params),
             Jobs(parent_stream=pipelines, **auth_params),
             ProjectMilestones(parent_stream=projects, **auth_params),
             GroupMilestones(parent_stream=groups, **auth_params),

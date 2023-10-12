@@ -5,7 +5,7 @@ This page contains the setup guide and reference information for the Gitlab Sour
 ## Prerequisites
 
 - Gitlab instance or an account at [Gitlab](https://gitlab.com)
-- Start date
+- Start date (Optional)
 - GitLab Groups (Optional)
 - GitLab Projects (Optional)
 
@@ -49,8 +49,8 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 3. On the source setup page, select **GitLab** from the Source type dropdown and enter a name for this connector.
 4. Click `Authenticate your GitLab account` by selecting Oauth or Personal Access Token for Authentication.
 5. Log in and Authorize to the GitLab account.
-6. **Start date** - The date from which you'd like to replicate data for streams.
-7. **API URL** - The URL to access you self-hosted GitLab instance or `gitlab.com` (default).
+6. **API URL** - The URL to access you self-hosted GitLab instance or `gitlab.com` (default).
+7. **Start date (Optional)** - The date from which you'd like to replicate data for streams.
 8. **Groups (Optional)** - Space-delimited list of GitLab group IDs, e.g. `airbytehq` for single group, `airbytehq another-repo` for multiple groups.
 9. **Projects (Optional)** - Space-delimited list of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
 10. Click **Set up source**.
@@ -111,7 +111,8 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
-| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------------- |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| 1.7.1   | 2023-10-12 |                                                          | Mark `start_date` as optional                                                              |
 | 1.7.0   | 2023-08-08 | [27869](https://github.com/airbytehq/airbyte/pull/29203) | Add Deployments stream                                                                     |
 | 1.6.0   | 2023-06-30 | [27869](https://github.com/airbytehq/airbyte/pull/27869) | Add `shared_runners_setting` field to groups                                               |
 | 1.5.1   | 2023-06-24 | [27679](https://github.com/airbytehq/airbyte/pull/27679) | Fix formatting                                                                             |
