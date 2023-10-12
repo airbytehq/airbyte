@@ -6,16 +6,15 @@ from io import IOBase
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
-from airbyte_cdk.sources.file_based.exceptions import RecordParseError, FileBasedSourceError
 from source_s3.v4.config import S3FileBasedStreamConfig
 
 
 class UnstructuredParser(FileTypeParser):
-
     async def infer_schema(
         self,
         config: S3FileBasedStreamConfig,
@@ -63,7 +62,7 @@ class UnstructuredParser(FileTypeParser):
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file_name)
         elements = partition(file=file_handle, metadata_filename=file_name)
         return self._render_markdown(elements)
-    
+
     def _get_filetype(self, file: IOBase):
         from unstructured.file_utils.filetype import detect_filetype
 
@@ -74,9 +73,10 @@ class UnstructuredParser(FileTypeParser):
             file=file,
             file_filename=file_name,
         )
-    
+
     def _supported_file_types(self):
         from unstructured.file_utils.filetype import FileType
+
         return [FileType.MD, FileType.PDF, FileType.DOCX]
 
     def _render_markdown(self, elements: List[Any]) -> str:

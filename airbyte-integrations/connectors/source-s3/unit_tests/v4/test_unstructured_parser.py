@@ -2,16 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import asyncio
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
-import asyncio
-from source_s3.v4.unstructured_parser import UnstructuredParser
-from unstructured.documents.elements import Formula, ListItem, Text, Title, ElementMetadata
-from unstructured.file_utils.filetype import FileType
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError
+from source_s3.v4.unstructured_parser import UnstructuredParser
+from unstructured.documents.elements import ElementMetadata, Formula, ListItem, Text, Title
+from unstructured.file_utils.filetype import FileType
 
 FILE_URI = "path/to/file.xyz"
+
 
 @pytest.mark.parametrize(
     "filetype, raises",
@@ -36,7 +37,7 @@ FILE_URI = "path/to/file.xyz"
             False,
             id="docx file",
         ),
-    ], 
+    ],
 )
 @patch("unstructured.file_utils.filetype.detect_filetype")
 def test_infer_schema(mock_detect_filetype, filetype, raises):
@@ -55,6 +56,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
             "content": {"type": "string"},
             "id": {"type": "string"},
         }
+
 
 @pytest.mark.parametrize(
     "filetype, parse_result, raises, expected_records",
