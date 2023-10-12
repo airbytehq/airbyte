@@ -21,8 +21,8 @@ class DefaultDiscoveryPolicy(AbstractDiscoveryPolicy):
 
     def get_max_n_files_for_schema_inference(self, parser: FileTypeParser) -> int:
         return min(
-                filter(
-                    None,
-                    (DEFAULT_MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE, parser.parser_max_n_files_for_schema_inference),
-                )
+            filter(
+                None,
+                (DEFAULT_MAX_N_FILES_FOR_STREAM_SCHEMA_INFERENCE, parser.parser_max_n_files_for_schema_inference),
             )
+        )
