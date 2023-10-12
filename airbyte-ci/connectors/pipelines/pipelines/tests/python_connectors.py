@@ -60,6 +60,7 @@ class PytestStep(Step, ABC):
     PYTEST_INI_FILE_NAME = "pytest.ini"
     PYPROJECT_FILE_NAME = "pyproject.toml"
     skipped_exit_code = 5
+    bind_to_docker_host = False
 
     @property
     @abstractmethod
@@ -89,6 +90,10 @@ class PytestStep(Step, ABC):
             connector_under_test, test_config_file_name, test_config_file, self.extra_dependencies_names
         )
         pytest_command = self.get_pytest_command(test_config_file_name)
+
+        if self.bind_to_docker_host:
+            test_environment = environments.with_bound_docker_host(self.context, test_environment)
+
         test_execution = test_environment.with_exec(pytest_command)
 
         return await self.get_step_result(test_execution)
@@ -189,6 +194,7 @@ class IntegrationTests(PytestStep):
 
     title = "Integration tests"
     test_directory_name = "integration_tests"
+    bind_to_docker_host = True
 
 
 async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
