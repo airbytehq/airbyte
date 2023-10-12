@@ -877,18 +877,16 @@ class PostgresSourceTest {
       final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
       setEmittedAtToNull(actualMessages);
 
-//      final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+      // final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
 
       setEmittedAtToNull(actualMessages);
 
       final Set<AirbyteMessage> expectedOutput = Sets.newHashSet(
           createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
-          createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1))
-      );
+          createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)));
       for (int i = 3; i < 1000; i++) {
         expectedOutput.add(
-            createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("%d.0".formatted(i)), "name", "gohan%d".formatted(i), "power", 222.1))
-        );
+            createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("%d.0".formatted(i)), "name", "gohan%d".formatted(i), "power", 222.1)));
       }
       assertThat(actualMessages.contains(expectedOutput));
       // Assert that the Postgres source is emitting records & state messages in the correct order.
@@ -896,4 +894,5 @@ class PostgresSourceTest {
           new AirbyteStreamNameNamespacePair("id_and_name", "public"));
     }
   }
+
 }
