@@ -17,7 +17,7 @@ class CdkImportTest {
    */
   @Test
   void cdkVersionShouldMatch() {
-    assertEquals("0.1.6", CDKConstants.VERSION.replace("-SNAPSHOT", ""));
+    assertEquals("0.1.7", CDKConstants.VERSION.replace("-SNAPSHOT", ""));
   }
 
 }
