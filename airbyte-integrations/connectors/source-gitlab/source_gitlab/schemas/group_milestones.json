@@ -30,11 +30,11 @@
     },
     "due_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "start_date": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date"
     },
     "expired": {
       "type": ["null", "boolean"]
