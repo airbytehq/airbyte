@@ -5,8 +5,8 @@ plugins {
 
 airbytePython {
     // TODO: uncomment and get mypy checks to pass
-    // mypyDirectory 'airbyte_cdk'
-    // mypyConfigFile 'mypy.ini'
+     mypyDirectory 'airbyte_cdk'
+     mypyConfigFile 'mypy.ini'
 }
 
 def generateComponentManifestClassFiles = tasks.register('generateComponentManifestClassFiles', Exec) {
