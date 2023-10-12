@@ -34,7 +34,7 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.sql.JDBCType;
+import net.snowflake.client.jdbc.SnowflakeType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -105,7 +105,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource<JDBCType> getJdbcSource() {
+  public AbstractJdbcSource<SnowflakeType> getJdbcSource() {
     return new SnowflakeSource(AIRBYTE_OSS);
   }
 

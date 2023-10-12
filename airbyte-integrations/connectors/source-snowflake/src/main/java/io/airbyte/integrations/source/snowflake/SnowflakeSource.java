@@ -19,16 +19,17 @@ import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.commons.json.Jsons;
 import java.io.IOException;
-import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import javax.sql.DataSource;
+
+import net.snowflake.client.jdbc.SnowflakeType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Source {
+public class SnowflakeSource extends AbstractJdbcSource<SnowflakeType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
