@@ -8,6 +8,7 @@ from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_airtable.schema_helpers import SchemaHelpers
 
@@ -71,7 +72,17 @@ class AirtableBases(HttpStream):
             }
         """
         records = response.json().get(self.name)
-        yield from records
+        for base in records:
+            if base.get("permissionLevel") == "none":
+                if isinstance(self._session.auth, TokenAuthenticator):
+                    additional_message = "if you'd like to see tables from this base, add base to the Access list for Personal Access Token, see Airtable docs for more info: https://support.airtable.com/docs/creating-and-using-api-keys-and-access-tokens#understanding-personal-access-token-basic-actions"
+                else:
+                    additional_message = "reauthenticate and add this base to the Access list, see Airtable docs for more info: https://support.airtable.com/docs/third-party-integrations-via-oauth-overview#granting-access-to-airtable-workspaces-bases"
+                self.logger.warning(
+                    f"Skipping base `{base.get('name')}` with id `{base.get('id')}`: Not enough permissions, {additional_message}"
+                )
+            else:
+                yield base
 
 
 class AirtableTables(AirtableBases):
