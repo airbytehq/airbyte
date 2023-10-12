@@ -1,74 +1,95 @@
 # Shopify
-This page contains the setup guide and reference information for the Shopify source connector.
+
+This page contains the setup guide and reference information for the [Shopify](https://www.shopify.com/) source connector.
+
+## Prerequisites
+
+* An active [Shopify store](https://www.shopify.com).
+* If you are syncing data from a store that you do not own, you will need to [request access to your client's store](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) (not required for account owners).
+* For **Airbyte Open Source** users: A custom Shopify application with [`read_` scopes enabled](#scopes-required-for-custom-app).
 
 ## Setup guide
 
-This connector supports the `OAuth2.0` and `API Password` (for private applications) athentication methods.
+This connector supports **OAuth2.0** and **API Password** (for private applications) authentication methods.
 
-### Connect using OAuth2.0 (for Cloud users only)
-1. Click `Authenticate your Shopify account` to start the autentication.
-2. Click `Install` to install the Airbyte application.
-3. Log in to your account, if you are not already logged in.
-4. Select the store you want to sync and review the consent.
-5. Click on `Install` to finish the Installation.
-6. Reveiew the `Shop Name` field for the chosen store for a sync.
-7. Set the `Start Date` as the starting point for your data replication. Any data created before this date will not be synced.
-8. Click `Test and Save` to finish the source set up.
+<!-- env:cloud -->
+:::note
+For existing **Airbyte Cloud** customers, if you are currently using the **API Password** authentication method, please switch to **OAuth2.0**, as the API Password will be deprecated shortly. This change will not affect **Airbyte Open Source** connections.
+:::
 
-### Connect using `API PASSWORD` option (for OSS users)
-1. Name your source.
-2. Enter your Store name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
-3. Enter your Admin API access token. To set up the access token, you will need to set up a custom application. See instructions below on creating a custom app.
-4. Click Set up source
+### Airbyte Cloud
 
-## Creating a Custom App
-Authentication to the Shopify API requies a [custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). Follow these instructions to create a custom app and find your Admin API Access Token.
+#### Connect using OAuth2.0
 
-1. Navigate to Settings > App and sales channels > Develop apps > Create an app
-2. Name your new app
-3. Select **Configure Admin API scopes**
-4. Tick all the scopes prefixed with `read_` (e.g. `read_locations`,`read_price_rules`, etc ) and save. See below for the full list of scopes to allow.
+1. Select a **Source name**.
+2. Click **Authenticate your Shopify account**.
+3. Click **Install** to install the Airbyte application.
+4. Log in to your account, if you are not already logged in.
+5. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
+6. The **Shopify Store** field will be automatically filled based on the store you selected. Confirm the value is accurate.
+7. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+8. Click **Set up source** and wait for the connection test to complete.
+<!-- /env:cloud -->
+
+### Airbyte Open Source
+
+#### Create a custom app
+
+Authentication to the Shopify API requires a [custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). Follow these instructions to create a custom app and find your Admin API Access Token.
+
+1. Navigate to **Settings** > **App and sales channels** > **Develop apps** > **Create an app**.
+2. Select a name for your new app.
+3. Select **Configure Admin API scopes**.
+4. Grant access to the [following list of scopes](#scopes-required-for-custom-app). Only select scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc ).
 5. Click **Install app** to give this app access to your data.
 6. Once installed, go to **API Credentials** to copy the **Admin API Access Token**.
 
 You're ready to set up Shopify in Airbyte!
 
-### Scopes Required for Custom App
+#### Connect using API Password
 
-Add the following scopes to your custom app to ensure Airbyte can sync all available data. To see a list of streams this source supports, see our full [Shopify documentation](https://docs.airbyte.com/integrations/sources/shopify/).
+1. Enter a **Source name**.
+2. Enter your **Shopify Store** name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
+3. For **API Password**, enter your custom application's Admin API access token.
+4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+5. Click **Set up source** and wait for the connection test to complete.
 
-- `read_analytics`
-- `read_assigned_fulfillment_orders`
-- `read_gdpr_data_request`
-- `read_locations`
-- `read_price_rules`
-- `read_product_listings`
-- `read_products`
-- `read_reports`
-- `read_resource_feedbacks`
-- `read_script_tags`
-- `read_shipping`
-- `read_locales`
-- `read_shopify_payments_accounts`
-- `read_shopify_payments_bank_accounts`
-- `read_shopify_payments_disputes`
-- `read_shopify_payments_payouts`
-- `read_content`
-- `read_themes`
-- `read_third_party_fulfillment_orders`
-- `read_translations`
-- `read_customers`
-- `read_discounts`
-- `read_draft_orders`
-- `read_fulfillments`
-- `read_gift_cards`
-- `read_inventory`
-- `read_legal_policies`
-- `read_marketing_events`
-- `read_merchant_managed_fulfillment_orders`
-- `read_online_store_pages`
-- `read_order_edits`
-- `read_orders`
+### Scopes required for custom app
+
+Add the following scopes to your custom app to ensure Airbyte can sync all available data. For more information on access scopes, see the [Shopify docs](https://shopify.dev/docs/api/usage/access-scopes).
+
+* `read_analytics`
+* `read_assigned_fulfillment_orders`
+* `read_content`
+* `read_customers`
+* `read_discounts`
+* `read_draft_orders`
+* `read_fulfillments`
+* `read_gdpr_data_request`
+* `read_gift_cards`
+* `read_inventory`
+* `read_legal_policies`
+* `read_locations`
+* `read_locales`
+* `read_marketing_events`
+* `read_merchant_managed_fulfillment_orders`
+* `read_online_store_pages`
+* `read_order_edits`
+* `read_orders`
+* `read_price_rules`
+* `read_product_listings`
+* `read_products`
+* `read_reports`
+* `read_resource_feedbacks`
+* `read_script_tags`
+* `read_shipping`
+* `read_shopify_payments_accounts`
+* `read_shopify_payments_bank_accounts`
+* `read_shopify_payments_disputes`
+* `read_shopify_payments_payouts`
+* `read_themes`
+* `read_third_party_fulfillment_orders`
+* `read_translations`
 
 ## Supported sync modes
 
@@ -78,45 +99,43 @@ This source can sync data for the [Shopify REST API](https://shopify.dev/api/adm
 
 ## Troubleshooting tips
 
-* If you faced with `access` errors while using the `OAuth2.0`, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the Client's store first, once the access is granted, you should be able to proceed with `OAuth2.0` authentication method.
+* If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the Client's store first. Once the access is granted, you should be able to proceed with `OAuth2.0` authentication method.
 * Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
-## Supported Streams
+## Supported streams
 
-This Source is capable of syncing the following core Streams:
-
+- [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2022-01/resources/abandoned-checkouts#top)
 - [Articles](https://shopify.dev/api/admin-rest/2022-01/resources/article)
 - [Blogs](https://shopify.dev/api/admin-rest/2022-01/resources/blog)
-- [Abandoned Checkouts](https://shopify.dev/api/admin-rest/2022-01/resources/abandoned-checkouts#top)
 - [Collects](https://shopify.dev/api/admin-rest/2022-01/resources/collect#top)
 - [Collections](https://shopify.dev/api/admin-rest/2022-01/resources/collection)
 - [Countries](https://shopify.dev/docs/api/admin-rest/2023-04/resources/country)
 - [Custom Collections](https://shopify.dev/api/admin-rest/2022-01/resources/customcollection#top)
-- [CustomerAddress](https://shopify.dev/docs/api/admin-rest/2023-04/resources/customer-address)
-- [CustomerSavedSearch](https://shopify.dev/docs/api/admin-rest/2023-04/resources/customersavedsearch)
-- [Smart Collections](https://shopify.dev/api/admin-rest/2022-01/resources/smartcollection)
 - [Customers](https://shopify.dev/api/admin-rest/2022-01/resources/customer#top)
+- [Customer Address](https://shopify.dev/docs/api/admin-rest/2023-04/resources/customer-address)
+- [Customer Saved Search](https://shopify.dev/docs/api/admin-rest/2023-04/resources/customersavedsearch)
 - [Draft Orders](https://shopify.dev/api/admin-rest/2022-01/resources/draftorder#top)
 - [Discount Codes](https://shopify.dev/api/admin-rest/2022-01/resources/discountcode#top)
 - [Disputes](https://shopify.dev/docs/api/admin-rest/2023-07/resources/dispute)
+- [Fulfillments](https://shopify.dev/api/admin-rest/2022-01/resources/fulfillment)
+- [Fulfillment Orders](https://shopify.dev/api/admin-rest/2022-01/resources/fulfillmentorder)
+- [Inventory Items](https://shopify.dev/api/admin-rest/2022-01/resources/inventoryItem)
+- [Inventory Levels](https://shopify.dev/api/admin-rest/2021-01/resources/inventorylevel)
+- [Locations](https://shopify.dev/api/admin-rest/2022-01/resources/location)
 - [Metafields](https://shopify.dev/api/admin-rest/2022-01/resources/metafield#top)
 - [Orders](https://shopify.dev/api/admin-rest/2022-01/resources/order#top)
-- [Orders Refunds](https://shopify.dev/api/admin-rest/2022-01/resources/refund#top)
-- [Orders Risks](https://shopify.dev/api/admin-rest/2022-01/resources/order-risk#top)
+- [Order Refunds](https://shopify.dev/api/admin-rest/2022-01/resources/refund#top)
+- [Order Risks](https://shopify.dev/api/admin-rest/2022-01/resources/order-risk#top)
+- [Pages](https://shopify.dev/api/admin-rest/2022-01/resources/page#top)
+- [Price Rules](https://shopify.dev/api/admin-rest/2022-01/resources/pricerule#top)
 - [Products](https://shopify.dev/api/admin-rest/2022-01/resources/product#top)
 - [Products (GraphQL)](https://shopify.dev/api/admin-graphql/2022-10/queries/products)
 - [Product Images](https://shopify.dev/api/admin-rest/2022-01/resources/product-image)
 - [Product Variants](https://shopify.dev/api/admin-rest/2022-01/resources/product-variant)
+- [Shop](https://shopify.dev/api/admin-rest/2022-01/resources/shop)
+- [Smart Collections](https://shopify.dev/api/admin-rest/2022-01/resources/smartcollection)
 - [Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/transaction#top)
 - [Tender Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/tendertransaction)
-- [Pages](https://shopify.dev/api/admin-rest/2022-01/resources/page#top)
-- [Price Rules](https://shopify.dev/api/admin-rest/2022-01/resources/pricerule#top)
-- [Locations](https://shopify.dev/api/admin-rest/2022-01/resources/location)
-- [InventoryItems](https://shopify.dev/api/admin-rest/2022-01/resources/inventoryItem)
-- [InventoryLevels](https://shopify.dev/api/admin-rest/2021-01/resources/inventorylevel)
-- [Fulfillment Orders](https://shopify.dev/api/admin-rest/2022-01/resources/fulfillmentorder)
-- [Fulfillments](https://shopify.dev/api/admin-rest/2022-01/resources/fulfillment)
-- [Shop](https://shopify.dev/api/admin-rest/2022-01/resources/shop)
 
 ### Stream sync recommendations
 
@@ -127,13 +146,13 @@ For better experience with `Incremental Refresh` the following is recommended:
 
 If child streams are synced alone from the parent stream - the full sync will take place, and the records are filtered out afterwards.
 
-## Capturing Deleted Records
+## Capturing deleted records
+
 The connector captures deletions for records in the `Articles`, `Blogs`, `CustomCollections`, `Orders`, `Pages`, `PriceRules` and `Products` streams. 
 
-When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records. 
+When a record is deleted, the connector outputs a record with the `ID` of that record and the `deleted_at`, `deleted_message`, and `deleted_description` fields filled out. No other fields are filled out for the deleted records.
 
-Check the following Shopify documentation for more information about the [Retrieving Deleted Records](https://shopify.dev/docs/api/admin-rest/2023-07/resources/event) 
-
+Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/2023-07/resources/event).
 
 ## Data type mapping
 
@@ -155,13 +174,13 @@ Check the following Shopify documentation for more information about the [Retrie
 
 ## Performance considerations
 
-Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, user can receive the warning message as follows:
+Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, you may encounter the following warning message:
 
 ```text
 "Caught retryable error '<some_error> or null' after <some_number> tries. Waiting <some_number> seconds then retrying..."
 ```
 
-This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Error. With given error message the sync operation is still goes on, but will require more time to finish.
+This is expected when the connector hits a `429 - Rate Limit Exceeded` HTTP Error. The sync operation will continue successfully after a short backoff period.
 
 ## Changelog
 
