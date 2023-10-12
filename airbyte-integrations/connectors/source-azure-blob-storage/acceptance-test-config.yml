@@ -1,4 +1,58 @@
 acceptance_tests:
+  basic_read:
+    tests:
+      - config_path: secrets/config.json
+        expect_records:
+          path: integration_tests/expected_records/csv.jsonl
+          exact_order: true
+      - config_path: secrets/csv_custom_encoding_config.json
+        expect_records:
+          path: integration_tests/expected_records/csv_custom_encoding.jsonl
+          exact_order: true
+      - config_path: secrets/csv_custom_format_config.json
+        expect_records:
+          path: integration_tests/expected_records/csv_custom_format.jsonl
+          exact_order: true
+      - config_path: secrets/csv_user_schema_config.json
+        expect_records:
+          path: integration_tests/expected_records/csv_user_schema.jsonl
+          exact_order: true
+      - config_path: secrets/csv_no_header_config.json
+        expect_records:
+          path: integration_tests/expected_records/csv_no_header.jsonl
+          exact_order: true
+      - config_path: secrets/csv_skip_rows_config.json
+        expect_records:
+          path: integration_tests/expected_records/csv_skip_rows.jsonl
+          exact_order: true
+      - config_path: secrets/csv_skip_rows_no_header_config.json
+        expect_records:
+          path: integration_tests/expected_records/csv_skip_rows_no_header.jsonl
+          exact_order: true
+      - config_path: secrets/csv_with_nulls_config.json
+        expect_records:
+          path: integration_tests/expected_records/csv_with_nulls.jsonl
+          exact_order: true
+      - config_path: secrets/csv_with_null_bools_config.json
+        expect_records:
+          path: integration_tests/expected_records/csv_with_null_bools.jsonl
+          exact_order: true
+      - config_path: secrets/parquet_config.json
+        expect_records:
+          path: integration_tests/expected_records/parquet.jsonl
+          exact_order: true
+      - config_path: secrets/avro_config.json
+        expect_records:
+          path: integration_tests/expected_records/avro.jsonl
+          exact_order: true
+      - config_path: secrets/jsonl_config.json
+        expect_records:
+          path: integration_tests/expected_records/jsonl.jsonl
+          exact_order: true
+      - config_path: secrets/jsonl_newlines_config.json
+        expect_records:
+          path: integration_tests/expected_records/jsonl_newlines.jsonl
+          exact_order: true
   connection:
     tests:
       - config_path: secrets/config.json
