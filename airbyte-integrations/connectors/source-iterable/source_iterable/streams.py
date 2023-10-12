@@ -354,10 +354,28 @@ class ListUsers(IterableStream):
     data_field = "getUsers"
     name = "list_users"
     # enable caching, because this stream used by other ones
-    use_cache = True
+    use_cache = False
 
     def path(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> str:
         return f"lists/{self.data_field}?listId={stream_slice['list_id']}"
+
+    def request_kwargs(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
+        """
+        https://api.iterable.com/api/docs#export_exportDataJson
+        Sending those type of requests could download large piece of json
+        objects splitted with newline character.
+        Passing stream=True argument to requests.session.send method to avoid
+        loading whole analytics report content into memory.
+        """
+        return {
+            **super().request_kwargs(stream_state, stream_slice, next_page_token),
+            "stream": True,
+        }
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
         lists = Lists(authenticator=self._cred)
