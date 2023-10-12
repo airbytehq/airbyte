@@ -23,6 +23,7 @@ requests = "2.28.2" # Pinned as the requests 2.29.0 version is not compatible wi
 connector-ops = {path = "../connector_ops", develop = true}
 toml = "^0.10.2"
 sentry-sdk = "^1.28.1"
+segment-analytics-python = "^2.2.3"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^6.2.5"
