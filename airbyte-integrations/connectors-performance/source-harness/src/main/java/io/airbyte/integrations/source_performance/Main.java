@@ -66,6 +66,7 @@ public class Main {
     final JsonNode catalog;
     try {
       catalog = getCatalog(dataset, connector);
+      log.info("catalog from file: " + catalog);
     } catch (final IOException ex) {
       throw new IllegalStateException("Failed to read catalog", ex);
     }
@@ -92,6 +93,7 @@ public class Main {
   static JsonNode getCatalog(final String dataset, final String connector) throws IOException {
     final ObjectMapper objectMapper = new ObjectMapper();
     final String catalogFilename = "catalogs/%s/%s_catalog.json".formatted(connector, dataset);
+    System.out.println("Catalog file name: " + catalogFilename);
     final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
     return objectMapper.readTree(is);
   }
