@@ -13,7 +13,7 @@ BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-operations", "connector-extensibi
 TEST_STRICTNESS_LEVEL_REVIEWERS = {"connector-operations"}
 GA_BYPASS_REASON_REVIEWERS = {"connector-operations"}
 GA_CONNECTOR_REVIEWERS = {"gl-python"}
-BREAKING_CHANGE_REVIEWERS = {"kats-group"}
+BREAKING_CHANGE_REVIEWERS = {"breaking-change-reviewers"}
 REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
 
 
@@ -64,7 +64,7 @@ def find_mandatory_reviewers() -> List[Union[str, Dict[str, List]]]:
     backward_compatibility_changes = utils.get_changed_acceptance_test_config(diff_regex="disable_for_version")
     test_strictness_level_changes = utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level")
     ga_bypass_reason_changes = get_bypass_reason_changes()
-    breaking_change_changes = [] # TODO: look to see if new breaking change releases are added
+    breaking_change_changes = utils.get_changed_metadata(diff_regex="breakingChanges")
 
     required_reviewers = []
 

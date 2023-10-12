@@ -34,6 +34,7 @@ SCAFFOLD_CONNECTOR_GLOB = "-scaffold-"
 
 
 ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
+METADATA_FILE_NAME = "metadata.yaml"
 AIRBYTE_DOCKER_REPO = "airbyte"
 AIRBYTE_REPO_DIRECTORY_NAME = "airbyte"
 GRADLE_PROJECT_RE_PATTERN = r"project\((['\"])(.+?)\1\)"
@@ -87,6 +88,30 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
     Returns:
         Set[Connector]: Set of connectors that were changed
     """
+    return get_changed_file(ACCEPTANCE_TEST_CONFIG_FILE_NAME, diff_regex)
+
+
+def get_changed_metadata(diff_regex: Optional[str] = None) -> Set[str]:
+    """Retrieve the set of connectors for which the metadata file was changed in the current branch (compared to master).
+
+    Args:
+        diff_regex (str): Find the edited files that contain the following regex in their change.
+
+    Returns:
+        Set[Connector]: Set of connectors that were changed
+    """
+    return get_changed_file(METADATA_FILE_NAME, diff_regex)
+
+
+def get_changed_file(file_name: str, diff_regex: Optional[str] = None) -> Set[str]:
+    """Retrieve the set of connectors for which the given file was changed in the current branch (compared to master).
+
+    Args:
+        diff_regex (str): Find the edited files that contain the following regex in their change.
+
+    Returns:
+        Set[Connector]: Set of connectors that were changed
+    """
     airbyte_repo = git.Repo(search_parent_directories=True)
 
     if diff_regex is None:
@@ -97,10 +122,9 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
     changed_acceptance_test_config_paths = {
         file_path
         for file_path in airbyte_repo.git.diff(*diff_command_args).split("\n")
-        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) and file_path.endswith(ACCEPTANCE_TEST_CONFIG_FILE_NAME)
+        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) and file_path.endswith(file_name)
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
-
 
 def has_local_cdk_ref(build_file: Path) -> bool:
     """Return true if the build file uses the local CDK.
