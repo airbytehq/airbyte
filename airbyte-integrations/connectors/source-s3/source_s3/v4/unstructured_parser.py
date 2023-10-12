@@ -10,12 +10,11 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
+from airbyte_cdk.sources.file_based.exceptions import RecordParseError, FileBasedSourceError
 from source_s3.v4.config import S3FileBasedStreamConfig
 
 
 class UnstructuredParser(FileTypeParser):
-
-    MAX_SIZE_PER_CHUNK = 4_000_000
 
     async def infer_schema(
         self,
@@ -24,12 +23,16 @@ class UnstructuredParser(FileTypeParser):
         stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
-        return {
-            "content": {"type": "string"},
-            "chunk_number": {"type": "integer"},
-            "no_of_chunks": {"type": "integer"},
-            "id": {"type": "string"},
-        }
+        with stream_reader.open_file(file, self.file_read_mode, None, logger) as file_handle:
+            filetype = self._get_filetype(file_handle)
+
+            if filetype not in self._supported_file_types():
+                raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri)
+
+            return {
+                "content": {"type": "string"},
+                "id": {"type": "string"},
+            }
 
     def parse_records(
         self,
@@ -39,55 +42,58 @@ class UnstructuredParser(FileTypeParser):
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
-        with stream_reader.open_file(file, self.file_read_mode, None, logger) as fp:
-            markdown = self.read_file(fp, logger)
-            if not markdown:
-                return []
-            chunks = [markdown[i : i + self.MAX_SIZE_PER_CHUNK] for i in range(0, len(markdown), self.MAX_SIZE_PER_CHUNK)]
-            yield from [
-                {
-                    "content": chunk,
-                    "chunk_number": i,
-                    "no_of_chunks": len(chunks),
-                    "id": f"{file.uri}_{i}",
-                }
-                for i, chunk in enumerate(chunks)
-            ]
+        with stream_reader.open_file(file, self.file_read_mode, None, logger) as file_handle:
+            markdown = self.read_file(file_handle, logger)
+            yield {
+                "content": markdown,
+                "id": file.uri,
+            }
 
-    def read_file(self, file: IOBase, logger: logging.Logger) -> Optional[str]:
-        from unstructured.file_utils.filetype import FileType, detect_filetype
+    def read_file(self, file_handle: IOBase, logger: logging.Logger) -> str:
+        from unstructured.file_utils.filetype import FileType
         from unstructured.partition.auto import partition
         from unstructured.partition.md import optional_decode
+
+        file_name = file_handle.name
+        filetype = self._get_filetype(file_handle)
+
+        if filetype == FileType.MD:
+            return optional_decode(file_handle.read())
+        if filetype not in self._supported_file_types():
+            raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file_name)
+        elements = partition(file=file_handle, metadata_filename=file_name)
+        return self._render_markdown(elements)
+    
+    def _get_filetype(self, file: IOBase):
+        from unstructured.file_utils.filetype import detect_filetype
 
         # set name to none, otherwise unstructured will try to get the modified date from the local file system
         file_name = file.name
         file.name = None
-        filetype = detect_filetype(
+        return detect_filetype(
             file=file,
             file_filename=file_name,
         )
-        if filetype == FileType.MD:
-            return optional_decode(file.read())
-        if filetype not in [FileType.PDF, FileType.DOCX]:
-            logger.warn(f"Skipping {file_name}, unsupported file type {str(filetype)}")
-            return None
-        elements = partition(file=file, metadata_filename=file_name)
-        return self._render_markdown(elements)
+    
+    def _supported_file_types(self):
+        from unstructured.file_utils.filetype import FileType
+        return [FileType.MD, FileType.PDF, FileType.DOCX]
 
     def _render_markdown(self, elements: List[Any]) -> str:
-        return "\n\n".join([self._convert_to_markdown(el) for el in elements])
+        return "\n\n".join((self._convert_to_markdown(el) for el in elements))
 
     def _convert_to_markdown(self, el: Any) -> str:
         from unstructured.documents.elements import Formula, ListItem, Title
 
         if type(el) == Title:
-            return f"# {el.text}"
+            heading_str = "#" * (el.metadata.category_depth or 1)
+            return f"{heading_str} {el.text}"
         elif type(el) == ListItem:
             return f"- {el.text}"
         elif type(el) == Formula:
             return f"```\n{el.text}\n```"
         else:
-            return el.text
+            return el.text if hasattr(el, "text") else ""
 
     @property
     def file_read_mode(self) -> FileReadMode:
