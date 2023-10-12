@@ -141,7 +141,6 @@ jobs:
           ls /root/.local/bin
           ls ~/.local/bin
           ci_credentials connectors-performance/$HARNESS_TYPE write-to-storage
-          echo "GCP_GSM_CREDENTIALS=${{ secrets.GCP_GSM_CREDENTIALS }}" >> $GITHUB_ENV
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
           HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
@@ -161,6 +160,8 @@ jobs:
           connector_name=$(echo ${{ github.event.inputs.connector }} | cut -d / -f 2)
           echo "Running ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check"
           ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.4.0
         with:
