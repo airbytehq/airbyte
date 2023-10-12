@@ -1,7 +1,10 @@
-# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
-# for more information about how to configure these tests
-connector_image: airbyte/source-azure-blob-storage:dev
-acceptance-tests:
+acceptance_tests:
+  connection:
+    tests:
+      - config_path: secrets/config.json
+        status: succeed
   spec:
     tests:
-      - spec_path: "main/resources/spec.json"
+      - spec_path: integration_tests/spec.json
+connector_image: airbyte/source-azure-blob-storage:dev
+test_strictness_level: low
