@@ -10,9 +10,9 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
     FromFieldEmbeddingConfigModel,
+    OpenAICompatibleEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
-    OpenAICompatibleEmbeddingConfigModel,
 )
 from airbyte_cdk.utils.spec_schema_transformations import resolve_refs
 from pydantic import BaseModel, Field
