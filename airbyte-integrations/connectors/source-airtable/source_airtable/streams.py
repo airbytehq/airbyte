@@ -10,6 +10,8 @@ import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_protocol.models import FailureType
 from source_airtable.schema_helpers import SchemaHelpers
 
 URL_BASE: str = "https://api.airtable.com/v0/"
@@ -31,6 +33,15 @@ class AirtableBases(HttpStream):
         return "meta/bases"
 
     def should_retry(self, response: requests.Response) -> bool:
+        if (
+            response.status_code == requests.codes.FORBIDDEN
+            and response.json().get("error", {}).get("type") == "INVALID_PERMISSIONS_OR_MODEL_NOT_FOUND"
+        ):
+            if isinstance(self._session.auth, TokenAuthenticator):
+                error_message = "Personal Access Token has not enough permissions, please add all required permissions to existed one or create new PAT, see docs for more info: https://docs.airbyte.com/integrations/sources/airtable#step-1-set-up-airtable"
+            else:
+                error_message = "Access Token has not enough permissions, please reauthenticate"
+            raise AirbyteTracedException(message=error_message, failure_type=FailureType.config_error)
         if response.status_code == 403 or response.status_code == 422:
             self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
             setattr(self, "raise_on_http_errors", False)
