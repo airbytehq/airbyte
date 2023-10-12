@@ -38,13 +38,13 @@ Once pyenv and pipx is installed then run the following:
 
 ```bash
 # install airbyte-ci
-pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/
+pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/
 ```
 
 This command installs `airbyte-ci` and makes it globally available in your terminal.
 
 _Note: `--force` is required to ensure updates are applied on subsequent installs._
-_Note: `--version=python3.10` is required to ensure the correct python version is used._
+_Note: `--python=python3.10` is required to ensure the correct python version is used._
 _Note: `--editable` is required to ensure the correct python version is used._
 
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
@@ -395,6 +395,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1.7.0   | [#30526](https://github.com/airbytehq/airbyte/pull/30526)  | Implement pre/post install hooks support.                                                                  |
 | 1.6.0   | [#30474](https://github.com/airbytehq/airbyte/pull/30474)  | Test connector inside their containers.                                                                  |
 | 1.5.1   | [#31227](https://github.com/airbytehq/airbyte/pull/31227)  | Use python 3.11 in amazoncorretto-bazed gradle containers, run 'test' gradle task instead of 'check'.     |
 | 1.5.0   | [#30456](https://github.com/airbytehq/airbyte/pull/30456)  | Start building Python connectors using our base images.                                                   |
@@ -454,9 +455,9 @@ To fix this, you can either:
 
 
 ## python3.10 not found
-If you get the following error when running `pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/`:
+If you get the following error when running `pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/`:
 ```bash
-$ pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/
+$ pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/
 Error: Python 3.10 not found on your system.
 ```
 

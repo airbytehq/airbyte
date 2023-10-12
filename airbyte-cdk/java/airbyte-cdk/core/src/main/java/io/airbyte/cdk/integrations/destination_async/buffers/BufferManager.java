@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.destination_async.buffers;
 
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.integrations.destination_async.AirbyteFileUtils;
 import io.airbyte.cdk.integrations.destination_async.FlushWorkers;
 import io.airbyte.cdk.integrations.destination_async.GlobalMemoryManager;
@@ -61,6 +62,16 @@ public class BufferManager {
     return stateManager;
   }
 
+  @VisibleForTesting
+  protected GlobalMemoryManager getMemoryManager() {
+    return memoryManager;
+  }
+
+  @VisibleForTesting
+  protected ConcurrentMap<StreamDescriptor, StreamAwareQueue> getBuffers() {
+    return buffers;
+  }
+
   public BufferEnqueue getBufferEnqueue() {
     return bufferEnqueue;
   }
@@ -95,8 +106,9 @@ public class BufferManager {
     for (final var entry : buffers.entrySet()) {
       final var queue = entry.getValue();
       queueInfo.append(
-          String.format("  Queue name: %s, num records: %d, num bytes: %s",
-              entry.getKey().getName(), queue.size(), AirbyteFileUtils.byteCountToDisplaySize(queue.getCurrentMemoryUsage())))
+          String.format("  Queue name: %s, num records: %d, num bytes: %s, allocated bytes: %s",
+              entry.getKey().getName(), queue.size(), AirbyteFileUtils.byteCountToDisplaySize(queue.getCurrentMemoryUsage()),
+              AirbyteFileUtils.byteCountToDisplaySize(queue.getMaxMemoryUsage())))
           .append(System.lineSeparator());
     }
 
