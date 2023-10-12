@@ -46,7 +46,7 @@ async def run_test(poetry_package_path: str, test_directory: str) -> bool:
     logger = logging.getLogger(f"{poetry_package_path}.tests")
     logger.info(f"Running tests for {poetry_package_path}")
     # The following directories are always mounted because a lot of tests rely on them
-    directories_to_always_mount = [".git", "airbyte-integrations", "airbyte-ci", "airbyte-cdk"]
+    directories_to_always_mount = [".git", "airbyte-integrations", "airbyte-ci", "airbyte-cdk", "pyproject.toml"]
     directories_to_mount = list(set([poetry_package_path, *directories_to_always_mount]))
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
         try:
