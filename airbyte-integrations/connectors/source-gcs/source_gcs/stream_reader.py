@@ -2,10 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import itertools
 import json
 import logging
 from contextlib import contextmanager
-from datetime import timedelta
+from datetime import datetime, timedelta
 from io import IOBase
 from typing import Iterable, List, Optional
 
@@ -33,6 +34,7 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
         super().__init__()
         self._gcs_client = None
+        self._config = None
 
     @property
     def config(self) -> Config:
@@ -43,38 +45,54 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, Config), "Config must be an instance of the expected Config class."
         self._config = value
 
-    @property
-    def gcs_client(self) -> storage.Client:
+    def _initialize_gcs_client(self):
         if self.config is None:
             raise ValueError("Source config is missing; cannot create the GCS client.")
         if self._gcs_client is None:
-            credentials = service_account.Credentials.from_service_account_info(json.loads(self.config.service_account))
+            credentials = self._get_credentials()
             self._gcs_client = storage.Client(credentials=credentials)
         return self._gcs_client
+
+    def _get_credentials(self):
+        return service_account.Credentials.from_service_account_info(json.loads(self.config.service_account))
+
+    @property
+    def gcs_client(self) -> storage.Client:
+        return self._initialize_gcs_client()
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
         """
         Retrieve all files matching the specified glob patterns in GCS.
         """
         try:
-            bucket = self.gcs_client.get_bucket(self.config.bucket)
-            remote_files = bucket.list_blobs(prefix=prefix)
+            start_date = (
+                datetime.strptime(self.config.start_date, self.DATE_TIME_FORMAT) if self.config and self.config.start_date else None
+            )
+            prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs or [])
+            globs = globs or [None]
 
-            for remote_file in remote_files:
-                if FILE_FORMAT in remote_file.name.lower():
-                    yield RemoteFile(
-                        uri=remote_file.generate_signed_url(expiration=timedelta(hours=1), version="v4"),
-                        last_modified=remote_file.updated.astimezone(pytz.utc).replace(tzinfo=None),
-                    )
+            for prefix, glob in itertools.product(prefixes, globs):
+                bucket = self.gcs_client.get_bucket(self.config.bucket)
+                blobs = bucket.list_blobs(prefix=prefix, match_glob=glob)
+                for blob in blobs:
+                    last_modified = blob.updated.astimezone(pytz.utc).replace(tzinfo=None)
+
+                    if FILE_FORMAT in blob.name.lower() and (not start_date or last_modified >= start_date):
+                        uri = blob.generate_signed_url(expiration=timedelta(hours=1), version="v4")
+
+                        yield RemoteFile(uri=uri, last_modified=last_modified)
 
         except Exception as exc:
-            logger.error(f"Error while listing files: {str(exc)}")
-            raise ErrorListingFiles(
-                FileBasedSourceError.ERROR_LISTING_FILES,
-                source="gcs",
-                bucket=self.config.bucket,
-                prefix=prefix,
-            ) from exc
+            self._handle_file_listing_error(exc, prefix, logger)
+
+    def _handle_file_listing_error(self, exc: Exception, prefix: str, logger: logging.Logger):
+        logger.error(f"Error while listing files: {str(exc)}")
+        raise ErrorListingFiles(
+            FileBasedSourceError.ERROR_LISTING_FILES,
+            source="gcs",
+            bucket=self.config.bucket,
+            prefix=prefix,
+        ) from exc
 
     @contextmanager
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
