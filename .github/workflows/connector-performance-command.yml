@@ -58,7 +58,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -107,7 +106,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
       - name: Install Java
         uses: actions/setup-java@v3
         with:
