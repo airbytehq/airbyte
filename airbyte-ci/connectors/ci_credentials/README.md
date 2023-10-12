@@ -30,13 +30,13 @@ python -m pipx ensurepath
 Once pyenv and pipx is installed then run the following:
 
 ```bash
-pipx install --editable --force --version=python3.10 airbyte-ci/connectors/ci_credentials/
+pipx install --editable --force --python=python3.10 airbyte-ci/connectors/ci_credentials/
 ```
 
 This command installs `ci_credentials` and makes it globally available in your terminal.
 
 _Note: `--force` is required to ensure updates are applied on subsequent installs._
-_Note: `--version=python3.10` is required to ensure the correct python version is used._
+_Note: `--python=python3.10` is required to ensure the correct python version is used._
 _Note: `--editable` is required to ensure the correct python version is used._
 
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
@@ -46,12 +46,12 @@ If you face any installation problem feel free to reach out the Airbyte Connecto
 Download a Service account json key that has access to Google Secrets Manager.
 
 ### Create Service Account
-* Go to https://console.cloud.google.com/iam-admin/serviceaccounts/create?project=dataline-integration-testing
+* Go to https://console.cloud.google.com/iam-admin/serviceaccounts/create?project=ab-connector-integration-test
 * In step #1 `Service account details`, set a name and a relevant description
 * In step #2 `Grant this service account access to project`, select role `Owner` (there is a role that is more scope but I based this decision on others `<user>-testing` service account)
 
 ### Create Service Account Token
-* Go to https://console.cloud.google.com/iam-admin/serviceaccounts?project=dataline-integration-testing
+* Go to https://console.cloud.google.com/iam-admin/serviceaccounts?project=ab-connector-integration-test
 * Find your service account and click on it
 * Go in the tab "KEYS"
 * Click on "ADD KEY -> Create new key" and select JSON. This will download a file on your computer

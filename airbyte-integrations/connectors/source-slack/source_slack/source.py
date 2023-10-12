@@ -209,8 +209,9 @@ class IncrementalMessageStream(ChanneledStream, ABC):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         if not stream_slice:
+            # return an empty iterator
             # this is done to emit at least one state message when no slices are generated
-            return []
+            return iter([])
         return super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
 
