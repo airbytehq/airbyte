@@ -22,10 +22,13 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
+import java.util.Set;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import net.snowflake.client.jdbc.SnowflakeType;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +51,9 @@ public class SnowflakeDataSourceUtils {
       .version(HttpClient.Version.HTTP_2)
       .connectTimeout(Duration.ofSeconds(10))
       .build();
+  public static final Set<SnowflakeType> ALLOWED_CURSOR_TYPES = Set.of(SnowflakeType.TIMESTAMP, SnowflakeType.TIMESTAMP_TZ,
+      SnowflakeType.TIME, SnowflakeType.DATE, SnowflakeType.FIXED, SnowflakeType.TIMESTAMP_LTZ, SnowflakeType.TIMESTAMP_NTZ,
+      SnowflakeType.INTEGER, SnowflakeType.REAL, SnowflakeType.TEXT);
 
   /**
    * Snowflake OAuth access token expires in 10 minutes. For the cases when sync duration is more than
