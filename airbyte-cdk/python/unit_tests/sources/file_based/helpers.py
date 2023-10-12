@@ -16,6 +16,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
 from airbyte_cdk.sources.file_based.stream.cursor import DefaultFileBasedCursor
 from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesStreamReader
+from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 
 
 class EmptySchemaParser(CsvParser):
@@ -26,8 +27,7 @@ class EmptySchemaParser(CsvParser):
 
 
 class LowInferenceLimitDiscoveryPolicy(DefaultDiscoveryPolicy):
-    @property
-    def max_n_files_for_schema_inference(self) -> int:
+    def get_max_n_files_for_schema_inference(self, parser: FileTypeParser) -> int:
         return 1
 
 

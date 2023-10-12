@@ -53,10 +53,15 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         - If the user provided a schema in the config, check that a subset of records in
           one file conform to the schema via a call to stream.conforms_to_schema(schema).
         """
+        parser = stream.get_parser()
         try:
             files = self._check_list_files(stream)
-            if not stream.get_parser().override_max_n_files_for_parsability == 0:
+            if not parser.override_max_n_files_for_parsability == 0:
                 self._check_parse_record(stream, files[0], logger)
+            else:
+                # If the parser is set to not check parsability, we still want to check that we can open the file.
+                handle = stream.stream_reader.open_file(files[0], parser.file_read_mode, None, logger)
+                handle.close()
         except CheckAvailabilityError:
             return False, "".join(traceback.format_exc())
 

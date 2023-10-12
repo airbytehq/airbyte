@@ -36,6 +36,7 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
         self._stream.catalog_schema = _ANY_SCHEMA
         self._stream.config = _ANY_CONFIG
         self._stream.validation_policy = PropertyMock(validate_schema_before_sync=False)
+        self._stream.stream_reader = self._stream_reader
 
     def test_given_file_extension_does_not_match_when_check_availability_and_parsability_then_stream_is_still_available(self) -> None:
         """
@@ -61,3 +62,4 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
 
         assert is_available
         assert not self._parser.parse_records.called
+        assert self._stream_reader.open_file.called

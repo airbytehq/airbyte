@@ -139,11 +139,10 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
         assert messages[1].log.level == Level.WARN
 
     def test_override_max_n_files_for_schema_inference_is_respected(self) -> None:
-        self._discovery_policy.max_n_files_for_schema_inference = 10
         self._discovery_policy.n_concurrent_requests = 1
+        self._discovery_policy.get_max_n_files_for_schema_inference.return_value = 3
         self._stream.config.input_schema = None
         self._stream.config.schemaless = None
-        self._parser.override_max_n_files_for_schema_inference = 3
         self._parser.infer_schema.return_value = {"data": {"type": "string"}}
         files = [RemoteFile(uri=f"file{i}", last_modified=self._NOW) for i in range(10)]
         self._stream_reader.get_matching_files.return_value = files

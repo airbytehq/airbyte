@@ -21,7 +21,7 @@ class FileTypeParser(ABC):
     """
 
     @property
-    def override_max_n_files_for_schema_inference(self) -> Optional[int]:
+    def parser_max_n_files_for_schema_inference(self) -> Optional[int]:
         """
         The discovery policy decides how many files are loaded for schema inference. This method can provide a parser-specific override. If it's defined, the smaller of the two values will be used.
         """
