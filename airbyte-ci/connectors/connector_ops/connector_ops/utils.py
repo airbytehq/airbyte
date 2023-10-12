@@ -126,6 +126,7 @@ def get_changed_file(file_name: str, diff_regex: Optional[str] = None) -> Set[st
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
 
+
 def has_local_cdk_ref(build_file: Path) -> bool:
     """Return true if the build file uses the local CDK.
 
