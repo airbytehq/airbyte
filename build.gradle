@@ -546,6 +546,8 @@ subprojects { subproj ->
         maxParallelForks = Runtime.runtime.availableProcessors()
         // This allows to set up a `gradle.properties` file inside the connector folder to reduce parallelization.
         // This is especially useful for connectors that share resources, like Redshift or Snowflake.
+        // This limits the number of test classes that execute in parallel.
+        // See also usages of parallelExecutionsPerThread.
         if (subproj.hasProperty('numberThreads')) {
             int numberThreads = 0
             String numberThreadsString = subproj.property('numberThreads').toString()
