@@ -17,7 +17,7 @@ For existing Shopify sources, if you previously used the **API Password** authen
 4. Select the store you want to sync and review the consent.
 5. Click **Install** to finish the installation.
 6. The **Shopify Store** field will be automatically filled based on the store you selected. Confirm the value is accurate.
-7. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+7. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Please note that this defaults to January 1st, 2020.
 8. Click **Set up source** and wait for the connection test to complete.
 
 For detailed information on supported sync modes, supported streams and performance considerations, refer to the [full documentation for Shopify](https://docs.airbyte.com/integrations/sources/shopify).
