@@ -74,6 +74,9 @@ definitions:
       start_time_option:
         field_name: begin_time
         inject_into: body_json
+      end_time_option:
+        field_name: end_time
+        inject_into: body_json
     retriever:
       $ref: "#/definitions/retriever"
       requester:
@@ -114,6 +117,9 @@ definitions:
       cursor_field: "updated_at"
       start_time_option:
         field_name: begin_time
+        inject_into: body_json
+      end_time_option:
+        field_name: end_time
         inject_into: body_json
     retriever:
       $ref: "#/definitions/retriever"
