@@ -9,9 +9,19 @@ import requests
 from pyrate_limiter import Duration as OrgDuration
 from pyrate_limiter import InMemoryBucket, Limiter
 from pyrate_limiter import Rate as OrgRate
+from pyrate_limiter.exceptions import BucketFullException
 
 Duration = OrgDuration
 Rate = OrgRate
+
+
+class CallRateLimitHit(Exception):
+    def __init__(self, error: str, item: Any, weight: int, rate: str, time_to_wait: int):
+        self.item = item
+        self.weight = weight
+        self.rate = rate
+        self.time_to_wait = time_to_wait
+        super().__init__(error)
 
 
 class AbstractCallRatePolicy(abc.ABC):
@@ -49,7 +59,18 @@ class CallRatePolicy(AbstractCallRatePolicy):
         self._limiter = Limiter(self._bucket)
 
     def try_acquire(self, request: Any, weight: int = 1):
-        self._limiter.try_acquire(request, weight=weight)
+        try:
+            self._limiter.try_acquire(request, weight=weight)
+        except BucketFullException as exc:
+            item = self._limiter.bucket_factory.wrap_item(request, weight)
+            time_to_wait = self._bucket.waiting(item)
+            raise CallRateLimitHit(
+                error=exc.meta_info["error"],
+                item=exc.meta_info["name"],
+                weight=int(exc.meta_info["weight"]),
+                rate=exc.meta_info["rate"],
+                time_to_wait=time_to_wait,
+            )
 
 
 class RequestMatcher:
