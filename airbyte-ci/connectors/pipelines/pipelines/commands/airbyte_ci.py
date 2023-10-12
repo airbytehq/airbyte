@@ -27,6 +27,8 @@ from pipelines.utils import (
 from .groups.connectors import connectors
 from .groups.metadata import metadata
 from .groups.tests import test
+from .groups.check import core_group
+
 
 # HELPERS
 
@@ -180,6 +182,9 @@ def airbyte_ci(
 airbyte_ci.add_command(connectors)
 airbyte_ci.add_command(metadata)
 airbyte_ci.add_command(test)
+
+# hack, overrides all the commands
+core_group.click_group()
 
 if __name__ == "__main__":
     airbyte_ci()

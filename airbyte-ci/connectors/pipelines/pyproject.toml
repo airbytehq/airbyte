@@ -23,6 +23,8 @@ requests = "2.28.2" # Pinned as the requests 2.29.0 version is not compatible wi
 connector-ops = {path = "../connector_ops", develop = true}
 toml = "^0.10.2"
 sentry-sdk = "^1.28.1"
+aircmd = {git = "git@github.com:airbytehq/aircmd.git", rev = "af01222136772f44dad4b9cb28207ae6cc9263d2"} # branch bnchrch/aircmd-python-310
+prefect = {git = "https://github.com/PrefectHQ/prefect.git", rev = "tasks-on-main-thread"}
 
 [tool.poetry.group.test.dependencies]
 pytest = "^6.2.5"
