@@ -6,7 +6,7 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'normalization'
+    mypyDirectory 'normalization'
 }
 
 dependencies {

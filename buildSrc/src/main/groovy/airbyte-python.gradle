@@ -7,7 +7,8 @@ import org.gradle.api.tasks.Exec
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
 abstract class AirbytePythonExtension {
-    abstract String moduleDirectory
+    abstract String mypyDirectory
+    abstract String mypyConfigFile
 }
 
 class Helpers {
@@ -114,7 +115,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             // flake8 doesn't support pyproject.toml files
             // and thus there is the wrapper "pyproject-flake8" for this
             pip 'pyproject-flake8:0.0.1a2'
-            pip 'mypy:1.4.1'
+            pip 'mypy:1.6.0'
             pip 'pytest:6.2.5'
             pip 'coverage[toml]:6.3.1'
         }
@@ -175,9 +176,13 @@ class AirbytePythonPlugin implements Plugin<Project> {
 
         def mypyCheck = project.tasks.register('mypyCheck', PythonTask) {
             module = "mypy"
-            command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
+            def configFile = project.rootProject.file('pyproject.toml')
+            if (extension.hasProperty('mypyConfigFile') && extension.mypyConfigFile != null) {
+                configFile = project.file(extension.mypyConfigFile)
+            }
+            command = "-p ${extension.mypyDirectory} --config-file ${configFile.absolutePath} --install-types --non-interactive"
             onlyIf {
-                extension.hasProperty('moduleDirectory') && extension.moduleDirectory != null
+                extension.hasProperty('mypyDirectory') && extension.mypyDirectory != null
             }
         }
         mypyCheck.configure {
