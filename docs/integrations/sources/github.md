@@ -45,7 +45,12 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
    <!-- env:oss -->
 -  **For Airbyte Open Source**: Authenticate with **Personal Access Token**.
    <!-- /env:oss -->
-6. **GitHub Repositories** - List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`. Repositories with the wrong name, or repositories that do not exist, or have the wrong name format are not allowed.
+6. **GitHub Repositories** - List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
+
+:::caution
+Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
+:::
+
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. If the date is not set, all data will be replicated. Using for streams: `Comments`, `Commit comment reactions`, `Commit comments`, `Commits`, `Deployments`, `Events`, `Issue comment reactions`, `Issue events`, `Issue milestones`, `Issue reactions`, `Issues`, `Project cards`, `Project columns`, `Projects`, `Pull request comment reactions`, `Pull requests`, `Pull request stats`, `Releases`, `Review comments`, `Reviews`, `Stargazers`, `Workflow runs`, `Workflows`.
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 9. **Max requests per hour (Optional)** - The GitHub API allows for a maximum of 5000 requests per hour (15000 for Github Enterprise). You can specify a lower value to limit your use of the API quota.
