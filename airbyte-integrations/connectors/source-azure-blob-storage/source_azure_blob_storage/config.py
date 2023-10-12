@@ -22,25 +22,25 @@ class Config(AbstractFileBasedSpec):
         title="Azure Blob Storage account name",
         description="The account's name of the Azure Blob Storage.",
         examples=["airbyte5storage"],
-        order=1,
+        order=2,
     )
     azure_blob_storage_account_key: str = Field(
         title="Azure Blob Storage account key",
         description="The Azure blob storage account key.",
         airbyte_secret=True,
         examples=["Z8ZkZpteggFx394vm+PJHnGTvdRncaYS+JhLKdj789YNmD+iyGTnG+PV+POiuYNhBg/ACS+LKjd%4FG3FHGN12Nd=="],
-        order=2,
+        order=3,
     )
     azure_blob_storage_container_name: str = Field(
         title="Azure blob storage container (Bucket) Name",
         description="The name of the Azure blob storage container.",
         examples=["airbytetescontainername"],
-        order=3,
+        order=4,
     )
     azure_blob_storage_endpoint: Optional[str] = Field(
         title="Endpoint Domain Name",
         description="This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from "
         "command line) to use Microsoft native from example.",
         examples=["blob.core.windows.net"],
-        order=4,
+        order=11,
     )
