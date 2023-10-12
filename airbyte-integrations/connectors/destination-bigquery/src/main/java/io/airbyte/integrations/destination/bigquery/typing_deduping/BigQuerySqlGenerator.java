@@ -166,6 +166,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     if (airbyteType == AirbyteProtocolType.STRING) {
       // Special case String to only use json value for type string and parse the json for others
+      // Naive json_value returns NULL for object/array values
       return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
           (CASE
