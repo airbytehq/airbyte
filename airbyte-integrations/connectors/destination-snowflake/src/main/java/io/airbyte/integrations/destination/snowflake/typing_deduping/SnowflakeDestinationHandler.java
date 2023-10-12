@@ -49,7 +49,6 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
                 row.get("COLUMN_NAME").asText(),
                 new SnowflakeColumnDefinition(row.get("DATA_TYPE").asText(), fromSnowflakeBoolean(row.get("IS_NULLABLE").asText()))),
             LinkedHashMap::putAll);
-
     if (columns.isEmpty()) {
       return Optional.empty();
     } else {
