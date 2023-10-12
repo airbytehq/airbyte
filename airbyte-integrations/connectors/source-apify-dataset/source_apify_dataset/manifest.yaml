@@ -113,14 +113,14 @@ streams:
       path: "datasets/{{ config['dataset_id'] }}/items"
     schema_loader:
       type: JsonFileSchemaLoader
-      file_path: "./source_apify_dataset/schemas/item_collection"
+      file_path: "./source_apify_dataset/schemas/item_collection.json"
     retriever:
       $ref: "#/definitions/retriever"
       record_selector:
         type: RecordSelector
         extractor:
           class_name: source_apify_dataset.wrapping_dpath_extractor.WrappingDpathExtractor
-          field_path: ["data"]
+          field_path: []
 
 check:
   type: CheckStream
