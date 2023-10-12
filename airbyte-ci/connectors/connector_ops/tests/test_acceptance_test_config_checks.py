@@ -74,7 +74,7 @@ def not_ga_not_tracked_change_expected_team(tmp_path, pokeapi_acceptance_test_co
 
 @pytest.fixture
 def ga_connector_file_change_expected_team(tmp_path, ga_connector_file):
-    expected_teams = list(acceptance_test_config_checks.GA_CONNECTOR_REVIEWERS)
+    expected_teams = [{"any-of": list(acceptance_test_config_checks.GA_CONNECTOR_REVIEWERS)}]
     backup_path = tmp_path / "ga_acceptance_test_config.backup"
     shutil.copyfile(ga_connector_file, backup_path)
     with open(ga_connector_file, "a") as ga_acceptance_test_config_file:
