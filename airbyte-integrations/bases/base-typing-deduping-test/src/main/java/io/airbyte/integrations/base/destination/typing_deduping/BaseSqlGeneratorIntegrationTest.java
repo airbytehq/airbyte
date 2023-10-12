@@ -471,13 +471,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "When all raw records have non-null loaded_at, the min timestamp should be equal to the latest extracted_at");
 
     // If we insert another raw record with older extracted_at than the typed records, we should fetch a
-    // timestamp
-    // earlier than this new record.
+    // timestamp earlier than this new record.
     // This emulates a sync inserting some records out of order, running T+D on newer records, inserting
-    // an older record,
-    // and then crashing before it can execute T+D. The next sync should recognize that older record as
-    // still needing
-    // to be processed.
+    // an older record,  and then crashing before it can execute T+D. The next sync should recognize
+    // that older record as still needing to be processed.
     insertRawTableRecords(
         streamId,
         List.of(Jsons.deserialize(
@@ -489,15 +486,14 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
     actualTimestamp = destinationHandler.getMinTimestampForSync(streamId).get();
-    /*
-     * this is a pretty confusing pair of assertions. To explain them in more detail: There are three
-     * records in the raw table: loaded_at not null, extracted_at = 2023-01-01 00:00Z loaded_at is null,
-     * extracted_at = 2023-01-01 12:00Z loaded_at not null, extracted_at = 2023-01-02 00:00Z
-     *
-     * We should have a timestamp which is older than the second record, but newer than or equal to
-     * (i.e. not before) the first record. This allows us to query the raw table using
-     * `_airbyte_extracted_at > ?`, which will include the second record and exclude the first record.
-     */
+    // this is a pretty confusing pair of assertions. To explain them in more detail: There are three
+    // records in the raw table:
+    // * loaded_at not null, extracted_at = 2023-01-01 00:00Z
+    // * loaded_at is null, extracted_at = 2023-01-01 12:00Z
+    // * loaded_at not null, extracted_at = 2023-01-02 00:00Z
+    // We should have a timestamp which is older than the second record, but newer than or equal to
+    // (i.e. not before) the first record. This allows us to query the raw table using
+    // `_airbyte_extracted_at > ?`, which will include the second record and exclude the first record.
     assertTrue(
         actualTimestamp.isBefore(Instant.parse("2023-01-01T12:00:00Z")),
         "When some raw records have null loaded_at, the min timestamp should be earlier than the oldest unloaded record (2023-01-01 12:00Z). Was actually "
