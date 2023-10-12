@@ -29,22 +29,22 @@ def test_http_mapping():
         ),
     )
 
-    assert api_budget.acquire_call(Request("POST", url="/unmatched_endpoint")), "unrestricted call"
-    assert api_budget.acquire_call(Request("GET", url="/users")), "first call"
-    assert api_budget.acquire_call(Request("GET", url="/users")), "second call"
+    api_budget.acquire_call(Request("POST", url="/unmatched_endpoint"), block=False), "unrestricted call"
+    api_budget.acquire_call(Request("GET", url="/users"), block=False), "first call"
+    api_budget.acquire_call(Request("GET", url="/users"), block=False), "second call"
 
     for i in range(8):
-        assert api_budget.acquire_call(Request("GET", url="/users")), f"{i + 3} call"
+        api_budget.acquire_call(Request("GET", url="/users"), block=False), f"{i + 3} call"
 
     with pytest.raises(CallRateLimitHit) as excinfo:
-        api_budget.acquire_call(Request("GET", url="/users")), "call over limit"
-    assert excinfo.value.time_to_wait == 60 * 1000
+        api_budget.acquire_call(Request("GET", url="/users"), block=False), "call over limit"
+    assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60, 0.1)
 
     time.sleep(5)
 
     with pytest.raises(CallRateLimitHit) as excinfo:
-        api_budget.acquire_call(Request("GET", url="/users")), "call over limit"
-    assert excinfo.value.time_to_wait <= (60 - 5) * 1000
+        api_budget.acquire_call(Request("GET", url="/users"), block=False), "call over limit"
+    assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60 - 5, 0.1)
 
-    assert api_budget.acquire_call(Request("POST", url="/groups")), "doesn't affect other policies"
-    assert api_budget.acquire_call(Request("POST", url="/list")), "unrestricted call"
+    api_budget.acquire_call(Request("POST", url="/groups"), block=False), "doesn't affect other policies"
+    api_budget.acquire_call(Request("POST", url="/list"), block=False), "unrestricted call"
