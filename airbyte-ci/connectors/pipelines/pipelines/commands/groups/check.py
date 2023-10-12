@@ -1,9 +1,10 @@
 import glob
-from typing import Optional
+from typing import List, Optional
 
 from aircmd.actions.environments import with_debian_packages, with_pip_packages
 from aircmd.models.base import PipelineContext
-from aircmd.models.click_commands import ClickCommandMetadata, ClickGroup
+from aircmd.models.click_commands import ClickCommandMetadata, ClickGroup, ClickFlag
+from aircmd.models.click_params import ParameterType
 from aircmd.models.click_utils import LazyPassDecorator, map_pyd_cmd_to_click_command
 from aircmd.models.github import github_integration
 from aircmd.models.plugins import DeveloperPlugin
@@ -15,14 +16,23 @@ from prefect import flow, task
 
 
 @task
-async def format_check_task(client: Client, settings: GlobalSettings) -> Container:
+async def format_check_task(client: Client, settings: GlobalSettings, check: bool = False) -> Container:
     mypy_cache: CacheVolume = client.cache_volume("mypy_cache")
+    check_flag = "--check" if check else None
+
+    base_cmd = ["poetry", "run", "black"]
+    base_flags = ["--config", "pyproject.toml"]
+    if check_flag:
+        base_flags.append(check_flag)
+    
+    cmd = base_cmd + base_flags + ["."]
+
     result = (with_poetry(client)
               .with_directory("/src", client.host().directory(".", include=["**/*.py", "pyproject.toml", "poetry.lock"], exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**/build"]))
               .with_workdir("/src")
               .with_exec(["ls"])
               .with_exec(["poetry", "install", "--no-dev"])
-              .with_exec(["poetry", "run", 'black', "--config", "pyproject.toml", '--check', "."])
+              .with_exec(cmd)
     )
 
     await result.sync()
@@ -47,9 +57,14 @@ pass_global_settings: LazyPassDecorator = LazyPassDecorator(GlobalSettings)
 core_group = ClickGroup(group_name="core", group_help="Commands for developing on aircmd")
 
 
-class BuildCommand(ClickCommandMetadata):
+class FormatCommand(ClickCommandMetadata):
     command_name: str = "format_check"
     command_help: str = "Builds aircmd"
+    flags: List[ClickFlag] = [ClickFlag(name = "--check",
+                                    type = ParameterType.BOOL,
+                                    help = "Fixes formatting errors", 
+                                    default = False)]
+
 
 
 class TestCommand(ClickCommandMetadata):
@@ -62,14 +77,14 @@ class CICommand(ClickCommandMetadata):
     command_help: str = "Run CI for aircmd"
 
 
-@core_group.command(BuildCommand())
+@core_group.command(FormatCommand())
 @pass_pipeline_context
 @pass_global_settings
 @flow(validate_parameters=False, name="Aircmd Core Build")
 @github_integration
-async def format_check(ctx: PipelineContext, settings: GlobalSettings, client: Optional[Client] = None) -> Container:
+async def format_check(ctx: PipelineContext, settings: GlobalSettings, client: Optional[Client] = None, check: bool = False) -> Container:
     build_client = await ctx.get_dagger_client(client, ctx.prefect_flow_run_context.flow_run.name)
-    build_future = await format_check_task.submit(build_client, settings)
+    build_future = await format_check_task.submit(build_client, settings, check=check)
     result = await build_future.result()
     return result
 
