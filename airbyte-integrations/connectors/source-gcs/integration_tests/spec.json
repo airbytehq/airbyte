@@ -276,6 +276,6 @@
         "type" : "string"
       }
     },
-    "required": ["streams", "bucket", "service_account"]
+    "required": ["streams", "service_account", "bucket"]
   }
 }
