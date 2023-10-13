@@ -26,7 +26,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 class ThreadBasedConcurrentStream(AbstractStream):
 
-    DEFAULT_TIMEOUT_SECONDS = 300
+    DEFAULT_TIMEOUT_SECONDS = 600
     DEFAULT_MAX_QUEUE_SIZE = 10_000
     DEFAULT_SLEEP_TIME = 0.1
 
@@ -158,6 +158,15 @@ class ThreadBasedConcurrentStream(AbstractStream):
 
     def as_airbyte_stream(self) -> AirbyteStream:
         stream = AirbyteStream(name=self.name, json_schema=dict(self._json_schema), supported_sync_modes=[SyncMode.full_refresh])
+
+        # if self.namespace:
+        #     stream.namespace = self.namespace
+
+        if self._cursor_field:
+            stream.source_defined_cursor = True
+            stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
+            # Wrap the cursor field in an array
+            stream.default_cursor_field = [self._cursor_field]
 
         keys = self._primary_key
         if keys and len(keys) > 0:

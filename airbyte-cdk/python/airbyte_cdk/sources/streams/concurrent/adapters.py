@@ -166,8 +166,7 @@ class StreamFacade(Stream):
 
     @property
     def supports_incremental(self) -> bool:
-        # Only full refresh is supported
-        return False
+        return bool(self._stream.cursor_field)
 
     def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         """
