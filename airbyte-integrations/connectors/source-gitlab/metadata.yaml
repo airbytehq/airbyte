@@ -17,6 +17,13 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - merge_requests
+      - users
+      - issues
+      - projects
+      - commits
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   tags:
     - language:python
