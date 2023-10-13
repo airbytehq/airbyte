@@ -128,11 +128,6 @@ public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination {
   }
 
   @Override
-  public ConnectorSpecification spec() throws Exception {
-    return null;
-  }
-
-  @Override
   protected DataSource getDataSource(final JsonNode config) {
     return SnowflakeDatabase.createDataSource(config, airbyteEnvironment);
   }

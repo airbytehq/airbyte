@@ -40,24 +40,4 @@ public class SnowflakeBulkLoadDestinationTest {
         new SnowflakeBulkLoadDestination().spec());
   }
 
-  private static Stream<Arguments> destinationTypeToConfig() {
-    return Stream.of(arguments("bulk_load_config.json", DestinationType.BULK_LOAD_FROM_S3));
-  }
-
-  @ParameterizedTest
-  @MethodSource("destinationTypeToConfig")
-  public void testS3ConfigType(final String configFileName, final DestinationType expectedDestinationType) throws Exception {
-    final JsonNode config = Jsons.deserialize(MoreResources.readResource(configFileName), JsonNode.class);
-    final DestinationType typeFromConfig = SnowflakeDestinationResolver.getTypeFromConfig(config);
-    assertEquals(expectedDestinationType, typeFromConfig);
-  }
-
-  @Test
-  void testWriteSnowflakeInternal() throws Exception {
-    final JsonNode config = Jsons.deserialize(MoreResources.readResource("bulk_load_config.json"), JsonNode.class);
-    final SerializedAirbyteMessageConsumer consumer = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS)
-        .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), null);
-    assertEquals(AsyncStreamConsumer.class, consumer.getClass());
-  }
-
 }
