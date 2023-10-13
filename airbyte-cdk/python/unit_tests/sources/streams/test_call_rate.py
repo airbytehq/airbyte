@@ -6,12 +6,10 @@ from typing import Iterable, Mapping
 
 import pytest
 import requests
-
-from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRatePolicy, Duration, HttpRequestMatcher, Rate, CallRateLimitHit
-from requests import Request
-
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRateLimitHit, CallRatePolicy, Duration, HttpRequestMatcher, Rate
+from airbyte_cdk.sources.streams.http import HttpStream
+from requests import Request
 
 
 class StubDummyHttpStream(HttpStream):
@@ -70,8 +68,7 @@ def test_http_mapping():
 
 
 def test_order_of_rates():
-    """CallRatePolicy will check all rates and apply stricter.
-    """
+    """CallRatePolicy will check all rates and apply stricter."""
     api_budget = APIBudget()
     api_budget.add_policy(
         request_matcher=HttpRequestMatcher(url="/users", method="GET"),
@@ -92,8 +89,7 @@ def test_order_of_rates():
 
 
 def test_http_stream_integration(mocker):
-    """Test that HttpStream will use call budget when provided
-    """
+    """Test that HttpStream will use call budget when provided"""
     response = requests.Response()
     response.status_code = 200
 
