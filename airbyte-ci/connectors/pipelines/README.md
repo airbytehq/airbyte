@@ -381,6 +381,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 1.9.0   | [#31369](https://github.com/airbytehq/airbyte/pull/31369)  | Run airbyte-ci from any where in airbyte project                                                          |
 | 1.8.0   | [#31369](https://github.com/airbytehq/airbyte/pull/31369)  | Remove metadata test commands                                                                             |
 | 1.7.2   | [#31343](https://github.com/airbytehq/airbyte/pull/31343)  | Bind Pytest integration tests to a dockerhost.                                                                  |
 | 1.7.1   | [#31332](https://github.com/airbytehq/airbyte/pull/31332)  | Disable Gradle step caching on source-postgres.                                                                  |

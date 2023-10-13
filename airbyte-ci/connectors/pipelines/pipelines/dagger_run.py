@@ -15,6 +15,8 @@ from typing import Optional
 import pkg_resources
 import requests
 
+from pipelines.commands.airbyte_ci import set_working_directory_to_root
+
 LOGGER = logging.getLogger(__name__)
 BIN_DIR = Path.home() / "bin"
 BIN_DIR.mkdir(exist_ok=True)
@@ -88,6 +90,7 @@ def check_dagger_cli_install() -> str:
 
 
 def main():
+    set_working_directory_to_root()
     os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
     exit_code = 0
     if len(sys.argv) > 1 and any([arg in ARGS_DISABLING_TUI for arg in sys.argv]):

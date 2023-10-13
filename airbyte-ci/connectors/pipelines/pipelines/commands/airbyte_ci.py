@@ -5,12 +5,14 @@
 """This module is the CLI entrypoint to the airbyte-ci commands."""
 
 import importlib
-import os
-import subprocess
 from typing import List
-
+import git
 import click
+import os
+import logging
+
 from github import PullRequest
+from pathlib import Path
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
@@ -63,6 +65,24 @@ def get_latest_version() -> str:
                 return line.split("=")[1].strip().replace('"', "")
     raise Exception("Could not find version in pyproject.toml. Please ensure you are running from the root of the airbyte repo.")
 
+def get_airbyte_repo() -> git.Repo:
+    """Get the airbyte repo."""
+    return git.Repo(search_parent_directories=True)
+
+
+def get_airbyte_repo_path_with_fallback() -> Path:
+    """Get the airbyte repo path."""
+    try:
+        return get_airbyte_repo().working_tree_dir
+    except git.exc.InvalidGitRepositoryError:
+        logging.warning("Could not find the airbyte repo, falling back to the current working directory.")
+        path = Path.cwd()
+        logging.warning(f"Using {path} as the airbyte repo path.")
+        return path
+
+def set_working_directory_to_root() -> None:
+    """Set the working directory to the root of the airbyte repo."""
+    os.chdir(get_airbyte_repo_path_with_fallback())
 
 def get_modified_files(
     git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, pull_request: PullRequest
@@ -89,7 +109,6 @@ def get_modified_files(
 
 
 # COMMANDS
-
 
 @click.group(help="Airbyte CI top-level command group.")
 @click.version_option(__installed_version__)
@@ -180,6 +199,7 @@ def airbyte_ci(
 airbyte_ci.add_command(connectors)
 airbyte_ci.add_command(metadata)
 airbyte_ci.add_command(test)
+set_working_directory_to_root()
 
 if __name__ == "__main__":
     airbyte_ci()
