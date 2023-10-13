@@ -51,8 +51,8 @@ Log into [GitLab](https://gitlab.com) and then generate a [personal access token
 5. Log in and Authorize to the GitLab account.
 6. **API URL** - The URL to access you self-hosted GitLab instance or `gitlab.com` (default).
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams.
-8. **Groups (Optional)** - Space-delimited list of GitLab group IDs, e.g. `airbytehq` for single group, `airbytehq another-repo` for multiple groups.
-9. **Projects (Optional)** - Space-delimited list of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
+8. **Groups (Optional)** - List of GitLab group IDs, e.g. `airbytehq` for single group, `airbytehq another-repo` for multiple groups.
+9. **Projects (Optional)** - List of GitLab projects to pull data for, e.g. `airbytehq/airbyte`.
 10. Click **Set up source**.
 
 **Note:** You can specify either Group IDs or Project IDs in the source configuration. If both fields are blank, the connector will retrieve a list of all the groups that are accessible to the configured token and ingest as normal.
