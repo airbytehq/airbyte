@@ -14,10 +14,12 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
 from requests.auth import AuthBase
+from requests.exceptions import HTTPError
 
 from .streams import (
     Branches,
     Commits,
+    Deployments,
     EpicIssues,
     Epics,
     GitlabStream,
@@ -106,7 +108,7 @@ class SourceGitlab(AbstractSource):
     def _projects_stream(self, config: MutableMapping[str, Any]) -> Union[Projects, GroupProjects]:
         if not self.__projects_stream:
             auth_params = self._auth_params(config)
-            project_ids = list(filter(None, config.get("projects", "").split(" ")))
+            project_ids = config.get("projects_list", [])
             groups_stream = self._groups_stream(config)
             if groups_stream.group_ids:
                 self.__projects_stream = GroupProjects(project_ids=project_ids, parent_stream=groups_stream, **auth_params)
@@ -121,7 +123,7 @@ class SourceGitlab(AbstractSource):
         return self.__auth_params
 
     def _get_group_list(self, config: MutableMapping[str, Any]) -> List[str]:
-        group_ids = list(filter(None, config.get("groups", "").split(" ")))
+        group_ids = config.get("groups_list")
         # Gitlab exposes different APIs to get a list of groups.
         # We use https://docs.gitlab.com/ee/api/groups.html#list-groups in case there's no group IDs in the input config.
         # This API provides full information about all available groups, including subgroups.
@@ -140,7 +142,36 @@ class SourceGitlab(AbstractSource):
     def _is_http_allowed() -> bool:
         return os.environ.get("DEPLOYMENT_MODE", "").upper() != "CLOUD"
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def _try_refresh_access_token(self, logger, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        This method attempts to refresh the expired `access_token`, while `refersh_token` is stil valid.
+        In order to obtain the new `refresh_token`, the Customer should `re-auth` in the source settings.
+        """
+        # get currernt authenticator
+        authenticator: Union[SingleUseRefreshTokenOauth2Authenticator, TokenAuthenticator] = self.__auth_params.get("authenticator")
+        if isinstance(authenticator, SingleUseRefreshTokenOauth2Authenticator):
+            try:
+                creds = authenticator.refresh_access_token()
+                # update the actual config values
+                config["credentials"]["access_token"] = creds[0]
+                config["credentials"]["refresh_token"] = creds[3]
+                config["credentials"]["token_expiry_date"] = authenticator.get_new_token_expiry_date(creds[1], creds[2]).to_rfc3339_string()
+                # update the config
+                emit_configuration_as_airbyte_control_message(config)
+                logger.info("The `access_token` was successfully refreshed.")
+                return config
+            except HTTPError as http_error:
+                raise http_error
+            except Exception as e:
+                raise Exception(f"Unknown error occured while refreshing the `access_token`, details: {e}")
+
+    def _handle_expired_access_token_error(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        try:
+            return self.check_connection(logger, self._try_refresh_access_token(logger, config))
+        except HTTPError as http_error:
+            return False, f"Unable to refresh the `access_token`, please re-authenticate in Sources > Settings. Details: {http_error}"
+
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         config = self._ensure_default_values(config)
         is_valid, scheme, _ = parse_url(config["api_url"])
         if not is_valid:
@@ -153,27 +184,37 @@ class SourceGitlab(AbstractSource):
                 next(projects.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
                 return True, None
             return True, None  # in case there's no projects
+        except HTTPError as http_error:
+            if config["credentials"]["auth_type"] == "oauth2.0":
+                if http_error.response.status_code == 401:
+                    return self._handle_expired_access_token_error(logger, config)
+                elif http_error.response.status_code == 500:
+                    return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(http_error)}"
+            else:
+                return False, f"Unable to connect to Gitlab API with the provided Private Access Token - {repr(http_error)}"
         except Exception as error:
-            return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(error)}"
+            return False, f"Unknown error occured while checking the connection - {repr(error)}"
 
     def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
         config = self._ensure_default_values(config)
         auth_params = self._auth_params(config)
+        start_date = config.get("start_date")
 
         groups, projects = self._groups_stream(config), self._projects_stream(config)
-        pipelines = Pipelines(parent_stream=projects, start_date=config["start_date"], **auth_params)
-        merge_requests = MergeRequests(parent_stream=projects, start_date=config["start_date"], **auth_params)
+        pipelines = Pipelines(parent_stream=projects, start_date=start_date, **auth_params)
+        merge_requests = MergeRequests(parent_stream=projects, start_date=start_date, **auth_params)
         epics = Epics(parent_stream=groups, **auth_params)
 
         streams = [
             groups,
             projects,
             Branches(parent_stream=projects, repository_part=True, **auth_params),
-            Commits(parent_stream=projects, repository_part=True, start_date=config["start_date"], **auth_params),
+            Commits(parent_stream=projects, repository_part=True, start_date=start_date, **auth_params),
             epics,
+            Deployments(parent_stream=projects, **auth_params),
             EpicIssues(parent_stream=epics, **auth_params),
             GroupIssueBoards(parent_stream=groups, **auth_params),
-            Issues(parent_stream=projects, start_date=config["start_date"], **auth_params),
+            Issues(parent_stream=projects, start_date=start_date, **auth_params),
             Jobs(parent_stream=pipelines, **auth_params),
             ProjectMilestones(parent_stream=projects, **auth_params),
             GroupMilestones(parent_stream=groups, **auth_params),
