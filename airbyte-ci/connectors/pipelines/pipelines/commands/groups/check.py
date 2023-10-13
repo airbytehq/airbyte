@@ -18,19 +18,16 @@ from pipelines.utils import sh_dash_c
 
 
 @click.command()
-@click.option("--fix", default=False, help="Whether to automatically fix any formatting issues detected.")
+@click.option("--fix", is_flag=True, default=False, help="Fix any formatting issues detected.")
 async def check(fix: bool):
-    """Checks whether the repository is formatted correctly.
-    Args:
-        fix (bool): Whether to automatically fix any formatting issues detected.
-    """
+    """Checks whether the repository is formatted correctly."""
     success = await run_check(fix)
     if not success:
         click.Abort()
 
 
 async def run_check(fix: bool) -> bool:
-    """Formats the repository.
+    """Checks whether the repository is formatted correctly.
     Args:
         fix (bool): Whether to automatically fix any formatting issues detected.
     Returns:
