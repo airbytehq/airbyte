@@ -7,10 +7,7 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.embedder import (
-    create_from_config,
-    Embedder,
-)
+from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
@@ -25,7 +22,11 @@ class DestinationWeaviate(Destination):
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
-        self.embedder = create_from_config(config.embedding, config.processing) if config.embedding.mode != "no_embedding" else NoEmbedder(config.embedding)
+        self.embedder = (
+            create_from_config(config.embedding, config.processing)
+            if config.embedding.mode != "no_embedding"
+            else NoEmbedder(config.embedding)
+        )
         self.indexer = WeaviateIndexer(config.indexing)
 
     def write(

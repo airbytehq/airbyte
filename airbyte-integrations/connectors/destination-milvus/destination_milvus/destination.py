@@ -7,10 +7,7 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.embedder import (
-    create_from_config,
-    Embedder,
-)
+from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
