@@ -118,6 +118,7 @@ See information about rate limits [here](https://airtable.com/developers/web/api
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------|
+| 4.1.3   | 2023-10-13 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update error message for invalid permissions                                           |
 | 4.1.2   | 2023-10-10 | [31215](https://github.com/airbytehq/airbyte/pull/31215) | Exclude bases without permission                                                       |
 | 4.1.1   | 2023-10-10 | [31119](https://github.com/airbytehq/airbyte/pull/31119) | Add user-friendly error message when refresh token has expired                         |
 | 4.1.0   | 2023-10-10 | [31044](https://github.com/airbytehq/airbyte/pull/31044) | Add source table name to output records                                                |
