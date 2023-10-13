@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from contextlib import contextmanager
 import logging
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
 from datetime import datetime
 from enum import Enum
 from io import IOBase

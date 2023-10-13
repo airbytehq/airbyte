@@ -2,12 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from contextlib import contextmanager
 import csv
 import io
 import json
 import logging
 import tempfile
+from contextlib import contextmanager
 from datetime import datetime
 from io import IOBase
 from typing import Any, Iterable, List, Mapping, Optional
