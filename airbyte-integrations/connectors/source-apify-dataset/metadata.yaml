@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f17145-fe20-4ef5-a548-e29b048adf84
-  dockerImageTag: 2.0.0
+  dockerImageTag: 2.1.0
   dockerRepository: airbyte/source-apify-dataset
   githubIssueLabel: source-apify-dataset
   icon: apify-dataset.svg
@@ -27,6 +27,9 @@ data:
       2.0.0:
         upgradeDeadline: 2023-09-18
         message: "Fix broken stream, manifest refactor"
+      2.1.0:
+        upgradeDeadline: 2023-10-13
+        message: "Add a new stream item_collection"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
   tags:
