@@ -5,13 +5,14 @@
 import abc
 import time
 from datetime import timedelta
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 import requests
 from pyrate_limiter import Duration as OrgDuration
 from pyrate_limiter import InMemoryBucket, Limiter
 from pyrate_limiter import Rate as OrgRate
 from pyrate_limiter.exceptions import BucketFullException
+from requests_cache import CachedSession
 
 Duration = OrgDuration
 Rate = OrgRate
@@ -131,15 +132,19 @@ class HttpRequestMatcher(RequestMatcher):
         if isinstance(request, (requests.Request, requests.PreparedRequest)):
             if self._method is not None:
                 if request.method != self._method:
+                    print("method", request.method, self._method)
                     return False
             if self._url is not None:
                 if request.url != self._url:
+                    print("url", request.url, self._url)
                     return False
             if self._params is not None:
                 if not self._match_dict(request.params, self._params):
+                    print("params", request.params, self._params)
                     return False
             if self._headers is not None:
                 if not self._match_dict(request.headers, self._headers):
+                    print("headers", request.headers, self._headers)
                     return False
             return True
 
@@ -227,3 +232,78 @@ class APIBudget(AbstractAPIBudget):
                 policy.try_acquire(request)
             else:
                 raise
+
+
+class SessionWithCallRate(requests.Session):
+    def __init__(self, api_budget: AbstractAPIBudget):
+        """Constructor
+
+        :param api_budget: api call rate limiter
+        """
+        self._api_budget = api_budget
+        super().__init__()
+
+    def send(self, request, **kwargs):
+        """Send a given PreparedRequest. We override it to respect call rate limits.
+
+        :rtype: requests.Response
+        """
+        self._api_budget.acquire_call(request)
+
+        return super().send(request, **kwargs)
+
+
+class CachedSessionWithCallRate(CachedSession):
+    def __init__(self, *args, api_budget: AbstractAPIBudget, **kwargs):
+        """Constructor
+
+        :param args: all positional arguments from CachedSession
+        :param api_budget: api call rate limiter
+        :param kwargs: all keyword arguments from CachedSession
+        """
+        self._api_budget = api_budget
+        super().__init__(*args, **kwargs)
+
+    def send(self, request, **kwargs):
+        """Send a given PreparedRequest. We override it to respect call rate limits.
+
+        :rtype: requests.Response
+        """
+        if not self.cache.contains(request):
+            self._api_budget.acquire_call(request)
+
+        return super().send(request, **kwargs)
+
+
+class SessionProxyWithCallRate:
+    def __init__(self, session: Union[requests.Session, CachedSession], api_budget: APIBudget):
+        """Wraps Session to take into account API call rate limits
+
+        :param session:
+        :param api_budget:
+        """
+        self._session = session
+        self._api_budget = api_budget
+
+    def __getattr__(self, item):
+        """Forward everything to original Session class
+
+        :param item: attribute name
+        :return:
+        """
+        return getattr(self._session, item)
+
+    def send(self, request, **kwargs):
+        """Override method to respect API call rate limits
+
+        :param request:
+        :param kwargs:
+        :return:
+        """
+        if isinstance(self._session, CachedSession):
+            if not self.cache.contains(request):
+                self._api_budget.acquire_call(request)
+        else:
+            self._api_budget.acquire_call(request)
+
+        return self._session.send(request, **kwargs)
