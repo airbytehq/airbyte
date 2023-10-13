@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from contextlib import contextmanager
 import csv
 import io
 import json
@@ -96,11 +97,12 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
             globs,
         )
 
+    @contextmanager
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         if self.file_type == "csv":
-            return self._make_csv_file_contents(file.uri)
+            yield self._make_csv_file_contents(file.uri)
         elif self.file_type == "jsonl":
-            return self._make_jsonl_file_contents(file.uri)
+            yield self._make_jsonl_file_contents(file.uri)
         else:
             raise NotImplementedError(f"No implementation for file type: {self.file_type}")
 

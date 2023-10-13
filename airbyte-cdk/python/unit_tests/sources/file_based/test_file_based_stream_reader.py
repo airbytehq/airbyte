@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from contextlib import contextmanager
 from io import IOBase
 from typing import Any, Iterable, List, Mapping, Optional, Set
 
@@ -70,6 +71,7 @@ class TestStreamReader(AbstractFileBasedStreamReader):
     def get_matching_files(self, globs: List[str]) -> Iterable[RemoteFile]:
         pass
 
+    @contextmanager
     def open_file(self, file: RemoteFile) -> IOBase:
         pass
 
