@@ -28,6 +28,7 @@ from .groups.check import core_group
 from .groups.connectors import connectors
 from .groups.metadata import metadata
 from .groups.tests import test
+from .groups.format import format
 
 # HELPERS
 
@@ -181,9 +182,10 @@ def airbyte_ci(
 airbyte_ci.add_command(connectors)
 airbyte_ci.add_command(metadata)
 airbyte_ci.add_command(test)
+airbyte_ci.add_command(format)
 
-# hack, overrides all the commands
-airbyte_ci.add_command(core_group.click_group())
+# # hack, overrides all the commands
+# airbyte_ci.add_command(core_group.click_group())
 
 if __name__ == "__main__":
     airbyte_ci()
