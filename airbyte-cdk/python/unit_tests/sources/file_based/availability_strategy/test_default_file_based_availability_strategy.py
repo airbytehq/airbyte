@@ -4,7 +4,7 @@
 
 import unittest
 from datetime import datetime
-from unittest.mock import Mock, PropertyMock
+from unittest.mock import Mock, PropertyMock, mock_open
 
 from airbyte_cdk.sources.file_based.availability_strategy.default_file_based_availability_strategy import (
     DefaultFileBasedAvailabilityStrategy,
@@ -55,6 +55,7 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
         """
         If the stream parser sets parser_max_n_files_for_parsability to 0, then we should not call parse_records on it
         """
+        self._stream_reader.open_file = mock_open()
         self._parser.parser_max_n_files_for_parsability = 0
         self._stream.list_files.return_value = [_FILE_WITH_UNKNOWN_EXTENSION]
 
