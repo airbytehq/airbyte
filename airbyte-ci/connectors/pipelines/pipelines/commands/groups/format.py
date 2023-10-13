@@ -18,19 +18,20 @@ from pipelines.utils import sh_dash_c
 
 
 @click.command()
-def format():
+@click.option("--fix", default=False, help="Whether to automatically fix any formatting issues detected.")
+def format(fix: bool):
     """Formats the repository.
 
     Args:
         poetry_package_path (str): Path to the poetry package to test, relative to airbyte-ci directory.
         test_directory (str): The directory containing the tests to run.
     """
-    success = anyio.run(run_format)
+    success = anyio.run(run_format, fix)
     if not success:
         click.Abort()
 
 
-async def run_format() -> bool:
+async def run_format(fix: bool) -> bool:
     """Runs the tests for the given airbyte-ci package in a Dagger container.
 
     Args:
@@ -39,6 +40,10 @@ async def run_format() -> bool:
         bool: True if the tests passed, False otherwise.
     """
     logger = logging.getLogger(f"format")
+    format_command = ["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."]
+    if fix: 
+        format_command.remove("--check")
+
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
         try:
             docker_host_socket = dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock")
@@ -67,7 +72,7 @@ async def run_format() -> bool:
                 )
                 .with_workdir(f"/src")
                 .with_exec(["poetry", "install", "--no-dev"])
-                .with_exec(["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."])
+                .with_exec(format_command)
             )
 
             await pytest_container
