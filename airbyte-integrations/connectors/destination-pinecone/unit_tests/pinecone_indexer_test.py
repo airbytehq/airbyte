@@ -52,13 +52,9 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
             Mock(page_content="test2", metadata={"_ab_stream": "abc"}, embedding=[4, 5, 6]),
         ],
         None,
-        "some_stream"
+        "some_stream",
     )
-    indexer.delete(
-        ["delete_id1", "delete_id2"],
-        None,
-        "some_stram"
-    )
+    indexer.delete(["delete_id1", "delete_id2"], None, "some_stram")
     indexer.pinecone_index.delete.assert_called_with(filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}})
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
@@ -84,13 +80,9 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
             Mock(page_content="test2", metadata={"_ab_stream": "abc"}, embedding=[4, 5, 6]),
         ],
         None,
-        "some_stream"
+        "some_stream",
     )
-    indexer.delete(
-        ["delete_id1", "delete_id2"],
-        None,
-        "some_stram"
-    )
+    indexer.delete(["delete_id1", "delete_id2"], None, "some_stram")
     indexer.pinecone_index.query.assert_called_with(
         vector=[0, 0, 0], filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000
     )
@@ -112,11 +104,7 @@ def test_pinecone_index_delete_1k_limit(mock_describe_index):
         MagicMock(matches=[MagicMock(id=f"doc_id_{str(i)}") for i in range(1300)]),
         MagicMock(matches=[]),
     ]
-    indexer.delete(
-        ["delete_id1"],
-        None,
-        "some_stream"
-    )
+    indexer.delete(["delete_id1"], None, "some_stream")
     indexer.pinecone_index.delete.assert_has_calls(
         [call(ids=[f"doc_id_{str(i)}" for i in range(1000)]), call(ids=[f"doc_id_{str(i+1000)}" for i in range(300)])]
     )
@@ -124,11 +112,7 @@ def test_pinecone_index_delete_1k_limit(mock_describe_index):
 
 def test_pinecone_index_empty_batch():
     indexer = create_pinecone_indexer()
-    indexer.index(
-        [],
-        None,
-        "some_stream"
-    )
+    indexer.index([], None, "some_stream")
     indexer.pinecone_index.delete.assert_not_called()
     indexer.pinecone_index.upsert.assert_not_called()
 
