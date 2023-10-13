@@ -3,7 +3,6 @@
 #
 
 import logging
-from contextlib import contextmanager
 from io import IOBase
 from typing import Iterable, List, Optional, Set
 
