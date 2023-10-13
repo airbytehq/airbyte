@@ -105,10 +105,16 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
         """
         self._parser.parse_records.side_effect = [ValueError("An error"), [self._A_RECORD]]
 
-        messages = list(self._stream.read_records_from_slice({"files": [
-            RemoteFile(uri="invalid_file", last_modified=self._NOW),
-            RemoteFile(uri="valid_file", last_modified=self._NOW),
-        ]}))
+        messages = list(
+            self._stream.read_records_from_slice(
+                {
+                    "files": [
+                        RemoteFile(uri="invalid_file", last_modified=self._NOW),
+                        RemoteFile(uri="valid_file", last_modified=self._NOW),
+                    ]
+                }
+            )
+        )
 
         assert messages[0].log.level == Level.ERROR
         assert messages[1].record.data["data"] == self._A_RECORD
@@ -118,13 +124,40 @@ class DefaultFileBasedStreamTest(unittest.TestCase):
         self._validation_policy.record_passes_validation_policy.return_value = False
         self._parser.parse_records.side_effect = [self._iter([self._A_RECORD, ValueError("An error")])]
 
-        messages = list(self._stream.read_records_from_slice({"files": [
-            RemoteFile(uri="invalid_file", last_modified=self._NOW),
-            RemoteFile(uri="valid_file", last_modified=self._NOW),
-        ]}))
+        messages = list(
+            self._stream.read_records_from_slice(
+                {
+                    "files": [
+                        RemoteFile(uri="invalid_file", last_modified=self._NOW),
+                        RemoteFile(uri="valid_file", last_modified=self._NOW),
+                    ]
+                }
+            )
+        )
 
         assert messages[0].log.level == Level.ERROR
         assert messages[1].log.level == Level.WARN
+
+    def test_override_max_n_files_for_schema_inference_is_respected(self) -> None:
+        self._discovery_policy.n_concurrent_requests = 1
+        self._discovery_policy.get_max_n_files_for_schema_inference.return_value = 3
+        self._stream.config.input_schema = None
+        self._stream.config.schemaless = None
+        self._parser.infer_schema.return_value = {"data": {"type": "string"}}
+        files = [RemoteFile(uri=f"file{i}", last_modified=self._NOW) for i in range(10)]
+        self._stream_reader.get_matching_files.return_value = files
+
+        schema = self._stream.get_json_schema()
+
+        assert schema == {
+            "type": "object",
+            "properties": {
+                "_ab_source_file_last_modified": {"type": "string"},
+                "_ab_source_file_url": {"type": "string"},
+                "data": {"type": ["null", "string"]},
+            },
+        }
+        assert self._parser.infer_schema.call_count == 3
 
     def _iter(self, x: Iterable[Any]) -> Iterator[Any]:
         for item in x:

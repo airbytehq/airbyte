@@ -2,21 +2,25 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 from abc import ABC, abstractmethod
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
     FromFieldEmbeddingConfigModel,
+    OpenAICompatibleEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
+    ProcessingConfigModel,
 )
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
 from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, format_exception
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.fake import FakeEmbeddings
+from langchain.embeddings.localai import LocalAIEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
 
 
@@ -92,7 +96,7 @@ class BaseOpenAIEmbedder(Embedder):
 
 class OpenAIEmbedder(BaseOpenAIEmbedder):
     def __init__(self, config: OpenAIEmbeddingConfigModel, chunk_size: int):
-        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, chunk_size=8191, max_retries=15), chunk_size)  # type: ignore
+        super().__init__(OpenAIEmbeddings(openai_api_key=config.openai_key, max_retries=15), chunk_size)  # type: ignore
 
 
 class AzureOpenAIEmbedder(BaseOpenAIEmbedder):
@@ -147,6 +151,37 @@ class FakeEmbedder(Embedder):
         return OPEN_AI_VECTOR_SIZE
 
 
+CLOUD_DEPLOYMENT_MODE = "cloud"
+
+
+class OpenAICompatibleEmbedder(Embedder):
+    def __init__(self, config: OpenAICompatibleEmbeddingConfigModel):
+        super().__init__()
+        self.config = config
+        # Client is set internally
+        # Always set an API key even if there is none defined in the config because the validator will fail otherwise. Embedding APIs that don't require an API key don't fail if one is provided, so this is not breaking usage.
+        self.embeddings = LocalAIEmbeddings(model=config.model_name, openai_api_key=config.api_key or "dummy-api-key", openai_api_base=config.base_url, max_retries=15)  # type: ignore
+
+    def check(self) -> Optional[str]:
+        deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
+        if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self.config.base_url.startswith("https://"):
+            return "Base URL must start with https://"
+
+        try:
+            self.embeddings.embed_query("test")
+        except Exception as e:
+            return format_exception(e)
+        return None
+
+    def embed_chunks(self, chunks: List[Chunk]) -> List[List[float]]:
+        return self.embeddings.embed_documents([chunk.page_content for chunk in chunks])
+
+    @property
+    def embedding_dimensions(self) -> int:
+        # vector size produced by the model
+        return self.config.dimensions
+
+
 class FromFieldEmbedder(Embedder):
     def __init__(self, config: FromFieldEmbeddingConfigModel):
         super().__init__()
@@ -189,3 +224,30 @@ class FromFieldEmbedder(Embedder):
     @property
     def embedding_dimensions(self) -> int:
         return self.config.dimensions
+
+
+embedder_map = {
+    "openai": OpenAIEmbedder,
+    "cohere": CohereEmbedder,
+    "fake": FakeEmbedder,
+    "azure_openai": AzureOpenAIEmbedder,
+    "from_field": FromFieldEmbedder,
+    "openai_compatible": OpenAICompatibleEmbedder,
+}
+
+
+def create_from_config(
+    embedding_config: Union[
+        AzureOpenAIEmbeddingConfigModel,
+        CohereEmbeddingConfigModel,
+        FakeEmbeddingConfigModel,
+        FromFieldEmbeddingConfigModel,
+        OpenAIEmbeddingConfigModel,
+        OpenAICompatibleEmbeddingConfigModel,
+    ],
+    processing_config: ProcessingConfigModel,
+):
+    if embedding_config.mode == "azure_openai" or embedding_config.mode == "openai":
+        return embedder_map[embedding_config.mode](embedding_config, processing_config.chunk_size)
+    else:
+        return embedder_map[embedding_config.mode](embedding_config)

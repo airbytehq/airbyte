@@ -174,11 +174,7 @@ error_record_validation_user_provided_schema_scenario = (
             ],
         }
     )
-    .set_source_builder(
-        _base_failure_scenario.source_builder.copy().set_validation_policies(
-            {FailingSchemaValidationPolicy.ALWAYS_FAIL: FailingSchemaValidationPolicy()}
-        )
-    )
+    .set_validation_policies({FailingSchemaValidationPolicy.ALWAYS_FAIL: FailingSchemaValidationPolicy()})
     .set_expected_check_error(None, FileBasedSourceError.ERROR_VALIDATING_RECORD.value)
 ).build()
 

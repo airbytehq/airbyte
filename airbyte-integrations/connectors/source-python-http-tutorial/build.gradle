@@ -1,11 +1,7 @@
 plugins {
     id 'airbyte-python'
-    id 'airbyte-docker'
+    id 'airbyte-docker-legacy'
     id 'airbyte-standard-source-test-file'
-}
-
-airbytePython {
-    moduleDirectory 'source_python_http_tutorial'
 }
 
 airbyteStandardSourceTestFile {
