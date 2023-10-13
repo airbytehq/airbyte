@@ -49,7 +49,7 @@ class AbstractFileBasedStream(Stream):
         self.config = config
         self.catalog_schema = catalog_schema
         self.validation_policy = validation_policy
-        self._stream_reader = stream_reader
+        self.stream_reader = stream_reader
         self._discovery_policy = discovery_policy
         self._availability_strategy = availability_strategy
         self._parsers = parsers
