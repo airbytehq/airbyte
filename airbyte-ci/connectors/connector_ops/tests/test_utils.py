@@ -164,6 +164,15 @@ def test_parse_dependencies(gradle_file_with_dependencies):
     assert all([test_dependency in expected_test_dependencies for test_dependency in test_dependencies])
 
 
+def test_parse_dependencies_with_cdk(gradle_file_with_local_cdk_dependencies):
+    gradle_file, expected_regular_dependencies, expected_test_dependencies = gradle_file_with_local_cdk_dependencies
+    regular_dependencies, test_dependencies = utils.parse_gradle_dependencies(gradle_file)
+    assert len(regular_dependencies) == len(expected_regular_dependencies)
+    assert all([regular_dependency in expected_regular_dependencies for regular_dependency in regular_dependencies])
+    assert len(test_dependencies) == len(expected_test_dependencies)
+    assert all([test_dependency in expected_test_dependencies for test_dependency in test_dependencies])
+
+
 def test_get_all_connectors_in_repo():
     all_connectors = utils.get_all_connectors_in_repo()
     assert len(all_connectors) > 0
