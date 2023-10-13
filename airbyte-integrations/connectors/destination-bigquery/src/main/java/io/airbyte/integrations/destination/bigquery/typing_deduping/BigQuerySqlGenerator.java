@@ -121,7 +121,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // This is guaranteed to not be a Union, so we won't recurse infinitely
       final AirbyteType chosenType = u.chooseType();
       return extractAndCast(column, chosenType, forceSafeCast);
-    } else if (airbyteType instanceof Struct) {
+    }
+
+    if (airbyteType instanceof Struct) {
       // We need to validate that the struct is actually a struct.
       // Note that struct columns are actually nullable in two ways. For a column `foo`:
       // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
@@ -137,7 +139,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
           END, wide_number_mode=>'round')
           """);
-    } else if (airbyteType instanceof Array) {
+    }
+
+    if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
       return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
@@ -148,7 +152,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
           END, wide_number_mode=>'round')
           """);
-    } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
+    }
+
+    if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
       // JSON_QUERY returns a SQL null if the field contains a JSON null, so we actually parse the
       // airbyte_data to json
       // and json_query it directly (which preserves nulls correctly).
@@ -156,16 +162,32 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           """
           JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${column_name}"')
           """);
+    }
+
+    if (airbyteType == AirbyteProtocolType.STRING) {
+      // Special case String to only use json value for type string and parse the json for others
+      // Naive json_value returns NULL for object/array values and json_query adds escaped quotes to the
+      // string.
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
+          """
+          (CASE
+                WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
+                  OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')) != 'string'
+                  THEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
+              ELSE
+              JSON_VALUE(`_airbyte_data`, '$."${column_name}"')
+            END)
+          """);
+    }
+
+    final StandardSQLTypeName dialectType = toDialectType(airbyteType);
+    final var baseTyping = "JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"')";
+    if (dialectType == StandardSQLTypeName.STRING) {
+      // json_value implicitly returns a string, so we don't need to cast it.
+      return baseTyping;
     } else {
-      final StandardSQLTypeName dialectType = toDialectType(airbyteType);
-      final var baseTyping = "JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"')";
-      if (dialectType == StandardSQLTypeName.STRING) {
-        // json_value implicitly returns a string, so we don't need to cast it.
-        return baseTyping;
-      } else {
-        // SAFE_CAST is actually a massive performance hit, so we should skip it if we can.
-        return cast(baseTyping, dialectType.name(), forceSafeCast);
-      }
+      // SAFE_CAST is actually a massive performance hit, so we should skip it if we can.
+      return cast(baseTyping, dialectType.name(), forceSafeCast);
     }
   }
 

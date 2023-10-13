@@ -557,6 +557,8 @@ subprojects { subproj ->
             }
         }
 
+        systemProperty 'user.timezone', 'UTC'
+
         if (rootProject.ext.skipSlowTests) {
             // Exclude all connector unit tests
             exclude '**/io/airbyte/integrations/source/**'
