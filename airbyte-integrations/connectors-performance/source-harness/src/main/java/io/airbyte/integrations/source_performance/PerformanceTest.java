@@ -7,12 +7,12 @@ package io.airbyte.integrations.source_performance;
 import com.datadog.api.client.ApiClient;
 import com.datadog.api.client.ApiException;
 import com.datadog.api.client.v2.api.MetricsApi;
+import com.datadog.api.client.v2.model.IntakePayloadAccepted;
 import com.datadog.api.client.v2.model.MetricIntakeType;
 import com.datadog.api.client.v2.model.MetricPayload;
 import com.datadog.api.client.v2.model.MetricPoint;
 import com.datadog.api.client.v2.model.MetricResource;
 import com.datadog.api.client.v2.model.MetricSeries;
-import com.datadog.api.client.v2.model.IntakePayloadAccepted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,7 +35,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -155,8 +154,7 @@ public class PerformanceTest {
                                 new MetricPoint()
                                     .timestamp(reportingTimeInEpochSeconds)
                                     .value(throughput)))
-                        .resources(metricResources)
-                    ));
+                        .resources(metricResources)));
     try {
       IntakePayloadAccepted result = apiInstance.submitMetrics(body);
       System.out.println(result);
