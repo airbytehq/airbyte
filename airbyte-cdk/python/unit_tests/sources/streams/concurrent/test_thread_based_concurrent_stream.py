@@ -167,7 +167,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         airbyte_stream = stream.as_airbyte_stream()
         assert expected_airbyte_stream == airbyte_stream
 
-    def test_as_airbyte_stream_cursor_field_is_always_none(self):
+    def test_as_airbyte_stream_with_a_cursor(self):
 
         json_schema = {
             "type": "object",
@@ -195,9 +195,9 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         expected_airbyte_stream = AirbyteStream(
             name=self._name,
             json_schema=json_schema,
-            supported_sync_modes=[SyncMode.full_refresh],
-            source_defined_cursor=None,
-            default_cursor_field=None,
+            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+            source_defined_cursor=True,
+            default_cursor_field=["date"],
             source_defined_primary_key=None,
             namespace=None,
         )
