@@ -130,7 +130,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         return file["Key"].endswith("/")
 
     def _page(
-            self, s3: BaseClient, globs: List[str], bucket: str, prefix: Optional[str], seen: Set[str], logger: logging.Logger
+        self, s3: BaseClient, globs: List[str], bucket: str, prefix: Optional[str], seen: Set[str], logger: logging.Logger
     ) -> Iterable[RemoteFile]:
         """
         Page through lists of S3 objects.
