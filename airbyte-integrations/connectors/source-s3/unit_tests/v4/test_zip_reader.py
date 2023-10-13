@@ -62,8 +62,14 @@ def test_decompressed_stream_seek():
     # Mocking the tell method to return 0
     mock_file.tell.return_value = 0
 
-    file_info = RemoteFileInsideArchive(uri="test_file.csv", last_modified=datetime.datetime(2022, 12, 28), start_offset=0,
-                                        compressed_size=100, uncompressed_size=200, compression_method=zipfile.ZIP_STORED)
+    file_info = RemoteFileInsideArchive(
+        uri="test_file.csv",
+        last_modified=datetime.datetime(2022, 12, 28),
+        start_offset=0,
+        compressed_size=100,
+        uncompressed_size=200,
+        compression_method=zipfile.ZIP_STORED,
+    )
     stream = DecompressedStream(mock_file, file_info)
     assert stream.seek(2) == 2
 
@@ -75,8 +81,14 @@ def test_decompressed_stream_seek_out_of_bounds():
 
     mock_file.tell.return_value = 0
 
-    file_info = RemoteFileInsideArchive(uri="test_file.csv", last_modified=datetime.datetime(2022, 12, 28), start_offset=0,
-                                        compressed_size=4, uncompressed_size=8, compression_method=zipfile.ZIP_STORED)
+    file_info = RemoteFileInsideArchive(
+        uri="test_file.csv",
+        last_modified=datetime.datetime(2022, 12, 28),
+        start_offset=0,
+        compressed_size=4,
+        uncompressed_size=8,
+        compression_method=zipfile.ZIP_STORED,
+    )
     stream = DecompressedStream(mock_file, file_info)
     assert stream.seek(10) == 8  # Assumes the seek will adjust to the file's size
 
