@@ -30,7 +30,7 @@ def ga_connector_file():
 
 @pytest.fixture
 def not_ga_backward_compatibility_change_expected_team(tmp_path, pokeapi_acceptance_test_config_path) -> List:
-    expected_teams = [{"any-of": list(acceptance_test_config_checks.BACKWARD_COMPATIBILITY_REVIEWERS)}]
+    expected_teams = list(acceptance_test_config_checks.BACKWARD_COMPATIBILITY_REVIEWERS)
     backup_path = tmp_path / "backup_poke_acceptance"
     shutil.copyfile(pokeapi_acceptance_test_config_path, backup_path)
     with open(pokeapi_acceptance_test_config_path, "a") as acceptance_test_config_file:
@@ -41,7 +41,7 @@ def not_ga_backward_compatibility_change_expected_team(tmp_path, pokeapi_accepta
 
 @pytest.fixture
 def not_ga_test_strictness_level_change_expected_team(tmp_path, pokeapi_acceptance_test_config_path) -> List:
-    expected_teams = [{"any-of": list(acceptance_test_config_checks.TEST_STRICTNESS_LEVEL_REVIEWERS)}]
+    expected_teams = list(acceptance_test_config_checks.TEST_STRICTNESS_LEVEL_REVIEWERS)
     backup_path = tmp_path / "non_ga_acceptance_test_config.backup"
     shutil.copyfile(pokeapi_acceptance_test_config_path, backup_path)
     with open(pokeapi_acceptance_test_config_path, "a") as acceptance_test_config_file:
@@ -74,7 +74,7 @@ def not_ga_not_tracked_change_expected_team(tmp_path, pokeapi_acceptance_test_co
 
 @pytest.fixture
 def ga_connector_file_change_expected_team(tmp_path, ga_connector_file):
-    expected_teams = [{"any-of": list(acceptance_test_config_checks.GA_CONNECTOR_REVIEWERS)}]
+    expected_teams = list(acceptance_test_config_checks.GA_CONNECTOR_REVIEWERS)
     backup_path = tmp_path / "ga_acceptance_test_config.backup"
     shutil.copyfile(ga_connector_file, backup_path)
     with open(ga_connector_file, "a") as ga_acceptance_test_config_file:
@@ -85,7 +85,7 @@ def ga_connector_file_change_expected_team(tmp_path, ga_connector_file):
 
 @pytest.fixture
 def ga_connector_backward_compatibility_file_change_expected_team(tmp_path, ga_connector_file):
-    expected_teams = [{"any-of": list(acceptance_test_config_checks.BACKWARD_COMPATIBILITY_REVIEWERS)}]
+    expected_teams = list(acceptance_test_config_checks.BACKWARD_COMPATIBILITY_REVIEWERS)
     backup_path = tmp_path / "ga_acceptance_test_config.backup"
     shutil.copyfile(ga_connector_file, backup_path)
     with open(ga_connector_file, "a") as ga_acceptance_test_config_file:
@@ -96,7 +96,7 @@ def ga_connector_backward_compatibility_file_change_expected_team(tmp_path, ga_c
 
 @pytest.fixture
 def ga_connector_bypass_reason_file_change_expected_team(tmp_path, ga_connector_file):
-    expected_teams = [{"any-of": list(acceptance_test_config_checks.GA_BYPASS_REASON_REVIEWERS)}]
+    expected_teams = list(acceptance_test_config_checks.GA_BYPASS_REASON_REVIEWERS)
     backup_path = tmp_path / "ga_acceptance_test_config.backup"
     shutil.copyfile(ga_connector_file, backup_path)
     with open(ga_connector_file, "a") as ga_acceptance_test_config_file:
@@ -107,7 +107,7 @@ def ga_connector_bypass_reason_file_change_expected_team(tmp_path, ga_connector_
 
 @pytest.fixture
 def ga_connector_test_strictness_level_file_change_expected_team(tmp_path, ga_connector_file):
-    expected_teams = [{"any-of": list(acceptance_test_config_checks.TEST_STRICTNESS_LEVEL_REVIEWERS)}]
+    expected_teams = list(acceptance_test_config_checks.TEST_STRICTNESS_LEVEL_REVIEWERS)
     backup_path = tmp_path / "ga_acceptance_test_config.backup"
     shutil.copyfile(ga_connector_file, backup_path)
     with open(ga_connector_file, "a") as ga_acceptance_test_config_file:
@@ -127,7 +127,7 @@ def verify_requirements_file_was_generated(captured: str):
 def verify_review_requirements_file_contains_expected_teams(requirements_file_path: str, expected_teams: List):
     with open(requirements_file_path, "r") as requirements_file:
         requirements = yaml.safe_load(requirements_file)
-    assert requirements[0]["teams"] == expected_teams
+    assert any([r["teams"] == expected_teams for r in requirements])
 
 
 def check_review_requirements_file(capsys, expected_teams: List):
