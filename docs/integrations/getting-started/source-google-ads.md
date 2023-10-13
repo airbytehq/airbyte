@@ -1,4 +1,4 @@
-# Getting Started: Source Facebook Marketing
+# Getting Started: Source Google Ads
 
 ## Requirements
 

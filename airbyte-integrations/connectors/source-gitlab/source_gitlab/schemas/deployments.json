@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "ref": {
+      "type": ["null", "string"]
+    },
+    "sha": {
+      "type": ["null", "string"]
+    },
+    "environment_name": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "user": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "user_full_name": {
+      "type": ["null", "string"]
+    },
+    "user_username": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "environment": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "environment_id": {
+      "type": ["null", "integer"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    }
+  }
+}

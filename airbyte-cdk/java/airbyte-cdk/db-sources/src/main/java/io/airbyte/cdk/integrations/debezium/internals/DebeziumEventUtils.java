@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class DebeziumEventUtils {
 
-  public static final String CDN_LSN = "_ab_cdc_lsn";
+  public static final String CDC_LSN = "_ab_cdc_lsn";
   public static final String CDC_UPDATED_AT = "_ab_cdc_updated_at";
   public static final String CDC_DELETED_AT = "_ab_cdc_deleted_at";
 
@@ -114,7 +114,7 @@ public class DebeziumEventUtils {
                                                           final JsonNode source,
                                                           final CdcMetadataInjector cdcMetadataInjector,
                                                           final Set<String> configuredFields) {
-    String eventJson;
+    final String eventJson;
 
     /*
      * The change events produced by MongoDB differ based on the server version. For version BEFORE 6.x,
