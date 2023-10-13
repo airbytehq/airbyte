@@ -19,7 +19,6 @@ from ci_credentials import SecretsManager
 from pydash.objects import get
 from rich.console import Console
 from simpleeval import simple_eval
-
 console = Console()
 
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
@@ -33,7 +32,6 @@ THIRD_PARTY_GLOB = "third-party"
 THIRD_PARTY_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + f"/{THIRD_PARTY_GLOB}/"
 SCAFFOLD_CONNECTOR_GLOB = "-scaffold-"
 
-
 ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
 AIRBYTE_DOCKER_REPO = "airbyte"
 AIRBYTE_REPO_DIRECTORY_NAME = "airbyte"
@@ -46,7 +44,6 @@ TEST_GRADLE_DEPENDENCIES = [
     "testFixturesCompileOnly",
     "testFixturesImplementation",
 ]
-
 
 def download_catalog(catalog_url):
     response = requests.get(catalog_url)
@@ -65,6 +62,36 @@ IMPORTANT_CONNECTOR_THRESHOLDS = {
 ALLOWED_HOST_THRESHOLD = {
     "ql": 300,
 }
+
+def get_airbyte_repo() -> git.Repo:
+    """Get the airbyte repo."""
+    return git.Repo(search_parent_directories=True)
+
+@functools.lru_cache(maxsize=1)
+def get_airbyte_repo_path_with_fallback() -> Path:
+    """Get the airbyte repo path."""
+    try:
+        return get_airbyte_repo().working_tree_dir
+    except git.exc.InvalidGitRepositoryError:
+        logging.warning("Could not find the airbyte repo, falling back to the current working directory.")
+        path = Path.cwd()
+        logging.warning(f"Using {path} as the airbyte repo path.")
+        # log the files in the current directory to help debug
+        logging.warning(f"Files in {path}: {os.listdir(path)}")
+        return path
+
+def abs_project_path_to_relative_path_str(absolute_path: Path) -> str:
+    """Get the relative path from the absolute path.
+
+    e.g. /Users/airbyte/airbyte/integrations/source-google-sheets -> integrations/source-google-sheets
+
+    Args:
+        absolute_path (Path): The absolute path.
+
+    Returns:
+        str: The relative path string.
+    """
+    return str(absolute_path).replace(get_airbyte_repo_path_with_fallback(), "").strip("/")
 
 
 class ConnectorInvalidNameError(Exception):
@@ -88,7 +115,6 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
     Returns:
         Set[Connector]: Set of connectors that were changed
     """
-    airbyte_repo = git.Repo(search_parent_directories=True)
 
     if diff_regex is None:
         diff_command_args = ("--name-only", DIFFED_BRANCH)
@@ -97,7 +123,7 @@ def get_changed_acceptance_test_config(diff_regex: Optional[str] = None) -> Set[
 
     changed_acceptance_test_config_paths = {
         file_path
-        for file_path in airbyte_repo.git.diff(*diff_command_args).split("\n")
+        for file_path in get_airbyte_repo().git.diff(*diff_command_args).split("\n")
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) and file_path.endswith(ACCEPTANCE_TEST_CONFIG_FILE_NAME)
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
@@ -294,38 +320,45 @@ class Connector:
     def documentation_directory(self) -> Path:
         if not self.has_airbyte_docs:
             return None
-        return Path(f"./docs/integrations/{self.connector_type}s")
+        return get_airbyte_repo_path_with_fallback() / Path(f"docs/integrations/{self.connector_type}s")
 
     @property
-    def relative_documentation_path_str(self) -> str:
+    def has_airbyte_docs(self) -> bool:
+        docs_url = self.metadata.get("documentationUrl")
+        return docs_url is not None and docs_url.startswith(BASE_AIRBYTE_DOCS_URL)
+
+    @property
+    def relative_documentation_path_str(self) -> Optional[str]:
+        if not self.has_airbyte_docs:
+            return None
+
         documentation_url = self.metadata["documentationUrl"]
         relative_documentation_path = documentation_url.replace(BASE_AIRBYTE_DOCS_URL, "")
 
         # strip leading and trailing slashes
         relative_documentation_path = relative_documentation_path.strip("/")
 
-        return f"./docs/{relative_documentation_path}"
+        return f"docs/{relative_documentation_path}"
 
     @property
-    def documentation_file_path(self) -> Path:
+    def documentation_file_path(self) -> Optional[Path]:
         if not self.has_airbyte_docs:
             return None
 
-        return Path(f"{self.relative_documentation_path_str}.md")
+        return get_airbyte_repo_path_with_fallback() / Path(f"{self.relative_documentation_path_str}.md")
 
     @property
-    def inapp_documentation_file_path(self) -> Path:
+    def inapp_documentation_file_path(self) -> Optional[Path]:
         if not self.has_airbyte_docs:
             return None
 
-        return Path(f"{self.relative_documentation_path_str}.inapp.md")
+        return get_airbyte_repo_path_with_fallback() / Path(f"{self.relative_documentation_path_str}.inapp.md")
 
     @property
-    def migration_guide_file_path(self) -> Path:
+    def migration_guide_file_path(self) -> Optional[Path]:
         if not self.has_airbyte_docs:
             return None
-
-        return Path(f"{self.relative_documentation_path_str}-migrations.md")
+        return get_airbyte_repo_path_with_fallback() / Path(f"{self.relative_documentation_path_str}-migrations.md")
 
     @property
     def icon_path(self) -> Path:
@@ -334,7 +367,7 @@ class Connector:
 
     @property
     def code_directory(self) -> Path:
-        return Path(f"./{CONNECTOR_PATH_PREFIX}/{self.relative_connector_path}")
+        return get_airbyte_repo_path_with_fallback() / Path(f"{CONNECTOR_PATH_PREFIX}/{self.relative_connector_path}")
 
     @property
     def has_dockerfile(self) -> bool:
@@ -554,8 +587,7 @@ def get_changed_connectors(
 ) -> Set[Connector]:
     """Retrieve a set of Connectors that were changed in the current branch (compared to master)."""
     if modified_files is None:
-        airbyte_repo = git.Repo(search_parent_directories=True)
-        modified_files = airbyte_repo.git.diff("--name-only", DIFFED_BRANCH).split("\n")
+        modified_files = get_airbyte_repo().git.diff("--name-only", DIFFED_BRANCH).split("\n")
 
     prefix_to_check = []
     if source:

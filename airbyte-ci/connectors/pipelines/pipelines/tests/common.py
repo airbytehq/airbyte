@@ -13,7 +13,7 @@ from typing import ClassVar, List, Optional
 import requests
 import semver
 import yaml
-from connector_ops.utils import Connector
+from connector_ops.utils import Connector, abs_project_path_to_relative_path_str
 from dagger import Container, Directory, File
 from pipelines import hacks
 from pipelines.actions import environments
@@ -145,10 +145,10 @@ class QaChecks(Step):
         """
         connector_ops = await environments.with_connector_ops(self.context)
         include = [
-            str(self.context.connector.code_directory),
-            str(self.context.connector.documentation_file_path),
-            str(self.context.connector.migration_guide_file_path),
-            str(self.context.connector.icon_path),
+            abs_project_path_to_relative_path_str(self.context.connector.code_directory),
+            abs_project_path_to_relative_path_str(self.context.connector.documentation_file_path),
+            abs_project_path_to_relative_path_str(self.context.connector.migration_guide_file_path),
+            abs_project_path_to_relative_path_str(self.context.connector.icon_path),
         ]
         if (
             self.context.connector.technical_name.endswith("strict-encrypt")
@@ -156,10 +156,10 @@ class QaChecks(Step):
         ):
             original_connector = Connector(self.context.connector.technical_name.replace("-strict-encrypt", "").replace("-secure", ""))
             include += [
-                str(original_connector.code_directory),
-                str(original_connector.documentation_file_path),
-                str(original_connector.icon_path),
-                str(original_connector.migration_guide_file_path),
+                abs_project_path_to_relative_path_str(original_connector.code_directory),
+                abs_project_path_to_relative_path_str(original_connector.documentation_file_path),
+                abs_project_path_to_relative_path_str(original_connector.icon_path),
+                abs_project_path_to_relative_path_str(original_connector.migration_guide_file_path),
             ]
 
         filtered_repo = self.context.get_repo_dir(

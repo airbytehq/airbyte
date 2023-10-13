@@ -21,7 +21,7 @@ import anyio
 import asyncer
 import click
 import git
-from connector_ops.utils import get_changed_connectors
+from connector_ops.utils import get_changed_connectors, abs_project_path_to_relative_path_str
 from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account
@@ -330,7 +330,8 @@ def _find_modified_connectors(
     modified_connectors = set()
 
     for connector in all_connectors:
-        if Path(file_path).is_relative_to(Path(connector.code_directory)):
+        relative_code_directory = abs_project_path_to_relative_path_str(connector.code_directory)
+        if Path(file_path).is_relative_to(relative_code_directory):
             main_logger.info(f"Adding connector '{connector}' due to connector file modification: {file_path}.")
             modified_connectors.add(connector)
 
