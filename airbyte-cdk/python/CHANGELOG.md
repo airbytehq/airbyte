@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.51.33
+Vector DB CDK: Improve batching process
+
+## 0.51.32
+Introduce experimental ThreadBasedConcurrentStream
+
 ## 0.51.31
 Fix initialize of token_expiry_is_time_of_expiration field
 
