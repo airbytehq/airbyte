@@ -24,7 +24,7 @@ MAIN_REQUIREMENTS = [
     "pyxlsb==1.0.9",
 ]
 
-TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2", "pytest-docker~=1.0.0", "pytest-mock~=3.6.1", "docker-compose"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.2", "pytest-docker~=2.0.1", "pytest-mock~=3.6.1"]
 
 setup(
     name="source_file",
