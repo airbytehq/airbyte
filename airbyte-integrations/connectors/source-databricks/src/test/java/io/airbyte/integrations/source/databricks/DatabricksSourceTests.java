@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.databricks;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.db.Database;
+import io.airbyte.cdk.db.Database;
 import org.junit.jupiter.api.Test;
 
 public class DatabricksSourceTests {

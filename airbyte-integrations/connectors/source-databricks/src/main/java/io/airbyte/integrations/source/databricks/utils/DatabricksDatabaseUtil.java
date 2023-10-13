@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.databricks.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.databricks.DatabricksSourceConfig;
 
 public abstract class DatabricksDatabaseUtil {
