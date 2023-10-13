@@ -60,7 +60,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
                 self._check_parse_record(stream, files[0], logger)
             else:
                 # If the parser is set to not check parsability, we still want to check that we can open the file.
-                with stream.stream_reader.open_file(files[0], parser.file_read_mode, None, logger) as handle:
+                with stream.stream_reader.open_file(files[0], parser.file_read_mode, None, logger):
                     pass
         except CheckAvailabilityError:
             return False, "".join(traceback.format_exc())
