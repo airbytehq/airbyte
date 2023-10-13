@@ -51,15 +51,15 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
             Mock(page_content="test", metadata={"_ab_stream": "abc"}, embedding=[1, 2, 3]),
             Mock(page_content="test2", metadata={"_ab_stream": "abc"}, embedding=[4, 5, 6]),
         ],
-        None,
+        "ns1",
         "some_stream"
     )
     indexer.index(
         ["delete_id1", "delete_id2"],
-        None,
+        "ns1",
         "some_stram"
     )
-    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}})
+    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, namespace="ns1")
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
             (ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test"}),
@@ -67,6 +67,7 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
         ),
         async_req=True,
         show_progress=False,
+        namespace="ns1",
     )
 
 
@@ -83,18 +84,18 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
             Mock(page_content="test", metadata={"_ab_stream": "abc"}, embedding=[1, 2, 3]),
             Mock(page_content="test2", metadata={"_ab_stream": "abc"}, embedding=[4, 5, 6]),
         ],
-        None,
+        "ns1",
         "some_stream"
     )
     indexer.index(
         ["delete_id1", "delete_id2"],
-        None,
+        "ns1",
         "some_stram"
     )
     indexer.pinecone_index.query.assert_called_with(
-        vector=[0, 0, 0], filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000
+        vector=[0, 0, 0], filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000, namespace="ns1"
     )
-    indexer.pinecone_index.delete.assert_has_calls([call(ids=["doc_id1", "doc_id2"]), call(ids=["doc_id3"])])
+    indexer.pinecone_index.delete.assert_has_calls([call(ids=["doc_id1", "doc_id2"]), call(ids=["doc_id3"])], namespace="ns1")
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
             (ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test"}),
@@ -102,6 +103,7 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
         ),
         async_req=True,
         show_progress=False,
+        namespace="ns1",
     )
 
 
@@ -114,11 +116,11 @@ def test_pinecone_index_delete_1k_limit(mock_describe_index):
     ]
     indexer.delete(
         ["delete_id1"],
-        None,
+        "ns1",
         "some_stream"
     )
     indexer.pinecone_index.delete.assert_has_calls(
-        [call(ids=[f"doc_id_{str(i)}" for i in range(1000)]), call(ids=[f"doc_id_{str(i+1000)}" for i in range(300)])]
+        [call(ids=[f"doc_id_{str(i)}" for i in range(1000)], namespace="ns1"), call(ids=[f"doc_id_{str(i+1000)}" for i in range(300)], namespace="ns1")]
     )
 
 
@@ -126,7 +128,8 @@ def test_pinecone_index_empty_batch():
     indexer = create_pinecone_indexer()
     indexer.index(
         [],
-        [],
+        "ns1",
+        "some_stream"
     )
     indexer.pinecone_index.delete.assert_not_called()
     indexer.pinecone_index.upsert.assert_not_called()
@@ -136,7 +139,7 @@ def test_pinecone_index_upsert_batching():
     indexer = create_pinecone_indexer()
     indexer.index(
         [Mock(page_content=f"test {i}", metadata={"_ab_stream": "abc"}, embedding=[i, i, i]) for i in range(50)],
-        None,
+        "ns1",
         "some_stream",
     )
     assert indexer.pinecone_index.upsert.call_count == 2
@@ -165,6 +168,7 @@ def generate_catalog():
                         "supported_sync_modes": ["full_refresh", "incremental"],
                         "source_defined_cursor": False,
                         "default_cursor_field": ["column_name"],
+                        "namespace": "ns1"
                     },
                     "primary_key": [["id"]],
                     "sync_mode": "incremental",
@@ -177,6 +181,7 @@ def generate_catalog():
                         "supported_sync_modes": ["full_refresh", "incremental"],
                         "source_defined_cursor": False,
                         "default_cursor_field": ["column_name"],
+                        "namespace": "ns2"
                     },
                     "primary_key": [["id"]],
                     "sync_mode": "full_refresh",
@@ -190,7 +195,7 @@ def generate_catalog():
 def test_pinecone_pre_sync(mock_describe_index):
     indexer = create_pinecone_indexer()
     indexer.pre_sync(generate_catalog())
-    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_stream": "example_stream2"})
+    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_stream": "example_stream2"}, namespace="ns2")
 
 
 def test_pinecone_pre_sync_starter(mock_describe_index):
@@ -201,8 +206,8 @@ def test_pinecone_pre_sync_starter(mock_describe_index):
         MagicMock(matches=[]),
     ]
     indexer.pre_sync(generate_catalog())
-    indexer.pinecone_index.query.assert_called_with(vector=[0, 0, 0], filter={"_ab_stream": "example_stream2"}, top_k=10_000)
-    indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"])
+    indexer.pinecone_index.query.assert_called_with(vector=[0, 0, 0], filter={"_ab_stream": "example_stream2"}, top_k=10_000, namespace="ns2")
+    indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"], namespace="ns2")
 
 
 @pytest.mark.parametrize(
@@ -253,4 +258,5 @@ def test_metadata_normalization():
         vectors=((ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test", "small": "a", "id": 1}),),
         async_req=True,
         show_progress=False,
+        namespace=None,
     )
