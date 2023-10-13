@@ -137,7 +137,7 @@ class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
                 fh.write((str(line) + "\n").encode("utf-8"))
         fh.seek(0)
         return fh
-    
+
     def _make_binary_file_contents(self, file_name: str) -> IOBase:
         fh = io.BytesIO()
 

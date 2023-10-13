@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import os
-from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError 
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 

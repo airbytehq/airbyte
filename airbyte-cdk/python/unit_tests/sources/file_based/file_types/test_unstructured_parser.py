@@ -13,6 +13,7 @@ from unstructured.file_utils.filetype import FileType
 
 FILE_URI = "path/to/file.xyz"
 
+
 @pytest.mark.parametrize(
     "filetype, raises",
     [
