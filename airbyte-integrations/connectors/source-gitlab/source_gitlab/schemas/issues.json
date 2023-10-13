@@ -100,21 +100,72 @@
     },
     "author": {
       "type": ["null", "object"],
-      "additionalProperties": true
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "username": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "integer"]
+        }
+      }
     },
     "author_id": {
       "type": ["null", "integer"]
     },
     "assignee": {
       "type": ["null", "object"],
-      "additionalProperties": true
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "username": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "assignee_id": {
       "type": ["null", "integer"]
     },
     "closed_by": {
       "type": ["null", "object"],
-      "additionalProperties": true
+      "properties": {
+        "state": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "web_url": {
+          "type": ["null", "string"]
+        },
+        "avatar_url": {
+          "type": ["null", "string"]
+        },
+        "username": {
+          "type": ["null", "string"]
+        }
+      }
     },
     "closed_by_id": {
       "type": ["null", "integer"]
