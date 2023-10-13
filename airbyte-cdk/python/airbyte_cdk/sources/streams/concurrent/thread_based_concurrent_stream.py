@@ -21,7 +21,6 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator impor
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class ThreadBasedConcurrentStream(AbstractStream):
@@ -45,7 +44,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
         max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
         sleep_time: float = DEFAULT_SLEEP_TIME,
-        type_transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform),
         namespace: Optional[str] = None,
     ):
         self._stream_partition_generator = partition_generator
@@ -62,7 +60,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._timeout_seconds = timeout_seconds
         self._max_concurrent_tasks = max_concurrent_tasks
         self._sleep_time = sleep_time
-        self._type_transformer = type_transformer
         self._namespace = namespace
 
     def read(self) -> Iterable[Record]:
