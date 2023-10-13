@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.35
+File CDK: Allow configuring number of tested files for schema inference and parsability check
+
 ## 0.51.34
 Vector DB CDK: Fix OpenAI compatible embedder when used without api key
 
