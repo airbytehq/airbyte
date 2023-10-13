@@ -13,5 +13,4 @@ jobs:
       - name: "Label PR based on changed files"
         uses: actions/labeler@v3
         with:
-          repo-token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
           sync-labels: true
