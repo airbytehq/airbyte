@@ -65,6 +65,8 @@ public class BigQueryDestinationHandler implements DestinationHandler<TableDefin
     final TableResult queryResult = bq.query(QueryJobConfiguration.newBuilder(new StringSubstitutor(Map.of(
         "raw_table", id.rawTableId(BigQuerySqlGenerator.QUOTE))).replace(
             // bigquery timestamps have microsecond precision
+            // and COALESCE short-circuits, so if the first subquery returns non-null, we don't
+            // evaluate the second query at all
             """
             SELECT COALESCE(
               (
