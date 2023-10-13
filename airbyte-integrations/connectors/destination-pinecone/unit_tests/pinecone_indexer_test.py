@@ -52,13 +52,9 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
             Mock(page_content="test2", metadata={"_ab_stream": "abc"}, embedding=[4, 5, 6]),
         ],
         "ns1",
-        "some_stream"
+        "some_stream",
     )
-    indexer.delete(
-        ["delete_id1", "delete_id2"],
-        "ns1",
-        "some_stram"
-    )
+    indexer.delete(["delete_id1", "delete_id2"], "ns1", "some_stram")
     indexer.pinecone_index.delete.assert_called_with(filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, namespace="ns1")
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
@@ -85,17 +81,15 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
             Mock(page_content="test2", metadata={"_ab_stream": "abc"}, embedding=[4, 5, 6]),
         ],
         "ns1",
-        "some_stream"
+        "some_stream",
     )
-    indexer.delete(
-        ["delete_id1", "delete_id2"],
-        "ns1",
-        "some_stram"
-    )
+    indexer.delete(["delete_id1", "delete_id2"], "ns1", "some_stram")
     indexer.pinecone_index.query.assert_called_with(
         vector=[0, 0, 0], filter={"_ab_record_id": {"$in": ["delete_id1", "delete_id2"]}}, top_k=10_000, namespace="ns1"
     )
-    indexer.pinecone_index.delete.assert_has_calls([call(ids=["doc_id1", "doc_id2"], namespace="ns1"), call(ids=["doc_id3"], namespace="ns1")])
+    indexer.pinecone_index.delete.assert_has_calls(
+        [call(ids=["doc_id1", "doc_id2"], namespace="ns1"), call(ids=["doc_id3"], namespace="ns1")]
+    )
     indexer.pinecone_index.upsert.assert_called_with(
         vectors=(
             (ANY, [1, 2, 3], {"_ab_stream": "abc", "text": "test"}),
