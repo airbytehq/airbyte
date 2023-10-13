@@ -11,7 +11,7 @@ import os
 import sys
 
 import anyio
-import click
+import asyncclick as click
 import dagger
 from pipelines.consts import DOCKER_VERSION
 from pipelines.utils import sh_dash_c
@@ -26,16 +26,12 @@ async def format(fix: bool):
         poetry_package_path (str): Path to the poetry package to test, relative to airbyte-ci directory.
         test_directory (str): The directory containing the tests to run.
     """
-    success, formatted_dir = anyio.run(run_format, fix)
+    success = await run_format(fix)
     if not success:
         click.Abort()
-    
-    if formatted_dir:
-        # copy the formatted files back to the host directory 
-        await formatted_dir.export(".", overwrite=True)
 
 
-async def run_format(fix: bool) -> [bool, dagger.Directory]:
+async def run_format(fix: bool) -> bool:
     """Runs the tests for the given airbyte-ci package in a Dagger container.
 
     Args:
@@ -45,7 +41,7 @@ async def run_format(fix: bool) -> [bool, dagger.Directory]:
     """
     logger = logging.getLogger(f"format")
     format_command = ["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."]
-    if fix: 
+    if fix:
         format_command.remove("--check")
 
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
@@ -80,10 +76,9 @@ async def run_format(fix: bool) -> [bool, dagger.Directory]:
             )
 
             await format_container
-            if fix: 
-                return True, format_container.directory("/src")
-            else:
-                return True, None
+            if fix:
+                await format_container.directory("/src").export(".")
+            return True
         except dagger.ExecError as e:
             logger.error("Format failed")
             logger.error(e.stderr)

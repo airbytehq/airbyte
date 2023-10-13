@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import List, Set, Tuple
 
 import anyio
-import click
+import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, console, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.bases import ConnectorWithModifiedFiles

@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any, Callable, FrozenSet, List, Optional, Set,
 
 import anyio
 import asyncer
-import click
+import asyncclick as click
 import git
 from connector_ops.utils import get_changed_connectors
 from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
