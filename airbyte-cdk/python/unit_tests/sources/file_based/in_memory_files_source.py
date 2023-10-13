@@ -7,7 +7,6 @@ import io
 import json
 import logging
 import tempfile
-from contextlib import contextmanager
 from datetime import datetime
 from io import IOBase
 from typing import Any, Iterable, List, Mapping, Optional
