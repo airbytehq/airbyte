@@ -36,6 +36,7 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
         self._stream.catalog_schema = _ANY_SCHEMA
         self._stream.config = _ANY_CONFIG
         self._stream.validation_policy = PropertyMock(validate_schema_before_sync=False)
+        self._stream.stream_reader = self._stream_reader
 
     def test_given_file_extension_does_not_match_when_check_availability_and_parsability_then_stream_is_still_available(self) -> None:
         """
@@ -49,3 +50,16 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
         is_available, reason = self._strategy.check_availability_and_parsability(self._stream, Mock(), Mock())
 
         assert is_available
+
+    def test_parse_records_is_not_called_with_parser_max_n_files_for_parsability_set(self) -> None:
+        """
+        If the stream parser sets parser_max_n_files_for_parsability to 0, then we should not call parse_records on it
+        """
+        self._parser.parser_max_n_files_for_parsability = 0
+        self._stream.list_files.return_value = [_FILE_WITH_UNKNOWN_EXTENSION]
+
+        is_available, reason = self._strategy.check_availability_and_parsability(self._stream, Mock(), Mock())
+
+        assert is_available
+        assert not self._parser.parse_records.called
+        assert self._stream_reader.open_file.called
