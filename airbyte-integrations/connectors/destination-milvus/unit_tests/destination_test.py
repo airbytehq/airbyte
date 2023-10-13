@@ -31,7 +31,7 @@ class TestDestinationMilvus(unittest.TestCase):
         self.logger = AirbyteLogger()
 
     @patch("destination_milvus.destination.MilvusIndexer")
-    @patch("destination_qdrant.destination.create_from_config")
+    @patch("destination_milvus.destination.create_from_config")
     def test_check(self, MockedEmbedder, MockedMilvusIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
@@ -49,7 +49,7 @@ class TestDestinationMilvus(unittest.TestCase):
         mock_indexer.check.assert_called_once()
 
     @patch("destination_milvus.destination.MilvusIndexer")
-    @patch("destination_qdrant.destination.create_from_config")
+    @patch("destination_milvus.destination.create_from_config")
     def test_check_with_errors(self, MockedEmbedder, MockedMilvusIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
@@ -73,7 +73,7 @@ class TestDestinationMilvus(unittest.TestCase):
 
     @patch("destination_milvus.destination.Writer")
     @patch("destination_milvus.destination.MilvusIndexer")
-    @patch("destination_qdrant.destination.create_from_config")
+    @patch("destination_milvus.destination.create_from_config")
     def test_write(self, MockedEmbedder, MockedMilvusIndexer, MockedWriter):
         mock_embedder = Mock()
         mock_indexer = Mock()
