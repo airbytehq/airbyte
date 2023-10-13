@@ -278,6 +278,19 @@ single_csv_scenario = (
                                                 },
                                             },
                                         },
+                                        {
+                                            "title": "Markdown/PDF/Docx Format (Experimental)",
+                                            "type": "object",
+                                            "properties": {
+                                                "filetype": {
+                                                    "title": "Filetype",
+                                                    "default": "unstructured",
+                                                    "const": "unstructured",
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "description": "Extract text from document formats and emit as one record per file."
+                                        },
                                     ],
                                 },
                                 "schemaless": {

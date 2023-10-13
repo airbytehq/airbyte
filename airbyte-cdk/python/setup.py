@@ -22,6 +22,13 @@ openai_dependency = "openai[embeddings]==0.27.9"
 cohere_dependency = "cohere==4.21"
 tiktoken_dependency = "tiktoken==0.4.0"
 
+unstructured_dependencies = [
+    "unstructured==0.10.19",
+    "unstructured[pdf]==0.10.19",
+    "unstructured[docx]==0.10.19",
+    "markdown",
+]
+
 setup(
     name="airbyte-cdk",
     # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
@@ -91,6 +98,7 @@ setup(
             openai_dependency,
             cohere_dependency,
             tiktoken_dependency,
+            *unstructured_dependencies,
         ],
         "sphinx-docs": [
             "Sphinx~=4.2",
@@ -100,6 +108,7 @@ setup(
             avro_dependency,
             fastavro_dependency,
             pyarrow_dependency,
+            *unstructured_dependencies,
         ],
         "vector-db-based": [langchain_dependency, openai_dependency, cohere_dependency, tiktoken_dependency],
     },
