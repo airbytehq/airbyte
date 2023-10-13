@@ -420,6 +420,27 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpFinalTableRecords(streamId, "_foo"));
   }
 
+  /**
+   * Test JSON Types encounted for a String Type field.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void jsonStringifyTypes() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(incrementalDedupStream, "_foo");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/json_types_in_string_inputrecords.jsonl"));
+    final String sql = generator.updateTable(incrementalDedupStream, "_foo");
+    destinationHandler.execute(sql);
+    verifyRecords(
+        "sqlgenerator/json_types_in_string_expectedrecords_raw.jsonl",
+        dumpRawTableRecords(streamId),
+        "sqlgenerator/json_types_in_string_expectedrecords_final.jsonl",
+        dumpFinalTableRecords(streamId, "_foo"));
+  }
+
   @Test
   public void timestampFormats() throws Exception {
     createRawTable(streamId);
