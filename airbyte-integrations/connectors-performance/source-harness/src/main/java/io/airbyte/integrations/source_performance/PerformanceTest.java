@@ -35,6 +35,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -54,12 +55,14 @@ public class PerformanceTest {
 
   public static final double MEGABYTE = Math.pow(1024, 2);
   private final String imageName;
+  private final String dataset;
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog catalog;
 
-  PerformanceTest(final String imageName, final String config, final String catalog) throws JsonProcessingException {
+  PerformanceTest(final String imageName, final String dataset, final String config, final String catalog) throws JsonProcessingException {
     final ObjectMapper mapper = new ObjectMapper();
     this.imageName = imageName;
+    this.dataset = dataset;
     this.config = mapper.readTree(config);
     this.catalog = Jsons.deserialize(catalog, ConfiguredAirbyteCatalog.class);
   }
@@ -69,28 +72,6 @@ public class PerformanceTest {
     // Initialize datadog.
     ApiClient defaultClient = ApiClient.getDefaultApiClient();
     MetricsApi apiInstance = new MetricsApi(defaultClient);
-
-    MetricPayload body =
-        new MetricPayload()
-            .series(
-                Collections.singletonList(
-                    new MetricSeries()
-                        .metric("xiaohan.test.ignore")
-                        .type(MetricIntakeType.GAUGE)
-                        .points(
-                            Collections.singletonList(
-                                new MetricPoint()
-                                    .timestamp(OffsetDateTime.now().toInstant().getEpochSecond())
-                                    .value(0.7)))
-                        .resources(
-                            Collections.singletonList(
-                                new MetricResource().name("dummyhost").type("host")))));
-    try {
-      IntakePayloadAccepted result = apiInstance.submitMetrics(body);
-      System.out.println(result);
-    } catch (ApiException e) {
-      log.error("Exception when calling MetricsApi#submitMetrics.", e);
-    }
 
     KubePortManagerSingleton.init(PORTS);
 
@@ -143,8 +124,45 @@ public class PerformanceTest {
     final var totalMB = totalBytes / MEGABYTE;
     final var totalTimeSecs = (end - start) / 1000.0;
     final var rps = counter / totalTimeSecs;
-    log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, totalMB / totalTimeSecs);
+    final var throughput = totalMB / totalTimeSecs;
+    log.info("total secs: {}. total MB read: {}, rps: {}, throughput: {}", totalTimeSecs, totalMB, rps, throughput);
     source.close();
+
+    final long reportingTimeInEpochSeconds = OffsetDateTime.now().toInstant().getEpochSecond();
+
+    List<MetricResource> metricResources = List.of(
+        new MetricResource().name("github").type("runner"),
+        new MetricResource().name(imageName).type("image"),
+        new MetricResource().name(dataset).type("dataset"));
+    MetricPayload body =
+        new MetricPayload()
+            .series(
+                List.of(
+                    new MetricSeries()
+                        .metric("connectors.performance.rps")
+                        .type(MetricIntakeType.GAUGE)
+                        .points(
+                            Collections.singletonList(
+                                new MetricPoint()
+                                    .timestamp(reportingTimeInEpochSeconds)
+                                    .value(rps)))
+                        .resources(metricResources),
+                    new MetricSeries()
+                        .metric("connectors.performance.throughput")
+                        .type(MetricIntakeType.GAUGE)
+                        .points(
+                            Collections.singletonList(
+                                new MetricPoint()
+                                    .timestamp(reportingTimeInEpochSeconds)
+                                    .value(throughput)))
+                        .resources(metricResources)
+                    ));
+    try {
+      IntakePayloadAccepted result = apiInstance.submitMetrics(body);
+      System.out.println(result);
+    } catch (ApiException e) {
+      log.error("Exception when calling MetricsApi#submitMetrics.", e);
+    }
   }
 
   private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
