@@ -74,6 +74,7 @@ OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere 
 
 | Version | Date       | Pull Request                                                  | Subject                                                                                                                                              |
 |:--------| :--------- |:--------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.16 | 2023-10-13 | [31377](https://github.com/airbytehq/airbyte/pull/31377) | Use our base image and remove Dockerfile |
 | 0.0.15   | 2023-10-04 | [#31075](https://github.com/airbytehq/airbyte/pull/31075) | Fix OpenAI embedder batch size |
 | 0.0.14   | 2023-09-29 | [#30820](https://github.com/airbytehq/airbyte/pull/30820)     | Update CDK | 
 | 0.0.13   | 2023-09-26 | [#30649](https://github.com/airbytehq/airbyte/pull/30649)     | Allow more text splitting options | 
@@ -88,4 +89,58 @@ OpenAI and Fake embeddings produce vectors with 1536 dimensions, and the Cohere 
 | 0.0.4   | 2023-09-05 | [#30086](https://github.com/airbytehq/airbyte/pull/30079)     | Switch to GRPC client for improved performance.  | 
 | 0.0.3   | 2023-09-01 | [#30079](https://github.com/airbytehq/airbyte/pull/30079)     | Fix bug with potential data loss on append+dedup syncing. 🚨 Streams using append+dedup mode need to be reset after upgrade.  | 
 | 0.0.2   | 2023-08-31 | [#29442](https://github.com/airbytehq/airbyte/pull/29946)     | Improve test coverage  | 
+
+## Build instructions
+### Build your own connector image
+This connector is built using our dynamic built process.
+The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
+The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
+It does not rely on a Dockerfile.
+
+If you would like to patch our connector and build your own a simple approach would be:
+
+1. Create your own Dockerfile based on the latest version of the connector image.
+```Dockerfile
+FROM airbyte/destination-pinecone:latest
+
+COPY . ./airbyte/integration_code
+RUN pip install ./airbyte/integration_code
+
+# The entrypoint and default env vars are already set in the base image
+# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+```
+Please use this as an example. This is not optimized.
+
+2. Build your image:
+```bash
+docker build -t airbyte/destination-pinecone:dev .
+# Running the spec command against your patched connector
+docker run airbyte/destination-pinecone:dev spec
+```
+
+### Customizing our build process
+When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
+You can customize our build process by adding a `build_customization.py` module to your connector.
+This module should contain a `pre_connector_install` and `post_connector_install` async function that will mutate the base image and the connector container respectively.
+It will be imported at runtime by our build process and the functions will be called if they exist.
+
+Here is an example of a `build_customization.py` module:
+```python
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Feel free to check the dagger documentation for more information on the Container object and its methods.
+    # https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/
+    from dagger import Container
+
+
+async def pre_connector_install(base_image_container: Container) -> Container:
+    return await base_image_container.with_env_variable("MY_PRE_BUILD_ENV_VAR", "my_pre_build_env_var_value")
+
+async def post_connector_install(connector_container: Container) -> Container:
+    return await connector_container.with_env_variable("MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value")
+```
 | 0.0.1   | 2023-08-29 | [#29539](https://github.com/airbytehq/airbyte/pull/29539)     | Pinecone connector with some embedders  | 
