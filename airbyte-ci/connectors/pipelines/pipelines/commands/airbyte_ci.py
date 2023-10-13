@@ -23,7 +23,7 @@ from pipelines.utils import (
     transform_strs_to_paths,
 )
 
-from .groups.check import format
+from .groups.check import check
 from .groups.connectors import connectors
 from .groups.metadata import metadata
 from .groups.tests import test
@@ -181,7 +181,7 @@ async def airbyte_ci(
 airbyte_ci.add_command(connectors)
 airbyte_ci.add_command(metadata)
 airbyte_ci.add_command(test)
-airbyte_ci.add_command(format)
+airbyte_ci.add_command(check)
 
 if __name__ == "__main__":
     airbyte_ci()

@@ -19,23 +19,22 @@ from pipelines.utils import sh_dash_c
 
 @click.command()
 @click.option("--fix", default=False, help="Whether to automatically fix any formatting issues detected.")
-async def format(fix: bool):
-    """Formats the repository.
+async def check(fix: bool):
+    """Checks whether the repository is formatted correctly.
     Args:
-        poetry_package_path (str): Path to the poetry package to test, relative to airbyte-ci directory.
-        test_directory (str): The directory containing the tests to run.
+        fix (bool): Whether to automatically fix any formatting issues detected.
     """
-    success = await run_format(fix)
+    success = await run_check(fix)
     if not success:
         click.Abort()
 
 
-async def run_format(fix: bool) -> bool:
-    """Runs the tests for the given airbyte-ci package in a Dagger container.
+async def run_check(fix: bool) -> bool:
+    """Formats the repository.
     Args:
-        airbyte_ci_package_path (str): Path to the airbyte-ci package to test, relative to airbyte-ci directory.
+        fix (bool): Whether to automatically fix any formatting issues detected.
     Returns:
-        bool: True if the tests passed, False otherwise.
+        bool: True if the check/format succeeded, false otherwise
     """
     logger = logging.getLogger(f"format")
     format_command = ["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."]
