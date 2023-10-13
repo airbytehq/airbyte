@@ -166,16 +166,18 @@ class ShopifyDeletedEventsStream(ShopifyStream):
         **kwargs,
     ) -> Mapping[str, Any]:
         params = {}
+
         if not next_page_token:
             params.update(**{"filter": self.deleted_events_api_name, "verb": "destroy"})
+            if stream_state:
+                state = stream_state.get("deleted", {}).get(self.cursor_field)
+                if state:
+                    params["created_at_min"] = state
         else:
             # `filter` and `verb` cannot be passed, when `page_info` is present.
             # See https://shopify.dev/api/usage/pagination-rest
             params.update(**next_page_token)
-        if stream_state:
-            state = stream_state.get("deleted", {}).get(self.cursor_field)
-            if state:
-                params["created_at_min"] = state
+
         return params
 
 
