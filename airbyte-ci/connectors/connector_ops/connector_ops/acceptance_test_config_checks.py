@@ -123,11 +123,8 @@ def write_review_requirements_file():
 
 
 def print_mandatory_reviewers():
-    teams = []
+    teams = set()
     mandatory_reviewers = find_mandatory_reviewers()
-    for mandatory_reviewer in mandatory_reviewers:
-        if isinstance(mandatory_reviewer, dict):
-            teams += mandatory_reviewer["any-of"]
-        else:
-            teams.append(mandatory_reviewer)
-    print(f"MANDATORY_REVIEWERS=A review is required from these teams: {','.join(teams)}")
+    for reviewers in mandatory_reviewers:
+        teams.update(reviewers["teams"])
+    print(f"MANDATORY_REVIEWERS=A review is required from these teams: {', '.join(teams)}")
