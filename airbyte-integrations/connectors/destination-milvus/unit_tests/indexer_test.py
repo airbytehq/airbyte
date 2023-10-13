@@ -142,7 +142,9 @@ class TestMilvusIndexer(unittest.TestCase):
 
     def test_index_calls_insert(self):
         self.milvus_indexer._primary_key = "id"
-        self.milvus_indexer.index([Mock(metadata={"key": "value", "id": 5}, page_content="some content", embedding=[1, 2, 3])], None, "some_stream")
+        self.milvus_indexer.index(
+            [Mock(metadata={"key": "value", "id": 5}, page_content="some content", embedding=[1, 2, 3])], None, "some_stream"
+        )
 
         self.milvus_indexer._collection.insert.assert_called_with([{"key": "value", "vector": [1, 2, 3], "text": "some content", "_id": 5}])
 
