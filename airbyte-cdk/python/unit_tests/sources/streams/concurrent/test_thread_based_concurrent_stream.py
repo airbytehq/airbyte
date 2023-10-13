@@ -241,3 +241,33 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
 
         airbyte_stream = stream.as_airbyte_stream()
         assert expected_airbyte_stream == airbyte_stream
+
+    def test_as_airbyte_stream_with_namespace(self):
+        stream = ThreadBasedConcurrentStream(
+            self._partition_generator,
+            self._max_workers,
+            self._name,
+            self._json_schema,
+            self._availability_strategy,
+            self._primary_key,
+            self._cursor_field,
+            self._slice_logger,
+            self._logger,
+            self._message_repository,
+            1,
+            2,
+            0,
+            namespace="test",
+        )
+        expected_airbyte_stream = AirbyteStream(
+            name=self._name,
+            json_schema=self._json_schema,
+            supported_sync_modes=[SyncMode.full_refresh],
+            source_defined_cursor=None,
+            default_cursor_field=None,
+            source_defined_primary_key=None,
+            namespace="test",
+        )
+        actual_airbyte_stream = stream.as_airbyte_stream()
+
+        assert expected_airbyte_stream == actual_airbyte_stream

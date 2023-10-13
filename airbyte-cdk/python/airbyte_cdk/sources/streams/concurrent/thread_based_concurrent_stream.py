@@ -46,6 +46,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
         sleep_time: float = DEFAULT_SLEEP_TIME,
         type_transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform),
+        namespace: Optional[str] = None,
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -62,6 +63,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._max_concurrent_tasks = max_concurrent_tasks
         self._sleep_time = sleep_time
         self._type_transformer = type_transformer
+        self._namespace = namespace
 
     def read(self) -> Iterable[Record]:
         """
@@ -159,8 +161,8 @@ class ThreadBasedConcurrentStream(AbstractStream):
     def as_airbyte_stream(self) -> AirbyteStream:
         stream = AirbyteStream(name=self.name, json_schema=dict(self._json_schema), supported_sync_modes=[SyncMode.full_refresh])
 
-        # if self.namespace:
-        #     stream.namespace = self.namespace
+        if self._namespace:
+            stream.namespace = self._namespace
 
         if self._cursor_field:
             stream.source_defined_cursor = True
