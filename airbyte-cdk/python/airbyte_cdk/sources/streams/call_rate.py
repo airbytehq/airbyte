@@ -132,19 +132,15 @@ class HttpRequestMatcher(RequestMatcher):
         if isinstance(request, (requests.Request, requests.PreparedRequest)):
             if self._method is not None:
                 if request.method != self._method:
-                    print("method", request.method, self._method)
                     return False
             if self._url is not None:
                 if request.url != self._url:
-                    print("url", request.url, self._url)
                     return False
             if self._params is not None:
                 if not self._match_dict(request.params, self._params):
-                    print("params", request.params, self._params)
                     return False
             if self._headers is not None:
                 if not self._match_dict(request.headers, self._headers):
-                    print("headers", request.headers, self._headers)
                     return False
             return True
 
