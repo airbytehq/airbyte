@@ -12,12 +12,11 @@ import pytz
 import smart_open
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile, RemoteFileInsideArchive
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
-from botocore.exceptions import ClientError
 from source_s3.v4.config import Config
-from source_s3.v4.zip_reader import DecompressedStream, ZipContentReader, ZipFileHandler
+from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
@@ -99,7 +98,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         try:
             if isinstance(file, RemoteFileInsideArchive):
                 s3_file_object = smart_open.open(f"s3://{self.config.bucket}/{file.uri.split('#')[0]}", transport_params=params, mode="rb")
-                decompressed_stream = DecompressedStream(s3_file_object, file.start_offset, file.compressed_size, file.compression_method)
+                decompressed_stream = DecompressedStream(s3_file_object, file)
                 result = ZipContentReader(decompressed_stream, encoding)
             else:
                 result = smart_open.open(
@@ -166,6 +165,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 last_modified=datetime(*zip_member.date_time).astimezone(pytz.utc).replace(tzinfo=None),
                 start_offset=zip_member.header_offset + cd_start,
                 compressed_size=zip_member.compress_size,
+                uncompressed_size=zip_member.file_size,
                 compression_method=zip_member.compress_type,
             )
             yield remote_file
