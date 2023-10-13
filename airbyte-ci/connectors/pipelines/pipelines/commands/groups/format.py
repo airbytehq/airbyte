@@ -19,19 +19,23 @@ from pipelines.utils import sh_dash_c
 
 @click.command()
 @click.option("--fix", default=False, help="Whether to automatically fix any formatting issues detected.")
-def format(fix: bool):
+async def format(fix: bool):
     """Formats the repository.
 
     Args:
         poetry_package_path (str): Path to the poetry package to test, relative to airbyte-ci directory.
         test_directory (str): The directory containing the tests to run.
     """
-    success = anyio.run(run_format, fix)
+    success, formatted_dir = anyio.run(run_format, fix)
     if not success:
         click.Abort()
+    
+    if formatted_dir:
+        # copy the formatted files back to the host directory 
+        await formatted_dir.export(".", overwrite=True)
 
 
-async def run_format(fix: bool) -> bool:
+async def run_format(fix: bool) -> [bool, dagger.Directory]:
     """Runs the tests for the given airbyte-ci package in a Dagger container.
 
     Args:
@@ -47,7 +51,7 @@ async def run_format(fix: bool) -> bool:
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
         try:
             docker_host_socket = dagger_client.host().unix_socket("/var/run/buildkit/buildkitd.sock")
-            pytest_container = await (
+            format_container = await (
                 dagger_client.container()
                 .from_("python:3.10.12")
                 .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
@@ -75,8 +79,11 @@ async def run_format(fix: bool) -> bool:
                 .with_exec(format_command)
             )
 
-            await pytest_container
-            return True
+            await format_container
+            if fix: 
+                return True, format_container.directory("/src")
+            else:
+                return True, None
         except dagger.ExecError as e:
             logger.error("Format failed")
             logger.error(e.stderr)
