@@ -44,7 +44,7 @@ class Config(AbstractFileBasedSpec):
         order=0,
     )
 
-    bucket: str = Field(title="Bucket", description="Name of the GCS bucket where the file(s) exist.", order=1)
+    bucket: str = Field(title="Bucket", description="Name of the GCS bucket where the file(s) exist.", order=2)
 
     streams: List[SourceGCSStreamConfig] = Field(
         title="The list of streams to sync",
@@ -54,7 +54,7 @@ class Config(AbstractFileBasedSpec):
             "parsed and validated. When sending data to warehouse destination such as Snowflake or "
             "BigQuery, each stream is a separate table."
         ),
-        order=2,
+        order=3,
     )
 
     @classmethod
