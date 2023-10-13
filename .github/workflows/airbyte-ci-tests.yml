@@ -12,7 +12,7 @@ on:
       - reopened
       - synchronize
     paths:
-      - airbyte-ci/**
+      - 'airbyte-ci/**'
     paths-ignore:
       - '**/*.md'
 jobs:
