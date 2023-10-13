@@ -253,7 +253,7 @@ class Connector:
     """Utility class to gather metadata about a connector."""
 
     # The technical name of the connector, e.g. source-google-sheets or third-party/farosai/airbyte-pagerduty-source
-    _relative_connector_path: str
+    relative_connector_path: str
 
     def _get_type_and_name_from_technical_name(self) -> Tuple[str, str]:
         if "-" not in self.technical_name:
@@ -265,10 +265,10 @@ class Connector:
     @property
     def technical_name(self) -> str:
         """
-        Return the technical name of the connector from the given _relative_connector_path
-        e.g. source-google-sheets -> google-sheets or third-party/farosai/airbyte-pagerduty-source -> airbyte-pagerduty-source
+        Return the technical name of the connector from the given relative_connector_path
+        e.g. source-google-sheets -> source-google-sheets or third-party/farosai/airbyte-pagerduty-source -> airbyte-pagerduty-source
         """
-        return self._relative_connector_path.split("/")[-1]
+        return self.relative_connector_path.split("/")[-1]
 
     @property
     def name(self):
@@ -280,11 +280,19 @@ class Connector:
 
     @property
     def is_third_party(self) -> bool:
-        return THIRD_PARTY_GLOB in self._relative_connector_path
+        return THIRD_PARTY_GLOB in self.relative_connector_path
+
+    @property
+    def has_airbyte_docs(self) -> bool:
+        return (
+            self.metadata
+            and self.metadata.get("documentationUrl") is not None
+            and BASE_AIRBYTE_DOCS_URL in self.metadata.get("documentationUrl")
+        )
 
     @property
     def documentation_directory(self) -> Path:
-        if self.has_external_documentation:
+        if not self.has_airbyte_docs:
             return None
         return Path(f"./docs/integrations/{self.connector_type}s")
 
@@ -300,14 +308,23 @@ class Connector:
 
     @property
     def documentation_file_path(self) -> Path:
+        if not self.has_airbyte_docs:
+            return None
+
         return Path(f"{self.relative_documentation_path_str}.md")
 
     @property
     def inapp_documentation_file_path(self) -> Path:
+        if not self.has_airbyte_docs:
+            return None
+
         return Path(f"{self.relative_documentation_path_str}.inapp.md")
 
     @property
     def migration_guide_file_path(self) -> Path:
+        if not self.has_airbyte_docs:
+            return None
+
         return Path(f"{self.relative_documentation_path_str}-migrations.md")
 
     @property
@@ -317,7 +334,7 @@ class Connector:
 
     @property
     def code_directory(self) -> Path:
-        return Path(f"./{CONNECTOR_PATH_PREFIX}/{self._relative_connector_path}")
+        return Path(f"./{CONNECTOR_PATH_PREFIX}/{self.relative_connector_path}")
 
     @property
     def has_dockerfile(self) -> bool:
@@ -555,6 +572,7 @@ def get_changed_connectors(
     }
     return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_source_connector_files}
 
+
 def _get_relative_connector_folder_name_from_metadata_path(metadata_file_path: str) -> str:
     """Get the relative connector folder name from the metadata file path.
 
@@ -573,6 +591,7 @@ def _get_relative_connector_folder_name_from_metadata_path(metadata_file_path: s
     # remove leading and trailing slashes
     metadata_file_path = metadata_file_path.strip("/")
     return metadata_file_path
+
 
 def get_all_connectors_in_repo() -> Set[Connector]:
     """Retrieve a set of all Connectors in the repo.
