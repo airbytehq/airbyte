@@ -449,7 +449,11 @@ class LinkedInAdsAnalyticsStream(IncrementalLinkedinAdsStream, ABC):
         parsed_response = response.json()
         if len(parsed_response.get("elements")) < self.records_limit:
             return None
-        raise Exception("Limit 15000 elements exceeded. Try to request your data in more granular pieces.")
+        raise Exception(
+            f"Limit {self.records_limit} elements exceeded. "
+            f"Try to request your data in more granular pieces. "
+            f"(For example switch `Time Granularity` from MONTHLY to DAILY)"
+        )
 
     def get_primary_key_from_slice(self, stream_slice) -> str:
         return stream_slice.get(self.primary_slice_key)
