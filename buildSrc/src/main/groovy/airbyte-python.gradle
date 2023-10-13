@@ -174,10 +174,10 @@ class AirbytePythonPlugin implements Plugin<Project> {
             dependsOn installReqs
         }
 
-        def mypyCheck = project.tasks.register('mypyCheck', PythonTask) {
-            module = "mypy"
+        def mypyCheck = project.tasks.register('mypyCheck', Exec) {
+            // Run mypy on modified files
             environment 'ROOT_DIR', extension.mypyDirectory
-            command = 'bin/run-mypy-on-modified-files.sh'
+            commandLine = 'bin/run-mypy-on-modified-files.sh'
             onlyIf {
                 extension.hasProperty('mypyDirectory') && extension.mypyDirectory != null
             }
