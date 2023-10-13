@@ -108,7 +108,7 @@ class WeaviateIndexer(Indexer):
                     prop.get("name") == METADATA_RECORD_ID_FIELD for prop in schema.get("properties", {})
                 )
 
-    def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
+    def delete(self, delete_ids, namespace, stream):
         if len(delete_ids) > 0:
             # Delete ids in all classes that have the record id metadata
             for class_name in self.has_record_id_metadata.keys():
@@ -117,6 +117,8 @@ class WeaviateIndexer(Indexer):
                         class_name=class_name,
                         where={"path": [METADATA_RECORD_ID_FIELD], "operator": "ContainsAny", "valueStringArray": delete_ids},
                     )
+
+    def index(self, document_chunks, namespace, stream):
         if len(document_chunks) == 0:
             return
 

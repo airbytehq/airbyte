@@ -85,7 +85,7 @@ class QdrantIndexer(Indexer):
                 collection_name=self.config.collection, field_name=field, field_schema=PayloadSchemaType.KEYWORD
             )
 
-    def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
+    def delete(self, delete_ids, namespace, stream):
         if len(delete_ids) > 0:
             self._delete_for_filter(
                 models.FilterSelector(
@@ -96,6 +96,8 @@ class QdrantIndexer(Indexer):
                     )
                 )
             )
+
+    def index(self, document_chunks, namespace, stream):
         entities = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
