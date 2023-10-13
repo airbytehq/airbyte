@@ -22,8 +22,8 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
     request_parameters:
-      end_time: "{{ config['end_time'] if config['begin_time'] else None }}"
-      begin_time: "{{ config['begin_time'] if config['begin_time'] else None }}"
+      end_time: "{{ config['end_time'] }}"
+      begin_time: "{{ config['begin_time'] }}"
       limit: "200"
       order: "asc"
       sort: "updated_at"
