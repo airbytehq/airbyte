@@ -40,6 +40,7 @@ FILE_URI = "path/to/file.xyz"
 )
 @patch("unstructured.file_utils.filetype.detect_filetype")
 def test_infer_schema(mock_detect_filetype, filetype, raises):
+    # use a fresh event loop to avoid leaking into other tests
     main_loop = asyncio.get_event_loop()
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -57,7 +58,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
         schema = loop.run_until_complete(UnstructuredParser().infer_schema(MagicMock(), MagicMock(), MagicMock(), MagicMock()))
         assert schema == {
             "content": {"type": "string"},
-            "id": {"type": "string"},
+            "document_key": {"type": "string"},
         }
     loop.close()
     asyncio.set_event_loop(main_loop)
@@ -73,7 +74,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
             [
                 {
                     "content": "test",
-                    "id": FILE_URI,
+                    "document_key": FILE_URI,
                 }
             ],
             id="markdown file",
@@ -97,7 +98,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
             [
                 {
                     "content": "# heading\n\nThis is the text\n\n- This is a list item\n\n```\nThis is a formula\n```",
-                    "id": FILE_URI,
+                    "document_key": FILE_URI,
                 }
             ],
             id="pdf file",
@@ -112,7 +113,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
             [
                 {
                     "content": "# first level heading\n\n## second level heading",
-                    "id": FILE_URI,
+                    "document_key": FILE_URI,
                 }
             ],
             id="multi-level headings",
@@ -129,7 +130,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
             [
                 {
                     "content": "# heading\n\nThis is the text\n\n- This is a list item\n\n```\nThis is a formula\n```",
-                    "id": FILE_URI,
+                    "document_key": FILE_URI,
                 }
             ],
             id="docx file",

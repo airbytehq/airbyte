@@ -42,7 +42,7 @@ simple_markdown_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "id": {
+                            "document_key": {
                                 "type": ["null", "string"],
                             },
                             "content": {
@@ -67,7 +67,7 @@ simple_markdown_scenario = (
         [
             {
                 "data": {
-                    "id": "a.md",
+                    "document_key": "a.md",
                     "content": "# Title 1\n\n## Title 2\n\n### Title 3\n\n#### Title 4\n\n##### Title 5\n\n###### Title 6\n\n",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.md",
@@ -76,7 +76,7 @@ simple_markdown_scenario = (
             },
             {
                 "data": {
-                    "id": "b.md",
+                    "document_key": "b.md",
                     "content": "Just some text",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.md",
@@ -119,7 +119,7 @@ unstructured_invalid_file_type_discover_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "id": {
+                            "document_key": {
                                 "type": ["null", "string"],
                             },
                             "content": {
@@ -180,7 +180,7 @@ unstructured_invalid_file_type_read_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "id": {
+                            "document_key": {
                                 "type": ["null", "string"],
                             },
                             "content": {
@@ -204,7 +204,7 @@ unstructured_invalid_file_type_read_scenario = (
     .set_expected_records([
             {
                 "data": {
-                    "id": "a.md",
+                    "document_key": "a.md",
                     "content": "A harmless markdown file",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "a.md",
@@ -246,7 +246,7 @@ simple_pdf_scenario = (
                     "json_schema": {
                         "type": "object",
                         "properties": {
-                            "id": {
+                            "document_key": {
                                 "type": ["null", "string"],
                             },
                             "content": {
@@ -271,7 +271,7 @@ simple_pdf_scenario = (
         [
             {
                 "data": {
-                    "id": "sample.pdf",
+                    "document_key": "sample.pdf",
                     "content": """# A Simple PDF File
 
 This is a small demonstration .pdf file -
