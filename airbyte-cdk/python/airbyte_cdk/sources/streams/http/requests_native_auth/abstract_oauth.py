@@ -31,6 +31,20 @@ class AbstractOauth2Authenticator(AuthBase):
 
     _NO_STREAM_NAME = None
 
+    def __init__(
+        self,
+        refresh_token_error_status_codes: Tuple[int, ...] = (),
+        refresh_token_error_key: str = "",
+        refresh_token_error_values: Tuple[str, ...] = (),
+    ) -> None:
+        """
+        If all of refresh_token_error_status_codes, refresh_token_error_key, and refresh_token_error_values are set,
+        then http errors with such params will be wrapped in AirbyteTracedException.
+        """
+        self._refresh_token_error_status_codes = refresh_token_error_status_codes
+        self._refresh_token_error_key = refresh_token_error_key
+        self._refresh_token_error_values = refresh_token_error_values
+
     def __call__(self, request: requests.Request) -> requests.Request:
         """Attach the HTTP headers required to authenticate on the HTTP request"""
         request.headers.update(self.get_auth_header())
@@ -77,38 +91,14 @@ class AbstractOauth2Authenticator(AuthBase):
 
         return payload
 
-    @property
-    def refresh_token_error_status_codes(self) -> Tuple[int, ...]:
-        """
-        Override if needed. If all of refresh_token_error_status_codes, refresh_token_error_key, and refresh_token_error_values are set,
-        then http errors with such params will be wrapped in AirbyteTracedException.
-        """
-        return ()
-
-    @property
-    def refresh_token_error_key(self) -> str:
-        """
-        Override if needed. If all of refresh_token_error_status_codes, refresh_token_error_key, and refresh_token_error_values are set,
-        then http errors with such params will be wrapped in AirbyteTracedException.
-        """
-        return ""
-
-    @property
-    def refresh_token_error_values(self) -> Tuple[str, ...]:
-        """
-        Override if needed. If all of refresh_token_error_status_codes, refresh_token_error_key, and refresh_token_error_values are set,
-        then http errors with such params will be wrapped in AirbyteTracedException.
-        """
-        return ()
-
     def _wrap_refresh_token_exception(self, exception: requests.exceptions.RequestException) -> bool:
         try:
             exception_content = exception.response.json()
         except JSONDecodeError:
             return False
         return (
-            exception.response.status_code in self.refresh_token_error_status_codes
-            and exception_content.get(self.refresh_token_error_key) in self.refresh_token_error_values
+            exception.response.status_code in self._refresh_token_error_status_codes
+            and exception_content.get(self._refresh_token_error_key) in self._refresh_token_error_values
         )
 
     @backoff.on_exception(

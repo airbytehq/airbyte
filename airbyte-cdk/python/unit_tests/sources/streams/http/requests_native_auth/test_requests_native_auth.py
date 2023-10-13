@@ -218,16 +218,16 @@ class TestOauth2Authenticator:
         ),
     )
     def test_refresh_access_token_wrapped(
-        self, mocker, requests_mock, config_codes, response_code, config_key, response_key, config_values, response_value, wrapped
+        self, requests_mock, config_codes, response_code, config_key, response_key, config_values, response_value, wrapped
     ):
-        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_status_codes", config_codes)
-        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_key", config_key)
-        mocker.patch.object(Oauth2Authenticator, "refresh_token_error_values", config_values)
         oauth = Oauth2Authenticator(
             f"https://{TestOauth2Authenticator.refresh_endpoint}",
             TestOauth2Authenticator.client_id,
             TestOauth2Authenticator.client_secret,
             TestOauth2Authenticator.refresh_token,
+            refresh_token_error_status_codes=config_codes,
+            refresh_token_error_key=config_key,
+            refresh_token_error_values=config_values,
         )
         error_content = {response_key: response_value}
         requests_mock.post(f"https://{TestOauth2Authenticator.refresh_endpoint}", status_code=response_code, json=error_content)
