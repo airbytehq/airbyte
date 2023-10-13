@@ -99,7 +99,8 @@ public class AsyncStreamConsumer implements SerializedAirbyteMessageConsumer {
     this.bufferManager = bufferManager;
     bufferEnqueue = bufferManager.getBufferEnqueue();
     this.flushFailure = flushFailure;
-    flushWorkers = new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager(), workerPool);
+    flushWorkers =
+        new FlushWorkers(bufferManager.getBufferDequeue(), flusher, outputRecordCollector, flushFailure, bufferManager.getStateManager(), workerPool);
     streamNames = StreamDescriptorUtils.fromConfiguredCatalog(catalog);
   }
 

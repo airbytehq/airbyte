@@ -67,8 +67,8 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     } catch (final IOException | RuntimeException e) {
       LOGGER.error("Got an error while writing message: {}", e.getMessage(), e);
       LOGGER.error(String.format(
-              "Failed to process a message for job: %s",
-              writer.toString()));
+          "Failed to process a message for job: %s",
+          writer.toString()));
       printHeapMemoryConsumption();
       throw new RuntimeException(e);
     }
