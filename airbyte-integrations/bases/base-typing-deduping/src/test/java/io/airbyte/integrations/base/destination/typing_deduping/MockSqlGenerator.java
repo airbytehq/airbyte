@@ -40,7 +40,7 @@ class MockSqlGenerator implements SqlGenerator<String> {
   @Override
   public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp) {
     final String timestampFilter = minRawTimestamp
-        .map(timestamp -> " WITH extracted_at > " + timestamp)
+        .map(timestamp -> " WHERE extracted_at > " + timestamp)
         .orElse("");
     return "UPDATE TABLE " + stream.id().finalTableId("", finalSuffix) + timestampFilter;
   }
