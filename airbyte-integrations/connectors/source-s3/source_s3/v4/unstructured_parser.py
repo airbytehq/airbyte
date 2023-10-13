@@ -15,6 +15,20 @@ from source_s3.v4.config import S3FileBasedStreamConfig
 
 
 class UnstructuredParser(FileTypeParser):
+    @property
+    def parser_max_n_files_for_schema_inference(self) -> Optional[int]:
+        """
+        Just check one file as the schema is static
+        """
+        return 1
+
+    @property
+    def parser_max_n_files_for_parsability(self) -> Optional[int]:
+        """
+        Do not check any files for parsability because it might be an expensive operation and doesn't give much confidence whether the sync will succeed.
+        """
+        return 0
+
     async def infer_schema(
         self,
         config: S3FileBasedStreamConfig,
