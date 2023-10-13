@@ -32,6 +32,9 @@ def hash(value, hash_type="md5", salt=None):
 
 
       :param value: value to be hashed
+      :param hash_type: valid hash type
+      :param salt: a salt that will be combined with the value to ensure that the hash created for a given value on this system
+                   is different from the hash created for that value on other systems.
       :return: computed hash as a hexadecimal string
     """
     hash_func = getattr(hashlib, hash_type, None)
