@@ -43,7 +43,7 @@ class PineconeIndexer(Indexer):
     def post_sync(self):
         return []
 
-    def delete_vectors(self, filter, namespace = None):
+    def delete_vectors(self, filter, namespace=None):
         if self._pod_type == "starter":
             # Starter pod types have a maximum of 100000 rows
             top_k = 10000
@@ -51,7 +51,7 @@ class PineconeIndexer(Indexer):
         else:
             self.pinecone_index.delete(filter=filter, namespace=namespace)
 
-    def delete_by_metadata(self, filter, top_k, namespace = None):
+    def delete_by_metadata(self, filter, top_k, namespace=None):
         zero_vector = [0.0] * self.embedding_dimensions
         query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k, namespace=namespace)
         while len(query_result.matches) > 0:
