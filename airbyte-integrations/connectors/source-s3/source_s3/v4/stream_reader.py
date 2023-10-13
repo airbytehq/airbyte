@@ -10,11 +10,13 @@ from typing import Iterable, List, Optional, Set
 import boto3.session
 import pytz
 import smart_open
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedSourceException, ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
+from botocore.exceptions import ClientError
 from source_s3.v4.config import Config
 from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
@@ -66,6 +68,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         seen = set()
         total_n_keys = 0
+        raise_exception = None
 
         try:
             if prefixes:
@@ -79,14 +82,23 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                     yield remote_file
 
             logger.info(f"Finished listing objects from S3. Found {total_n_keys} objects total ({len(seen)} unique objects).")
+        except ClientError as exc:
+            if exc.response["Error"]["Code"] == "NoSuchBucket":
+                raise CustomFileBasedSourceException.from_exception(
+                    exc, message=f"The bucket {self.config.bucket} does not exist.", failure_type=FailureType.config_error
+                ) from exc
+            raise_exception = exc
         except Exception as exc:
+            raise_exception = exc
+
+        if raise_exception:
             raise ErrorListingFiles(
                 FileBasedSourceError.ERROR_LISTING_FILES,
                 source="s3",
                 bucket=self.config.bucket,
                 globs=globs,
                 endpoint=self.config.endpoint,
-            ) from exc
+            ) from raise_exception
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         try:
@@ -118,7 +130,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         return file["Key"].endswith("/")
 
     def _page(
-        self, s3: BaseClient, globs: List[str], bucket: str, prefix: Optional[str], seen: Set[str], logger: logging.Logger
+            self, s3: BaseClient, globs: List[str], bucket: str, prefix: Optional[str], seen: Set[str], logger: logging.Logger
     ) -> Iterable[RemoteFile]:
         """
         Page through lists of S3 objects.

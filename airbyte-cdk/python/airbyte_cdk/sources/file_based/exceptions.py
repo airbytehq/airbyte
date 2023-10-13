@@ -3,6 +3,7 @@
 #
 
 from enum import Enum
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class FileBasedSourceError(Enum):
@@ -81,4 +82,9 @@ class StopSyncPerValidationPolicy(BaseFileBasedSourceError):
 
 
 class ErrorListingFiles(BaseFileBasedSourceError):
+    pass
+
+
+class CustomFileBasedSourceException(AirbyteTracedException):
+    """Custom exception that can be raised in connectors using file_based to avoid catching in DefaultFileBasedAvailabilityStrategy"""
     pass
