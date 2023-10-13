@@ -207,6 +207,32 @@ definitions:
       primary_key: "id"
       path: "/locations"
 
+  locations_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/locations_stream"
+        parent_key: "id"
+        partition_field: "location_id"
+
+  cash_drawers_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "cash_drawers"
+      primary_key: "id"
+      path: "/cash-drawers/shifts"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/locations_partition_router"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          location_id: "{{ stream_partition.location_id }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          field_path: ["cash_drawer_shifts"]
+
   categories_stream:
     $ref: "#/definitions/base_catalog_objects_stream"
     $parameters:
@@ -303,6 +329,7 @@ streams:
   - "#/definitions/refunds_stream"
   - "#/definitions/payments_stream"
   - "#/definitions/orders_stream"
+  - "#/definitions/cash_drawers_stream"
 
 check:
   stream_names:
