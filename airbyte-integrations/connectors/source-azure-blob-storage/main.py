@@ -13,10 +13,9 @@ from source_azure_blob_storage import Config, SourceAzureBlobStorage, SourceAzur
 if __name__ == "__main__":
     args = sys.argv[1:]
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
-    source = SourceAzureBlobStorage(SourceAzureBlobStorageStreamReader(), Config, catalog_path)
     try:
-        launch(source, args)
-    except KeyError:
+        source = SourceAzureBlobStorage(SourceAzureBlobStorageStreamReader(), Config, catalog_path)
+    except Exception:
         print(
             AirbyteMessage(
                 type=Type.TRACE,
@@ -30,3 +29,5 @@ if __name__ == "__main__":
                 ),
             ).json()
         )
+    else:
+        launch(source, args)
