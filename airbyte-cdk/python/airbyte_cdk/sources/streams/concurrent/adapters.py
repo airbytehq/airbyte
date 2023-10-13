@@ -230,7 +230,6 @@ class StreamPartition(Partition):
         try:
             for record_data in self._stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=copy.deepcopy(self._slice)):
                 if isinstance(record_data, Mapping):
-                    # Transform the data from the partition instead of the AbstractStream.
                     data_to_return = dict(record_data)
                     self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
                     yield Record(data_to_return)
@@ -284,6 +283,7 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
 
+    # The data returned by the partitions should be formatted appropriately, so we explicitly set the transformer to NoTransform
     transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
 
     def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
