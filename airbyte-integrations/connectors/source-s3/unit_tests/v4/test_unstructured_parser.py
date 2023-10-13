@@ -54,7 +54,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
         schema = asyncio.run(UnstructuredParser().infer_schema(MagicMock(), MagicMock(), MagicMock(), MagicMock()))
         assert schema == {
             "content": {"type": "string"},
-            "id": {"type": "string"},
+            "document_key": {"type": "string"},
         }
 
 
@@ -68,7 +68,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
             [
                 {
                     "content": "test",
-                    "id": FILE_URI,
+                    "document_key": FILE_URI,
                 }
             ],
             id="markdown file",
@@ -92,7 +92,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
             [
                 {
                     "content": "# heading\n\nThis is the text\n\n- This is a list item\n\n```\nThis is a formula\n```",
-                    "id": FILE_URI,
+                    "document_key": FILE_URI,
                 }
             ],
             id="pdf file",
@@ -107,7 +107,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
             [
                 {
                     "content": "# first level heading\n\n## second level heading",
-                    "id": FILE_URI,
+                    "document_key": FILE_URI,
                 }
             ],
             id="multi-level headings",
@@ -124,7 +124,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
             [
                 {
                     "content": "# heading\n\nThis is the text\n\n- This is a list item\n\n```\nThis is a formula\n```",
-                    "id": FILE_URI,
+                    "document_key": FILE_URI,
                 }
             ],
             id="docx file",

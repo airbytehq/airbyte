@@ -44,7 +44,7 @@ class UnstructuredParser(FileTypeParser):
 
             return {
                 "content": {"type": "string"},
-                "id": {"type": "string"},
+                "document_key": {"type": "string"},
             }
 
     def parse_records(
@@ -59,7 +59,7 @@ class UnstructuredParser(FileTypeParser):
             markdown = self.read_file(file_handle, logger)
             yield {
                 "content": markdown,
-                "id": file.uri,
+                "document_key": file.uri,
             }
 
     def read_file(self, file_handle: IOBase, logger: logging.Logger) -> str:
