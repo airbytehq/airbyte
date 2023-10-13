@@ -49,23 +49,27 @@ definitions:
       $ref: "#/definitions/requester"
     paginator:
       $ref: "#/definitions/default_paginator"
+  incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: "updated_at"
+    cursor_datetime_formats:
+      - '%Y-%m-%dT%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: >-
+        {{ config['begin_time'] if config['begin_time'] else day_delta(-30,
+        format='%Y-%m-%dT%H:%M:%SZ') }}
+    start_time_option:
+      inject_into: request_parameter
+      field_name: begin_time
+      type: RequestOption
   base_stream:
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
-  base_incremental_stream:
-    type: "DatetimeBasedCursor"
-    start_datetime:
-      datetime: >-
-        {{ config['start_date'] if config['start_date'] else day_delta(-30,
-        format='%Y-%m-%dT%H:%M:%SZ') }}
-      datetime_format: '%Y-%m-%dt%H:%M:%SZ'
-    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-    start_time_option:
-      type: RequestOption
-      field_name: updated_since
-      inject_into: request_parameter
-    cursor_field: updated_at
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
   accounts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -233,7 +237,7 @@ definitions:
   unique_coupons_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "unique_coupon_codes"
+      name: "unique_coupons"
     retriever:
       $ref: "#/definitions/retriever"
       requester:

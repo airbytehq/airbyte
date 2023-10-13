@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "activate_at": {
+      "type": ["null", "string"]
+    },
+    "activated": {
+      "type": ["null", "boolean"]
+    },
+    "add_ons": {
+      "type": ["null", "array"],
+      "title": "Add-ons",
+      "items": {
+        "type": ["null", "object"],
+        "title": "Subscription Add-on",
+        "description": "This links an Add-on to a specific Subscription.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Subscription Add-on ID",
+            "maxLength": 13
+          },
+          "code": {
+            "type": "string",
+            "title": "Add-on code",
+            "description": "The unique identifier for the add-on within its plan.",
+            "maxLength": 50
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "invoice_collection": {
+      "type": ["null", "object"],
+      "properties": {
+        "credit_invoices": {
+          "type": ["null", "array"]
+        },
+        "object": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "plan": {
+      "type": ["null", "object"],
+      "properties": {
+        "code": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "object": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "quantity": {
+      "type": ["null", "number"]
+    },
+    "revenue_schedule_type": {
+      "type": ["null", "string"]
+    },
+    "shipping": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "number"]
+        },
+        "object": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "subscription_id": {
+      "type": ["null", "string"]
+    },
+    "unit_amount": {
+      "type": ["null", "number"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

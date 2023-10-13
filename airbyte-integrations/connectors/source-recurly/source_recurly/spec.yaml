@@ -1,4 +1,4 @@
-documentation_url: https://docs.airbyte.com/integrations/sources/recurly
+documentationUrl: "https://docs.airbyte.com/integrations/sources/recurly"
 connectionSpecification:
   type: object
   title: "Recurly Source Spec"
@@ -19,7 +19,7 @@ connectionSpecification:
     end_time:
       type: string
       order: 3
-      title: end_time
+      title: end_time2
       pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
       examples:
         - '2021-12-01T00:00:00'
