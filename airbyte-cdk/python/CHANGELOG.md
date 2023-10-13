@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.37
+Enable debug logging when running availability check
+
 ## 0.51.36
 Enable debug logging when running availability check
 
