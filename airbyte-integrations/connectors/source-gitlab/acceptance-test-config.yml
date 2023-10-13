@@ -15,6 +15,8 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: 1.7.1
   basic_read:
     tests:
       - config_path: "secrets/config.json"
@@ -25,7 +27,6 @@ acceptance_tests:
           jobs:
             - name: "user"
               bypass_reason: "User object contains local_time which will be different each time test is run"
-        fail_on_extra_columns: false
       - config_path: "secrets/config_with_ids.json"
         timeout_seconds: 3600
         empty_streams:
@@ -39,7 +40,6 @@ acceptance_tests:
           jobs:
             - name: "user"
               bypass_reason: "User object contains local_time which will be different each time test is run"
-        fail_on_extra_columns: false
       - config_path: "secrets/config_oauth.json"
         timeout_seconds: 3600
         expect_records:
@@ -48,7 +48,6 @@ acceptance_tests:
           jobs:
             - name: "user"
               bypass_reason: "User object contains local_time which will be different each time test is run"
-        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config_with_ids.json"
