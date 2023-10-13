@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.34
+Vector DB CDK: Fix OpenAI compatible embedder when used without api key
+
 ## 0.51.33
 Vector DB CDK: Improve batching process
 
