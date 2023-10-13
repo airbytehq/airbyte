@@ -174,7 +174,23 @@ error_record_validation_user_provided_schema_scenario = (
             ],
         }
     )
-    .set_validation_policies({FailingSchemaValidationPolicy.ALWAYS_FAIL: FailingSchemaValidationPolicy()})
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
+            }
+        )
+        .set_file_type("csv")
+        .set_validation_policies({FailingSchemaValidationPolicy.ALWAYS_FAIL: FailingSchemaValidationPolicy()})
+    )
     .set_expected_check_error(None, FileBasedSourceError.ERROR_VALIDATING_RECORD.value)
 ).build()
 
