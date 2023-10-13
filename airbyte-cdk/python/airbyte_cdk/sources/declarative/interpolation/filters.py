@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import base64
 import hashlib
 
 
@@ -32,9 +32,6 @@ def hash(value, hash_type="md5", salt=None):
 
 
       :param value: value to be hashed
-      :param hash_type: valid hash type
-      :param salt: a salt that will be combined with the value to ensure that the hash created for a given value on this system
-                   is different from the hash created for that value on other systems.
       :return: computed hash as a hexadecimal string
     """
     hash_func = getattr(hashlib, hash_type, None)
@@ -51,5 +48,43 @@ def hash(value, hash_type="md5", salt=None):
     return computed_hash
 
 
-_filters_list = [hash]
+def base64encode(value: str) -> str:
+    """
+    Implementation of a custom Jinja2 base64encode filter
+
+    For example:
+
+      OAuthAuthenticator:
+        $ref: "#/definitions/OAuthAuthenticator"
+        $parameters:
+          name: "client_id"
+          value: "{{ config['client_id'] | base64encode }}"
+
+    :param value: value to be encoded in base64
+    :return: base64 encoded string
+    """
+
+    return base64.b64encode(value.encode("utf-8")).decode()
+
+
+def base64decode(value: str) -> str:
+    """
+    Implementation of a custom Jinja2 base64decode filter
+
+    For example:
+
+      OAuthAuthenticator:
+        $ref: "#/definitions/OAuthAuthenticator"
+        $parameters:
+          name: "client_id"
+          value: "{{ config['client_id'] | base64encode }}"
+
+    :param value: value to be decoded from base64
+    :return: base64 decoded string
+    """
+
+    return base64.b64decode(value.encode("utf-8")).decode()
+
+
+_filters_list = [hash, base64encode, base64decode]
 filters = {f.__name__: f for f in _filters_list}
