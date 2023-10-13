@@ -102,7 +102,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 f"Check whether key {file.uri} exists in `{self.config.bucket}` bucket and/or has proper ACL permissions"
             )
         
-        # we can simply return the result here as its a context manager itself that will release all resources
+        # we can simply return the result here as it is a context manager itself that will release all resources
         return result
 
     @staticmethod
