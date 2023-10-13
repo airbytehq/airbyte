@@ -78,65 +78,69 @@ _base_single_stream_scenario = (
 
 _base_multi_stream_scenario = (
     TestScenarioBuilder()
-    .set_files(
-        {
-            "a/a1.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val_aa1_11", "1"),
-                    ("val_aa1_12", "2"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "a/a2.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val_aa2_11", "this is text that will trigger validation policy"),
-                    ("val_aa2_12", "2"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "a/a3.csv": {
-                "contents": [
-                    ("col1",),
-                    ("val_aa3_11",),
-                    ("val_aa3_12", "val_aa3_22"),  # This record is not parsable
-                    ("val_aa3_13",),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "a/a4.csv": {
-                "contents": [
-                    ("col1",),
-                    ("val_aa4_11",),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b/b1.csv": {  # The records in this file do not conform to the schema
-                "contents": [
-                    ("col1", "col2"),
-                    ("val_bb1_11", "1"),
-                    ("val_bb1_12", "2"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b/b2.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val_bb2_11", "this is text that will trigger validation policy"),
-                    ("val_bb2_12", "2"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b/b3.csv": {
-                "contents": [
-                    ("col1",),
-                    ("val_bb3_11",),
-                    ("val_bb3_12",),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a/a1.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val_aa1_11", "1"),
+                        ("val_aa1_12", "2"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "a/a2.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val_aa2_11", "this is text that will trigger validation policy"),
+                        ("val_aa2_12", "2"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "a/a3.csv": {
+                    "contents": [
+                        ("col1",),
+                        ("val_aa3_11",),
+                        ("val_aa3_12", "val_aa3_22"),  # This record is not parsable
+                        ("val_aa3_13",),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "a/a4.csv": {
+                    "contents": [
+                        ("col1",),
+                        ("val_aa4_11",),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b/b1.csv": {  # The records in this file do not conform to the schema
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val_bb1_11", "1"),
+                        ("val_bb1_12", "2"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b/b2.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val_bb2_11", "this is text that will trigger validation policy"),
+                        ("val_bb2_12", "2"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b/b3.csv": {
+                    "contents": [
+                        ("col1",),
+                        ("val_bb3_11",),
+                        ("val_bb3_12",),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
     .set_expected_catalog(
         {

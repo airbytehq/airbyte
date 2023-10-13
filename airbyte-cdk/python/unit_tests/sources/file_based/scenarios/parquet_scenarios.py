@@ -721,8 +721,11 @@ parquet_with_invalid_config_scenario = (
     TestScenarioBuilder()
     .set_name("parquet_with_invalid_config")
     .set_config({"streams": [{"name": "stream1", "globs": ["*"], "validation_policy": "Emit Record", "format": {"filetype": "csv"}}]})
-    .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
-    .set_file_type("parquet")
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_stream_reader(TemporaryParquetFilesStreamReader(files=_single_parquet_file, file_type="parquet"))
+        .set_file_type("parquet")
+    )
     .set_expected_records([])
     .set_expected_logs({"read": [{"level": "ERROR", "message": "Error parsing record"}]})
     .set_expected_discover_error(AirbyteTracedException, "Error inferring schema from files")

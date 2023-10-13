@@ -21,19 +21,22 @@ single_csv_input_state_is_earlier_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(
             input_state=[
@@ -135,7 +138,6 @@ single_csv_file_is_skipped_if_same_modified_at_as_in_history = (
         )
         .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(
             input_state=[
@@ -203,19 +205,22 @@ single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(
             input_state=[
