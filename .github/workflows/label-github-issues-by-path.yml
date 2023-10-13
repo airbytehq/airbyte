@@ -10,8 +10,13 @@ jobs:
     name: "Label PRs based on files changes"
     runs-on: ubuntu-latest
     steps:
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_OSS }} \
+            ${{ secrets.GH_PAT_BUILD_RUNNER_BACKUP }}
       - name: "Label PR based on changed files"
         uses: actions/labeler@v3
         with:
-          repo-token: "${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}"
+          repo-token: ${{ env.PAT }}
           sync-labels: true
