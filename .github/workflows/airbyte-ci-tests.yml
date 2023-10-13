@@ -37,10 +37,8 @@ jobs:
               - 'airbyte-ci/connectors/base_images/**'
               - 'airbyte-ci/connectors/pipelines/**'
             metadata-lib:
-              - 'airbyte-ci/connectors/connector_ops/**'
               - 'airbyte-ci/connectors/metadata/lib/**'
             metadata-orchestrator:
-              - 'airbyte-ci/connectors/connector_ops/**'
               - 'airbyte-ci/connectors/metadata/lib/**'
               - 'airbyte-ci/connectors/metadata/orchestrator/**'
 
@@ -91,7 +89,7 @@ jobs:
         if: steps.changes.outputs.metadata-lib == 'true'
         uses: ./.github/actions/run-dagger-pipeline
         with:
-          subcommand: "metadata test lib"
+          subcommand: "test airbyte-ci/connectors/metadata_service/lib/"
           context: "pull_request"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
@@ -102,7 +100,7 @@ jobs:
         if: steps.changes.outputs.metadata-orchestrator == 'true'
         uses: ./.github/actions/run-dagger-pipeline
         with:
-          subcommand: "metadata test orchestrator"
+          subcommand: "test airbyte-ci/connectors/metadata_service/orchestrator/"
           context: "pull_request"
           github_token: ${{ secrets.GITHUB_TOKEN }}
           docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
