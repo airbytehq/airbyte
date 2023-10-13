@@ -3,7 +3,7 @@ spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/recurly
   connection_specification:
     type: object
-    title: "Recurly Source Spec",
+    title: "Recurly Source Spec"
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - domain
