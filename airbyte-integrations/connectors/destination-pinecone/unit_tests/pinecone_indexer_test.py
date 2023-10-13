@@ -54,7 +54,7 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
         "ns1",
         "some_stream"
     )
-    indexer.index(
+    indexer.delete(
         ["delete_id1", "delete_id2"],
         "ns1",
         "some_stram"
@@ -87,7 +87,7 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
         "ns1",
         "some_stream"
     )
-    indexer.index(
+    indexer.delete(
         ["delete_id1", "delete_id2"],
         "ns1",
         "some_stram"
