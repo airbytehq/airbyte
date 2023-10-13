@@ -97,7 +97,7 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
     Optional<String> minUnloadedTimestamp = Optional.ofNullable(database.queryStrings(
         conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
             "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
-            """
+                """
                 SELECT to_varchar(
                   TIMESTAMPADD(NANOSECOND, -1, MIN("_airbyte_extracted_at")),
                   'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
@@ -106,21 +106,20 @@ public class SnowflakeDestinationHandler implements DestinationHandler<Snowflake
                 WHERE "_airbyte_loaded_at" IS NULL
                 """)),
         // The query will always return exactly one record, so use .get(0)
-        record -> record.getString("MIN_TIMESTAMP")).get(0)
-    );
+        record -> record.getString("MIN_TIMESTAMP")).get(0));
     if (minUnloadedTimestamp.isEmpty()) {
       // If there are no unloaded raw records, then we can safely skip all existing raw records.
       // This second query just finds the newest raw record.
       minUnloadedTimestamp = Optional.ofNullable(database.queryStrings(
           conn -> conn.createStatement().executeQuery(new StringSubstitutor(Map.of(
               "raw_table", id.rawTableId(SnowflakeSqlGenerator.QUOTE))).replace(
-              """
-              SELECT to_varchar(
-                MAX("_airbyte_extracted_at"),
-                'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
-              ) AS MIN_TIMESTAMP
-              FROM ${raw_table}
-              """)),
+                  """
+                  SELECT to_varchar(
+                    MAX("_airbyte_extracted_at"),
+                    'YYYY-MM-DDTHH24:MI:SS.FF9TZH:TZM'
+                  ) AS MIN_TIMESTAMP
+                  FROM ${raw_table}
+                  """)),
           record -> record.getString("MIN_TIMESTAMP")).get(0));
     }
     return minUnloadedTimestamp.map(Instant::parse);
