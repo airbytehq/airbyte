@@ -106,6 +106,9 @@ definitions:
           - stream: "#/definitions/accounts_stream"
             parent_key: "id"
             partition_field: "parent_id"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
+      cursor_field: "created_at"
   addons_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
