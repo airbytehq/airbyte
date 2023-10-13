@@ -1,0 +1,306 @@
+version: 0.51.16
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/recurly
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - domain
+      - api_key
+    properties:
+      domain:
+        type: string
+        order: 0
+        title: Domain
+      api_key:
+        type: string
+        order: 1
+        title: API Key
+        airbyte_secret: true
+      end_time:
+        type: string
+        order: 3
+        title: end_time
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        examples:
+          - '2021-12-01T00:00:00'
+      begin_time:
+        type: string
+        order: 2
+        title: begin_time
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        examples:
+          - '2021-12-01T00:00:00'
+    additionalProperties: true
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - accounts
+definitions:
+  schema_loader:
+    type: JsonFileSchemaLoader
+    file_path: "./source_recurly/schemas/{{ parameters['name'] }}.json"
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - data
+  requester:
+    type: HttpRequester
+    url_base: "https://{{ config['domain'] }}"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+    request_parameters:
+      end_time: "{{ config['end_time'] if config['begin_time'] else None }}"
+      begin_time: "{{ config['begin_time'] if config['begin_time'] else None }}"
+      limit: "200"
+      order: "asc"
+      sort: "updated_at"
+    request_headers:
+      Accept: application/vnd.recurly.v2021-02-25
+    error_handler:
+      response_filters:
+        - http_codes: [ 422 ]
+          action: IGNORE
+  default_paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ response['next'] }}"
+      stop_condition: "{{ response['has_more'] == false }}"
+    page_token_option:
+      type: "RequestPath"
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    requester:
+      $ref: "#/definitions/requester"
+    paginator:
+      $ref: "#/definitions/default_paginator"
+  base_stream:
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+  base_incremental_stream:
+    type: "DatetimeBasedCursor"
+    start_datetime:
+      datetime: >-
+        {{ config['start_date'] if config['start_date'] else day_delta(-30,
+        format='%Y-%m-%dT%H:%M:%SZ') }}
+      datetime_format: '%Y-%m-%dt%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_time_option:
+      type: RequestOption
+      field_name: updated_since
+      inject_into: request_parameter
+    cursor_field: updated_at
+  accounts_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "accounts"
+      path: "accounts"
+  account_coupon_redemption_steam:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "account_coupon_redemptions"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "accounts/{{ stream_slice.parent_id }}/coupon_redemptions"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/accounts_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  account_notes_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "account_notes"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "accounts/{{ stream_slice.parent_id }}/notes"
+        request_parameters:
+          $ref: "#/definitions/requester/request_parameters"
+          order: "asc"
+          sort: "created_at"
+          limit: "200"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/accounts_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  addons_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "add_ons"
+      path: "add_ons"
+  billing_infos_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "billing_infos"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "accounts/{{ stream_slice.parent_id }}/billing_infos"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/accounts_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  coupons_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "coupons"
+      path: "coupons"
+  credit_payments_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "credit_payments"
+      path: "credit_payments"
+  export_dates_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "export_dates"
+      path: "export_dates"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    transformations:
+      - type: AddFields
+        fields:
+          - path: [ "dates" ]
+            value: "{{ record['dates']}}"
+      - type: RemoveFields
+        field_pointers:
+          - [ "object" ]
+  invoices_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "invoices"
+      path: "invoices"
+  line_items_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "line_items"
+      path: "line_items"
+  measured_units_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "measured_units"
+      path: "measured_units"
+  plans_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "plans"
+      path: "plans"
+  shipping_addresses_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "shipping_addresses"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "accounts/{{ stream_slice.parent_id }}/shipping_addresses"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/accounts_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  shipping_methods_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "shipping_methods"
+      path: "shipping_methods"
+  subscriptions_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "subscriptions"
+      path: "subscriptions"
+  subscription_changes_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "subscription_changes"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "subscriptions/{{ stream_slice.parent_id }}/change"
+        error_handler:
+          response_filters:
+            - http_codes: [ 404 ]
+              action: IGNORE
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/subscriptions_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  transactions_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "transactions"
+      path: "transactions"
+  unique_coupons_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "unique_coupon_codes"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "coupons/{{ stream_slice.parent_id }}/unique_coupon_codes"
+        error_handler:
+          response_filters:
+            - http_codes: [ 404, 400 ]
+              action: IGNORE
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/coupons_stream"
+            parent_key: "id"
+            partition_field: "parent_id"
+  
+streams:
+  - "#/definitions/accounts_stream"
+  - "#/definitions/account_coupon_redemption_steam"
+  - "#/definitions/account_notes_stream"
+  - "#/definitions/addons_stream"
+  - "#/definitions/billing_infos_stream"
+  - "#/definitions/coupons_stream"
+  - "#/definitions/credit_payments_stream"
+  - "#/definitions/export_dates_stream"
+  - "#/definitions/invoices_stream"
+  - "#/definitions/line_items_stream"
+  - "#/definitions/measured_units_stream"
+  - "#/definitions/plans_stream"
+  - "#/definitions/shipping_addresses_stream"
+  - "#/definitions/shipping_methods_stream"
+  - "#/definitions/subscriptions_stream"
+  - "#/definitions/subscription_changes_stream"
+  - "#/definitions/transactions_stream"
+  - "#/definitions/unique_coupons_stream"
+
