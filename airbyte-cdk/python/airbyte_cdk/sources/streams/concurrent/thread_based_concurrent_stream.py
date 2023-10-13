@@ -45,7 +45,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
         max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
         sleep_time: float = DEFAULT_SLEEP_TIME,
-        type_transformer: TransformConfig = TypeTransformer(TransformConfig.NoTransform),
+        type_transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform),
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
