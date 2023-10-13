@@ -4,6 +4,15 @@
 
 package io.airbyte.integrations.source_performance;
 
+import com.datadog.api.client.ApiClient;
+import com.datadog.api.client.ApiException;
+import com.datadog.api.client.v2.api.MetricsApi;
+import com.datadog.api.client.v2.model.MetricIntakeType;
+import com.datadog.api.client.v2.model.MetricPayload;
+import com.datadog.api.client.v2.model.MetricPoint;
+import com.datadog.api.client.v2.model.MetricResource;
+import com.datadog.api.client.v2.model.MetricSeries;
+import com.datadog.api.client.v2.model.IntakePayloadAccepted;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,6 +35,8 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import java.net.InetAddress;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -54,6 +65,33 @@ public class PerformanceTest {
   }
 
   void runTest() throws Exception {
+
+    // Initialize datadog.
+    ApiClient defaultClient = ApiClient.getDefaultApiClient();
+    MetricsApi apiInstance = new MetricsApi(defaultClient);
+
+    MetricPayload body =
+        new MetricPayload()
+            .series(
+                Collections.singletonList(
+                    new MetricSeries()
+                        .metric("xiaohan.test.ignore")
+                        .type(MetricIntakeType.GAUGE)
+                        .points(
+                            Collections.singletonList(
+                                new MetricPoint()
+                                    .timestamp(OffsetDateTime.now().toInstant().getEpochSecond())
+                                    .value(0.7)))
+                        .resources(
+                            Collections.singletonList(
+                                new MetricResource().name("dummyhost").type("host")))));
+    try {
+      IntakePayloadAccepted result = apiInstance.submitMetrics(body);
+      System.out.println(result);
+    } catch (ApiException e) {
+      log.error("Exception when calling MetricsApi#submitMetrics.", e);
+    }
+
     KubePortManagerSingleton.init(PORTS);
 
     final KubernetesClient fabricClient = new DefaultKubernetesClient();
