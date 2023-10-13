@@ -8,12 +8,12 @@ import static io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeDestinationBulkLoad extends AbstractJdbcDestination implements Destination {
+public class SnowflakeDestinationBulkLoad extends AbstractJdbcDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDestinationBulkLoad.class);
   private static final String PROPERTIES = "properties";
