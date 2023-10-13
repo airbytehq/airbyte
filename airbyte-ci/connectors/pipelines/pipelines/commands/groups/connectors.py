@@ -9,8 +9,7 @@ import sys
 from pathlib import Path
 from typing import List, Set, Tuple
 
-import anyio
-import click
+import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, console, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.bases import ConnectorWithModifiedFiles
@@ -239,7 +238,7 @@ def connectors(
     is_flag=True,
 )
 @click.pass_context
-def test(
+async def test(
     ctx: click.Context,
     code_tests_only: bool,
     fail_fast: bool,
@@ -285,8 +284,7 @@ def test(
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
     try:
-        anyio.run(
-            run_connectors_pipelines,
+        await run_connectors_pipelines(
             [connector_context for connector_context in connectors_tests_contexts],
             run_connector_test_pipeline,
             "Test Pipeline",
@@ -318,7 +316,7 @@ def test(
     type=bool,
 )
 @click.pass_context
-def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
+async def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
     """Runs a build pipeline for the selected connectors."""
 
     connectors_contexts = [
@@ -344,8 +342,7 @@ def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
     ]
     if use_host_gradle_dist_tar and not ctx.obj["is_local"]:
         raise Exception("flag --use-host-gradle-dist-tar requires --is-local")
-    anyio.run(
-        run_connectors_pipelines,
+    await run_connectors_pipelines(
         connectors_contexts,
         run_connector_build_pipeline,
         "Build Pipeline",
@@ -415,7 +412,7 @@ def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
     default="#connector-publish-updates",
 )
 @click.pass_context
-def publish(
+async def publish(
     ctx: click.Context,
     pre_release: bool,
     spec_cache_gcs_credentials: str,
@@ -469,8 +466,7 @@ def publish(
     main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")
     ctx.obj["concurrency"] = 1
 
-    publish_connector_contexts = anyio.run(
-        run_connectors_pipelines,
+    publish_connector_contexts = await run_connectors_pipelines(
         publish_connector_contexts,
         run_connector_publish_pipeline,
         "Publishing connectors",
@@ -531,7 +527,7 @@ def list(
     envvar="DOCKER_HUB_PASSWORD",
 )
 @click.pass_context
-def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker_hub_username: str, docker_hub_password: str) -> bool:
+async def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker_hub_username: str, docker_hub_password: str) -> bool:
     """Upgrades the base image version used by the selected connectors."""
 
     connectors_contexts = [
@@ -558,8 +554,7 @@ def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker_hub_u
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
 
-    anyio.run(
-        run_connectors_pipelines,
+    await run_connectors_pipelines(
         connectors_contexts,
         run_connector_base_image_upgrade_pipeline,
         "Upgrade base image pipeline",
@@ -577,7 +572,7 @@ def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker_hub_u
 @click.argument("pull-request-number", type=str)
 @click.argument("changelog-entry", type=str)
 @click.pass_context
-def bump_version(
+async def bump_version(
     ctx: click.Context,
     bump_type: str,
     pull_request_number: str,
@@ -607,8 +602,7 @@ def bump_version(
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
 
-    anyio.run(
-        run_connectors_pipelines,
+    await run_connectors_pipelines(
         connectors_contexts,
         run_connector_version_bump_pipeline,
         "Version bump pipeline pipeline",
@@ -643,7 +637,7 @@ def bump_version(
     envvar="DOCKER_HUB_PASSWORD",
 )
 @click.pass_context
-def migrate_to_base_image(
+async def migrate_to_base_image(
     ctx: click.Context,
     pull_request_number: str,
     docker_hub_username: str,
@@ -675,8 +669,7 @@ def migrate_to_base_image(
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
 
-    anyio.run(
-        run_connectors_pipelines,
+    await run_connectors_pipelines(
         connectors_contexts,
         run_connector_migration_to_base_image_pipeline,
         "Migration to base image pipeline",

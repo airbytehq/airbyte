@@ -7,7 +7,7 @@
 import importlib
 from typing import List
 
-import click
+import asyncclick as click
 from github import PullRequest
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
