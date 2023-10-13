@@ -107,7 +107,7 @@ class SourceGitlab(AbstractSource):
     def _projects_stream(self, config: MutableMapping[str, Any]) -> Union[Projects, GroupProjects]:
         if not self.__projects_stream:
             auth_params = self._auth_params(config)
-            project_ids = config.get("projects_list")
+            project_ids = config.get("projects_list", [])
             groups_stream = self._groups_stream(config)
             if groups_stream.group_ids:
                 self.__projects_stream = GroupProjects(project_ids=project_ids, parent_stream=groups_stream, **auth_params)
