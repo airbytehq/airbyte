@@ -104,13 +104,13 @@ from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
     single_parquet_scenario,
     single_partitioned_parquet_scenario,
 )
+from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.unstructured_scenarios import (
     simple_markdown_scenario,
     simple_pdf_scenario,
     unstructured_invalid_file_type_discover_scenario,
     unstructured_invalid_file_type_read_scenario,
 )
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.user_input_schema_scenarios import (
     multi_stream_user_input_schema_scenario_emit_nonconforming_records,
     multi_stream_user_input_schema_scenario_schema_is_invalid,

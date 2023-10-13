@@ -286,10 +286,10 @@ single_csv_scenario = (
                                                     "title": "Filetype",
                                                     "default": "unstructured",
                                                     "const": "unstructured",
-                                                    "type": "string"
+                                                    "type": "string",
                                                 }
                                             },
-                                            "description": "Extract text from document formats and emit as one record per file."
+                                            "description": "Extract text from document formats and emit as one record per file.",
                                         },
                                     ],
                                 },
