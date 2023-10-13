@@ -166,7 +166,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
 
         if self._cursor_field:
             stream.source_defined_cursor = True
-            stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
+            stream.supported_sync_modes.append(SyncMode.incremental)
             # Wrap the cursor field in an array
             stream.default_cursor_field = [self._cursor_field]
 
