@@ -107,7 +107,7 @@ class SourceGitlab(AbstractSource):
     def _projects_stream(self, config: MutableMapping[str, Any]) -> Union[Projects, GroupProjects]:
         if not self.__projects_stream:
             auth_params = self._auth_params(config)
-            project_ids = list(filter(None, config.get("projects", "").split(" ")))
+            project_ids = config.get("projects_list")
             groups_stream = self._groups_stream(config)
             if groups_stream.group_ids:
                 self.__projects_stream = GroupProjects(project_ids=project_ids, parent_stream=groups_stream, **auth_params)
@@ -122,7 +122,7 @@ class SourceGitlab(AbstractSource):
         return self.__auth_params
 
     def _get_group_list(self, config: MutableMapping[str, Any]) -> List[str]:
-        group_ids = list(filter(None, config.get("groups", "").split(" ")))
+        group_ids = config.get("groups_list")
         # Gitlab exposes different APIs to get a list of groups.
         # We use https://docs.gitlab.com/ee/api/groups.html#list-groups in case there's no group IDs in the input config.
         # This API provides full information about all available groups, including subgroups.

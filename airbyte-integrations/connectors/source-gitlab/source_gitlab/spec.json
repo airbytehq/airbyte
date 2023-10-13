@@ -98,11 +98,31 @@
         "type": "string",
         "examples": ["airbyte.io"],
         "title": "Groups",
-        "description": "Space-delimited list of groups. e.g. airbyte.io.",
+        "description": "[DEPRECATED] Space-delimited list of groups. e.g. airbyte.io.",
+        "airbyte_hidden": true
+      },
+      "groups_list": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "examples": ["airbyte.io"],
+        "title": "Groups",
+        "description": "List of groups. e.g. airbyte.io.",
         "order": 3
       },
       "projects": {
         "type": "string",
+        "title": "Projects",
+        "examples": ["airbyte.io/documentation"],
+        "description": "[DEPRECATED] Space-delimited list of projects. e.g. airbyte.io/documentation meltano/tap-gitlab.",
+        "airbyte_hidden": true
+      },
+      "projects_list": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
         "title": "Projects",
         "examples": ["airbyte.io/documentation"],
         "description": "Space-delimited list of projects. e.g. airbyte.io/documentation meltano/tap-gitlab.",
