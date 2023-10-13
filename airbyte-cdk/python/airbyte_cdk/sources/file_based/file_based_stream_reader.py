@@ -2,13 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from contextlib import contextmanager
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
 from io import IOBase
-from typing import ContextManager, Iterable, List, Optional, Set
+from typing import Iterable, List, Optional, Set
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -45,9 +44,9 @@ class AbstractFileBasedStreamReader(ABC):
         ...
 
     @abstractmethod
-    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> ContextManager:
+    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         """
-        Return a file handle for reading as context manager.
+        Return a file handle for reading. It's recommended to use this method as a context manager.
 
         Many sources will be able to use smart_open to implement this method,
         for example:
