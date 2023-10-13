@@ -233,11 +233,7 @@ definitions:
   unique_coupons_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-<<<<<<< HEAD
-      name: "unique_coupons"
-=======
       name: "unique_coupon_codes"
->>>>>>> Migrate connector to Low-code CDK
     retriever:
       $ref: "#/definitions/retriever"
       requester:
