@@ -7,7 +7,6 @@ data:
       enabled: true
     cloud:
       enabled: true
-      dockerImageTag: 0.2.0 # https://github.com/airbytehq/airbyte/issues/30478
   connectorSubtype: api
   connectorType: source
   definitionId: 47f17145-fe20-4ef5-a548-e29b048adf84
@@ -28,8 +27,8 @@ data:
         upgradeDeadline: 2023-09-18
         message: "Fix broken stream, manifest refactor"
       2.1.0:
-        upgradeDeadline: 2023-10-13
-        message: "Add a new stream item_collection"
+        upgradeDeadline: 2023-10-27
+        message: "Rename dataset streams"
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/apify-dataset
   tags:
