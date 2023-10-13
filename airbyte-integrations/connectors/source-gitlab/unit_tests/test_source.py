@@ -47,6 +47,32 @@ def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
     assert status is False, msg.startswith('Unable to connect to Gitlab API with the provided credentials - "DefaultBackoffException"')
 
 
+def test_connection_fail_due_to_expired_access_token_error(oauth_config, mocker, requests_mock):
+    expected = "Unable to refresh the `access_token`, please re-auth in Source > Settings."
+    requests_mock.post("https://gitlab.com/oauth/token", status_code=401)
+    source = SourceGitlab()
+    status, msg = source.check_connection(logging.getLogger("airbyte"), oauth_config)
+    assert status is False, expected in msg
+
+
+def test_refresh_expired_access_token_on_error(oauth_config, mocker, requests_mock):
+    test_response = {
+        "access_token": "new_access_token",
+        "expires_in": 7200,
+        "created_at": 1735689600,
+        # (7200 + 1735689600).timestamp().to_rfc3339_string() = "2025-01-01T02:00:00+00:00"
+        "refresh_token": "new_refresh_token",
+    }
+    expected_token_expiry_date = "2025-01-01T02:00:00+00:00"
+    requests_mock.post("https://gitlab.com/oauth/token", status_code=200, json=test_response)
+    source = SourceGitlab()
+    source.check_connection(logging.getLogger("airbyte"), oauth_config)
+    # check the updated config values
+    assert test_response.get("access_token") == oauth_config.get("credentials").get("access_token")
+    assert test_response.get("refresh_token") == oauth_config.get("credentials").get("refresh_token")
+    assert expected_token_expiry_date == oauth_config.get("credentials").get("token_expiry_date")
+
+
 @pytest.mark.parametrize(
     "api_url, deployment_env, expected_message",
     (
