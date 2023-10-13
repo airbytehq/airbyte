@@ -110,7 +110,8 @@ class DeployOrchestrator(Step):
     ]
 
     async def _run(self) -> StepResult:
-        parent_dir = self.context.get_repo_dir(INTERNAL_TOOL_PATHS.METADATA_ROOT.value)
+        # mount metadata_service/lib and metadata_service/orchestrator
+        parent_dir = self.context.get_repo_dir("airbyte-ci/connectors/metadata_service")
         python_base = with_python_base(self.context, "3.9")
         python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "pydantic==1.10.6", "poetry2setup==1.1.0"])
         dagster_cloud_api_token_secret: dagger.Secret = get_secret_host_variable(
@@ -120,7 +121,7 @@ class DeployOrchestrator(Step):
         container_to_run = (
             python_with_dependencies.with_mounted_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
-            .with_workdir(f"/src/{INTERNAL_TOOL_PATHS.METADATA_ORCHESTRATOR.value}")
+            .with_workdir(f"/src/orchestrator")
             .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
             .with_exec(self.deploy_dagster_command)
         )
