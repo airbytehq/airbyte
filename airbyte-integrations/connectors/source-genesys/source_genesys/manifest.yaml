@@ -1,0 +1,249 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["entities"]
+
+  requester:
+    type: HttpRequester
+    url_base: "https://api.{{ parameters['{{ config['tenant_endpoint'] }}'] }}//api/v2/"
+    http_method: "GET"
+    authenticator:
+      type: OAuthAuthenticator
+        token_refresh_endpoint: "https://login.{{ parameters['{{ config['tenant_endpoint'] }}'] }}/oauth/token"
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: ""
+    $parameters:
+      Americas (US East): mypurecloud.com
+      Americas (US East 2): use2.us-gov-pure.cloud
+      Americas (US West): usw2.pure.cloud
+      Americas (Canada): cac1.pure.cloud
+      Americas (São Paulo): sae1.pure.cloud
+      EMEA (Frankfurt): mypurecloud.de
+      EMEA (Dublin): mypurecloud.ie
+      EMEA (London): euw2.pure.cloud
+      Asia Pacific (Mumbai): aps1.pure.cloud
+      Asia Pacific (Seoul): apne2.pure.cloud
+      Asia Pacific (Sydney): mypurecloud.com.au
+    error_handler:
+      backoff_strategies:
+        type: "WaitTimeFromHeader"
+        header: "Retry-After"
+    request_parameters:
+      pageSize: 500
+
+  paginator:
+    pagination_strategy:
+      type: "CursorPagination"
+      cursor_value: "{{ headers['urls']['nextUri'] }}"
+      page_size: 500
+    page_token_option:
+      type: "RequestPath"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "#/definitions/paginator"
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  # API Docs: https://developer.genesys.cloud/routing/routing/
+  routing_outbound_events_stream:
+    $ref: "#/definitions/base_stream"
+    name: routing_outbound_events
+    primary_key: id
+    path: "routing/assessments"
+
+  routing_routing_assessments_stream:
+    $ref: "#/definitions/base_stream"
+    name: routing_routing_assessments
+    primary_key: id
+    path: "routing/assessments"
+    $parameters:
+      page_size: 200
+      cursor_field: "dateModified"
+  
+  routing_routing_queues_stream:
+    $ref: "#/definitions/base_stream"
+    name: routing_routing_queues
+    primary_key: id
+    path: "routing/queues"
+
+  # API Docs: https://developer.genesys.cloud/telephony/locations-apis
+  telephony_locations_stream:
+    $ref: "#/definitions/base_stream"
+    name: telephony_locations
+    primary_key: id
+    path: "locations"
+
+  telephony_providers_edges_stream:
+    $ref: "#/definitions/base_stream"
+    name: telephony_providers_edges
+    primary_key: id
+    path: "telephony/providers/edges"
+  
+  telephony_providers_edges_dids_stream:
+    $ref: "#/definitions/base_stream"
+    name: elephony_providers_edges_dids
+    primary_key: id
+    path: "telephony/providers/edges/dids"
+
+  telephony_providers_edges_didpools_stream:
+    $ref: "#/definitions/base_stream"
+    name: telephony_providers_edges_didpools
+    primary_key: id
+    path: "telephony/providers/edges/didpools"
+
+  telephony_providers_edges_extensions_stream:
+    $ref: "#/definitions/base_stream"
+    name: telephony_providers_edges_extensions
+    primary_key: id
+    path: "telephony/providers/edges/extensions"
+
+  telephony_providers_edges_lines_stream:
+    $ref: "#/definitions/base_stream"
+    name: telephony_providers_edges_lines
+    primary_key: id
+    path: "telephony/providers/edges/lines"
+
+  telephony_providers_edges_outboundroutes_stream:
+    $ref: "#/definitions/base_stream"
+    name: telephony_providers_edges_outboundroutes
+    primary_key: id
+    path: "telephony/providers/edges/outboundroutes"
+
+  telephony_providers_edges_trunks_stream:
+    $ref: "#/definitions/base_stream"
+    name: telephony_providers_edges_trunks
+    primary_key: id
+    path: "telephony/providers/edges/trunks"
+
+  telephony_providers_edges_sites_stream:
+    $ref: "#/definitions/base_stream"
+    name: telephony_providers_edges_sites
+    primary_key: id
+    path: "telephony/providers/edges/sites"
+
+  telephony_providers_edges_phones_stream:
+    $ref: "#/definitions/base_stream"
+    name: telephony_providers_edges_phones
+    primary_key: id
+    path: "telephony/providers/edges/phones"
+
+  telephony_stations_stream:
+    $ref: "#/definitions/base_stream"
+    name: telephony_stations
+    primary_key: id
+    path: "stations"
+
+  # API Docs: https://developer.genesys.cloud/useragentman/groups/
+  user_users_stream:
+    $ref: "#/definitions/base_stream"
+    name: user_users
+    primary_key: id
+    path: "users"
+
+  user_groups_stream:
+    $ref: "#/definitions/base_stream"
+    name: user_groups
+    primary_key: id
+    path: "groups"
+
+streams:
+  - "#/definitions/routing_outbound_events_stream"
+  - "#/definitions/routing_routing_assessments_stream"
+  - "#/definitions/routing_routing_queues_stream"
+  - "#/definitions/telephony_locations_stream"
+  - "#/definitions/telephony_providers_edges_stream"
+  - "#/definitions/telephony_providers_edges_dids_stream"
+  - "#/definitions/telephony_providers_edges_didpools_stream"
+  - "#/definitions/telephony_providers_edges_extensions_stream"
+  - "#/definitions/telephony_providers_edges_lines_stream"
+  - "#/definitions/telephony_providers_edges_outboundroutes_stream"
+  - "#/definitions/telephony_providers_edges_trunks_stream"
+  - "#/definitions/telephony_providers_edges_sites_stream"
+  - "#/definitions/telephony_providers_edges_phones_stream"
+  - "#/definitions/telephony_stations_stream"
+  - "#/definitions/user_users_stream"
+  - "#/definitions/user_groups_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "routing_outbound_events_stream"
+    - "routing_routing_assessments_stream"
+    - "routing_routing_queues_stream"
+    - "telephony_locations_stream"
+    - "telephony_providers_edges_stream"
+    - "telephony_providers_edges_dids_stream"
+    - "telephony_providers_edges_didpools_stream"
+    - "telephony_providers_edges_extensions_stream"
+    - "telephony_providers_edges_lines_stream"
+    - "telephony_providers_edges_outboundroutes_stream"
+    - "telephony_providers_edges_trunks_stream"
+    - "telephony_providers_edges_sites_stream"
+    - "telephony_providers_edges_phones_stream"
+    - "telephony_stations_stream"
+    - "user_users_stream"
+    - "user_groups_stream"
+
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.io/integrations/sources/genesys
+  connectionSpecification:
+    "$schema": http://json-schema.org/draft-07/schema#
+    title: Genesys Connector Configuration
+    type: object
+    required:
+    - start_date
+    - tenant_endpoint
+    - client_id
+    - client_secret
+    properties:
+      client_id:
+        type: string
+        title: Client ID
+        description: Your OAuth user Client ID
+        airbyte_secret: true
+        order: 0
+      client_secret:
+        type: string
+        title: Client Secret
+        description: Your OAuth user Client Secret
+        airbyte_secret: true
+        order: 1
+      tenant_endpoint:
+        title: Tenant Endpoint Location
+        type: string
+        description: Please choose the right endpoint where your Tenant is located.
+          More info by this <a href="https://help.mypurecloud.com/articles/aws-regions-for-genesys-cloud-deployment/">Link</a>
+        enum:
+        - Americas (US East)
+        - Americas (US East 2)
+        - Americas (US West)
+        - Americas (Canada)
+        - Americas (São Paulo)
+        - EMEA (Frankfurt)
+        - EMEA (Dublin)
+        - EMEA (London)
+        - Asia Pacific (Mumbai)
+        - Asia Pacific (Seoul)
+        - Asia Pacific (Sydney)
+        order: 2
+      start_date:
+        type: string
+        title: Start Date
+        description: 'Start Date in format: YYYY-MM-DD'
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        order: 3
