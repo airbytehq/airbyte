@@ -34,6 +34,8 @@ acceptance_tests:
             bypass_reason: "Not able to fill stream"
           - name: refunds
             bypass_reason: "Not able to fill stream"
+          - name: cash_drawers
+            bypass_reason: "Not able to fill stream"
         expect_records:
           path: "integration_tests/expected_records_oauth.jsonl"
         ignored_fields:
