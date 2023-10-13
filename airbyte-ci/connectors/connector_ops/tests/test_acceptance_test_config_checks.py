@@ -24,6 +24,11 @@ def pokeapi_acceptance_test_config_path():
 
 
 @pytest.fixture
+def pokeapi_metadata_path():
+    return "airbyte-integrations/connectors/source-pokeapi/metadata.yaml"
+
+
+@pytest.fixture
 def ga_connector_file():
     return "airbyte-integrations/connectors/source-amplitude/acceptance-test-config.yml"
 
@@ -116,6 +121,17 @@ def ga_connector_test_strictness_level_file_change_expected_team(tmp_path, ga_co
     shutil.copyfile(backup_path, ga_connector_file)
 
 
+@pytest.fixture
+def test_breaking_change_release_expected_team(tmp_path, pokeapi_metadata_path) -> List:
+    expected_teams = list(acceptance_test_config_checks.BREAKING_CHANGE_REVIEWERS)
+    backup_path = tmp_path / "backup_poke_metadata"
+    shutil.copyfile(pokeapi_metadata_path, backup_path)
+    with open(pokeapi_metadata_path, "a") as acceptance_test_config_file:
+        acceptance_test_config_file.write("releases:\n  breakingChanges:\n    23.0.0:\n      message: hi\n      upgradeDeadline: 2025-01-01")
+    yield expected_teams
+    shutil.copyfile(backup_path, pokeapi_metadata_path)
+
+
 def verify_no_requirements_file_was_generated(captured: str):
     assert captured.out.split("\n")[0].split("=")[-1] == "false"
 
@@ -171,6 +187,12 @@ def test_find_mandatory_reviewers_ga_test_strictness_level(
     mock_diffed_branched, capsys, ga_connector_test_strictness_level_file_change_expected_team
 ):
     check_review_requirements_file(capsys, ga_connector_test_strictness_level_file_change_expected_team)
+
+
+def test_find_mandatory_reviewers_breaking_change_release(
+    mock_diffed_branched, capsys, test_breaking_change_release_expected_team
+):
+    check_review_requirements_file(capsys, test_breaking_change_release_expected_team)
 
 
 def test_find_mandatory_reviewers_no_tracked_changed(mock_diffed_branched, capsys, not_ga_not_tracked_change_expected_team):
