@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.36
+Enable debug logging when running availability check
+
 ## 0.51.35
 File CDK: Allow configuring number of tested files for schema inference and parsability check
 
