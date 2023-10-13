@@ -146,9 +146,6 @@ def gradle_file_with_local_cdk_dependencies(tmpdir) -> tuple[Path, list[Path], l
     expected_dependencies = [
         Path("path/to/dependency1"),
         Path("path/to/dependency2"),
-        Path("airbyte-cdk/java/airbyte-cdk"),
-        Path("airbyte-commons"),
-        Path("airbyte-commons-cli"),
     ]
     expected_test_dependencies = [
         Path("path/to/test/dependency"),
