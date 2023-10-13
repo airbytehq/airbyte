@@ -12,7 +12,7 @@ airbyteJavaConnector {
 airbyteJavaConnector.addCdkDependencies()
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestinationBulkLoad'
+    mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeBulkLoadDestination'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 

@@ -32,7 +32,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 // todo (cgardens) - DRY this up with SnowflakeDestinationAcceptanceTest
-public class SnowflakeDestinationBulkLoadAcceptanceTest extends DestinationAcceptanceTest {
+public class SnowflakeBulkLoadDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private PostgreSQLContainer<?> db;
   private final StandardNameTransformer namingResolver = new StandardNameTransformer();

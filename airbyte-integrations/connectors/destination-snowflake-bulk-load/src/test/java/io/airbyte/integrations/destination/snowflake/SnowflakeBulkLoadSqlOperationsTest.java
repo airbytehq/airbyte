@@ -7,7 +7,7 @@ package io.airbyte.integrations.destination.snowflake;
 import static org.junit.jupiter.api.Assertions.*;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
