@@ -175,7 +175,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
         }
 
         def mypyCheck = project.tasks.register('mypyCheck', Exec) {
-            // Run mypy on modified files
+            // Run mypy on modified files only since there are too many type errors in the whole project.
             environment 'ROOT_DIR', extension.mypyDirectory
             commandLine = 'bin/run-mypy-on-modified-files.sh'
             onlyIf {
