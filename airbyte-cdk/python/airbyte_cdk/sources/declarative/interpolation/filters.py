@@ -77,7 +77,7 @@ def base64decode(value: str) -> str:
         $ref: "#/definitions/OAuthAuthenticator"
         $parameters:
           name: "client_id"
-          value: "{{ config['client_id'] | base64encode }}"
+          value: "{{ config['client_id'] | base64decode }}"
 
     :param value: value to be decoded from base64
     :return: base64 decoded string
