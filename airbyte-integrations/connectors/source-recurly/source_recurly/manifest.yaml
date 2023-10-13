@@ -1,4 +1,38 @@
 version: 0.51.16
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/recurly
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - domain
+      - api_key
+    properties:
+      domain:
+        type: string
+        order: 0
+        title: Domain
+      api_key:
+        type: string
+        order: 1
+        title: API Key
+        airbyte_secret: true
+      end_time:
+        type: string
+        order: 3
+        title: end_time
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        examples:
+          - '2021-12-01T00:00:00'
+      begin_time:
+        type: string
+        order: 2
+        title: begin_time
+        pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
+        examples:
+          - '2021-12-01T00:00:00'
+    additionalProperties: true
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -22,8 +56,8 @@ definitions:
       type: BasicHttpAuthenticator
       username: "{{ config['api_key'] }}"
     request_parameters:
-      end_time: "{{ config['end_time'] }}"
-      begin_time: "{{ config['begin_time'] }}"
+      end_time: "{{ config['end_time'] if config['begin_time'] else None }}"
+      begin_time: "{{ config['begin_time'] if config['begin_time'] else None }}"
       limit: "200"
       order: "asc"
       sort: "updated_at"
@@ -49,27 +83,23 @@ definitions:
       $ref: "#/definitions/requester"
     paginator:
       $ref: "#/definitions/default_paginator"
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: "updated_at"
-    cursor_datetime_formats:
-      - '%Y-%m-%dT%H:%M:%SZ'
-    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: >-
-        {{ config['begin_time'] if config['begin_time'] else day_delta(-30,
-        format='%Y-%m-%dT%H:%M:%SZ') }}
-    start_time_option:
-      inject_into: request_parameter
-      field_name: begin_time
-      type: RequestOption
   base_stream:
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
+  base_incremental_stream:
+    type: "DatetimeBasedCursor"
+    start_datetime:
+      datetime: >-
+        {{ config['start_date'] if config['start_date'] else day_delta(-30,
+        format='%Y-%m-%dT%H:%M:%SZ') }}
+      datetime_format: '%Y-%m-%dt%H:%M:%SZ'
+    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+    start_time_option:
+      type: RequestOption
+      field_name: updated_since
+      inject_into: request_parameter
+    cursor_field: updated_at
   accounts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -237,7 +267,11 @@ definitions:
   unique_coupons_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
+<<<<<<< HEAD
       name: "unique_coupons"
+=======
+      name: "unique_coupon_codes"
+>>>>>>> Migrate connector to Low-code CDK
     retriever:
       $ref: "#/definitions/retriever"
       requester:
