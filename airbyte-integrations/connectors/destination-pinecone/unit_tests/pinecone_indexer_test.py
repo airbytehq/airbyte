@@ -54,7 +54,7 @@ def test_pinecone_index_upsert_and_delete(mock_describe_index):
         None,
         "some_stream"
     )
-    indexer.index(
+    indexer.delete(
         ["delete_id1", "delete_id2"],
         None,
         "some_stram"
@@ -86,7 +86,7 @@ def test_pinecone_index_upsert_and_delete_starter(mock_describe_index):
         None,
         "some_stream"
     )
-    indexer.index(
+    indexer.delete(
         ["delete_id1", "delete_id2"],
         None,
         "some_stram"
@@ -126,7 +126,8 @@ def test_pinecone_index_empty_batch():
     indexer = create_pinecone_indexer()
     indexer.index(
         [],
-        [],
+        None,
+        "some_stream"
     )
     indexer.pinecone_index.delete.assert_not_called()
     indexer.pinecone_index.upsert.assert_not_called()
