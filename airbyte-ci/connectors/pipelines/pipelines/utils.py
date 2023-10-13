@@ -21,7 +21,7 @@ import anyio
 import asyncer
 import click
 import git
-from connector_ops.utils import get_changed_connectors, abs_project_path_to_relative_path_str
+from connector_ops.utils import abs_project_path_to_relative_path_str, get_changed_connectors
 from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
 from google.cloud import storage
 from google.oauth2 import service_account

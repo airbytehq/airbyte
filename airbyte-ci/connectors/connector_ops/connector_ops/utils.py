@@ -19,6 +19,7 @@ from ci_credentials import SecretsManager
 from pydash.objects import get
 from rich.console import Console
 from simpleeval import simple_eval
+
 console = Console()
 
 DIFFED_BRANCH = os.environ.get("DIFFED_BRANCH", "origin/master")
@@ -45,6 +46,7 @@ TEST_GRADLE_DEPENDENCIES = [
     "testFixturesImplementation",
 ]
 
+
 def download_catalog(catalog_url):
     response = requests.get(catalog_url)
     return response.json()
@@ -63,9 +65,11 @@ ALLOWED_HOST_THRESHOLD = {
     "ql": 300,
 }
 
+
 def get_airbyte_repo() -> git.Repo:
     """Get the airbyte repo."""
     return git.Repo(search_parent_directories=True)
+
 
 @functools.lru_cache(maxsize=1)
 def get_airbyte_repo_path_with_fallback() -> Path:
@@ -79,6 +83,7 @@ def get_airbyte_repo_path_with_fallback() -> Path:
         # log the files in the current directory to help debug
         logging.warning(f"Files in {path}: {os.listdir(path)}")
         return path
+
 
 def abs_project_path_to_relative_path_str(absolute_path: Path) -> str:
     """Get the relative path from the absolute path.
