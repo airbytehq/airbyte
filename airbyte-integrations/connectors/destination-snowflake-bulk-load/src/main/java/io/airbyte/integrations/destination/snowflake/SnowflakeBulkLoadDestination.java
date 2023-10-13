@@ -2,22 +2,20 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-
 package io.airbyte.integrations.destination.snowflake;
 
 import static io.airbyte.integrations.destination.snowflake.OssCloudEnvVarConsts.AIRBYTE_CLOUD;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.cdk.db.factory.DataSourceFactory;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.*;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import java.util.Collections;
 import java.util.Map;
 import javax.sql.DataSource;
