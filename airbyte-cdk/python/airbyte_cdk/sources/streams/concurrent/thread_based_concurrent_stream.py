@@ -26,7 +26,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 class ThreadBasedConcurrentStream(AbstractStream):
 
-    DEFAULT_TIMEOUT_SECONDS = 600
+    DEFAULT_TIMEOUT_SECONDS = 900
     DEFAULT_MAX_QUEUE_SIZE = 10_000
     DEFAULT_SLEEP_TIME = 0.1
 
