@@ -16,8 +16,12 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.codehaus.plexus.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesManager {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RelationalDbDebeziumPropertiesManager.class);
 
   public RelationalDbDebeziumPropertiesManager(final Properties properties,
                                                final JsonNode config,
@@ -28,7 +32,7 @@ public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesMan
   }
 
   @Override
-  protected Properties getConnectionConfiguration(JsonNode config) {
+  protected Properties getConnectionConfiguration(final JsonNode config) {
     final Properties properties = new Properties();
 
     // db connection configuration
@@ -45,12 +49,19 @@ public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesMan
   }
 
   @Override
-  protected String getName(JsonNode config) {
-    return config.get(JdbcUtils.DATABASE_KEY).asText();
+  protected String getName(final JsonNode config) {
+    //return "fixed_topic_prefix_name";
+    final String name = config.get(JdbcUtils.DATABASE_KEY).asText();
+    if (isInvalidName(name)) {
+      final String validName = normalizeName(name);
+      LOGGER.info("Invalid name detected for debezium name & topic prefix {}, renaming to {} ", name, validName);
+      return validName;
+    }
+    return name;
   }
 
   @Override
-  protected Properties getIncludeConfiguration(ConfiguredAirbyteCatalog catalog, JsonNode config) {
+  protected Properties getIncludeConfiguration(final ConfiguredAirbyteCatalog catalog, final JsonNode config) {
     final Properties properties = new Properties();
 
     // table selection
@@ -116,4 +127,29 @@ public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesMan
         .collect(Collectors.joining("|", "(", ")"));
   }
 
+  /**
+   * Checks if the string contains any of the invalid characters. A string is valid if it contains only underscore, hyphen, dot or alphanumeric chars.
+   * This is according to the rules for values of topic.prefix outlined here :
+   * https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-topic-prefix.
+   * The same applies for other debezium connectors Airbyte currently supports (Postgres, MySQL, MsSQL)
+   *
+   * @param name - the input string to check.
+   * @return - true if it contains any invalid characters, false otherwise.
+   */
+  private static boolean isInvalidName(final String name) {
+    return !name.matches("[^a-zA-Z0-9._-]*");
+  }
+
+  /**
+   * Removes any invalid characters from the given name. A string is valid if it contains only underscore, hyphen, dot or alphanumeric chars.
+   * This is according to the rules for valid values of topic.prefix outlined here :
+   * https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-topic-prefix.
+   * The same applies for other debezium connectors Airbyte currently supports (Postgres, MySQL, MsSQL)
+   *
+   * @param name - the input string to clean.
+   * @return - the cleaned string.
+   */
+  private static String normalizeName(final String name) {
+    return name.replaceAll("[^a-zA-Z0-9._-]", "");
+  }
 }
