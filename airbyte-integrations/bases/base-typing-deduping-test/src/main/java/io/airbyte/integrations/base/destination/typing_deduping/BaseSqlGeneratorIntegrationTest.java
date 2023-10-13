@@ -355,43 +355,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Test that T+D throws an error for an incremental-dedup sync where at least one record has a null
-   * primary key, and that we don't write any final records.
-   */
-  @Test
-  public void incrementalDedupInvalidPrimaryKey() throws Exception {
-    createRawTable(streamId);
-    createFinalTable(incrementalDedupStream, "");
-    insertRawTableRecords(
-        streamId,
-        List.of(
-            Jsons.deserialize(
-                """
-                {
-                  "_airbyte_raw_id": "10d6e27d-ae7a-41b5-baf8-c4c277ef9c11",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {}
-                }
-                """),
-            Jsons.deserialize(
-                """
-                {
-                  "_airbyte_raw_id": "5ce60e70-98aa-4fe3-8159-67207352c4f0",
-                  "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-                  "_airbyte_data": {"id1": 1, "id2": 100}
-                }
-                """)));
-
-    final String sql = generator.updateTable(incrementalDedupStream, "");
-    assertThrows(
-        Exception.class,
-        () -> destinationHandler.execute(sql));
-    DIFFER.diffFinalTableRecords(
-        emptyList(),
-        dumpFinalTableRecords(streamId, ""));
-  }
-
-  /**
    * Test that T+D supports streams whose name and namespace are the same.
    */
   @Test
@@ -454,6 +417,27 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "sqlgenerator/alltypes_expectedrecords_raw.jsonl",
         dumpRawTableRecords(streamId),
         "sqlgenerator/alltypes_expectedrecords_final.jsonl",
+        dumpFinalTableRecords(streamId, "_foo"));
+  }
+
+  /**
+   * Test JSON Types encounted for a String Type field.
+   *
+   * @throws Exception
+   */
+  @Test
+  public void jsonStringifyTypes() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(incrementalDedupStream, "_foo");
+    insertRawTableRecords(
+        streamId,
+        BaseTypingDedupingTest.readRecords("sqlgenerator/json_types_in_string_inputrecords.jsonl"));
+    final String sql = generator.updateTable(incrementalDedupStream, "_foo");
+    destinationHandler.execute(sql);
+    verifyRecords(
+        "sqlgenerator/json_types_in_string_expectedrecords_raw.jsonl",
+        dumpRawTableRecords(streamId),
+        "sqlgenerator/json_types_in_string_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, "_foo"));
   }
 
@@ -579,9 +563,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         {
           "_airbyte_raw_id": "4fa4efe2-3097-4464-bd22-11211cc3e15b",
           "_airbyte_extracted_at": "2023-01-01T00:00:00Z",
-          "_airbyte_meta": {},
-          "id1": 1,
-          "id2": 2
+          "_airbyte_meta": {}
         }
         """));
     insertFinalTableRecords(
@@ -930,8 +912,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Verify that the final table inherently rejects null values for primary key columns. Subclasses
-   * MAY override this if they don't support `NOT NULL` constraints.
+   * Verify that the final table does not include NON-NULL PKs (after
+   * https://github.com/airbytehq/airbyte/pull/31082)
    */
   @Test
   public void ensurePKsAreIndexedUnique() throws Exception {
@@ -958,10 +940,10 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     assertTrue(generator.existingSchemaMatchesStreamConfig(incrementalDedupStream, existingTableA.get()));
     destinationHandler.execute("DROP TABLE " + streamId.finalTableId(""));
 
-    // Hack the create query to remove NOT NULLs to emulate the old behavior
-    final String createTableModified = Arrays.stream(createTable.split("\r\n"))
-        .map(line -> line.contains("id1") || line.contains("id2") || line.contains("ID1") || line.contains("ID2")
-            ? line.replace("NOT NULL", "")
+    // Hack the create query to add NOT NULLs to emulate the old behavior
+    final String createTableModified = Arrays.stream(createTable.split(System.lineSeparator()))
+        .map(line -> !line.contains("CLUSTER") && (line.contains("id1") || line.contains("id2") || line.contains("ID1") || line.contains("ID2"))
+            ? line.replace(",", " NOT NULL,")
             : line)
         .collect(Collectors.joining("\r\n"));
     destinationHandler.execute(createTableModified);

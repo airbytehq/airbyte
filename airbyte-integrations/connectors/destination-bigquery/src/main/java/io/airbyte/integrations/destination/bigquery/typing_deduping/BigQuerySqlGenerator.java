@@ -121,7 +121,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // This is guaranteed to not be a Union, so we won't recurse infinitely
       final AirbyteType chosenType = u.chooseType();
       return extractAndCast(column, chosenType, forceSafeCast);
-    } else if (airbyteType instanceof Struct) {
+    }
+
+    if (airbyteType instanceof Struct) {
       // We need to validate that the struct is actually a struct.
       // Note that struct columns are actually nullable in two ways. For a column `foo`:
       // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
@@ -137,7 +139,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
           END, wide_number_mode=>'round')
           """);
-    } else if (airbyteType instanceof Array) {
+    }
+
+    if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
       return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
@@ -148,7 +152,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
           END, wide_number_mode=>'round')
           """);
-    } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
+    }
+
+    if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
       // JSON_QUERY returns a SQL null if the field contains a JSON null, so we actually parse the
       // airbyte_data to json
       // and json_query it directly (which preserves nulls correctly).
@@ -156,16 +162,32 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           """
           JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${column_name}"')
           """);
+    }
+
+    if (airbyteType == AirbyteProtocolType.STRING) {
+      // Special case String to only use json value for type string and parse the json for others
+      // Naive json_value returns NULL for object/array values and json_query adds escaped quotes to the
+      // string.
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
+          """
+          (CASE
+                WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
+                  OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')) != 'string'
+                  THEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
+              ELSE
+              JSON_VALUE(`_airbyte_data`, '$."${column_name}"')
+            END)
+          """);
+    }
+
+    final StandardSQLTypeName dialectType = toDialectType(airbyteType);
+    final var baseTyping = "JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"')";
+    if (dialectType == StandardSQLTypeName.STRING) {
+      // json_value implicitly returns a string, so we don't need to cast it.
+      return baseTyping;
     } else {
-      final StandardSQLTypeName dialectType = toDialectType(airbyteType);
-      final var baseTyping = "JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"')";
-      if (dialectType == StandardSQLTypeName.STRING) {
-        // json_value implicitly returns a string, so we don't need to cast it.
-        return baseTyping;
-      } else {
-        // SAFE_CAST is actually a massive performance hit, so we should skip it if we can.
-        return cast(baseTyping, dialectType.name(), forceSafeCast);
-      }
+      // SAFE_CAST is actually a massive performance hit, so we should skip it if we can.
+      return cast(baseTyping, dialectType.name(), forceSafeCast);
     }
   }
 
@@ -232,12 +254,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String columnsAndTypes(final StreamConfig stream) {
-    final Set<String> pks = getPks(stream);
     return stream.columns().entrySet().stream()
-        .map(column -> String.join(
-            " ",
-            column.getKey().name(QUOTE),
-            toDialectType(column.getValue()).name(), pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
+        .map(column -> String.join(" ", column.getKey().name(QUOTE), toDialectType(column.getValue()).name()))
         .collect(joining(",\n"));
   }
 
@@ -255,7 +273,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     LOGGER.info("Alter Table Report {} {} {}; Clustering {}; Partitioning {}",
         alterTableReport.columnsToAdd(),
         alterTableReport.columnsToRemove(),
-        alterTableReport.columnsToChange(),
+        alterTableReport.columnsToChangeType(),
         tableClusteringMatches,
         tablePartitioningMatches);
 
@@ -304,7 +322,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .collect(Collectors.toSet());
 
     // Columns that are typed differently than the StreamConfig
-    final Set<String> columnsToChange = Stream.concat(
+    final Set<String> columnsToChangeType = Stream.concat(
         streamSchema.keySet().stream()
             // If it's not in the existing schema, it should already be in the columnsToAdd Set
             .filter(name -> {
@@ -316,16 +334,18 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                   // if there is no matching key, then don't include it because it is probably already in columnsToAdd
                   .orElse(false);
             }),
-        // Find any PK columns which do not have a Non-Null requirement
+
+        // OR columns that used to have a non-null constraint and shouldn't
+        // (https://github.com/airbytehq/airbyte/pull/31082)
         existingTable.getSchema().getFields().stream()
             .filter(field -> pks.contains(field.getName()))
-            .filter(field -> field.getMode() != Mode.REQUIRED)
+            .filter(field -> field.getMode() == Mode.REQUIRED)
             .map(Field::getName))
         .collect(Collectors.toSet());
 
     final boolean isDestinationV2Format = schemaContainAllFinalTableV2AirbyteColumns(existingSchema.keySet());
 
-    return new AlterTableReport(columnsToAdd, columnsToRemove, columnsToChange, isDestinationV2Format);
+    return new AlterTableReport(columnsToAdd, columnsToRemove, columnsToChangeType, isDestinationV2Format);
   }
 
   /**
@@ -690,13 +710,13 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .replace("'", "\\'");
   }
 
-  private static Set<String> getPks(StreamConfig stream) {
-    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
-  }
-
   private static String cast(final String content, final String asType, boolean useSafeCast) {
     final var open = useSafeCast ? "SAFE_CAST(" : "CAST(";
     return wrap(open, content + " as " + asType, ")");
+  }
+
+  private static Set<String> getPks(StreamConfig stream) {
+    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
   private static String wrap(final String open, final String content, final String close) {
