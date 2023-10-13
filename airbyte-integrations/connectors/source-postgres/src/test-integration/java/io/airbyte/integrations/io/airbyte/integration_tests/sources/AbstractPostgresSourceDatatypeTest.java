@@ -301,6 +301,16 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
             .addExpectedValues("33.345")
             .build());
 
+    // Verify that large integers are not deserialized into scientific notation
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .fullSourceDataType("NUMERIC(38)")
+            .addInsertValues("'70000'", "'853245'", "'900000000'")
+            .addExpectedValues("70000", "853245", "900000000")
+            .build());
+
     // case of a column type being a NUMERIC data type
     // with precision but no decimal
     addDataTypeTestData(
