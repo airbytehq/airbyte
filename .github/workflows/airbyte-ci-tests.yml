@@ -12,9 +12,8 @@ on:
       - reopened
       - synchronize
     paths:
-      - "airbyte-ci/**"
-    paths-ignore:
-      - "**/*.md"
+      - airbyte-ci/**
+
 jobs:
   run-airbyte-ci-tests:
     name: Run Airbyte CI tests
