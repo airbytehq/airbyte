@@ -46,7 +46,7 @@ class FileBasedSource(AbstractSource, ABC):
         catalog = self.read_catalog(catalog_path) if catalog_path else None
         self.stream_schemas = {s.stream.name: s.stream.json_schema for s in catalog.streams} if catalog else {}
         self.cursor_cls = cursor_cls
-        self.logger = logging.getLogger(f"airbyte.{self.name}")
+        self.logger = logging.getLogger(f"airbyte.{self.name} sdf ")
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
