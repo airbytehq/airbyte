@@ -1,0 +1,22 @@
+name: Run mymy on modified cdk files
+
+on:
+  pull_request:
+    paths:
+      - "airbyte-cdk/python/**"
+jobs:
+  run-mypy-on-modified-cdk-files:
+    name: "Run mypy on modified cdk files"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+      - run: pip install mypy # you can pin your preferred version
+      - name: Install ci-connector-ops package
+        run: airbyte-cdk/python/bin/run-mypy-on-modified-files.sh
