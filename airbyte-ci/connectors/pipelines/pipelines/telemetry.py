@@ -4,7 +4,7 @@ import os
 
 import segment.analytics as analytics
 
-analytics.write_key = 'ER8EjdRVFut7n05XPaaTKrSEnjLscyKr'
+analytics.write_key = 'G6G7whgro81g9xM00kN2buclGKvcOjFd'
 analytics.send = True
 analytics.debug = True
 
