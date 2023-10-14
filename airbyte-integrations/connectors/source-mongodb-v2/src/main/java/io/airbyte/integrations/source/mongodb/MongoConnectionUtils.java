@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import java.net.URLEncoder;
+
 import static io.airbyte.integrations.source.mongodb.MongoConstants.DRIVER_NAME;
 
 import com.mongodb.ConnectionString;
@@ -40,7 +42,7 @@ public class MongoConnectionUtils {
     if (config.hasAuthCredentials()) {
       final String authSource = config.getAuthSource();
       final String user = config.getUsername();
-      final String password = config.getPassword();
+      final String password = URLEncoder.encode(config.getPassword(), StandardCharsets.UTF_8);
       mongoClientSettingsBuilder.credential(MongoCredential.createCredential(user, authSource, password.toCharArray()));
     }
 
