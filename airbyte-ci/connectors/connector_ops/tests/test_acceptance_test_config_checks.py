@@ -127,7 +127,9 @@ def test_breaking_change_release_expected_team(tmp_path, pokeapi_metadata_path) 
     backup_path = tmp_path / "backup_poke_metadata"
     shutil.copyfile(pokeapi_metadata_path, backup_path)
     with open(pokeapi_metadata_path, "a") as acceptance_test_config_file:
-        acceptance_test_config_file.write("releases:\n  breakingChanges:\n    23.0.0:\n      message: hi\n      upgradeDeadline: 2025-01-01")
+        acceptance_test_config_file.write(
+            "releases:\n  breakingChanges:\n    23.0.0:\n      message: hi\n      upgradeDeadline: 2025-01-01"
+        )
     yield expected_teams
     shutil.copyfile(backup_path, pokeapi_metadata_path)
 
@@ -189,9 +191,7 @@ def test_find_mandatory_reviewers_ga_test_strictness_level(
     check_review_requirements_file(capsys, ga_connector_test_strictness_level_file_change_expected_team)
 
 
-def test_find_mandatory_reviewers_breaking_change_release(
-    mock_diffed_branched, capsys, test_breaking_change_release_expected_team
-):
+def test_find_mandatory_reviewers_breaking_change_release(mock_diffed_branched, capsys, test_breaking_change_release_expected_team):
     check_review_requirements_file(capsys, test_breaking_change_release_expected_team)
 
 

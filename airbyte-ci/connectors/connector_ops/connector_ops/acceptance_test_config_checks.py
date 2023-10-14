@@ -69,30 +69,15 @@ def find_mandatory_reviewers() -> List[Dict[str, Union[str, Dict[str, List]]]]:
     required_reviewers = []
 
     if backward_compatibility_changes:
-        required_reviewers.append({
-            "name": "Backwards Compatibility Test Skip",
-            "teams": list(BACKWARD_COMPATIBILITY_REVIEWERS)
-        })
+        required_reviewers.append({"name": "Backwards Compatibility Test Skip", "teams": list(BACKWARD_COMPATIBILITY_REVIEWERS)})
     if test_strictness_level_changes:
-        required_reviewers.append({
-            "name": "Acceptance Test Strictness Level",
-            "teams": list(TEST_STRICTNESS_LEVEL_REVIEWERS)
-        })
+        required_reviewers.append({"name": "Acceptance Test Strictness Level", "teams": list(TEST_STRICTNESS_LEVEL_REVIEWERS)})
     if ga_bypass_reason_changes:
-        required_reviewers.append({
-            "name": "GA Acceptance Test Bypass",
-            "teams": list(GA_BYPASS_REASON_REVIEWERS)
-        })
+        required_reviewers.append({"name": "GA Acceptance Test Bypass", "teams": list(GA_BYPASS_REASON_REVIEWERS)})
     if important_connector_changes:
-        required_reviewers.append({
-            "name": "GA Connectors",
-            "teams": list(GA_CONNECTOR_REVIEWERS)
-        })
+        required_reviewers.append({"name": "GA Connectors", "teams": list(GA_CONNECTOR_REVIEWERS)})
     if breaking_change_changes:
-        required_reviewers.append({
-            "name": "Breaking Changes",
-            "teams": list(BREAKING_CHANGE_REVIEWERS)
-        })
+        required_reviewers.append({"name": "Breaking Changes", "teams": list(BREAKING_CHANGE_REVIEWERS)})
 
     return required_reviewers
 
@@ -112,9 +97,7 @@ def write_review_requirements_file():
     mandatory_reviewers = find_mandatory_reviewers()
 
     if mandatory_reviewers:
-        requirements_file_content = [
-            dict(r, paths="unmatched") for r in mandatory_reviewers
-        ]
+        requirements_file_content = [dict(r, paths="unmatched") for r in mandatory_reviewers]
         with open(REVIEW_REQUIREMENTS_FILE_PATH, "w") as requirements_file:
             yaml.safe_dump(requirements_file_content, requirements_file)
         print("CREATED_REQUIREMENTS_FILE=true")
