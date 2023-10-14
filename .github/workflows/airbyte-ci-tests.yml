@@ -13,8 +13,6 @@ on:
       - synchronize
     paths:
       - airbyte-ci/**
-    paths-ignore:
-      - "**/*.md"
 
 jobs:
   run-airbyte-ci-tests:
