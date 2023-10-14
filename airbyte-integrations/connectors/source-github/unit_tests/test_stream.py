@@ -1368,7 +1368,6 @@ def test_stream_contributor_activity_parse_empty_response(caplog):
 
 
 @responses.activate
-@patch("time.sleep", return_value=0)
 def test_stream_contributor_activity_accepted_response(caplog):
     repository_args = {
         "page_size_for_large_streams": 20,
@@ -1381,9 +1380,10 @@ def test_stream_contributor_activity_accepted_response(caplog):
         body="",
         status=202,
     )
-    with pytest.raises(UserDefinedBackoffException):
+    with patch("time.sleep", return_value=0):
         list(read_full_refresh(stream))
     assert resp.call_count == 6
+    assert "Syncing `ContributorActivity` stream isn't available for repository `airbytehq/airbyte`." in caplog.messages
 
 
 @responses.activate

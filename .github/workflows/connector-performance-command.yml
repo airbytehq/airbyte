@@ -4,7 +4,13 @@ on:
     inputs:
       connector:
         description: "Airbyte Connector"
+        type: choice
         required: true
+        options:
+          - connectors/source-postgres
+          - connectors/source-mysql
+          - connectors/destination-snowflake
+        default: "connectors/source-postgres"
       repo:
         description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
         required: false
@@ -102,6 +108,7 @@ jobs:
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
+          fetch-depth: 0 # This is to fetch the main branch in case we are running on a different branch.
       - name: Install Java
         uses: actions/setup-java@v3
         with:
@@ -124,6 +131,7 @@ jobs:
           echo "harness_type=$the_harness" >> "$GITHUB_OUTPUT"
       - name: Write harness credentials
         run: |
+          export PATH="$PATH:/root/.local/bin"
           ci_credentials connectors-performance/$HARNESS_TYPE write-to-storage
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -144,6 +152,8 @@ jobs:
           connector_name=$(echo ${{ github.event.inputs.connector }} | cut -d / -f 2)
           echo "Running ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check"
           ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: KIND Kubernetes Cluster Setup
         uses: helm/kind-action@v1.4.0
         with:
@@ -180,6 +190,7 @@ jobs:
           kubectl logs --tail=1 $POD | while read line ; do line=${line#"$PREFIX"}; line=${line%"$SUFFIX"}; echo $line >> $GITHUB_OUTPUT ; done
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
+        if: github.event.inputs.comment-id
         uses: peter-evans/create-or-update-comment@v2
         with:
           reactions: "+1"
