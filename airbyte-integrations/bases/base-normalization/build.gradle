@@ -6,8 +6,7 @@ plugins {
 }
 
 airbytePython {
-    // TODO: uncomment and get mypy checks to pass
-    // mypyDirectory 'normalization'
+    moduleDirectory 'normalization'
 }
 
 dependencies {

@@ -7,8 +7,7 @@ plugins {
 }
 
 airbytePython {
-    // TODO: uncomment and get mypy checks to pass
-    // mypyDirectory 'octavia_cli'
+    moduleDirectory 'octavia_cli'
 }
 
 def generateApiClient = tasks.register('generateApiClient', GenerateTask) {
