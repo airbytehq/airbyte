@@ -35,9 +35,23 @@ class Indexer(ABC):
         return []
 
     @abstractmethod
-    def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
+    def index(self, document_chunks: List[Chunk], namespace: str, stream: str) -> None:
         """
-        Index a list of document chunks. This method should be used to index the documents in the destination. The delete_ids parameter contains a list of record ids - all chunks with a record id in this list should be deleted from the destination.
+        Index a list of document chunks.
+
+        This method should be used to index the documents in the destination.
+        All chunks belong to the stream and namespace specified in the parameters.
+        """
+        pass
+
+    @abstractmethod
+    def delete(self, delete_ids: List[str], namespace: str, stream: str) -> None:
+        """
+        Delete document chunks belonging to certain record ids.
+
+        This method should be used to delete documents from the destination.
+        The delete_ids parameter contains a list of record ids - all chunks with a record id in this list should be deleted from the destination.
+        All ids belong to the stream and namespace specified in the parameters.
         """
         pass
 
