@@ -12,6 +12,7 @@ from github import PullRequest
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
+from pipelines.telemetry import track_command
 from pipelines.utils import (
     get_current_epoch_time,
     get_current_git_branch,
@@ -25,9 +26,6 @@ from pipelines.utils import (
 from .groups.connectors import connectors
 from .groups.metadata import metadata
 from .groups.tests import test
-
-from pipelines.telemetry import track_command
-
 
 # HELPERS
 
