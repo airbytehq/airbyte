@@ -354,7 +354,7 @@ class Connector:
         return self.metadata.get("supportLevel") if self.metadata else None
 
     def metadata_query_match(self, query_string: str) -> bool:
-        """Evaluate a query string against the connector metadata.
+        """Evaluate a query string against the connector metadata
 
         Based on the simpleeval library:
         https://github.com/danthedeckie/simpleeval
