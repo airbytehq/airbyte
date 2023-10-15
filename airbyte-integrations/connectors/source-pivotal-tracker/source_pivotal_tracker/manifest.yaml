@@ -1,0 +1,415 @@
+version: 0.50.0
+type: DeclarativeSource
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - "*"
+
+  requester:
+    type: HttpRequester
+    url_base: https://www.pivotaltracker.com/services/v5
+    http_method: GET
+    authenticator:
+      type: ApiKeyAuthenticator
+      api_token: "{{ config['api_token'] }}"
+      inject_into:
+        type: RequestOption
+        field_name: X-TrackerToken
+        inject_into: header
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  base_properties:
+    id:
+      type: number
+    kind:
+      type: string
+    name:
+      type: string
+
+  base_dates_properties:
+    $ref: "#/definitions/base_properties"
+    created_at:
+      type: string
+    updated_at:
+      type: string
+
+  project_entity_properties:
+    $ref: "#/definitions/base_dates_properties"
+    project_id:
+      type: number
+
+  timezone_properties:
+    properties:
+      kind:
+        type: string
+      offset:
+        type: string
+      olson_name:
+        type: string
+    type: object
+
+  project_schema:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      properties:
+        $ref: "#/definitions/base_dates_properties"
+        account_id:
+          type: number
+        atom_enabled:
+          type: boolean
+        automatic_planning:
+          type: boolean
+        bugs_and_chores_are_estimatable:
+          type: boolean
+        current_iteration_number:
+          type: number
+        enable_following:
+          type: boolean
+        enable_incoming_emails:
+          type: boolean
+        enable_tasks:
+          type: boolean
+        has_google_domain:
+          type: boolean
+        initial_velocity:
+          type: number
+        iteration_length:
+          type: number
+        number_of_done_iterations_to_show:
+          type: number
+        point_scale:
+          type: string
+        point_scale_is_custom:
+          type: boolean
+        project_type:
+          type: string
+        public:
+          type: boolean
+        show_priority_icon:
+          type: boolean
+        show_priority_icon_in_all_panels:
+          type: boolean
+        show_story_priority:
+          type: boolean
+        start_time:
+          type: string
+        time_zone:
+          $ref: "#/definitions/timezone_properties"
+        velocity_averaged_over:
+          type: number
+        version:
+          type: number
+        week_start_day:
+          type: string
+      type: object
+
+  projects_stream:
+    $ref: "#/definitions/base_stream"
+    name: projects
+    primary_key: id
+    schema_loader:
+      $ref: "#/definitions/project_schema"
+    $parameters:
+      path: "/projects"
+
+  project_retriever:
+    $ref: "#/definitions/retriever"
+    partition_router:
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: id
+            partition_field: project
+            stream:
+              $ref: "#/definitions/projects_stream"
+
+  project_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/project_retriever"
+
+  epic_schema:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      properties:
+        $ref: "#/definitions/project_entity_properties"
+        label:
+          $ref: "#/definitions/project_entity_properties"
+        url:
+          type: string
+      type: object
+
+  epics_stream:
+    $ref: "#/definitions/project_base_stream"
+    name: epics
+    primary_key: id
+    schema_loader:
+      $ref: "#/definitions/epic_schema"
+    $parameters:
+      path: "/projects/{{ stream_partition.project }}/epics"
+
+  label_schema:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      properties:
+        $ref: "#/definitions/project_entity_properties"
+      type: object
+
+  labels_stream:
+    $ref: "#/definitions/project_base_stream"
+    name: labels
+    primary_key: id
+    schema_loader:
+      $ref: "#/definitions/label_schema"
+    $parameters:
+      path: "/projects/{{ stream_partition.project }}/labels"
+
+  person_properties:
+    type: object
+    properties:
+      $ref: "#/definitions/base_properties"
+      email:
+        type: string
+      initials:
+        type: string
+      username:
+        type: string
+
+  membership_schema:
+    type: InlineSchemaLoader
+    schema:
+      $schema: http://json-schema.org/schema#
+      properties:
+        id:
+          type: number
+        kind:
+          type: string
+        role:
+          type: string
+        person:
+          $ref: "#/definitions/person_properties"
+        favorite:
+          type: boolean
+        created_at:
+          type: string
+        project_id:
+          type: number
+        updated_at:
+          type: string
+        project_color:
+          type: string
+        last_viewed_at:
+          type: string
+        wants_comment_notification_emails:
+          type: boolean
+        will_receive_mention_notifications_or_emails:
+          type: boolean
+      type: object
+
+  memberships_stream:
+    $ref: "#/definitions/project_base_stream"
+    name: project_memberships
+    primary_key: id
+    schema_loader:
+      $ref: "#/definitions/membership_schema"
+    $parameters:
+      path: "/projects/{{ stream_partition.project }}/memberships"
+
+  project_paginated_retriever:
+    $ref: "#/definitions/project_retriever"
+    paginator:
+      type: DefaultPaginator
+      page_size_option:
+        type: RequestOption
+        field_name: limit
+        inject_into: request_parameter
+      page_token_option:
+        type: RequestOption
+        field_name: offset
+        inject_into: request_parameter
+      pagination_strategy:
+        type: OffsetIncrement
+        page_size: 100
+
+  project_paginated_base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/project_paginated_retriever"
+
+  release_schema:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/schema#
+      properties:
+        $ref: "#/definitions/project_entity_properties"
+        url:
+          type: string
+        labels:
+          type: array
+        accepted_at:
+          type: string
+        current_state:
+          type: string
+
+  releases_stream:
+    $ref: "#/definitions/project_paginated_base_stream"
+    name: releases
+    primary_key: id
+    schema_loader:
+      $ref: "#/definitions/release_schema"
+    $parameters:
+      path: "/projects/{{ stream_partition.project }}/releases"
+
+  story_schema:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/schema#
+      properties:
+        $ref: "#/definitions/project_entity_properties"
+        url:
+          type: string
+        labels:
+          type: array
+          items:
+            type: object
+            properties:
+              $ref: "#/definitions/project_entity_properties"
+        owner_ids:
+          type: array
+        story_type:
+          type: string
+        accepted_at:
+          type: string
+        description:
+          type: string
+        current_state:
+          type: string
+        story_priority:
+          type: string
+        requested_by_id:
+          type: number
+
+  stories_stream:
+    $ref: "#/definitions/project_paginated_base_stream"
+    name: stories
+    primary_key: id
+    schema_loader:
+      $ref: "#/definitions/story_schema"
+    $parameters:
+      path: "/projects/{{ stream_partition.project }}/stories"
+
+  activity_schema:
+    type: InlineSchemaLoader
+    schema:
+      type: object
+      $schema: http://json-schema.org/schema#
+      properties:
+        $ref: "#/definitions/base_dates_properties"
+        public:
+          type: boolean
+        version:
+          type: number
+        time_zone:
+          $ref: "#/definitions/timezone_properties"
+        account_id:
+          type: number
+        start_time:
+          type: string
+        point_scale:
+          type: string
+        atom_enabled:
+          type: boolean
+        enable_tasks:
+          type: boolean
+        project_type:
+          type: string
+        week_start_day:
+          type: string
+        enable_following:
+          type: boolean
+        initial_velocity:
+          type: number
+        iteration_length:
+          type: number
+        has_google_domain:
+          type: boolean
+        automatic_planning:
+          type: boolean
+        show_priority_icon:
+          type: boolean
+        show_story_priority:
+          type: boolean
+        point_scale_is_custom:
+          type: boolean
+        enable_incoming_emails:
+          type: boolean
+        velocity_averaged_over:
+          type: number
+        current_iteration_number:
+          type: number
+        bugs_and_chores_are_estimatable:
+          type: boolean
+        show_priority_icon_in_all_panels:
+          type: boolean
+        number_of_done_iterations_to_show:
+          type: number
+
+  activity_stream:
+    $ref: "#/definitions/project_paginated_base_stream"
+    name: activity
+    primary_key: guid
+    schema_loader:
+      $ref: "#/definitions/activity_schema"
+    $parameters:
+      path: "/projects/{{ stream_partition.project }}/activity"
+
+streams:
+  - "#/definitions/projects_stream"
+  - "#/definitions/epics_stream"
+  - "#/definitions/labels_stream"
+  - "#/definitions/memberships_stream"
+  - "#/definitions/releases_stream"
+  - "#/definitions/stories_stream"
+  - "#/definitions/activity_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - projects
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/pivotal-tracker
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - api_token
+    properties:
+      api_token:
+        type: string
+        title: API Token
+        airbyte_secret: true
+        description: Pivotal Tracker API token
+        order: 0
+    additionalProperties: true
