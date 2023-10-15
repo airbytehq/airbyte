@@ -7,6 +7,7 @@
 from typing import List, Optional
 
 import anyio
+import asyncer
 from dagger import File, QueryError
 from pipelines.actions import environments, secrets
 from pipelines.bases import StepResult, StepStatus
@@ -87,11 +88,6 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     if build_connector_image_results.status is StepStatus.FAILURE:
         return step_results
 
-    unit_tests_results = await UnitTests(context).run()
-    step_results.append(unit_tests_results)
-    if context.fail_fast and unit_tests_results.status is StepStatus.FAILURE:
-        return step_results
-
     if context.connector.supports_normalization:
         normalization_image = f"{context.connector.normalization_repository}:dev"
         context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
@@ -107,9 +103,15 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
     connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
 
-    integration_tests_results = await IntegrationTests(context).run(connector_image_tar_file, normalization_tar_file)
-    step_results.append(integration_tests_results)
+    async with asyncer.create_task_group() as test_task_group:
+        soon_unit_tests_results = test_task_group.soonify(UnitTests(context).run)()
+        soon_integration_tests_results = test_task_group.soonify(IntegrationTests(context).run)(
+            connector_tar_file=connector_image_tar_file, normalization_tar_file=normalization_tar_file
+        )
+        soon_acceptance_tests_results = test_task_group.soonify(AcceptanceTests(context).run)(
+            connector_under_test_image_tar=connector_image_tar_file
+        )
 
-    acceptance_tests_results = await AcceptanceTests(context).run(connector_image_tar_file)
-    step_results.append(acceptance_tests_results)
+    step_results += [soon_acceptance_tests_results.value, soon_integration_tests_results.value, soon_unit_tests_results.value]
+
     return step_results
