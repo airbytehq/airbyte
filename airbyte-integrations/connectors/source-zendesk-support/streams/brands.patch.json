@@ -1,0 +1,7 @@
+{
+    "properties":{
+        "logo": {
+            "type": ["null", "object"]
+        } 
+    }
+}
