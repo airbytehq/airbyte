@@ -34,9 +34,12 @@ async def run_check(fix: bool) -> bool:
         bool: True if the check/format succeeded, false otherwise
     """
     logger = logging.getLogger(f"format")
-    format_command = ["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."]
+    isort_command = ["poetry", "run", 'isort', '--settings-file', "pyproject.toml", '--check-only', "."]
+    black_command = ["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."]
     if fix:
-        format_command.remove("--check")
+        isort_command.remove("--check-only")
+        black_command.remove("--check")
+        
 
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
         try:
@@ -65,8 +68,9 @@ async def run_check(fix: bool) -> bool:
                     )
                 )
                 .with_workdir(f"/src")
-                .with_exec(["poetry", "install", "--no-dev"])
-                .with_exec(format_command)
+                .with_exec(["poetry", "install"])
+                .with_exec(isort_command)
+                .with_exec(black_command)
             )
 
             await format_container
