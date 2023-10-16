@@ -1,5 +1,7 @@
 import getpass
+import hashlib
 import os
+import platform
 import sys
 
 import segment.analytics as analytics
@@ -10,7 +12,22 @@ analytics.debug = True
 
 
 def _is_airbyte_user():
+    """Returns True if the user is airbyter, False otherwise."""
     return os.getenv("AIRBYTE_ROLE") == "airbyter"
+
+
+def _get_anonymous_system_id():
+    """Returns a unique anonymous hashid of the current system info."""
+    # Collect machine-specific information
+    machine_info = platform.node()
+    username = getpass.getuser()
+
+    unique_system_info = f"{machine_info}-{username}"
+
+    # Generate a unique hash
+    unique_id = hashlib.sha256(unique_system_info.encode()).hexdigest()
+
+    return unique_id
 
 
 def track_command(f):
@@ -23,12 +40,13 @@ def track_command(f):
         top_level_command = ctx.command_path
         full_cmd = " ".join(sys.argv)
 
-        sys_user_name = getpass.getuser()
-        airbyter = _is_airbyte_user()
-
         # remove anything prior to the command name f.__name__
         # to avoid logging inline secrets
         santized_cmd = full_cmd[full_cmd.find(top_level_command) :]
+
+        sys_id = _get_anonymous_system_id()
+        sys_user_name = f"anonymous:{sys_id}"
+        airbyter = _is_airbyte_user()
 
         is_local = kwargs.get("is_local", False)
         user_id = "local-user" if is_local else "ci-user"
