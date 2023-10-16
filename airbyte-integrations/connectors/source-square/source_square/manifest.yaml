@@ -316,7 +316,7 @@ definitions:
         $ref: "#/definitions/base_stream_page_json_limit/retriever/requester"
         http_method: "POST"
         request_body_json:
-          limit: "{{ 500 }}"
+          limit: "{{ 200 }}"
       record_selector:
         $ref: "#/definitions/selector"
         extractor:
