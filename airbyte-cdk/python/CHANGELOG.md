@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.51.38
+Add ability to wrap HTTP errors with specific status codes occurred during access token refresh into AirbyteTracedException
+
+## 0.51.37
+Enable debug logging when running availability check
+
+## 0.51.36
+Enable debug logging when running availability check
+
 ## 0.51.35
 File CDK: Allow configuring number of tested files for schema inference and parsability check
 

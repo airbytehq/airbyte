@@ -1600,6 +1600,17 @@ class ContributorActivity(GithubStream):
                 response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
             )
 
+    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        repository = stream_slice.get("repository", "")
+        try:
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
+        except HTTPError as e:
+            if e.response.status_code == requests.codes.ACCEPTED:
+                self.logger.info(f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`.")
+                yield
+            else:
+                raise e
+
 
 class IssueTimelineEvents(GithubStream):
     """
