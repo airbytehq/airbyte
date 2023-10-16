@@ -261,10 +261,10 @@
       "type": ["null", "integer"]
     },
     "metrics.impressions": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.video_views": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.video_quartile_p100_rate": {
       "type": ["null", "number"]
@@ -303,7 +303,10 @@
       "type": ["null", "integer"]
     },
     "metrics.interaction_event_types": {
-      "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     },
     "metrics.value_per_conversion": {
       "type": ["null", "number"]
@@ -316,7 +319,7 @@
       "format": "date"
     },
     "segments.hour": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "segments.ad_network_type": {
       "type": ["null", "string"]
