@@ -36,27 +36,15 @@ def get_bypass_reason_changes() -> Set[utils.Connector]:
 
 
 def find_mandatory_reviewers() -> List[Dict[str, Union[str, Dict[str, List]]]]:
-    important_connector_changes = find_changed_important_connectors()
-    backward_compatibility_changes = utils.get_changed_acceptance_test_config(diff_regex="disable_for_version")
-    test_strictness_level_changes = utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level")
-    ga_bypass_reason_changes = get_bypass_reason_changes()
-    breaking_change_changes = utils.get_changed_metadata(diff_regex="upgradeDeadline")
+    requirements = [
+        {"name": "Backwards Compatibility Test Skip", "teams": list(BACKWARD_COMPATIBILITY_REVIEWERS), "is_required": utils.get_changed_acceptance_test_config(diff_regex="disable_for_version")},
+        {"name": "Acceptance Test Strictness Level", "teams": list(TEST_STRICTNESS_LEVEL_REVIEWERS), "is_required": utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level")},
+        {"name": "GA Acceptance Test Bypass", "teams": list(GA_BYPASS_REASON_REVIEWERS), "is_required": get_bypass_reason_changes()},
+        {"name": "GA Connectors", "teams": list(GA_CONNECTOR_REVIEWERS), "is_required": find_changed_important_connectors()},
+        {"name": "Breaking Changes", "teams": list(BREAKING_CHANGE_REVIEWERS), "is_required": utils.get_changed_metadata(diff_regex="upgradeDeadline")},
+    ]
 
-    required_reviewers = []
-
-    if backward_compatibility_changes:
-        required_reviewers.append({"name": "Backwards Compatibility Test Skip", "teams": list(BACKWARD_COMPATIBILITY_REVIEWERS)})
-    if test_strictness_level_changes:
-        required_reviewers.append({"name": "Acceptance Test Strictness Level", "teams": list(TEST_STRICTNESS_LEVEL_REVIEWERS)})
-    if ga_bypass_reason_changes:
-        required_reviewers.append({"name": "GA Acceptance Test Bypass", "teams": list(GA_BYPASS_REASON_REVIEWERS)})
-    if important_connector_changes:
-        required_reviewers.append({"name": "GA Connectors", "teams": list(GA_CONNECTOR_REVIEWERS)})
-    if breaking_change_changes:
-        required_reviewers.append({"name": "Breaking Changes", "teams": list(BREAKING_CHANGE_REVIEWERS)})
-
-    return required_reviewers
-
+    return [{'name': r['name'], 'teams': r['teams']} for r in requirements if r["is_required"]]
 
 def write_review_requirements_file():
     mandatory_reviewers = find_mandatory_reviewers()
