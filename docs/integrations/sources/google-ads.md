@@ -163,6 +163,8 @@ A particular interest-based vertical to be targeted.
 
 A click view with metrics aggregated at each click level, including both valid and invalid clicks.
 
+Note that `ad_group`, `ad_group_ad`, and `campaign` contain a `labels` field, which should be joined against their respective `*_label` streams if you want to view the actual labels. For example, the `ad_group` stream contains an `ad_group.labels` field, which you would join against the `ad_group_label` stream's `label.resource_name` field.
+
 ### Report Tables
 
 - [account_performance_report](https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance)
