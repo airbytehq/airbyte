@@ -21,12 +21,11 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator impor
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 class ThreadBasedConcurrentStream(AbstractStream):
 
-    DEFAULT_TIMEOUT_SECONDS = 600
+    DEFAULT_TIMEOUT_SECONDS = 900
     DEFAULT_MAX_QUEUE_SIZE = 10_000
     DEFAULT_SLEEP_TIME = 0.1
 
@@ -45,7 +44,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
         max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
         sleep_time: float = DEFAULT_SLEEP_TIME,
-        type_transformer: TransformConfig = TypeTransformer(TransformConfig.NoTransform),
+        namespace: Optional[str] = None,
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -61,7 +60,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._timeout_seconds = timeout_seconds
         self._max_concurrent_tasks = max_concurrent_tasks
         self._sleep_time = sleep_time
-        self._type_transformer = type_transformer
+        self._namespace = namespace
 
     def read(self) -> Iterable[Record]:
         """
@@ -159,13 +158,12 @@ class ThreadBasedConcurrentStream(AbstractStream):
     def as_airbyte_stream(self) -> AirbyteStream:
         stream = AirbyteStream(name=self.name, json_schema=dict(self._json_schema), supported_sync_modes=[SyncMode.full_refresh])
 
-        # if self.namespace:
-        #     stream.namespace = self.namespace
+        if self._namespace:
+            stream.namespace = self._namespace
 
         if self._cursor_field:
             stream.source_defined_cursor = True
-            stream.supported_sync_modes.append(SyncMode.incremental)  # type: ignore
-            # Wrap the cursor field in an array
+            stream.supported_sync_modes.append(SyncMode.incremental)
             stream.default_cursor_field = [self._cursor_field]
 
         keys = self._primary_key

@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.51.38
+Add ability to wrap HTTP errors with specific status codes occurred during access token refresh into AirbyteTracedException
+
+## 0.51.37
+Enable debug logging when running availability check
+
+## 0.51.36
+Enable debug logging when running availability check
+
+## 0.51.35
+File CDK: Allow configuring number of tested files for schema inference and parsability check
+
+## 0.51.34
+Vector DB CDK: Fix OpenAI compatible embedder when used without api key
+
+## 0.51.33
+Vector DB CDK: Improve batching process
+
+## 0.51.32
+Introduce experimental ThreadBasedConcurrentStream
+
 ## 0.51.31
 Fix initialize of token_expiry_is_time_of_expiration field
 
