@@ -5,9 +5,8 @@
 
 from typing import Optional
 
-from pydantic import BaseModel, Field
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-
+from pydantic import BaseModel, Field
 
 
 class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
@@ -24,5 +23,4 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
 
     @classmethod
     def documentation_url(cls) -> str:
-       return "https://docs.airbyte.com/integrations/sources/google-drive"
-
+        return "https://docs.airbyte.com/integrations/sources/google-drive"

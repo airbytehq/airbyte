@@ -2,32 +2,33 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from datetime import datetime
+import io
 import json
 import logging
+import re
 from contextlib import contextmanager
+from datetime import datetime
 from io import IOBase
 from typing import Any, Iterable, List, Optional, Set
 
 import boto3.session
 import pytz
-import io
 import smart_open
+from airbyte_cdk.models import ConnectorSpecification
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
-from .spec import SourceGoogleDriveSpec as Config
-from airbyte_cdk.models import ConnectorSpecification
-from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from google.auth.transport.requests import Request
 from google.oauth2 import service_account
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
-import re
+
+from .spec import SourceGoogleDriveSpec as Config
 
 
 class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
@@ -61,7 +62,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             raise ValueError("Source config is missing; cannot create the Google Drive client.")
         if self._drive_service is None:
             creds = service_account.Credentials.from_service_account_info(json.loads(self.config.service_account_json))
-            self._drive_service = build('drive', 'v3', credentials=creds)
+            self._drive_service = build("drive", "v3", credentials=creds)
         return self._drive_service
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:
@@ -71,27 +72,26 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         service = self.google_drive_service
         folder_id = self.get_folder_id(self.config.folder_url)
 
-        request = service.files().list(q=f"'{folder_id}' in parents",
-            pageSize=10, fields="nextPageToken, files(id, name, modifiedTime)")
+        request = service.files().list(q=f"'{folder_id}' in parents", pageSize=10, fields="nextPageToken, files(id, name, modifiedTime)")
         while True:
-                results = request.execute()
-                new_files = results.get('files', [])
-                for new_file in new_files:
-                    last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
-                    remote_file = RemoteFile(uri=new_file["name"], last_modified=last_modified)
-                    if self.file_matches_globs(remote_file, globs):
-                        # the glob matching operates on file names, but google drive uses auto-generated ids. So rewrite the RemoteFile instance after it matched
-                        yield RemoteFile(uri=self.get_uri(new_file["id"]), last_modified=last_modified)
-                request = service.files().list_next(request, results)
-                if request is None:
-                    break
-        
+            results = request.execute()
+            new_files = results.get("files", [])
+            for new_file in new_files:
+                last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                remote_file = RemoteFile(uri=new_file["name"], last_modified=last_modified)
+                if self.file_matches_globs(remote_file, globs):
+                    # the glob matching operates on file names, but google drive uses auto-generated ids. So rewrite the RemoteFile instance after it matched
+                    yield RemoteFile(uri=self.get_uri(new_file["id"]), last_modified=last_modified)
+            request = service.files().list_next(request, results)
+            if request is None:
+                break
+
     def get_uri(self, id: str):
         return f"https://drive.google.com/file/d/{id}"
 
     def get_file_id(self, url):
         # Regular expression pattern to check the URL structure and extract the ID
-        pattern = r'^https://drive\.google\.com/file/d/(.+)$'
+        pattern = r"^https://drive\.google\.com/file/d/(.+)$"
 
         # Find the pattern in the URL
         match = re.search(pattern, url)
@@ -102,11 +102,11 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             return drive_id
         else:
             # If no match is found
-            raise ValueError(f'Could not extract file ID from {url}')
-    
+            raise ValueError(f"Could not extract file ID from {url}")
+
     def get_folder_id(self, url):
         # Regular expression pattern to check the URL structure and extract the ID
-        pattern = r'^https://drive\.google\.com/drive/folders/([a-zA-Z0-9_-]+)$'
+        pattern = r"^https://drive\.google\.com/drive/folders/([a-zA-Z0-9_-]+)$"
 
         # Find the pattern in the URL
         match = re.search(pattern, url)
@@ -117,7 +117,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             return drive_id
         else:
             # If no match is found
-            raise ValueError(f'Could not extract folder ID from {url}')
+            raise ValueError(f"Could not extract folder ID from {url}")
 
     @contextmanager
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:

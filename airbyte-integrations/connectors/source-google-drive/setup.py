@@ -16,7 +16,7 @@ MAIN_REQUIREMENTS = [
     "python-snappy==0.6.1",
     "google-api-python-client",
     "google-auth-httplib2",
-    "google-auth-oauthlib"
+    "google-auth-oauthlib",
 ]
 
 TEST_REQUIREMENTS = [
