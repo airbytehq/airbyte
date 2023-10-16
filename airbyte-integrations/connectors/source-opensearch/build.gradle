@@ -1,9 +1,15 @@
 plugins {
     id 'application'
-    id 'airbyte-docker'
-    id 'airbyte-integration-test-java'
-    id 'airbyte-connector-acceptance-test'
+    id 'airbyte-java-connector'
 }
+
+airbyteJavaConnector {
+    cdkVersionRequired = '0.1.0'
+    features = ['db-sources']
+    useLocalCdk = false
+}
+
+airbyteJavaConnector.addCdkDependencies()
 
 application {
     mainClass = 'io.airbyte.integrations.source.opensearch.OpenSearchSource'
@@ -11,10 +17,8 @@ application {
 }
 
 dependencies {
-    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-integrations:bases:base-java')
-    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation 'org.opensearch.client:opensearch-rest-client: 2.5.0'
     implementation 'org.opensearch.client:opensearch-java:2.0.0'
@@ -33,11 +37,10 @@ dependencies {
 
     //  MIT
     //  https://www.testcontainers.org/
-    testImplementation libs.connectors.testcontainers
-    testImplementation libs.connectors.testcontainers.opensearch
-    integrationTestJavaImplementation libs.connectors.testcontainers.opensearch
+    testImplementation libs.testcontainers.opensearch
+    integrationTestJavaImplementation libs.testcontainers.opensearch
 
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-opensearch')
+//    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
+//    integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-opensearch')
 }
 
