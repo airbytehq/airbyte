@@ -1,5 +1,13 @@
 name: Connector Performance Harness
 on:
+  workflow_call:
+    inputs:
+      connector:
+        type: string
+        required: true
+      dataset:
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       connector:
