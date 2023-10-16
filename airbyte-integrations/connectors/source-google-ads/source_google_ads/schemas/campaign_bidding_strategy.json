@@ -93,7 +93,8 @@
       "type": ["null", "string"]
     },
     "segments.date": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }
