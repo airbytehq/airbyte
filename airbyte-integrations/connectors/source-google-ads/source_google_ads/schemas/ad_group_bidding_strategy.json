@@ -52,7 +52,7 @@
     },
     "bidding_strategy.status": {
       "type": ["null", "string"]
-      },
+    },
     "bidding_strategy.target_cpa.cpc_bid_ceiling_micros": {
       "type": ["null", "integer"]
     },
@@ -67,7 +67,7 @@
     },
     "bidding_strategy.target_impression_share.location": {
       "type": ["null", "string"]
-      },
+    },
     "bidding_strategy.target_impression_share.location_fraction_micros": {
       "type": ["null", "integer"]
     },
@@ -88,7 +88,7 @@
     },
     "bidding_strategy.type": {
       "type": ["null", "string"]
-      },
+    },
     "segments.date": {
       "type": ["null", "string"],
       "format": "date"

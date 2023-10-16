@@ -7,22 +7,22 @@
     },
     "campaign.ad_serving_optimization_status": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.advertising_channel_sub_type": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.advertising_channel_type": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.app_campaign_setting.app_id": {
       "type": ["null", "string"]
     },
     "campaign.app_campaign_setting.app_store": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.app_campaign_setting.bidding_strategy_goal_type": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.base_campaign": {
       "type": ["null", "string"]
     },
@@ -31,7 +31,7 @@
     },
     "campaign.bidding_strategy_type": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.campaign_budget": {
       "type": ["null", "string"]
     },
@@ -63,11 +63,11 @@
       "type": ["null", "array"],
       "items": {
         "type": "string"
-        }
+      }
     },
     "campaign.experiment_type": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.final_url_suffix": {
       "type": ["null", "string"]
     },
@@ -79,10 +79,10 @@
     },
     "campaign.geo_target_type_setting.negative_geo_target_type": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.geo_target_type_setting.positive_geo_target_type": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.hotel_setting.hotel_center_id": {
       "type": ["null", "integer"]
     },
@@ -97,7 +97,7 @@
     },
     "campaign.local_campaign_setting.location_source_type": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.manual_cpc.enhanced_cpc_enabled": {
       "type": ["null", "boolean"]
     },
@@ -132,14 +132,14 @@
       "type": ["null", "array"],
       "items": {
         "type": "string"
-        }
+      }
     },
     "campaign.optimization_score": {
       "type": ["null", "number"]
     },
     "campaign.payment_mode": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.percent_cpc.cpc_bid_ceiling_micros": {
       "type": ["null", "integer"]
     },
@@ -160,7 +160,7 @@
     },
     "campaign.serving_status": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.shopping_setting.campaign_priority": {
       "type": ["null", "integer"]
     },
@@ -178,7 +178,7 @@
     },
     "campaign.status": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.target_cpa.cpc_bid_ceiling_micros": {
       "type": ["null", "integer"]
     },
@@ -193,13 +193,13 @@
     },
     "campaign.target_cpm.target_frequency_goal.time_unit": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.target_impression_share.cpc_bid_ceiling_micros": {
       "type": ["null", "integer"]
     },
     "campaign.target_impression_share.location": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.target_impression_share.location_fraction_micros": {
       "type": ["null", "integer"]
     },
@@ -238,13 +238,13 @@
     },
     "campaign.vanity_pharma.vanity_pharma_display_url_mode": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.vanity_pharma.vanity_pharma_text": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.video_brand_safety_suitability": {
       "type": ["null", "string"]
-      },
+    },
     "metrics.clicks": {
       "type": ["null", "integer"]
     },
@@ -306,7 +306,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
-        }
+      }
     },
     "metrics.value_per_conversion": {
       "type": ["null", "number"]
@@ -323,6 +323,6 @@
     },
     "segments.ad_network_type": {
       "type": ["null", "string"]
-      }
+    }
   }
 }

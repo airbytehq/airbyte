@@ -19,7 +19,7 @@
     },
     "campaign_criterion.age_range.type": {
       "type": ["null", "string"]
-      },
+    },
     "campaign_criterion.mobile_application.name": {
       "type": ["null", "string"]
     },

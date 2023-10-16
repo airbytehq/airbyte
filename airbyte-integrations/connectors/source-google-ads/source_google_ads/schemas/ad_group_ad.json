@@ -76,7 +76,7 @@
     },
     "ad_group_ad.ad.call_ad.conversion_reporting_state": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_ad.ad.call_ad.country_code": {
       "type": ["null", "string"]
     },
@@ -109,10 +109,10 @@
     },
     "ad_group_ad.ad.device_preference": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_ad.ad.display_upload_ad.display_upload_product_type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_ad.ad.display_upload_ad.media_bundle": {
       "type": ["null", "string"]
     },
@@ -178,7 +178,7 @@
     },
     "ad_group_ad.ad.image_ad.mime_type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_ad.ad.image_ad.name": {
       "type": ["null", "string"]
     },
@@ -217,7 +217,7 @@
     },
     "ad_group_ad.ad.legacy_responsive_display_ad.format_setting": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_ad.ad.legacy_responsive_display_ad.logo_image": {
       "type": ["null", "string"]
     },
@@ -319,7 +319,7 @@
     },
     "ad_group_ad.ad.responsive_display_ad.format_setting": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_ad.ad.responsive_display_ad.headlines": {
       "type": ["null", "array"],
       "items": {
@@ -409,7 +409,7 @@
     },
     "ad_group_ad.ad.system_managed_resource_source": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_ad.ad.text_ad.description1": {
       "type": ["null", "string"]
     },
@@ -424,7 +424,7 @@
     },
     "ad_group_ad.ad.type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_ad.ad.url_collections": {
       "type": ["null", "array"],
       "items": {
@@ -499,7 +499,7 @@
     },
     "ad_group_ad.ad_strength": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_ad.labels": {
       "type": ["null", "array"],
       "items": {
@@ -508,7 +508,7 @@
     },
     "ad_group_ad.policy_summary.approval_status": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_ad.policy_summary.policy_topic_entries": {
       "type": ["null", "array"],
       "items": {
@@ -517,13 +517,13 @@
     },
     "ad_group_ad.policy_summary.review_status": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_ad.resource_name": {
       "type": ["null", "string"]
     },
     "ad_group_ad.status": {
       "type": ["null", "string"]
-      },
+    },
     "segments.date": {
       "type": ["null", "string"],
       "format": "date"

@@ -28,6 +28,6 @@
     },
     "audience.status": {
       "type": ["null", "string"]
-      }
+    }
   }
 }

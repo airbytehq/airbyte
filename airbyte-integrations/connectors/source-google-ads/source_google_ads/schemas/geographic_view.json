@@ -13,7 +13,7 @@
     },
     "geographic_view.location_type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group.id": {
       "type": ["null", "integer"]
     },

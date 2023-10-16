@@ -16,13 +16,13 @@
     },
     "ad_group_criterion.age_range.type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.app_payment_model.type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.approval_status": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.audience.audience": {
       "type": ["null", "string"]
     },
@@ -67,25 +67,25 @@
     },
     "ad_group_criterion.effective_cpc_bid_source": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.effective_cpm_bid_micros": {
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpm_bid_source": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.effective_cpv_bid_micros": {
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpv_bid_source": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.effective_percent_cpc_bid_micros": {
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_percent_cpc_bid_source": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.final_mobile_urls": {
       "type": ["null", "array"],
       "items": {
@@ -103,13 +103,13 @@
     },
     "ad_group_criterion.gender.type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.income_range.type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.keyword.match_type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.keyword.text": {
       "type": ["null", "string"]
     },
@@ -133,7 +133,7 @@
     },
     "ad_group_criterion.parental_status.type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.percent_cpc_bid_micros": {
       "type": ["null", "integer"]
     },
@@ -157,25 +157,25 @@
     },
     "ad_group_criterion.quality_info.creative_quality_score": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.quality_info.post_click_quality_score": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.quality_info.quality_score": {
       "type": ["null", "integer"]
     },
     "ad_group_criterion.quality_info.search_predicted_ctr": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.resource_name": {
       "type": ["null", "string"]
     },
     "ad_group_criterion.status": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.system_serving_status": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.topic.path": {
       "type": ["null", "array"],
       "items": {
@@ -190,7 +190,7 @@
     },
     "ad_group_criterion.type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.url_custom_parameters": {
       "type": ["null", "array"],
       "items": {

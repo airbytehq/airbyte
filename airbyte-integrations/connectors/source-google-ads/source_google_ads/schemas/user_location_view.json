@@ -8,7 +8,7 @@
     },
     "segments.day_of_week": {
       "type": ["null", "string"]
-      },
+    },
     "segments.month": {
       "type": ["null", "string"]
     },
@@ -23,7 +23,7 @@
     },
     "segments.ad_network_type": {
       "type": ["null", "string"]
-      },
+    },
     "customer.currency_code": {
       "type": ["null", "string"]
     },
@@ -56,13 +56,13 @@
     },
     "campaign.status": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group.name": {
       "type": ["null", "string"]
     },
     "ad_group.status": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group.base_ad_group": {
       "type": ["null", "string"]
     },
@@ -121,7 +121,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
-        }
+      }
     },
     "metrics.interaction_rate": {
       "type": ["null", "number"]

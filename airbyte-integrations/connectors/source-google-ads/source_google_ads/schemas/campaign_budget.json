@@ -16,7 +16,7 @@
     },
     "campaign_budget.delivery_method": {
       "type": ["null", "string"]
-      },
+    },
     "campaign_budget.explicitly_shared": {
       "type": ["null", "boolean"]
     },
@@ -31,7 +31,7 @@
     },
     "campaign_budget.period": {
       "type": ["null", "string"]
-      },
+    },
     "campaign_budget.recommended_budget_amount_micros": {
       "type": ["null", "integer"]
     },
@@ -55,13 +55,13 @@
     },
     "campaign_budget.status": {
       "type": ["null", "string"]
-      },
+    },
     "campaign_budget.total_amount_micros": {
       "type": ["null", "integer"]
     },
     "campaign_budget.type": {
       "type": ["null", "string"]
-      },
+    },
     "segments.date": {
       "type": ["null", "string"],
       "format": "date"
@@ -71,7 +71,7 @@
     },
     "segments.budget_campaign_association_status.status": {
       "type": ["null", "string"]
-      },
+    },
     "metrics.all_conversions": {
       "type": ["null", "number"]
     },
@@ -136,7 +136,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
-        }
+      }
     },
     "metrics.interaction_rate": {
       "type": ["null", "number"]

@@ -70,7 +70,7 @@
     },
     "ad_group.status": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group.target_cpa_micros": {
       "type": ["null", "integer"]
     },

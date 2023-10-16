@@ -43,10 +43,10 @@
     },
     "ad_group.status": {
       "type": ["null", "string"]
-      },
+    },
     "segments.ad_network_type": {
       "type": ["null", "string"]
-      },
+    },
     "metrics.all_conversions_from_interactions_rate": {
       "type": ["null", "number"]
     },
@@ -85,7 +85,7 @@
     },
     "campaign.bidding_strategy_type": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.id": {
       "type": ["null", "integer"]
     },
@@ -94,7 +94,7 @@
     },
     "campaign.status": {
       "type": ["null", "string"]
-      },
+    },
     "metrics.clicks": {
       "type": ["null", "integer"]
     },
@@ -121,13 +121,13 @@
     },
     "ad_group_criterion.effective_cpc_bid_source": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.effective_cpm_bid_micros": {
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpm_bid_source": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.topic.path": {
       "type": ["null", "array"],
       "items": {
@@ -146,10 +146,10 @@
     },
     "segments.day_of_week": {
       "type": ["null", "string"]
-      },
+    },
     "segments.device": {
       "type": ["null", "string"]
-      },
+    },
     "metrics.engagement_rate": {
       "type": ["null", "number"]
     },
@@ -193,7 +193,7 @@
       "type": ["null", "array"],
       "items": {
         "type": "string"
-        }
+      }
     },
     "metrics.interactions": {
       "type": ["null", "integer"]
@@ -215,7 +215,7 @@
     },
     "ad_group_criterion.status": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.tracking_url_template": {
       "type": ["null", "string"]
     },

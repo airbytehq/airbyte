@@ -46,22 +46,22 @@
     },
     "ad_group_criterion.listing_group.case_value.product_bidding_category.level": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.listing_group.case_value.product_brand.value": {
       "type": ["null", "string"]
     },
     "ad_group_criterion.listing_group.case_value.product_channel.channel": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.listing_group.case_value.product_channel_exclusivity.channel_exclusivity": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.listing_group.case_value.product_condition.condition": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.listing_group.case_value.product_custom_attribute.index": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.listing_group.case_value.product_custom_attribute.value": {
       "type": ["null", "string"]
     },
@@ -70,7 +70,7 @@
     },
     "ad_group_criterion.listing_group.case_value.product_type.level": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.listing_group.case_value.product_type.value": {
       "type": ["null", "string"]
     },
@@ -79,6 +79,6 @@
     },
     "ad_group_criterion.listing_group.type": {
       "type": ["null", "string"]
-      }
+    }
   }
 }

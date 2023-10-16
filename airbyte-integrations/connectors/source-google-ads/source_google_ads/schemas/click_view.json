@@ -16,7 +16,7 @@
     },
     "click_view.keyword_info.match_type": {
       "type": ["null", "string"]
-      },
+    },
     "click_view.keyword_info.text": {
       "type": ["null", "string"]
     },
@@ -38,7 +38,7 @@
     },
     "segments.ad_network_type": {
       "type": ["null", "string"]
-      },
+    },
     "campaign.network_settings.target_content_network": {
       "type": ["null", "boolean"]
     },

@@ -16,7 +16,7 @@
     },
     "ad_group_criterion.type": {
       "type": ["null", "string"]
-      },
+    },
     "ad_group_criterion.keyword.text": {
       "type": ["null", "string"]
     },
@@ -25,7 +25,7 @@
     },
     "ad_group_criterion.keyword.match_type": {
       "type": ["null", "string"]
-      },
+    },
     "metrics.historical_quality_score": {
       "type": ["null", "integer"]
     },
@@ -38,7 +38,7 @@
     },
     "campaign.bidding_strategy_type": {
       "type": ["null", "string"]
-      },
+    },
     "metrics.clicks": {
       "type": ["null", "integer"]
     },
@@ -76,7 +76,7 @@
       "type": ["null", "array"],
       "items": {
         "type": ["null", "string"]
-        }
+      }
     },
     "metrics.view_through_conversions": {
       "type": ["null", "integer"]

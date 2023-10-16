@@ -16,7 +16,7 @@
     },
     "label.status": {
       "type": ["null", "string"]
-      },
+    },
     "label.text_label.background_color": {
       "type": ["null", "string"]
     },
