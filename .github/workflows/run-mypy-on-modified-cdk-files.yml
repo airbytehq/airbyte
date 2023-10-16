@@ -1,9 +1,9 @@
-name: Run mymy on modified cdk files
+name: Run mypy on modified cdk files
 
 on:
   pull_request:
     paths:
-      - "airbyte-cdk/python/airbyte_cdk/**"
+      - "airbyte-cdk/python/airbyte_cdk/**/*.py"
 jobs:
   run-mypy-on-modified-cdk-files:
     name: "Run mypy on modified cdk files"
