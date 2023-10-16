@@ -147,6 +147,26 @@ class CustomFields(WorkspaceRelatedStream):
         return f"workspaces/{workspace_gid}/custom_fields"
 
 
+class Events(AsanaStream):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return "events"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        decoded_response = response.json()
+        last_sync = decoded_response.get("sync")
+        if last_sync:
+            return {"sync": last_sync}
+
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["resource"] = stream_slice["resource_gid"]
+        return params
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.read_slices_from_records(stream_class=Projects, slice_field="resource_gid")
+        yield from self.read_slices_from_records(stream_class=Tasks, slice_field="resource_gid")
+
+
 class Projects(WorkspaceRequestParamsRelatedStream):
     use_cache = True
 
