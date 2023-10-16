@@ -423,6 +423,6 @@ class SourceStripe(AbstractSource):
             ),
         ]
         if self._use_concurrent_cdk:
-            return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, 1) for stream in streams]
+            return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, 2) for stream in streams]
         else:
             return streams
