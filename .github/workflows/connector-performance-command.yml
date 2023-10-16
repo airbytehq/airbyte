@@ -1,5 +1,13 @@
 name: Connector Performance Harness
 on:
+  workflow_call:
+    inputs:
+      connector:
+        type: string
+        required: true
+      dataset:
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       connector:
@@ -169,6 +177,7 @@ jobs:
           PREFIX: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
           SUFFIX: '"}}'
           HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
         run: |
           kubectl apply -f ./tools/bin/admin-service-account.yaml
           connector_name=$(echo $CONN | cut -d / -f 2)
@@ -180,6 +189,7 @@ jobs:
           export STREAM_NUMBER=$STREAM_NUMBER
           export SYNC_MODE=$SYNC_MODE
           export HARNESS=$HARNESS_TYPE
+          export DD_API_KEY=$DD_API_KEY
           envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
           echo "harness is ${{ steps.which-harness.outputs.harness_type }}"
           POD=$(kubectl get pod -l app=performance-harness -o jsonpath="{.items[0].metadata.name}")
