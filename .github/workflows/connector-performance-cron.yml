@@ -8,32 +8,32 @@ on:
 
 jobs:
   postgres-1m-run:
-    uses: .github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
+    uses: ./.github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
     with:
       connector: connectors/source-postgres
       dataset: 1m
   postgres-10m-run:
-    uses: .github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
+    uses: ./.github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
     with:
       connector: connectors/source-postgres
       dataset: 10m
   postgres-20m-run:
-    uses: .github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
+    uses: ./.github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
     with:
       connector: connectors/source-postgres
       dataset: 20m
   mysql-1m-run:
-    uses: .github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
+    uses: ./.github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
     with:
       connector: connectors/source-mysql
       dataset: 1m
   mysql-10m-run:
-    uses: .github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
+    uses: ./.github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
     with:
       connector: connectors/source-mysql
       dataset: 10m
   mysql-20m-run:
-    uses: .github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
+    uses: ./.github/workflows/connector-performance-command.yml@04a1d976cf593580ac720c6e307731d55e9cb1ef
     with:
       connector: connectors/source-mysql
       dataset: 20m
