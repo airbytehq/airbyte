@@ -11,8 +11,6 @@ on:
       - opened
       - reopened
       - synchronize
-    paths:
-      - "airbyte-ci/**"
     paths-ignore:
       - "**/*.md"
 jobs:
