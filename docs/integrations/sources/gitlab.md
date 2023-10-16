@@ -108,10 +108,75 @@ GitLab source works with GitLab API v4. It can also work with self-hosted GitLab
 
 Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.html#gitlabcom-specific-rate-limits), but the Gitlab connector should not run into Gitlab API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+
+## Build instructions
+
+### Use `airbyte-ci` to build your connector
+The Airbyte way of building this connector is to use our `airbyte-ci` tool.
+You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1).
+Then running the following command will build your connector:
+
+```bash
+airbyte-ci connectors --name source-gitlab build
+```
+
+### Build your own connector image
+This connector is built using our dynamic built process.
+The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
+The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
+It does not rely on a Dockerfile.
+
+If you would like to patch our connector and build your own a simple approach would be to:
+
+1. Create your own Dockerfile based on the latest version of the connector image.
+```Dockerfile
+FROM airbyte/source-gitlab:latest
+
+COPY . ./airbyte/integration_code
+RUN pip install ./airbyte/integration_code
+
+# The entrypoint and default env vars are already set in the base image
+# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+```
+Please use this as an example. This is not optimized.
+
+2. Build your image:
+```bash
+docker build -t airbyte/source-gitlab:dev .
+# Running the spec command against your patched connector
+docker run airbyte/source-gitlab:dev spec
+```
+
+### Customizing our build process
+When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
+You can customize our build process by adding a `build_customization.py` module to your connector.
+This module should contain a `pre_connector_install` and `post_connector_install` async function that will mutate the base image and the connector container respectively.
+It will be imported at runtime by our build process and the functions will be called if they exist.
+
+Here is an example of a `build_customization.py` module:
+```python
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    # Feel free to check the dagger documentation for more information on the Container object and its methods.
+    # https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/
+    from dagger import Container
+
+
+async def pre_connector_install(base_image_container: Container) -> Container:
+    return await base_image_container.with_env_variable("MY_PRE_BUILD_ENV_VAR", "my_pre_build_env_var_value")
+
+async def post_connector_install(connector_container: Container) -> Container:
+    return await connector_container.with_env_variable("MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value")
+```
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| 1.8.2 | 2023-10-16 | [TBDGUS](https://github.com/airbytehq/airbyte/pull/TBDGUS) | Use our base image and remove Dockerfile |
 | 1.8.1   | 2023-10-12 | [31375](https://github.com/airbytehq/airbyte/pull/31375) | Mark `start_date` as optional, migrate `groups` and `projects` to array                    |
 | 1.8.0   | 2023-10-12 | [31339](https://github.com/airbytehq/airbyte/pull/31339) | Add undeclared fields to streams schemas, validate date/date-time format in stream schemas |
 | 1.7.1   | 2023-10-10 | [31210](https://github.com/airbytehq/airbyte/pull/31210) | Added expired `access_token` handling, while checking the connection                       |
