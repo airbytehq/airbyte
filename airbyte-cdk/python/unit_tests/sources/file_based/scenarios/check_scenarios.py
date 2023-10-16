@@ -8,7 +8,6 @@ from unit_tests.sources.file_based.helpers import (
     TestErrorListMatchingFilesInMemoryFilesStreamReader,
     TestErrorOpenFileInMemoryFilesStreamReader,
 )
-from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 _base_success_scenario = (
@@ -25,22 +24,19 @@ _base_success_scenario = (
             ]
         }
     )
-    .set_source_builder(
-        FileBasedSourceBuilder()
-        .set_files(
-            {
-                "a.csv": {
-                    "contents": [
-                        ("col1", "col2"),
-                        ("val11", "val12"),
-                        ("val21", "val22"),
-                    ],
-                    "last_modified": "2023-06-05T03:54:07.000Z",
-                }
+    .set_files(
+        {
+            "a.csv": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11", "val12"),
+                    ("val21", "val22"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
             }
-        )
-        .set_file_type("csv")
+        }
     )
+    .set_file_type("csv")
     .set_expected_check_status("SUCCEEDED")
 )
 
@@ -87,19 +83,17 @@ success_extensionless_scenario = (
             ]
         }
     )
-    .set_source_builder(
-        _base_success_scenario.source_builder.copy().set_files(
-            {
-                "a": {
-                    "contents": [
-                        ("col1", "col2"),
-                        ("val11", "val12"),
-                        ("val21", "val22"),
-                    ],
-                    "last_modified": "2023-06-05T03:54:07.000Z",
-                }
+    .set_files(
+        {
+            "a": {
+                "contents": [
+                    ("col1", "col2"),
+                    ("val11", "val12"),
+                    ("val21", "val22"),
+                ],
+                "last_modified": "2023-06-05T03:54:07.000Z",
             }
-        )
+        }
     )
 ).build()
 
@@ -129,7 +123,7 @@ _base_failure_scenario = _base_success_scenario.copy().set_expected_check_status
 error_empty_stream_scenario = (
     _base_failure_scenario.copy()
     .set_name("error_empty_stream_scenario")
-    .set_source_builder(_base_failure_scenario.copy().source_builder.copy().set_files({}))
+    .set_files({})
     .set_expected_check_error(None, FileBasedSourceError.EMPTY_STREAM.value)
 ).build()
 
@@ -137,11 +131,7 @@ error_empty_stream_scenario = (
 error_listing_files_scenario = (
     _base_failure_scenario.copy()
     .set_name("error_listing_files_scenario")
-    .set_source_builder(
-        _base_failure_scenario.source_builder.copy().set_stream_reader(
-            TestErrorListMatchingFilesInMemoryFilesStreamReader(files=_base_failure_scenario.source_builder._files, file_type="csv")
-        )
-    )
+    .set_stream_reader(TestErrorListMatchingFilesInMemoryFilesStreamReader(files=_base_failure_scenario._files, file_type="csv"))
     .set_expected_check_error(None, FileBasedSourceError.ERROR_LISTING_FILES.value)
 ).build()
 
@@ -149,11 +139,7 @@ error_listing_files_scenario = (
 error_reading_file_scenario = (
     _base_failure_scenario.copy()
     .set_name("error_reading_file_scenario")
-    .set_source_builder(
-        _base_failure_scenario.source_builder.copy().set_stream_reader(
-            TestErrorOpenFileInMemoryFilesStreamReader(files=_base_failure_scenario.source_builder._files, file_type="csv")
-        )
-    )
+    .set_stream_reader(TestErrorOpenFileInMemoryFilesStreamReader(files=_base_failure_scenario._files, file_type="csv"))
     .set_expected_check_error(None, FileBasedSourceError.ERROR_READING_FILE.value)
 ).build()
 
@@ -174,11 +160,7 @@ error_record_validation_user_provided_schema_scenario = (
             ],
         }
     )
-    .set_source_builder(
-        _base_failure_scenario.source_builder.copy().set_validation_policies(
-            {FailingSchemaValidationPolicy.ALWAYS_FAIL: FailingSchemaValidationPolicy()}
-        )
-    )
+    .set_validation_policies({FailingSchemaValidationPolicy.ALWAYS_FAIL: FailingSchemaValidationPolicy()})
     .set_expected_check_error(None, FileBasedSourceError.ERROR_VALIDATING_RECORD.value)
 ).build()
 
