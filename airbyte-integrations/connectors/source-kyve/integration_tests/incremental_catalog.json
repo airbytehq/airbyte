@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "pool_0",
+        "name": "pool_1",
         "json_schema": {},
         "source_defined_cursor": true,
         "supported_sync_modes": ["full_refresh", "incremental"]
