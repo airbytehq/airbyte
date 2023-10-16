@@ -65,7 +65,7 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
-      - name: UUID ${{ github.event.inputs.uuid }}
+      - name: UUID ${{ inputs.uuid }}
         run: true
   start-test-runner:
     name: Start Build EC2 Runner
@@ -79,8 +79,8 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
+          repository: ${{ inputs.repo }}
+          ref: ${{ inputs.gitref }}
       - name: Check PAT rate limits
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
@@ -99,37 +99,37 @@ jobs:
     runs-on: ${{ needs.start-test-runner.outputs.label }}
     steps:
       - name: Link comment to workflow run
-        if: github.event.inputs.comment-id
+        if: inputs.comment-id
         uses: peter-evans/create-or-update-comment@v1
         with:
-          comment-id: ${{ github.event.inputs.comment-id }}
+          comment-id: ${{ inputs.comment-id }}
           body: |
             #### Note: The following `dataset=` values are supported: `1m`<sub>(default)</sub>, `10m`, `20m`,
             `bottleneck_stream1`, `bottleneck_stream_randomseed. For destinations only: you can also use `stream-numbers=N`
             to simulate N number of parallel streams. Additionally, `sync-mode=incremental` is supported for destinations.
             For example: `dataset=1m stream-numbers=2 sync-mode=incremental`
-            > :runner: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}.
+            > :runner: ${{inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}.
       - name: Search for valid connector name format
         id: regex
         uses: AsasInnab/regex-action@v1
         with:
           regex_pattern: "^((connectors|bases)/)?[a-zA-Z0-9-_]+$"
           regex_flags: "i" # required to be set for this plugin
-          search_string: ${{ github.event.inputs.connector }}
+          search_string: ${{ inputs.connector }}
       - name: Validate input workflow format
-        if: steps.regex.outputs.first_match != github.event.inputs.connector
+        if: steps.regex.outputs.first_match != inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Filter supported connectors
         if:
-          "${{ github.event.inputs.connector != 'connectors/source-postgres' &&
-          github.event.inputs.connector != 'connectors/source-mysql' &&
-          github.event.inputs.connector != 'connectors/destination-snowflake' }}"
+          "${{ inputs.connector != 'connectors/source-postgres' &&
+          inputs.connector != 'connectors/source-mysql' &&
+          inputs.connector != 'connectors/destination-snowflake' }}"
         run: echo "Only connectors/source-postgres, source-mysql and destination-snowflake currently supported by harness" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
+          repository: ${{ inputs.repo }}
+          ref: ${{ inputs.gitref }}
           fetch-depth: 0 # This is to fetch the main branch in case we are running on a different branch.
       - name: Install Java
         uses: actions/setup-java@v3
@@ -149,7 +149,7 @@ jobs:
       - name: Source or Destination harness
         id: which-harness
         run: |
-          the_harness="$(echo ${{github.event.inputs.connector}} | sed 's/.*\///; s/-.*//')"-harness
+          the_harness="$(echo ${{inputs.connector}} | sed 's/.*\///; s/-.*//')"-harness
           echo "harness_type=$the_harness" >> "$GITHUB_OUTPUT"
       - name: Write harness credentials
         run: |
@@ -169,9 +169,9 @@ jobs:
       - name: build connector
         shell: bash
         run: |
-          echo "Building... ${{github.event.inputs.connector}}" >> $GITHUB_STEP_SUMMARY
+          echo "Building... ${{inputs.connector}}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY # this is a blank line
-          connector_name=$(echo ${{ github.event.inputs.connector }} | cut -d / -f 2)
+          connector_name=$(echo ${{ inputs.connector }} | cut -d / -f 2)
           echo "Running ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check"
           ./gradlew :airbyte-integrations:connectors:$connector_name:build -x check
         env:
@@ -184,10 +184,10 @@ jobs:
         id: run-harness
         shell: bash
         env:
-          CONN: ${{ github.event.inputs.connector }}
-          DS: ${{ github.event.inputs.dataset }}
-          STREAM_NUMBER: ${{ github.event.inputs.stream-number }}
-          SYNC_MODE: ${{ github.event.inputs.sync-mode }}
+          CONN: ${{ inputs.connector }}
+          DS: ${{ inputs.dataset }}
+          STREAM_NUMBER: ${{ inputs.stream-number }}
+          SYNC_MODE: ${{ inputs.sync-mode }}
           PREFIX: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
           SUFFIX: '"}}'
           HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
@@ -214,11 +214,11 @@ jobs:
           kubectl logs --tail=1 $POD | while read line ; do line=${line#"$PREFIX"}; line=${line%"$SUFFIX"}; echo $line >> $GITHUB_OUTPUT ; done
           echo "$EOF" >> $GITHUB_OUTPUT
       - name: Link comment to workflow run
-        if: github.event.inputs.comment-id
+        if: inputs.comment-id
         uses: peter-evans/create-or-update-comment@v2
         with:
           reactions: "+1"
-          comment-id: ${{ github.event.inputs.comment-id }}
+          comment-id: ${{ inputs.comment-id }}
           body: |
             ## Performance test Result:
             ```
