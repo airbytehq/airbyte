@@ -48,7 +48,7 @@ class FileBasedSource(AbstractSource, ABC):
         self.cursor_cls = cursor_cls
         self.logger = logging.getLogger(f"airbyte.{self.name}")
 
-    def check_connection(self, logger: logging.Logger, config: str) -> Tuple[bool, Optional[Any]]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
         Check that the source can be accessed using the user-provided configuration.
 
