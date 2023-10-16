@@ -18,9 +18,10 @@ from .streams import CustomFields, Projects, SectionsCompact, Sections, Stories,
 class SourceAsana(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            workspaces_stream = Workspaces(authenticator=self._get_authenticator(config))
-            logger("THIS IS THE WORKSPACES STREAM", workspaces_stream)
-            next(workspaces_stream.read_records(sync_mode=SyncMode.full_refresh))
+            workspaces_stream = Workspaces(
+                authenticator=self._get_authenticator(config))
+            next(workspaces_stream.read_records(
+                sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
             return False, e
