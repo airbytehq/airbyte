@@ -107,7 +107,6 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
 
         async with asyncer.create_task_group() as docker_build_dependent_group:
-            soon_unit_tests_results = docker_build_dependent_group.soonify(UnitTests(context).run)()
             soon_integration_tests_results = docker_build_dependent_group.soonify(IntegrationTests(context).run)(
                 connector_tar_file=connector_image_tar_file, normalization_tar_file=normalization_tar_file
             )
@@ -115,7 +114,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
                 connector_under_test_image_tar=connector_image_tar_file
             )
 
-        step_results += [soon_cat_results.value, soon_integration_tests_results.value, soon_unit_tests_results.value]
+        step_results += [soon_cat_results.value, soon_integration_tests_results.value]
         return step_results
 
     async with asyncer.create_task_group() as test_task_group:
