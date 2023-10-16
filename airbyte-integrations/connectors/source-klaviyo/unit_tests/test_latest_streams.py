@@ -8,6 +8,7 @@ import pendulum
 import pytest
 import requests
 from pydantic import BaseModel
+from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategyLatest
 from source_klaviyo.streams import IncrementalKlaviyoStreamLatest, Profiles
 
 START_DATE = pendulum.datetime(2020, 10, 10)
@@ -100,3 +101,7 @@ class TestProfilesStream:
                 "properties": {"Status": "onboarding_started"},
             },
         ]
+
+    def test_availability_strategy(self):
+        stream = Profiles(api_key="some_key", start_date=START_DATE.isoformat())
+        assert isinstance(stream.availability_strategy, KlaviyoAvailabilityStrategyLatest)
