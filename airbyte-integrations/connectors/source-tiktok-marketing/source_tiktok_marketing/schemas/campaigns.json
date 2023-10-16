@@ -67,6 +67,12 @@
     },
     "is_search_campaign": {
       "type": ["null", "boolean"]
+    },
+    "app_promotion_type": {
+      "type": ["null", "string"]
+    },
+    "rf_campaign_type": {
+      "type": ["null", "string"]
     }
   }
 }
