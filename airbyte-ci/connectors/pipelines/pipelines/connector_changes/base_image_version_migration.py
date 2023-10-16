@@ -134,17 +134,17 @@ class AddBuildInstructionsToReadme(Step):
                 self,
                 StepStatus.SKIPPED,
                 stdout="Connector does not have a documentation file.",
-                output_artifact=self.container_with_airbyte_repo,
+                output_artifact=self.repo_dir,
             )
-        current_readme = await self.context.get_connector_dir().file("README.md").contents()
+        current_readme = await (await self.context.get_connector_dir(include=["README.md"])).file("README.md").contents()
         try:
             updated_readme = self.add_build_instructions(current_readme)
         except Exception as e:
             return StepResult(
                 self,
                 StepStatus.FAILURE,
-                stderr=f"Could not add the build instructions: {e}",
-                output_artifact=self.container_with_airbyte_repo,
+                stdout=str(e),
+                output_artifact=self.repo_dir,
             )
         updated_repo_dir = await self.repo_dir.with_new_file(str(readme_path), updated_readme)
         return StepResult(
@@ -155,20 +155,12 @@ class AddBuildInstructionsToReadme(Step):
         )
 
     def add_build_instructions(self, og_doc_content) -> str:
-        line_no_for_build_instructions = None
-        og_lines = og_doc_content.splitlines()
-        for line_no, line in enumerate(og_lines):
-            if "#### Build" in line:
-                line_no_for_build_instructions = line_no
-        if line_no_for_build_instructions is None:
-            line_no_for_build_instructions = len(og_lines) - 1
 
         build_instructions_template = Template(
             textwrap.dedent(
                 """
-            ## Build instructions
 
-            ### Use `airbyte-ci` to build your connector
+            #### Use `airbyte-ci` to build your connector
             The Airbyte way of building this connector is to use our `airbyte-ci` tool.
             You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1).
             Then running the following command will build your connector:
@@ -178,8 +170,33 @@ class AddBuildInstructionsToReadme(Step):
             ```
             Once the command is done, you will find your connector image in your local docker registry: `{{ connector_image }}:dev`.
 
-            ### Build your own connector image
-            This connector is built using our dynamic built process.
+            ##### Customizing our build process
+            When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
+            You can customize our build process by adding a `build_customization.py` module to your connector.
+            This module should contain a `pre_connector_install` and `post_connector_install` async function that will mutate the base image and the connector container respectively.
+            It will be imported at runtime by our build process and the functions will be called if they exist.
+
+            Here is an example of a `build_customization.py` module:
+            ```python
+            from __future__ import annotations
+
+            from typing import TYPE_CHECKING
+
+            if TYPE_CHECKING:
+                # Feel free to check the dagger documentation for more information on the Container object and its methods.
+                # https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/
+                from dagger import Container
+
+
+            async def pre_connector_install(base_image_container: Container) -> Container:
+                return await base_image_container.with_env_variable("MY_PRE_BUILD_ENV_VAR", "my_pre_build_env_var_value")
+
+            async def post_connector_install(connector_container: Container) -> Container:
+                return await connector_container.with_env_variable("MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value")
+            ```
+
+            #### Build your own connector image
+            This connector is built using our dynamic built process in `airbyte-ci`.
             The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
             The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
             It does not rely on a Dockerfile.
@@ -205,31 +222,6 @@ class AddBuildInstructionsToReadme(Step):
             # Running the spec command against your patched connector
             docker run {{ connector_image }}:dev spec
             ```
-
-            ### Customizing our build process
-            When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
-            You can customize our build process by adding a `build_customization.py` module to your connector.
-            This module should contain a `pre_connector_install` and `post_connector_install` async function that will mutate the base image and the connector container respectively.
-            It will be imported at runtime by our build process and the functions will be called if they exist.
-
-            Here is an example of a `build_customization.py` module:
-            ```python
-            from __future__ import annotations
-
-            from typing import TYPE_CHECKING
-
-            if TYPE_CHECKING:
-                # Feel free to check the dagger documentation for more information on the Container object and its methods.
-                # https://dagger-io.readthedocs.io/en/sdk-python-v0.6.4/
-                from dagger import Container
-
-
-            async def pre_connector_install(base_image_container: Container) -> Container:
-                return await base_image_container.with_env_variable("MY_PRE_BUILD_ENV_VAR", "my_pre_build_env_var_value")
-
-            async def post_connector_install(connector_container: Container) -> Container:
-                return await connector_container.with_env_variable("MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value")
-            ```
             """
             )
         )
@@ -241,7 +233,21 @@ class AddBuildInstructionsToReadme(Step):
             }
         )
 
-        new_doc = "\n".join(og_lines[:line_no_for_build_instructions] + [build_instructions] + og_lines[line_no_for_build_instructions:])
+        og_lines = og_doc_content.splitlines()
+        build_instructions_index = None
+        run_instructions_index = None
+
+        for line_no, line in enumerate(og_lines):
+            if "#### Build" in line:
+                build_instructions_index = line_no
+            if "#### Run" in line:
+                run_instructions_index = line_no
+                break
+
+        if build_instructions_index is None or run_instructions_index is None:
+            raise Exception("Could not find build or run instructions in README.md")
+
+        new_doc = "\n".join(og_lines[:build_instructions_index] + build_instructions.splitlines() + og_lines[run_instructions_index:])
         return new_doc
 
 
