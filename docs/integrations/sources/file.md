@@ -216,6 +216,7 @@ In order to read large files from a remote location, this connector uses the [sm
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.3.13  | 2023-10-12 | [31341](https://github.com/airbytehq/airbyte/pull/31341) | Build from airbyte/python-connector-base:1.0.0                                                                |
 | 0.3.12  | 2023-09-19 | [30579](https://github.com/airbytehq/airbyte/pull/30579) | Add ParserError handling for `discovery`                                                                |
 | 0.3.11  | 2023-06-08 | [27157](https://github.com/airbytehq/airbyte/pull/27157) | Force smart open log level to ERROR                                                                     |
 | 0.3.10  | 2023-06-07 | [27107](https://github.com/airbytehq/airbyte/pull/27107) | Make source-file testable in our new airbyte-ci pipelines                                               |
