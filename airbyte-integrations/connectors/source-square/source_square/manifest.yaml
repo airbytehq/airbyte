@@ -184,6 +184,24 @@ definitions:
       primary_key: "id"
       path: "/team-members/search"
 
+  inventory_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "inventory"
+      primary_key: "catalog_object_id"
+      path: "/inventory/counts/batch-retrieve"
+    retriever:
+      $ref: "#/definitions/base_stream_page_json_limit/retriever"
+      requester:
+        $ref: "#/definitions/base_stream_page_json_limit/retriever/requester"
+        http_method: "POST"
+        request_body_json:
+          limit: "{{ 500 }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          field_path: ["counts"]
+
   team_member_wages_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -327,6 +345,7 @@ streams:
   - "#/definitions/taxes_stream"
   - "#/definitions/modifier_list_stream"
   - "#/definitions/refunds_stream"
+  - "#/definitions/inventory_stream"
   - "#/definitions/payments_stream"
   - "#/definitions/orders_stream"
   - "#/definitions/cash_drawers_stream"
