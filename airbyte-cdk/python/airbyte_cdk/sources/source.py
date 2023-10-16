@@ -43,8 +43,9 @@ class Source(
     BaseSource[Mapping[str, Any], Union[List[AirbyteStateMessage], MutableMapping[str, Any]], ConfiguredAirbyteCatalog],
     ABC,
 ):
-    # can be overridden to change an input state
-    def read_state(self, state_path: str) -> Union[List[AirbyteStateMessage], MutableMapping[str, Any]]:
+    # can be overridden to change an input state.
+    @classmethod
+    def read_state(cls, state_path: str) -> Union[List[AirbyteStateMessage], MutableMapping[str, Any]]:
         """
         Retrieves the input state of a sync by reading from the specified JSON file. Incoming state can be deserialized into either
         a JSON object for legacy state input or as a list of AirbyteStateMessages for the per-stream state format. Regardless of the
@@ -53,9 +54,9 @@ class Source(
         :return: The complete stream state based on the connector's previous sync
         """
         if state_path:
-            state_obj = self._read_json_file(state_path)
+            state_obj = BaseConnector._read_json_file(state_path)
             if not state_obj:
-                return self._emit_legacy_state_format({})
+                return cls._emit_legacy_state_format({})
             is_per_stream_state = isinstance(state_obj, List)
             if is_per_stream_state:
                 parsed_state_messages = []
@@ -66,17 +67,18 @@ class Source(
                     parsed_state_messages.append(parsed_message)
                 return parsed_state_messages
             else:
-                return self._emit_legacy_state_format(state_obj)
-        return self._emit_legacy_state_format({})
+                return cls._emit_legacy_state_format(state_obj)
+        return cls._emit_legacy_state_format({})
 
-    def _emit_legacy_state_format(self, state_obj) -> Union[List[AirbyteStateMessage], MutableMapping[str, Any]]:
+    @classmethod
+    def _emit_legacy_state_format(cls, state_obj) -> Union[List[AirbyteStateMessage], MutableMapping[str, Any]]:
         """
         Existing connectors that override read() might not be able to interpret the new state format. We temporarily
         send state in the old format for these connectors, but once all have been upgraded, this method can be removed,
         and we can then emit state in the list format.
         """
         # vars(self.__class__) checks if the current class directly overrides the read() function
-        if "read" in vars(self.__class__):
+        if "read" in vars(cls.__class__):
             return defaultdict(dict, state_obj)
         else:
             if state_obj:

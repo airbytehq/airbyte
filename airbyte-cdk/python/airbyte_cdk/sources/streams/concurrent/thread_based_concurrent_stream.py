@@ -14,6 +14,7 @@ from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -46,6 +47,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
         sleep_time: float = DEFAULT_SLEEP_TIME,
         type_transformer: TransformConfig = TypeTransformer(TransformConfig.NoTransform),
+        cursor: Optional[ConcurrentCursor] = None,
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -62,6 +64,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._max_concurrent_tasks = max_concurrent_tasks
         self._sleep_time = sleep_time
         self._type_transformer = type_transformer
+        self._cursor = cursor
 
     def read(self) -> Iterable[Record]:
         """
@@ -80,13 +83,14 @@ class ThreadBasedConcurrentStream(AbstractStream):
           - If the next work item is a PartitionCompleteSentinel, a partition is done processing
             - Update the value in partitions_to_done to True so we know the partition is completed
         """
-        self._logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
+        self._logger.debug(f"Processing stream slices for {self.name}")
         futures: List[Future[Any]] = []
         queue: Queue[QueueItem] = Queue()
         partition_generator = PartitionEnqueuer(queue, PARTITIONS_GENERATED_SENTINEL)
         partition_reader = PartitionReader(queue)
 
-        # Submit partition generation tasks
+        # FIXME is syncmode needed here? It feels like this information shouldn't change how we generate partitions given that the cursor
+        #  has the state information
         self._submit_task(futures, partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh)
 
         # True -> partition is done
@@ -105,9 +109,11 @@ class ThreadBasedConcurrentStream(AbstractStream):
                         f"Received sentinel for partition {record_or_partition.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support.partitions:\n{partitions_to_done}"
                     )
                 partitions_to_done[record_or_partition.partition] = True
+                self._cursor.close_partition(record_or_partition.partition)
             elif isinstance(record_or_partition, Record):
                 # Emit records
                 yield record_or_partition
+                self._cursor.observe(record_or_partition)
             elif isinstance(record_or_partition, Partition):
                 # A new partition was generated and must be processed
                 partitions_to_done[record_or_partition] = False

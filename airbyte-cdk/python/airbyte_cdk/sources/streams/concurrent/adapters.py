@@ -6,7 +6,7 @@ import copy
 import json
 import logging
 from functools import lru_cache
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
@@ -20,6 +20,7 @@ from airbyte_cdk.sources.streams.concurrent.availability_strategy import (
     StreamAvailable,
     StreamUnavailable,
 )
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
@@ -45,7 +46,15 @@ class StreamFacade(Stream):
     """
 
     @classmethod
-    def create_from_stream(cls, stream: Stream, source: AbstractSource, logger: logging.Logger, max_workers: int) -> Stream:
+    def create_from_stream(
+            cls,
+            stream: Stream,
+            source: AbstractSource,
+            logger: logging.Logger,
+            max_workers: int,
+            state: MutableMapping[str, Any],
+            cursor: Cursor,
+    ) -> Stream:
         """
         Create a ConcurrentStream from a Stream object.
         :param source: The source
@@ -64,7 +73,7 @@ class StreamFacade(Stream):
         message_repository = source.message_repository
         return StreamFacade(
             ThreadBasedConcurrentStream(
-                partition_generator=StreamPartitionGenerator(stream, message_repository),
+                partition_generator=StreamPartitionGenerator(stream, message_repository, state),
                 max_workers=max_workers,
                 name=stream.name,
                 json_schema=stream.get_json_schema(),
@@ -74,8 +83,16 @@ class StreamFacade(Stream):
                 slice_logger=source._slice_logger,
                 message_repository=message_repository,
                 logger=logger,
-            )
+                cursor=cursor,
+            ),
+            stream,
+            cursor,
         )
+
+    def state(self, value: Mapping[str, Any]):
+        self._legacy_stream.state = value
+
+    state = property(None, state)
 
     @classmethod
     def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> List[str]:
@@ -103,11 +120,13 @@ class StreamFacade(Stream):
         else:
             return stream.cursor_field
 
-    def __init__(self, stream: AbstractStream):
+    def __init__(self, stream: AbstractStream, legacy_stream: Stream, cursor: Cursor):
         """
         :param stream: The underlying AbstractStream
         """
         self._abstract_stream = stream
+        self._legacy_stream = legacy_stream
+        self._cursor = cursor
 
     def read_full_refresh(
         self,
@@ -122,8 +141,18 @@ class StreamFacade(Stream):
         :param slice_logger: (ignored)
         :return: Iterable of StreamData
         """
-        for record in self._abstract_stream.read():
-            yield record.data
+        yield from self._read_records()
+
+    def read_incremental(
+        self,
+        cursor_field: Optional[List[str]],
+        logger: logging.Logger,
+        slice_logger: SliceLogger,
+        stream_state: MutableMapping[str, Any],
+        state_manager,  # ignoring typing for ConnectorStateManager because of circular dependencies
+        per_stream_state_enabled: bool,
+    ) -> Iterable[StreamData]:
+        yield from self._read_records()
 
     def read_records(
         self,
@@ -132,12 +161,11 @@ class StreamFacade(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        if sync_mode == SyncMode.full_refresh:
-            for record in self._abstract_stream.read():
-                yield record.data
-        else:
-            # Incremental reads are not supported
-            raise NotImplementedError
+        yield from self._read_records()
+
+    def _read_records(self):
+        for record in self._abstract_stream.read():
+            yield record.data
 
     @property
     def name(self) -> str:
@@ -166,8 +194,7 @@ class StreamFacade(Stream):
 
     @property
     def supports_incremental(self) -> bool:
-        # Only full refresh is supported
-        return False
+        return not isinstance(self._cursor, NoopCursor)
 
     def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         """
@@ -211,7 +238,13 @@ class StreamPartition(Partition):
     In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
     """
 
-    def __init__(self, stream: Stream, _slice: Optional[Mapping[str, Any]], message_repository: MessageRepository):
+    def __init__(
+        self,
+        stream: Stream,
+        _slice: Optional[Mapping[str, Any]],
+        message_repository: MessageRepository,
+        state: MutableMapping[str, Any]
+    ):
         """
         :param stream: The stream to delegate to
         :param _slice: The partition's stream_slice
@@ -220,6 +253,9 @@ class StreamPartition(Partition):
         self._stream = stream
         self._slice = _slice
         self._message_repository = message_repository
+        self._state = state
+        # TODO no impact for Stripe but other sources might use this
+        #  self._sync_mode = sync_mode
 
     def read(self) -> Iterable[Record]:
         """
@@ -228,7 +264,17 @@ class StreamPartition(Partition):
         Otherwise, the message will be emitted on the message repository.
         """
         try:
-            for record_data in self._stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=copy.deepcopy(self._slice)):
+            # using `stream_state=self._state` have a very different behavior than the current one as today the state is updated slice
+            #  by slice incrementally. We don't have this guarantee with Concurrent CDK. For HttpStream, `stream_state` is passed to:
+            #  * fetch_next_page
+            #  * parse_response
+            #  Both are not used for Stripe so we should be good for the first iteration of Concurrent CDK. However, Stripe still do
+            #  `if not stream_state` to know if it calls the Event stream or not
+            for record_data in self._stream.read_records(
+                sync_mode=SyncMode.full_refresh,
+                stream_slice=copy.deepcopy(self._slice),
+                stream_state=self._state,
+            ):
                 if isinstance(record_data, Mapping):
                     # Transform the data from the partition instead of the AbstractStream.
                     data_to_return = dict(record_data)
@@ -266,17 +312,19 @@ class StreamPartitionGenerator(PartitionGenerator):
     In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
     """
 
-    def __init__(self, stream: Stream, message_repository: MessageRepository):
+    def __init__(self, stream: Stream, message_repository: MessageRepository, state: MutableMapping[str, Any]):
         """
         :param stream: The stream to delegate to
         :param message_repository: The message repository to use to emit non-record messages
         """
         self.message_repository = message_repository
         self._stream = stream
+        self._state = state
 
     def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
-        for s in self._stream.stream_slices(sync_mode=sync_mode):
-            yield StreamPartition(self._stream, copy.deepcopy(s), self.message_repository)
+        # TODO `cursor_field` not needed as Stripe uses an attribute of the class to define that but others might need it
+        for s in self._stream.stream_slices(sync_mode=sync_mode, stream_state=self._state):
+            yield StreamPartition(self._stream, copy.deepcopy(s), self.message_repository, self._state)
 
 
 @deprecated("This class is experimental. Use at your own risk.")
