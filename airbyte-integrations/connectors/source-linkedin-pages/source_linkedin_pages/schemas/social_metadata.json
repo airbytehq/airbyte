@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "entity": {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "commentsState": {"type" : ["null", "string"]},
+    "commentCount": {"type" : ["null", "number"]},
+    "topLevelCommentCount": {"type" : ["null", "number"]},
+    "reactionSummaries": {
+      "type" : ["null" ,"array"],
+      "items" : {
+        "type" : "object",
+        "properties" : {
+          "reactionType": {
+            "type" : ["null", "string"]
+          },
+          "count": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    },
+    "commentSummary": {
+      "type": ["null", "object"],
+      "properties" : {
+        "commentCount": {
+          "type": ["null", "integer"]
+        },
+        "topLevelCommentCount": {
+          "type" : ["null", "number"]
+        }
+      }
+    }
+  }
+}

@@ -35,6 +35,17 @@
         }
       }
     },
-    "organizationalEntity": { "type": ["null", "string"] }
+    "organizationalEntity": { "type": ["null", "string"] },
+    "timeRange": {
+      "type" : ["null", "object"],
+      "properties" : {
+        "start": {
+          "type" : ["null", "integer"]
+        },
+        "end": {
+          "type" : ["null", "integer"]
+        }
+      }
+    }
   }
 }

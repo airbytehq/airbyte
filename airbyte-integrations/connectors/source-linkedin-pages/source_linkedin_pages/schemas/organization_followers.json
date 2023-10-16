@@ -5,6 +5,9 @@
   "properties": {
     "firstDegreeSize": {
       "type": ["null", "integer"]
+    },
+    "organizationId": {
+      "type": ["null", "string"]
     }
   }
 }

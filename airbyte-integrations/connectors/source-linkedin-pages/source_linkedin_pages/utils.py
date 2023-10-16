@@ -322,3 +322,101 @@ def transform_data(records: List) -> Iterable[Mapping]:
             record = transform_variables(record)
 
         yield record
+
+
+def build_share_statistics_parameters(share_post_list: List) -> Mapping[str, Any]:
+
+    share_counter = 0
+    ugc_post_counter = 0
+    result = {}
+
+    for id in share_post_list:
+        if "share" in id:
+            key = f"shares[{share_counter}]"
+            result[key] = id
+            share_counter += 1
+        elif "ugcPost" in id:
+            key = f"ugcPosts[{ugc_post_counter}]"
+            result[key] = id
+            ugc_post_counter += 1
+
+    return result
+
+
+def build_share_statistics_parameter(record_id: str) -> Mapping[str, Any]:
+    """ Function to return the single post/share query parameter to be used in OrganizationalEntity call"""
+    if "share" in record_id:
+        return {"shares[0]": record_id}
+    elif "ugcPost" in record_id:
+        return {"ugcPosts[0]": record_id}
+
+    return {}
+
+
+def parse_post_media_content(content: Mapping[str, Any], media_type: str):
+    """
+    single image:
+    "content": {
+                "media": {
+                    "altText": "Picture of Alex, smiling!",
+                    "id": "urn:li:image:D4E22AQFokVOemJ9jrg"
+                }
+            },
+    multi-image:
+    "content": {
+                "multiImage": {
+                    "images": [
+                        {
+                            "altText": "",
+                            "id": "urn:li:image:D4E22AQGm2oOsCjisrw"
+                        },
+                        {
+                            "altText": "",
+                            "id": "urn:li:image:D4E22AQGWTZf-5LFRww"
+                        },
+                        {
+                            "altText": "",
+                            "id": "urn:li:image:D4E22AQH14O43nltKLg"
+                        },
+                        {
+                            "altText": "",
+                            "id": "urn:li:image:D4E22AQEBZp-YHOdhyA"
+                        }
+                    ]
+                }
+            },
+    not_an_image:
+    "content": {
+                "media": {
+                    "title": "Inside Coral: Jack Robinson",
+                    "id": "urn:li:document:D4E1FAQHG_F1vnOUP5Q"
+                }
+            },
+    """
+    media_ids = []
+
+    # Check for single media content
+    if "media" in content and content["media"]["id"].startswith(f"urn:li:{media_type}:"):
+        media_ids.append(content["media"]["id"])
+
+    # Check for multi-image
+    if media_type == "image" and "multiImage" in content:
+        for image in content["multiImage"]["images"]:
+            if image["id"].startswith(f"urn:li:image:"):
+                media_ids.append(image["id"])
+
+    return media_ids
+
+
+def flatten_social_metadata_record(record: Mapping[str, Any]) -> Mapping[str, Any]:
+    flat_dict = {
+        "entity": record["entity"],
+        "commentsState": record["commentsState"],
+        "commentSummary": record["commentSummary"],
+    }
+
+    # Convert reactionSummaries to a list of key/value pairs
+    reactions = [{"reactionType": key, **value} for key, value in record["reactionSummaries"].items()]
+    flat_dict["reactionSummaries"] = reactions
+
+    return flat_dict

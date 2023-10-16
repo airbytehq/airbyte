@@ -1,0 +1,210 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "adContext": {
+      "type": ["null", "object"],
+      "properties": {
+        "dscAdAccount": {
+          "type": ["null", "string"]
+        },
+        "dscAdType": {
+          "type": ["null", "string"]
+        },
+        "dscName": {
+          "type": ["null", "string"]
+        },
+        "dscStatus": {
+          "type": ["null", "string"]
+        },
+        "isDsc": {
+          "type": ["null", "boolean"]
+        }
+      }
+    },
+    "author": {
+      "type": "string"
+    },
+    "commentary": {
+      "type": "string"
+    },
+    "content": {
+      "properties": {
+        "article": {
+          "properties": {
+            "description": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            },
+            "thumbnail": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "carousel": {
+          "properties": {
+            "cards": {
+              "items": {
+                "properties": {
+                  "landingPage": {
+                    "type": "string"
+                  },
+                  "media": {
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "media": {
+          "properties": {
+            "altText": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "multiImage": {
+          "properties": {
+            "images": {
+              "items": {
+                "properties": {
+                  "altText": {
+                    "type": "string"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "poll": {
+          "properties": {
+            "options": {
+              "items": {
+                "properties": {
+                  "isVotedByViewer": {
+                    "type": "boolean"
+                  },
+                  "text": {
+                    "type": "string"
+                  },
+                  "voteCount": {
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "question": {
+              "type": "string"
+            },
+            "settings": {
+              "properties": {
+                "duration": {
+                  "type": "string"
+                },
+                "isVoterVisibleToAuthor": {
+                  "type": "boolean"
+                },
+                "voteSelectionType": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "uniqueVotersCount": {
+              "type": "number"
+            }
+          },
+          "type": "object"
+        },
+        "reference": {
+          "properties": {
+            "id": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
+    },
+    "contentCallToActionLabel": {
+      "type": "string"
+    },
+    "contentLandingPage": {
+      "type": "string"
+    },
+    "createdAt": {
+      "type": "number"
+    },
+    "distribution": {
+      "properties": {
+        "feedDistribution": {
+          "type": "string"
+        },
+        "thirdPartyDistributionChannels": {
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "id": {
+      "type": "string"
+    },
+    "isReshareDisabledByAuthor": {
+      "type": "boolean"
+    },
+    "lastModifiedAt": {
+      "type": "number"
+    },
+    "lifecycleState": {
+      "type": "string"
+    },
+    "lifecycleStateInfo": {
+      "properties": {
+        "isEditedByAuthor": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "publishedAt": {
+      "type": "number"
+    },
+    "visibility": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}

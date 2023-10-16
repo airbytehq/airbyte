@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "duration" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "aspectRatioWidth" : {
+      "type" : [
+        "null",
+        "number"
+      ]
+    },
+    "owner" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "thumbnail" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "downloadUrlExpiresAt" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "downloadUrl" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "aspectRatioHeight" : {
+      "type" : [
+        "null",
+        "number"
+      ]
+    },
+    "id" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "captions" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "status" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

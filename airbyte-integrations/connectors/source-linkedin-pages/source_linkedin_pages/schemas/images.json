@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "additionalProperties": true,
+  "properties": {
+    "downloadUrl" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "owner" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "id" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    },
+    "downloadUrlExpiresAt" : {
+      "type" : [
+        "null",
+        "integer"
+      ]
+    },
+    "status" : {
+      "type" : [
+        "null",
+        "string"
+      ]
+    }
+  }
+}
