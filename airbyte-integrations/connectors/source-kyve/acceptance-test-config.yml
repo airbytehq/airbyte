@@ -7,11 +7,13 @@ acceptance_tests:
     tests:
       - spec_path: "source_kyve/spec.yaml"
         config_path: "integration_tests/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.1.0"
   connection:
     tests:
       - config_path: "integration_tests/config.json"
         status: "succeed"
-      - config_path: "integration_tests/config_multiple_pools.json"
+      - config_path: "integration_tests/multiple_pools_config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
@@ -21,7 +23,7 @@ acceptance_tests:
     tests:
       - config_path: "integration_tests/config.json"
         timeout_seconds: 60
-      - config_path: "integration_tests/config_multiple_pools.json"
+      - config_path: "integration_tests/multiple_pools_config.json"
         timeout_seconds: 60
   full_refresh:
     tests:
