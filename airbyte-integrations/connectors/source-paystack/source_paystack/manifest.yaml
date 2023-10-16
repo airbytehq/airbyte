@@ -1,0 +1,141 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: ["data"]
+
+  requester:
+    type: HttpRequester
+    url_base: "https://api.paystack.co/"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['secret_key'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: "DefaultPaginator"
+      page_size_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "perPage"
+      pagination_strategy:
+        type: "PageIncrement"
+        page_size: 5
+      page_token_option:
+        type: "RequestOption"
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  incremental_sync_base:
+    type: DatetimeBasedCursor
+    cursor_field: "{{ parameters.incremental_cursor }}"
+    datetime_format: "%s"
+    cursor_granularity: "PT0.000001S"
+    lookback_window: "P31D"
+    start_datetime:
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    end_datetime:
+      datetime: "{{ today_utc() }}"
+      datetime_format: "%Y-%m-%d"
+    step: "P1M"
+
+  transactions_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "transactions"
+      primary_key: "id"
+      incremental_cursor: "createdAt"
+      path: "transaction"
+
+  customers_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "customers"
+      primary_key: "id"
+      incremental_cursor: "createdAt"
+      path: "customer"
+
+  disputes_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "disputes"
+      primary_key: "id"
+      incremental_cursor: "createdAt"
+      path: "dispute"
+
+  refunds_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "refunds"
+      primary_key: "id"
+      incremental_cursor: "createdAt"
+      path: "refund"
+
+  settlements_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "settlements"
+      primary_key: "id"
+      incremental_cursor: "createdAt"
+      path: "settlement"
+
+  subscriptions_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "subscriptions"
+      primary_key: "id"
+      incremental_cursor: "createdAt"
+      path: "subscription"
+
+  transfers_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "transfers"
+      primary_key: "id"
+      incremental_cursor: "createdAt"
+      path: "transfer"
+
+  invoices_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "invoices"
+      primary_key: "id"
+      incremental_cursor: "created_at"
+      path: "paymentrequest"
+
+streams:
+  - "#/definitions/transactions_stream"
+  - "#/definitions/customers_stream"
+  - "#/definitions/invoices_stream"
+  - "#/definitions/disputes_stream"
+  - "#/definitions/refunds_stream"
+  - "#/definitions/settlements_stream"
+  - "#/definitions/subscriptions_stream"
+  - "#/definitions/transfers_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "transactions"
+    - "customers"
+    - "invoices"
+    - "disputes"
+    - "refunds"
+    - "settlements"
+    - "subscriptions"
+    - "transfers"
