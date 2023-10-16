@@ -130,8 +130,7 @@ jobs:
         if: steps.regex.outputs.first_match != inputs.connector
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Filter supported connectors
-        if:
-          "${{ inputs.connector != 'connectors/source-postgres' &&
+        if: "${{ inputs.connector != 'connectors/source-postgres' &&
           inputs.connector != 'connectors/source-mysql' &&
           inputs.connector != 'connectors/destination-snowflake' }}"
         run: echo "Only connectors/source-postgres, source-mysql and destination-snowflake currently supported by harness" && exit 1
