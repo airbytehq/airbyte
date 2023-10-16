@@ -524,7 +524,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
     final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamId, "");
     verifyRecordCounts(
-        1,
+        2,
         actualRawRecords,
         1,
         actualFinalRecords);
@@ -662,9 +662,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     verifyRecordCounts(
         // We keep the newest raw record per PK
-        7,
+        11,
         dumpRawTableRecords(streamId),
-        5,
+        6,
         dumpFinalTableRecords(streamId, ""));
   }
 
@@ -693,7 +693,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
-        1,
+        2,
         dumpRawTableRecords(streamId),
         0,
         dumpFinalTableRecords(streamId, ""));
@@ -730,7 +730,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
-        1,
+        2,
         dumpRawTableRecords(streamId),
         1,
         dumpFinalTableRecords(streamId, ""));
