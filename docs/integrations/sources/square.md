@@ -71,6 +71,7 @@ The Square source connector supports the following [ sync modes](https://docs.ai
 - [Inventory](https://developer.squareup.com/reference/square/inventory-api/batch-retrieve-inventory-counts)
 - [Orders](https://developer.squareup.com/reference/square/orders-api/search-orders)
 - [Cash drawers](https://developer.squareup.com/explorer/square/cash-drawers-api/list-cash-drawer-shifts)
+- [Loyalty](https://developer.squareup.com/explorer/square/loyalty-api/search-loyalty-accounts)
 
 ## Connector-specific features & highlights
 
@@ -99,6 +100,7 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------|
+| 1.4.0   | 2023-10-13 | [31106](https://github.com/airbytehq/airbyte/pull/31106) | Add new stream Loyalty                                                    |
 | 1.3.0   | 2023-10-12 | [31107](https://github.com/airbytehq/airbyte/pull/31107) | Add new stream Inventory                                                  |
 | 1.2.0   | 2023-10-10 | [31065](https://github.com/airbytehq/airbyte/pull/31065) | Add new stream Cash drawers shifts                                        |
 | 1.1.3   | 2023-10-10 | [30960](https://github.com/airbytehq/airbyte/pull/30960) | Update `airbyte-cdk` version to `>=0.51.31`                               |
