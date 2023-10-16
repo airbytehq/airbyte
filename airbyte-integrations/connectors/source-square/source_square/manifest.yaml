@@ -333,10 +333,10 @@ definitions:
         request_body_json:
           limit: "{{ 500 }}"
 
-  banks_accounts_stream:
+  bank_accounts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "banks_accounts"
+      name: "bank_accounts"
       primary_key: "id"
       path: "/bank-accounts"
 
@@ -355,7 +355,7 @@ streams:
   - "#/definitions/inventory_stream"
   - "#/definitions/payments_stream"
   - "#/definitions/orders_stream"
-  - "#/definitions/banks_accounts_stream"
+  - "#/definitions/bank_accounts_stream"
   - "#/definitions/cash_drawers_stream"
 
 check:
