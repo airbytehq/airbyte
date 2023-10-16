@@ -153,15 +153,15 @@ def test_report_get_start_date_performance_report_wo_stream_state():
         GeographicPerformanceReportDaily,
         GeographicPerformanceReportHourly,
         GeographicPerformanceReportMonthly,
-        GeographicPerformanceReportWeekly
-    )
+        GeographicPerformanceReportWeekly,
+    ),
 )
 def test_geographic_performance_report_pk(performance_report_cls):
     config = {
         "developer_token": "developer_token",
         "client_id": "client_id",
         "refresh_token": "refresh_token",
-        "reports_start_date": "2020-01-01T00:00:00Z"
+        "reports_start_date": "2020-01-01T00:00:00Z",
     }
     stream = performance_report_cls(client=Mock(), config=config)
     assert stream.primary_key is None
