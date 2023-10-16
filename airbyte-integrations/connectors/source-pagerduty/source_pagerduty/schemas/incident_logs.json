@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Generated schema for Root",
+  "title": "Incident Logs schema",
+  "additionalProperties": true,
   "type": ["null", "object"],
   "properties": {
     "id": {
