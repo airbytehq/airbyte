@@ -189,6 +189,7 @@
     },
     "cover": {
       "type": ["null", "object"],
+      "additionalProperties": true,
       "properties": {
         "idAttachment": {
           "type": ["null", "string"]
@@ -197,12 +198,21 @@
           "type": ["null", "string"]
         },
         "idUploadedBackground": {
-          "type": ["null", "boolean"]
+          "type": ["null", "string"]
         },
         "size": {
           "type": ["null", "string"]
         },
         "brightness": {
+          "type": ["null", "string"]
+        },
+        "edgeColor": {
+          "type": ["null", "string"]
+        },
+        "sharedSourceUrl": {
+          "type": ["null", "string"]
+        },
+        "idPlugin": {
           "type": ["null", "string"]
         }
       }

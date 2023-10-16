@@ -74,6 +74,7 @@ class PipelineContext:
         ci_gcs_credentials: Optional[str] = None,
         ci_git_user: Optional[str] = None,
         ci_github_access_token: Optional[str] = None,
+        open_report_in_browser: bool = True,
     ):
         """Initialize a pipeline context.
 
@@ -116,6 +117,7 @@ class PipelineContext:
         self.started_at = None
         self.stopped_at = None
         self.secrets_to_mask = []
+        self.open_report_in_browser = open_report_in_browser
         update_commit_status_check(**self.github_commit_status)
 
     @property
@@ -336,6 +338,8 @@ class ConnectorContext(PipelineContext):
         use_local_cdk: bool = False,
         use_host_gradle_dist_tar: bool = False,
         open_report_in_browser: bool = True,
+        docker_hub_username: Optional[str] = None,
+        docker_hub_password: Optional[str] = None,
     ):
         """Initialize a connector context.
 
@@ -359,6 +363,8 @@ class ConnectorContext(PipelineContext):
             code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
             use_host_gradle_dist_tar (bool, optional): Used when developing java connectors with gradle. Defaults to False.
             open_report_in_browser (bool, optional): Open HTML report in browser window. Defaults to True.
+            docker_hub_username (Optional[str], optional): Docker Hub username to use to read registries. Defaults to None.
+            docker_hub_password (Optional[str], optional): Docker Hub password to use to read registries. Defaults to None.
         """
 
         self.pipeline_name = pipeline_name
@@ -376,6 +382,8 @@ class ConnectorContext(PipelineContext):
         self.use_local_cdk = use_local_cdk
         self.use_host_gradle_dist_tar = use_host_gradle_dist_tar
         self.open_report_in_browser = open_report_in_browser
+        self.docker_hub_username = docker_hub_username
+        self.docker_hub_password = docker_hub_password
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -393,6 +401,7 @@ class ConnectorContext(PipelineContext):
             ci_gcs_credentials=ci_gcs_credentials,
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
+            open_report_in_browser=open_report_in_browser,
         )
 
     @property
