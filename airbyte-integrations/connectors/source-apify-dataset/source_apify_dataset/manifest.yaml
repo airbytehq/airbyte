@@ -107,9 +107,25 @@ streams:
           type: DpathExtractor
           field_path: []
 
+  - type: DeclarativeStream
+    name: item_collection
+    $parameters:
+      path: "datasets/{{ config['dataset_id'] }}/items"
+    schema_loader:
+      type: JsonFileSchemaLoader
+      file_path: "./source_apify_dataset/schemas/item_collection.json"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          class_name: source_apify_dataset.wrapping_dpath_extractor.WrappingDpathExtractor
+          field_path: []
+
 check:
   type: CheckStream
   stream_names:
     - dataset_collection
     - dataset
     - item_collection_website_content_crawler
+    - item_collection
