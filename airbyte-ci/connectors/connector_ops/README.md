@@ -2,8 +2,6 @@
 
 A collection of utilities for working with Airbyte connectors.
 
-some change to get pipelines to run
-
 # Setup
 
 ## Prerequisites
