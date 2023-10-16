@@ -304,6 +304,24 @@ definitions:
     retriever:
       $ref: "#/definitions/base_incremental_stream/retriever"
 
+  loyalty_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "loyalty"
+      primary_key: "id"
+      path: "/loyalty/accounts/search"
+    retriever:
+      $ref: "#/definitions/base_stream_page_json_limit/retriever"
+      requester:
+        $ref: "#/definitions/base_stream_page_json_limit/retriever/requester"
+        http_method: "POST"
+        request_body_json:
+          limit: "{{ 200 }}"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          field_path: ["loyalty_accounts"]
+
   orders_stream:
     $ref: "#/definitions/base_stream_page_json_limit"
     $parameters:
@@ -349,6 +367,7 @@ streams:
   - "#/definitions/payments_stream"
   - "#/definitions/orders_stream"
   - "#/definitions/cash_drawers_stream"
+  - "#/definitions/loyalty_stream"
 
 check:
   stream_names:
