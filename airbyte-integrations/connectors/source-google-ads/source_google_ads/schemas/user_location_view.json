@@ -88,7 +88,7 @@
       "type": ["null", "number"]
     },
     "metrics.clicks": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.conversions": {
       "type": ["null", "number"]
@@ -100,7 +100,7 @@
       "type": ["null", "number"]
     },
     "metrics.cost_micros": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.cost_per_all_conversions": {
       "type": ["null", "number"]
@@ -115,7 +115,7 @@
       "type": ["null", "number"]
     },
     "metrics.impressions": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.interaction_event_types": {
       "type": ["null", "array"],
@@ -127,7 +127,7 @@
       "type": ["null", "number"]
     },
     "metrics.interactions": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.value_per_all_conversions": {
       "type": ["null", "number"]
@@ -139,10 +139,10 @@
       "type": ["null", "number"]
     },
     "metrics.video_views": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     },
     "metrics.view_through_conversions": {
-      "type": ["null", "number"]
+      "type": ["null", "integer"]
     }
   }
 }
