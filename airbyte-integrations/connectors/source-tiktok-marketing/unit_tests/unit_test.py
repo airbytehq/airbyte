@@ -195,4 +195,4 @@ def test_minimum_start_date(config, caplog):
 
     for stream in streams:
         assert stream._start_time == "2012-01-01 00:00:00"
-    assert "The start date is to far in the past. Setting it to 2012-01-01" in caplog.text
+    assert "The start date is too far in the past. Setting it to 2012-01-01" in caplog.text
