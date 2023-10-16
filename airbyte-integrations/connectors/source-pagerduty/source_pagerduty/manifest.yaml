@@ -38,10 +38,33 @@ definitions:
       extractorPath: "incidents"
       path: "/incidents"
 
+  incidents_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - stream: "#/definitions/incidents_stream"
+        parent_key: "id"
+        partition_field: "incident_id"
+
+  incident_logs_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "incident_logs"
+      primary_key: "id"
+      extractorPath: "log_entries"
+    retriever:
+      $ref: "#/definitions/retriever"
+      partition_router:
+        $ref: "#/definitions/incidents_partition_router"
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/incidents/{{ stream_partition.incident_id }}/log_entries"
+
 streams:
   - "#/definitions/incidents_stream"
+  - "#/definitions/incident_logs_stream"
 
 check:
   type: CheckStream
   stream_names:
     - "incidents"
+    - "incident_logs"
