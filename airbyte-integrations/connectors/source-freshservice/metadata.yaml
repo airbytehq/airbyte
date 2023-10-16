@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - TODO # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 9bb85338-ea95-4c93-b267-6be89125b267
+  dockerImageTag: 1.2.0
+  dockerRepository: airbyte/source-freshservice
+  githubIssueLabel: source-freshservice
+  icon: freshservice.svg
+  license: MIT
+  name: Freshservice
+  releaseDate: "2021-10-29"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/freshservice
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

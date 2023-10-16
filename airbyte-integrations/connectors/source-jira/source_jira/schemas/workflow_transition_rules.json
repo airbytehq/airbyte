@@ -45,8 +45,7 @@
             "properties": {
               "id": {
                 "type": "integer",
-                "description": "The transition ID.",
-                "format": "int32"
+                "description": "The transition ID."
               },
               "name": {
                 "type": "string",
@@ -87,8 +86,7 @@
             "properties": {
               "id": {
                 "type": "integer",
-                "description": "The transition ID.",
-                "format": "int32"
+                "description": "The transition ID."
               },
               "name": {
                 "type": "string",
@@ -129,8 +127,7 @@
             "properties": {
               "id": {
                 "type": "integer",
-                "description": "The transition ID.",
-                "format": "int32"
+                "description": "The transition ID."
               },
               "name": {
                 "type": "string",

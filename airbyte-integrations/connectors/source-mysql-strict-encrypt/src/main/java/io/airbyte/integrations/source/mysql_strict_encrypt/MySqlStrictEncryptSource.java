@@ -6,11 +6,11 @@ package io.airbyte.integrations.source.mysql_strict_encrypt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingSource;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;
 import io.airbyte.integrations.source.mysql.MySqlSource;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
@@ -31,6 +31,7 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
   public static final String SSL_MODE = "ssl_mode";
   public static final String MODE = "mode";
   public static final String SSL_MODE_PREFERRED = "preferred";
+  public static final String SSL_MODE_REQUIRED = "required";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlStrictEncryptSource.class);
   private static final String SSL_MODE_DESCRIPTION = "SSL connection modes. " +
@@ -47,6 +48,7 @@ public class MySqlStrictEncryptSource extends SpecModifyingSource implements Sou
   public ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
     final ConnectorSpecification spec = Jsons.clone(originalSpec);
     ((ObjectNode) spec.getConnectionSpecification().get("properties")).remove(JdbcUtils.SSL_KEY);
+    ((ObjectNode) spec.getConnectionSpecification().get("properties").get(SSL_MODE)).put("default", SSL_MODE_REQUIRED);
     return spec;
   }
 

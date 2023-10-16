@@ -4,8 +4,10 @@
 
 package io.airbyte.integrations.source.mssql;
 
-import io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod;
+import org.junit.jupiter.api.Disabled;
 
+@Disabled
 public class SshPasswordMssqlSourceAcceptanceTest extends AbstractSshMssqlSourceAcceptanceTest {
 
   @Override

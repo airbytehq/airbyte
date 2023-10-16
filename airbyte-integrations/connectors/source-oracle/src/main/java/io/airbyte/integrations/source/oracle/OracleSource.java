@@ -6,16 +6,16 @@ package io.airbyte.integrations.source.oracle;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.cdk.integrations.base.IntegrationRunner;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedSource;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
-import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.base.ssh.SshWrappedSource;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.protocol.models.CommonField;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -46,6 +46,8 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   private static final String SERVICE_NAME = "service_name";
   private static final String UNRECOGNIZED = "Unrecognized";
   private static final String CONNECTION_DATA = "connection_data";
+
+  private static final String ORACLE_JDBC_PARAMETER_DELIMITER = ";";
 
   enum Protocol {
     TCP,
@@ -115,7 +117,7 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
     }
 
     if (!additionalParameters.isEmpty()) {
-      final String connectionParams = String.join(getJdbcParameterDelimiter(), additionalParameters);
+      final String connectionParams = String.join(ORACLE_JDBC_PARAMETER_DELIMITER, additionalParameters);
       configBuilder.put(JdbcUtils.CONNECTION_PROPERTIES_KEY, connectionParams);
     }
 
@@ -191,11 +193,6 @@ public class OracleSource extends AbstractJdbcSource<JDBCType> implements Source
   @Override
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of();
-  }
-
-  @Override
-  protected String getJdbcParameterDelimiter() {
-    return ";";
   }
 
   @Override

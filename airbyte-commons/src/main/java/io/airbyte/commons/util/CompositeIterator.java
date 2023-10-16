@@ -6,9 +6,14 @@ package io.airbyte.commons.util;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.AbstractIterator;
+import io.airbyte.commons.stream.AirbyteStreamStatusHolder;
+import io.airbyte.commons.stream.StreamStatusUtils;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,16 +41,20 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
 
   private static final Logger LOGGER = LoggerFactory.getLogger(CompositeIterator.class);
 
+  private final Optional<Consumer<AirbyteStreamStatusHolder>> airbyteStreamStatusConsumer;
   private final List<AutoCloseableIterator<T>> iterators;
 
   private int i;
+  private boolean firstRead;
   private boolean hasClosed;
 
-  CompositeIterator(final List<AutoCloseableIterator<T>> iterators) {
+  CompositeIterator(final List<AutoCloseableIterator<T>> iterators, final Consumer<AirbyteStreamStatusHolder> airbyteStreamStatusConsumer) {
     Preconditions.checkNotNull(iterators);
 
+    this.airbyteStreamStatusConsumer = Optional.ofNullable(airbyteStreamStatusConsumer);
     this.iterators = iterators;
     this.i = 0;
+    this.firstRead = true;
     this.hasClosed = false;
   }
 
@@ -63,22 +72,43 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
     while (!currentIterator().hasNext()) {
       try {
         currentIterator().close();
+        StreamStatusUtils.emitCompleteStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
       } catch (final Exception e) {
+        StreamStatusUtils.emitIncompleteStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
         throw new RuntimeException(e);
       }
 
       if (i + 1 < iterators.size()) {
         i++;
+        StreamStatusUtils.emitStartStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
+        firstRead = true;
       } else {
         return endOfData();
       }
     }
 
-    return currentIterator().next();
+    try {
+      if (isFirstStream()) {
+        StreamStatusUtils.emitStartStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
+      }
+      return currentIterator().next();
+    } catch (final RuntimeException e) {
+      StreamStatusUtils.emitIncompleteStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
+      throw e;
+    } finally {
+      if (firstRead) {
+        StreamStatusUtils.emitRunningStreamStatus(getAirbyteStream(), airbyteStreamStatusConsumer);
+        firstRead = false;
+      }
+    }
   }
 
   private AutoCloseableIterator<T> currentIterator() {
     return iterators.get(i);
+  }
+
+  private boolean isFirstStream() {
+    return i == 0 && firstRead;
   }
 
   @Override
@@ -97,6 +127,15 @@ public final class CompositeIterator<T> extends AbstractIterator<T> implements A
 
     if (!exceptions.isEmpty()) {
       throw exceptions.get(0);
+    }
+  }
+
+  @Override
+  public Optional<AirbyteStreamNameNamespacePair> getAirbyteStream() {
+    if (currentIterator() instanceof AirbyteStreamAware) {
+      return AirbyteStreamAware.class.cast(currentIterator()).getAirbyteStream();
+    } else {
+      return Optional.empty();
     }
   }
 

@@ -1,0 +1,24 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: f636c3c6-4077-45ac-b109-19fc62a283c1
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-primetric
+  githubIssueLabel: source-primetric
+  icon: primetric.svg
+  license: MIT
+  name: Primetric
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/primetric
+  tags:
+    - language:python
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

@@ -34,6 +34,11 @@ COPY dbt-project-template/ ./dbt-template/
 COPY dbt-project-template-oracle/* ./dbt-template/
 
 WORKDIR /airbyte/base_python_structs
+
+# workaround for https://github.com/yaml/pyyaml/issues/601
+# this should be fixed in the airbyte/base-airbyte-protocol-python image
+RUN pip install "Cython<3.0" "pyyaml==5.4" --no-build-isolation
+
 RUN pip install .
 
 WORKDIR /airbyte/normalization_code
@@ -42,6 +47,11 @@ RUN pip install .
 RUN pip install dbt-oracle==0.4.3
 
 WORKDIR /airbyte/normalization_code/dbt-template/
+
+# Pin MarkupSafe to 2.0.1 per this issue for dbt
+# https://github.com/dbt-labs/dbt-core/issues/4745#issuecomment-1044165591
+RUN pip install --force-reinstall MarkupSafe==2.0.1
+
 # Download external dbt dependencies
 RUN dbt deps
 

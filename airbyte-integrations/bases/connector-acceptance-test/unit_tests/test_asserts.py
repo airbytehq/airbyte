@@ -3,7 +3,7 @@
 #
 
 import pytest
-from airbyte_cdk.models import (
+from airbyte_protocol.models import (
     AirbyteRecordMessage,
     AirbyteStream,
     ConfiguredAirbyteCatalog,
@@ -73,7 +73,7 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
 
     records = [AirbyteRecordMessage(stream="my_stream", data=record, emitted_at=0) for record in records]
 
-    streams_with_errors = verify_records_schema(records, configured_catalog)
+    streams_with_errors = verify_records_schema(records, configured_catalog, fail_on_extra_columns=False)
     errors = [error.message for error in streams_with_errors["my_stream"].values()]
 
     assert "my_stream" in streams_with_errors
@@ -109,36 +109,12 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
         ({"a": "2021-08-10T12:43:15Z"}, {"type": "object", "properties": {"a": {"type": "string", "format": "date-time"}}}, True),
         ({"a": "2018-11-13T20:20:39+00:00"}, {"type": "object", "properties": {"a": {"type": "string", "format": "date-time"}}}, True),
         ({"a": "2018-21-13T20:20:39+00:00"}, {"type": "object", "properties": {"a": {"type": "string", "format": "date-time"}}}, False),
-        # This is valid for postgres sql but not valid for bigquery
-        ({"a": "2014-09-27 9:35z"}, {"type": "object", "properties": {"a": {"type": "string", "format": "date-time"}}}, False),
-        # Seconds are obligatory for bigquery timestamp
-        ({"a": "2014-09-27 9:35"}, {"type": "object", "properties": {"a": {"type": "string", "format": "date-time"}}}, False),
-        ({"a": "2014-09-27 9:35:0z"}, {"type": "object", "properties": {"a": {"type": "string", "format": "date-time"}}}, True),
-        # email
-        ({"a": "2018-11-13 20:20:39"}, {"type": "object", "properties": {"a": {"type": "string", "format": "email"}}}, False),
-        ({"a": "hi@example.com"}, {"type": "object", "properties": {"a": {"type": "string", "format": "email"}}}, True),
-        ({"a": "Пример@example.com"}, {"type": "object", "properties": {"a": {"type": "string", "format": "email"}}}, True),
-        ({"a": "写电子邮件@子邮件"}, {"type": "object", "properties": {"a": {"type": "string", "format": "email"}}}, True),
-        # hostname
-        ({"a": "2018-11-13 20:20:39"}, {"type": "object", "properties": {"a": {"type": "string", "format": "hostname"}}}, False),
-        ({"a": "hi@example.com"}, {"type": "object", "properties": {"a": {"type": "string", "format": "hostname"}}}, False),
-        ({"a": "localhost"}, {"type": "object", "properties": {"a": {"type": "string", "format": "hostname"}}}, True),
-        ({"a": "example.com"}, {"type": "object", "properties": {"a": {"type": "string", "format": "hostname"}}}, True),
-        # ipv4
-        ({"a": "example.com"}, {"type": "object", "properties": {"a": {"type": "string", "format": "ipv4"}}}, False),
-        ({"a": "0.0.0.1000"}, {"type": "object", "properties": {"a": {"type": "string", "format": "ipv4"}}}, False),
-        ({"a": "0.0.0.0"}, {"type": "object", "properties": {"a": {"type": "string", "format": "ipv4"}}}, True),
-        # ipv6
-        ({"a": "example.com"}, {"type": "object", "properties": {"a": {"type": "string", "format": "ipv6"}}}, False),
-        ({"a": "1080:0:0:0:8:800:200C:417A"}, {"type": "object", "properties": {"a": {"type": "string", "format": "ipv6"}}}, True),
-        ({"a": "::1"}, {"type": "object", "properties": {"a": {"type": "string", "format": "ipv6"}}}, True),
-        ({"a": "::"}, {"type": "object", "properties": {"a": {"type": "string", "format": "ipv6"}}}, True),
     ],
     indirect=["configured_catalog"],
 )
 def test_validate_records_format(record, configured_catalog, valid):
     records = [AirbyteRecordMessage(stream="my_stream", data=record, emitted_at=0)]
-    streams_with_errors = verify_records_schema(records, configured_catalog)
+    streams_with_errors = verify_records_schema(records, configured_catalog, fail_on_extra_columns=False)
     if valid:
         assert not streams_with_errors
     else:

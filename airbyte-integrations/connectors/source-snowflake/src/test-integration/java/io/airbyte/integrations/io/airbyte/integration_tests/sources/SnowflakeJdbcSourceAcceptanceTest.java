@@ -13,15 +13,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
+import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -257,8 +257,8 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertFalse(actual.getStreams().isEmpty());
 
     var streams = actual.getStreams().stream()
-            .filter(s -> !s.getNamespace().equals(SCHEMA_NAME))
-                .collect(Collectors.toList());
+        .filter(s -> !s.getNamespace().equals(SCHEMA_NAME))
+        .collect(Collectors.toList());
 
     assertTrue(streams.isEmpty());
 
@@ -272,4 +272,5 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
     assertTrue(streams.isEmpty());
   }
+
 }

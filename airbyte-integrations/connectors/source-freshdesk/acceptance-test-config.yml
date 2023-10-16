@@ -14,8 +14,9 @@ acceptance_tests:
         status: "failed"
   discovery:
     tests:
-      - config_path: "secrets/config.json"
-        # please remove the backward_capability checks bypass, once updated to the newer version
+      - config_path:
+          "secrets/config.json"
+          # please remove the backward_capability checks bypass, once updated to the newer version
         backward_compatibility_tests_config:
           disable_for_version: "1.0.0"
   basic_read:
@@ -32,6 +33,7 @@ acceptance_tests:
             bypass_reason: "no records"
           - name: products
             bypass_reason: "no records"
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"

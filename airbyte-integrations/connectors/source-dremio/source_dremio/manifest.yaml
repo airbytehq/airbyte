@@ -1,37 +1,36 @@
-version: "0.1.0"
+version: "0.29.0"
 
 definitions:
   selector:
     extractor:
-      field_pointer: []
+      field_path: []
   requester:
     url_base: "{{ config['base_url']}}/api/v3"
     http_method: "GET"
-    request_options_provider:
-      request_body_json:
-        Content-Type: "application/json"
+    request_body_json:
+      Content-Type: "application/json"
     authenticator:
       type: ApiKeyAuthenticator
       header: Authorization
       api_token: "_dremio{{ config['api_key'] }}"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
+      $ref: "#/definitions/requester"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   catalogs_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "catalogs"
       path: "/catalog"
 
 streams:
-  - "*ref(definitions.catalogs_stream)"
+  - "#/definitions/catalogs_stream"
 
 check:
   type: CheckStream

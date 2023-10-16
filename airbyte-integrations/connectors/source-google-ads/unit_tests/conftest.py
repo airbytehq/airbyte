@@ -3,10 +3,10 @@
 #
 
 import pytest
-from source_google_ads.models import Customer
+from source_google_ads.models import CustomerModel
 
 
-@pytest.fixture(scope="session", name="config")
+@pytest.fixture(name="config")
 def test_config():
     config = {
         "credentials": {
@@ -52,4 +52,4 @@ def mock_oauth_call(requests_mock):
 
 @pytest.fixture
 def customers(config):
-    return [Customer(id=_id, time_zone="local", is_manager_account=False) for _id in config["customer_id"].split(",")]
+    return [CustomerModel(id=_id, time_zone="local", is_manager_account=False) for _id in config["customer_id"].split(",")]

@@ -27,7 +27,7 @@ These are non-exhaustive use cases `octavia` can be convenient for:
 - Integrating the Airbyte configuration deployment in a dev ops tooling stack: Helm, Ansible etc.
 - Streamlining the deployment of Airbyte configurations to multiple Airbyte instance.
 
-Feel free to share your use cases with the community in [#octavia-cli](https://airbytehq.slack.com/archives/C02RRUG9CP5) or on [Discourse](https://discuss.airbyte.io/).
+Feel free to share your use cases with the community in [#octavia-cli](https://airbytehq.slack.com/archives/C02RRUG9CP5) or on [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 ## Table of content
 
@@ -104,7 +104,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.40.32
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.50.0
 ```
 
 ### Using `docker-compose`
@@ -178,7 +178,7 @@ headers:
 | ----------------------------------------- | ------------------------------------------------------------------------------------------ |
 | **`octavia init`**                        | Initialize required directories for the project.                                           |
 | **`octavia list connectors sources`**     | List all sources connectors available on the remote Airbyte instance.                      |
-| **`octavia list connectors destination`** | List all destinations connectors available on the remote Airbyte instance.                 |
+| **`octavia list connectors destinations`** | List all destinations connectors available on the remote Airbyte instance.                 |
 | **`octavia list workspace sources`**      | List existing sources in current the Airbyte workspace.                                    |
 | **`octavia list workspace destinations`** | List existing destinations in the current Airbyte workspace.                               |
 | **`octavia list workspace connections`**  | List existing connections in the current Airbyte workspace.                                |
@@ -686,7 +686,7 @@ $ octavia apply
 
 ### Developing locally
 
-0. Build the project locally (from the root of Airbyte's repo): `SUB_BUILD=OCTAVIA_CLI ./gradlew build # from the root directory of the repo`.
+0. Build the project locally (from the root of Airbyte's repo): `./gradlew :octavia-cli:build # from the root directory of the repo`.
 1. Install Python 3.8.12. We suggest doing it through `pyenv`.
 2. Create a virtualenv: `python -m venv .venv`.
 3. Activate the virtualenv: `source .venv/bin/activate`.
@@ -710,9 +710,9 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 ## Changelog
 
 | Version | Date       | Description                                                                           | PR                                                          |
-| ------- | ---------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+|---------| ---------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | 0.41.0  | 2022-10-13 | Use Basic Authentication for making API requests                                      | [#17982](https://github.com/airbytehq/airbyte/pull/17982)   |
-| 0.40.32 | 2022-08-10 | Enable cron and basic scheduling                                                      | [#15253](https://github.com/airbytehq/airbyte/pull/15253)   |
+| 0.40.0  | 2022-08-10 | Enable cron and basic scheduling                                                      | [#15253](https://github.com/airbytehq/airbyte/pull/15253)   |
 | 0.39.33 | 2022-07-05 | Add `octavia import all` command                                                      | [#14374](https://github.com/airbytehq/airbyte/pull/14374)   |
 | 0.39.32 | 2022-06-30 | Create import command to import and manage existing Airbyte resource from octavia-cli | [#14137](https://github.com/airbytehq/airbyte/pull/14137)   |
 | 0.39.27 | 2022-06-24 | Create get command to retrieve resources JSON representation                          | [#13254](https://github.com/airbytehq/airbyte/pull/13254)   |

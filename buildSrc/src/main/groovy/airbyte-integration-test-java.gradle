@@ -14,15 +14,18 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
                 }
             }
         }
-        project.test.dependsOn('compileIntegrationTestJavaJava')
+        project.tasks.named('check').configure {
+            dependsOn project.tasks.matching { it.name == 'compileIntegrationTestJavaJava' }
+            dependsOn project.tasks.matching { it.name == 'spotbugsIntegrationTestJava' }
+        }
 
         project.configurations {
             integrationTestJavaImplementation.extendsFrom testImplementation
             integrationTestJavaRuntimeOnly.extendsFrom testRuntimeOnly
         }
 
-        project.task('integrationTestJava', type: Test) {
-            testClassesDirs += project.sourceSets.integrationTestJava.output.classesDirs
+        def integrationTestJava = project.tasks.register('integrationTestJava', Test) {
+            testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
             classpath += project.sourceSets.integrationTestJava.runtimeClasspath
 
             useJUnitPlatform {
@@ -39,24 +42,17 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
 
             outputs.upToDateWhen { false }
 
-            if(project.hasProperty('airbyteDocker')) {
-                dependsOn project.airbyteDocker
-            }
+            maxParallelForks = project.test.maxParallelForks
+            maxHeapSize = project.test.maxHeapSize
 
-            maxHeapSize = '3g'
-
-            mustRunAfter project.test
-
-            // This is needed to make the destination-snowflake tests succeed - https://github.com/snowflakedb/snowflake-jdbc/issues/589#issuecomment-983944767
-            jvmArgs = ["--add-opens=java.base/java.nio=ALL-UNNAMED"]
+            systemProperties = [
+                // Allow tests to set @Execution(ExecutionMode.CONCURRENT)
+                'junit.jupiter.execution.parallel.enabled': 'true'
+            ]
         }
-
-        // make sure we create the integrationTest task once in case a standard source test was already initialized
-        if(!project.hasProperty('integrationTest')) {
-            project.task('integrationTest')
+        integrationTestJava.configure {
+            mustRunAfter project.tasks.named('check')
+            dependsOn project.tasks.matching { it.name == 'assemble' }
         }
-
-        project.integrationTest.dependsOn(project.integrationTestJava)
-        project.integrationTest.dependsOn(project.spotbugsMain)
     }
 }

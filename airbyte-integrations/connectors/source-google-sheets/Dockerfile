@@ -1,4 +1,4 @@
-FROM python:3.9.11-alpine3.15 as base
+FROM python:3.9.16-alpine3.18 as base
 
 # build and load all requirements
 FROM base as builder
@@ -25,14 +25,17 @@ COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
 
 # bash is installed for more convenient debugging.
-RUN apk --no-cache add bash
+# Include socat binary in the connector image
+RUN apk --no-cache add bash socat && \
+    # upgrading openssl due to https://nvd.nist.gov/vuln/detail/CVE-2023-2650
+    apk upgrade
 
 # copy payload code only
 COPY main.py ./
-COPY google_sheets_source ./google_sheets_source
+COPY source_google_sheets ./source_google_sheets
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.2.31
+LABEL io.airbyte.version=0.3.10
 LABEL io.airbyte.name=airbyte/source-google-sheets

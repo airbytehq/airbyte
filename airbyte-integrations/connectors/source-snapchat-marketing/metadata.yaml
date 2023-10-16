@@ -1,0 +1,28 @@
+data:
+  allowedHosts:
+    hosts:
+      - accounts.snapchat.com
+      - adsapi.snapchat.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
+  dockerImageTag: 0.3.0
+  dockerRepository: airbyte/source-snapchat-marketing
+  githubIssueLabel: source-snapchat-marketing
+  icon: snapchat.svg
+  license: MIT
+  name: Snapchat Marketing
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
+  tags:
+    - language:python
+  ab_internal:
+    sl: 200
+    ql: 400
+  supportLevel: certified
+metadataSpecVersion: "1.0"

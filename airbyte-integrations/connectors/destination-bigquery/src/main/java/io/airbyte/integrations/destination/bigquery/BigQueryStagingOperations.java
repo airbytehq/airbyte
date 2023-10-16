@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.bigquery;
 
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.TableId;
-import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import java.util.List;
 
 /**
@@ -14,7 +14,7 @@ import java.util.List;
  * {@link io.airbyte.integrations.destination.s3.BlobStorageOperations}.
  *
  * <p>
- * Similar interface to {@link io.airbyte.integrations.destination.jdbc.SqlOperations}
+ * Similar interface to {@link io.airbyte.cdk.integrations.destination.jdbc.SqlOperations}
  * </p>
  */
 public interface BigQueryStagingOperations {
@@ -55,24 +55,23 @@ public interface BigQueryStagingOperations {
    * @param stream Name of stream
    * @param tableId Name of destination's target table
    * @param schema Schema of the data being synced
-   * @param stagedFiles collection of staged files
+   * @param stagedFileName name of staged file
    * @throws Exception
    */
   void copyIntoTableFromStage(final String datasetId,
-                                    final String stream,
-                                    final TableId tableId,
-                                    final Schema schema,
-                                    final List<String> stagedFiles)
+                              final String stream,
+                              final TableId tableId,
+                              final Schema schema,
+                              final String stagedFileName)
       throws Exception;
 
   /**
-   * This method was primarily used to clean up staging area at the end of a sync, however, since we're
-   * no longer trying to commit remaining staged files at the end of a sync this is super-ceded by
-   * #dropStageIfExists
+   * This method was primarily used to clean up staging area at the end of a sync, however, since
+   * we're no longer trying to commit remaining staged files at the end of a sync this is super-ceded
+   * by #dropStageIfExists
    */
   @Deprecated
   void cleanUpStage(final String datasetId, final String stream, final List<String> stagedFiles);
-
 
   void dropTableIfExists(final String datasetId, final TableId tableId);
 

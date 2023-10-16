@@ -81,7 +81,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integrat
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 First install test dependencies into your virtual environment:
 ```
-pip install .[tests]
+pip install .'[tests]'
 ```
 ### Unit Tests
 To run unit tests locally, from the connector directory run:
@@ -129,4 +129,4 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
 1. Create a Pull Request.
 1. Pat yourself on the back for being an awesome contributor.
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master. 

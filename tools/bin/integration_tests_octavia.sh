@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
-
+. run-ab-platform.sh -d # download the platform docker files necessary to run docker compose
 . tools/lib/lib.sh
 
 assert_root
@@ -19,4 +19,4 @@ echo "Waiting for services to begin"
 while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8000/api/v1/health)" != "200" ]]; do echo "Waiting for docker deployment.."; sleep 5; done
 
 echo "Running integration tests via gradle"
-SUB_BUILD=OCTAVIA_CLI ./gradlew :octavia-cli:integrationTest --rerun-tasks --scan
+./gradlew :octavia-cli:integrationTest --rerun-tasks --scan

@@ -85,5 +85,6 @@ class Source(
                 return []
 
     # can be overridden to change an input catalog
-    def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog.parse_obj(self._read_json_file(catalog_path))
+    @classmethod
+    def read_catalog(cls, catalog_path: str) -> ConfiguredAirbyteCatalog:
+        return ConfiguredAirbyteCatalog.parse_obj(cls._read_json_file(catalog_path))

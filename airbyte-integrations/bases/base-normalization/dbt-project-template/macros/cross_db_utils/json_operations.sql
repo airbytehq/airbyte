@@ -66,7 +66,7 @@
 {%- endmacro %}
 
 {% macro redshift__format_json_path(json_path_list) -%}
-    {%- set quote = '"' if redshift_super_type() else "'" -%}
+    {%- set quote = '"' -%}
     {%- set str_list = [] -%}
     {%- for json_path in json_path_list -%}
         {%- if str_list.append(json_path.replace(quote, quote + quote)) -%} {%- endif -%}
@@ -151,11 +151,7 @@
     {%- if from_table|string() != '' -%}
     {%- set json_column = from_table|string() + "." + json_column|string() -%}
     {%- endif -%}
-    {%- if redshift_super_type() -%}
-        case when {{ json_column }}.{{ format_json_path(json_path_list) }} != '' then {{ json_column }}.{{ format_json_path(json_path_list) }} end
-    {%- else -%}
-        case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
-    {%- endif -%}
+    case when {{ json_column }}.{{ format_json_path(json_path_list) }} != '' then {{ json_column }}.{{ format_json_path(json_path_list) }} end
 {%- endmacro %}
 
 {% macro snowflake__json_extract(from_table, json_column, json_path_list, normalized_json_path) -%}
@@ -221,11 +217,7 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
-    {%- if redshift_super_type() -%}
     case when {{ json_column }}.{{ format_json_path(json_path_list) }} != '' then {{ json_column }}.{{ format_json_path(json_path_list) }} end
-    {%- else -%}
-    case when json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) != '' then json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true) end
-    {%- endif -%}
 {%- endmacro %}
 
 {% macro snowflake__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
@@ -279,11 +271,7 @@
 {%- endmacro %}
 
 {% macro redshift__json_extract_array(json_column, json_path_list, normalized_json_path) -%}
-    {%- if redshift_super_type() -%}
     {{ json_column }}.{{ format_json_path(json_path_list) }}
-    {%- else -%}
-    json_extract_path_text({{ json_column }}, {{ format_json_path(json_path_list) }}, true)
-    {%- endif -%}
 {%- endmacro %}
 
 {% macro snowflake__json_extract_array(json_column, json_path_list, normalized_json_path) -%}

@@ -14,47 +14,15 @@ from source_google_analytics_data_api.source import GoogleAnalyticsDataApiBaseSt
 
 from .utils import read_incremental
 
-json_credentials = """
-{
-    "type": "service_account",
-    "project_id": "unittest-project-id",
-    "private_key_id": "9qf98e52oda52g5ne23al6evnf13649c2u077162c",
-    "private_key": "",
-    "client_email": "google-analytics-access@unittest-project-id.iam.gserviceaccount.com",
-    "client_id": "213243192021686092537",
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-analytics-access%40unittest-project-id.iam.gserviceaccount.com"
-}
-"""
-
 
 @pytest.fixture
-def patch_base_class(mocker):
+def patch_base_class(mocker, config):
     # Mock abstract methods to enable instantiating abstract class
     mocker.patch.object(GoogleAnalyticsDataApiBaseStream, "path", f"{random.randint(100000000, 999999999)}:runReport")
     mocker.patch.object(GoogleAnalyticsDataApiBaseStream, "primary_key", "test_primary_key")
     mocker.patch.object(GoogleAnalyticsDataApiBaseStream, "__abstractmethods__", set())
 
-    return {
-        "config": {
-            "property_id": "496180525",
-            "credentials": {"auth_type": "Service", "credentials_json": json_credentials},
-            "dimensions": ["date", "deviceCategory", "operatingSystem", "browser"],
-            "metrics": [
-                "totalUsers",
-                "newUsers",
-                "sessions",
-                "sessionsPerUser",
-                "averageSessionDuration",
-                "screenPageViews",
-                "screenPageViewsPerSession",
-                "bounceRate",
-            ],
-            "date_ranges_start_date": datetime.datetime.strftime((datetime.datetime.now() - datetime.timedelta(days=1)), "%Y-%m-%d"),
-        }
-    }
+    return {"config": config}
 
 
 def test_request_params(patch_base_class):
@@ -87,31 +55,38 @@ def test_request_body_json(patch_base_class):
             {"name": "browser"},
         ],
         "dateRanges": [request_body_params["stream_slice"]],
+        "returnPropertyQuota": True,
+        "offset": str(0),
+        "limit": "100000",
     }
 
-    request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(**request_body_params)
+    request_body_json = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"]).request_body_json(
+        **request_body_params
+    )
     assert request_body_json == expected_body_json
+
+
+def test_changed_page_size(patch_base_class):
+    request_body_params = {"stream_state": MagicMock(), "stream_slice": MagicMock(), "next_page_token": None}
+    stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
+    stream.page_size = 100
+    request_body_json = stream.request_body_json(**request_body_params)
+    assert request_body_json["limit"] == "100"
 
 
 def test_next_page_token_equal_chunk(patch_base_class):
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     response = MagicMock()
     response.json.side_effect = [
-        {"limit": 100000, "offset": 0, "rowCount": 200000},
-        {"limit": 100000, "offset": 100000, "rowCount": 200000},
-        {"limit": 100000, "offset": 200000, "rowCount": 200000},
+        {"rowCount": 300000},
+        {"rowCount": 300000},
+        {"rowCount": 300000},
     ]
     inputs = {"response": response}
 
     expected_tokens = [
-        {
-            "limit": 100000,
-            "offset": 100000,
-        },
-        {
-            "limit": 100000,
-            "offset": 200000,
-        },
+        {"offset": 100000},
+        {"offset": 200000},
         None,
     ]
 
@@ -123,26 +98,19 @@ def test_next_page_token(patch_base_class):
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=MagicMock(), config=patch_base_class["config"])
     response = MagicMock()
     response.json.side_effect = [
-        {"limit": 100000, "offset": 0, "rowCount": 250000},
-        {"limit": 100000, "offset": 100000, "rowCount": 250000},
-        {"limit": 100000, "offset": 200000, "rowCount": 250000},
-        {"limit": 100000, "offset": 300000, "rowCount": 250000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
+        {"rowCount": 450000},
     ]
     inputs = {"response": response}
 
     expected_tokens = [
-        {
-            "limit": 100000,
-            "offset": 100000,
-        },
-        {
-            "limit": 100000,
-            "offset": 200000,
-        },
-        {
-            "limit": 100000,
-            "offset": 300000,
-        },
+        {"offset": 100000},
+        {"offset": 200000},
+        {"offset": 300000},
+        {"offset": 400000},
         None,
     ]
 
@@ -159,7 +127,7 @@ def test_parse_response(patch_base_class):
             {"name": "totalUsers", "type": "TYPE_INTEGER"},
             {"name": "newUsers", "type": "TYPE_INTEGER"},
             {"name": "sessions", "type": "TYPE_INTEGER"},
-            {"name": "sessionsPerUser", "type": "TYPE_FLOAT"},
+            {"name": "sessionsPerUser:parameter", "type": "TYPE_FLOAT"},
             {"name": "averageSessionDuration", "type": "TYPE_SECONDS"},
             {"name": "screenPageViews", "type": "TYPE_INTEGER"},
             {"name": "screenPageViewsPerSession", "type": "TYPE_FLOAT"},
@@ -200,7 +168,7 @@ def test_parse_response(patch_base_class):
 
     expected_data = [
         {
-            "property_id": "496180525",
+            "property_id": "108176369",
             "date": "20220731",
             "deviceCategory": "desktop",
             "operatingSystem": "Macintosh",
@@ -208,14 +176,14 @@ def test_parse_response(patch_base_class):
             "totalUsers": 344,
             "newUsers": 169,
             "sessions": 420,
-            "sessionsPerUser": 1.2209302325581395,
+            "sessionsPerUser:parameter": 1.2209302325581395,
             "averageSessionDuration": 194.76313766428572,
             "screenPageViews": 614,
             "screenPageViewsPerSession": 1.4619047619047618,
             "bounceRate": 0.47857142857142859,
         },
         {
-            "property_id": "496180525",
+            "property_id": "108176369",
             "date": "20220731",
             "deviceCategory": "desktop",
             "operatingSystem": "Windows",
@@ -223,7 +191,7 @@ def test_parse_response(patch_base_class):
             "totalUsers": 322,
             "newUsers": 211,
             "sessions": 387,
-            "sessionsPerUser": 1.2018633540372672,
+            "sessionsPerUser:parameter": 1.2018633540372672,
             "averageSessionDuration": 249.21595714211884,
             "screenPageViews": 669,
             "screenPageViewsPerSession": 1.7286821705426356,
@@ -235,8 +203,6 @@ def test_parse_response(patch_base_class):
     response.json.return_value = response_data
     inputs = {"response": response, "stream_state": {}}
     actual_records: Mapping[str, Any] = list(stream.parse_response(**inputs))
-    for record in actual_records:
-        del record["uuid"]
     assert actual_records == expected_data
 
 
@@ -258,7 +224,7 @@ def test_http_method(patch_base_class):
     [
         (HTTPStatus.OK, False),
         (HTTPStatus.BAD_REQUEST, False),
-        (HTTPStatus.TOO_MANY_REQUESTS, False),
+        (HTTPStatus.TOO_MANY_REQUESTS, True),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
     ],
 )
@@ -278,7 +244,7 @@ def test_backoff_time(patch_base_class):
 
 @freeze_time("2023-01-01 00:00:00")
 def test_stream_slices():
-    config = {"date_ranges_start_date": datetime.date(2022, 12, 29), "window_in_days": 1}
+    config = {"date_ranges_start_date": datetime.date(2022, 12, 29), "window_in_days": 1, "dimensions": ["date"]}
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
     slices = list(stream.stream_slices(sync_mode=None))
     assert slices == [
@@ -288,7 +254,7 @@ def test_stream_slices():
         {"startDate": "2023-01-01", "endDate": "2023-01-01"},
     ]
 
-    config = {"date_ranges_start_date": datetime.date(2022, 12, 28), "window_in_days": 2}
+    config = {"date_ranges_start_date": datetime.date(2022, 12, 28), "window_in_days": 2, "dimensions": ["date"]}
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
     slices = list(stream.stream_slices(sync_mode=None))
     assert slices == [
@@ -297,7 +263,7 @@ def test_stream_slices():
         {"startDate": "2023-01-01", "endDate": "2023-01-01"},
     ]
 
-    config = {"date_ranges_start_date": datetime.date(2022, 12, 20), "window_in_days": 5}
+    config = {"date_ranges_start_date": datetime.date(2022, 12, 20), "window_in_days": 5, "dimensions": ["date"]}
     stream = GoogleAnalyticsDataApiBaseStream(authenticator=None, config=config)
     slices = list(stream.stream_slices(sync_mode=None))
     assert slices == [
@@ -309,10 +275,11 @@ def test_stream_slices():
 
 def test_read_incremental(requests_mock):
     config = {
+        "property_ids": [123],
         "property_id": 123,
-        "date_ranges_start_date": datetime.date(2022, 12, 29),
+        "date_ranges_start_date": datetime.date(2022, 1, 6),
         "window_in_days": 1,
-        "dimensions": ["date"],
+        "dimensions": ["yearWeek"],
         "metrics": ["totalUsers"],
     }
 
@@ -321,41 +288,54 @@ def test_read_incremental(requests_mock):
 
     responses = [
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20221229"}], "metricValues": [{"value": "100"}]}],
-            "rowCount": 1
+            "rows": [{"dimensionValues": [{"value": "202201"}], "metricValues": [{"value": "100"}]}],
+            "rowCount": 1,
         },
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20221230"}], "metricValues": [{"value": "110"}]}],
-            "rowCount": 1
+            "rows": [{"dimensionValues": [{"value": "202201"}], "metricValues": [{"value": "110"}]}],
+            "rowCount": 1,
         },
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20221231"}], "metricValues": [{"value": "120"}]}],
-            "rowCount": 1
+            "rows": [{"dimensionValues": [{"value": "202201"}], "metricValues": [{"value": "120"}]}],
+            "rowCount": 1,
         },
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20230101"}], "metricValues": [{"value": "130"}]}],
-            "rowCount": 1
+            "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "130"}]}],
+            "rowCount": 1,
+        },
+        # 2-nd incremental read
+        {
+            "dimensionHeaders": [{"name": "yearWeek"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "112"}]}],
+            "rowCount": 1,
         },
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20230101"}], "metricValues": [{"value": "140"}]}],
-            "rowCount": 1
+            "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "125"}]}],
+            "rowCount": 1,
         },
         {
-            "dimensionHeaders": [{"name": "date"}],
+            "dimensionHeaders": [{"name": "yearWeek"}],
             "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
-            "rows": [{"dimensionValues": [{"value": "20230102"}], "metricValues": [{"value": "150"}]}],
-            "rowCount": 1
-        }
+            "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "140"}]}],
+            "rowCount": 1,
+        },
+        {
+            "dimensionHeaders": [{"name": "yearWeek"}],
+            "metricHeaders": [{"name": "totalUsers", "type": "TYPE_INTEGER"}],
+            "rows": [{"dimensionValues": [{"value": "202202"}], "metricValues": [{"value": "150"}]}],
+            "rowCount": 1,
+        },
     ]
 
     requests_mock.register_uri(
@@ -364,28 +344,23 @@ def test_read_incremental(requests_mock):
         json=lambda request, context: responses.pop(0),
     )
 
-    with freeze_time("2023-01-01 12:00:00"):
+    with freeze_time("2022-01-09 12:00:00"):
         records = list(read_incremental(stream, stream_state))
-
-    for record in records:
-        del record["uuid"]
-
+    print(records)
     assert records == [
-        {"date": "20221229", "totalUsers": 100, "property_id": 123},
-        {"date": "20221230", "totalUsers": 110, "property_id": 123},
-        {"date": "20221231", "totalUsers": 120, "property_id": 123},
-        {"date": "20230101", "totalUsers": 130, "property_id": 123},
+        {"property_id": 123, "yearWeek": "202201", "totalUsers": 100, "startDate": "2022-01-06", "endDate": "2022-01-06"},
+        {"property_id": 123, "yearWeek": "202201", "totalUsers": 110, "startDate": "2022-01-07", "endDate": "2022-01-07"},
+        {"property_id": 123, "yearWeek": "202201", "totalUsers": 120, "startDate": "2022-01-08", "endDate": "2022-01-08"},
+        {"property_id": 123, "yearWeek": "202202", "totalUsers": 130, "startDate": "2022-01-09", "endDate": "2022-01-09"},
     ]
 
-    assert stream_state == {"date": "20230101"}
+    assert stream_state == {"yearWeek": "202202"}
 
-    with freeze_time("2023-01-02 12:00:00"):
+    with freeze_time("2022-01-10 12:00:00"):
         records = list(read_incremental(stream, stream_state))
 
-    for record in records:
-        del record["uuid"]
-
     assert records == [
-        {"date": "20230101", "totalUsers": 140, "property_id": 123},
-        {"date": "20230102", "totalUsers": 150, "property_id": 123},
+        {"property_id": 123, "yearWeek": "202202", "totalUsers": 112, "startDate": "2022-01-08", "endDate": "2022-01-08"},
+        {"property_id": 123, "yearWeek": "202202", "totalUsers": 125, "startDate": "2022-01-09", "endDate": "2022-01-09"},
+        {"property_id": 123, "yearWeek": "202202", "totalUsers": 140, "startDate": "2022-01-10", "endDate": "2022-01-10"},
     ]

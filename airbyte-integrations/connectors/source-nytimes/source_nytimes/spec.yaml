@@ -23,6 +23,7 @@ connectionSpecification:
       examples:
         - 2022-08
         - 1851-01
+      format: date
       order: 1
     end_date:
       type: string
@@ -32,6 +33,7 @@ connectionSpecification:
       examples:
         - 2022-08
         - 1851-01
+      format: date
       order: 2
     period:
       type: integer

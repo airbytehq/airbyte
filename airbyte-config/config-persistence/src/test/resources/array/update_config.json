@@ -1,5 +1,0 @@
-{
-  "username": "charles",
-  "rotating_key_strings": ["key5", "key6", "key7"],
-  "rotating_key_objects": [{ "a": "key8" }, { "a": "key9" }, { "a": "key10" }]
-}

@@ -5,7 +5,7 @@
 import logging
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Any, Dict, List, Optional, Type
+from typing import List, Optional
 
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
@@ -32,6 +32,8 @@ class InsightConfig(BaseModel):
         description="The name value of insight",
     )
 
+    level: str = Field(title="Level", description="Chosen level for API", default="ad", enum=["ad", "adset", "campaign", "account"])
+
     fields: Optional[List[ValidFields]] = Field(
         title="Fields",
         description="A list of chosen fields for fields parameter",
@@ -48,6 +50,17 @@ class InsightConfig(BaseModel):
         title="Action Breakdowns",
         description="A list of chosen action_breakdowns for action_breakdowns",
         default=[],
+    )
+
+    action_report_time: str = Field(
+        title="Action Report Time",
+        description=(
+            "Determines the report time of action stats. For example, if a person saw the ad on Jan 1st "
+            "but converted on Jan 2nd, when you query the API with action_report_time=impression, you see a conversion on Jan 1st. "
+            "When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd."
+        ),
+        default="mixed",
+        enum=["conversion", "impression", "mixed"],
     )
 
     time_increment: Optional[PositiveInt] = Field(
@@ -71,7 +84,7 @@ class InsightConfig(BaseModel):
         title="End Date",
         description=(
             "The date until which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z. "
-            "All data generated between the start date and this date will be replicated. "
+            "All data generated between the start date and this end date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
         pattern=DATE_TIME_PATTERN,
@@ -92,23 +105,38 @@ class ConnectorConfig(BaseConfig):
     class Config:
         title = "Source Facebook Marketing"
 
-        @staticmethod
-        def schema_extra(schema: Dict[str, Any], model: Type["ConnectorConfig"]) -> None:
-            schema["properties"]["end_date"].pop("format")
-
     account_id: str = Field(
-        title="Account ID",
+        title="Ad Account ID",
         order=0,
-        description="The Facebook Ad account ID to use when pulling data from the Facebook Marketing API.",
+        description=(
+            "The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. "
+            "The Ad account ID number is in the account dropdown menu or in your browser's address "
+            'bar of your <a href="https://adsmanager.facebook.com/adsmanager/">Meta Ads Manager</a>. '
+            'See the <a href="https://www.facebook.com/business/help/1492627900875762">docs</a> for more information.'
+        ),
+        pattern="^[0-9]+$",
+        pattern_descriptor="1234567890",
         examples=["111111111111111"],
     )
 
-    start_date: datetime = Field(
-        title="Start Date",
+    access_token: str = Field(
+        title="Access Token",
         order=1,
         description=(
+            "The value of the generated access token. "
+            'From your App’s Dashboard, click on "Marketing API" then "Tools". '
+            'Select permissions <b>ads_management, ads_read, read_insights, business_management</b>. Then click on "Get token". '
+            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information.'
+        ),
+        airbyte_secret=True,
+    )
+
+    start_date: Optional[datetime] = Field(
+        title="Start Date",
+        order=2,
+        description=(
             "The date from which you'd like to replicate data for all incremental streams, "
-            "in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated."
+            "in the format YYYY-MM-DDT00:00:00Z. If not set then all data will be replicated for usual streams and only last 2 years for insight streams."
         ),
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
@@ -116,10 +144,10 @@ class ConnectorConfig(BaseConfig):
 
     end_date: Optional[datetime] = Field(
         title="End Date",
-        order=2,
+        order=3,
         description=(
-            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. "
-            "All data generated between start_date and this date will be replicated. "
+            "The date until which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z."
+            " All data generated between the start date and this end date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
         pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
@@ -127,35 +155,26 @@ class ConnectorConfig(BaseConfig):
         default_factory=lambda: datetime.now(tz=timezone.utc),
     )
 
-    access_token: str = Field(
-        title="Access Token",
-        order=3,
-        description=(
-            "The value of the access token generated. "
-            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information'
-        ),
-        airbyte_secret=True,
-    )
-
     include_deleted: bool = Field(
-        title="Include Deleted",
+        title="Include Deleted Campaigns, Ads, and AdSets",
         order=4,
         default=False,
-        description="Include data from deleted Campaigns, Ads, and AdSets",
+        description="Set to active if you want to include data from deleted Campaigns, Ads, and AdSets.",
     )
 
     fetch_thumbnail_images: bool = Field(
-        title="Fetch Thumbnail Images",
+        title="Fetch Thumbnail Images from Ad Creative",
         order=5,
         default=False,
-        description="In each Ad Creative, fetch the thumbnail_url and store the result in thumbnail_data_url",
+        description="Set to active if you want to fetch the thumbnail_url and store the result in thumbnail_data_url for each Ad Creative.",
     )
 
     custom_insights: Optional[List[InsightConfig]] = Field(
         title="Custom Insights",
         order=6,
         description=(
-            "A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
+            "A list which contains ad statistics entries, each entry must have a name and can contains fields, "
+            'breakdowns or action_breakdowns. Click on "add" to fill this field.'
         ),
     )
 
@@ -164,28 +183,39 @@ class ConnectorConfig(BaseConfig):
         order=7,
         default=100,
         description=(
-            "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
+            "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. "
+            "Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
         ),
     )
 
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Insights Lookback Window",
         order=8,
-        description="The attribution window",
+        description=(
+            "The attribution window. Facebook freezes insight data 28 days after it was generated, "
+            "which means that all data from the past 28 days may have changed since we last emitted it, "
+            "so you can retrieve refreshed insights from the past by setting this parameter. "
+            "If you set a custom lookback window value in Facebook account, please provide the same value here."
+        ),
         maximum=28,
         mininum=1,
         default=28,
     )
 
-    max_batch_size: Optional[PositiveInt] = Field(
-        title="Maximum size of Batched Requests",
-        order=9,
-        description="Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
-        default=50,
-    )
-
     action_breakdowns_allow_empty: bool = Field(
         description="Allows action_breakdowns to be an empty list",
         default=True,
+        airbyte_hidden=True,
+    )
+
+    client_id: Optional[str] = Field(
+        description="The Client Id for your OAuth app",
+        airbyte_secret=True,
+        airbyte_hidden=True,
+    )
+
+    client_secret: Optional[str] = Field(
+        description="The Client Secret for your OAuth app",
+        airbyte_secret=True,
         airbyte_hidden=True,
     )

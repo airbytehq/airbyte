@@ -214,7 +214,7 @@
               },
               "flattening": {
                 "type": "string",
-                "title": "Normalization (Flattening)",
+                "title": "Flattening",
                 "description": "Whether the input json data should be normalized (flattened) in the output CSV. Please refer to docs for details.",
                 "default": "No flattening",
                 "enum": ["No flattening", "Root level flattening"]
@@ -259,6 +259,13 @@
                 "type": "string",
                 "enum": ["JSONL"],
                 "default": "JSONL"
+              },
+              "flattening": {
+                "type": "string",
+                "title": "Flattening",
+                "description": "Whether the input json data should be normalized (flattened) in the output JSON Lines. Please refer to docs for details.",
+                "default": "No flattening",
+                "enum": ["No flattening", "Root level flattening"]
               },
               "compression": {
                 "title": "Compression",

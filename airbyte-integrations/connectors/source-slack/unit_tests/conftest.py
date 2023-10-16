@@ -3,16 +3,19 @@
 #
 
 import copy
+import os
 from typing import MutableMapping
 
 import pytest
+
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 
 @pytest.fixture(autouse=True)
 def conversations_list(requests_mock):
     return requests_mock.register_uri(
         "GET",
-        "https://slack.com/api/conversations.list?limit=100&types=public_channel",
+        "https://slack.com/api/conversations.list?limit=1000&types=public_channel",
         json={
             "channels": [
                 {"name": "advice-data-architecture", "id": 1},

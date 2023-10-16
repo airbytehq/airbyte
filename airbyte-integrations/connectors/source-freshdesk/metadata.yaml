@@ -1,0 +1,27 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*.freshdesk.com"
+  connectorSubtype: api
+  connectorType: source
+  definitionId: ec4b9503-13cb-48ab-a4ab-6ade4be46567
+  dockerImageTag: 3.0.4
+  dockerRepository: airbyte/source-freshdesk
+  githubIssueLabel: source-freshdesk
+  icon: freshdesk.svg
+  license: MIT
+  name: Freshdesk
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  documentationUrl: https://docs.airbyte.com/integrations/sources/freshdesk
+  tags:
+    - language:python
+  ab_internal:
+    sl: 200
+    ql: 400
+  supportLevel: certified
+metadataSpecVersion: "1.0"

@@ -37,6 +37,9 @@
     },
     "shop_url": {
       "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
     }
   },
   "additionalProperties": true,

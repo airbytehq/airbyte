@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "projects": {
@@ -18,6 +18,25 @@
     },
     "id": {
       "type": ["null", "integer"]
+    },
+    "default_branch_protection_defaults": {
+      "type": ["null", "object"],
+      "properties": {
+        "allow_force_push": {
+          "type": ["null", "boolean"]
+        },
+        "allowed_to_merge": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "access_level": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        }
+      }
     },
     "web_url": {
       "type": ["null", "string"]
@@ -106,6 +125,25 @@
     },
     "prevent_forking_outside_group": {
       "type": ["null", "boolean"]
+    },
+    "wiki_access_level": {
+      "type": ["null", "string"]
+    },
+    "marked_for_deletion_on": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "prevent_sharing_groups_outside_hierarchy": {
+      "type": ["null", "boolean"]
+    },
+    "membership_lock": {
+      "type": ["null", "boolean"]
+    },
+    "ip_restriction_ranges": {
+      "type": ["null", "string"]
+    },
+    "shared_runners_setting": {
+      "type": ["null", "string"]
     }
   }
 }

@@ -137,13 +137,3 @@ ij_yaml_sequence_on_new_line = false
 ij_yaml_space_before_colon = false
 ij_yaml_spaces_within_braces = true
 ij_yaml_spaces_within_brackets = true
-
-# don't interfere with prettier default formatting for webapp
-# see https://prettier.io/docs/en/api.html#prettierresolveconfigfilepath--options
-# for options that we're disabling
-[/airbyte-webapp/**]
-end_of_line = unset
-indent_style = unset
-indent_size = unset
-tab_width = unset
-max_line_length = unset

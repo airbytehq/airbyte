@@ -6,6 +6,7 @@ package io.airbyte.integrations.destination.bigquery.uploader.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
+import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.UploadingMethod;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
@@ -20,7 +21,15 @@ import lombok.Getter;
 public class UploaderConfig {
 
   private JsonNode config;
+  /**
+   * Taken directly from the {@link ConfiguredAirbyteStream}, except if the namespace was null, we set
+   * it to the destination default namespace.
+   */
   private ConfiguredAirbyteStream configStream;
+  /**
+   * Parsed directly from {@link #configStream}.
+   */
+  private StreamConfig parsedStream;
   private String targetTableName;
   private String tmpTableName;
   private BigQuery bigQuery;
@@ -32,7 +41,7 @@ public class UploaderConfig {
   }
 
   public UploaderType getUploaderType() {
-    return (isGcsUploadingMode() ? UploaderType.AVRO : UploaderType.STANDARD);
+    return (isGcsUploadingMode() ? UploaderType.CSV : UploaderType.STANDARD);
   }
 
   public BigQueryRecordFormatter getFormatter() {

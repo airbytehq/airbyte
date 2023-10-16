@@ -1,0 +1,24 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3490c201-5d95-4783-b600-eaf07a4c7787
+  dockerImageTag: 0.5.0
+  dockerRepository: airbyte/source-outreach
+  documentationUrl: https://docs.airbyte.com/integrations/sources/outreach
+  githubIssueLabel: source-outreach
+  icon: outreach.svg
+  license: MIT
+  name: Outreach
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

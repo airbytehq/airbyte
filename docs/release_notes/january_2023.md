@@ -4,7 +4,7 @@
 This page includes new features and improvements to the Airbyte Cloud and Airbyte Open Source platforms. 
 
 ### New features
-* Added the [Free Connector Program](https://docs.airbyte.com/cloud/managing-airbyte-cloud#enroll-in-the-free-connector-program) to Airbyte Cloud, allowing you to sync connections with alpha or beta connectors for free.
+* Added the [Free Connector Program](https://docs.airbyte.com/cloud/managing-airbyte-cloud/manage-credits#enroll-in-the-free-connector-program) to Airbyte Cloud, allowing you to sync connections with alpha or beta connectors for free.
 
 ### Improvements
 * Improved Airbyte Open Source by integrating [Docker Compose V2](https://docs.docker.com/compose/compose-v2/). You must have Docker Compose V2 [installed](https://docs.docker.com/compose/install/) before upgrading to Airbyte version 0.42.0 or later. [#19321](https://github.com/airbytehq/airbyte/pull/19321)

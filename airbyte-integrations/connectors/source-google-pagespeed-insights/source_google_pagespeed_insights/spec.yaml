@@ -23,7 +23,7 @@ connectionSpecification:
       type: array
       items:
         type: string
-        pattern: ^(?:origin:)?(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=.]+$
+        pattern: ^(?:origin:)?(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#\[\]@!\$&'\(\)\*\+,;=.]+$
       title: URLs to analyse
       description: >-
         The URLs to retrieve pagespeed information from. The connector will attempt to sync

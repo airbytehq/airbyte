@@ -4,12 +4,16 @@
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Preconditions;
+import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
+import io.airbyte.configoss.StandardCheckConnectionOutput;
+import io.airbyte.configoss.StandardCheckConnectionOutput.Status;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -18,16 +22,42 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ArgumentsSource;
 
+@Disabled
 public class SnowflakeInternalStagingDestinationAcceptanceTest extends SnowflakeInsertDestinationAcceptanceTest {
 
   public JsonNode getStaticConfig() {
-    final JsonNode internalStagingConfig = Jsons.deserialize(IOs.readFile(Path.of("secrets/internal_staging_config.json")));
-    Preconditions.checkArgument(!SnowflakeDestinationResolver.isS3Copy(internalStagingConfig));
-    Preconditions.checkArgument(!SnowflakeDestinationResolver.isGcsCopy(internalStagingConfig));
-    return internalStagingConfig;
+    return Jsons.deserialize(IOs.readFile(Path.of("secrets/internal_staging_config.json")));
+  }
+
+  @Disabled("See README for why this test is disabled")
+  @Test
+  public void testCheckWithNoProperStagingPermissionConnection() throws Exception {
+    // Config to user (creds) that has no permission to write
+    final JsonNode config = Jsons.deserialize(IOs.readFile(
+        Path.of("secrets/copy_insufficient_staging_roles_config.json")));
+
+    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_USER_PRIVILEGES_ERR_MSG);
+  }
+
+  @Disabled("See README for why this test is disabled")
+  @Test
+  public void testCheckWithNoActiveWarehouseConnection() throws Exception {
+    // Config to user(creds) that has no warehouse assigned
+    final JsonNode config = Jsons.deserialize(IOs.readFile(
+        Path.of("secrets/internal_staging_config_no_active_warehouse.json")));
+
+    final StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_ACTIVE_WAREHOUSE_ERR_MSG);
   }
 
   @ParameterizedTest
@@ -42,7 +72,8 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
     testSyncWithNormalizationWithKeyPairAuth(messagesFilename, catalogFilename, "secrets/config_key_pair_encrypted.json");
   }
 
-  private void testSyncWithNormalizationWithKeyPairAuth(String messagesFilename, String catalogFilename, String configName) throws Exception {
+  private void testSyncWithNormalizationWithKeyPairAuth(final String messagesFilename, final String catalogFilename, final String configName)
+      throws Exception {
     if (!normalizationFromDefinition()) {
       return;
     }

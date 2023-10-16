@@ -5,18 +5,21 @@
 package io.airbyte.integrations.destination.snowflake;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.airbyte.commons.jackson.MoreMappers;
+import io.airbyte.cdk.integrations.base.DestinationConfig;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.destination.snowflake.SnowflakeDestination.DestinationType;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -24,43 +27,51 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 public class SnowflakeDestinationTest {
 
-  private static final ObjectMapper mapper = MoreMappers.initMapper();
-
-  @Test
-  @DisplayName("When given S3 credentials should use COPY")
-  public void useS3CopyStrategyTest() {
-    final var stubLoadingMethod = mapper.createObjectNode();
-    stubLoadingMethod.put("s3_bucket_name", "fake-bucket");
-    stubLoadingMethod.put("access_key_id", "test");
-    stubLoadingMethod.put("secret_access_key", "test key");
-
-    final var stubConfig = mapper.createObjectNode();
-    stubConfig.set("loading_method", stubLoadingMethod);
-
-    assertTrue(SnowflakeDestinationResolver.isS3Copy(stubConfig));
+  @BeforeEach
+  public void setup() {
+    DestinationConfig.initialize(Jsons.emptyObject());
   }
 
-  @Test
-  @DisplayName("When given GCS credentials should use COPY")
-  public void useGcsCopyStrategyTest() {
-    final var stubLoadingMethod = mapper.createObjectNode();
-    stubLoadingMethod.put("project_id", "my-project");
-    stubLoadingMethod.put("bucket_name", "my-bucket");
-    stubLoadingMethod.put("credentials_json", "hunter2");
+  private static Stream<Arguments> urlsDataProvider() {
+    return Stream.of(
+        // See https://docs.snowflake.com/en/user-guide/admin-account-identifier for specific requirements
+        // "Account name in organization" style
+        arguments("https://acme-marketing-test-account.snowflakecomputing.com", true),
+        arguments("https://acme-marketing_test_account.snowflakecomputing.com", true),
+        arguments("https://acme-marketing.test-account.snowflakecomputing.com", true),
 
-    final var stubConfig = mapper.createObjectNode();
-    stubConfig.set("loading_method", stubLoadingMethod);
+        // Legacy style (account locator in a region)
+        // Some examples taken from
+        // https://docs.snowflake.com/en/user-guide/admin-account-identifier#non-vps-account-locator-formats-by-cloud-platform-and-region
+        arguments("xy12345.snowflakecomputing.com", true),
+        arguments("xy12345.us-gov-west-1.aws.snowflakecomputing.com", true),
+        arguments("xy12345.us-east-1.aws.snowflakecomputing.com", true),
+        // And some other formats which are, de facto, valid
+        arguments("xy12345.foo.us-west-2.aws.snowflakecomputing.com", true),
+        arguments("https://xy12345.snowflakecomputing.com", true),
+        arguments("https://xy12345.us-east-1.snowflakecomputing.com", true),
+        arguments("https://xy12345.us-east-1.aws.snowflakecomputing.com", true),
+        arguments("https://xy12345.foo.us-west-2.aws.snowflakecomputing.com", true),
 
-    assertTrue(SnowflakeDestinationResolver.isGcsCopy(stubConfig));
+        // Invalid formats
+        arguments("example.snowflakecomputing.com/path/to/resource", false),
+        arguments("example.snowflakecomputing.com:8080", false),
+        arguments("example.snowflakecomputing.com:12345", false),
+        arguments("example.snowflakecomputing.com//path/to/resource", false),
+        arguments("example.snowflakecomputing.com/path?query=string", false),
+        arguments("example.snowflakecomputing.com/#fragment", false),
+        arguments("ab12345.us-east-2.aws.snowflakecomputing. com", false),
+        arguments("ab12345.us-east-2.aws.snowflakecomputing..com", false));
   }
 
-  @Test
-  @DisplayName("When not given S3 credentials should use INSERT")
-  public void useInsertStrategyTest() {
-    final var stubLoadingMethod = mapper.createObjectNode();
-    final var stubConfig = mapper.createObjectNode();
-    stubConfig.set("loading_method", stubLoadingMethod);
-    assertFalse(SnowflakeDestinationResolver.isS3Copy(stubConfig));
+  @ParameterizedTest
+  @MethodSource({"urlsDataProvider"})
+  void testUrlPattern(final String url, final boolean isMatch) throws Exception {
+    final ConnectorSpecification spec = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).spec();
+    final Pattern pattern = Pattern.compile(spec.getConnectionSpecification().get("properties").get("host").get("pattern").asText());
+
+    final Matcher matcher = pattern.matcher(url);
+    assertEquals(isMatch, matcher.find());
   }
 
   @ParameterizedTest
@@ -72,9 +83,15 @@ public class SnowflakeDestinationTest {
   }
 
   private static Stream<Arguments> destinationTypeToConfig() {
-    return Stream.of(
-        arguments("copy_gcs_config.json", DestinationType.COPY_GCS),
-        arguments("copy_s3_config.json", DestinationType.COPY_S3),
-        arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
+    return Stream.of(arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
   }
+
+  @Test
+  void testWriteSnowflakeInternal() throws Exception {
+    final JsonNode config = Jsons.deserialize(MoreResources.readResource("internal_staging_config.json"), JsonNode.class);
+    final SerializedAirbyteMessageConsumer consumer = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS)
+        .getSerializedMessageConsumer(config, new ConfiguredAirbyteCatalog(), null);
+    assertEquals(AsyncStreamConsumer.class, consumer.getClass());
+  }
+
 }

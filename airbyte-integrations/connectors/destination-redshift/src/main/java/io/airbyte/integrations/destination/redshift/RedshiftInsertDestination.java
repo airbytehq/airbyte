@@ -7,13 +7,15 @@ package io.airbyte.integrations.destination.redshift;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +27,10 @@ public class RedshiftInsertDestination extends AbstractJdbcDestination {
   public static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
       JdbcUtils.SSL_KEY, "true",
       "sslfactory", "com.amazon.redshift.ssl.NonValidatingFactory");
+
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new RedshiftInsertDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
 
   public RedshiftInsertDestination() {
     super(DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());

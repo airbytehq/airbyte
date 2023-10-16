@@ -54,7 +54,7 @@ runs:
 
     - name: Start EC2 runner
       id: start-ec2-runner
-      uses: airbytehq/ec2-github-runner@MSGv0.0.2
+      uses: airbytehq/ec2-github-runner@MSGv0.0.5
       with:
         mode: start
         github-token: ${{ inputs.github-token }}

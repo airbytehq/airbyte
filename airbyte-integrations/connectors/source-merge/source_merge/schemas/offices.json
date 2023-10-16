@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Offices Schema",
+  "additionalProperties": true,
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "remote_id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "remote_was_deleted": {
+      "type": ["null", "boolean"]
+    },
+    "field_mappings": {
+      "type": ["null", "object"],
+      "properties": {
+        "organization_defined_targets": {
+          "type": ["null", "object"],
+          "properties": {
+            "custom_key": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "linked_account_defined_targets": {
+          "type": ["null", "object"],
+          "properties": {
+            "custom_key": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    },
+    "remote_data": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "path": {
+            "type": ["null", "string"]
+          },
+          "data": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "string"]
+            }
+          }
+        }
+      }
+    }
+  }
+}

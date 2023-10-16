@@ -1,0 +1,24 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 4f2f093d-ce44-4121-8118-9d13b7bfccd0
+  dockerImageTag: 0.1.3
+  dockerRepository: airbyte/source-netsuite
+  documentationUrl: https://docs.airbyte.com/integrations/sources/netsuite
+  githubIssueLabel: source-netsuite
+  icon: netsuite.svg
+  license: MIT
+  name: Netsuite
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

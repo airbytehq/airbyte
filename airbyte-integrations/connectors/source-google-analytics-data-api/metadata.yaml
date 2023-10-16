@@ -1,0 +1,45 @@
+data:
+  allowedHosts:
+    hosts:
+      - oauth2.googleapis.com
+      - www.googleapis.com
+      - analyticsdata.googleapis.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3cc2eafd-84aa-4dca-93af-322d9dfeec1a
+  dockerImageTag: 2.0.0
+  dockerRepository: airbyte/source-google-analytics-data-api
+  githubIssueLabel: source-google-analytics-data-api
+  icon: google-analytics.svg
+  license: Elv2
+  name: Google Analytics 4 (GA4)
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releases:
+    breakingChanges:
+      2.0.0:
+        message: "Version 2.0.0 introduces changes to stream names for those syncing more than one Google Analytics 4 property. It allows streams from all properties to sync successfully. Please upgrade the connector to enable this additional functionality."
+        upgradeDeadline: "2023-10-16"
+  releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - website_overview
+      - daily_active_users
+      - traffic_sources
+      - pages
+      - weekly_active_users
+      - devices
+      - locations
+      - four_weekly_active_users
+      - sessions
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-analytics-data-api
+  tags:
+    - language:python
+  ab_internal:
+    sl: 300
+    ql: 400
+  supportLevel: certified
+metadataSpecVersion: "1.0"

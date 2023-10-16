@@ -2,21 +2,21 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "event_time": "2021-05-27 11:59:53.710000" },
+      "stream_state": { "event_time": "2023-02-15 08:00:00.000000" },
       "stream_descriptor": { "name": "events" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "date": "2021-05-27" },
+      "stream_state": { "date": "2023-02-17" },
       "stream_descriptor": { "name": "active_users" }
     }
   },
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "date": "2021-05-27" },
+      "stream_state": { "date": "2023-02-17" },
       "stream_descriptor": { "name": "average_session_length" }
     }
   }

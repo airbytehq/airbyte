@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "Votes",
+  "type": ["null", "object"],
+  "properties": {
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "item_id": {
+      "type": ["null", "integer"]
+    },
+    "item_type": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "value": {
+      "type": ["null", "integer"]
+    }
+  }
+}

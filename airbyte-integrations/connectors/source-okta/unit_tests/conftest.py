@@ -194,6 +194,7 @@ def group_members_instance(api_url):
     """
     _id = "test_user_id"
     return {
+        "groupId": "test_group_id",
         "id": _id,
         "status": "ACTIVE",
         "created": "2021-04-21T21:04:03.000Z",
@@ -226,6 +227,7 @@ def group_role_assignments_instance():
     Group Role Assignment instance object response
     """
     return {
+        "groupId": "test_group_id",
         "actor": {
             "id": "test_user_id",
             "type": "User",
@@ -276,7 +278,8 @@ def user_role_assignments_instance(api_url):
     """
     _user_id = "test_user_id"
     return {
-        "id": _user_id,
+        "userId": _user_id,
+        "id": "test_role_id",
         "label": "Super Organization Administrator",
         "type": "SUPER_ADMIN",
         "status": "ACTIVE",

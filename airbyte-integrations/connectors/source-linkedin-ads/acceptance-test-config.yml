@@ -6,12 +6,15 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "source_linkedin_ads/spec.json"
+        config_path: "secrets/config_oauth.json"
   connection:
     tests:
       - config_path: "secrets/config_oauth.json"
         status: "succeed"
         timeout_seconds: 60
       - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      - config_path: "integration_tests/invalid_config_custom_report.json"
         status: "failed"
   discovery:
     tests:
@@ -21,11 +24,17 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config_oauth.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
+        fail_on_extra_columns: true
+        timeout_seconds: 3600
+        ignored_fields:
+          campaign_groups:
+            - name: "lastModified"
+              bypass_reason: "Volatile data"
   incremental:
     tests:
       - config_path: "secrets/config_oauth.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
+        configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
           missing_streams:
@@ -37,4 +46,3 @@ acceptance_tests:
       - config_path: "secrets/config_oauth.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         timeout_seconds: 3600
-

@@ -1,14 +1,16 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
   "additionalProperties": true,
   "properties": {
     "stat_time_day": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "stat_time_hour": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "campaign_id": {
       "type": ["null", "integer"]
@@ -34,7 +36,7 @@
         "adgroup_name": {
           "type": ["null", "string"]
         },
-        "placement": {
+        "placement_type": {
           "type": ["null", "string"]
         },
         "adgroup_id": {
@@ -137,6 +139,39 @@
           "type": ["null", "string"]
         },
         "frequency": {
+          "type": ["null", "string"]
+        },
+        "total_purchase_value": {
+          "type": ["null", "string"]
+        },
+        "total_onsite_shopping_value": {
+          "type": ["null", "string"]
+        },
+        "onsite_shopping": {
+          "type": ["null", "string"]
+        },
+        "vta_purchase": {
+          "type": ["null", "string"]
+        },
+        "cta_purchase": {
+          "type": ["null", "string"]
+        },
+        "cta_conversion": {
+          "type": ["null", "string"]
+        },
+        "vta_conversion": {
+          "type": ["null", "string"]
+        },
+        "total_pageview": {
+          "type": ["null", "string"]
+        },
+        "complete_payment": {
+          "type": ["null", "string"]
+        },
+        "value_per_complete_payment": {
+          "type": ["null", "string"]
+        },
+        "total_complete_payment_rate": {
           "type": ["null", "string"]
         }
       }

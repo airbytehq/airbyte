@@ -5,10 +5,10 @@
 import logging
 import sys
 import time
-from typing import Optional
+from typing import Any, Callable, Mapping, Optional
 
 import backoff
-from requests import codes, exceptions
+from requests import PreparedRequest, RequestException, Response, codes, exceptions
 
 from .exceptions import DefaultBackoffException, UserDefinedBackoffException
 
@@ -23,21 +23,31 @@ TRANSIENT_EXCEPTIONS = (
 logger = logging.getLogger("airbyte")
 
 
-def default_backoff_handler(max_tries: Optional[int], factor: float, **kwargs):
-    def log_retry_attempt(details):
+SendRequestCallableType = Callable[[PreparedRequest, Mapping[str, Any]], Response]
+
+
+def default_backoff_handler(
+    max_tries: Optional[int], factor: float, **kwargs: Any
+) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
+    def log_retry_attempt(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
-        if exc.response:
+        if isinstance(exc, RequestException) and exc.response:
             logger.info(f"Status code: {exc.response.status_code}, Response Content: {exc.response.content}")
         logger.info(
             f"Caught retryable error '{str(exc)}' after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         )
 
-    def should_give_up(exc):
+    def should_give_up(exc: Exception) -> bool:
         # If a non-rate-limiting related 4XX error makes it this far, it means it was unexpected and probably consistent, so we shouldn't back off
-        give_up = exc.response is not None and exc.response.status_code != codes.too_many_requests and 400 <= exc.response.status_code < 500
-        if give_up:
-            logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}")
-        return give_up
+        if isinstance(exc, RequestException):
+            give_up: bool = (
+                exc.response is not None and exc.response.status_code != codes.too_many_requests and 400 <= exc.response.status_code < 500
+            )
+            if give_up:
+                logger.info(f"Giving up for returned HTTP status: {exc.response.status_code}")
+            return give_up
+        # Only RequestExceptions are retryable, so if we get here, it's not retryable
+        return False
 
     return backoff.on_exception(
         backoff.expo,
@@ -51,8 +61,8 @@ def default_backoff_handler(max_tries: Optional[int], factor: float, **kwargs):
     )
 
 
-def user_defined_backoff_handler(max_tries: Optional[int], **kwargs):
-    def sleep_on_ratelimit(details):
+def user_defined_backoff_handler(max_tries: Optional[int], **kwargs: Any) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
+    def sleep_on_ratelimit(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
         if isinstance(exc, UserDefinedBackoffException):
             if exc.response:
@@ -61,9 +71,12 @@ def user_defined_backoff_handler(max_tries: Optional[int], **kwargs):
             logger.info(f"Retrying. Sleeping for {retry_after} seconds")
             time.sleep(retry_after + 1)  # extra second to cover any fractions of second
 
-    def log_give_up(details):
+    def log_give_up(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
-        logger.error(f"Max retry limit reached. Request: {exc.request}, Response: {exc.response}")
+        if isinstance(exc, RequestException):
+            logger.error(f"Max retry limit reached. Request: {exc.request}, Response: {exc.response}")
+        else:
+            logger.error("Max retry limit reached for unknown request and response")
 
     return backoff.on_exception(
         backoff.constant,

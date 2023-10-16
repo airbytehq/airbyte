@@ -114,6 +114,15 @@ public enum PostgresType implements SQLType {
   }
 
   /**
+   * Returns true if the PostgresType is an array type, false otherwise.
+   *
+   * @return true if the PostgresType is an array type, false otherwise.
+   */
+  public boolean isArrayType() {
+    return type == Types.ARRAY;
+  }
+
+  /**
    * Returns the {@code JDBCType} that corresponds to the specified {@code Types} value
    *
    * @param type {@code Types} value
@@ -122,7 +131,7 @@ public enum PostgresType implements SQLType {
    *         {@code Types} value
    * @see Types
    */
-  public static PostgresType valueOf(final int type,  final Map<Integer, PostgresType> postgresTypeMap) {
+  public static PostgresType valueOf(final int type, final Map<Integer, PostgresType> postgresTypeMap) {
     if (postgresTypeMap.containsKey(type)) {
       return postgresTypeMap.get(type);
     }
@@ -130,7 +139,7 @@ public enum PostgresType implements SQLType {
         + "Types.java value.");
   }
 
-  public static PostgresType safeGetJdbcType(final int columnTypeInt,  final Map<Integer, PostgresType> postgresTypeMap) {
+  public static PostgresType safeGetJdbcType(final int columnTypeInt, final Map<Integer, PostgresType> postgresTypeMap) {
     try {
       return PostgresType.valueOf(columnTypeInt, postgresTypeMap);
     } catch (final Exception e) {

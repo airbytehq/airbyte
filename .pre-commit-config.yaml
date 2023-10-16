@@ -14,7 +14,7 @@ repos:
       - id: black
         args: ["--config", "pyproject.toml"]
   - repo: https://github.com/timothycrosley/isort
-    rev: 5.10.1
+    rev: 5.12.0
     hooks:
       - id: isort
         args:
@@ -33,8 +33,6 @@ repos:
         exclude: |
           (?x)^.*(
               .github/|
-              source_specs.yaml|
-              destination_specs.yaml|
               .gitlab-ci.yml
           ).?$
 

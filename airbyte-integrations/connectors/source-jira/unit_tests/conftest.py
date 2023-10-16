@@ -5,23 +5,27 @@
 import json
 import os
 
-import pytest
+import responses
 from pytest import fixture
+from responses import matchers
+from source_jira.streams import Projects
+
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 
-@pytest.fixture
+@fixture
 def config():
     return {
         "api_token": "token",
         "domain": "domain",
         "email": "email@email.com",
         "start_date": "2021-01-01T00:00:00Z",
-        "projects": ["Project1"]
+        "projects": ["Project1"],
     }
 
 
 def load_file(fn):
-    return open(os.path.join("unit_tests", "responses", fn)).read()
+    return open(os.path.join(os.path.dirname(__file__), "responses", fn)).read()
 
 
 @fixture
@@ -257,3 +261,37 @@ def issue_remote_links_response():
 @fixture
 def projects_versions_response():
     return json.loads(load_file("projects_versions.json"))
+
+
+@fixture
+def mock_projects_responses(config, projects_response):
+    Projects.use_cache = False
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description%2Clead&status=live&status=archived&status=deleted",
+        json=projects_response,
+    )
+
+
+@fixture
+def mock_issues_responses(config, issues_response):
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search",
+        match=[
+            matchers.query_param_matcher(
+                {"maxResults": 50, "fields": "*all", "jql": "project in (1)", "expand": "renderedFields,transitions,changelog"}
+            )
+        ],
+        json=issues_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/search",
+        match=[
+            matchers.query_param_matcher(
+                {"maxResults": 50, "fields": "*all", "jql": "project in (2)", "expand": "renderedFields,transitions,changelog"}
+            )
+        ],
+        json={},
+    )

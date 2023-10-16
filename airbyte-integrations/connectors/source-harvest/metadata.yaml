@@ -1,0 +1,27 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.harvestapp.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: fe2b4084-3386-4d3b-9ad6-308f61a6f1e6
+  dockerImageTag: 0.1.19
+  dockerRepository: airbyte/source-harvest
+  githubIssueLabel: source-harvest
+  icon: harvest.svg
+  license: MIT
+  name: Harvest
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  documentationUrl: https://docs.airbyte.com/integrations/sources/harvest
+  tags:
+    - language:python
+  ab_internal:
+    sl: 200
+    ql: 400
+  supportLevel: certified
+metadataSpecVersion: "1.0"

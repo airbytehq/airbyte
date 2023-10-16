@@ -6,17 +6,18 @@ package io.airbyte.integrations.destination.tidb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
-import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.integrations.util.HostPortResolver;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
@@ -26,7 +27,7 @@ import org.testcontainers.utility.DockerImageName;
 
 public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
-  private final ExtendedNameTransformer namingResolver = new TiDBSQLNameTransformer();
+  private final StandardNameTransformer namingResolver = new TiDBSQLNameTransformer();
   private GenericContainer container;
   private final String usernameKey = "root";
   private final String passwordKey = "";
@@ -37,7 +38,6 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
   protected String getImageName() {
     return "airbyte/destination-tidb:dev";
   }
-
 
   @Override
   protected boolean implementsNamespaces() {
@@ -136,7 +136,7 @@ public class TiDBDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) {
+  protected void setup(TestDestinationEnv testEnv, HashSet<String> TEST_SCHEMAS) {
     container = new GenericContainer(DockerImageName.parse("pingcap/tidb:nightly"))
         .withExposedPorts(4000);
     container.start();

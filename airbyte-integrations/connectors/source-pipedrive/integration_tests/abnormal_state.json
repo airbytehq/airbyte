@@ -17,7 +17,51 @@
         "update_time": "2217-06-26 21:20:07"
       },
       "stream_descriptor": {
+        "name": "files"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "filters"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "notes"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
         "name": "activities"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "activity_types"
       }
     }
   },
@@ -40,6 +84,17 @@
       },
       "stream_descriptor": {
         "name": "pipelines"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "update_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "products"
       }
     }
   },

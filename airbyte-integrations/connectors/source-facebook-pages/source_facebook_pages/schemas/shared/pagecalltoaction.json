@@ -15,7 +15,7 @@
     },
     "created_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "email_address": {
       "type": ["string", "null"]
@@ -43,7 +43,7 @@
     },
     "updated_time": {
       "type": ["string", "null"],
-      "format": "datetime"
+      "format": "date-time"
     },
     "web_destination_type": {
       "type": ["string", "null"]

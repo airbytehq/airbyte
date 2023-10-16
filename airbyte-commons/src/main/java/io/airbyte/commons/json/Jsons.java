@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.core.util.Separators;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -41,6 +42,13 @@ public class Jsons {
 
   // Object Mapper is thread-safe
   private static final ObjectMapper OBJECT_MAPPER = MoreMappers.initMapper();
+  // sort of a hotfix; I don't know how bad the performance hit is so not turning this on by default
+  // at time of writing (2023-08-18) this is only used in tests, so we don't care.
+  private static final ObjectMapper OBJECT_MAPPER_EXACT;
+  static {
+    OBJECT_MAPPER_EXACT = MoreMappers.initMapper();
+    OBJECT_MAPPER_EXACT.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
+  }
 
   private static final ObjectMapper YAML_OBJECT_MAPPER = MoreMappers.initYamlMapper(new YAMLFactory());
   private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER.writer(new JsonPrettyPrinter());
@@ -97,9 +105,25 @@ public class Jsons {
     }
   }
 
+  public static JsonNode deserializeExact(final String jsonString) {
+    try {
+      return OBJECT_MAPPER_EXACT.readTree(jsonString);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static <T> Optional<T> tryDeserialize(final String jsonString, final Class<T> klass) {
     try {
       return Optional.of(OBJECT_MAPPER.readValue(jsonString, klass));
+    } catch (final Throwable e) {
+      return Optional.empty();
+    }
+  }
+
+  public static <T> Optional<T> tryDeserializeExact(final String jsonString, final Class<T> klass) {
+    try {
+      return Optional.of(OBJECT_MAPPER_EXACT.readValue(jsonString, klass));
     } catch (final Throwable e) {
       return Optional.empty();
     }
@@ -326,7 +350,7 @@ public class Jsons {
         Entry::getValue)));
   }
 
-  public static Map<String, String> deserializeToStringMap(JsonNode json) {
+  public static Map<String, String> deserializeToStringMap(final JsonNode json) {
     return OBJECT_MAPPER.convertValue(json, new TypeReference<>() {});
   }
 

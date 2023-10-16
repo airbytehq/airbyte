@@ -19,6 +19,7 @@ tests:
         extra_fields: no
         exact_order: no
         extra_records: yes
+      timeout_seconds: 2400
   incremental:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

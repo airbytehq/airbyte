@@ -14,15 +14,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.cdk.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
+import io.airbyte.cdk.integrations.source.relationaldb.models.DbState;
+import io.airbyte.cdk.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
-import io.airbyte.integrations.source.relationaldb.models.DbState;
-import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -127,8 +127,8 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // standard) is concerned as it has both a date and time component.
     incrementalCursorCheck(
         COL_UPDATED_AT,
-        "2005-10-18T00:00:00.000000Z",
-        "2006-10-19T00:00:00.000000Z",
+        "2005-10-18T00:00:00.000000",
+        "2006-10-19T00:00:00.000000",
         Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
@@ -202,7 +202,7 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_1,
                         COL_NAME, "picard",
-                        COL_UPDATED_AT, "2004-10-19T00:00:00.000000Z")))),
+                        COL_UPDATED_AT, "2004-10-19T00:00:00.000000")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName)
                 .withNamespace(getDefaultNamespace())
@@ -210,22 +210,22 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
                     .of(COL_ID, ID_VALUE_2,
                         COL_NAME, "crusher",
                         COL_UPDATED_AT,
-                        "2005-10-19T00:00:00.000000Z")))),
+                        "2005-10-19T00:00:00.000000")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName)
                 .withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
                     .of(COL_ID, ID_VALUE_3,
                         COL_NAME, "vash",
-                        COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
+                        COL_UPDATED_AT, "2006-10-19T00:00:00.000000")))));
   }
 
   @Test
   void testIncrementalTimestampCheckCursor() throws Exception {
     incrementalCursorCheck(
         COL_UPDATED_AT,
-        "2005-10-18T00:00:00.000000Z",
-        "2006-10-19T00:00:00.000000Z",
+        "2005-10-18T00:00:00.000000",
+        "2006-10-19T00:00:00.000000",
         Lists.newArrayList(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
@@ -269,13 +269,13 @@ class OracleJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
             .withData(Jsons.jsonNode(ImmutableMap
                 .of(COL_ID, ID_VALUE_4,
                     COL_NAME, "riker",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
+                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
             .withData(Jsons.jsonNode(ImmutableMap
                 .of(COL_ID, ID_VALUE_5,
                     COL_NAME, "data",
-                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000Z")))));
+                    COL_UPDATED_AT, "2006-10-19T00:00:00.000000")))));
     expectedMessages.add(new AirbyteMessage()
         .withType(Type.STATE)
         .withState(new AirbyteStateMessage()

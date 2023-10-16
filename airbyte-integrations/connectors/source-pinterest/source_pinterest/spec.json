@@ -10,7 +10,10 @@
       "start_date": {
         "type": "string",
         "title": "Start Date",
-        "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (914 days from today).",
+        "description": "A date in the format YYYY-MM-DD. If you have not set a date, it would be defaulted to latest allowed date by api (89 days from today).",
+        "format": "date",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "pattern_descriptor": "YYYY-MM-DD",
         "examples": ["2022-07-28"]
       },
       "status": {

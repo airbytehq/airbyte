@@ -4,38 +4,41 @@
 
 package io.airbyte.integrations.destination.redshift;
 
-import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
-import static io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants.UPLOADING_METHOD;
+import static io.airbyte.cdk.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+import static io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.SSL_JDBC_PARAMETERS;
 import static io.airbyte.integrations.destination.redshift.RedshiftInsertDestination.getJdbcConfig;
+import static io.airbyte.integrations.destination.redshift.constants.RedshiftDestinationConstants.UPLOADING_METHOD;
 import static io.airbyte.integrations.destination.redshift.util.RedshiftUtil.findS3Options;
-import static io.airbyte.integrations.destination.s3.S3DestinationConfig.getS3DestinationConfig;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
+import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
+import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption;
+import io.airbyte.cdk.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
+import io.airbyte.cdk.integrations.destination.s3.EncryptionConfig;
+import io.airbyte.cdk.integrations.destination.s3.NoEncryption;
+import io.airbyte.cdk.integrations.destination.s3.S3BaseChecks;
+import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
+import io.airbyte.cdk.integrations.destination.s3.S3StorageOperations;
+import io.airbyte.cdk.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
-import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
-import io.airbyte.integrations.destination.record_buffer.FileBuffer;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.TypeAndDedupeOperationValve;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftS3StagingSqlOperations;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
-import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption;
-import io.airbyte.integrations.destination.s3.AesCbcEnvelopeEncryption.KeyType;
-import io.airbyte.integrations.destination.s3.EncryptionConfig;
-import io.airbyte.integrations.destination.s3.NoEncryption;
-import io.airbyte.integrations.destination.s3.S3BaseChecks;
-import io.airbyte.integrations.destination.s3.S3DestinationConfig;
-import io.airbyte.integrations.destination.s3.S3StorageOperations;
-import io.airbyte.integrations.destination.s3.csv.CsvSerializedBuffer;
-import io.airbyte.integrations.destination.staging.StagingConsumerFactory;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -43,6 +46,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.util.Map;
 import java.util.function.Consumer;
 import javax.sql.DataSource;
+import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,12 +54,16 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3Destination.class);
 
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new RedshiftStagingS3Destination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
+
   public RedshiftStagingS3Destination() {
     super(RedshiftInsertDestination.DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
   }
 
   private boolean isEphemeralKeysAndPurgingStagingData(final JsonNode config, final EncryptionConfig encryptionConfig) {
-    return !isPurgeStagingData(config) && encryptionConfig instanceof AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL;
+    return !isPurgeStagingData(config) && encryptionConfig instanceof final AesCbcEnvelopeEncryption c && c.keyType() == KeyType.EPHEMERAL;
   }
 
   @Override
@@ -129,16 +137,23 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   @Override
+  @Deprecated
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
+    throw new NotImplementedException("Should use the getSerializedMessageConsumer instead");
+  }
+
+  @Override
+  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(JsonNode config,
+                                                                       ConfiguredAirbyteCatalog catalog,
+                                                                       Consumer<AirbyteMessage> outputRecordCollector)
+      throws Exception {
     final EncryptionConfig encryptionConfig =
-        config.has(UPLOADING_METHOD) ?
-            EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+        config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
     final int numberOfFileBuffers = getNumberOfFileBuffers(s3Options);
-
     if (numberOfFileBuffers > FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER) {
       LOGGER.warn("""
                   Increasing the number of file buffers past {} can lead to increased performance but
@@ -147,23 +162,30 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                   """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
     }
 
-    return new StagingConsumerFactory().create(
+    return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
         getDatabase(getDataSource(config)),
         new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
         getNamingResolver(),
-        CsvSerializedBuffer.createFunction(null, () -> new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX, numberOfFileBuffers)),
         config,
         catalog,
-        isPurgeStagingData(s3Options));
+        isPurgeStagingData(s3Options),
+        new TypeAndDedupeOperationValve(),
+        new NoopTyperDeduper(),
+        // The parsedcatalog is only used in v2 mode, so just pass null for now
+        null,
+        // Overwriting null namespace with null is perfectly safe
+        null,
+        // still using v1 table format
+        false);
   }
 
   /**
-   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number
-   * of file buffers and sets the minimum number to the default
+   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
+   * file buffers and sets the minimum number to the default
    *
-   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit
-   * has not been thoroughly load tested across all instance sizes
+   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
+   * not been thoroughly load tested across all instance sizes
    *
    * @param config user configurations
    * @return number of file buffers if configured otherwise default

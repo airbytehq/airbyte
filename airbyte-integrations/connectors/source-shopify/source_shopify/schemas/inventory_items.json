@@ -5,10 +5,25 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "admin_graphql_api_id": {
+      "type": ["null", "string"]
+    },
     "cost": {
       "type": ["null", "number"]
     },
     "country_code_of_origin": {
+      "type": ["null", "string"]
+    },
+    "country_harmonized_system_codes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "harmonized_system_code": {
+      "type": ["null", "string"]
+    },
+    "province_code_of_origin": {
       "type": ["null", "string"]
     },
     "updated_at": {
@@ -21,6 +36,12 @@
     },
     "sku": {
       "type": ["null", "string"]
+    },
+    "tracked": {
+      "type": ["null", "boolean"]
+    },
+    "requires_shipping": {
+      "type": ["null", "boolean"]
     },
     "shop_url": {
       "type": ["null", "string"]

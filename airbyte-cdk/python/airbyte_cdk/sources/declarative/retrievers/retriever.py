@@ -4,16 +4,14 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Iterable, List, Optional
+from typing import Iterable, Optional
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 from airbyte_cdk.sources.streams.core import StreamData
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class Retriever(JsonSchemaMixin):
+class Retriever:
     """
     Responsible for fetching a stream's records from an HTTP API source.
     """
@@ -21,10 +19,7 @@ class Retriever(JsonSchemaMixin):
     @abstractmethod
     def read_records(
         self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
         stream_slice: Optional[StreamSlice] = None,
-        stream_state: Optional[StreamState] = None,
     ) -> Iterable[StreamData]:
         """
         Fetch a stream's records from an HTTP API source
@@ -37,7 +32,7 @@ class Retriever(JsonSchemaMixin):
         """
 
     @abstractmethod
-    def stream_slices(self, *, sync_mode: SyncMode, stream_state: Optional[StreamState] = None) -> Iterable[Optional[StreamSlice]]:
+    def stream_slices(self) -> Iterable[Optional[StreamSlice]]:
         """Returns the stream slices"""
 
     @property
@@ -57,5 +52,5 @@ class Retriever(JsonSchemaMixin):
 
     @state.setter
     @abstractmethod
-    def state(self, value: StreamState):
+    def state(self, value: StreamState) -> None:
         """State setter, accept state serialized by state getter."""

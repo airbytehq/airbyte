@@ -1,0 +1,28 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.monday.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
+  dockerImageTag: 1.1.3
+  dockerRepository: airbyte/source-monday
+  githubIssueLabel: source-monday
+  icon: monday.svg
+  license: MIT
+  name: Monday
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  documentationUrl: https://docs.airbyte.com/integrations/sources/monday
+  tags:
+    - language:low-code
+    - language:python
+  ab_internal:
+    sl: 200
+    ql: 400
+  supportLevel: certified
+metadataSpecVersion: "1.0"

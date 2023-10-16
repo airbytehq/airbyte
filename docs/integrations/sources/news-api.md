@@ -58,4 +58,5 @@ The following fields are required fields for the connector to work:
 
 | Version | Date       | Pull Request                                             | Subject    |
 |:--------|:-----------|:---------------------------------------------------------|:-----------|
+| 0.1.1   | 2023-04-30 | [25554](https://github.com/airbytehq/airbyte/pull/25554) | Make manifest connector builder friendly |
 | 0.1.0   | 2022-10-21 | [18301](https://github.com/airbytehq/airbyte/pull/18301) | New source |

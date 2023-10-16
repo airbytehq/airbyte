@@ -1,5 +1,5 @@
 {
-  "type": ["null", "object"],
+  "type": "object",
   "additionalProperties": true,
   "properties": {
     "advertiser_id": {
@@ -16,11 +16,25 @@
     },
     "stat_time_day": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
     },
     "stat_time_hour": {
       "type": ["null", "string"],
-      "format": "date-time"
+      "format": "date-time",
+      "airbyte_type": "timestamp_without_timezone"
+    },
+    "country_code": {
+      "type": ["null", "string"]
+    },
+    "platform": {
+      "type": ["null", "string"]
+    },
+    "gender": {
+      "type": ["null", "string"]
+    },
+    "age": {
+      "type": ["null", "string"]
     },
     "metrics": {
       "type": ["null", "object"],
@@ -34,7 +48,7 @@
         "adgroup_name": {
           "type": ["null", "string"]
         },
-        "placement": {
+        "placement_type": {
           "type": ["null", "string"]
         },
         "adgroup_id": {

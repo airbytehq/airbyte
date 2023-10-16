@@ -13,6 +13,12 @@
       "description": "Creation date of the dashboard.",
       "readOnly": true
     },
+    "deleted_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Deletion date of the dashboard.",
+      "readOnly": true
+    },
     "description": {
       "type": ["string", "null"],
       "description": "Description of the dashboard.",

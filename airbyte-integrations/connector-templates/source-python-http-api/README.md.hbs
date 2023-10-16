@@ -63,6 +63,7 @@ First, make sure you build the latest Docker image:
 docker build . -t airbyte/source-{{dashCase name}}:dev
 ```
 
+
 You can also build the connector image via Gradle:
 ```
 ./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}:airbyteDocker
@@ -110,7 +111,7 @@ To run your integration tests with docker
 All commands should be run from airbyte project root.
 To run unit tests:
 ```
-./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}:unitTest
+./gradlew :airbyte-integrations:connectors:source-{{dashCase name}}:check
 ```
 To run acceptance and custom integration tests:
 ```

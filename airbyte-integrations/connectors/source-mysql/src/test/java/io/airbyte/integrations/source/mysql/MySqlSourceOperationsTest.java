@@ -11,10 +11,10 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mysql.cj.MysqlType;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.jdbc.DateTimeConverter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -219,7 +219,7 @@ public class MySqlSourceOperationsTest {
     try (final Connection connection = container.createConnection("")) {
       final PreparedStatement preparedStatement = connection.prepareStatement(
           "SELECT * from " + tableName + " WHERE " + cursorColumn + " > ?");
-      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATETIME, "2019-01-20T03:00:00.000000Z");
+      sqlSourceOperations.setCursorField(preparedStatement, 1, MysqlType.DATETIME, "2019-01-20T03:00:00.000000");
 
       try (final ResultSet resultSet = preparedStatement.executeQuery()) {
         while (resultSet.next()) {

@@ -4,7 +4,9 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader;
 
-import com.google.cloud.bigquery.*;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.JobInfo;
+import com.google.cloud.bigquery.TableId;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;

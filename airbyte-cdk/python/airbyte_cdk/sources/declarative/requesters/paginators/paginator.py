@@ -8,11 +8,11 @@ from typing import Any, List, Mapping, Optional
 
 import requests
 from airbyte_cdk.sources.declarative.requesters.request_options.request_options_provider import RequestOptionsProvider
-from dataclasses_jsonschema import JsonSchemaMixin
+from airbyte_cdk.sources.declarative.types import Record
 
 
 @dataclass
-class Paginator(ABC, RequestOptionsProvider, JsonSchemaMixin):
+class Paginator(ABC, RequestOptionsProvider):
     """
     Defines the token to use to fetch the next page of records from the API.
 
@@ -21,13 +21,13 @@ class Paginator(ABC, RequestOptionsProvider, JsonSchemaMixin):
     """
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> None:
         """
         Reset the pagination's inner state
         """
 
     @abstractmethod
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Mapping[str, Any]]:
         """
         Returns the next_page_token to use to fetch the next page of records.
 

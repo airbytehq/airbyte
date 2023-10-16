@@ -10,11 +10,10 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class CheckStream(ConnectionChecker, JsonSchemaMixin):
+class CheckStream(ConnectionChecker):
     """
     Checks the connections by checking availability of one or many streams selected by the developer
 
@@ -23,10 +22,10 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
     """
 
     stream_names: List[str]
-    options: InitVar[Mapping[str, Any]]
+    parameters: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
-        self._options = options
+    def __post_init__(self, parameters: Mapping[str, Any]):
+        self._parameters = parameters
 
     def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         streams = source.streams(config)
@@ -41,10 +40,9 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
             availability_strategy = stream.availability_strategy or HttpAvailabilityStrategy()
             try:
                 stream_is_available, reason = availability_strategy.check_availability(stream, logger, source)
-                if stream_is_available:
-                    return True, None
-                else:
+                if not stream_is_available:
                     return False, reason
             except Exception as error:
                 logger.error(f"Encountered an error trying to connect to stream {stream_name}. Error: \n {traceback.format_exc()}")
                 return False, f"Unable to connect to stream {stream_name} - {error}"
+        return True, None

@@ -97,3 +97,15 @@ def test_stream_teams_read(auth):
     assert records
     assert records == [{"campaign_id": 123, "action": "q", "timestamp": "2021-08-24T14:15:22Z"}]
     assert len(responses.calls) == 2
+
+
+@responses.activate
+def test_stream_parse_json_error(auth, caplog):
+    args = {"authenticator": auth}
+    stream = EmailActivity(**args)
+    stream_url = stream.url_base + "reports/123/email-activity"
+    campaigns_stream_url = stream.url_base + "campaigns"
+    responses.add("GET", campaigns_stream_url, json={"campaigns": [{"id": 123}]})
+    responses.add("GET", stream_url, body="not_valid_json")
+    read_incremental(stream, {})
+    assert "response.content=b'not_valid_json'" in caplog.text

@@ -40,11 +40,17 @@ As cursor field this connector uses "modify_time" values. But endpoints don't pr
   - AdsReportsDaily(Daily, AdsReports)
   - AdsReportsLifetime(Lifetime, AdsReports)
   streams:
+    * campaigns_audience_reports_daily
     * campaigns_audience_reports_by_country_daily
+    * campaigns_audience_reports_by_platform_daily
     * campaigns_reports_daily 
     * advertisers_audience_reports_daily
+    * advertisers_audience_reports_by_country_daily
+    * advertisers_audience_reports_by_platform_daily
     * advertisers_reports_daily
     * ad_group_audience_reports_daily
+    * ad_group_audience_reports_by_country_daily
+    * ad_group_audience_reports_by_platform_daily
     * ads_reports_lifetime
     * advertiser_ids
     * campaigns_reports_lifetime
@@ -54,6 +60,8 @@ As cursor field this connector uses "modify_time" values. But endpoints don't pr
     * advertisers_reports_lifetime
     * ads_reports_daily
     * ads_audience_reports_daily
+    * ads_audience_reports_by_country_daily
+    * ads_audience_reports_by_platform_daily
     * ads_reports_hourly
     * ad_groups_reports_hourly
     * advertisers_reports_hourly

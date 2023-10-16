@@ -17,6 +17,27 @@
     "AccountMode": {
       "type": ["null", "string"]
     },
+    "ForwardCompatibilityMap": {
+      "type": ["null", "string"]
+    },
+    "PaymentMethodType": {
+      "type": ["null", "string"]
+    },
+    "Language": {
+      "type": ["null", "string"]
+    },
+    "LinkedAgencies": {
+      "type": ["null", "string"]
+    },
+    "TaxInformation": {
+      "type": ["null", "string"]
+    },
+    "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "TimeZone": {
+      "type": ["null", "string"]
+    },
     "BusinessAddress": {
       "type": ["null", "object"],
       "properties": {

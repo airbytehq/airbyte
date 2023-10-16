@@ -14,7 +14,7 @@ You can find your Project ID and find or create an API key within [Fastbill](htt
 
 ### For Airbyte Cloud:
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Fastbill connector and select **Fastbill** from the Source type dropdown.
 4. Enter your `username` - Fastbill username/email.
@@ -61,4 +61,5 @@ The Fastbill source connector supports the following [sync modes](https://docs.a
 
 | Version | Date        | Pull Request                                             | Subject                                           |
 |:--------|:------------|:---------------------------------------------------------|:--------------------------------------------------|
-| 0.1.0   | 2022-10-TBA | [18522](https://github.com/airbytehq/airbyte/pull/18593)   | New Source: Fastbill                                |
+| 0.2.0   | 2023-08-13 | [29390](https://github.com/airbytehq/airbyte/pull/29390)   | Migrated to Low Code CDK                                    |
+| 0.1.0   | 2022-11-08 | [18522](https://github.com/airbytehq/airbyte/pull/18593)   | New Source: Fastbill                                |

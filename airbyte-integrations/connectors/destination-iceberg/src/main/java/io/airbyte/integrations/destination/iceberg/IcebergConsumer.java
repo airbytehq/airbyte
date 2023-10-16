@@ -4,19 +4,19 @@
 
 package io.airbyte.integrations.destination.iceberg;
 
-import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID;
-import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
-import static io.airbyte.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_AB_ID;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_DATA;
+import static io.airbyte.cdk.integrations.base.JavaBaseConstants.COLUMN_NAME_EMITTED_AT;
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
 
+import io.airbyte.cdk.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
-import io.airbyte.integrations.base.CommitOnStateAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.iceberg.config.WriteConfig;
 import io.airbyte.integrations.destination.iceberg.config.catalog.IcebergCatalogConfig;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
@@ -93,7 +93,7 @@ public class IcebergConsumer extends CommitOnStateAirbyteMessageConsumer {
         throw new IllegalStateException("Undefined destination sync mode");
       }
       final boolean isAppendMode = syncMode != DestinationSyncMode.OVERWRITE;
-      AirbyteStreamNameNamespacePair nameNamespacePair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream());
+      AirbyteStreamNameNamespacePair nameNamespacePair = AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream());
       Integer flushBatchSize = catalogConfig.getFormatConfig().getFlushBatchSize();
       WriteConfig writeConfig = new WriteConfig(namespace, streamName, isAppendMode, flushBatchSize);
       configs.put(nameNamespacePair, writeConfig);

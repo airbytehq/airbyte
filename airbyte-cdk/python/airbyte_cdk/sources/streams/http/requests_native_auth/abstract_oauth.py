@@ -2,12 +2,24 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import abstractmethod
-from typing import Any, List, Mapping, MutableMapping, Tuple, Union
+from json import JSONDecodeError
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+import backoff
 import pendulum
 import requests
+from airbyte_cdk.models import FailureType, Level
+from airbyte_cdk.sources.http_logger import format_http_message
+from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
+from airbyte_cdk.utils import AirbyteTracedException
 from requests.auth import AuthBase
+
+from ..exceptions import DefaultBackoffException
+
+logger = logging.getLogger("airbyte")
+_NOOP_MESSAGE_REPOSITORY = NoopMessageRepository()
 
 
 class AbstractOauth2Authenticator(AuthBase):
@@ -16,6 +28,22 @@ class AbstractOauth2Authenticator(AuthBase):
     is designed to generically perform the refresh flow without regard to how config fields are get/set by
     delegating that behavior to the classes implementing the interface.
     """
+
+    _NO_STREAM_NAME = None
+
+    def __init__(
+        self,
+        refresh_token_error_status_codes: Tuple[int, ...] = (),
+        refresh_token_error_key: str = "",
+        refresh_token_error_values: Tuple[str, ...] = (),
+    ) -> None:
+        """
+        If all of refresh_token_error_status_codes, refresh_token_error_key, and refresh_token_error_values are set,
+        then http errors with such params will be wrapped in AirbyteTracedException.
+        """
+        self._refresh_token_error_status_codes = refresh_token_error_status_codes
+        self._refresh_token_error_key = refresh_token_error_key
+        self._refresh_token_error_values = refresh_token_error_values
 
     def __call__(self, request: requests.Request) -> requests.Request:
         """Attach the HTTP headers required to authenticate on the HTTP request"""
@@ -29,10 +57,9 @@ class AbstractOauth2Authenticator(AuthBase):
     def get_access_token(self) -> str:
         """Returns the access token"""
         if self.token_has_expired():
-            current_datetime = pendulum.now()
             token, expires_in = self.refresh_access_token()
             self.access_token = token
-            self.set_token_expiry_date(current_datetime, expires_in)
+            self.set_token_expiry_date(expires_in)
 
         return self.access_token
 
@@ -64,22 +91,81 @@ class AbstractOauth2Authenticator(AuthBase):
 
         return payload
 
-    def _get_refresh_access_token_response(self):
-        response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
-        response.raise_for_status()
-        return response.json()
-
-    def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        Returns the refresh token and its lifespan in seconds
-
-        :return: a tuple of (access_token, token_lifespan_in_seconds)
-        """
+    def _wrap_refresh_token_exception(self, exception: requests.exceptions.RequestException) -> bool:
         try:
-            response_json = self._get_refresh_access_token_response()
-            return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
+            exception_content = exception.response.json()
+        except JSONDecodeError:
+            return False
+        return (
+            exception.response.status_code in self._refresh_token_error_status_codes
+            and exception_content.get(self._refresh_token_error_key) in self._refresh_token_error_values
+        )
+
+    @backoff.on_exception(
+        backoff.expo,
+        DefaultBackoffException,
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        max_time=300,
+    )
+    def _get_refresh_access_token_response(self):
+        try:
+            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
+            self._log_response(response)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            if e.response.status_code == 429 or e.response.status_code >= 500:
+                raise DefaultBackoffException(request=e.response.request, response=e.response)
+            if self._wrap_refresh_token_exception(e):
+                message = "Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
+                raise AirbyteTracedException(internal_message=message, message=message, failure_type=FailureType.config_error)
+            raise
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
+
+    def refresh_access_token(self) -> Tuple[str, Union[str, int]]:
+        """
+        Returns the refresh token and its expiration datetime
+
+        :return: a tuple of (access_token, token_lifespan)
+        """
+        response_json = self._get_refresh_access_token_response()
+
+        return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
+
+    def _parse_token_expiration_date(self, value: Union[str, int]) -> pendulum.DateTime:
+        """
+        Return the expiration datetime of the refresh token
+
+        :return: expiration datetime
+        """
+
+        if self.token_expiry_is_time_of_expiration:
+            if not self.token_expiry_date_format:
+                raise ValueError(
+                    f"Invalid token expiry date format {self.token_expiry_date_format}; a string representing the format is required."
+                )
+            return pendulum.from_format(value, self.token_expiry_date_format)
+        else:
+            return pendulum.now().add(seconds=int(float(value)))
+
+    @property
+    def token_expiry_is_time_of_expiration(self) -> bool:
+        """
+        Indicates that the Token Expiry returns the date until which the token will be valid, not the amount of time it will be valid.
+        """
+
+        return False
+
+    @property
+    def token_expiry_date_format(self) -> Optional[str]:
+        """
+        Format of the datetime; exists it if expires_in is returned as the expiration datetime instead of seconds until it expires
+        """
+
+        return None
 
     @abstractmethod
     def get_token_refresh_endpoint(self) -> str:
@@ -94,7 +180,7 @@ class AbstractOauth2Authenticator(AuthBase):
         """The client secret to authenticate"""
 
     @abstractmethod
-    def get_refresh_token(self) -> str:
+    def get_refresh_token(self) -> Optional[str]:
         """The token used to refresh the access token when it expires"""
 
     @abstractmethod
@@ -106,7 +192,7 @@ class AbstractOauth2Authenticator(AuthBase):
         """Expiration date of the access token"""
 
     @abstractmethod
-    def set_token_expiry_date(self, initial_time: pendulum.DateTime, value: Union[str, int]):
+    def set_token_expiry_date(self, value: Union[str, int]):
         """Setter for access token expiration date"""
 
     @abstractmethod
@@ -134,3 +220,22 @@ class AbstractOauth2Authenticator(AuthBase):
     @abstractmethod
     def access_token(self, value: str) -> str:
         """Setter for the access token"""
+
+    @property
+    def _message_repository(self) -> Optional[MessageRepository]:
+        """
+        The implementation can define a message_repository if it wants debugging logs for HTTP requests
+        """
+        return _NOOP_MESSAGE_REPOSITORY
+
+    def _log_response(self, response: requests.Response):
+        self._message_repository.log_message(
+            Level.DEBUG,
+            lambda: format_http_message(
+                response,
+                "Refresh token",
+                "Obtains access token",
+                self._NO_STREAM_NAME,
+                is_auxiliary=True,
+            ),
+        )

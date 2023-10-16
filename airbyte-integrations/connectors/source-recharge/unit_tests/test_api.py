@@ -17,7 +17,8 @@ from source_recharge.api import (
     Onetimes,
     Orders,
     Products,
-    RechargeStream,
+    RechargeStreamDeprecatedAPI,
+    RechargeStreamModernAPI,
     Shop,
     Subscriptions,
 )
@@ -34,9 +35,6 @@ def config():
 
 
 class TestCommon:
-
-    main = RechargeStream()
-
     @pytest.mark.parametrize(
         "stream_cls, expected",
         [
@@ -57,69 +55,6 @@ class TestCommon:
         assert expected == stream_cls.primary_key
 
     @pytest.mark.parametrize(
-        "stream_cls",
-        [
-            (Addresses),
-            (Charges),
-            (Collections),
-            (Customers),
-            (Discounts),
-            (Metafields),
-            (Onetimes),
-            (Orders),
-            (Products),
-            (Shop),
-            (Subscriptions),
-        ],
-    )
-    def test_url_base(self, stream_cls):
-        expected = self.main.url_base
-        result = stream_cls.url_base
-        assert expected == result
-
-    @pytest.mark.parametrize(
-        "stream_cls",
-        [
-            (Addresses),
-            (Charges),
-            (Collections),
-            (Customers),
-            (Discounts),
-            (Metafields),
-            (Onetimes),
-            (Orders),
-            (Products),
-            (Shop),
-            (Subscriptions),
-        ],
-    )
-    def test_limit(self, stream_cls):
-        expected = self.main.limit
-        result = stream_cls.limit
-        assert expected == result
-
-    @pytest.mark.parametrize(
-        "stream_cls",
-        [
-            (Addresses),
-            (Charges),
-            (Collections),
-            (Customers),
-            (Discounts),
-            (Metafields),
-            (Onetimes),
-            (Orders),
-            (Products),
-            (Shop),
-            (Subscriptions),
-        ],
-    )
-    def test_page_num(self, stream_cls):
-        expected = self.main.page_num
-        result = stream_cls.page_num
-        assert expected == result
-
-    @pytest.mark.parametrize(
         "stream_cls, stream_type, expected",
         [
             (Addresses, "incremental", "addresses"),
@@ -137,9 +72,9 @@ class TestCommon:
     )
     def test_data_path(self, config, stream_cls, stream_type, expected):
         if stream_type == "incremental":
-            result = stream_cls(start_date=config["start_date"]).data_path
+            result = stream_cls(config, authenticator=None).data_path
         else:
-            result = stream_cls().data_path
+            result = stream_cls(config, authenticator=None).data_path
         assert expected == result
 
     @pytest.mark.parametrize(
@@ -160,9 +95,9 @@ class TestCommon:
     )
     def test_path(self, config, stream_cls, stream_type, expected):
         if stream_type == "incremental":
-            result = stream_cls(start_date=config["start_date"]).path()
+            result = stream_cls(config, authenticator=None).path()
         else:
-            result = stream_cls().path()
+            result = stream_cls(config, authenticator=None).path()
         assert expected == result
 
     @pytest.mark.parametrize(
@@ -175,50 +110,67 @@ class TestCommon:
             (HTTPStatus.FORBIDDEN, {}, False),
         ],
     )
-    def test_should_retry(self, http_status, headers, should_retry):
+    @pytest.mark.parametrize("stream_cls", (RechargeStreamDeprecatedAPI, RechargeStreamModernAPI))
+    def test_should_retry(self, config, http_status, headers, should_retry, stream_cls):
         response = requests.Response()
         response.status_code = http_status
         response._content = b""
         response.headers = headers
-        stream = RechargeStream()
+        stream = stream_cls(config, authenticator=None)
         assert stream.should_retry(response) == should_retry
 
 
 class TestFullRefreshStreams:
     def generate_records(self, stream_name, count):
+        if not stream_name:
+            return {f"record_{1}": f"test_{1}"}
         result = []
         for i in range(0, count):
             result.append({f"record_{i}": f"test_{i}"})
         return {stream_name: result}
 
     @pytest.mark.parametrize(
-        "stream_cls, rec_limit, expected",
+        "stream_cls, cursor_response, expected",
         [
-            (Collections, 1, {"page": 2}),
-            (Metafields, 2, {"page": 2}),
-            (Products, 1, {"page": 2}),
-            (Shop, 1, {"page": 2}),
+            (Collections, {"next_cursor": "some next cursor"}, {"cursor": "some next cursor"}),
+            (Metafields, {"next_cursor": "some next cursor"}, {"cursor": "some next cursor"}),
+            (Products, {}, {"page": 2}),
+            (Shop, {}, None),
+            (Orders, {}, {"page": 2}),
         ],
     )
-    def test_next_page_token(self, stream_cls, rec_limit, requests_mock, expected):
-        stream = stream_cls()
-        stream.limit = rec_limit
+    def test_next_page_token(self, config, stream_cls, cursor_response, requests_mock, expected):
+        stream = stream_cls(config, authenticator=None)
+        stream.limit = 2
         url = f"{stream.url_base}{stream.path()}"
-        requests_mock.get(url, json=self.generate_records(stream.name, rec_limit))
+        response = {**cursor_response, **self.generate_records(stream.data_path, 2)}
+        requests_mock.get(url, json=response)
         response = requests.get(url)
         assert stream.next_page_token(response) == expected
 
     @pytest.mark.parametrize(
         "stream_cls, next_page_token, stream_state, stream_slice, expected",
         [
-            (Collections, None, {}, {}, {"limit": 250}),
-            (Metafields, {"page": 2}, {"updated_at": "2030-01-01"}, {}, {"limit": 250, "page": 2}),
-            (Products, None, {}, {}, {"limit": 250}),
-            (Shop, None, {}, {}, {"limit": 250}),
+            (
+                Collections,
+                None,
+                {},
+                {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
+                {"limit": 250, "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
+            ),
+            (Metafields, {"cursor": "12353"}, {"updated_at": "2030-01-01"}, {}, {"limit": 250, "owner_resource": None, "cursor": "12353"}),
+            (
+                Products,
+                None,
+                {},
+                {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
+                {"limit": 250, "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
+            ),
+            (Shop, None, {}, {}, {}),
         ],
     )
-    def test_request_params(self, stream_cls, next_page_token, stream_state, stream_slice, expected):
-        stream = stream_cls()
+    def test_request_params(self, config, stream_cls, next_page_token, stream_state, stream_slice, expected):
+        stream = stream_cls(config, authenticator=None)
         result = stream.request_params(stream_state, stream_slice, next_page_token)
         assert result == expected
 
@@ -231,8 +183,8 @@ class TestFullRefreshStreams:
             (Shop, {"test4": 456}, [{"test4": 456}]),
         ],
     )
-    def test_parse_response(self, stream_cls, data, requests_mock, expected):
-        stream = stream_cls()
+    def test_parse_response(self, config, stream_cls, data, requests_mock, expected):
+        stream = stream_cls(config, authenticator=None)
         url = f"{stream.url_base}{stream.path()}"
         data = {stream.data_path: data} if stream.data_path else data
         requests_mock.get(url, json=data)
@@ -248,8 +200,8 @@ class TestFullRefreshStreams:
             (Shop, {"test4": 456}, [{"test4": 456}]),
         ],
     )
-    def get_stream_data(self, stream_cls, data, requests_mock, expected):
-        stream = stream_cls()
+    def get_stream_data(self, config, stream_cls, data, requests_mock, expected):
+        stream = stream_cls(config, authenticator=None)
         url = f"{stream.url_base}{stream.path()}"
         data = {stream.data_path: data} if stream.data_path else data
         requests_mock.get(url, json=data)
@@ -257,9 +209,9 @@ class TestFullRefreshStreams:
         assert list(stream.parse_response(response)) == expected
 
     @pytest.mark.parametrize("owner_resource, expected", [({"customer": {"id": 123}}, {"customer": {"id": 123}})])
-    def test_metafields_read_records(self, owner_resource, expected):
+    def test_metafields_read_records(self, config, owner_resource, expected):
         with patch.object(Metafields, "read_records", return_value=owner_resource):
-            result = Metafields().read_records(stream_slice={"owner_resource": owner_resource})
+            result = Metafields(config).read_records(stream_slice={"owner_resource": owner_resource})
             assert result == expected
 
 
@@ -283,44 +235,87 @@ class TestIncrementalStreams:
         ],
     )
     def test_cursor_field(self, config, stream_cls, expected):
-        stream = stream_cls(start_date=config["start_date"])
+        stream = stream_cls(config, authenticator=None)
         result = stream.cursor_field
         assert result == expected
 
     @pytest.mark.parametrize(
-        "stream_cls, rec_limit, expected",
+        "stream_cls, cursor_response, expected",
         [
-            (Addresses, 1, {"page": 2}),
-            (Charges, 2, {"page": 2}),
-            (Customers, 1, {"page": 2}),
-            (Discounts, 1, {"page": 2}),
-            (Onetimes, 1, {"page": 2}),
-            (Orders, 1, {"page": 2}),
-            (Subscriptions, 1, {"page": 2}),
+            (Addresses, {"next_cursor": "some next cursor"}, {"cursor": "some next cursor"}),
+            (Charges, {"next_cursor": "some next cursor"}, {"cursor": "some next cursor"}),
+            (Customers, {"next_cursor": "some next cursor"}, {"cursor": "some next cursor"}),
+            (Discounts, {"next_cursor": "some next cursor"}, {"cursor": "some next cursor"}),
+            (Onetimes, {"next_cursor": "some next cursor"}, {"cursor": "some next cursor"}),
+            (Orders, {}, {"page": 2}),
+            (Subscriptions, {"next_cursor": "some next cursor"}, {"cursor": "some next cursor"}),
         ],
     )
-    def test_next_page_token(self, config, stream_cls, rec_limit, requests_mock, expected):
-        stream = stream_cls(start_date=config["start_date"])
-        stream.limit = rec_limit
+    def test_next_page_token(self, config, stream_cls, cursor_response, requests_mock, expected):
+        stream = stream_cls(config, authenticator=None)
+        stream.limit = 2
         url = f"{stream.url_base}{stream.path()}"
-        requests_mock.get(url, json=self.generate_records(stream.name, rec_limit))
+        response = {**cursor_response, **self.generate_records(stream.data_path, 2)}
+        requests_mock.get(url, json=response)
         response = requests.get(url)
         assert stream.next_page_token(response) == expected
 
     @pytest.mark.parametrize(
         "stream_cls, next_page_token, stream_state, stream_slice, expected",
         [
-            (Addresses, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15 00:00:00"}),
-            (Charges, {"page": 2}, {"updated_at": "2030-01-01"}, {}, {"limit": 250, "page": 2, "updated_at_min": "2030-01-01 00:00:00"}),
-            (Customers, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15 00:00:00"}),
-            (Discounts, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15 00:00:00"}),
-            (Onetimes, {"page": 2}, {"updated_at": "2030-01-01"}, {}, {"limit": 250, "page": 2, "updated_at_min": "2030-01-01 00:00:00"}),
-            (Orders, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15 00:00:00"}),
-            (Subscriptions, None, {}, {}, {"limit": 250, "updated_at_min": "2021-08-15 00:00:00"}),
+            (
+                Addresses,
+                None,
+                {},
+                {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
+                {"limit": 250, "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
+            ),
+            (
+                Charges,
+                {"cursor": "123"},
+                {"updated_at": "2030-01-01"},
+                {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
+                {"limit": 250, "cursor": "123"},
+            ),
+            (
+                Customers,
+                None,
+                {},
+                {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
+                {"limit": 250, "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
+            ),
+            (
+                Discounts,
+                None,
+                {},
+                {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
+                {"limit": 250, "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
+            ),
+            (
+                Onetimes,
+                {"cursor": "123"},
+                {"updated_at": "2030-01-01"},
+                {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
+                {"limit": 250, "cursor": "123"},
+            ),
+            (
+                Orders,
+                None,
+                {},
+                {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
+                {"limit": 250, "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
+            ),
+            (
+                Subscriptions,
+                None,
+                {},
+                {"start_date": "2020-01-01T00:00:00Z", "end_date": "2020-02-01T00:00:00Z"},
+                {"limit": 250, "updated_at_min": "2020-01-01T00:00:00Z", "updated_at_max": "2020-02-01T00:00:00Z"},
+            ),
         ],
     )
     def test_request_params(self, config, stream_cls, next_page_token, stream_state, stream_slice, expected):
-        stream = stream_cls(start_date=config["start_date"])
+        stream = stream_cls(config, authenticator=None)
         result = stream.request_params(stream_state, stream_slice, next_page_token)
         assert result == expected
 
@@ -337,6 +332,6 @@ class TestIncrementalStreams:
         ],
     )
     def test_get_updated_state(self, config, stream_cls, current_state, latest_record, expected):
-        stream = stream_cls(start_date=config["start_date"])
+        stream = stream_cls(config, authenticator=None)
         result = stream.get_updated_state(current_state, latest_record)
         assert result == expected

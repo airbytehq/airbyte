@@ -16,8 +16,7 @@
       "max-length": 100
     },
     "discount_type": {
-      "type": ["string", "null"],
-      "enum": ["fixed_amount", "percentage"]
+      "type": ["string", "null"]
     },
     "discount_percentage": {
       "type": ["number", "null"]
@@ -30,8 +29,10 @@
       "max-length": 3
     },
     "duration_type": {
-      "type": ["string", "null"],
-      "enum": ["one_time", "forever", "limited_period"]
+      "type": ["string", "null"]
+    },
+    "duration_month": {
+      "type": ["integer", "null"]
     },
     "valid_till": {
       "type": ["integer", "null"]
@@ -40,12 +41,13 @@
       "type": ["integer", "null"]
     },
     "status": {
-      "type": ["string", "null"],
-      "enum": ["active", "expired", "archived", "deleted"]
+      "type": ["string", "null"]
+    },
+    "apply_discount_on": {
+      "type": ["string", "null"]
     },
     "apply_on": {
-      "type": ["string", "null"],
-      "enum": ["invoice_amount", "each_specified_item"]
+      "type": ["string", "null"]
     },
     "created_at": {
       "type": ["integer", "null"]
@@ -63,8 +65,7 @@
       "type": ["integer", "null"]
     },
     "period_unit": {
-      "type": ["string", "null"],
-      "enum": ["day", "week", "month", "year"]
+      "type": ["string", "null"]
     },
     "redemptions": {
       "type": ["integer", "null"]
@@ -79,12 +80,10 @@
         "type": ["object", "null"],
         "properties": {
           "item_type": {
-            "type": ["string", "null"],
-            "enum": ["plan", "addon", "charge"]
+            "type": ["string", "null"]
           },
           "constraint": {
-            "type": ["string", "null"],
-            "enum": ["none", "all", "specific", "criteria"]
+            "type": ["string", "null"]
           },
           "item_price_ids": {
             "type": ["array", "null"],
@@ -99,8 +98,7 @@
         "type": ["object", "null"],
         "properties": {
           "item_type": {
-            "type": ["string", "null"],
-            "enum": ["plan", "addon", "charge"]
+            "type": ["string", "null"]
           },
           "currencies": {
             "type": ["array", "null"],

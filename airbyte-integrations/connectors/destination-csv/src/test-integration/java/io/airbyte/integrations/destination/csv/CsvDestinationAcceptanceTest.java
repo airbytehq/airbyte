@@ -8,29 +8,28 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.cdk.integrations.standardtest.destination.ProtocolVersion;
+import io.airbyte.cdk.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
+import io.airbyte.cdk.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
-import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import java.io.FileReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil;
-import io.airbyte.protocol.models.v0.AirbyteCatalog;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
-import io.airbyte.protocol.models.v0.CatalogHelpers;
-import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -53,7 +52,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
     return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString()));
   }
 
-    protected JsonNode getConfigWithDelimiter(String delimiter) {
+  protected JsonNode getConfigWithDelimiter(final String delimiter) {
     config = Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString(), "delimiter", delimiter));
     return config;
   }
@@ -75,10 +74,9 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   public void testCheckConnectionInvalidCredentials() {}
 
-
   @ParameterizedTest
   @ArgumentsSource(CSVDataArgumentsProvider.class)
-  public void testSyncWithDelimiter(final String messagesFilename, final String catalogFilename, String delimiter)
+  public void testSyncWithDelimiter(final String messagesFilename, final String catalogFilename, final String delimiter)
       throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
         AirbyteCatalog.class);
@@ -121,7 +119,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected void setup(final TestDestinationEnv testEnv) {
+  protected void setup(final TestDestinationEnv testEnv, final HashSet<String> TEST_SCHEMAS) {
     // no op
   }
 
@@ -132,18 +130,24 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   public static class CSVDataArgumentsProvider extends DataArgumentsProvider {
 
-    public CSVDataArgumentsProvider(){};
+    public CSVDataArgumentsProvider() {};
+
     @Override
     public Stream<? extends Arguments> provideArguments(final ExtensionContext context) throws Exception {
-      ProtocolVersion protocolVersion = ArgumentProviderUtil.getProtocolVersion(context);
+      final ProtocolVersion protocolVersion = ArgumentProviderUtil.getProtocolVersion(context);
       return Stream.of(
-              Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion), "\\u002c"),
-              Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion), "\\u003b"),
-              Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion), "\\u007c"),
-              Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion), "\\u0009"),
-              Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion), "\\u0020")
-      );
+          Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
+              "\\u002c"),
+          Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
+              "\\u003b"),
+          Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
+              "\\u007c"),
+          Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
+              "\\u0009"),
+          Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion),
+              "\\u0020"));
     }
+
   }
 
 }

@@ -1,0 +1,28 @@
+data:
+  ab_internal:
+    ql: 300
+    sl: 100
+  allowedHosts:
+    hosts:
+      - graph.facebook.com
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 010eb12f-837b-4685-892d-0a39f76a98f5
+  dockerImageTag: 0.3.0
+  dockerRepository: airbyte/source-facebook-pages
+  documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-pages
+  githubIssueLabel: source-facebook-pages
+  icon: facebook.svg
+  license: ELv2
+  name: Facebook Pages
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: beta
+  supportLevel: community
+  tags:
+    - language:low-code
+    - language:python
+metadataSpecVersion: "1.0"

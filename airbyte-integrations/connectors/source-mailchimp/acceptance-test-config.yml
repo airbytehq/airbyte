@@ -9,10 +9,10 @@ acceptance_tests:
       # for old spec config (without oneOf)
       - config_path: "secrets/config.json"
         status: "succeed"
-      # for auth with API token
+        # for auth with API token
       - config_path: "secrets/config_apikey.json"
         status: "succeed"
-      # for auth with oauth2 token
+        # for auth with oauth2 token
       - config_path: "secrets/config_oauth.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
@@ -25,28 +25,26 @@ acceptance_tests:
     tests:
       # for old spec config (without oneOf)
       - config_path: "secrets/config.json"
-      # for auth with API token
+        # for auth with API token
       - config_path: "secrets/config_apikey.json"
-      # for auth with oauth2 token
+        # for auth with oauth2 token
       - config_path: "secrets/config_oauth.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
           bypass_reason: "Risk to disclose internal data. Need to set up a sandbox account - https://github.com/airbytehq/airbyte/issues/20726"
+        fail_on_extra_columns: false
       - config_path: "secrets/config_oauth.json"
         expect_records:
           bypass_reason: "Risk to disclose internal data. Need to set up a sandbox account - https://github.com/airbytehq/airbyte/issues/20726"
+        fail_on_extra_columns: false
   incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/state.json"
-        cursor_paths:
-          lists: ["date_created"]
-          campaigns: ["create_time"]
-          email_activity: ["49d68626f3", "timestamp"]
   # Email activities stream has working campaigns with email newsletters.
   # Due to this sequential_reads test could be failed.
   full_refresh:

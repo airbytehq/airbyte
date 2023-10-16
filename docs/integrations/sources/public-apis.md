@@ -43,4 +43,5 @@ This source requires no setup.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-10-28 | [18471](https://github.com/airbytehq/airbyte/pull/18471) |  Initial Release |
+| 0.2.0 | 2023-06-15 | [29391](https://github.com/airbytehq/airbyte/pull/29391) |  Migrated to Low Code |
+| 0.1.0 | 2022-10-28 | [18471](https://github.com/airbytehq/airbyte/pull/18471) |  Initial Release      |

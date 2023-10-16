@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.lemlist.com
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 789f8e7a-2d28-11ec-8d3d-0242ac130003
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-lemlist
+  githubIssueLabel: source-lemlist
+  icon: lemlist.svg
+  license: MIT
+  name: Lemlist
+  releaseDate: "2021-10-14"
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/lemlist
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

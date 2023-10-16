@@ -1,0 +1,24 @@
+data:
+  ab_internal:
+    ql: 200
+    sl: 100
+  connectorSubtype: api
+  connectorType: source
+  definitionId: af54297c-e8f8-4d63-a00d-a94695acc9d3
+  dockerImageTag: 1.0.2
+  dockerRepository: airbyte/source-linkedin-pages
+  documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-pages
+  githubIssueLabel: source-linkedin-pages
+  icon: linkedin.svg
+  license: MIT
+  name: LinkedIn Pages
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

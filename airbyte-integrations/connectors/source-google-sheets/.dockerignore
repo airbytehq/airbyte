@@ -1,6 +1,5 @@
 *
 !Dockerfile
 !main.py
-!google_sheets_source
+!source_google_sheets
 !setup.py
-!secrets

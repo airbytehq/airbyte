@@ -1,1 +1,0 @@
-export { DestinationsTable } from "./DestinationsTable";

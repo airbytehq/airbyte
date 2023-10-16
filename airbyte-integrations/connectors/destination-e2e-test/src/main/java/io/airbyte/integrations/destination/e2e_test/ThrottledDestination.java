@@ -7,9 +7,9 @@ package io.airbyte.integrations.destination.e2e_test;
 import static java.lang.Thread.sleep;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.BaseConnector;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
+import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -36,7 +36,7 @@ public class ThrottledDestination extends BaseConnector implements Destination {
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return new ThrottledConsumer(config.get("millis_per_record").asLong(), outputRecordCollector);
+    return new ThrottledConsumer(config.get("test_destination").get("millis_per_record").asLong(), outputRecordCollector);
   }
 
   public static class ThrottledConsumer implements AirbyteMessageConsumer {

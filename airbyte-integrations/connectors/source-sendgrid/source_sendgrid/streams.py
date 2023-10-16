@@ -415,3 +415,8 @@ class SpamReports(SendgridStreamOffsetPagination, SendgridStreamIncrementalMixin
 
     def path(self, **kwargs) -> str:
         return "suppression/spam_reports"
+
+
+class UnsubscribeGroups(SendgridStream):
+    def path(self, **kwargs) -> str:
+        return "asm/groups"

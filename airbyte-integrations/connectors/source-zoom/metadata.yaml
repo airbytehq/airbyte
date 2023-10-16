@@ -1,0 +1,25 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
+  dockerImageTag: 1.0.0
+  dockerRepository: airbyte/source-zoom
+  githubIssueLabel: source-zoom
+  icon: zoom.svg
+  license: MIT
+  name: Zoom
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/sources/zoom
+  tags:
+    - language:low-code
+    - language:python
+  ab_internal:
+    sl: 100
+    ql: 200
+  supportLevel: community
+metadataSpecVersion: "1.0"

@@ -7,7 +7,7 @@ from unittest.mock import MagicMock
 
 import pytest
 import requests
-from source_pinterest.source import (
+from source_pinterest.streams import (
     AdAccountAnalytics,
     AdAccounts,
     AdAnalytics,

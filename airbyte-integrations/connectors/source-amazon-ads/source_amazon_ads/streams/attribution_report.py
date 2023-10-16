@@ -2,11 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, List, Mapping, Optional
 
 import pendulum
 import requests
-from source_amazon_ads.schemas import AttributionReportModel, Profile
+from airbyte_cdk.models import SyncMode
+from requests.exceptions import HTTPError
+from source_amazon_ads.schemas import AttributionReportModel
 from source_amazon_ads.streams.common import AmazonAdsStream
 
 BRAND_REFERRAL_BONUS = "brb_bonus_amount"
@@ -58,7 +60,7 @@ class AttributionReport(AmazonAdsStream):
     page_size = 300
 
     report_type = ""
-    metrics = ""
+    custom_metrics = []
     group_by = ""
 
     _next_page_token_field = "cursorId"
@@ -70,40 +72,61 @@ class AttributionReport(AmazonAdsStream):
 
     def __init__(self, config: Mapping[str, Any], *args, **kwargs):
         self._start_date = config.get("start_date")
-        self._req_start_date = ""
-        self._req_end_date = ""
-
         super().__init__(config, *args, **kwargs)
 
-    def _set_dates(self, profile: Profile):
-        new_start_date = pendulum.now(tz=profile.timezone).subtract(days=1).date()
-        new_end_date = pendulum.now(tz=profile.timezone).date()
-
-        if self._start_date:
-            new_start_date = max(self._start_date, new_end_date.subtract(days=self.REPORTING_PERIOD))
-
-        self._req_start_date = new_start_date.format(self.REPORT_DATE_FORMAT)
-        self._req_end_date = new_end_date.format(self.REPORT_DATE_FORMAT)
+    @property
+    def metrics(self):
+        return METRICS_MAP[self.report_type] + self.custom_metrics
 
     @property
     def http_method(self) -> str:
         return "POST"
 
-    def read_records(self, *args, **kvargs) -> Iterable[Mapping[str, Any]]:
-        """
-        Iterate through self._profiles list and send read all records for each profile.
-        """
-        for profile in self._profiles:
-            try:
-                self._set_dates(profile)
-                self._current_profile_id = profile.profileId
-                yield from super().read_records(*args, **kvargs)
-            except Exception as err:
-                self.logger.info("some error occurred: %s", err)
+    def path(self, **kvargs) -> str:
+        return "/attribution/report"
 
-    def request_headers(self, *args, **kvargs) -> MutableMapping[str, Any]:
-        headers = super().request_headers(*args, **kvargs)
-        headers["Amazon-Advertising-API-Scope"] = str(self._current_profile_id)
+    def get_json_schema(self):
+        schema = super().get_json_schema()
+        metrics_type_map = {metric: {"type": ["null", "string"]} for metric in self.metrics}
+        schema["properties"].update(metrics_type_map)
+        return schema
+
+    def stream_slices(
+        self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for profile in self._profiles:
+            start_date = pendulum.now(tz=profile.timezone).subtract(days=1).date()
+            end_date = pendulum.now(tz=profile.timezone).date()
+            if self._start_date:
+                start_date = max(self._start_date, end_date.subtract(days=self.REPORTING_PERIOD))
+
+            yield {
+                "profileId": profile.profileId,
+                "startDate": start_date.format(self.REPORT_DATE_FORMAT),
+                "endDate": end_date.format(self.REPORT_DATE_FORMAT),
+            }
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        try:
+            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        except HTTPError as e:
+            if e.response.status_code == 400:
+                if e.response.json()["message"] == "This profileID is not authorized to use Amazon Attribution":
+                    self.logger.warning(f"This profileID {stream_slice['profileId']} is not authorized to use Amazon Attribution")
+                    return
+            raise e
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        headers = super().request_headers(stream_state, stream_slice, next_page_token)
+        headers["Amazon-Advertising-API-Scope"] = str(stream_slice["profileId"])
         return headers
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -112,21 +135,19 @@ class AttributionReport(AmazonAdsStream):
         if next_page_token:
             return {self._next_page_token_field: next_page_token}
 
-    def path(self, **kvargs) -> str:
-        return "/attribution/report"
-
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Optional[Mapping]:
+
         body = {
             "reportType": self.report_type,
             "count": self.page_size,
-            "metrics": self.metrics,
-            "startDate": self._req_start_date,
-            "endDate": self._req_end_date,
+            "metrics": ",".join(self.metrics),
+            "startDate": stream_slice["startDate"],
+            "endDate": stream_slice["endDate"],
             self._next_page_token_field: "",
         }
 
@@ -141,35 +162,21 @@ class AttributionReport(AmazonAdsStream):
 
 class AttributionReportProducts(AttributionReport):
     report_type = "PRODUCTS"
-
-    metrics = ",".join(METRICS_MAP[report_type])
-
     group_by = ""
 
 
 class AttributionReportPerformanceCreative(AttributionReport):
     report_type = "PERFORMANCE"
-
-    metrics = ",".join(METRICS_MAP[report_type])
-
     group_by = "CREATIVE"
 
 
 class AttributionReportPerformanceAdgroup(AttributionReport):
     report_type = "PERFORMANCE"
-
-    metrics_list = METRICS_MAP[report_type]
-    metrics_list.append(BRAND_REFERRAL_BONUS)
-    metrics = ",".join(metrics_list)
-
+    custom_metrics = [BRAND_REFERRAL_BONUS]
     group_by = "ADGROUP"
 
 
 class AttributionReportPerformanceCampaign(AttributionReport):
     report_type = "PERFORMANCE"
-
-    metrics_list = METRICS_MAP[report_type]
-    metrics_list.append(BRAND_REFERRAL_BONUS)
-    metrics = ",".join(metrics_list)
-
+    custom_metrics = [BRAND_REFERRAL_BONUS]
     group_by = "CAMPAIGN"

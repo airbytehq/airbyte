@@ -5,7 +5,7 @@
 package io.airbyte.integrations.destination.bigquery.formatter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.cdk.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 
 /**
@@ -13,17 +13,17 @@ import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
  */
 public class GcsAvroBigQueryRecordFormatter extends DefaultBigQueryRecordFormatter {
 
-  public GcsAvroBigQueryRecordFormatter(JsonNode jsonSchema, StandardNameTransformer namingResolver) {
+  public GcsAvroBigQueryRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     super(jsonSchema, namingResolver);
   }
 
   @Override
-  protected Object getEmittedAtField(AirbyteRecordMessage recordMessage) {
+  protected Object getEmittedAtField(final AirbyteRecordMessage recordMessage) {
     return recordMessage.getEmittedAt();
   }
 
   @Override
-  protected Object getData(AirbyteRecordMessage recordMessage) {
+  protected Object getData(final AirbyteRecordMessage recordMessage) {
     return StandardNameTransformer.formatJsonPath(recordMessage.getData()).toString();
   }
 

@@ -13,9 +13,20 @@ HERE = pathlib.Path(__file__).parent
 # The text of the README file
 README = (HERE / "README.md").read_text()
 
+avro_dependency = "avro~=1.11.2"
+fastavro_dependency = "fastavro~=1.8.0"
+pyarrow_dependency = "pyarrow==12.0.1"
+
+langchain_dependency = "langchain==0.0.271"
+openai_dependency = "openai[embeddings]==0.27.9"
+cohere_dependency = "cohere==4.21"
+tiktoken_dependency = "tiktoken==0.4.0"
+
 setup(
     name="airbyte-cdk",
-    version="0.28.1",
+    # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
+    # updated if our semver format changes such as using release candidate versions.
+    version="0.51.38",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -33,7 +44,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "License :: OSI Approved :: MIT License",
         # Python Version Support
-        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.8",
     ],
     keywords="airbyte connector-development-kit cdk",
     project_urls={
@@ -44,39 +55,52 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
-        "airbyte-protocol-models==1.0.0",
+        "airbyte-protocol-models==0.4.0",
         "backoff",
-        # pinned to the last working version for us temporarily while we fix
-        "dataclasses-jsonschema==2.15.1",
         "dpath~=2.0.1",
         "isodate~=0.6.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
         "pendulum",
         "genson==1.2.2",
-        "pydantic~=1.9.2",
+        "pydantic>=1.10.8,<2.0.0",
         "python-dateutil",
-        "PyYAML~=5.4",
+        "PyYAML>=6.0.1",
         "requests",
         "requests_cache",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
         "cachetools",
+        "wcmatch==8.4",
     ],
-    python_requires=">=3.9",
+    python_requires=">=3.8",
     extras_require={
         "dev": [
+            avro_dependency,
+            fastavro_dependency,
             "freezegun",
-            "MyPy~=0.812",
+            "mypy",
             "pytest",
             "pytest-cov",
             "pytest-mock",
             "requests-mock",
             "pytest-httpserver",
+            "pandas==2.0.3",
+            pyarrow_dependency,
+            langchain_dependency,
+            openai_dependency,
+            cohere_dependency,
+            tiktoken_dependency,
         ],
         "sphinx-docs": [
             "Sphinx~=4.2",
             "sphinx-rtd-theme~=1.0",
         ],
+        "file-based": [
+            avro_dependency,
+            fastavro_dependency,
+            pyarrow_dependency,
+        ],
+        "vector-db-based": [langchain_dependency, openai_dependency, cohere_dependency, tiktoken_dependency],
     },
 )

@@ -1,0 +1,10 @@
+{
+  "credentials": {
+    "access_token": "fake-token",
+    "refresh_token": "fake-refresh-token",
+    "client_id": "fake_client_id",
+    "client_secret": "fake_client_secret",
+    "token_expiry_date": "2021-06-27T15:32:38Z"
+  },
+  "start_date": "2021-06-27T15:32:38Z"
+}

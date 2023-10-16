@@ -4,13 +4,13 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
-import static io.airbyte.db.DataTypeUtils.TIMETZ_FORMATTER;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
-import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
+import static io.airbyte.cdk.db.DataTypeUtils.TIMESTAMPTZ_FORMATTER;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_DECIMAL_DIGITS;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
+import static io.airbyte.cdk.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import static io.airbyte.integrations.source.postgres.PostgresType.safeGetJdbcType;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,12 +21,12 @@ import com.fasterxml.jackson.databind.node.BinaryNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.db.DataTypeUtils;
+import io.airbyte.cdk.db.SourceOperations;
+import io.airbyte.cdk.db.jdbc.AbstractJdbcCompatibleSourceOperations;
+import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.DataTypeUtils;
-import io.airbyte.db.SourceOperations;
-import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
-import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
@@ -34,6 +34,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -72,7 +73,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   @Override
   public JsonNode rowToJson(final ResultSet queryContext) throws SQLException {
-    // the first call communicates with the database. after that the result is cached.
+    // the first call communicates with the database, after that the result is cached.
     final ResultSetMetaData metadata = queryContext.getMetaData();
     final int columnCount = metadata.getColumnCount();
     final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
@@ -175,7 +176,15 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
         case "_varchar", "_char", "_bpchar", "_text", "_name" -> putArray(json, columnName, resultSet, colIndex);
         case "_int2", "_int4", "_int8", "_oid" -> putLongArray(json, columnName, resultSet, colIndex);
-        case "_numeric", "_decimal" -> putBigDecimalArray(json, columnName, resultSet, colIndex);
+        case "_numeric", "_decimal" -> {
+          // If a numeric_array column precision is not 0 AND scale is 0,
+          // then we know the precision and scale are purposefully chosen
+          if (metadata.getPrecision(colIndex) != 0 && metadata.getScale(colIndex) == 0) {
+            putBigIntArray(json, columnName, resultSet, colIndex);
+          } else {
+            putBigDecimalArray(json, columnName, resultSet, colIndex);
+          }
+        }
         case "_money" -> putMoneyArray(json, columnName, resultSet, colIndex);
         case "_float4", "_float8" -> putDoubleArray(json, columnName, resultSet, colIndex);
         case "_bool" -> putBooleanArray(json, columnName, resultSet, colIndex);
@@ -194,7 +203,13 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
             case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
             case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
             case REAL -> putFloat(json, columnName, resultSet, colIndex);
-            case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
+            case NUMERIC, DECIMAL -> {
+              if (metadata.getPrecision(colIndex) != 0 && metadata.getScale(colIndex) == 0) {
+                putBigInt(json, columnName, resultSet, colIndex);
+              } else {
+                putBigDecimal(json, columnName, resultSet, colIndex);
+              }
+            }
             // BIT is a bit string in Postgres, e.g. '0100'
             case BIT, CHAR, VARCHAR, LONGVARCHAR -> json.put(columnName, value);
             case DATE -> putDate(json, columnName, resultSet, colIndex);
@@ -202,7 +217,13 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
             case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
             case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
             case ARRAY -> putArray(json, columnName, resultSet, colIndex);
-            default -> json.put(columnName, value);
+            default -> {
+              if (columnInfo.columnType.isArrayType()) {
+                putArray(json, columnName, resultSet, colIndex);
+              } else {
+                json.put(columnName, value);
+              }
+            }
           }
         }
       }
@@ -231,7 +252,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       if (timetz == null) {
         arrayNode.add(NullNode.getInstance());
       } else {
-        arrayNode.add(timetz.format(TIMETZ_FORMATTER));
+        arrayNode.add(DateTimeConverter.convertToTimeWithTimezone(timetz));
       }
     }
     node.set(columnName, arrayNode);
@@ -241,7 +262,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      final LocalDateTime timestamp = getObject(arrayResultSet, 2, LocalDateTime.class);
+      final Timestamp timestamp = arrayResultSet.getTimestamp(2);
       if (timestamp == null) {
         arrayNode.add(NullNode.getInstance());
       } else {
@@ -332,11 +353,21 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
+  private void putBigIntArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
+    final ArrayNode arrayNode = Jsons.arrayNode();
+    final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
+    while (arrayResultSet.next()) {
+      final long value = DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getLong(2));
+      arrayNode.add(value);
+    }
+    node.set(columnName, arrayNode);
+  }
+
   private void putDoubleArray(final ObjectNode node, final String columnName, final ResultSet resultSet, final int colIndex) throws SQLException {
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getDouble(colIndex), Double::isFinite));
+      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> arrayResultSet.getDouble(2), Double::isFinite));
     }
     node.set(columnName, arrayNode);
   }
@@ -345,7 +376,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      final String moneyValue = parseMoneyValue(arrayResultSet.getString(colIndex));
+      final String moneyValue = parseMoneyValue(arrayResultSet.getString(2));
       arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
     }
     node.set(columnName, arrayNode);
@@ -371,7 +402,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       // Postgres boolean is mapped to JDBCType.BIT, but should be BOOLEAN
       return switch (typeName) {
-
         case "_bit" -> PostgresType.BIT_ARRAY;
         case "_bool" -> PostgresType.BOOL_ARRAY;
         case "_name" -> PostgresType.NAME_ARRAY;
@@ -398,6 +428,13 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         // It should not be converted to base64 binary string. So it is represented as JDBC VARCHAR.
         // https://www.postgresql.org/docs/14/datatype-binary.html
         case "bytea" -> PostgresType.VARCHAR;
+        case "numeric", "decimal" -> {
+          if (field.get(INTERNAL_DECIMAL_DIGITS) != null && field.get(INTERNAL_DECIMAL_DIGITS).asInt() == 0) {
+            yield PostgresType.BIGINT;
+          } else {
+            yield PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt(), POSTGRES_TYPE_DICT);
+          }
+        }
         case TIMESTAMPTZ -> PostgresType.TIMESTAMP_WITH_TIMEZONE;
         case TIMETZ -> PostgresType.TIME_WITH_TIMEZONE;
         default -> PostgresType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt(), POSTGRES_TYPE_DICT);
@@ -591,6 +628,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   private static class ColumnInfo {
+
     public String columnTypeName;
     public PostgresType columnType;
 

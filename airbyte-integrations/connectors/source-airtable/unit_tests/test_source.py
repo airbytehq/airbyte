@@ -3,6 +3,7 @@
 #
 
 
+import logging
 from unittest.mock import MagicMock
 
 import pytest
@@ -21,9 +22,9 @@ def test_spec(config):
     "status, check_passed",
     [
         (200, (True, None)),
-        (401, (False, '401 Client Error: None for url: https://api.airtable.com/v0/meta/bases')),
+        (401, (False, "401 Client Error: None for url: https://api.airtable.com/v0/meta/bases")),
     ],
-    ids=["success", "fail"]
+    ids=["success", "fail"],
 )
 def test_check_connection(config, status, check_passed, fake_bases_response, fake_tables_response, requests_mock):
     source = SourceAirtable()
@@ -58,5 +59,17 @@ def test_streams(config, fake_bases_response, fake_tables_response, expected_dis
     streams = list(source.streams(config))
     assert len(streams) == 1
     assert [stream.name for stream in streams] == expected_discovery_stream_name
+
+
+def test_remove_missed_streams_from_catalog(mocker, config, fake_catalog, fake_streams, caplog):
+    logger = logging.getLogger(__name__)
+    source = SourceAirtable()
+    mocker.patch("source_airtable.source.SourceAirtable.streams", return_value=fake_streams)
+    streams_before = len(fake_catalog.streams)
+    catalog = source._remove_missed_streams_from_catalog(logger=logger, config=config, catalog=fake_catalog)
+    assert streams_before - len(catalog.streams) == 1
+    assert len(caplog.messages) == 1
+    assert caplog.text.startswith("WARNING")
+
 
 #

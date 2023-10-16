@@ -1,0 +1,29 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 06ec60c7-7468-45c0-91ac-174f6e1a788b
+  dockerImageTag: 0.1.4
+  dockerRepository: airbyte/destination-tidb
+  githubIssueLabel: destination-tidb
+  icon: tidb.svg
+  license: MIT
+  name: TiDB
+  normalizationConfig:
+    normalizationIntegrationType: tidb
+    normalizationRepository: airbyte/normalization-tidb
+    normalizationTag: 0.4.3
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: alpha
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/tidb
+  supportsDbt: true
+  tags:
+    - language:java
+  ab_internal:
+    sl: 100
+    ql: 100
+  supportLevel: community
+metadataSpecVersion: "1.0"

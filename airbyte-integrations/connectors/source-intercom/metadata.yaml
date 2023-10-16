@@ -1,0 +1,35 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.intercom.io
+  connectorSubtype: api
+  connectorType: source
+  definitionId: d8313939-3782-41b0-be29-b3ca20d8dd3a
+  dockerImageTag: 0.3.0
+  dockerRepository: airbyte/source-intercom
+  githubIssueLabel: source-intercom
+  icon: intercom.svg
+  license: MIT
+  name: Intercom
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - conversations
+      - contacts
+      - conversation_parts
+      - teams
+      - companies
+  documentationUrl: https://docs.airbyte.com/integrations/sources/intercom
+  tags:
+    - language:low-code
+    - language:python
+  ab_internal:
+    sl: 300
+    ql: 400
+  supportLevel: certified
+metadataSpecVersion: "1.0"

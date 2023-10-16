@@ -1,18 +1,18 @@
-version: "0.1.0"
+version: "0.29.0"
 definitions:
   selector:
     extractor:
-      field_pointer: []
-  url_stream_slicer:
-    type: "ListStreamSlicer"
-    slice_values: "{{ config['urls'] }}"
+      field_path: []
+  url_partition_router:
+    type: "ListPartitionRouter"
+    values: "{{ config['urls'] }}"
     cursor_field: url
     request_option:
       field_name: "url"
       inject_into: "request_parameter"
-  strategy_stream_slicer:
-    type: "ListStreamSlicer"
-    slice_values: "{{ config['strategies'] }}"
+  strategy_partition_router:
+    type: "ListPartitionRouter"
+    values: "{{ config['strategies'] }}"
     cursor_field: strategy
     request_option:
       field_name: "strategy"
@@ -20,38 +20,35 @@ definitions:
   requester:
     url_base: "https://www.googleapis.com/pagespeedonline/v5/"
     http_method: "GET"
-    request_options_provider:
-      request_parameters:
-        key: "{{ config['api_key'] }}"
-        category: "{{ config['categories'] }}"
+    request_parameters:
+      key: "{{ config['api_key'] }}"
+      category: "{{ config['categories'] }}"
   retriever:
     record_selector:
-      $ref: "*ref(definitions.selector)"
+      $ref: "#/definitions/selector"
     paginator:
       type: NoPagination
     requester:
-      $ref: "*ref(definitions.requester)"
-    stream_slicer:
-      type: CartesianProductStreamSlicer
-      stream_slicers:
-        - "*ref(definitions.url_stream_slicer)"
-        - "*ref(definitions.strategy_stream_slicer)"
+      $ref: "#/definitions/requester"
+    partition_router:
+      - "#/definitions/url_partition_router"
+      - "#/definitions/strategy_partition_router"
   base_stream:
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      $ref: "#/definitions/retriever"
   pagespeed_stream:
     transformations:
       - type: AddFields
         fields:
           - path: ["strategy"]
             value: "{{ stream_slice.strategy }}"
-    $ref: "*ref(definitions.base_stream)"
-    $options:
+    $ref: "#/definitions/base_stream"
+    $parameters:
       name: "pagespeed"
       path: "/runPagespeed"
 
 streams:
-  - "*ref(definitions.pagespeed_stream)"
+  - "#/definitions/pagespeed_stream"
 
 check:
   stream_names:

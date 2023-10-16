@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "invoice": {
+      "type": ["null", "string"]
+    },
+    "livemode": {
+      "type": ["null", "boolean"]
+    },
+    "object": {
+      "type": ["null", "string"]
+    },
+    "period": {
+      "type": ["null", "object"],
+      "properties": {
+        "start": {
+          "type": ["null", "integer"]
+        },
+        "end": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "subscription_item": {
+      "type": ["null", "string"]
+    },
+    "total_usage": {
+      "type": ["null", "integer"]
+    }
+  }
+}

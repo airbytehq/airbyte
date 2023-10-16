@@ -55,7 +55,7 @@ class SourceFtp(AbstractSource):
 
         # Get last file to infer schema
         # Use pandas `infer_objects` to infer dtypes
-        df = connection.fetch_file(files[-1], config["file_type"])
+        df = connection.fetch_file(fn=files[-1], file_type=config["file_type"], separator=config.get("separator"))
         df = df.infer_objects()
 
         # Default column used for incremental sync

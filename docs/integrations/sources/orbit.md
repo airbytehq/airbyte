@@ -8,7 +8,7 @@ This source can sync data for the [Orbit API](https://docs.orbit.love/reference/
 
 This Source is capable of syncing the following core Streams:
 
-* [Members](https://docs.orbit.love/reference/get_-workspace-slug-members) 
+* [Members](https://api.orbit.love/reference/get_workspace-slug-members) 
 * [Workspaces](https://docs.orbit.love/reference/get_workspaces-workspace-slug)
 
 ### Features

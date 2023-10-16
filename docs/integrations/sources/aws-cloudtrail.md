@@ -51,6 +51,7 @@ Please, follow this [steps](https://docs.aws.amazon.com/powershell/latest/usergu
 
 | Version | Date       | Pull Request                                             | Subject                                           |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------ |
+| 0.1.5   | 2023-02-15 | [23083](https://github.com/airbytehq/airbyte/pull/23083) | Specified date formatting in specification                             |
 | 0.1.4   | 2022-04-11 | [11763](https://github.com/airbytehq/airbyte/pull/11763) | Upgrade to Python 3.9                             |
 | 0.1.3   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications |
 | 0.1.2   | 2021-08-04 | [5152](https://github.com/airbytehq/airbyte/pull/5152)   | Fix connector spec.json                           |

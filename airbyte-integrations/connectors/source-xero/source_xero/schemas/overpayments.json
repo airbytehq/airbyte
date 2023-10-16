@@ -15,9 +15,7 @@
       "type": ["null", "string"]
     },
     "AppliedAmount": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "LineAmountTypes": {
       "type": ["null", "string"]
@@ -29,19 +27,13 @@
       "type": ["null", "array"]
     },
     "SubTotal": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "TotalTax": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "Total": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "UpdatedDateUTC": {
       "type": ["null", "string"],
@@ -54,14 +46,10 @@
       "type": ["string"]
     },
     "CurrencyRate": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "RemainingCredit": {
-      "type": ["null", "number"],
-      "minimum": -1e33,
-      "maximum": 1e33
+      "type": ["null", "number"]
     },
     "Allocations": {
       "type": ["null", "array"],

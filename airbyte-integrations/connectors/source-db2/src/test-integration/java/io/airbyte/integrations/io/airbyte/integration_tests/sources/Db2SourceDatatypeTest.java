@@ -6,15 +6,15 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.db2.Db2Source;
-import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -311,7 +311,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("TIME")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'00.00.00'", "'1:59 PM'", "'23.59.59'")
-            .addExpectedValues(null, "00:00:00.000000", "13:59:00.000000", "23:59:59.000000")
+            .addExpectedValues(null, "00:00:00.000000", "13:59:00.000000", "23:59:59")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
@@ -319,8 +319,8 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("TIMESTAMP")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'2018-03-22-12.00.00.123'", "'2018-03-22-12.00.00.123456'", "'20180322125959'", "'20180101 12:00:59 PM'")
-            .addExpectedValues(null, "2018-03-22T12:00:00.123000Z", "2018-03-22T12:00:00.123456Z", "2018-03-22T12:59:59.000000Z",
-                "2018-01-01T12:00:59.000000Z")
+            .addExpectedValues(null, "2018-03-22T12:00:00.123", "2018-03-22T12:00:00.123456", "2018-03-22T12:59:59",
+                "2018-01-01T12:00:59")
             .build());
   }
 

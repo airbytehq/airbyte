@@ -2,23 +2,9 @@
   "streams": [
     {
       "stream": {
-        "name": "users/table_1",
+        "name": "users/table_1/tblmrNtgqio9IWVGx",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {}
-        },
-        "supported_sync_modes": ["full_refresh"],
-        "supported_destination_sync_modes": ["overwrite", "append_dedup"]
-      },
-      "sync_mode": "full_refresh",
-      "destination_sync_mode": "overwrite"
-    }, 
-    {
-      "stream": {
-        "name": "users/table_2",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -30,9 +16,9 @@
     },
     {
       "stream": {
-        "name": "users/table_6",
+        "name": "users/table_2/tblCjIgm5yveWC4X5",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -44,9 +30,9 @@
     },
     {
       "stream": {
-        "name": "users/field_type_test",
+        "name": "users/table_6/tblSXpxKHg0OiLxbI",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -58,9 +44,9 @@
     },
     {
       "stream": {
-        "name": "users/50_columns",
+        "name": "users/field_type_test/tblFcp5mncufoYaR9",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -72,9 +58,9 @@
     },
     {
       "stream": {
-        "name": "users/checkboxes",
+        "name": "users/50_columns/tbl01Hi93Tt6XJ0u5",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },
@@ -86,9 +72,23 @@
     },
     {
       "stream": {
-        "name": "untitled_base/table_1",
+        "name": "users/checkboxes/tbl81WIAUZg5nwGN8",
         "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
+          "$schema": "https://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "supported_destination_sync_modes": ["overwrite", "append_dedup"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "untitled_base/table_1/tblT7mnwDS5TVtfOh",
+        "json_schema": {
+          "$schema": "https://json-schema.org/draft-07/schema#",
           "type": "object",
           "properties": {}
         },

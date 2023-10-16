@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Executions",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "sid": {
+      "type": ["null", "string"]
+    },
+    "account_sid": {
+      "type": ["null", "string"]
+    },
+    "flow_sid": {
+      "type": ["null", "string"]
+    },
+    "contact_sid": {
+      "type": ["null", "string"]
+    },
+    "contact_channel_address": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "context": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "date_created": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "date_updated": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "links": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "execution_context": { "type": ["null", "string"] },
+        "steps": { "type": ["null", "string"] }
+      }
+    }
+  }
+}

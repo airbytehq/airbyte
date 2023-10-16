@@ -305,6 +305,12 @@
     "order_id": {
       "type": ["null", "integer"]
     },
+    "payment_terms": {
+      "type": ["null", "string"]
+    },
+    "po_number": {
+      "type": ["null", "string"]
+    },
     "shipping_line": {
       "properties": {
         "price": {

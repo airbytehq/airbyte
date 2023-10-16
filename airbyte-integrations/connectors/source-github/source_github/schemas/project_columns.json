@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
     "url": {
@@ -21,18 +21,18 @@
       "type": ["null", "string"]
     },
     "created_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"],
+      "type": "string",
       "format": "date-time"
     },
     "repository": {
-      "type": ["null", "string"]
+      "type": "string"
     },
     "project_id": {
-      "type": ["null", "integer"]
+      "type": "integer"
     }
   }
 }

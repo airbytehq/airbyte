@@ -50,7 +50,7 @@ class CustomEggInfoCommand(egg_info):
 
 MAIN_REQUIREMENTS = ["airbyte-cdk", "tap-kustomer==1.0.2"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest-mock~=3.6.1", "pytest~=6.1"]
 
 setup(
     name="source_kustomer_singer",

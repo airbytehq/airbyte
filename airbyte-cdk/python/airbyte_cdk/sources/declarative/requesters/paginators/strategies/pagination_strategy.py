@@ -7,14 +7,20 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional
 
 import requests
-from dataclasses_jsonschema import JsonSchemaMixin
 
 
 @dataclass
-class PaginationStrategy(JsonSchemaMixin):
+class PaginationStrategy:
     """
     Defines how to get the next page token
     """
+
+    @property
+    @abstractmethod
+    def initial_token(self) -> Optional[Any]:
+        """
+        Return the initial value of the token
+        """
 
     @abstractmethod
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:

@@ -5,10 +5,14 @@
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
+import requests
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from pydantic.error_wrappers import ValidationError
 
 from .streams import (
     ApplicationRoles,
@@ -21,6 +25,7 @@ from .streams import (
     Groups,
     IssueComments,
     IssueCustomFieldContexts,
+    IssueCustomFieldOptions,
     IssueFieldConfigurations,
     IssueFields,
     IssueLinkTypes,
@@ -32,6 +37,8 @@ from .streams import (
     IssueResolutions,
     Issues,
     IssueSecuritySchemes,
+    IssueTransitions,
+    IssueTypes,
     IssueTypeSchemes,
     IssueTypeScreenSchemes,
     IssueVotes,
@@ -46,6 +53,7 @@ from .streams import (
     ProjectComponents,
     ProjectEmail,
     ProjectPermissionSchemes,
+    ProjectRoles,
     Projects,
     ProjectTypes,
     ProjectVersions,
@@ -81,30 +89,40 @@ class SourceJira(AbstractSource):
         return BasicHttpAuthenticator(config["email"], config["api_token"])
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        config = self._validate_and_transform(config)
-        authenticator = self.get_authenticator(config)
-        kwargs = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-        labels_stream = Labels(**kwargs)
-        next(read_full_refresh(labels_stream), None)
-        # check projects
-        projects_stream = Projects(**kwargs)
-        projects = {project["key"] for project in read_full_refresh(projects_stream)}
-        unknown_projects = set(config["projects"]) - projects
-        if unknown_projects:
-            return False, "unknown project(s): " + ", ".join(unknown_projects)
-        return True, None
+        try:
+            config = self._validate_and_transform(config)
+            authenticator = self.get_authenticator(config)
+            kwargs = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+            labels_stream = Labels(**kwargs)
+            next(read_full_refresh(labels_stream), None)
+            # check projects
+            projects_stream = Projects(**kwargs)
+            projects = {project["key"] for project in read_full_refresh(projects_stream)}
+            unknown_projects = set(config["projects"]) - projects
+            if unknown_projects:
+                return False, "unknown project(s): " + ", ".join(unknown_projects)
+            return True, None
+        except ValidationError as validation_error:
+            return False, validation_error
+        except requests.exceptions.RequestException as request_error:
+            if request_error.response.status_code == requests.codes.not_found:
+                raise AirbyteTracedException(
+                    message="Config validation error: please validate your domain.",
+                    internal_message=str(request_error),
+                    failure_type=FailureType.config_error,
+                ) from None
+            # sometimes jira returns non json response
+            message = ""
+            if request_error.response.headers.get("content-type") == "application/json":
+                message = " ".join(map(str, request_error.response.json().get("errorMessages", "")))
+            return False, f"{message} {request_error}"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
         incremental_args = {**args, "start_date": config.get("start_date")}
-        render_fields = config.get("render_fields", False)
-        issues_stream = Issues(
-            **incremental_args,
-            expand_changelog=config.get("expand_issue_changelog", False),
-            render_fields=render_fields,
-        )
+        issues_stream = Issues(**incremental_args)
         issue_fields_stream = IssueFields(**args)
         experimental_streams = []
         if config.get("enable_experimental_streams", False):
@@ -125,6 +143,7 @@ class SourceJira(AbstractSource):
             issue_fields_stream,
             IssueFieldConfigurations(**args),
             IssueCustomFieldContexts(**args),
+            IssueCustomFieldOptions(**args),
             IssueLinkTypes(**args),
             IssueNavigatorSettings(**args),
             IssueNotificationSchemes(**args),
@@ -133,7 +152,9 @@ class SourceJira(AbstractSource):
             IssueRemoteLinks(**incremental_args),
             IssueResolutions(**args),
             IssueSecuritySchemes(**args),
+            IssueTransitions(**args),
             IssueTypeSchemes(**args),
+            IssueTypes(**args),
             IssueTypeScreenSchemes(**args),
             IssueVotes(**incremental_args),
             IssueWatchers(**incremental_args),
@@ -143,6 +164,7 @@ class SourceJira(AbstractSource):
             Permissions(**args),
             PermissionSchemes(**args),
             Projects(**args),
+            ProjectRoles(**args),
             ProjectAvatars(**args),
             ProjectCategories(**args),
             ProjectComponents(**args),

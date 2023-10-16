@@ -246,7 +246,7 @@ def test_source_streams(config, activity):
     source = SourceMarketo()
     with patch("source_marketo.source.ActivityTypes.read_records", Mock(return_value=[activity])):
         streams = source.streams(config)
-    assert len(streams) == 6
+    assert len(streams) == 7
     assert all(isinstance(stream, MarketoStream) for stream in streams)
 
 
@@ -306,8 +306,8 @@ today = today.strftime("%Y-%m-%dT%H:%M:%SZ")
         ({"updatedAt": today}, {"updatedAt": None}, {"updatedAt": today}),
         ({"updatedAt": today}, {}, {"updatedAt": today}),
         ({"updatedAt": yesterday}, {"updatedAt": today}, {"updatedAt": today}),
-        ({"updatedAt": today}, {"updatedAt": yesterday}, {"updatedAt": today})
-    )
+        ({"updatedAt": today}, {"updatedAt": yesterday}, {"updatedAt": today}),
+    ),
 )
 def test_get_updated_state(config, latest_record, current_state, expected_state):
     stream = Leads(config)

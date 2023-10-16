@@ -32,8 +32,8 @@ Schema:
       - header
       - api_token
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       header:
         type: string
       api_token:
@@ -63,8 +63,8 @@ Schema:
     required:
       - api_token
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       api_token:
         type: string
 ```
@@ -93,8 +93,8 @@ Schema:
     required:
       - username
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       username:
         type: string
       password:
@@ -149,8 +149,8 @@ Schema:
       - access_token_name
       - expires_in_name
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       token_refresh_endpoint:
         type: string
       client_id:

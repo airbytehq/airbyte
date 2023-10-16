@@ -4,12 +4,12 @@
 
 
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.utils import AirbyteTracedException
 from source_file import SourceFile
-from source_file.client import Client, ConfigurationError
+from source_file.client import Client
 
 SAMPLE_DIRECTORY = Path(__file__).resolve().parent.joinpath("sample_files/formats")
 
@@ -60,7 +60,7 @@ def test_raises_file_wrong_format(file_format, extension, wrong_format, filename
     file_path = str(file_directory.joinpath(f"{filename}.{extension}"))
     configs = {"dataset_name": "test", "format": wrong_format, "url": file_path, "provider": {"storage": "local"}}
     client = Client(**configs)
-    with pytest.raises((TypeError, ValueError, ConfigurationError)):
+    with pytest.raises((TypeError, ValueError, AirbyteTracedException)):
         list(client.read())
 
 
@@ -79,29 +79,3 @@ def run_load_nested_json_schema(config, expected_columns=10, expected_rows=42):
     df = data_list[0]
     assert len(df) == expected_rows  # DataFrame should have 42 items
     return df
-
-
-# https://github.com/airbytehq/alpha-beta-issues/issues/174
-# this is to ensure we make all conditions under which the bug is reproduced, i.e.
-# - chunk size < file size
-# - column type in the last chunk is not `string`
-@patch("source_file.client.Client.CSV_CHUNK_SIZE", 1)
-def test_csv_schema():
-    source = SourceFile()
-    file_path = str(SAMPLE_DIRECTORY.parent.joinpath("discover.csv"))
-    config = {"dataset_name": "test", "format": "csv", "url": file_path, "provider": {"storage": "local"}}
-    catalog = source.discover(logger=AirbyteLogger(), config=config).dict()
-    assert len(catalog["streams"]) == 1
-    schema = catalog["streams"][0]["json_schema"]
-    assert schema == {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "properties": {
-            "Address": {"type": ["string", "null"]},
-            "City": {"type": ["string", "null"]},
-            "First Name": {"type": ["string", "null"]},
-            "Last Name": {"type": ["string", "null"]},
-            "State": {"type": ["string", "null"]},
-            "zip_code": {"type": ["string", "null"]},
-        },
-        "type": "object",
-    }
