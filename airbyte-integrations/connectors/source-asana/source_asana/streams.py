@@ -74,7 +74,8 @@ class AsanaStream(HttpStream, ABC):
             if "object" in value["type"]:
                 opt_fields.append(self._handle_object_type(prop, value))
             elif "array" in value["type"]:
-                opt_fields.append(self._handle_array_type(prop, value.get("items", [])))
+                opt_fields.append(self._handle_array_type(
+                    prop, value.get("items", [])))
             else:
                 opt_fields.append(prop)
 
@@ -91,7 +92,8 @@ class AsanaStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        yield from response_json.get("data", [])  # Asana puts records in a container array "data"
+        # Asana puts records in a container array "data"
+        yield from response_json.get("data", [])
 
     def read_slices_from_records(self, stream_class: AsanaStreamType, slice_field: str) -> Iterable[Optional[Mapping[str, Any]]]:
         """
@@ -159,7 +161,7 @@ class SectionsCompact(ProjectRelatedStream):
         return f"projects/{project_gid}/sections"
 
 
-class Section(AsanaStream):
+class Sections(AsanaStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         section_gid = stream_slice["section_gid"]
         return f"sections/{section_gid}"
