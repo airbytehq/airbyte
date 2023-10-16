@@ -11,6 +11,15 @@
     },
     {
       "stream": {
+        "name": "sections_compact",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "sections",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]

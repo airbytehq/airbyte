@@ -5,11 +5,12 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import ClassVar, List, Tuple
+from typing import ClassVar, List
 
-from dagger import CacheSharingMode, CacheVolume, Container, Directory
+from dagger import CacheSharingMode, CacheVolume
+from pipelines import hacks
 from pipelines.actions import environments
-from pipelines.bases import Step, StepResult, StepStatus
+from pipelines.bases import Step, StepResult
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.contexts import PipelineContext
 from pipelines.utils import sh_dash_c
@@ -37,7 +38,10 @@ class GradleTask(Step, ABC):
 
     @property
     def connector_java_build_cache(self) -> CacheVolume:
-        return self.context.dagger_client.cache_volume("gradle-cache")
+        # TODO: remove this once we finish the project to boost source-postgres CI performance.
+        # We should use a static gradle-cache volume name.
+        cache_volume_name = hacks.get_gradle_cache_volume_name(self.context, self.logger)
+        return self.context.dagger_client.cache_volume(cache_volume_name)
 
     @property
     def build_include(self) -> List[str]:
@@ -123,6 +127,8 @@ class GradleTask(Step, ABC):
             # Set RUN_IN_AIRBYTE_CI to tell gradle how to configure its build cache.
             # This is consumed by settings.gradle in the repo root.
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            # TODO: remove this once we finish the project to boost source-postgres CI performance.
+            .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger))
             # Mount the gradle cache volume.
             # We deliberately don't mount it at $GRADLE_HOME, instead we load it there and store it from there using rsync.
             # This is because the volume is accessed concurrently by all GradleTask instances.
