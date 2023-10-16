@@ -12,13 +12,7 @@
       "type": ["null", "integer"]
     },
     "geographic_view.location_type": {
-      "type": ["null", "string"],
-      "enum": [
-        "AREA_OF_INTEREST",
-        "LOCATION_OF_PRESENCE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "type": ["null", "string"]
     },
     "ad_group.id": {
       "type": ["null", "integer"]

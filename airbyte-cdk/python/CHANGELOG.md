@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.38
+Add ability to wrap HTTP errors with specific status codes occurred during access token refresh into AirbyteTracedException
+
 ## 0.51.37
 Enable debug logging when running availability check
 
