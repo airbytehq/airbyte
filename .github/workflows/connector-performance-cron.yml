@@ -1,10 +1,6 @@
 name: Connector Performance Harness Cron
 on:
-  workflow_dispatch:
-    inputs:
-      test:
-        description: might not be needed.
-        default: "test"
+  workflow_dispatch
 
 jobs:
   postgres-1m-run:

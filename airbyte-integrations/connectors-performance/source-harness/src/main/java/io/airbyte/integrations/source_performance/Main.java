@@ -78,7 +78,6 @@ public class Main {
     try {
       final PerformanceTest test = new PerformanceTest(
           image,
-          dataset,
           config.toString(),
           catalog.toString());
       test.runTest();
