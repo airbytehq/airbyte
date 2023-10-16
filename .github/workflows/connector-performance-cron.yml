@@ -1,3 +1,4 @@
+name: Connector Performance Harness Cron
 on:
   workflow_dispatch:
     inputs:
