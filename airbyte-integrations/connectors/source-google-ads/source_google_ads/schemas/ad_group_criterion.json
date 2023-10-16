@@ -194,7 +194,7 @@
     "ad_group_criterion.url_custom_parameters": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "object"]
+        "type": ["null", "string"]
       }
     },
     "ad_group_criterion.user_interest.user_interest_category": {
