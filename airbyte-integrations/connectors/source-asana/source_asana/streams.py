@@ -74,8 +74,7 @@ class AsanaStream(HttpStream, ABC):
             if "object" in value["type"]:
                 opt_fields.append(self._handle_object_type(prop, value))
             elif "array" in value["type"]:
-                opt_fields.append(self._handle_array_type(
-                    prop, value.get("items", [])))
+                opt_fields.append(self._handle_array_type(prop, value.get("items", [])))
             else:
                 opt_fields.append(prop)
 
