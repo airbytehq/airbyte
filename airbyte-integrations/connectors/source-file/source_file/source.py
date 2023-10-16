@@ -112,13 +112,6 @@ class SourceFile(Source):
 
         # override cloud spec to remove local file support
         if is_cloud_environment():
-            for provider in spec.connectionSpecification["properties"]["provider"]["oneOf"]:
-                storage = provider["properties"]["storage"]
-
-            if "enum" in storage:
-                storage.pop("enum")
-                storage["const"] = storage.pop("default")
-
             for i in range(len(spec.connectionSpecification["properties"]["provider"]["oneOf"])):
                 provider = spec.connectionSpecification["properties"]["provider"]["oneOf"][i]
                 if provider["properties"]["storage"]["const"] == LOCAL_STORAGE_NAME:
