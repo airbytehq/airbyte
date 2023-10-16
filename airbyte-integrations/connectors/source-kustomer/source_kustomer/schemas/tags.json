@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "color": { "type": ["null", "string"] },
+    "created_at": { "format": "date-time", "type": ["null", "string"] },
+    "created_by": {
+      "properties": {
+        "id": { "type": ["null", "string"] },
+        "type": { "type": ["null", "string"] }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": false
+    },
+    "deleted": { "type": ["null", "boolean"] },
+    "id": { "type": ["null", "string"] },
+    "links": {
+      "properties": { "self": { "type": ["null", "string"] } },
+      "type": ["null", "object"],
+      "additionalProperties": false
+    },
+    "modified_at": { "type": ["null", "string"] },
+    "modified_by": {
+      "properties": {
+        "id": { "type": ["null", "string"] },
+        "type": { "type": ["null", "string"] }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": false
+    },
+    "name": { "type": ["null", "string"] },
+    "org": {
+      "properties": {
+        "id": { "type": ["null", "string"] },
+        "type": { "type": ["null", "string"] }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": false
+    },
+    "type": { "type": ["null", "string"] },
+    "updated_at": { "format": "date-time", "type": ["null", "string"] }
+  }
+}

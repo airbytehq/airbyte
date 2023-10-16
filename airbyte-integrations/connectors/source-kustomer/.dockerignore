@@ -1,7 +1,6 @@
 *
 !Dockerfile
-!Dockerfile.test
 !main.py
-!source_kustomer_singer
+!source_kustomer
 !setup.py
 !secrets
