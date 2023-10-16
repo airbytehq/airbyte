@@ -22,6 +22,16 @@ on:
         description: "Custom UUID of workflow run. Used because GitHub dispatches endpoint does not return workflow run id."
         type: string
         required: false
+      stream-number:
+        description: "Number of streams to use for destination performance measurement."
+        type: string
+        required: false
+        default: "1"
+      sync-mode:
+        description: "Sync mode to use for destination performance measurement."
+        required: false
+        type: string
+        default: "full_refresh"
   workflow_dispatch:
     inputs:
       connector:
