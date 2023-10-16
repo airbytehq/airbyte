@@ -169,13 +169,24 @@ class AddBuildInstructionsToDoc(Step):
             textwrap.dedent(
                 """
             ## Build instructions
+
+            ### Use `airbyte-ci` to build your connector
+            The Airbyte way of building this connector is to use our `airbyte-ci` tool.
+            You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1).
+            Then running the following command will build your connector:
+
+            ```bash
+            airbyte-ci connectors --name {{ connector_technical_name }} build
+            ```
+            Once the command is done, you will find your connector image in your local docker registry: `{{ connector_image }}:dev`.
+
             ### Build your own connector image
             This connector is built using our dynamic built process.
             The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
             The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
             It does not rely on a Dockerfile.
 
-            If you would like to patch our connector and build your own a simple approach would be:
+            If you would like to patch our connector and build your own a simple approach would be to:
 
             1. Create your own Dockerfile based on the latest version of the connector image.
             ```Dockerfile
@@ -225,7 +236,12 @@ class AddBuildInstructionsToDoc(Step):
             )
         )
 
-        build_instructions = build_instructions_template.render({"connector_image": self.context.connector.metadata["dockerRepository"]})
+        build_instructions = build_instructions_template.render(
+            {
+                "connector_image": self.context.connector.metadata["dockerRepository"],
+                "connector_technical_name": self.context.connector.technical_name,
+            }
+        )
 
         new_doc = "\n".join(og_lines[:line_no_for_build_instructions] + [build_instructions] + og_lines[line_no_for_build_instructions:])
         return new_doc
