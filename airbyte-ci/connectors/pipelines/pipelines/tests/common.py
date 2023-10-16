@@ -17,7 +17,7 @@ from connector_ops.utils import Connector
 from dagger import Container, Directory, File
 from pipelines import hacks
 from pipelines.actions import environments
-from pipelines.bases import CIContext, PytestStep, Step, StepResult, StepStatus
+from pipelines.bases import CIContext, Step, StepResult, StepStatus
 from pipelines.utils import METADATA_FILE_NAME
 
 
@@ -175,12 +175,13 @@ class QaChecks(Step):
         return await self.get_step_result(qa_checks)
 
 
-class AcceptanceTests(PytestStep):
+class AcceptanceTests(Step):
     """A step to run acceptance tests for a connector if it has an acceptance test config file."""
 
     title = "Acceptance tests"
     CONTAINER_TEST_INPUT_DIRECTORY = "/test_input"
     CONTAINER_SECRETS_DIRECTORY = "/test_input/secrets"
+    skipped_exit_code = 5
 
     @property
     def base_cat_command(self) -> List[str]:

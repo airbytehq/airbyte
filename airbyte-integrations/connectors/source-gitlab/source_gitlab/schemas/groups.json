@@ -19,6 +19,25 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "default_branch_protection_defaults": {
+      "type": ["null", "object"],
+      "properties": {
+        "allow_force_push": {
+          "type": ["null", "boolean"]
+        },
+        "allowed_to_merge": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "access_level": {
+                "type": ["null", "integer"]
+              }
+            }
+          }
+        }
+      }
+    },
     "web_url": {
       "type": ["null", "string"]
     },

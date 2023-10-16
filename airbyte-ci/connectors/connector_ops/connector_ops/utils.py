@@ -27,7 +27,9 @@ OSS_CATALOG_URL = "https://connectors.airbyte.com/files/registries/v0/oss_regist
 CONNECTOR_PATH_PREFIX = "airbyte-integrations/connectors"
 SOURCE_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/source-"
 DESTINATION_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/destination-"
-THIRD_PARTY_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + "/third_party/"
+
+THIRD_PARTY_GLOB = "third-party"
+THIRD_PARTY_CONNECTOR_PATH_PREFIX = CONNECTOR_PATH_PREFIX + f"/{THIRD_PARTY_GLOB}/"
 SCAFFOLD_CONNECTOR_GLOB = "-scaffold-"
 
 
@@ -298,6 +300,10 @@ class Connector:
         return Path(f"./airbyte-integrations/connectors/{self.technical_name}")
 
     @property
+    def has_dockerfile(self) -> bool:
+        return (self.code_directory / "Dockerfile").is_file()
+
+    @property
     def metadata_file_path(self) -> Path:
         return self.code_directory / METADATA_FILE_NAME
 
@@ -319,20 +325,19 @@ class Connector:
         return None
 
     @property
-    def version(self) -> str:
+    def version(self) -> Optional[str]:
         if self.metadata is None:
             return self.version_in_dockerfile_label
         return self.metadata["dockerImageTag"]
 
     @property
     def version_in_dockerfile_label(self) -> Optional[str]:
-        try:
-            with open(self.code_directory / "Dockerfile") as f:
-                for line in f:
-                    if "io.airbyte.version" in line:
-                        return line.split("=")[1].strip()
-        except FileNotFoundError as e:
+        if not self.has_dockerfile:
             return None
+        with open(self.code_directory / "Dockerfile") as f:
+            for line in f:
+                if "io.airbyte.version" in line:
+                    return line.split("=")[1].strip()
         raise ConnectorVersionNotFound(
             """
             Could not find the connector version from its Dockerfile.
@@ -487,6 +492,10 @@ class Connector:
         if self.supports_normalization:
             return f"{self.metadata['normalizationConfig']['normalizationTag']}"
 
+    @property
+    def is_using_poetry(self) -> bool:
+        return Path(self.code_directory / "pyproject.toml").exists()
+
     def get_secret_manager(self, gsm_credentials: str):
         return SecretsManager(connector_name=self.technical_name, gsm_credentials=gsm_credentials)
 
@@ -540,7 +549,9 @@ def get_all_connectors_in_repo() -> Set[Connector]:
     return {
         Connector(Path(metadata_file).parent.name)
         for metadata_file in glob(f"{repo_path}/airbyte-integrations/connectors/**/metadata.yaml", recursive=True)
-        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file
+        # HACK: The Connector util is not good at fetching metadata for third party connectors.
+        # We want to avoid picking a connector that does not have metadata.
+        if SCAFFOLD_CONNECTOR_GLOB not in metadata_file and THIRD_PARTY_GLOB not in metadata_file
     }
 
 

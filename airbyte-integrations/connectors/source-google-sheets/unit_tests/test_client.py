@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+from unittest.mock import MagicMock
 
 import pytest
 import requests
@@ -14,12 +15,54 @@ def test_backoff_give_up(status, need_give_up, mocker):
     assert need_give_up is GoogleSheetsClient.Backoff.give_up(e)
 
 
-def test_backoff_increase_row_batch_size(mocker):
-    assert GoogleSheetsClient.Backoff.row_batch_size == 200
+def test_backoff_increase_row_batch_size():
+    client = GoogleSheetsClient(
+        {"auth_type": "Client", "client_id": "fake_client_id", "client_secret": "fake_client_secret", "refresh_token": "fake_refresh_token"}
+    )
+    assert client.Backoff.row_batch_size == 200
+    assert client._create_range("spreadsheet_id", 0) == "spreadsheet_id!0:200"
     e = requests.HTTPError("error")
     e.status_code = 429
-    GoogleSheetsClient.Backoff.increase_row_batch_size({"exception": e})
-    assert GoogleSheetsClient.Backoff.row_batch_size == 210
-    GoogleSheetsClient.Backoff.row_batch_size = 1000
-    GoogleSheetsClient.Backoff.increase_row_batch_size({"exception": e})
-    assert GoogleSheetsClient.Backoff.row_batch_size == 1000
+    client.Backoff.increase_row_batch_size({"exception": e})
+    assert client.Backoff.row_batch_size == 210
+    assert client._create_range("spreadsheet_id", 0) == "spreadsheet_id!0:210"
+    client.Backoff.row_batch_size = 1000
+    client.Backoff.increase_row_batch_size({"exception": e})
+    assert client.Backoff.row_batch_size == 1000
+    assert client._create_range("spreadsheet_id", 0) == "spreadsheet_id!0:1000"
+
+
+def test_client_get_values_on_backoff(caplog):
+    client_google_sheets = GoogleSheetsClient(
+        {
+            "auth_type": "Client",
+            "client_id": "fake_client_id",
+            "client_secret": "fake_client_secret",
+            "refresh_token": "fake_refresh_token",
+        },
+    )
+    client_google_sheets.Backoff.row_batch_size = 210
+    client_google_sheets.client.values = MagicMock(return_value=MagicMock(batchGet=MagicMock()))
+
+    assert client_google_sheets.Backoff.row_batch_size == 210
+    client_google_sheets.get_values(
+        sheet="sheet",
+        row_cursor=0,
+        spreadsheetId="spreadsheet_id",
+        majorDimension="ROWS",
+    )
+
+    assert "Fetching range sheet!0:210" in caplog.text
+    assert client_google_sheets.Backoff.row_batch_size == 210
+    e = requests.HTTPError("error")
+    e.status_code = 429
+    client_google_sheets.Backoff.increase_row_batch_size({"exception": e})
+    assert client_google_sheets.Backoff.row_batch_size == 220
+    client_google_sheets.get_values(
+        sheet="sheet",
+        row_cursor=0,
+        spreadsheetId="spreadsheet_id",
+        majorDimension="ROWS",
+    )
+
+    assert "Fetching range sheet!0:220" in caplog.text
