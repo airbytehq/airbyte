@@ -372,7 +372,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String dropTempTable = dropTableIfExists(stream, SOFT_RESET_SUFFIX);
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
-    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
+    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX);
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
     return String.join("\n", dropTempTable, createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
@@ -397,12 +397,26 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
   @Override
   public String updateTable(final StreamConfig stream, final String finalSuffix) {
-    return updateTable(stream, finalSuffix, true);
+    final var unsafeUpdate = updateTableQueryBuilder(stream, finalSuffix, false);
+    final var safeUpdate = updateTableQueryBuilder(stream, finalSuffix, true);
+    return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate)).replace(
+        """
+        BEGIN
+
+        ${unsafe_update}
+
+        EXCEPTION WHEN ERROR THEN
+        ROLLBACK TRANSACTION;
+
+        ${safe_update}
+
+        END;
+
+        """);
   }
 
   private String updateTableQueryBuilder(final StreamConfig stream,
                                          final String finalSuffix,
-                                         final boolean verifyPrimaryKeys,
                                          final boolean forceSafeCasting) {
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), forceSafeCasting);
     String dedupFinalTable = "";
@@ -431,28 +445,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ${commit_raw_table}
             COMMIT TRANSACTION;
             """);
-  }
-
-  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
-    final var unsafeUpdate = updateTableQueryBuilder(stream, finalSuffix, verifyPrimaryKeys, false);
-    final var safeUpdate = updateTableQueryBuilder(stream, finalSuffix, verifyPrimaryKeys, true);
-    final String pkVarDeclaration = verifyPrimaryKeys ? "DECLARE missing_pk_count INT64;" : "";
-    return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate, "pk_var_declaration", pkVarDeclaration)).replace(
-        """
-        ${pk_var_declaration}
-
-        BEGIN
-
-        ${unsafe_update}
-
-        EXCEPTION WHEN ERROR THEN
-        ROLLBACK TRANSACTION;
-
-        ${safe_update}
-
-        END;
-
-        """);
   }
 
   @VisibleForTesting
@@ -710,12 +702,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .replace("'", "\\'");
   }
 
-  private static String cast(final String content, final String asType, boolean useSafeCast) {
+  private static String cast(final String content, final String asType, final boolean useSafeCast) {
     final var open = useSafeCast ? "SAFE_CAST(" : "CAST(";
     return wrap(open, content + " as " + asType, ")");
   }
 
-  private static Set<String> getPks(StreamConfig stream) {
+  private static Set<String> getPks(final StreamConfig stream) {
     return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
