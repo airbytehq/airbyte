@@ -8,11 +8,11 @@ data:
     cloud:
       enabled: true
   connectorBuildOptions:
-    baseImage: airbyte/airbyte-python-connectors-base:0.1.0
+    baseImage: airbyte/python-connector-base:1.0.0
   connectorSubtype: api
   connectorType: source
   definitionId: 6c504e48-14aa-4221-9a72-19cf5ff1ae78
-  dockerImageTag: 0.4.1
+  dockerImageTag: 0.5.0
   dockerRepository: airbyte/source-auth0
   githubIssueLabel: source-auth0
   icon: auth0.svg
