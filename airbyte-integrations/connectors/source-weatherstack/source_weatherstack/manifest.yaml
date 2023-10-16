@@ -1,0 +1,77 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path: []
+
+  requester:
+    type: HttpRequester
+    url_base: "http://api.weatherstack.com/"
+    http_method: "GET"
+    authenticator:
+      type: NoAuth
+    request_parameters:
+      access_key: "{{ config['access_key'] }}"
+      query: "{{ config['query'] }}"
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "#/definitions/requester"
+
+  base_stream:
+    type: DeclarativeStream
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  current_weather_stream:
+    $ref: "#/definitions/base_stream"
+    name: "current_weather"
+    $parameters:
+      path: "current"
+
+  forecast_stream:
+    $ref: "#/definitions/base_stream"
+    name: "forecast"
+    $parameters:
+      path: "forecast"
+
+  historical_stream:
+    $ref: "#/definitions/base_stream"
+    name: "historical"
+    $parameters:
+      path: "historical"
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          access_key: "{{ config['access_key'] }}"
+          query: "{{ config['query'] }}"
+          historical_date: "{{ config['historical_date'] }}"
+
+  location_lookup_stream:
+    $ref: "#/definitions/base_stream"
+    name: "location_lookup"
+    $parameters:
+      path: "location_lookup"
+
+streams:
+  - "#/definitions/current_weather_stream"
+  - "#/definitions/forecast_stream"
+  - "#/definitions/historical_stream"
+  - "#/definitions/location_lookup_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "current_weather"
+    - "forecast"
+
