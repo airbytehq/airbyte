@@ -186,6 +186,10 @@ jobs:
           # envsubst requires variables to be exported
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
+          export STREAM_NUMBER=$STREAM_NUMBER
+          export SYNC_MODE=$SYNC_MODE
+          export HARNESS=$HARNESS_TYPE
+          export DD_API_KEY=$DD_API_KEY
           envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
           echo "harness is ${{ steps.which-harness.outputs.harness_type }}"
           POD=$(kubectl get pod -l app=performance-harness -o jsonpath="{.items[0].metadata.name}")
