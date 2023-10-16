@@ -46,7 +46,7 @@
       "type": ["null", "boolean"]
     },
     "scheduled_cancellation_at": {
-      "type": ["null", "boolean"]
+      "type": ["null", "string"]
     },
     "trial_ended_at": {
       "type": ["null", "string"]
