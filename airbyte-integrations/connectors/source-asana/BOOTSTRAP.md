@@ -6,7 +6,7 @@ Connector is implemented with [Airbyte CDK](https://docs.airbyte.io/connector-de
 
 Some streams depend on:
 - workspaces (Teams, Users, CustomFields, Projects, Tags, Users streams);
-- projects (Sections, Tasks streams);
+- projects (SectionsCompact, Sections, Tasks streams);
 - tasks (Stories stream);
 - teams (TeamMemberships stream).
 
