@@ -25,7 +25,7 @@ from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 class ThreadBasedConcurrentStream(AbstractStream):
 
-    DEFAULT_TIMEOUT_SECONDS = 300
+    DEFAULT_TIMEOUT_SECONDS = 900
     DEFAULT_MAX_QUEUE_SIZE = 10_000
     DEFAULT_SLEEP_TIME = 0.1
 
@@ -44,6 +44,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
         max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
         sleep_time: float = DEFAULT_SLEEP_TIME,
+        namespace: Optional[str] = None,
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -59,6 +60,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._timeout_seconds = timeout_seconds
         self._max_concurrent_tasks = max_concurrent_tasks
         self._sleep_time = sleep_time
+        self._namespace = namespace
 
     def read(self) -> Iterable[Record]:
         """
@@ -156,9 +158,17 @@ class ThreadBasedConcurrentStream(AbstractStream):
     def as_airbyte_stream(self) -> AirbyteStream:
         stream = AirbyteStream(name=self.name, json_schema=dict(self._json_schema), supported_sync_modes=[SyncMode.full_refresh])
 
+        if self._namespace:
+            stream.namespace = self._namespace
+
+        if self._cursor_field:
+            stream.source_defined_cursor = True
+            stream.supported_sync_modes.append(SyncMode.incremental)
+            stream.default_cursor_field = [self._cursor_field]
+
         keys = self._primary_key
         if keys and len(keys) > 0:
-            stream.source_defined_primary_key = keys
+            stream.source_defined_primary_key = [keys]
 
         return stream
 
