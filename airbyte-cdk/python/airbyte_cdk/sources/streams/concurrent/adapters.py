@@ -27,7 +27,6 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
 
 """
@@ -282,9 +281,6 @@ class StreamPartitionGenerator(PartitionGenerator):
 class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
-
-    # The data returned by the partitions should be formatted appropriately, so we explicitly set the transformer to NoTransform
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
 
     def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
         """
