@@ -74,6 +74,13 @@ def targeting_response():
 
 
 @fixture
+def creatives_response():
+    return """
+[{"creativeId":0,"adGroupId":0,"creativeType":"IMAGE","properties":{"headline":"string"},"moderationStatus":"APPROVED"}]
+"""
+
+
+@fixture
 def attribution_report_response():
     def _internal(report_type: str):
         responses = {
