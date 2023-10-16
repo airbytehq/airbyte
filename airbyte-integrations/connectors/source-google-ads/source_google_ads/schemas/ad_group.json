@@ -6,8 +6,7 @@
       "type": ["null", "integer"]
     },
     "ad_group.ad_rotation_mode": {
-      "type": ["null", "string"],
-      "enum": ["OPTIMIZE", "ROTATE_FOREVER", "UNKNOWN", "UNSPECIFIED"]
+      "type": ["null", "string"]
     },
     "ad_group.base_ad_group": {
       "type": ["null", "string"]
@@ -25,81 +24,24 @@
       "type": ["null", "integer"]
     },
     "ad_group.display_custom_bid_dimension": {
-      "type": ["null", "string"],
-      "enum": [
-        "AGE_RANGE",
-        "AUDIENCE",
-        "GENDER",
-        "INCOME_RANGE",
-        "KEYWORD",
-        "PARENTAL_STATUS",
-        "PLACEMENT",
-        "TOPIC",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "type": ["null", "string"]
     },
     "ad_group.effective_target_cpa_micros": {
       "type": ["null", "integer"]
     },
     "ad_group.effective_target_cpa_source": {
-      "type": ["null", "string"],
-      "enum": [
-        "AD_GROUP",
-        "AD_GROUP_CRITERION",
-        "CAMPAIGN_BIDDING_STRATEGY",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "type": ["null", "string"]
     },
     "ad_group.effective_target_roas": {
       "type": ["null", "number"]
     },
     "ad_group.effective_target_roas_source": {
-      "type": ["null", "string"],
-      "enum": [
-        "AD_GROUP",
-        "AD_GROUP_CRITERION",
-        "CAMPAIGN_BIDDING_STRATEGY",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
+      "type": ["null", "string"]
     },
     "ad_group.excluded_parent_asset_field_types": {
       "type": ["null", "array"],
       "items": {
-        "type": "string",
-        "enum": [
-          "AD_IMAGE",
-          "BOOK_ON_GOOGLE",
-          "BUSINESS_LOGO",
-          "BUSINESS_NAME",
-          "CALL",
-          "CALLOUT",
-          "CALL_TO_ACTION_SELECTION",
-          "DESCRIPTION",
-          "HEADLINE",
-          "HOTEL_CALLOUT",
-          "HOTEL_PROPERTY",
-          "LANDSCAPE_LOGO",
-          "LEAD_FORM",
-          "LOGO",
-          "LONG_HEADLINE",
-          "MANDATORY_AD_TEXT",
-          "MARKETING_IMAGE",
-          "MEDIA_BUNDLE",
-          "MOBILE_APP",
-          "PORTRAIT_MARKETING_IMAGE",
-          "PRICE",
-          "PROMOTION",
-          "SITELINK",
-          "SQUARE_MARKETING_IMAGE",
-          "STRUCTURED_SNIPPET",
-          "UNKNOWN",
-          "UNSPECIFIED",
-          "VIDEO",
-          "YOUTUBE_VIDEO"
-        ]
+        "type": "string"
       }
     },
     "ad_group.optimized_targeting_enabled": {
@@ -127,9 +69,8 @@
       "type": ["null", "string"]
     },
     "ad_group.status": {
-      "type": ["null", "string"],
-      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group.target_cpa_micros": {
       "type": ["null", "integer"]
     },
@@ -149,28 +90,7 @@
       "type": ["null", "string"]
     },
     "ad_group.type": {
-      "type": ["null", "string"],
-      "enum": [
-        "DISPLAY_STANDARD",
-        "HOTEL_ADS",
-        "PROMOTED_HOTEL_ADS",
-        "SEARCH_DYNAMIC_ADS",
-        "SEARCH_STANDARD",
-        "SHOPPING_COMPARISON_LISTING_ADS",
-        "SHOPPING_PRODUCT_ADS",
-        "SHOPPING_SMART_ADS",
-        "SMART_CAMPAIGN_ADS",
-        "TRAVEL_ADS",
-        "UNKNOWN",
-        "UNSPECIFIED",
-        "VIDEO_BUMPER",
-        "VIDEO_EFFICIENT_REACH",
-        "VIDEO_NON_SKIPPABLE_IN_STREAM",
-        "VIDEO_OUTSTREAM",
-        "VIDEO_RESPONSIVE",
-        "VIDEO_TRUE_VIEW_IN_DISPLAY",
-        "VIDEO_TRUE_VIEW_IN_STREAM"
-      ]
+      "type": ["null", "string"]
     },
     "ad_group.url_custom_parameters": {
       "type": ["null", "array"],

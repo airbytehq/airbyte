@@ -7,19 +7,8 @@
       "format": "date"
     },
     "segments.day_of_week": {
-      "type": ["null", "string"],
-      "enum": [
-        "FRIDAY",
-        "MONDAY",
-        "SATURDAY",
-        "SUNDAY",
-        "THURSDAY",
-        "TUESDAY",
-        "UNKNOWN",
-        "UNSPECIFIED",
-        "WEDNESDAY"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "segments.month": {
       "type": ["null", "string"]
     },
@@ -33,18 +22,8 @@
       "type": ["null", "integer"]
     },
     "segments.ad_network_type": {
-      "type": ["null", "string"],
-      "enum": [
-        "CONTENT",
-        "MIXED",
-        "SEARCH",
-        "SEARCH_PARTNERS",
-        "UNKNOWN",
-        "UNSPECIFIED",
-        "YOUTUBE_SEARCH",
-        "YOUTUBE_WATCH"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "customer.currency_code": {
       "type": ["null", "string"]
     },
@@ -76,16 +55,14 @@
       "type": ["null", "string"]
     },
     "campaign.status": {
-      "type": ["null", "string"],
-      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group.name": {
       "type": ["null", "string"]
     },
     "ad_group.status": {
-      "type": ["null", "string"],
-      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group.base_ad_group": {
       "type": ["null", "string"]
     },
@@ -143,16 +120,8 @@
     "metrics.interaction_event_types": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "string"],
-        "enum": [
-          "InteractionEventType.CLICK",
-          "InteractionEventType.ENGAGEMENT",
-          "InteractionEventType.NONE",
-          "InteractionEventType.UNKNOWN",
-          "InteractionEventType.UNSPECIFIED",
-          "InteractionEventType.VIDEO_VIEW"
-        ]
-      }
+        "type": ["null", "string"]
+        }
     },
     "metrics.interaction_rate": {
       "type": ["null", "number"]

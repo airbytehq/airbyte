@@ -15,47 +15,8 @@
       "type": ["null", "integer"]
     },
     "ad_group_criterion.type": {
-      "type": ["null", "string"],
-      "enum": [
-        "AD_SCHEDULE",
-        "AGE_RANGE",
-        "APP_PAYMENT_MODEL",
-        "AUDIENCE",
-        "CARRIER",
-        "COMBINED_AUDIENCE",
-        "CONTENT_LABEL",
-        "CUSTOM_AFFINITY",
-        "CUSTOM_AUDIENCE",
-        "CUSTOM_INTENT",
-        "DEVICE",
-        "GENDER",
-        "INCOME_RANGE",
-        "IP_BLOCK",
-        "KEYWORD",
-        "KEYWORD_THEME",
-        "LANGUAGE",
-        "LISTING_GROUP",
-        "LISTING_SCOPE",
-        "LOCAL_SERVICE_ID",
-        "LOCATION",
-        "LOCATION_GROUP",
-        "MOBILE_APPLICATION",
-        "MOBILE_APP_CATEGORY",
-        "MOBILE_DEVICE",
-        "OPERATING_SYSTEM_VERSION",
-        "PARENTAL_STATUS",
-        "PLACEMENT",
-        "PROXIMITY",
-        "TOPIC",
-        "UNKNOWN",
-        "UNSPECIFIED",
-        "USER_INTEREST",
-        "USER_LIST",
-        "WEBPAGE",
-        "YOUTUBE_CHANNEL",
-        "YOUTUBE_VIDEO"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.keyword.text": {
       "type": ["null", "string"]
     },
@@ -63,9 +24,8 @@
       "type": ["null", "boolean"]
     },
     "ad_group_criterion.keyword.match_type": {
-      "type": ["null", "string"],
-      "enum": ["BROAD", "EXACT", "PHRASE", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "metrics.historical_quality_score": {
       "type": ["null", "integer"]
     },
@@ -77,29 +37,8 @@
       "format": "date"
     },
     "campaign.bidding_strategy_type": {
-      "type": ["null", "string"],
-      "enum": [
-        "COMMISSION",
-        "ENHANCED_CPC",
-        "INVALID",
-        "MANUAL_CPA",
-        "MANUAL_CPC",
-        "MANUAL_CPM",
-        "MANUAL_CPV",
-        "MAXIMIZE_CONVERSIONS",
-        "MAXIMIZE_CONVERSION_VALUE",
-        "PAGE_ONE_PROMOTED",
-        "PERCENT_CPC",
-        "TARGET_CPA",
-        "TARGET_CPM",
-        "TARGET_IMPRESSION_SHARE",
-        "TARGET_OUTRANK_SHARE",
-        "TARGET_ROAS",
-        "TARGET_SPEND",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "metrics.clicks": {
       "type": ["null", "integer"]
     },
@@ -136,16 +75,8 @@
     "metrics.interaction_event_types": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "string"],
-        "enum": [
-          "InteractionEventType.CLICK",
-          "InteractionEventType.ENGAGEMENT",
-          "InteractionEventType.NONE",
-          "InteractionEventType.UNKNOWN",
-          "InteractionEventType.UNSPECIFIED",
-          "InteractionEventType.VIDEO_VIEW"
-        ]
-      }
+        "type": ["null", "string"]
+        }
     },
     "metrics.view_through_conversions": {
       "type": ["null", "integer"]

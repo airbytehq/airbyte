@@ -27,8 +27,7 @@
       "type": ["null", "string"]
     },
     "audience.status": {
-      "type": ["null", "string"],
-      "enum": ["ENABLED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
-    }
+      "type": ["null", "string"]
+      }
   }
 }

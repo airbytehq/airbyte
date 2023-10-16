@@ -15,9 +15,8 @@
       "type": ["null", "integer"]
     },
     "campaign_budget.delivery_method": {
-      "type": ["null", "string"],
-      "enum": ["ACCELERATED", "STANDARD", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "campaign_budget.explicitly_shared": {
       "type": ["null", "boolean"]
     },
@@ -31,9 +30,8 @@
       "type": ["null", "string"]
     },
     "campaign_budget.period": {
-      "type": ["null", "string"],
-      "enum": ["CUSTOM_PERIOD", "DAILY", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "campaign_budget.recommended_budget_amount_micros": {
       "type": ["null", "integer"]
     },
@@ -56,23 +54,14 @@
       "type": ["null", "string"]
     },
     "campaign_budget.status": {
-      "type": ["null", "string"],
-      "enum": ["ENABLED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "campaign_budget.total_amount_micros": {
       "type": ["null", "integer"]
     },
     "campaign_budget.type": {
-      "type": ["null", "string"],
-      "enum": [
-        "FIXED_CPA",
-        "LOCAL_SERVICES",
-        "SMART_CAMPAIGN",
-        "STANDARD",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "segments.date": {
       "type": ["null", "string"],
       "format": "date"
@@ -81,9 +70,8 @@
       "type": ["null", "string"]
     },
     "segments.budget_campaign_association_status.status": {
-      "type": ["null", "string"],
-      "enum": ["ENABLED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "metrics.all_conversions": {
       "type": ["null", "number"]
     },
@@ -147,16 +135,8 @@
     "metrics.interaction_event_types": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null", "string"],
-        "enum": [
-          "InteractionEventType.CLICK",
-          "InteractionEventType.ENGAGEMENT",
-          "InteractionEventType.NONE",
-          "InteractionEventType.UNKNOWN",
-          "InteractionEventType.UNSPECIFIED",
-          "InteractionEventType.VIDEO_VIEW"
-        ]
-      }
+        "type": ["null", "string"]
+        }
     },
     "metrics.interaction_rate": {
       "type": ["null", "number"]

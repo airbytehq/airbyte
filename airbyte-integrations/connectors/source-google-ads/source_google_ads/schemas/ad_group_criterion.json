@@ -15,34 +15,14 @@
       "type": ["null", "string"]
     },
     "ad_group_criterion.age_range.type": {
-      "type": ["null", "string"],
-      "enum": [
-        "AGE_RANGE_18_24",
-        "AGE_RANGE_25_34",
-        "AGE_RANGE_35_44",
-        "AGE_RANGE_45_54",
-        "AGE_RANGE_55_64",
-        "AGE_RANGE_65_UP",
-        "AGE_RANGE_UNDETERMINED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.app_payment_model.type": {
-      "type": ["null", "string"],
-      "enum": ["PAID", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.approval_status": {
-      "type": ["null", "string"],
-      "enum": [
-        "APPROVED",
-        "DISAPPROVED",
-        "PENDING_REVIEW",
-        "UNDER_REVIEW",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.audience.audience": {
       "type": ["null", "string"]
     },
@@ -86,54 +66,26 @@
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpc_bid_source": {
-      "type": ["null", "string"],
-      "enum": [
-        "AD_GROUP",
-        "AD_GROUP_CRITERION",
-        "CAMPAIGN_BIDDING_STRATEGY",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.effective_cpm_bid_micros": {
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpm_bid_source": {
-      "type": ["null", "string"],
-      "enum": [
-        "AD_GROUP",
-        "AD_GROUP_CRITERION",
-        "CAMPAIGN_BIDDING_STRATEGY",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.effective_cpv_bid_micros": {
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_cpv_bid_source": {
-      "type": ["null", "string"],
-      "enum": [
-        "AD_GROUP",
-        "AD_GROUP_CRITERION",
-        "CAMPAIGN_BIDDING_STRATEGY",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.effective_percent_cpc_bid_micros": {
       "type": ["null", "integer"]
     },
     "ad_group_criterion.effective_percent_cpc_bid_source": {
-      "type": ["null", "string"],
-      "enum": [
-        "AD_GROUP",
-        "AD_GROUP_CRITERION",
-        "CAMPAIGN_BIDDING_STRATEGY",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.final_mobile_urls": {
       "type": ["null", "array"],
       "items": {
@@ -150,27 +102,14 @@
       }
     },
     "ad_group_criterion.gender.type": {
-      "type": ["null", "string"],
-      "enum": ["FEMALE", "MALE", "UNDETERMINED", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.income_range.type": {
-      "type": ["null", "string"],
-      "enum": [
-        "INCOME_RANGE_0_50",
-        "INCOME_RANGE_50_60",
-        "INCOME_RANGE_60_70",
-        "INCOME_RANGE_70_80",
-        "INCOME_RANGE_80_90",
-        "INCOME_RANGE_90_UP",
-        "INCOME_RANGE_UNDETERMINED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.keyword.match_type": {
-      "type": ["null", "string"],
-      "enum": ["BROAD", "EXACT", "PHRASE", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.keyword.text": {
       "type": ["null", "string"]
     },
@@ -193,15 +132,8 @@
       "type": ["null", "boolean"]
     },
     "ad_group_criterion.parental_status.type": {
-      "type": ["null", "string"],
-      "enum": [
-        "NOT_A_PARENT",
-        "PARENT",
-        "UNDETERMINED",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.percent_cpc_bid_micros": {
       "type": ["null", "integer"]
     },
@@ -224,49 +156,26 @@
       "type": ["null", "integer"]
     },
     "ad_group_criterion.quality_info.creative_quality_score": {
-      "type": ["null", "string"],
-      "enum": [
-        "ABOVE_AVERAGE",
-        "AVERAGE",
-        "BELOW_AVERAGE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.quality_info.post_click_quality_score": {
-      "type": ["null", "string"],
-      "enum": [
-        "ABOVE_AVERAGE",
-        "AVERAGE",
-        "BELOW_AVERAGE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.quality_info.quality_score": {
       "type": ["null", "integer"]
     },
     "ad_group_criterion.quality_info.search_predicted_ctr": {
-      "type": ["null", "string"],
-      "enum": [
-        "ABOVE_AVERAGE",
-        "AVERAGE",
-        "BELOW_AVERAGE",
-        "UNKNOWN",
-        "UNSPECIFIED"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.resource_name": {
       "type": ["null", "string"]
     },
     "ad_group_criterion.status": {
-      "type": ["null", "string"],
-      "enum": ["ENABLED", "PAUSED", "REMOVED", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.system_serving_status": {
-      "type": ["null", "string"],
-      "enum": ["ELIGIBLE", "RARELY_SERVED", "UNKNOWN", "UNSPECIFIED"]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.topic.path": {
       "type": ["null", "array"],
       "items": {
@@ -280,47 +189,8 @@
       "type": ["null", "string"]
     },
     "ad_group_criterion.type": {
-      "type": ["null", "string"],
-      "enum": [
-        "AD_SCHEDULE",
-        "AGE_RANGE",
-        "APP_PAYMENT_MODEL",
-        "AUDIENCE",
-        "CARRIER",
-        "COMBINED_AUDIENCE",
-        "CONTENT_LABEL",
-        "CUSTOM_AFFINITY",
-        "CUSTOM_AUDIENCE",
-        "CUSTOM_INTENT",
-        "DEVICE",
-        "GENDER",
-        "INCOME_RANGE",
-        "IP_BLOCK",
-        "KEYWORD",
-        "KEYWORD_THEME",
-        "LANGUAGE",
-        "LISTING_GROUP",
-        "LISTING_SCOPE",
-        "LOCAL_SERVICE_ID",
-        "LOCATION",
-        "LOCATION_GROUP",
-        "MOBILE_APPLICATION",
-        "MOBILE_APP_CATEGORY",
-        "MOBILE_DEVICE",
-        "OPERATING_SYSTEM_VERSION",
-        "PARENTAL_STATUS",
-        "PLACEMENT",
-        "PROXIMITY",
-        "TOPIC",
-        "UNKNOWN",
-        "UNSPECIFIED",
-        "USER_INTEREST",
-        "USER_LIST",
-        "WEBPAGE",
-        "YOUTUBE_CHANNEL",
-        "YOUTUBE_VIDEO"
-      ]
-    },
+      "type": ["null", "string"]
+      },
     "ad_group_criterion.url_custom_parameters": {
       "type": ["null", "array"],
       "items": {
