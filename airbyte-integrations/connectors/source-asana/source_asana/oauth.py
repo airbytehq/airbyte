@@ -5,7 +5,7 @@
 from typing import Tuple
 
 import requests
-from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 
 class AsanaOauth2Authenticator(Oauth2Authenticator):
@@ -24,13 +24,13 @@ class AsanaOauth2Authenticator(Oauth2Authenticator):
             Tuple of access token and expiration time in seconds
         """
         data = {
-            "client_id": (None, self.client_id),
-            "client_secret": (None, self.client_secret),
+            "client_id": (None, self._client_id),
+            "client_secret": (None, self._client_secret),
             "grant_type": (None, "refresh_token"),
-            "refresh_token": (None, self.refresh_token),
+            "refresh_token": (None, self._refresh_token),
         }
 
-        response = requests.post(self.token_refresh_endpoint, files=data)
+        response = requests.post(self._token_refresh_endpoint, files=data)
         response.raise_for_status()
         response_body = response.json()
         return response_body["access_token"], response_body["expires_in"]

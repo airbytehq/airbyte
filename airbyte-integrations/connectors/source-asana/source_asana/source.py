@@ -9,7 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from source_asana.oauth import AsanaOauth2Authenticator
 
 from .streams import CustomFields, Projects, SectionsCompact, Sections, Stories, Tags, Tasks, TeamMemberships, Teams, Users, Workspaces
@@ -19,6 +19,7 @@ class SourceAsana(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             workspaces_stream = Workspaces(authenticator=self._get_authenticator(config))
+            logger("THIS IS THE WORKSPACES STREAM", workspaces_stream)
             next(workspaces_stream.read_records(sync_mode=SyncMode.full_refresh))
             return True, None
         except Exception as e:
