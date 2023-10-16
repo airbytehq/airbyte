@@ -120,25 +120,25 @@ class DeleteConnectorFile(Step):
         )
 
 
-class AddBuildInstructionsToDoc(Step):
-    title = "Add build instructions to doc"
+class AddBuildInstructionsToReadme(Step):
+    title = "Add build instructions to README.md"
 
     def __init__(self, context: PipelineContext, repo_dir: Directory) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
 
     async def _run(self) -> StepResult:
-        doc_path = self.context.connector.documentation_file_path
-        if not doc_path.exists():
+        readme_path = self.context.connector.code_directory / "README.md"
+        if not readme_path.exists():
             return StepResult(
                 self,
                 StepStatus.SKIPPED,
                 stdout="Connector does not have a documentation file.",
                 output_artifact=self.container_with_airbyte_repo,
             )
-        current_doc = await self.repo_dir.file(str(doc_path)).contents()
+        current_readme = await self.context.get_connector_dir().file("README.md").contents()
         try:
-            updated_doc = self.add_build_instructions(current_doc)
+            updated_readme = self.add_build_instructions(current_readme)
         except Exception as e:
             return StepResult(
                 self,
@@ -146,11 +146,11 @@ class AddBuildInstructionsToDoc(Step):
                 stderr=f"Could not add the build instructions: {e}",
                 output_artifact=self.container_with_airbyte_repo,
             )
-        updated_repo_dir = await self.repo_dir.with_new_file(str(doc_path), updated_doc)
+        updated_repo_dir = await self.repo_dir.with_new_file(str(readme_path), updated_readme)
         return StepResult(
             self,
             StepStatus.SUCCESS,
-            stdout=f"Added changelog entry to {doc_path}",
+            stdout=f"Added build instructions to {readme_path}",
             output_artifact=updated_repo_dir,
         )
 
@@ -158,9 +158,7 @@ class AddBuildInstructionsToDoc(Step):
         line_no_for_build_instructions = None
         og_lines = og_doc_content.splitlines()
         for line_no, line in enumerate(og_lines):
-            if "## Build instructions" in line:
-                return og_doc_content
-            if "## Changelog" in line:
+            if "#### Build" in line:
                 line_no_for_build_instructions = line_no
         if line_no_for_build_instructions is None:
             line_no_for_build_instructions = len(og_lines) - 1
@@ -323,7 +321,7 @@ async def run_connector_migration_to_base_image_pipeline(context: ConnectorConte
             steps_results.append(add_changelog_entry_result)
 
             # UPDATE DOC
-            add_build_instructions_to_doc = AddBuildInstructionsToDoc(
+            add_build_instructions_to_doc = AddBuildInstructionsToReadme(
                 context,
                 add_changelog_entry_result.output_artifact,
             )
