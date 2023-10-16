@@ -63,13 +63,6 @@ definitions:
     $parameters:
       path: "subscriptions.json"
       field_path: "subscription"
-  
-  transactions_stream:
-    $ref: "#/definitions/base_stream"
-    name: "transactions"
-    $parameters:
-      path: "transactions.json"
-      field_path: "transaction"
 
   invoices_stream:
     name: "invoices"
@@ -98,12 +91,19 @@ definitions:
       path: "coupons.json"
       field_path: "coupon"
 
+  transactions_stream:
+    $ref: "#/definitions/base_stream"
+    name: "transactions"
+    $parameters:
+      path: "transactions.json"
+      field_path: "transaction"
+
 streams:
   - "#/definitions/customers_stream"
   - "#/definitions/subscriptions_stream"
-  - "#/definitions/transactions_stream"
   - "#/definitions/invoices_stream"
   - "#/definitions/coupons_stream"
+  - "#/definitions/transactions_stream"
 
 check:
   type: CheckStream
