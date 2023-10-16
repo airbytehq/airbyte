@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass, field
+from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
@@ -91,7 +91,6 @@ class DefaultPaginator(Paginator):
     url_base: Union[InterpolatedString, str]
     parameters: InitVar[Mapping[str, Any]]
     decoder: Decoder = JsonDecoder(parameters={})
-    _token: Optional[Any] = field(init=False, repr=False, default=None)
     page_size_option: Optional[RequestOption] = None
     page_token_option: Optional[Union[RequestPath, RequestOption]] = None
 
@@ -100,6 +99,7 @@ class DefaultPaginator(Paginator):
             raise ValueError("page_size_option cannot be set if the pagination strategy does not have a page_size")
         if isinstance(self.url_base, str):
             self.url_base = InterpolatedString(string=self.url_base, parameters=parameters)
+        self._token = self.pagination_strategy.initial_token
 
     def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Mapping[str, Any]]:
         self._token = self.pagination_strategy.next_page_token(response, last_records)
@@ -160,7 +160,7 @@ class DefaultPaginator(Paginator):
 
         if (
             self.page_token_option
-            and self._token
+            and self._token is not None
             and isinstance(self.page_token_option, RequestOption)
             and self.page_token_option.inject_into == option_type
         ):

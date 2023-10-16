@@ -93,6 +93,7 @@ class TestAirtableStream:
             stream_path=prepared_stream["stream_path"],
             stream_name=prepared_stream["stream"].name,
             stream_schema=prepared_stream["stream"].json_schema,
+            table_name=prepared_stream["table_name"],
             authenticator=MagicMock(),
         )
 
