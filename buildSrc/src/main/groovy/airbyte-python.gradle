@@ -6,10 +6,6 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.Exec
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 
-abstract class AirbytePythonExtension {
-    abstract String moduleDirectory
-}
-
 class Helpers {
     static addTestTaskIfTestFilesFound(Project project, String testFilesDirectory, String taskName, taskDependencies) {
         """
@@ -60,7 +56,6 @@ class Helpers {
 class AirbytePythonPlugin implements Plugin<Project> {
 
     void apply(Project project) {
-        def extension = project.extensions.create('airbytePython', AirbytePythonExtension)
 
         def venvDirectoryName = '.venv'
 
@@ -114,7 +109,6 @@ class AirbytePythonPlugin implements Plugin<Project> {
             // flake8 doesn't support pyproject.toml files
             // and thus there is the wrapper "pyproject-flake8" for this
             pip 'pyproject-flake8:0.0.1a2'
-            pip 'mypy:1.4.1'
             pip 'pytest:6.2.5'
             pip 'coverage[toml]:6.3.1'
         }
@@ -171,20 +165,6 @@ class AirbytePythonPlugin implements Plugin<Project> {
         }
         installTestReqs.configure {
             dependsOn installReqs
-        }
-
-        def mypyCheck = project.tasks.register('mypyCheck', PythonTask) {
-            module = "mypy"
-            command = "-m ${extension.moduleDirectory} --config-file ${project.rootProject.file('pyproject.toml').absolutePath}"
-            onlyIf {
-                extension.hasProperty('moduleDirectory') && extension.moduleDirectory != null
-            }
-        }
-        mypyCheck.configure {
-            dependsOn installTestReqs
-        }
-        project.tasks.named('check').configure {
-            dependsOn mypyCheck
         }
 
         Helpers.addTestTaskIfTestFilesFound(project, 'unit_tests', 'testPython', installTestReqs)
