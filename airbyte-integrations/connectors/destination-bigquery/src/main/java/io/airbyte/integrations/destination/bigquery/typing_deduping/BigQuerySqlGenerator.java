@@ -442,7 +442,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String columnList = stream.columns().keySet().stream()
         .map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",")
         .collect(joining("\n"));
-    final String extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting, false);
+    final String extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting);
 
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
@@ -463,7 +463,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   private String mergeNewRecords(final StreamConfig stream,
                                   final String finalSuffix,
                                   final boolean forceSafeCasting) {
-    final String extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting, true);
+    final String extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting);
 
     final String pkEquivalent = stream.primaryKey().stream().map(pk -> {
       final String quotedColumnName = pk.name(QUOTE);
@@ -548,7 +548,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
    * their columns, and builds their airbyte_meta column. Also extracts all raw
    * CDC deletion records (for tombstoning purposes).
    */
-  private String extractNewRawRecords(final StreamConfig stream, final boolean forceSafeCasting, final boolean dedup) {
+  private String extractNewRawRecords(final StreamConfig stream, final boolean forceSafeCasting) {
     final LinkedHashMap<ColumnId, AirbyteType> streamColumns = stream.columns();
     final String columnCasts = streamColumns.entrySet().stream().map(
             col -> extractAndCast(col.getKey(), col.getValue(), forceSafeCasting) + " as " + col.getKey().name(QUOTE) + ",")
@@ -578,23 +578,14 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
-    String cdcConditionalOrIncludeStatement = "";
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
-      cdcConditionalOrIncludeStatement = """
-                                         OR (
-                                           _airbyte_loaded_at IS NOT NULL
-                                           AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
-                                         )
-                                         """;
-    }
-
-    if (!dedup) {
+    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
+      // When not deduplicating, we just need to handle type-casting.
+      // Extract+cast the not-yet-loaded records in a CTE, then select that CTE and build airbyte_meta.
       return new StringSubstitutor(Map.of(
           "project_id", '`' + projectId + '`',
           "raw_table_id", stream.id().rawTableId(QUOTE),
           "column_casts", columnCasts,
           "column_errors", columnErrors,
-          "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
           "column_list", columnList)).replace(
           """
               WITH intermediate_data AS (
@@ -604,9 +595,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 _airbyte_raw_id,
                 _airbyte_extracted_at
                 FROM ${project_id}.${raw_table_id}
-                WHERE
-                  _airbyte_loaded_at IS NULL
-                  ${cdcConditionalOrIncludeStatement}
+                WHERE _airbyte_loaded_at IS NULL
               )
               SELECT
               ${column_list}
@@ -615,6 +604,21 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 _airbyte_extracted_at
               FROM intermediate_data""");
     } else {
+      // When deduping, we need to dedup the raw records. Note the row_number() invocation in the SQL statement.
+      // Do the same extrac+cast CTE + airbyte_meta construction, but then add row_number so that we only
+      // take the most-recent raw record for each PK.
+
+      // We also explicitly include old CDC deletion records, which act as tombstones to correctly delete out-of-order records.
+      String cdcConditionalOrIncludeStatement = "";
+      if (streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
+        cdcConditionalOrIncludeStatement = """
+                                         OR (
+                                           _airbyte_loaded_at IS NOT NULL
+                                           AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                                         )
+                                         """;
+      }
+
       final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
       final String cursorOrderClause = stream.cursor()
           .map(cursorId -> cursorId.name(QUOTE) + " DESC NULLS LAST,")
