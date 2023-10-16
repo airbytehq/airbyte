@@ -1,4 +1,4 @@
-name: Run mypy on modified cdk files
+name: Connector Extensibility - Run mypy on modified cdk files
 
 on:
   pull_request:
