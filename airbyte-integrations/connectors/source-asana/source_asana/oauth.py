@@ -5,7 +5,7 @@
 from typing import Tuple
 
 import requests
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 
 
 class AsanaOauth2Authenticator(Oauth2Authenticator):

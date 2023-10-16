@@ -9,7 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_asana.oauth import AsanaOauth2Authenticator
 
 from .streams import CustomFields, Projects, Sections, SectionsCompact, Stories, Tags, Tasks, TeamMemberships, Teams, Users, Workspaces
