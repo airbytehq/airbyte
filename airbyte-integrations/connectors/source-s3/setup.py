@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk>=0.51.17",
+    "airbyte-cdk>=0.51.35",
     "pyarrow==12.0.1",
     "smart-open[s3]==5.1.0",
     "wcmatch==8.4",
@@ -14,6 +14,10 @@ MAIN_REQUIREMENTS = [
     "pytz",
     "fastavro==1.4.11",
     "python-snappy==0.6.1",
+    "unstructured==0.10.19",
+    "unstructured[pdf]==0.10.19",
+    "unstructured[docx]==0.10.19",
+    "markdown",
 ]
 
 TEST_REQUIREMENTS = [
