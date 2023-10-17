@@ -10,12 +10,13 @@ from connector_ops.utils import ConnectorLanguage
 from dagger import Directory
 from jinja2 import Template
 from pipelines import consts
-from pipelines.models.bases import ConnectorReport, Step, StepResult, StepStatus
+from pipelines.models.bases import Step, StepResult, StepStatus
 from pipelines.pipeline.connectors.bump_version.pipeline import BumpDockerImageTagInMetadata
 from pipelines.pipeline.connectors.bump_version.pipeline import AddChangelogEntry, get_bumped_version
 from pipelines.pipeline.connectors.context import ConnectorContext, PipelineContext
+from pipelines.pipeline.connectors.reports import ConnectorReport
 
-from ....helpers.connectors import metadata_change_helpers
+from pipelines.helpers import metadata_change_helpers
 
 
 class UpgradeBaseImageMetadata(Step):
