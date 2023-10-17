@@ -15,7 +15,8 @@ from dagger import DaggerError
 from pipelines import consts, main_logger
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 from pipelines.helpers import sentry_utils
-from pipelines.helpers.utils import slugify, upload_to_gcs
+from pipelines.helpers.utils import slugify
+from pipelines.helpers.gcs import upload_to_gcs
 from pipelines.consts import STATIC_REPORT_PREFIX
 
 class DaggerPipelineCommand(click.Command):

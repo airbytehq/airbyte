@@ -15,7 +15,7 @@ from pipelines.pipeline.connectors.builds.steps.java_connectors import BuildConn
 from pipelines.pipeline.connectors.builds.steps.normalization import BuildOrPullNormalization
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.pipeline.connectors.context import ConnectorContext
-from pipelines.pipelines.models.steps import GradleTask
+from pipelines.pipeline.steps import GradleTask
 from pipelines.pipeline.connectors.test.steps.common import AcceptanceTests
 from pipelines.helpers.utils import export_container_to_tarball
 

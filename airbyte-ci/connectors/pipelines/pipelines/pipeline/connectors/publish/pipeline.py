@@ -12,9 +12,10 @@ from dagger import Container, ExecError, File, ImageLayerCompression, QueryError
 from pipelines import consts
 from pipelines.dagger.actions.system import docker
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
-from pipelines.models.bases import ConnectorReport, Step, StepResult, StepStatus
+from pipelines.models.steps import Step, StepResult, StepStatus
 from pipelines.pipeline.connectors.builds import steps
 from pipelines.pipeline.connectors.publish.context import PublishConnectorContext
+from pipelines.pipeline.connectors.reports import ConnectorReport
 from pipelines.pipeline.metadata.pipeline import MetadataValidation, MetadataUpload
 from pydantic import ValidationError
 

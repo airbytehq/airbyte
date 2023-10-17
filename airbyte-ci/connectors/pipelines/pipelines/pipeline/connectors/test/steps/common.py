@@ -17,8 +17,8 @@ from connector_ops.utils import Connector
 from dagger import Container, Directory, File
 from pipelines import hacks
 from pipelines.dagger.actions import secrets
-import pipelines.dagger.actions.internal_tools
-from pipelines.models.bases import Step, StepResult, StepStatus
+from pipelines.dagger.containers import internal_tools
+from pipelines.models.steps import Step, StepResult, StepStatus
 from pipelines.helpers.utils import METADATA_FILE_NAME
 from pipelines.consts import CIContext
 
@@ -145,7 +145,7 @@ class QaChecks(Step):
         Returns:
             StepResult: Failure or success of the QA checks with stdout and stderr.
         """
-        connector_ops = await pipelines.dagger.actions.internal_tools.with_connector_ops(self.context)
+        connector_ops = await internal_tools.with_connector_ops(self.context)
         include = [
             str(self.context.connector.code_directory),
             str(self.context.connector.documentation_file_path),

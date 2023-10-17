@@ -9,7 +9,7 @@ import platform
 
 import anyio
 from connector_ops.utils import ConnectorLanguage
-from pipelines.models.bases import StepResult
+from pipelines.models.steps import StepResult
 from pipelines.pipeline.connectors.builds.steps import python_connectors
 from pipelines.pipeline.connectors.builds.steps.common import LoadContainerToLocalDockerHost, StepStatus
 from pipelines.consts import LOCAL_BUILD_PLATFORM

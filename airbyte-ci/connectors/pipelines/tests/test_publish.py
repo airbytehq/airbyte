@@ -9,7 +9,7 @@ from typing import List
 import anyio
 import pytest
 from pipelines import publish
-from pipelines.models.bases import StepStatus
+from pipelines.models.steps import StepStatus
 import pipelines.pipeline.metadata.pipeline
 
 pytestmark = [

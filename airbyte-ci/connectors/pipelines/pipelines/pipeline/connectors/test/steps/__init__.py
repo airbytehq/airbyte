@@ -9,8 +9,9 @@ from typing import List
 import anyio
 import asyncer
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
-from pipelines.models.bases import ConnectorReport, StepResult
+from pipelines.models.steps import StepResult
 from pipelines.pipeline.connectors.context import ConnectorContext
+from pipelines.pipeline.connectors.reports import ConnectorReport
 from pipelines.pipeline.connectors.test.steps import java_connectors
 from pipelines.pipeline.metadata.pipeline import MetadataValidation
 from pipelines.pipeline.connectors.test.steps import python_connectors

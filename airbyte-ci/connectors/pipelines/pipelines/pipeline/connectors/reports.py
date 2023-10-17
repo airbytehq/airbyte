@@ -1,6 +1,6 @@
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 from pipelines.helpers.utils import format_duration
-from pipelines.models.bases import StepStatus
+from pipelines.models.steps import StepStatus
 from pipelines.models.reports import Report
 
 
