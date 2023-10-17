@@ -183,13 +183,10 @@ jobs:
           connector_name=$(echo $CONN | cut -d / -f 2)
           kind load docker-image airbyte/$connector_name:dev --name chart-testing
           kind load docker-image airbyte/$HARNESS_TYPE:dev --name chart-testing
-          # envsubst requires variables to be exported
+          # envsubst requires variables to be exported or setup in the env field in this step.
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
-          export STREAM_NUMBER=$STREAM_NUMBER
-          export SYNC_MODE=$SYNC_MODE
           export HARNESS=$HARNESS_TYPE
-          export DD_API_KEY=$DD_API_KEY
           envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
           echo "harness is ${{ steps.which-harness.outputs.harness_type }}"
           POD=$(kubectl get pod -l app=performance-harness -o jsonpath="{.items[0].metadata.name}")
