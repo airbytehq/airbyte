@@ -83,7 +83,13 @@ class SingleUseRefreshTokenGitlabOAuth2Authenticator(SingleUseRefreshTokenOauth2
 def get_authenticator(config: MutableMapping) -> AuthBase:
     if config["credentials"]["auth_type"] == "access_token":
         return TokenAuthenticator(token=config["credentials"]["access_token"])
-    return SingleUseRefreshTokenGitlabOAuth2Authenticator(config, token_refresh_endpoint=f"https://{config['api_url']}/oauth/token")
+    return SingleUseRefreshTokenGitlabOAuth2Authenticator(
+        config,
+        token_refresh_endpoint=f"https://{config['api_url']}/oauth/token",
+        refresh_token_error_status_codes=(400,),
+        refresh_token_error_key="error",
+        refresh_token_error_values="invalid_grant",
+    )
 
 
 class SourceGitlab(AbstractSource):
@@ -144,10 +150,10 @@ class SourceGitlab(AbstractSource):
 
     def _try_refresh_access_token(self, logger, config: Mapping[str, Any]) -> Mapping[str, Any]:
         """
-        This method attempts to refresh the expired `access_token`, while `refersh_token` is stil valid.
+        This method attempts to refresh the expired `access_token`, while `refresh_token` is still valid.
         In order to obtain the new `refresh_token`, the Customer should `re-auth` in the source settings.
         """
-        # get currernt authenticator
+        # get current authenticator
         authenticator: Union[SingleUseRefreshTokenOauth2Authenticator, TokenAuthenticator] = self.__auth_params.get("authenticator")
         if isinstance(authenticator, SingleUseRefreshTokenOauth2Authenticator):
             try:
@@ -163,7 +169,7 @@ class SourceGitlab(AbstractSource):
             except HTTPError as http_error:
                 raise http_error
             except Exception as e:
-                raise Exception(f"Unknown error occured while refreshing the `access_token`, details: {e}")
+                raise Exception(f"Unknown error occurred while refreshing the `access_token`, details: {e}")
 
     def _handle_expired_access_token_error(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
@@ -186,14 +192,14 @@ class SourceGitlab(AbstractSource):
             return True, None  # in case there's no projects
         except HTTPError as http_error:
             if config["credentials"]["auth_type"] == "oauth2.0":
-                if http_error.response.status_code == 401:
+                if http_error.response.status_code in (400, 401):
                     return self._handle_expired_access_token_error(logger, config)
                 elif http_error.response.status_code == 500:
                     return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(http_error)}"
             else:
                 return False, f"Unable to connect to Gitlab API with the provided Private Access Token - {repr(http_error)}"
         except Exception as error:
-            return False, f"Unknown error occured while checking the connection - {repr(error)}"
+            return False, f"Unknown error occurred while checking the connection - {repr(error)}"
 
     def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
         config = self._ensure_default_values(config)
