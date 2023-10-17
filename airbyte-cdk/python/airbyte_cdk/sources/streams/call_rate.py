@@ -265,7 +265,7 @@ class CachedSessionWithCallRate(CachedSession):
 
         :rtype: requests.Response
         """
-        if not self.cache.contains(request):
+        if not self.cache.contains(request=request):
             self._api_budget.acquire_call(request)
 
         return super().send(request, **kwargs)
@@ -297,7 +297,7 @@ class SessionProxyWithCallRate:
         :return:
         """
         if isinstance(self._session, CachedSession):
-            if not self.cache.contains(request):
+            if not self.cache.contains(request=request):
                 self._api_budget.acquire_call(request)
         else:
             self._api_budget.acquire_call(request)
