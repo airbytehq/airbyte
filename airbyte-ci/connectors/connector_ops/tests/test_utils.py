@@ -30,17 +30,17 @@ class TestConnector:
         "connector, exists",
         [
             (utils.Connector("source-faker"), True),
-            (utils.Connector("source-notpublished"), False),
+            (utils.Connector("source-doesnotexist"), False),
         ],
     )
     def test_init(self, connector, exists, mocker, tmp_path):
         assert str(connector) == connector.technical_name
-        assert connector.connector_type, connector.name == connector._get_type_and_name_from_technical_name()
         assert connector.code_directory == Path(f"./airbyte-integrations/connectors/{connector.technical_name}")
         assert connector.acceptance_test_config_path == connector.code_directory / utils.ACCEPTANCE_TEST_CONFIG_FILE_NAME
-        assert connector.documentation_file_path == Path(f"./docs/integrations/{connector.connector_type}s/{connector.name}.md")
 
         if exists:
+            assert connector.connector_type, connector.name == connector._get_type_and_name_from_technical_name()
+            assert connector.documentation_file_path == Path(f"./docs/integrations/{connector.connector_type}s/{connector.name}.md")
             assert isinstance(connector.metadata, dict)
             assert isinstance(connector.support_level, str)
             assert isinstance(connector.acceptance_test_config, dict)

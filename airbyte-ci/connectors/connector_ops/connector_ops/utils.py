@@ -301,7 +301,7 @@ class Connector:
 
     @property
     def connector_type(self) -> str:
-        return self.metadata["connectorType"]
+        return self.metadata["connectorType"] if self.metadata else None
 
     @property
     def is_third_party(self) -> bool:
@@ -312,13 +312,11 @@ class Connector:
         return (
             self.metadata
             and self.metadata.get("documentationUrl") is not None
-            and BASE_AIRBYTE_DOCS_URL in self.metadata.get("documentationUrl")
+            and BASE_AIRBYTE_DOCS_URL in str(self.metadata.get("documentationUrl"))
         )
 
     @property
-    def documentation_directory(self) -> Path:
-        if not self.has_airbyte_docs:
-            return None
+    def local_connector_documentation_directory(self) -> Path:
         return Path(f"./docs/integrations/{self.connector_type}s")
 
     @property
@@ -346,11 +344,12 @@ class Connector:
         return Path(f"{self.relative_documentation_path_str}.inapp.md")
 
     @property
-    def migration_guide_file_path(self) -> Path:
-        if not self.has_airbyte_docs:
-            return None
+    def migration_guide_file_name(self) -> str:
+        return f"{self.name}-migrations.md"
 
-        return Path(f"{self.relative_documentation_path_str}-migrations.md")
+    @property
+    def migration_guide_file_path(self) -> Path:
+        return self.local_connector_documentation_directory / self.migration_guide_file_name
 
     @property
     def icon_path(self) -> Path:
