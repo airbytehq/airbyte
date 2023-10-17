@@ -10,7 +10,7 @@ For information about how to use this connector within Airbyte, see [the User Do
 From the Airbyte repository root, run:
 
 ```bash
-./gradlew :airbyte-integrations:connectors:destination-snowflake-bulk-load-2:build
+./gradlew :airbyte-integrations:connectors:destination-snowflake-bulk-load:build
 ```
 
 #### Create credentials
@@ -27,7 +27,7 @@ Note that the `secrets` directory is git-ignored by default, so there is no dang
 Build the connector image via Gradle:
 
 ```bash
-./gradlew :airbyte-integrations:connectors:destination-snowflake-bulk-load-2:airbyteDocker
+./gradlew :airbyte-integrations:connectors:destination-snowflake-bulk-load:build
 ```
 
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
@@ -38,10 +38,10 @@ the Dockerfile.
 Then run any of the connector commands as follows:
 
 ```bash
-docker run --rm airbyte/destination-snowflake-bulk-load-2:dev spec
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-snowflake-bulk-load-2:dev check --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-snowflake-bulk-load-2:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-snowflake-bulk-load-2:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm airbyte/destination-snowflake-bulk-load:dev spec
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-snowflake-bulk-load:dev check --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets airbyte/destination-snowflake-bulk-load:dev discover --config /secrets/config.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/destination-snowflake-bulk-load:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
 ## Testing
@@ -63,13 +63,13 @@ All commands should be run from airbyte project root.
 To run unit tests:
 
 ```bash
-./gradlew :airbyte-integrations:connectors:destination-snowflake-bulk-load-2:check
+./gradlew :airbyte-integrations:connectors:destination-snowflake-bulk-load:check
 ```
 
 To run acceptance and custom integration tests:
 
 ```bash
-./gradlew :airbyte-integrations:connectors:destination-snowflake-bulk-load-2:integrationTest
+./gradlew :airbyte-integrations:connectors:destination-snowflake-bulk-load:integrationTest
 ```
 
 ## Dependency Management

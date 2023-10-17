@@ -40,7 +40,7 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
 
   public SnowflakeBulkLoadSqlOperations(final NamingConventionTransformer nameTransformer) {
     this.nameTransformer = nameTransformer;
-    this.use1s1t = TypingAndDedupingFlag.isDestinationV2();
+    this.use1s1t = true;
   }
 
   public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
