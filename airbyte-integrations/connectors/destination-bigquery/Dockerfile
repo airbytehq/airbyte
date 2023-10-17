@@ -25,5 +25,5 @@ ENV AIRBYTE_NORMALIZATION_INTEGRATION bigquery
 
 COPY --from=build /airbyte /airbyte
 
-LABEL io.airbyte.version=2.1.4
+LABEL io.airbyte.version=2.1.5
 LABEL io.airbyte.name=airbyte/destination-bigquery
