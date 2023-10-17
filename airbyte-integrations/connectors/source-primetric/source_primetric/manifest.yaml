@@ -1,0 +1,269 @@
+version: "0.29.0"
+
+definitions:
+  selector:
+    type: RecordSelector
+    extractor:
+      type: DpathExtractor
+      field_path:
+        - results
+      
+  requester:
+    type: HttpRequester
+    url_base: "http://192.168.1.17:3000/"
+    http_method: "GET"
+    path: "/{{parameters.path}}"
+    authenticator:
+      type: OAuthAuthenticator
+      token_refresh_endpoint: "http://192.168.1.17:3000/auth/token/"
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_token: ""
+      grant_type: client_credentials
+      access_token_name: access_token
+    error_handler:
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 31
+
+  retriever:
+    type: SimpleRetriever
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      type: DefaultPaginator
+      page_token_option:
+        type: RequestPath
+      pagination_strategy:
+        type: CursorPagination
+        page_size: 50
+        cursor_value: '{{ response.get("next", {}) }}'
+        stop_condition: '{{ not response.get("next", {}) }}'
+    requester:
+      $ref: "#/definitions/requester"
+      
+  base_stream:
+    type: DeclarativeStream
+    primary_key: "uuid"
+    retriever:
+      $ref: "#/definitions/retriever"
+
+  assignments_stream:
+    $ref: "#/definitions/base_stream"
+    name: "assignments"
+    $parameters:
+      path: "/assignments"
+  employees_stream:
+    $ref: "#/definitions/base_stream"
+    name: "employees"
+    $parameters:
+      path: "/employees"
+  hashtags_stream:
+    $ref: "#/definitions/base_stream"
+    name: "hashtags"
+    $parameters:
+      path: "/hash_tags"
+  organization_clients_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organization_clients"
+    $parameters:
+      path: "/organization/clients"
+  organization_company_groups_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organization_company_groups"
+    $parameters:
+      path: "/organization/company_groups"
+      
+  organization_departments_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organization_departments"
+    $parameters:
+      path: "/organization/departments"
+
+  organization_identity_providers_stream:
+    type: DeclarativeStream
+    name: "organization_identity_providers"
+    $parameters:
+      path: "/organization/identity_providers"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+
+  organization_positions_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organization_positions"
+    $parameters:
+      path: "/organization/positions"
+
+  organization_ragScopes_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organization_ragScopes"
+    primary_key: "text"
+    $parameters:
+      path: "/organization/rag_scopes"
+      
+
+  organization_roles_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organization_roles"
+    $parameters:
+      path: "/organization/roles"
+
+  organization_seniorities_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organization_seniorities"
+    $parameters:
+      path: "/organization/seniorities"
+
+  organization_tags_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organization_tags"
+    $parameters:
+      path: "/organization/tags"
+
+  organization_teams_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organization_teams"
+    $parameters:
+      path: "/organization/teams"
+
+  organization_timeoff_types_stream:
+    $ref: "#/definitions/base_stream"
+    name: "organization_timeoff_types"
+    $parameters:
+      path: "/organization/timeoff_types"
+
+  people_stream:
+    $ref: "#/definitions/base_stream"
+    name: "people"
+    $parameters:
+      path: "/people"
+
+  projects_stream:
+    $ref: "#/definitions/base_stream"
+    name: "projects"
+    $parameters:
+      path: "/projects"
+
+  projects_vacancies_stream:
+    $ref: "#/definitions/base_stream"
+    name: "projects_vacancies"
+    $parameters:
+      path: "/projects_vacancies"
+
+  rag_ratings_stream:
+    type: DeclarativeStream
+    name: "rag_ratings"
+    primary_key: "project_id"
+    $parameters:
+      path: "/rag_ratings"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: NoPagination
+
+  skills_stream:
+    $ref: "#/definitions/base_stream"
+    name: "skills"
+    $parameters:
+      path: "/skills"
+  timeoffs_stream:
+    $ref: "#/definitions/base_stream"
+    name: "timeoffs"
+    $parameters:
+      path: "/timeoffs"
+  worklogs_stream:
+    $ref: "#/definitions/base_stream"
+    name: "worklogs"
+    $parameters:
+      path: "/worklogs"
+
+streams:
+  - "#/definitions/assignments_stream"
+  # - "#/definitions/employees_stream"
+  # - "#/definitions/hashtags_stream"
+  # - "#/definitions/organization_clients_stream"
+  # - "#/definitions/organization_company_groups_stream"
+  # - "#/definitions/organization_departments_stream"
+  # - "#/definitions/organization_identity_providers_stream"
+  # - "#/definitions/organization_positions_stream"
+  # - "#/definitions/organization_ragScopes_stream"
+  # - "#/definitions/organization_roles_stream"
+  # - "#/definitions/organization_seniorities_stream"
+  # - "#/definitions/organization_tags_stream"
+  # - "#/definitions/organization_teams_stream"
+  # - "#/definitions/organization_timeoff_types_stream"
+  # - "#/definitions/people_stream"
+  # - "#/definitions/projects_stream"
+  # - "#/definitions/projects_vacancies_stream"
+  - "#/definitions/rag_ratings_stream"
+  # - "#/definitions/skills_stream"
+  # - "#/definitions/timeoffs_stream"
+  # - "#/definitions/worklogs_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - "assignments"
+    # - "employees"
+    # - "hashtags"
+    # - "organization_clients"
+    # - "organization_company_groups"
+    # - "organization_departments"
+    # - "organization_identity_providers"
+    # - "organization_positions"
+    # - "organization_ragScopes"
+    # - "organization_roles"
+    # - "organization_seniorities"
+    # - "organization_tags"
+    # - "organization_teams"
+    # - "organization_timeoff_types"
+    # - "people"
+    # - "projects"
+    # - "projects_vacancies"
+    - "rag_ratings"
+    # - "skills"
+    # - "timeoffs"
+    # - "worklogs"
+
+spec:
+  type: Spec
+  documentation_url: https://docsurl.com
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: Primetric Spec
+    type: object
+    required:
+      - client_id
+      - client_secret
+    properties:
+      client_id:
+        type: string
+        title: Client ID
+        description: The Client ID of your Primetric developer application. The Client ID is visible <a href=\"https://app.primetric.com/administrator/integrations">here</a>.
+        pattern: ^[a-zA-Z0-9]+$
+        airbyte_secret: true
+        examples: ["1234aBcD5678EFGh9045Neq79sdDlA15082VMYcj"]
+        order: 0
+      client_secret:
+        type: string
+        title: Client Secret
+        description: The Client Secret of your Primetric developer application. You can manage your client's credentials <a href=\"https://app.primetric.com/administrator/integrations">here</a>.
+        pattern: ^[a-zA-Z0-9]+$
+        airbyte_secret: true
+        order: 1
