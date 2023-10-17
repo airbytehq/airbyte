@@ -427,7 +427,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     String cdcDeletes = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
-      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns(), forceSafeCasting);
+      cdcDeletes = cdcDeletes(stream, finalSuffix);
     }
     final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
 
@@ -634,33 +634,17 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ;""");
   }
 
-  @VisibleForTesting
-  String cdcDeletes(final StreamConfig stream,
-                    final String finalSuffix,
-                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
-                    final boolean forceSafeCasting) {
-
+  private String cdcDeletes(final StreamConfig stream, final String finalSuffix) {
     if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
     }
-
-    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
+    if (!stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
       return "";
     }
 
-    final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    final String pkCasts =
-        stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk), forceSafeCasting)).collect(joining(",\n"));
-
-    // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
-    // out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
-        "raw_table_id", stream.id().rawTableId(QUOTE),
-        "pk_list", pkList,
-        "pk_extracts", pkCasts,
-        "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)).replace(
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix))).replace(
             """
             DELETE FROM ${project_id}.${final_table_id}
             WHERE _ab_cdc_deleted_at IS NOT NULL;""");
