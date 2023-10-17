@@ -112,18 +112,6 @@ Once you have access to the app, select `New Connection` and fill the following 
 
 --- 
 
-`Secret` 
-
-The name of the secret prefixed by which database and schema. Based on the previous steps: `<database>.<your_schema>.integration_linkedin_ads_oauth`.
-
----
-
-`External Access Integration`
-
-Name of the Snowflake integration where the secret and network rules are configured. Based on the previous steps: `integration_linkedin_ads`.
-
---- 
-
 `start_date`
 
 UTC date in the format 2020-09-17. Any data before this date will not be replicated. 

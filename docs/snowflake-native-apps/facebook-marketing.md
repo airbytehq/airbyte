@@ -101,18 +101,6 @@ Once you have access to the app, select `New Connection` and fill the following 
 
 --- 
 
-`Secret` 
-
-The name of the secret prefixed by which database and schema. Based on the previous steps: `<database>.<your_schema>.integration_facebook_marketing_oauth`.
-
----
-
-`External Access Integration`
-
-Name of the Snowflake integration where the secret and network rules are configured. Based on the previous steps: `integration_facebook_marketing`.
-
----
-
 `account_id`
 
 The Facebook Ad account ID to use when pulling data from the Facebook Marketing API. The Ad account ID number is in the account dropdown menu or in your browser's address bar of your [Meta Ads Manager](https://adsmanager.facebook.com/adsmanager/).
