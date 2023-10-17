@@ -9,12 +9,13 @@ import platform
 
 import anyio
 from connector_ops.utils import ConnectorLanguage
-from pipelines.models.bases import ConnectorReport, StepResult
+from pipelines.models.bases import StepResult
 from pipelines.pipeline.connectors.builds.steps import python_connectors
 from pipelines.pipeline.connectors.builds.steps.common import LoadContainerToLocalDockerHost, StepStatus
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.pipeline.connectors.builds.steps import java_connectors
 from pipelines.pipeline.connectors.context import ConnectorContext
+from pipelines.pipeline.connectors.reports import ConnectorReport
 
 
 class NoBuildStepForLanguageError(Exception):

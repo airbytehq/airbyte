@@ -1,4 +1,4 @@
-from pipelines.pipelines.metadata import run_metadata_orchestrator_deploy_pipeline
+from pipelines.pipeline.metadata.pipeline import run_metadata_orchestrator_deploy_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 

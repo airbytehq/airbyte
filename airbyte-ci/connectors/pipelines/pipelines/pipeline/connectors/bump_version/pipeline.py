@@ -4,8 +4,9 @@ import datetime
 import semver
 from pipelines import consts
 from pipelines.helpers.connectors import metadata_change_helpers
-from pipelines.models.bases import ConnectorReport, Step, StepResult, StepStatus
+from pipelines.models.bases import Step, StepResult, StepStatus
 from pipelines.pipeline.connectors.context import ConnectorContext
+from pipelines.pipeline.connectors.reports import ConnectorReport
 
 
 def get_bumped_version(version: str, bump_type: str) -> str:

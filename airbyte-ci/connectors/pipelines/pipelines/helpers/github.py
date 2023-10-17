@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING, Optional
 
 from connector_ops.utils import console
 from pipelines import main_logger
-from pipelines.models.contexts import CIContext
+from pipelines.consts import CIContext
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -92,6 +92,7 @@ def get_pull_request(pull_request_number: int, github_access_token: str) -> Pull
 
 
 def update_global_commit_status_check_for_tests(click_context: dict, github_state: str, logger: Logger = None):
+
     update_commit_status_check(
         click_context["git_revision"],
         github_state,

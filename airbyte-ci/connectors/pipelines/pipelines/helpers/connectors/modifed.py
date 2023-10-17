@@ -3,7 +3,7 @@ from connector_ops.utils import Connector
 
 from pathlib import Path
 from typing import FrozenSet, Set, Union
-from pipelines import main_logger, Union
+from pipelines import main_logger
 from pipelines.helpers.utils import IGNORED_FILE_EXTENSIONS
 
 

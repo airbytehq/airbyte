@@ -1,8 +1,6 @@
 import os
 from pathlib import Path
 from pipelines import main_logger
-from pipelines.commands.groups.connectors import ALL_CONNECTORS
-
 
 import click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo

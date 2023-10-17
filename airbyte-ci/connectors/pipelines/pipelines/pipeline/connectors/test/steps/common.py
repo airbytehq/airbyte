@@ -18,8 +18,9 @@ from dagger import Container, Directory, File
 from pipelines import hacks
 from pipelines.dagger.actions import secrets
 import pipelines.dagger.actions.internal_tools
-from pipelines.models.bases import CIContext, Step, StepResult, StepStatus
+from pipelines.models.bases import Step, StepResult, StepStatus
 from pipelines.helpers.utils import METADATA_FILE_NAME
+from pipelines.consts import CIContext
 
 
 class VersionCheck(Step, ABC):
