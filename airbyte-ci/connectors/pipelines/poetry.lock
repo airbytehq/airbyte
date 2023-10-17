@@ -1359,6 +1359,20 @@ test = ["hypothesis (>=6.46.1)", "pytest (>=7.3.2)", "pytest-asyncio (>=0.17.0)"
 xml = ["lxml (>=4.8.0)"]
 
 [[package]]
+name = "pex"
+version = "2.1.148"
+description = "The PEX packaging toolchain."
+optional = false
+python-versions = ">=2.7,<3.13,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
+files = [
+    {file = "pex-2.1.148-py2.py3-none-any.whl", hash = "sha256:b406a54e66855c537182caf618ed2c9167b021ddc8f28a6d570af88cea691101"},
+    {file = "pex-2.1.148.tar.gz", hash = "sha256:5d1111dbc39b23d4ec6798792e4017844c46abe738869a04ba7da16a09295179"},
+]
+
+[package.extras]
+subprocess = ["subprocess32 (>=3.2.7)"]
+
+[[package]]
 name = "platformdirs"
 version = "3.11.0"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a \"user data dir\"."
@@ -2248,4 +2262,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "~3.10"
-content-hash = "76b53958ee6dd19c2816b023cce1585bb198e14c79124d56de2445c494d51cf2"
+content-hash = "93017c8dce041b5a3a2728b9615823b713e5ce933d6d059cf2831b85e4b13204"
