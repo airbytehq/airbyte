@@ -13,7 +13,7 @@ jobs:
   format-and-commit:
     runs-on: ubuntu-latest
     name: "Apply All Formatting Rules"
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
