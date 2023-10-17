@@ -122,8 +122,7 @@ def test_http_stream_integration(mocker):
 
 
 def test_http_stream_with_cache_integration(mocker):
-    """Test that HttpStream will use call budget when provided and not cached
-    """
+    """Test that HttpStream will use call budget when provided and not cached"""
     response = requests.Response()
     response.status_code = 200
     response.request = requests.PreparedRequest()
