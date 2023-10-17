@@ -7,7 +7,7 @@ import logging
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
-from airbyte_cdk.sources.utils.slice_logger import NeverLogSliceLogger
+from airbyte_cdk.sources.utils.slice_logger import AlwaysLogSliceLogger, NeverLogSliceLogger
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import (
     AlwaysAvailableAvailabilityStrategy,
@@ -15,9 +15,6 @@ from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_str
     InMemoryPartition,
     InMemoryPartitionGenerator,
 )
-
-_base_concurrent_scenario = ()
-
 
 _id_only_stream = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator([InMemoryPartition("partition1", None, [Record({"id": "1"}), Record({"id": "2"})])]),
@@ -34,7 +31,26 @@ _id_only_stream = ThreadBasedConcurrentStream(
     cursor_field=None,
     slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
-    message_repository=InMemoryMessageRepository(),
+    message_repository=None,
+    timeout_seconds=300,
+)
+
+_id_only_stream_with_slice_logger = ThreadBasedConcurrentStream(
+    partition_generator=InMemoryPartitionGenerator([InMemoryPartition("partition1", None, [Record({"id": "1"}), Record({"id": "2"})])]),
+    max_workers=1,
+    name="stream1",
+    json_schema={
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "string"]},
+        },
+    },
+    availability_strategy=AlwaysAvailableAvailabilityStrategy(),
+    primary_key=[],
+    cursor_field=None,
+    slice_logger=AlwaysLogSliceLogger(),
+    logger=logging.getLogger("test_logger"),
+    message_repository=None,
     timeout_seconds=300,
 )
 
@@ -53,7 +69,7 @@ _id_only_stream_with_primary_key = ThreadBasedConcurrentStream(
     cursor_field=None,
     slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
-    message_repository=InMemoryMessageRepository(),
+    message_repository=None,
     timeout_seconds=300,
 )
 
@@ -77,7 +93,7 @@ _id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
     cursor_field=None,
     slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
-    message_repository=InMemoryMessageRepository(),
+    message_repository=None,
     timeout_seconds=300,
 )
 
@@ -101,7 +117,7 @@ _id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurren
     cursor_field=None,
     slice_logger=NeverLogSliceLogger(),
     logger=logging.getLogger("test_logger"),
-    message_repository=InMemoryMessageRepository(),
+    message_repository=None,
     timeout_seconds=300,
 )
 
@@ -110,11 +126,67 @@ test_concurrent_cdk_single_stream = (
     .set_name("test_concurrent_cdk_single_stream")
     .set_config({})
     .set_source_builder(
-        ConcurrentSourceBuilder().set_streams(
+        ConcurrentSourceBuilder()
+        .set_streams(
             [
                 _id_only_stream,
             ]
         )
+        .set_message_repository(InMemoryMessageRepository())
+    )
+    .set_expected_records(
+        [
+            {"data": {"id": "1"}, "stream": "stream1"},
+            {"data": {"id": "2"}, "stream": "stream1"},
+        ]
+    )
+    .set_expected_logs(
+        {
+            "read": [
+                {"level": "INFO", "message": "Starting syncing ConcurrentCdkSource"},
+                {"level": "INFO", "message": "Marking stream stream1 as STARTED"},
+                {"level": "INFO", "message": "Syncing stream: stream1"},
+                {"level": "INFO", "message": "Marking stream stream1 as RUNNING"},
+                {"level": "INFO", "message": "Read 2 records from stream1 stream"},
+                {"level": "INFO", "message": "Marking stream stream1 as STOPPED"},
+                {"level": "INFO", "message": "Finished syncing stream1"},
+                {"level": "INFO", "message": "ConcurrentCdkSource runtimes"},
+                {"level": "INFO", "message": "Finished syncing ConcurrentCdkSource"},
+            ]
+        }
+    )
+    .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": ["null", "string"]},
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            ]
+        }
+    )
+    .build()
+)
+
+test_concurrent_cdk_single_stream_with_slice_logger = (
+    TestScenarioBuilder()
+    .set_name("test_concurrent_cdk_single_stream_with_slice_logger")
+    .set_config({})
+    .set_source_builder(
+        ConcurrentSourceBuilder()
+        .set_streams(
+            [
+                _id_only_stream_with_slice_logger,
+            ]
+        )
+        .set_message_repository(InMemoryMessageRepository())
     )
     .set_expected_records(
         [
@@ -138,6 +210,26 @@ test_concurrent_cdk_single_stream = (
             ]
         }
     )
+    .set_expected_logs(
+        {
+            "read": [
+                {
+                    "level": "INFO",
+                    "message": "slice:null",
+                },  # Worth noting that the logs are coming out of order. I think it's because of how the4 the message repository and the logging interact. Haven't dug into this much...
+                {"level": "INFO", "message": "Starting syncing ConcurrentCdkSource"},
+                {"level": "INFO", "message": "Marking stream stream1 as STARTED"},
+                {"level": "INFO", "message": "Syncing stream: stream1"},
+                {"level": "INFO", "message": "Marking stream stream1 as RUNNING"},
+                {"level": "INFO", "message": "Read 2 records from stream1 stream"},
+                {"level": "INFO", "message": "Marking stream stream1 as STOPPED"},
+                {"level": "INFO", "message": "Finished syncing stream1"},
+                {"level": "INFO", "message": "ConcurrentCdkSource runtimes"},
+                {"level": "INFO", "message": "Finished syncing ConcurrentCdkSource"},
+            ]
+        }
+    )
+    .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
     .build()
 )
 
@@ -204,7 +296,7 @@ test_concurrent_cdk_multiple_streams = (
                     cursor_field=None,
                     slice_logger=NeverLogSliceLogger(),
                     logger=logging.getLogger("test_logger"),
-                    message_repository=InMemoryMessageRepository(),
+                    message_repository=None,
                     timeout_seconds=300,
                 ),
             ]

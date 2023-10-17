@@ -15,11 +15,13 @@ from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_str
     test_concurrent_cdk_single_stream,
     test_concurrent_cdk_single_stream_multiple_partitions,
     test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_two,
+    test_concurrent_cdk_single_stream_with_slice_logger,
 )
 
 scenarios = [
     test_concurrent_cdk_single_stream,
     test_concurrent_cdk_multiple_streams,
+    test_concurrent_cdk_single_stream_with_slice_logger,
     test_concurrent_cdk_single_stream_multiple_partitions,
     test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_two,
 ]

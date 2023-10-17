@@ -4,10 +4,11 @@
 
 import json
 import logging
-from typing import Any, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability, StreamAvailable
@@ -20,8 +21,9 @@ from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuild
 
 
 class ConcurrentCdkSource(AbstractSource):
-    def __init__(self, streams: List[ThreadBasedConcurrentStream]):
+    def __init__(self, streams: List[ThreadBasedConcurrentStream], message_repository: Optional[MessageRepository]):
         self._streams = streams
+        self._message_repository = message_repository
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         # Check is not verified because it is up to the source to implement this method
@@ -44,6 +46,10 @@ class ConcurrentCdkSource(AbstractSource):
                 for s in self._streams
             ]
         )
+
+    @property
+    def message_repository(self) -> Union[None, MessageRepository]:
+        return self._message_repository
 
 
 class InMemoryPartitionGenerator(PartitionGenerator):
@@ -78,12 +84,20 @@ class InMemoryPartition(Partition):
 class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
     def __init__(self):
         self._streams: List[ThreadBasedConcurrentStream] = []
+        self._message_repository = None
 
     def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> ConcurrentCdkSource:
-        return ConcurrentCdkSource(self._streams)
+        for stream in self._streams:
+            if not stream._message_repository:
+                stream._message_repository = self._message_repository
+        return ConcurrentCdkSource(self._streams, self._message_repository)
 
     def set_streams(self, streams: List[ThreadBasedConcurrentStream]) -> "ConcurrentSourceBuilder":
         self._streams = streams
+        return self
+
+    def set_message_repository(self, message_repository: MessageRepository) -> "ConcurrentSourceBuilder":
+        self._message_repository = message_repository
         return self
 
 
