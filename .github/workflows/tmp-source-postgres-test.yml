@@ -14,12 +14,12 @@ on:
     inputs:
       runner:
         description: "The runner to use for this job"
-        default: "conn-prod-xlarge-runner"
+        default: "conn-prod-xxlarge-runner"
 
 jobs:
   source_postgres_ci:
-    name: Source Postgres CI on ${{ inputs.runner || 'conn-prod-xlarge-runner'}}
-    runs-on: ${{ inputs.runner || 'conn-prod-xlarge-runner'}}
+    name: Source Postgres CI on ${{ inputs.runner || 'conn-prod-xxlarge-runner'}}
+    runs-on: ${{ inputs.runner || 'conn-prod-xxlarge-runner'}}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
