@@ -1,6 +1,6 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
+// import { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -8,16 +8,18 @@ import { Button, MainPageWithScroll } from "components";
 import HeadTitle from "components/HeadTitle";
 import PageTitle from "components/PageTitle";
 
-import { FilterConnectionRequestBody } from "core/request/DaspireClient";
+// import { FilterSourceRequestBody } from "core/request/DaspireClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import { useConnectionFilterOptions, useFilteredConnectionList } from "hooks/services/useConnectionHook";
-import { usePageConfig } from "hooks/services/usePageConfig";
+// import { useConnectionFilterOptions, useFilteredConnectionList } from "hooks/services/useConnectionHook";
+// import { usePageConfig } from "hooks/services/usePageConfig";
 import { useSourceList } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+// import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import SourcesTable from "./components/SourcesTable";
 import { RoutePaths } from "../../../routePaths";
+// import { Separator } from "components/Separator";
+// import { PageSize } from "components/PageSize";
 // import { Separator } from "components/Separator";
 // import { PageSize } from "components/PageSize";
 
@@ -41,32 +43,40 @@ const BtnText = styled.div`
 `;
 
 const AllSourcesPage: React.FC = () => {
-  const { push, query } = useRouter();
-
+  // const { push, query } = useRouter();
+  const { push } = useRouter();
   // const [pageConfig, updatePageSize] = usePageConfig();
-  const [pageConfig] = usePageConfig();
 
   // const [currentPageSize, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
-  const [currentPageSize] = useState<number>(pageConfig.connection.pageSize);
+  // const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig.source.pageSize);
   const { sources } = useSourceList();
+
   useTrackPage(PageTrackingCodes.SOURCE_LIST);
-  const workspace = useCurrentWorkspace();
-  const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions();
+  // const workspace = useCurrentWorkspace();
+  // const initialFiltersState = {
+  //   workspaceId: "fbc7e2ed-7d9c-459e-9831-26ce863f7b93",
+  //   pageSize: pageCurrent,
+  //   pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
+  // };
 
-  const initialFiltersState = {
-    workspaceId: workspace.workspaceId,
-    pageSize: currentPageSize,
-    pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
-    status: statusOptions[0].value,
-    sourceDefinitionId: sourceOptions[0].value,
-    destinationDefinitionId: destinationOptions[0].value,
-  };
+  // const [filters, setFilters] = useState<FilterSourceRequestBody>(initialFiltersState);
+  // const { sources, total, pageSize } = usePaginatedSources(filters);
+  // const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions();
 
-  const [filters] = useState<FilterConnectionRequestBody>(initialFiltersState);
+  // const initialFiltersState = {
+  //   workspaceId: workspace.workspaceId,
+  //   pageSize: currentPageSize,
+  //   pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
+  //   status: statusOptions[0].value,
+  //   sourceDefinitionId: sourceOptions[0].value,
+  //   destinationDefinitionId: destinationOptions[0].value,
+  // };
+
+  // const [filters] = useState<FilterConnectionRequestBody>(initialFiltersState);
 
   // const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
   // const { connections, total, pageSize } = useFilteredConnectionList(filters);
-  const { connections } = useFilteredConnectionList(filters);
+  // const { connections } = useFilteredConnectionList(filters);
 
   // const onSelectFilter = useCallback(
   //   (
@@ -89,7 +99,7 @@ const AllSourcesPage: React.FC = () => {
   // const onChangePageSize = useCallback(
   //   (size: number) => {
   //     setCurrentPageSize(size);
-  //     updatePageSize("connection", size);
+  //     updatePageSize("source", size);
   //     onSelectFilter("pageSize", size);
   //   },
   //   [onSelectFilter]
@@ -121,9 +131,9 @@ const AllSourcesPage: React.FC = () => {
       }
     >
       {/* <Separator height="10px" />
-      <PageSize currentPageSize={currentPageSize} totalPage={total / pageSize} onChange={onChangePageSize} />
+      <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />
       <Separator height="10px" /> */}
-      <SourcesTable sources={sources} connections={connections} />
+      <SourcesTable sources={sources} />
     </MainPageWithScroll>
   );
 };

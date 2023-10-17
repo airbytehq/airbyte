@@ -23,9 +23,10 @@ const LoginNewPage: React.FC = () => {
         })
         .catch((err) => {
           if (err.message) {
-            setErrorMessage(err.message);
+            setErrorMessage(err?.message);
           }
           setTimeout(() => {
+            debugger;
             window.open(process.env.REACT_APP_WEBSITE_URL, "_self");
           }, 1500);
         });

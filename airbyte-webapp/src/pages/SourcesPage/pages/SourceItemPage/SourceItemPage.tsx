@@ -25,11 +25,11 @@ import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocument
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 import TestConnection from "views/Connector/TestConnection";
 
-import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
-import { RoutePaths } from "../../../routePaths";
 import HeaderSction from "./components/HeaderSection";
 import SourceConnectionTable from "./components/SourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
+import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
+import { RoutePaths } from "../../../routePaths";
 
 interface PageConfig {
   menuConfig: CategoryItem[];
@@ -87,7 +87,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     { name: source.name },
   ];
 
-  const connectionsWithSource = connections.filter((connectionItem) => connectionItem.sourceId === source.sourceId);
+  const connectionsWithSource = connections?.filter((connectionItem) => connectionItem?.sourceId === source?.sourceId);
 
   const destinationsDropDownData = useMemo(
     () =>

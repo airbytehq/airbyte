@@ -8,7 +8,6 @@ import Table from "components/Table";
 
 import useRouter from "hooks/useRouter";
 
-import { RoutePaths } from "../../pages/routePaths";
 import AllConnectionsStatusCell from "./components/AllConnectionsStatusCell";
 import ConnectEntitiesCell from "./components/ConnectEntitiesCell";
 import ConnectionCopyCell from "./components/ConnectionCopyCell";
@@ -19,12 +18,13 @@ import NameCell from "./components/NameCell";
 import NewTabIconButton from "./components/NewTabIconButton";
 import SortButton from "./components/SortButton";
 import styles from "./ImplementationTable.module.scss";
-import { EntityTableDataItem, SortOrderEnum } from "./types";
+import { EntityTableDataItem, SortOrderEnum, SourceTableDataItem } from "./types";
+import { RoutePaths } from "../../pages/routePaths";
 
 interface IProps {
-  data: EntityTableDataItem[];
+  data: SourceTableDataItem[];
   entity: "source" | "destination";
-  onClickRow?: (data: EntityTableDataItem) => void;
+  onClickRow?: (data: SourceTableDataItem) => void;
 }
 
 const NameColums = styled.div`

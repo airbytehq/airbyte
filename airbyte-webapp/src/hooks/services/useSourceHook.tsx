@@ -10,6 +10,9 @@ import { JobInfo } from "core/domain/job";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
+import { useAnalyticsService } from "./Analytics";
+import { useRemoveConnectionsFromList } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
 import {
   SourceRead,
   SynchronousJobRead,
@@ -19,9 +22,6 @@ import {
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useAnalyticsService } from "./Analytics";
-import { useRemoveConnectionsFromList } from "./useConnectionHook";
-import { useCurrentWorkspace } from "./useWorkspace";
 
 export const sourcesKeys = {
   all: [SCOPE_WORKSPACE, "sources"] as const,
@@ -54,12 +54,21 @@ function useSourceService() {
 interface SourceList {
   sources: SourceRead[];
 }
-
+interface PaginatedSourceList {
+  sources: SourceRead[];
+  total: number;
+  pageSize: number;
+}
 const useSourceList = (): SourceList => {
   const workspace = useCurrentWorkspace();
   const service = useSourceService();
 
   return useSuspenseQuery(sourcesKeys.lists(), () => service.list(workspace.workspaceId));
+};
+const usePaginatedSources = (filters: any): PaginatedSourceList => {
+  const service = useSourceService();
+
+  return useSuspenseQuery(sourcesKeys.list(filters), () => service.filteredList(filters));
 };
 
 const useGetSource = <T extends string | undefined | null>(
@@ -227,4 +236,5 @@ export {
   useCloneSource,
   useUpdateSource,
   useDiscoverSchema,
+  usePaginatedSources,
 };

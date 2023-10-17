@@ -1,6 +1,6 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
+// import { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -11,13 +11,13 @@ import PageTitle from "components/PageTitle";
 // import { Pagination } from "components/Pagination";
 import { Separator } from "components/Separator";
 
-import { FilterConnectionRequestBody } from "core/request/DaspireClient";
+// import { FilterConnectionRequestBody } from "core/request/DaspireClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import { useConnectionFilterOptions, useFilteredConnectionList } from "hooks/services/useConnectionHook";
+// import { useConnectionFilterOptions, useFilteredConnectionList } from "hooks/services/useConnectionHook";
 import { useDestinationList } from "hooks/services/useDestinationHook";
-import { usePageConfig } from "hooks/services/usePageConfig";
+// import { usePageConfig } from "hooks/services/usePageConfig";
 import useRouter from "hooks/useRouter";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+// import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
 import DestinationsTable from "./components/DestinationsTable";
 import { RoutePaths } from "../../../routePaths";
@@ -49,32 +49,33 @@ const BtnText = styled.div`
 // `;
 
 const AllDestinationsPage: React.FC = () => {
-  const { push, query } = useRouter();
+  // const { push, query } = useRouter();
+  const { push } = useRouter();
   const { destinations } = useDestinationList();
 
   // const [pageConfig, updatePageSize] = usePageConfig();
-  const [pageConfig] = usePageConfig();
+  // const [pageConfig] = usePageConfig();
 
-  const [currentPageSize] = useState<number>(pageConfig.connection.pageSize);
+  // const [currentPageSize] = useState<number>(pageConfig.connection.pageSize);
   // const [currentPageSize, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
   useTrackPage(PageTrackingCodes.DESTINATION_LIST);
 
-  const workspace = useCurrentWorkspace();
-  const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions();
+  // const workspace = useCurrentWorkspace();
+  // const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions();
 
-  const initialFiltersState = {
-    workspaceId: workspace.workspaceId,
-    pageSize: currentPageSize,
-    pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
-    status: statusOptions[0].value,
-    sourceDefinitionId: sourceOptions[0].value,
-    destinationDefinitionId: destinationOptions[0].value,
-  };
+  // const initialFiltersState = {
+  //   workspaceId: workspace.workspaceId,
+  //   pageSize: currentPageSize,
+  //   pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
+  //   status: statusOptions[0].value,
+  //   sourceDefinitionId: sourceOptions[0].value,
+  //   destinationDefinitionId: destinationOptions[0].value,
+  // };
 
-  const [filters] = useState<FilterConnectionRequestBody>(initialFiltersState);
+  // const [filters] = useState<FilterConnectionRequestBody>(initialFiltersState);
   // const [filters, setFilters] = useState<FilterConnectionRequestBody>(initialFiltersState);
   // const { connections, total, pageSize } = useFilteredConnectionList(filters);
-  const { connections } = useFilteredConnectionList(filters);
+  // const { connections } = useFilteredConnectionList(filters);
   // const onSelectFilter = useCallback(
   //   (
   //     filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId" | "pageSize",
@@ -131,7 +132,7 @@ const AllDestinationsPage: React.FC = () => {
       {/* <Separator height="10px" />
       <PageSize currentPageSize={currentPageSize} totalPage={total / pageSize} onChange={onChangePageSize} />
       <Separator height="10px" /> */}
-      <DestinationsTable destinations={destinations} connections={connections} />
+      <DestinationsTable destinations={destinations} />
       <Separator height="24px" />
       {/* <Footer>
         <Pagination
