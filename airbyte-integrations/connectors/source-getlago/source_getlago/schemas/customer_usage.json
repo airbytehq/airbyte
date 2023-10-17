@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "from_datetime": {
       "type": ["null", "string"]
@@ -29,7 +30,7 @@
     "charges_usage": {
       "type": ["null", "array"],
       "items": {
-        "type": ["null","object"],
+        "type": ["null", "object"],
         "properties": {
           "units": {
             "type": ["null", "string"]
@@ -44,7 +45,7 @@
             "type": ["null", "string"]
           },
           "charge": {
-            "type": ["null","object"],
+            "type": ["null", "object"],
             "properties": {
               "lago_id": {
                 "type": ["null", "string"]
@@ -55,7 +56,7 @@
             }
           },
           "billable_metric": {
-            "type": ["null","object"],
+            "type": ["null", "object"],
             "properties": {
               "lago_id": {
                 "type": ["null", "string"]
@@ -74,7 +75,7 @@
           "groups": {
             "type": ["null", "array"],
             "items": {
-              "type": ["null","object"],
+              "type": ["null", "object"],
               "properties": {
                 "lago_id": {
                   "type": ["null", "string"]
