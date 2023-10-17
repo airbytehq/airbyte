@@ -8,8 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -65,7 +65,7 @@ public class Main {
 
     final JsonNode catalog;
     try {
-      catalog = getCatalog(dataset, connector);
+      catalog = getCatalog(dataset, connector, syncMode);
     } catch (final IOException ex) {
       throw new IllegalStateException("Failed to read catalog", ex);
     }
@@ -90,11 +90,11 @@ public class Main {
     System.exit(0);
   }
 
-  static JsonNode getCatalog(final String dataset, final String connector) throws IOException {
+  static JsonNode getCatalog(final String dataset, final String connector, final String syncMode) throws IOException {
     final ObjectMapper objectMapper = new ObjectMapper();
     final String catalogFilename = "catalogs/%s/%s_catalog.json".formatted(connector, dataset);
-    final InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(catalogFilename);
-    return objectMapper.readTree(is);
+    final String template = MoreResources.readResource(catalogFilename);
+    return objectMapper.readTree(String.format(template, syncMode));
   }
 
 }

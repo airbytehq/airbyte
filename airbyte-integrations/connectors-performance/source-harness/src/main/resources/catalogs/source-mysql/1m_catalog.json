@@ -37,10 +37,10 @@
           }
         },
         "default_cursor_field": [],
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["%1$s", "incremental"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "%1$s",
       "primary_key": [["id"]],
       "cursor_field": ["id"],
       "destination_sync_mode": "append"
@@ -110,10 +110,10 @@
           }
         },
         "default_cursor_field": [],
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["%1$s", "incremental"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "%1$s",
       "primary_key": [["id"]],
       "cursor_field": ["updated_at"],
       "destination_sync_mode": "append"
@@ -149,10 +149,10 @@
           }
         },
         "default_cursor_field": [],
-        "supported_sync_modes": ["full_refresh", "incremental"],
+        "supported_sync_modes": ["%1$s", "incremental"],
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "%1$s",
       "primary_key": [["id"]],
       "cursor_field": ["created_at"],
       "destination_sync_mode": "append"

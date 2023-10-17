@@ -44,6 +44,10 @@ on:
       sync-mode:
         description: "Sync mode to use for destination performance measurement."
         required: false
+        type: choice
+        options:
+          - full_refresh
+          - incremental
         default: "full_refresh"
 jobs:
   uuid:
