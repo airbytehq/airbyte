@@ -547,9 +547,6 @@ class PublishConnectorContext(ConnectorContext):
         self.metadata_bucket_name = metadata_bucket_name
         self.spec_cache_gcs_credentials = sanitize_gcs_credentials(spec_cache_gcs_credentials)
         self.metadata_service_gcs_credentials = sanitize_gcs_credentials(metadata_service_gcs_credentials)
-        self.docker_hub_username = docker_hub_username
-        self.docker_hub_password = docker_hub_password
-
         pipeline_name = f"Publish {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
 
@@ -569,6 +566,8 @@ class PublishConnectorContext(ConnectorContext):
             reporting_slack_channel=reporting_slack_channel,
             ci_gcs_credentials=ci_gcs_credentials,
             should_save_report=True,
+            docker_hub_username=docker_hub_username,
+            docker_hub_password=docker_hub_password,
         )
 
     @property
