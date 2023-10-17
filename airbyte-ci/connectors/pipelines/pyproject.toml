@@ -24,6 +24,7 @@ airbyte-connectors-base-images = {path = "../base_images", develop = true}
 connector-ops = {path = "../connector_ops", develop = true}
 toml = "^0.10.2"
 sentry-sdk = "^1.28.1"
+segment-analytics-python = "^2.2.3"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^6.2.5"
