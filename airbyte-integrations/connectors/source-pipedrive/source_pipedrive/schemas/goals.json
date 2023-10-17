@@ -15,6 +15,7 @@
     },
     "type": {
       "type": ["object", "null"],
+      "additionalProperties": true,
       "properties": {
         "name": {
           "type": ["string", "null"]
@@ -40,6 +41,7 @@
     },
     "assignee": {
       "type": ["object", "null"],
+      "additionalProperties": true,
       "properties": {
         "type": {
           "type": ["string", "null"]
@@ -54,6 +56,7 @@
     },
     "duration": {
       "type": ["object", "null"],
+      "additionalProperties": true,
       "properties": {
         "start": {
           "type": ["string", "null"]
@@ -65,6 +68,7 @@
     },
     "expected_outcome": {
       "type": ["object", "null"],
+      "additionalProperties": true,
       "properties": {
         "target": {
           "type": ["number", "null"]

@@ -136,6 +136,8 @@ definitions:
         extractor:
           type: DpathExtractor
           field_path: ["data", "goals"]
+      paginator:
+        type: "NoPagination"
 
   notes_stream:
     $ref: "#/definitions/base_stream"
