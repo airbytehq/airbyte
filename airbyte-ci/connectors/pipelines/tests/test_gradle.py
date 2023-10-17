@@ -5,7 +5,8 @@
 from pathlib import Path
 
 import pytest
-from pipelines import bases, gradle
+from pipelines import gradle
+from pipelines.models import bases
 
 pytestmark = [
     pytest.mark.anyio,

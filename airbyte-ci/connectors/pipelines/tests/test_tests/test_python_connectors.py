@@ -3,10 +3,10 @@
 #
 import pytest
 from connector_ops.utils import Connector
-from pipelines.bases import StepResult
-from pipelines.builds.python_connectors import BuildConnectorImages
-from pipelines.contexts import ConnectorContext
-from pipelines.tests.python_connectors import UnitTests
+from pipelines.models.steps import StepResult
+from pipelines.pipeline.connectors.builds.steps.python_connectors import BuildConnectorImages
+from pipelines.pipeline.connectors.context import ConnectorContext
+from pipelines.pipeline.connectors.test.steps.python_connectors import UnitTests
 
 pytestmark = [
     pytest.mark.anyio,

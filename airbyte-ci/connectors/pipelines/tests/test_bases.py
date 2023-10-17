@@ -7,7 +7,7 @@ from datetime import timedelta
 import anyio
 import pytest
 from dagger import DaggerError
-from pipelines import bases
+from pipelines.models import bases
 
 pytestmark = [
     pytest.mark.anyio,

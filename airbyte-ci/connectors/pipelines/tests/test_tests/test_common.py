@@ -11,8 +11,8 @@ import dagger
 import pytest
 import yaml
 from freezegun import freeze_time
-from pipelines.bases import ConnectorWithModifiedFiles, StepStatus
-from pipelines.tests import common
+from pipelines.models.bases import ConnectorWithModifiedFiles, StepStatus
+from pipelines.pipeline.connectors.test.steps import common
 
 pytestmark = [
     pytest.mark.anyio,

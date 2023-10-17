@@ -7,7 +7,8 @@ from unittest import mock
 
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
-from pipelines import utils
+from pipelines.helpers import utils
+import pipelines.helpers.git
 from tests.utils import pick_a_random_connector
 
 
@@ -135,7 +136,7 @@ def test_get_modified_connectors_with_dependency_scanning(all_connectors, enable
     )
     modified_files.append(modified_java_connector.code_directory / "foo.bar")
 
-    modified_connectors = utils.get_modified_connectors(modified_files, all_connectors, enable_dependency_scanning)
+    modified_connectors = pipelines.helpers.git.get_modified_connectors(modified_files, all_connectors, enable_dependency_scanning)
     if enable_dependency_scanning:
         assert not_modified_java_connector in modified_connectors
     else:
@@ -152,7 +153,7 @@ def test_get_connector_modified_files():
         other_connector.code_directory / "README.md",
     }
 
-    result = utils.get_connector_modified_files(connector, all_modified_files)
+    result = pipelines.helpers.git.get_connector_modified_files(connector, all_modified_files)
     assert result == frozenset({connector.code_directory / "setup.py"})
 
 
@@ -164,7 +165,7 @@ def test_no_modified_files_in_connector_directory():
         other_connector.code_directory / "README.md",
     }
 
-    result = utils.get_connector_modified_files(connector, all_modified_files)
+    result = pipelines.helpers.git.get_connector_modified_files(connector, all_modified_files)
     assert result == frozenset()
 
 
