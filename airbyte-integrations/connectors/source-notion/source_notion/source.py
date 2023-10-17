@@ -8,8 +8,10 @@ from itertools import islice
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
+from pendulum.parsing.exceptions import ParserError
 import re
 import requests
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -37,11 +39,15 @@ class SourceNotion(AbstractSource):
 
         if start_date:
             pattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z')
-            if not pattern.match(start_date):
+            if not pattern.match(start_date): # Compare against the pattern descriptor.
                 return "Please check the format of the start date against the pattern descriptor."
-            
-            parsed_start_date = pendulum.parse(start_date)
-            if parsed_start_date > pendulum.now("UTC"):
+
+            try: # Handle invalid dates.
+                parsed_start_date = pendulum.parse(start_date)
+            except ParserError:
+                return "The provided start date is not a valid date. Please check the format and try again."
+
+            if parsed_start_date > pendulum.now("UTC"): # Handle future start date.
                 return "The start date cannot be greater than the current date."
             
         return None

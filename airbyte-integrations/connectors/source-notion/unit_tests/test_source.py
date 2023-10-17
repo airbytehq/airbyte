@@ -75,6 +75,7 @@ def test_get_authenticator(config, expected_token):
     [
         ({}, None),
         ({"start_date": "2021-01-01T00:00:00.000Z"}, None),
+        ({"start_date": "2021-99-99T79:89:99.123Z"}, "The provided start date is not a valid date. Please check the format and try again."),
         ({"start_date": "2021-01-01T00:00:00.000"}, "Please check the format of the start date against the pattern descriptor."),
         ({"start_date": "2025-01-25T00:00:00.000Z"}, "The start date cannot be greater than the current date.")
     ]
