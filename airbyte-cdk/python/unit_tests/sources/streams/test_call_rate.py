@@ -33,120 +33,150 @@ class StubDummyCacheHttpStream(StubDummyHttpStream):
     use_cache = True
 
 
-def test_http_mapping():
+def test_http_request_matchers(mocker):
+    users_policy = mocker.Mock(spec=CallRatePolicy)
+    groups_policy = mocker.Mock(spec=CallRatePolicy)
+
     api_budget = APIBudget()
     api_budget.add_policy(
         request_matcher=HttpRequestMatcher(url="/users", method="GET"),
-        policy=CallRatePolicy(
-            rates=[
-                Rate(10, Duration.MINUTE),
-                Rate(100, Duration.HOUR),
-            ],
-        ),
+        policy=users_policy,
     )
     api_budget.add_policy(
         request_matcher=HttpRequestMatcher(url="/groups", method="POST"),
-        policy=CallRatePolicy(
-            rates=[
-                Rate(1, Duration.MINUTE),
-            ],
-        ),
+        policy=groups_policy,
     )
 
     api_budget.acquire_call(Request("POST", url="/unmatched_endpoint"), block=False), "unrestricted call"
-    api_budget.acquire_call(Request("GET", url="/users"), block=False), "first call"
+    users_policy.try_acquire.assert_not_called()
+    groups_policy.try_acquire.assert_not_called()
+
+    request = Request("GET", url="/users")
+    api_budget.acquire_call(request, block=False), "first call"
+    users_policy.try_acquire.assert_called_once_with(request)
+    groups_policy.try_acquire.assert_not_called()
+
     api_budget.acquire_call(Request("GET", url="/users"), block=False), "second call"
 
-    for i in range(8):
-        api_budget.acquire_call(Request("GET", url="/users"), block=False), f"{i + 3} call"
+    # for i in range(8):
+    #     api_budget.acquire_call(Request("GET", url="/users"), block=False), f"{i + 3} call"
 
-    with pytest.raises(CallRateLimitHit) as excinfo:
-        api_budget.acquire_call(Request("GET", url="/users"), block=False), "call over limit"
-    assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60, 0.1)
-
-    time.sleep(5)
-
-    with pytest.raises(CallRateLimitHit) as excinfo:
-        api_budget.acquire_call(Request("GET", url="/users"), block=False), "call over limit"
-    assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60 - 5, 0.1)
+    # with pytest.raises(CallRateLimitHit) as excinfo:
+    #     api_budget.acquire_call(Request("GET", url="/users"), block=False), "call over limit"
+    # assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60, 0.1)
+    #
+    # with pytest.raises(CallRateLimitHit) as excinfo:
+    #     api_budget.acquire_call(Request("GET", url="/users"), block=False), "call over limit"
+    # assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60 - 5, 0.1)
 
     api_budget.acquire_call(Request("POST", url="/groups"), block=False), "doesn't affect other policies"
     api_budget.acquire_call(Request("POST", url="/list"), block=False), "unrestricted call"
 
 
-def test_order_of_rates():
-    """CallRatePolicy will check all rates and apply stricter."""
-    api_budget = APIBudget()
-    api_budget.add_policy(
-        request_matcher=HttpRequestMatcher(url="/users", method="GET"),
-        policy=CallRatePolicy(
+class TestCallRatePolicy:
+
+    def test_limit_rate(self):
+        """try_acquire must respect configured call rate and throw CallRateLimitHit when hit the limit.
+        """
+        policy = CallRatePolicy(rates=[Rate(10, Duration.MINUTE)])
+
+        for i in range(10):
+            policy.try_acquire("call", weight=1), f"{i + 1} call"
+
+        with pytest.raises(CallRateLimitHit) as excinfo1:
+            policy.try_acquire("call", weight=1), "call over limit"
+        assert excinfo1.value.time_to_wait.total_seconds() == pytest.approx(60, 0.1)
+
+        time.sleep(0.5)
+
+        with pytest.raises(CallRateLimitHit) as excinfo2:
+            policy.try_acquire("call", weight=1), "call over limit"
+        assert excinfo2.value.time_to_wait.total_seconds() == pytest.approx(60 - 5, 0.1)
+
+        assert excinfo2.value.time_to_wait < excinfo1.value.time_to_wait, "time to wait must decrease over time"
+
+    def test_limit_rate_support_custom_weight(self):
+        """try_acquire must take into account provided weight and throw CallRateLimitHit when hit the limit.
+        """
+        policy = CallRatePolicy(rates=[Rate(10, Duration.MINUTE)])
+
+        policy.try_acquire("call", weight=2), "1 call"
+        with pytest.raises(CallRateLimitHit) as excinfo:
+            policy.try_acquire("call", weight=9), "1 call"
+        assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60, 0.1)
+
+    def test_multiple_limit_rates(self):
+        """try_acquire must take into all call rates and apply stricter.
+        """
+        policy = CallRatePolicy(
             rates=[
-                Rate(5, Duration.MINUTE),
+                Rate(10, Duration.MINUTE),
+                Rate(3, Duration.SECOND * 10),
                 Rate(2, Duration.HOUR),
             ],
-        ),
-    )
+        )
 
-    for i in range(2):
-        api_budget.acquire_call(Request("GET", url="/users"), block=False), f"{i + 3} call"
+        policy.try_acquire("call", weight=2), "1 call"
 
-    with pytest.raises(CallRateLimitHit) as excinfo:
-        api_budget.acquire_call(Request("GET", url="/users"), block=False), "call over hour limit"
-    assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60 * 60, 0.1)
+        with pytest.raises(CallRateLimitHit) as excinfo:
+            policy.try_acquire("call", weight=1), "1 call"
 
-
-def test_http_stream_integration(mocker):
-    """Test that HttpStream will use call budget when provided"""
-    response = requests.Response()
-    response.status_code = 200
-
-    mocker.patch.object(CallRatePolicy, "try_acquire")
-    mocker.patch.object(requests.Session, "send", return_value=response)
-
-    api_budget = APIBudget()
-    api_budget.add_policy(
-        request_matcher=HttpRequestMatcher(url=f"{StubDummyHttpStream.url_base}/", method="GET"),
-        policy=CallRatePolicy(
-            rates=[
-                Rate(2, Duration.MINUTE),
-            ],
-        ),
-    )
-
-    stream = StubDummyHttpStream(api_budget=api_budget)
-    records = stream.read_records(SyncMode.full_refresh)
-    for i in range(10):
-        assert next(records) == {"data": "some_data"}
-
-    assert CallRatePolicy.try_acquire.call_count == 10
+        assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(3600, 0.1)
+        assert str(excinfo.value) == 'Bucket for item=call with Rate limit=2/1.0h is already full'
 
 
-def test_http_stream_with_cache_integration(mocker):
-    """Test that HttpStream will use call budget when provided and not cached
-    """
-    response = requests.Response()
-    response.status_code = 200
-    response.request = requests.PreparedRequest()
+class TestHttpStreamIntegration:
+    def test_without_cache(self, mocker):
+        """Test that HttpStream will use call budget when provided"""
+        response = requests.Response()
+        response.status_code = 200
 
-    mocker.patch.object(CallRatePolicy, "try_acquire")
-    mocker.patch.object(requests.Session, "send", return_value=response)
+        mocker.patch.object(CallRatePolicy, "try_acquire")
+        mocker.patch.object(requests.Session, "send", return_value=response)
 
-    api_budget = APIBudget()
-    api_budget.add_policy(
-        request_matcher=HttpRequestMatcher(url=f"{StubDummyHttpStream.url_base}/", method="GET"),
-        policy=CallRatePolicy(
-            rates=[
-                Rate(2, Duration.MINUTE),
-            ],
-        ),
-    )
+        api_budget = APIBudget()
+        api_budget.add_policy(
+            request_matcher=HttpRequestMatcher(url=f"{StubDummyHttpStream.url_base}/", method="GET"),
+            policy=CallRatePolicy(
+                rates=[
+                    Rate(2, Duration.MINUTE),
+                ],
+            ),
+        )
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        os.environ[ENV_REQUEST_CACHE_PATH] = temp_dir
-
-        stream = StubDummyCacheHttpStream(api_budget=api_budget)
+        stream = StubDummyHttpStream(api_budget=api_budget)
         records = stream.read_records(SyncMode.full_refresh)
         for i in range(10):
             assert next(records) == {"data": "some_data"}
 
-    assert CallRatePolicy.try_acquire.call_count == 10
+        assert CallRatePolicy.try_acquire.call_count == 10
+
+    def test_with_cache(self, mocker):
+        """Test that HttpStream will use call budget when provided and not cached
+        """
+        response = requests.Response()
+        response.status_code = 200
+        response.request = requests.PreparedRequest()
+
+        mocker.patch.object(CallRatePolicy, "try_acquire")
+        mocker.patch.object(requests.Session, "send", return_value=response)
+
+        api_budget = APIBudget()
+        api_budget.add_policy(
+            request_matcher=HttpRequestMatcher(url=f"{StubDummyHttpStream.url_base}/", method="GET"),
+            policy=CallRatePolicy(
+                rates=[
+                    Rate(2, Duration.MINUTE),
+                ],
+            ),
+        )
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            os.environ[ENV_REQUEST_CACHE_PATH] = temp_dir
+
+            stream = StubDummyCacheHttpStream(api_budget=api_budget)
+            records = stream.read_records(SyncMode.full_refresh)
+            for i in range(10):
+                assert next(records) == {"data": "some_data"}
+
+        assert CallRatePolicy.try_acquire.call_count == 10
