@@ -15,6 +15,20 @@ definitions:
       $ref: "#/definitions/selector"
     requester:
       $ref: "#/definitions/requester"
+  base_customer_count_stream:
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_body_data:
+          start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+          end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+          interval: "{{ parameters.interval }}"
+      paginator:
+        type: NoPagination
+    $parameters:
+      primary_key: "date"
+      path: "/v1/metrics/customer-count"
   customers_stream:
     retriever:
       $ref: "#/definitions/retriever"
@@ -60,26 +74,34 @@ definitions:
       name: "activities"
       primary_key: "uuid"
       path: "/v1/activities"
-  customer_count_stream:
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_body_data:
-          start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
-          end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
-          interval: "{{ config['interval'] }}"
-      paginator:
-        type: NoPagination
+  customer_count_stream_daily:
+    $ref: "#/definitions/base_customer_count_stream"
     $parameters:
-      name: "customer_count"
-      primary_key: "date"
-      path: "/v1/metrics/customer-count"
+      interval: "day"
+      name: "customer_count_daily"
+  customer_count_stream_weekly:
+    $ref: "#/definitions/base_customer_count_stream"
+    $parameters:
+      interval: "week"
+      name: "customer_count_weekly"
+  customer_count_stream_monthly:
+    $ref: "#/definitions/base_customer_count_stream"
+    $parameters:
+      interval: "month"
+      name: "customer_count_monthly"
+  customer_count_stream_quarterly:
+    $ref: "#/definitions/base_customer_count_stream"
+    $parameters:
+      interval: "quarter"
+      name: "customer_count_quarterly"
 
 streams:
   - "#/definitions/customers_stream"
   - "#/definitions/activities_stream"
-  - "#/definitions/customer_count_stream"
+  - "#/definitions/customer_count_stream_daily"
+  - "#/definitions/customer_count_stream_weekly"
+  - "#/definitions/customer_count_stream_monthly"
+  - "#/definitions/customer_count_stream_quarterly"
 
 check:
   stream_names:

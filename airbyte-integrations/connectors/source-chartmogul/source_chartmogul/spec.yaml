@@ -6,7 +6,6 @@ connectionSpecification:
   required:
     - api_key
     - start_date
-    - interval
   properties:
     api_key:
       type: string
@@ -22,10 +21,3 @@ connectionSpecification:
       examples: ["2017-01-25T00:00:00Z"]
       order: 1
       format: date-time
-    interval:
-      type: string
-      title: "Interval"
-      description: 'Some APIs such as <a href="https://dev.chartmogul.com/reference/endpoint-overview-metrics-api">Metrics</a> require intervals to cluster data.'
-      enum: ["day", "week", "month", "quarter"]
-      default: "month"
-      order: 2
