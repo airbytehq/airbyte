@@ -4,14 +4,17 @@
 
 
 import logging
+import re
 from itertools import islice
 from typing import Any, List, Mapping, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from pendulum.parsing.exceptions import ParserError
 
 from .streams import Blocks, Comments, Databases, Pages, Users
 
@@ -30,7 +33,29 @@ class SourceNotion(AbstractSource):
         if config.get("access_token"):
             return TokenAuthenticator(config["access_token"])
 
+    def _validate_start_date(self, config: Mapping[str, Any]):
+        start_date = config.get("start_date")
+
+        if start_date:
+            pattern = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z")
+            if not pattern.match(start_date):  # Compare against the pattern descriptor.
+                return "Please check the format of the start date against the pattern descriptor."
+
+            try:  # Handle invalid dates.
+                parsed_start_date = pendulum.parse(start_date)
+            except ParserError:
+                return "The provided start date is not a valid date. Please check the format and try again."
+
+            if parsed_start_date > pendulum.now("UTC"):  # Handle future start date.
+                return "The start date cannot be greater than the current date."
+
+        return None
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        # First confirm that if start_date is set by user, it is valid.
+        validation_error = self._validate_start_date(config)
+        if validation_error:
+            return False, validation_error
         try:
             authenticator = self._get_authenticator(config)
             stream = Pages(authenticator=authenticator, config=config)
