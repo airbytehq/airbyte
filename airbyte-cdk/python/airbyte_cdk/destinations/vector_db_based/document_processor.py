@@ -91,6 +91,7 @@ class DocumentProcessor:
         self.splitter = self._get_text_splitter(config.chunk_size, config.chunk_overlap, config.text_splitter)
         self.text_fields = config.text_fields
         self.metadata_fields = config.metadata_fields
+        self.field_name_mappings = config.field_name_mappings
         self.logger = logging.getLogger("airbyte.document_processor")
 
     def _stream_identifier(self, stream: Union[AirbyteStream, AirbyteRecordMessage]) -> str:
@@ -137,7 +138,7 @@ class DocumentProcessor:
                     relevant_fields[field] = values if len(values) > 1 else values[0]
         else:
             relevant_fields = record.data
-        return relevant_fields
+        return self._remap_field_names(relevant_fields)
 
     def _extract_metadata(self, record: AirbyteRecordMessage) -> Dict[str, Any]:
         metadata = self._extract_relevant_fields(record, self.metadata_fields)
@@ -161,3 +162,14 @@ class DocumentProcessor:
     def _split_document(self, doc: Document) -> List[Document]:
         chunks = self.splitter.split_documents([doc])
         return chunks
+
+    def _remap_field_names(self, fields: Dict[str, Any]) -> Dict[str, Any]:
+        if not self.field_name_mappings:
+            return fields
+
+        new_fields = fields.copy()
+        for mapping in self.field_name_mappings:
+            if mapping.from_field in new_fields:
+                new_fields[mapping.to_field] = new_fields.pop(mapping.from_field)
+
+        return new_fields
