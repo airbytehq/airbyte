@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from dagger import Container, Secret
 from pipelines.dagger.actions.python.pipx import with_installed_pipx_package
 from pipelines.dagger.containers.python import with_python_base

@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import datetime
 from copy import deepcopy
 

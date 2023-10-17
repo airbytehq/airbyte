@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 from dagger import CacheVolume, Container, File, Platform
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions.connector.hooks import finalize_build

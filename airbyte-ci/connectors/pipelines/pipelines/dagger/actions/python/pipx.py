@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from typing import List, Optional
 
 from dagger import Container

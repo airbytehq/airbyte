@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import anyio
 import click
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand

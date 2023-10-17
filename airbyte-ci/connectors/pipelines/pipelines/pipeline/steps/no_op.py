@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from pipelines.models.contexts import PipelineContext
 from pipelines.models.steps import Step, StepResult, StepStatus
 

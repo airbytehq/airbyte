@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 import os
 from pathlib import Path
 from typing import List, Set, Tuple

@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from dagger import CacheVolume, Container
 from pipelines.consts import CONNECTOR_TESTING_REQUIREMENTS, LICENSE_SHORT_FILE_PATH, PYPROJECT_TOML_FILE_PATH
 from pipelines.helpers.utils import sh_dash_c

@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
+
 from dagger import Container, Platform
 from pipelines.pipeline.connectors.context import ConnectorContext
 
