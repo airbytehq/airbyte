@@ -330,11 +330,8 @@ class Connector:
         return f"./docs/{relative_documentation_path}"
 
     @property
-    def documentation_file_path(self) -> Path:
-        if not self.has_airbyte_docs:
-            return None
-
-        return Path(f"{self.relative_documentation_path_str}.md")
+    def documentation_file_path(self) -> Optional[Path]:
+        return Path(f"{self.relative_documentation_path_str}.md") if self.has_airbyte_docs else None
 
     @property
     def inapp_documentation_file_path(self) -> Path:
