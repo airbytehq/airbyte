@@ -26,14 +26,11 @@ import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeSq
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV1V2Migrator;
 import io.airbyte.integrations.destination.snowflake.typing_deduping.SnowflakeV2TableMigrator;
 import io.airbyte.protocol.models.v0.*;
-
-import java.util.function.Consumer;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
-
+import java.util.function.Consumer;
 import javax.sql.DataSource;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +61,7 @@ public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination {
     super("", nameTransformer, new SnowflakeBulkLoadSqlOperations(nameTransformer));
     this.airbyteEnvironment = AIRBYTE_CLOUD;
   }
+
   public SnowflakeBulkLoadDestination(final NamingConventionTransformer nameTransformer, final String airbyteEnvironment) {
     super("", nameTransformer, new SnowflakeBulkLoadSqlOperations(nameTransformer));
     this.airbyteEnvironment = airbyteEnvironment;
