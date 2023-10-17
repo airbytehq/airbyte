@@ -10,6 +10,10 @@ from freezegun import freeze_time
 from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.test_scenarios import verify_discover, verify_read
+from unit_tests.sources.streams.concurrent.scenarios.stream_facade_scenarios import (
+    test_stream_facade_multiple_streams,
+    test_stream_facade_single_stream,
+)
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_scenarios import (
     test_concurrent_cdk_multiple_streams,
     test_concurrent_cdk_single_stream,
@@ -24,6 +28,9 @@ scenarios = [
     test_concurrent_cdk_single_stream_with_slice_logger,
     test_concurrent_cdk_single_stream_multiple_partitions,
     test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_two,
+    # test streams built using the facade
+    test_stream_facade_single_stream,
+    test_stream_facade_multiple_streams,
 ]
 
 
