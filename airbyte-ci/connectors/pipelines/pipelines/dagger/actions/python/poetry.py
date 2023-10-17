@@ -53,20 +53,6 @@ async def find_local_dependencies_in_pyproject_toml(
     return local_dependency_paths
 
 
-def _install_python_dependencies_from_poetry(
-    container: Container,
-    additional_dependency_groups: Optional[List] = None,
-) -> Container:
-    pip_install_poetry_cmd = ["pip", "install", "poetry"]
-    poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
-    poetry_install_no_venv_cmd = ["poetry", "install"]
-    if additional_dependency_groups:
-        for group in additional_dependency_groups:
-            poetry_install_no_venv_cmd += ["--with", group]
-
-    return container.with_exec(pip_install_poetry_cmd).with_exec(poetry_disable_virtual_env_cmd).with_exec(poetry_install_no_venv_cmd)
-
-
 def with_poetry(context: PipelineContext) -> Container:
     """Install poetry in a python environment.
 

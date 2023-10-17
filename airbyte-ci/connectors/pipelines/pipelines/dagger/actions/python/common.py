@@ -3,7 +3,6 @@
 #
 from pathlib import Path
 import re
-from pipelines.dagger.actions.python.poetry import _install_python_dependencies_from_poetry
 from pipelines.dagger.containers.python import with_python_base, with_testing_dependencies
 from pipelines.helpers.utils import check_path_in_workdir, get_file_contents
 from pipelines.pipeline.connectors.context import ConnectorContext, PipelineContext
@@ -155,6 +154,20 @@ def _install_python_dependencies_from_setup_py(
 def _install_python_dependencies_from_requirements_txt(container: Container) -> Container:
     install_requirements_cmd = ["pip", "install", "-r", "requirements.txt"]
     return container.with_exec(install_requirements_cmd)
+
+
+def _install_python_dependencies_from_poetry(
+    container: Container,
+    additional_dependency_groups: Optional[List] = None,
+) -> Container:
+    pip_install_poetry_cmd = ["pip", "install", "poetry"]
+    poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
+    poetry_install_no_venv_cmd = ["poetry", "install"]
+    if additional_dependency_groups:
+        for group in additional_dependency_groups:
+            poetry_install_no_venv_cmd += ["--with", group]
+
+    return container.with_exec(pip_install_poetry_cmd).with_exec(poetry_disable_virtual_env_cmd).with_exec(poetry_install_no_venv_cmd)
 
 
 async def with_installed_python_package(
