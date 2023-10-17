@@ -18,12 +18,8 @@ from typing import TYPE_CHECKING, Any, Callable, List, Optional, Tuple
 
 import anyio
 import asyncer
-import click
-from connector_ops.utils import get_changed_connectors
-from dagger import Client, Config, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
+from dagger import Client, Config, Container, ExecError, File, ImageLayerCompression, QueryError, Secret
 from more_itertools import chunked
-from pipelines import consts
-from pipelines.helpers import sentry_utils
 
 if TYPE_CHECKING:
     from pipelines.pipeline.connectors.context import ConnectorContext

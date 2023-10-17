@@ -9,7 +9,7 @@ import datetime
 from typing import TYPE_CHECKING, Callable
 
 from dagger import Container, Secret
-from pipelines.dagger.actions import internal_tools
+from pipelines.dagger.containers.internal_tools import with_ci_credentials
 from pipelines.helpers.utils import get_file_contents, get_secret_host_variable
 from pipelines.pipeline.connectors.context import PipelineContext
 
@@ -45,7 +45,7 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
     """
     gsm_secret = get_secret_host_variable(context.dagger_client, gcp_gsm_env_variable_name)
     secrets_path = f"/{context.connector.code_directory}/secrets"
-    ci_credentials = await internal_tools.with_ci_credentials(context, gsm_secret)
+    ci_credentials = await with_ci_credentials(context, gsm_secret)
     with_downloaded_secrets = (
         ci_credentials.with_exec(["mkdir", "-p", secrets_path])
         .with_env_variable(
