@@ -11,7 +11,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 2.0.0
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/source-bing-ads
   githubIssueLabel: source-bing-ads
   icon: bingads.svg
@@ -34,8 +34,5 @@ data:
       1.0.0:
         message: "Version 1.0.0 removes the primary keys from the geographic performance report streams. This will prevent the connector from losing data in the incremental append+dedup sync mode because of deduplication and incorrect primary keys. A data reset and schema refresh of all the affected streams is required for the changes to take effect."
         upgradeDeadline: "2023-10-25"
-      2.0.0:
-        message: "This update is a follow-up to the previous major update - version 1.0.0. It completes what should have been done in version 1.0.0, but unfortunately was not. Version 2.0.0 removes the primary keys from the geographic performance report streams. This will prevent the connector from losing data in the incremental append+dedup sync mode because of deduplication and incorrect primary keys. A data reset and schema refresh of all the affected streams is required for the changes to take effect."
-        upgradeDeadline: "2023-10-31"
   supportLevel: certified
 metadataSpecVersion: "1.0"
