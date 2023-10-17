@@ -9,13 +9,13 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.1.9'
     features = ['db-sources']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 airbyteJavaConnector.addCdkDependencies()
 
 application {
-    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSourceRunner'
+    mainClass = 'io.airbyte.integrations.source.postgres.PostgresSource'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 

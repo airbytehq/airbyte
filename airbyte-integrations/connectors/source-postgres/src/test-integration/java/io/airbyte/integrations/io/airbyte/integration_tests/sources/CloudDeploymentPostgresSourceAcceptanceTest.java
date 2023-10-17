@@ -14,6 +14,7 @@ import io.airbyte.cdk.db.PostgresUtils;
 import io.airbyte.cdk.db.factory.DSLContextFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
@@ -41,7 +42,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStub;
 import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
 @ExtendWith(SystemStubsExtension.class)
-public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTest {
+public class CloudDeploymentPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
@@ -56,7 +57,7 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    environmentVariables.set("DEPLOYMENT_MODE", "CLOUD");
+    environmentVariables.set(AdaptiveSourceRunner.DEPLOYMENT_MODE_KEY, AdaptiveSourceRunner.CLOUD_MODE);
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
         .asCompatibleSubstituteFor("postgres"));
@@ -117,7 +118,7 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
   @Override
   protected ConnectorSpecification getSpec() throws Exception {
     return SshHelpers.injectSshIntoSpec(
-        Jsons.deserialize(MoreResources.readResource("expected_strict_encrypt_spec.json"), ConnectorSpecification.class),
+        Jsons.deserialize(MoreResources.readResource("expected_cloud_deployment_spec.json"), ConnectorSpecification.class),
         Optional.of("security"));
   }
 

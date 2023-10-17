@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.adaptive.AdaptiveSourceRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
@@ -19,14 +20,22 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
-public class PostgresSourceStrictEncryptTest {
+@ExtendWith(SystemStubsExtension.class)
+public class CloudDeploymentPostgresSourceTest {
 
-  private final PostgresSourceStrictEncrypt source = new PostgresSourceStrictEncrypt();
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
+
   private final PostgreSQLContainer<?> postgreSQLContainerNoSSL = new PostgreSQLContainer<>("postgres:13-alpine");
   private final PostgreSQLContainer<?> postgreSQLContainerWithSSL =
       new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
@@ -36,6 +45,11 @@ public class PostgresSourceStrictEncryptTest {
 
   private static final SshBastionContainer bastion = new SshBastionContainer();
   private static final Network network = Network.newNetwork();
+
+  @BeforeEach
+  void setup() {
+    environmentVariables.set(AdaptiveSourceRunner.DEPLOYMENT_MODE_KEY, AdaptiveSourceRunner.CLOUD_MODE);
+  }
 
   @Test
   void testSSlModesDisableAllowPreferWithTunnelIfServerDoesNotSupportSSL() throws Exception {
@@ -112,7 +126,7 @@ public class PostgresSourceStrictEncryptTest {
       final ImmutableMap<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, SSL_MODE_REQUIRE, false).build();
       final JsonNode config = Jsons.jsonNode(configBuilderWithSSLMode);
       addNoTunnel((ObjectNode) config);
-      final AirbyteConnectionStatus connectionStatus = source.check(config);
+      final AirbyteConnectionStatus connectionStatus = PostgresSource.sshWrappedSource().check(config);
       assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, connectionStatus.getStatus());
     }
   }
@@ -165,7 +179,7 @@ public class PostgresSourceStrictEncryptTest {
       final JsonNode config = getMockedSSLConfig(sslMode);
       addNoTunnel((ObjectNode) config);
 
-      final AirbyteConnectionStatus connectionStatus = source.check(config);
+      final AirbyteConnectionStatus connectionStatus = PostgresSource.sshWrappedSource().check(config);
       assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
       assertTrue(connectionStatus.getMessage().contains("Unsecured connection not allowed"));
     }
@@ -176,7 +190,7 @@ public class PostgresSourceStrictEncryptTest {
     final ImmutableMap.Builder<Object, Object> configBuilderWithSSLMode = getDatabaseConfigBuilderWithSSLMode(db, sslmode, true);
     final JsonNode configWithSSLModeDisable =
         bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, configBuilderWithSSLMode, innerAddress);
-    return source.check(configWithSSLModeDisable);
+    return PostgresSource.sshWrappedSource().check(configWithSSLModeDisable);
   }
 
   private static void addNoTunnel(final ObjectNode config) {
