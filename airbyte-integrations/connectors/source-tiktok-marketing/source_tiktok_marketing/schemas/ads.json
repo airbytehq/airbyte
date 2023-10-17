@@ -228,28 +228,16 @@
     "music_id": {
       "type": ["null", "string"]
     },
-    "utm_params" : {
-      "type" : [
-        "null",
-        "array"
-      ],
-      "items" : {
-        "type" : [
-          "null",
-          "object"
-        ],
-        "properties" : {
-          "key" : {
-            "type" : [
-              "null",
-              "string"
-            ]
+    "utm_params": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "key": {
+            "type": ["null", "string"]
           },
-          "value" : {
-            "type" : [
-              "null",
-              "string"
-            ]
+          "value": {
+            "type": ["null", "string"]
           }
         }
       }
