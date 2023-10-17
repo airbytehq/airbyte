@@ -11,9 +11,9 @@ import pytest
 from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
-from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.logger import AirbyteLogFormatter
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
@@ -37,7 +37,9 @@ def verify_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: 
             _verify_expected_logs(logs, discover_logs)
 
 
-def verify_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> None:
+def verify_read(
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
+) -> None:
     caplog.handler.setFormatter(AirbyteLogFormatter())
     if scenario.incremental_scenario_config:
         run_test_read_incremental(capsys, caplog, tmp_path, scenario)
@@ -45,7 +47,9 @@ def verify_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path
         run_test_read_full_refresh(capsys, caplog, tmp_path, scenario)
 
 
-def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> None:
+def run_test_read_full_refresh(
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
+) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     if expected_exc:
         with pytest.raises(expected_exc) as exc:  # noqa
@@ -57,7 +61,9 @@ def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: LogCaptureFi
         _verify_read_output(output, scenario)
 
 
-def run_test_read_incremental(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> None:
+def run_test_read_incremental(
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
+) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     if expected_exc:
         with pytest.raises(expected_exc):
@@ -166,7 +172,9 @@ def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestSce
     }
 
 
-def read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> Dict[str, Any]:
+def read(
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
+) -> Dict[str, Any]:
     with caplog.handler.stream as logger_stream:
         launch(
             scenario.source,
