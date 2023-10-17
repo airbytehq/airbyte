@@ -162,10 +162,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), minRawTimestamp);
     String dedupFinalTable = "";
     String cdcDeletes = "";
-    String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
-      // If we're in dedup mode, then we must have a cursor
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
     }
@@ -175,13 +172,11 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
         "cdc_deletes", cdcDeletes,
-        "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
             """
             BEGIN TRANSACTION;
             ${insert_new_records}
             ${dedup_final_table}
-            ${dedupe_raw_table}
             ${cdc_deletes}
             ${commit_raw_table}
             COMMIT;
@@ -435,22 +430,6 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                 )
               FROM  ${raw_table_id}
               WHERE "_airbyte_data":"_ab_cdc_deleted_at" != 'null'
-            );
-            """);
-  }
-
-  @VisibleForTesting
-  String dedupRawTable(final StreamId id, final String finalSuffix) {
-    return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix.toUpperCase()))).replace(
-            // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
-            // would be painful,
-            // and it only matters in a few edge cases.
-            """
-            DELETE FROM ${raw_table_id}
-            WHERE "_airbyte_raw_id" NOT IN (
-              SELECT "_AIRBYTE_RAW_ID" FROM ${final_table_id}
             );
             """);
   }

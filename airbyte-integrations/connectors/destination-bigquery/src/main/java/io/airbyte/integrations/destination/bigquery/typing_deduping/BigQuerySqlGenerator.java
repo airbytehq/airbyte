@@ -426,7 +426,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     String dedupFinalTable = "";
     String cdcDeletes = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      // If we're in dedup mode, then we must have a cursor
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns(), forceSafeCasting);
     }
