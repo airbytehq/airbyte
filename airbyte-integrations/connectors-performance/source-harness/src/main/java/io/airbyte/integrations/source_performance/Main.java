@@ -28,6 +28,7 @@ public class Main {
     // TODO: (ryankfu) add function parity with destination_performance
     int numOfParallelStreams = 1;
     String syncMode = "full_refresh";
+    boolean reportToDatadog = false;
 
     // TODO: (ryankfu) Integrated something akin to {@link Clis} for parsing arguments.
     switch (args.length) {
@@ -46,6 +47,13 @@ public class Main {
         dataset = args[1];
         numOfParallelStreams = Integer.parseInt(args[2]);
         syncMode = args[3];
+      }
+      case 5 -> {
+        image = args[0];
+        dataset = args[1];
+        numOfParallelStreams = Integer.parseInt(args[2]);
+        syncMode = args[3];
+        reportToDatadog = Boolean.parseBoolean(args[4]);
       }
       default -> {
         log.info("unexpected arguments");
@@ -79,6 +87,8 @@ public class Main {
       final PerformanceTest test = new PerformanceTest(
           image,
           dataset,
+          syncMode,
+          reportToDatadog,
           config.toString(),
           catalog.toString());
       test.runTest();
