@@ -483,15 +483,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                                       final boolean forceSafeCasting,
                                       final Optional<Instant> minRawTimestamp) {
     final String columnCasts = stream.columns().entrySet().stream().map(
-            col -> extractAndCast(col.getKey(), col.getValue(), forceSafeCasting) + " as " + col.getKey().name(QUOTE) + ",")
+        col -> extractAndCast(col.getKey(), col.getValue(), forceSafeCasting) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
     final String columnErrors;
     if (forceSafeCasting) {
       columnErrors = "[" + stream.columns().entrySet().stream().map(
-              col -> new StringSubstitutor(Map.of(
-                  "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
-                  "col_type", toDialectType(col.getValue()).name(),
-                  "json_extract", extractAndCast(col.getKey(), col.getValue(), true))).replace(
+          col -> new StringSubstitutor(Map.of(
+              "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
+              "col_type", toDialectType(col.getValue()).name(),
+              "json_extract", extractAndCast(col.getKey(), col.getValue(), true))).replace(
                   // Explicitly parse json here. This is safe because we're not using the actual value anywhere,
                   // and necessary because json_query
                   """
@@ -521,11 +521,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       String cdcConditionalOrIncludeStatement = "";
       if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
         cdcConditionalOrIncludeStatement = """
-                                         OR (
-                                           _airbyte_loaded_at IS NOT NULL
-                                           AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
-                                         )
-                                         """;
+                                           OR (
+                                             _airbyte_loaded_at IS NOT NULL
+                                             AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                                           )
+                                           """;
       }
 
       final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
@@ -542,33 +542,33 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           "column_list", columnList,
           "pk_list", pkList,
           "cursor_order_clause", cursorOrderClause)).replace(
-          """
-          WITH intermediate_data AS (
-            SELECT
-          ${column_casts}
-            ${column_errors} AS column_errors,
-            _airbyte_raw_id,
-            _airbyte_extracted_at
-            FROM ${project_id}.${raw_table_id}
-            WHERE
-              _airbyte_loaded_at IS NULL
-              ${cdcConditionalOrIncludeStatement}
-          ), new_records AS (
-            SELECT
-            ${column_list}
-              to_json(struct(COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), []) AS errors)) AS _airbyte_meta,
-              _airbyte_raw_id,
-              _airbyte_extracted_at
-            FROM intermediate_data
-          ), numbered_rows AS (
-            SELECT *, row_number() OVER (
-              PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} `_airbyte_extracted_at` DESC
-            ) AS row_number
-            FROM new_records
-          )
-          SELECT ${column_list} _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at
-          FROM numbered_rows
-          WHERE row_number = 1""");
+              """
+              WITH intermediate_data AS (
+                SELECT
+              ${column_casts}
+                ${column_errors} AS column_errors,
+                _airbyte_raw_id,
+                _airbyte_extracted_at
+                FROM ${project_id}.${raw_table_id}
+                WHERE
+                  _airbyte_loaded_at IS NULL
+                  ${cdcConditionalOrIncludeStatement}
+              ), new_records AS (
+                SELECT
+                ${column_list}
+                  to_json(struct(COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), []) AS errors)) AS _airbyte_meta,
+                  _airbyte_raw_id,
+                  _airbyte_extracted_at
+                FROM intermediate_data
+              ), numbered_rows AS (
+                SELECT *, row_number() OVER (
+                  PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} `_airbyte_extracted_at` DESC
+                ) AS row_number
+                FROM new_records
+              )
+              SELECT ${column_list} _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at
+              FROM numbered_rows
+              WHERE row_number = 1""");
     } else {
       // When not deduplicating, we just need to handle type casting.
       // Extract+cast the not-yet-loaded records in a CTE, then select that CTE and build airbyte_meta.
@@ -579,7 +579,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           "column_errors", columnErrors,
           "extractedAtCondition", extractedAtCondition,
           "column_list", columnList)).replace(
-          """
+              """
               WITH intermediate_data AS (
                 SELECT
               ${column_casts}
