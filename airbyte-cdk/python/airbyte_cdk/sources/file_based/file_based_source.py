@@ -2,15 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from collections import defaultdict
 import logging
 import traceback
 from abc import ABC
+from collections import defaultdict
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
-from airbyte_cdk.models import ConnectorSpecification, ConfiguredAirbyteCatalog, AirbyteMessage, AirbyteStateMessage
+from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.utils.analytics_message import create_analytics_message
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy, DefaultFileBasedAvailabilityStrategy
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
@@ -24,6 +23,7 @@ from airbyte_cdk.sources.file_based.stream import AbstractFileBasedStream, Defau
 from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils.analytics_message import create_analytics_message
 from pydantic.error_wrappers import ValidationError
 
 
@@ -126,7 +126,7 @@ class FileBasedSource(AbstractSource, ABC):
         parsed_config = self._get_parsed_config(config)
         for stream in parsed_config.streams:
             stream_by_parser[stream.format.filetype] += 1
-        
+
         for (parser, count) in stream_by_parser.items():
             yield create_analytics_message(f"file-cdk-{parser}-stream-count", count)
 

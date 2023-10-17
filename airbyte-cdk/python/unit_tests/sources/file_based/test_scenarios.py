@@ -12,7 +12,7 @@ from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.logger import AirbyteLogFormatter
-from airbyte_cdk.models import SyncMode, AirbyteAnalyticsTraceMessage
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
@@ -87,10 +87,11 @@ def _verify_read_output(output: Dict[str, Any], scenario: TestScenario) -> None:
         read_logs = scenario.expected_logs.get("read")
         assert len(logs) == (len(read_logs) if read_logs else 0)
         _verify_expected_logs(logs, read_logs)
-    
+
     if scenario.expected_analytics:
         analytics = output["analytics"]
         _verify_analytics(analytics, scenario.expected_analytics)
+
 
 def _verify_analytics(analytics: List[Dict[str, Any]], expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]]) -> None:
     if expected_analytics:
@@ -100,6 +101,7 @@ def _verify_analytics(analytics: List[Dict[str, Any]], expected_analytics: Optio
             expected_value = expected.value
             assert actual_type == expected_type
             assert actual_value == expected_value
+
 
 def _verify_expected_logs(logs: List[Dict[str, Any]], expected_logs: Optional[List[Mapping[str, Any]]]) -> None:
     if expected_logs:
@@ -179,7 +181,11 @@ def read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: Posix
         return {
             "records": [msg for msg in (json.loads(line) for line in captured) if msg["type"] == "RECORD"],
             "logs": [msg["log"] for msg in (json.loads(line) for line in captured) if msg["type"] == "LOG"],
-            "analytics": [msg["trace"]["analytics"] for msg in (json.loads(line) for line in captured) if msg["type"] == "TRACE" and msg["trace"]["type"] == "ANALYTICS"],
+            "analytics": [
+                msg["trace"]["analytics"]
+                for msg in (json.loads(line) for line in captured)
+                if msg["type"] == "TRACE" and msg["trace"]["type"] == "ANALYTICS"
+            ],
         }
 
 

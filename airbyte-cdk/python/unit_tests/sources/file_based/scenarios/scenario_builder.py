@@ -7,7 +7,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Generic, List, Mapping, Optional, Tuple, Type, TypeVar
 
-from airbyte_cdk.models import SyncMode, AirbyteAnalyticsTraceMessage
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
 from airbyte_cdk.sources import AbstractSource
 
 
@@ -160,7 +160,7 @@ class TestScenarioBuilder(Generic[SourceType]):
     def set_source_builder(self, source_builder: SourceBuilder[SourceType]) -> "TestScenarioBuilder[SourceType]":
         self.source_builder = source_builder
         return self
-    
+
     def set_expected_analytics(self, expected_analytics: List[AirbyteAnalyticsTraceMessage]) -> "TestScenarioBuilder[SourceType]":
         self._expected_analytics = expected_analytics
         return self

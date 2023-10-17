@@ -368,7 +368,7 @@ multi_format_analytics_scenario = (
                     "format": {"filetype": "jsonl"},
                     "globs": ["file3.jsonl"],
                     "validation_policy": "Emit Record",
-                }
+                },
             ]
         }
     )
@@ -429,10 +429,12 @@ multi_format_analytics_scenario = (
         }
     )
     .set_expected_records([])
-    .set_expected_analytics([
-        AirbyteAnalyticsTraceMessage(type="file-cdk-csv-stream-count", value="2"),
-        AirbyteAnalyticsTraceMessage(type="file-cdk-jsonl-stream-count", value="1"),
-    ])
+    .set_expected_analytics(
+        [
+            AirbyteAnalyticsTraceMessage(type="file-cdk-csv-stream-count", value="2"),
+            AirbyteAnalyticsTraceMessage(type="file-cdk-jsonl-stream-count", value="1"),
+        ]
+    )
 ).build()
 
 multi_csv_scenario = (
