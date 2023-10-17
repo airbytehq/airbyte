@@ -37,7 +37,7 @@
           }
         },
         "default_cursor_field": [],
-        "supported_sync_modes": ["%1$s", "incremental"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "%1$s",
@@ -110,7 +110,7 @@
           }
         },
         "default_cursor_field": [],
-        "supported_sync_modes": ["%1$s", "incremental"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "%1$s",
@@ -149,7 +149,7 @@
           }
         },
         "default_cursor_field": [],
-        "supported_sync_modes": ["%1$s", "incremental"],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "%1$s",

@@ -31,6 +31,8 @@ spec:
           value: $DD_API_KEY
         - name: DD_SITE
           value: "datadoghq.com"
+        - name: USE_STREAM_CAPABLE_STATE
+          value: "true"
   volumes:
     - name: secrets-volume
       hostPath:

@@ -128,6 +128,9 @@ public class PerformanceTest {
             totalBytes / MEGABYTE);
       }
     }
+    if (source.getExitValue() > 0) {
+      throw new RuntimeException("Source failed with exit code: " + source.getExitValue());
+    }
     log.info("Test ended successfully");
     final var end = System.currentTimeMillis();
     final var totalMB = totalBytes / MEGABYTE;
