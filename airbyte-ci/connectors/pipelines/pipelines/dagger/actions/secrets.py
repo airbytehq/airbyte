@@ -9,7 +9,6 @@ import datetime
 from typing import TYPE_CHECKING, Callable
 
 from dagger import Container, Secret
-from pipelines.dagger.containers.internal_tools import with_ci_credentials
 from pipelines.helpers.utils import get_file_contents, get_secret_host_variable
 from pipelines.pipeline.connectors.context import PipelineContext
 
@@ -43,6 +42,9 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
     Returns:
         Directory: A directory with the downloaded secrets.
     """
+    # temp - fix circular import
+    from pipelines.dagger.containers.internal_tools import with_ci_credentials
+
     gsm_secret = get_secret_host_variable(context.dagger_client, gcp_gsm_env_variable_name)
     secrets_path = f"/{context.connector.code_directory}/secrets"
     ci_credentials = await with_ci_credentials(context, gsm_secret)
@@ -79,10 +81,13 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     Raises:
         ExecError: If the command returns a non-zero exit code.
     """
+    # temp - fix circular import
+    from pipelines.dagger.containers.internal_tools import with_ci_credentials
+
     gsm_secret = get_secret_host_variable(context.dagger_client, gcp_gsm_env_variable_name)
     secrets_path = f"/{context.connector.code_directory}/secrets"
 
-    ci_credentials = await internal_tools.with_ci_credentials(context, gsm_secret)
+    ci_credentials = await with_ci_credentials(context, gsm_secret)
 
     return await ci_credentials.with_directory(secrets_path, context.updated_secrets_dir).with_exec(
         ["ci_credentials", context.connector.technical_name, "update-secrets"]
