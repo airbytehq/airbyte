@@ -11,10 +11,11 @@ from unit_tests.sources.streams.concurrent.scenarios.stream_facade_builder impor
 
 
 class _MockStream(Stream):
-    def __init__(self, records, name, json_schema):
+    def __init__(self, records, name, json_schema, primary_key=None):
         self._records = records
         self._name = name
         self._json_schema = json_schema
+        self._primary_key = primary_key
 
     def read_records(
         self,
@@ -29,7 +30,7 @@ class _MockStream(Stream):
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         # FIXME: probably test this
-        return None
+        return self._primary_key
 
     @property
     def name(self) -> str:
@@ -50,6 +51,18 @@ _stream1 = _MockStream(
     },
 )
 
+_stream_with_primary_key = _MockStream(
+    [{"id": "1"}, {"id": "2"}],
+    "stream1",
+    json_schema={
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "string"]},
+        },
+    },
+    primary_key="id",
+)
+
 _stream2 = _MockStream(
     [{"id": "A"}, {"id": "B"}],
     "stream2",
@@ -64,6 +77,37 @@ _stream2 = _MockStream(
 test_stream_facade_single_stream = (
     TestScenarioBuilder()
     .set_name("test_stream_facade_single_stream")
+    .set_config({})
+    .set_source_builder(StreamFacadeSourceBuilder().set_streams([_stream1]))
+    .set_expected_records(
+        [
+            {"data": {"id": "1"}, "stream": "stream1"},
+            {"data": {"id": "2"}, "stream": "stream1"},
+        ]
+    )
+    # FIXME: add a test with the logs
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": ["null", "string"]},
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            ]
+        }
+    )
+    .build()
+)
+
+test_stream_facade_single_stream_with_primary_key = (
+    TestScenarioBuilder()
+    .set_name("test_stream_facade_stream_with_primary_key")
     .set_config({})
     .set_source_builder(StreamFacadeSourceBuilder().set_streams([_stream1]))
     .set_expected_records(

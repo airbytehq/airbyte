@@ -13,12 +13,14 @@ from unit_tests.sources.file_based.test_scenarios import verify_discover, verify
 from unit_tests.sources.streams.concurrent.scenarios.stream_facade_scenarios import (
     test_stream_facade_multiple_streams,
     test_stream_facade_single_stream,
+    test_stream_facade_single_stream_with_primary_key,
 )
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_scenarios import (
     test_concurrent_cdk_multiple_streams,
     test_concurrent_cdk_single_stream,
     test_concurrent_cdk_single_stream_multiple_partitions,
     test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_two,
+    test_concurrent_cdk_single_stream_with_primary_key,
     test_concurrent_cdk_single_stream_with_slice_logger,
 )
 
@@ -28,9 +30,11 @@ scenarios = [
     test_concurrent_cdk_single_stream_with_slice_logger,
     test_concurrent_cdk_single_stream_multiple_partitions,
     test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_two,
+    test_concurrent_cdk_single_stream_with_primary_key,
     # test streams built using the facade
     test_stream_facade_single_stream,
     test_stream_facade_multiple_streams,
+    test_stream_facade_single_stream_with_primary_key,
 ]
 
 
