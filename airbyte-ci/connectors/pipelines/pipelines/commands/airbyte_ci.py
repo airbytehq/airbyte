@@ -24,6 +24,7 @@ from pipelines.utils import (
 )
 
 from .groups.check import check
+from .groups.check import check_java
 from .groups.connectors import connectors
 from .groups.metadata import metadata
 from .groups.tests import test
@@ -182,6 +183,7 @@ airbyte_ci.add_command(connectors)
 airbyte_ci.add_command(metadata)
 airbyte_ci.add_command(test)
 airbyte_ci.add_command(check)
+airbyte_ci.add_command(check_java)
 
 if __name__ == "__main__":
     airbyte_ci()

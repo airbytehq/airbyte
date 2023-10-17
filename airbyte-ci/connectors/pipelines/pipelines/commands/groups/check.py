@@ -64,7 +64,7 @@ async def run_check(fix: bool) -> bool:
                     dagger_client.host().directory(
                         ".", 
                         include=["**/*.py", "pyproject.toml", "poetry.lock"], 
-                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**/build"]
+                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**/build", ".git"]
                     )
                 )
                 .with_workdir(f"/src")
@@ -81,3 +81,61 @@ async def run_check(fix: bool) -> bool:
             logger.error("Format failed")
             logger.error(e.stderr)
             sys.exit(1)
+
+
+@click.command()
+@click.option("--fix", is_flag=True, default=False, help="Fix any formatting issues detected.")
+async def check_java(fix: bool):
+    """Checks whether the repository is formatted correctly.
+    Args:
+        fix (bool): Whether to automatically fix any formatting issues detected.
+    Returns:
+        bool: True if the check/format succeeded, false otherwise
+    """
+    success = await run_check_java(fix)
+    if not success:
+        click.Abort()
+
+
+async def run_check_java(fix: bool) -> bool:
+    logger = logging.getLogger("format")
+    if fix:
+        gradle_command = ["./gradlew", "spotlessApply"]
+    else:
+        gradle_command = ["./gradlew", "spotlessCheck"]
+    
+    async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
+        try:
+            format_container = await (
+                dagger_client.container()
+                .from_("openjdk:17.0.1-jdk-slim")
+                .with_exec(
+                    sh_dash_c(
+                        [
+                            "apt-get update",
+                            "apt-get install -y bash",
+                        ]
+                    )
+                )
+                .with_mounted_directory(
+                    "/src",
+                    dagger_client.host().directory(
+                        ".", 
+                        include=["**/*.java", "**/*.gradle", "gradlew", "gradlew.bat", "gradle", "**/deps.toml", "**/gradle.properties", "**/version.properties", "tools/gradle/codestyle/java-google-style.xml"],
+                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**/build", ".git"]
+                    )
+                )
+                .with_workdir(f"/src")
+                .with_exec(["ls", "-la"])
+                .with_exec(gradle_command)
+            )
+
+            await format_container
+            if fix:
+                await format_container.directory("/src").export(".")
+                
+            return True
+        except dagger.ExecError as e:
+            logger.error("Format failed")
+            logger.error(e.stderr)
+            return False

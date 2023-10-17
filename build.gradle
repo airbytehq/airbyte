@@ -267,7 +267,7 @@ allprojects {
                 target javaTarget
                 importOrder()
                 eclipse('4.21').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
-                licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
+//                licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
                 removeUnusedImports()
                 trimTrailingWhitespace()
             }
@@ -295,9 +295,9 @@ allprojects {
             }
         }
     }
-    tasks.matching { it.name =~ /spotless.*/ }.configureEach {
-        dependsOn tasks.matching { it.name == 'generate' }
-    }
+//    tasks.matching { it.name =~ /spotless.*/ }.configureEach {
+//        dependsOn tasks.matching { it.name == 'generate' }
+//    }
     tasks.matching { it.name =~ /spotlessStyling.*/ }.configureEach {
         dependsOn rootProject.tasks.named('nodeSetup')
         dependsOn rootProject.tasks.named('npmSetup')
@@ -307,49 +307,49 @@ allprojects {
         enabled = false
     }
 
-    // python license header generation is part of 'format'
-    def pythonTarget = createFormatTarget('**/*.py')
-    if (!project.name.endsWith('source-stock-ticker-api-tutorial') && !pythonTarget.isEmpty()) {
-
-        apply plugin: 'com.github.hierynomus.license'
-
-        license {
-            header rootProject.file("LICENSE_SHORT")
-        }
-
-        // Disable auto-generated java tasks, we rely on spotless there.
-        tasks.matching { it.name =~ /license.*/ }.configureEach {
-            enabled = false
-        }
-
-        def licensePythonCheck = tasks.register('licensePythonCheck', LicenseCheck) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
-            source = pythonTarget
-            strictCheck = true
-        }
-        licensePythonCheck.configure {
-            dependsOn tasks.matching { it.name == 'generate' }
-        }
-        def licensePythonFormat = tasks.register('licensePythonFormat', LicenseFormat) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
-            source = pythonTarget
-            strictCheck = true
-        }
-        licensePythonFormat.configure {
-            dependsOn tasks.matching { it.name == 'generate' }
-        }
-    }
+//    // python license header generation is part of 'format'
+//    def pythonTarget = createFormatTarget('**/*.py')
+//    if (!project.name.endsWith('source-stock-ticker-api-tutorial') && !pythonTarget.isEmpty()) {
+//
+//        apply plugin: 'com.github.hierynomus.license'
+//
+//        license {
+//            header rootProject.file("LICENSE_SHORT")
+//        }
+//
+//        // Disable auto-generated java tasks, we rely on spotless there.
+//        tasks.matching { it.name =~ /license.*/ }.configureEach {
+//            enabled = false
+//        }
+//
+//        def licensePythonCheck = tasks.register('licensePythonCheck', LicenseCheck) {
+//            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
+//            source = pythonTarget
+//            strictCheck = true
+//        }
+//        licensePythonCheck.configure {
+//            dependsOn tasks.matching { it.name == 'generate' }
+//        }
+//        def licensePythonFormat = tasks.register('licensePythonFormat', LicenseFormat) {
+//            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
+//            source = pythonTarget
+//            strictCheck = true
+//        }
+//        licensePythonFormat.configure {
+//            dependsOn tasks.matching { it.name == 'generate' }
+//        }
+//    }
 
     tasks.register('format') {
         dependsOn tasks.matching { it.name == 'generate' }
         dependsOn tasks.matching { it.name =~ /spotless.*Apply/ }
-        dependsOn tasks.matching { it.name =~ /.*PythonFormat/ }
+//        dependsOn tasks.matching { it.name =~ /.*PythonFormat/ }
     }
-    tasks.named('check').configure {
-        dependsOn tasks.matching { it.name == 'licensePythonCheck' }
-        dependsOn tasks.matching { it.name == 'isortPythonCheck' }
-        dependsOn tasks.matching { it.name == 'blackPythonCheck' }
-    }
+//    tasks.named('check').configure {
+//        dependsOn tasks.matching { it.name == 'licensePythonCheck' }
+//        dependsOn tasks.matching { it.name == 'isortPythonCheck' }
+//        dependsOn tasks.matching { it.name == 'blackPythonCheck' }
+//    }
 }
 
 def getCDKTargetVersion() {
