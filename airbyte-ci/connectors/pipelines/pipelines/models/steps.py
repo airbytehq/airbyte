@@ -6,8 +6,9 @@ from __future__ import annotations
 from abc import abstractmethod
 from dataclasses import dataclass
 from datetime import timedelta
+from enum import Enum
 from pathlib import Path
-from typing import List, Optional, Any, Enum
+from typing import List, Optional, Any
 
 import anyio
 import asyncer

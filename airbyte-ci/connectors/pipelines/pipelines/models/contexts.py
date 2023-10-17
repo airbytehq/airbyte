@@ -17,7 +17,7 @@ from dagger import Client, Directory, File, Secret
 from github import PullRequest
 from pipelines import hacks
 from pipelines.helpers.gcs import sanitize_gcs_credentials
-from pipelines.models.bases import CIContext, Report
+from pipelines.models.reports import Report
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import AIRBYTE_REPO_URL
@@ -31,6 +31,18 @@ class ContextState(Enum):
     ERROR = {"github_state": "error", "description": "Something went wrong while running the Pipelines."}
     SUCCESSFUL = {"github_state": "success", "description": "All Pipelines ran successfully."}
     FAILURE = {"github_state": "failure", "description": "Pipeline failed."}
+
+
+class CIContext(str, Enum):
+    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""
+
+    MANUAL = "manual"
+    PULL_REQUEST = "pull_request"
+    NIGHTLY_BUILDS = "nightly_builds"
+    MASTER = "master"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class PipelineContext:

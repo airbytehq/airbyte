@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import anyio
+import typing
 import json
 
 from dataclasses import dataclass, field
@@ -18,7 +19,6 @@ from typing import List
 from anyio import Path
 from connector_ops.utils import console
 from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT
-from pipelines.models.contexts import PipelineContext
 from pipelines.dagger.actions import remote_storage
 from pipelines.models.steps import StepResult, StepStatus
 from pipelines.helpers.utils import format_duration
@@ -28,11 +28,14 @@ from rich.style import Style
 from rich.table import Table
 from rich.text import Text
 
+if typing.TYPE_CHECKING:
+    from pipelines.models.steps import PipelineContext
+
 @dataclass(frozen=True)
 class Report:
     """A dataclass to build reports to share pipelines executions results with the user."""
 
-    pipeline_context: PipelineContext
+    pipeline_context: "PipelineContext"
     steps_results: List[StepResult]
     created_at: datetime = field(default_factory=datetime.utcnow)
     name: str = "REPORT"

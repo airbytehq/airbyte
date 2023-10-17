@@ -2,7 +2,7 @@ from pipelines import main_logger
 from pipelines.consts import GCS_PUBLIC_DOMAIN
 
 
-from google.cloud.storage import storage
+from google.cloud import storage
 from google.oauth2 import service_account
 
 
