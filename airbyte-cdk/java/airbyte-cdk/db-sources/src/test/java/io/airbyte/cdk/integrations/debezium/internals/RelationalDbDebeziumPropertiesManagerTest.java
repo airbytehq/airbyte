@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.cdk.integrations.debezium.internals;
 
 import static io.airbyte.cdk.db.jdbc.JdbcUtils.DATABASE_KEY;
@@ -57,7 +61,7 @@ public class RelationalDbDebeziumPropertiesManagerTest {
         catalog,
         offsetManager,
         Optional.empty());
-    assertEquals(relationalDbDebeziumPropertiesManager.getName(validConfig),validDbName);
+    assertEquals(relationalDbDebeziumPropertiesManager.getName(validConfig), validDbName);
   }
 
   private JsonNode createConfiguration(final String dbName) {

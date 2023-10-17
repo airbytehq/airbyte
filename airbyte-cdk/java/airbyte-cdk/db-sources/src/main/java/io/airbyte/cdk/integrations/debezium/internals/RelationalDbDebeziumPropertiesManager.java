@@ -50,7 +50,7 @@ public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesMan
 
   @Override
   protected String getName(final JsonNode config) {
-    //return "fixed_topic_prefix_name";
+    // return "fixed_topic_prefix_name";
     final String name = config.get(JdbcUtils.DATABASE_KEY).asText();
     if (isInvalidName(name)) {
       final String validName = normalizeName(name);
@@ -128,10 +128,12 @@ public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesMan
   }
 
   /**
-   * Checks if the string contains any of the invalid characters. A string is valid if it contains only underscore, hyphen, dot or alphanumeric chars.
-   * This is according to the rules for values of topic.prefix outlined here :
+   * Checks if the string contains any of the invalid characters. A string is valid if it contains
+   * only underscore, hyphen, dot or alphanumeric chars. This is according to the rules for values of
+   * topic.prefix outlined here :
    * https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-topic-prefix.
-   * The same applies for other debezium connectors Airbyte currently supports (Postgres, MySQL, MsSQL)
+   * The same applies for other debezium connectors Airbyte currently supports (Postgres, MySQL,
+   * MsSQL)
    *
    * @param name - the input string to check.
    * @return - true if it contains any invalid characters, false otherwise.
@@ -141,10 +143,12 @@ public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesMan
   }
 
   /**
-   * Removes any invalid characters from the given name. A string is valid if it contains only underscore, hyphen, dot or alphanumeric chars.
-   * This is according to the rules for valid values of topic.prefix outlined here :
+   * Removes any invalid characters from the given name. A string is valid if it contains only
+   * underscore, hyphen, dot or alphanumeric chars. This is according to the rules for valid values of
+   * topic.prefix outlined here :
    * https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-topic-prefix.
-   * The same applies for other debezium connectors Airbyte currently supports (Postgres, MySQL, MsSQL)
+   * The same applies for other debezium connectors Airbyte currently supports (Postgres, MySQL,
+   * MsSQL)
    *
    * @param name - the input string to clean.
    * @return - the cleaned string.
@@ -152,4 +156,5 @@ public class RelationalDbDebeziumPropertiesManager extends DebeziumPropertiesMan
   private static String normalizeName(final String name) {
     return name.replaceAll("[^a-zA-Z0-9._-]", "");
   }
+
 }
