@@ -317,14 +317,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   private String extractNewRawRecords(final StreamConfig stream, final Optional<Instant> minRawTimestamp) {
     final String columnCasts = stream.columns().entrySet().stream().map(
-            col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
+        col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
     final String columnErrors = stream.columns().entrySet().stream().map(
-            col -> new StringSubstitutor(Map.of(
-                "raw_col_name", escapeJsonIdentifier(col.getKey().originalName()),
-                "printable_col_name", escapeSingleQuotedString(col.getKey().originalName()),
-                "col_type", toDialectType(col.getValue()),
-                "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
+        col -> new StringSubstitutor(Map.of(
+            "raw_col_name", escapeJsonIdentifier(col.getKey().originalName()),
+            "printable_col_name", escapeSingleQuotedString(col.getKey().originalName()),
+            "col_type", toDialectType(col.getValue()),
+            "json_extract", extractAndCast(col.getKey(), col.getValue()))).replace(
                 // TYPEOF returns "NULL_VALUE" for a JSON null and "NULL" for a SQL null
                 """
                 CASE
@@ -336,19 +336,17 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .collect(joining(",\n"));
     final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
 
-
-
     final String extractedAtCondition = buildExtractedAtCondition(minRawTimestamp);
 
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       String cdcConditionalOrIncludeStatement = "";
       if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
         cdcConditionalOrIncludeStatement = """
-                                         OR (
-                                           "_airbyte_loaded_at" IS NOT NULL
-                                           AND TYPEOF("_airbyte_data":"_ab_cdc_deleted_at") NOT IN ('NULL', 'NULL_VALUE')
-                                         )
-                                         """;
+                                           OR (
+                                             "_airbyte_loaded_at" IS NOT NULL
+                                             AND TYPEOF("_airbyte_data":"_ab_cdc_deleted_at") NOT IN ('NULL', 'NULL_VALUE')
+                                           )
+                                           """;
       }
 
       final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
@@ -365,7 +363,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
           "column_list", columnList,
           "pk_list", pkList,
           "cursor_order_clause", cursorOrderClause)).replace(
-          """
+              """
               WITH intermediate_data AS (
                 SELECT
               ${column_casts}
@@ -400,7 +398,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
           "column_errors", columnErrors,
           "extractedAtCondition", extractedAtCondition,
           "column_list", columnList)).replace(
-          """
+              """
               WITH intermediate_data AS (
                 SELECT
               ${column_casts}
