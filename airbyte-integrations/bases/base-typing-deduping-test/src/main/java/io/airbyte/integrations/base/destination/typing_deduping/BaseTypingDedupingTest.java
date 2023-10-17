@@ -595,8 +595,7 @@ public abstract class BaseTypingDedupingTest {
             dumpFinalTableRecords(namespace1, streamName)),
         () -> DIFFER.diffFinalTableRecords(
             readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
-            dumpFinalTableRecords(namespace2, streamName))
-    );
+            dumpFinalTableRecords(namespace2, streamName)));
   }
 
   @Test
