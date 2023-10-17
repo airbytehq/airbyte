@@ -4,7 +4,7 @@ from typing import Any, Optional
 from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
 
 
-def create_analytics_message(type: str, value: Optional[Any]):
+def create_analytics_message(type: str, value: Optional[Any]) -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.TRACE,
         trace=AirbyteTraceMessage(

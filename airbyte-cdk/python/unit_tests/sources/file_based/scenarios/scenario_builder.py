@@ -110,8 +110,8 @@ class TestScenarioBuilder(Generic[SourceType]):
         self._expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
+        self._expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]] = None
         self.source_builder: Optional[SourceBuilder[SourceType]] = None
-        self._expected_analytics = None
 
     def set_name(self, name: str) -> "TestScenarioBuilder[SourceType]":
         self._name = name
@@ -161,14 +161,14 @@ class TestScenarioBuilder(Generic[SourceType]):
         self.source_builder = source_builder
         return self
 
-    def set_expected_analytics(self, expected_analytics: List[AirbyteAnalyticsTraceMessage]) -> "TestScenarioBuilder[SourceType]":
+    def set_expected_analytics(self, expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]]) -> "TestScenarioBuilder[SourceType]":
         self._expected_analytics = expected_analytics
         return self
 
     def copy(self) -> "TestScenarioBuilder[SourceType]":
         return deepcopy(self)
 
-    def build(self) -> TestScenario:
+    def build(self) -> "TestScenario[SourceType]":
         if self.source_builder is None:
             raise ValueError("source_builder is not set")
         source = self.source_builder.build(
