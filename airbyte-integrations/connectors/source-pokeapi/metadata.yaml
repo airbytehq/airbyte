@@ -5,10 +5,8 @@ data:
   registries:
     oss:
       enabled: true
-      dockerImageTag: 0.1.5
     cloud:
       enabled: true
-      dockerImageTag: 0.1.5
   connectorSubtype: api
   connectorType: source
   definitionId: 6371b14b-bc68-4236-bfbd-468e8df8e968
