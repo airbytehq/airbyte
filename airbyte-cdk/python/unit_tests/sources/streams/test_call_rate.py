@@ -33,6 +33,17 @@ class StubDummyCacheHttpStream(StubDummyHttpStream):
     use_cache = True
 
 
+@pytest.fixture(name="enable_cache")
+def enable_cache_fixture():
+    prev_cache_path = os.environ.get(ENV_REQUEST_CACHE_PATH)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        os.environ[ENV_REQUEST_CACHE_PATH] = temp_dir
+        yield
+
+    if prev_cache_path is not None:
+        os.environ[ENV_REQUEST_CACHE_PATH] = prev_cache_path
+
+
 def test_http_request_matchers(mocker):
     users_policy = mocker.Mock(spec=CallRatePolicy)
     groups_policy = mocker.Mock(spec=CallRatePolicy)
@@ -123,13 +134,11 @@ class TestCallRatePolicy:
 
 
 class TestHttpStreamIntegration:
-    def test_without_cache(self, mocker):
+    def test_without_cache(self, mocker, requests_mock):
         """Test that HttpStream will use call budget when provided"""
-        response = requests.Response()
-        response.status_code = 200
+        requests_mock.get(f"{StubDummyHttpStream.url_base}/", json={"data": "test"})
 
         mocker.patch.object(CallRatePolicy, "try_acquire")
-        mocker.patch.object(requests.Session, "send", return_value=response)
 
         api_budget = APIBudget()
         api_budget.add_policy(
@@ -148,14 +157,12 @@ class TestHttpStreamIntegration:
 
         assert CallRatePolicy.try_acquire.call_count == 10
 
-    def test_with_cache(self, mocker):
+    @pytest.mark.usefixtures("enable_cache")
+    def test_with_cache(self, mocker, requests_mock):
         """Test that HttpStream will use call budget when provided and not cached"""
-        response = requests.Response()
-        response.status_code = 200
-        response.request = requests.PreparedRequest()
+        requests_mock.get(f"{StubDummyHttpStream.url_base}/", json={"data": "test"})
 
         mocker.patch.object(CallRatePolicy, "try_acquire")
-        mocker.patch.object(requests.Session, "send", return_value=response)
 
         api_budget = APIBudget()
         api_budget.add_policy(
@@ -167,12 +174,10 @@ class TestHttpStreamIntegration:
             ),
         )
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            os.environ[ENV_REQUEST_CACHE_PATH] = temp_dir
+        stream = StubDummyCacheHttpStream(api_budget=api_budget)
+        records = stream.read_records(SyncMode.full_refresh)
 
-            stream = StubDummyCacheHttpStream(api_budget=api_budget)
-            records = stream.read_records(SyncMode.full_refresh)
-            for i in range(10):
-                assert next(records) == {"data": "some_data"}
+        for i in range(10):
+            assert next(records) == {"data": "some_data"}
 
-        assert CallRatePolicy.try_acquire.call_count == 10
+        assert CallRatePolicy.try_acquire.call_count == 1
