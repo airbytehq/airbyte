@@ -12,7 +12,7 @@ jobs:
     name: "Check if a review is required from Connector teams"
     runs-on: ubuntu-latest
 
-    if: ${{ github.repository == 'airbytehq/airbyte' }}
+    if: ${{ github.repository == 'airbytehq/airbyte' && github.event.pull_request.draft == false }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
