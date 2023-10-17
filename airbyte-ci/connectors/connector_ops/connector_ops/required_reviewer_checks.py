@@ -12,6 +12,7 @@ TEST_STRICTNESS_LEVEL_REVIEWERS = {"connector-operations"}
 GA_BYPASS_REASON_REVIEWERS = {"connector-operations"}
 GA_CONNECTOR_REVIEWERS = {"gl-python"}
 BREAKING_CHANGE_REVIEWERS = {"breaking-change-reviewers"}
+BUILD_CUSTOMIZATION_REVIEWERS = {"connector-operations"}
 REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
 
 
@@ -54,14 +55,17 @@ def find_mandatory_reviewers() -> List[Dict[str, Union[str, Dict[str, List]]]]:
             "teams": list(BREAKING_CHANGE_REVIEWERS),
             "is_required": utils.get_changed_metadata(diff_regex="upgradeDeadline"),
         },
+        {
+            "name": "Build customization",
+            "teams": list(BUILD_CUSTOMIZATION_REVIEWERS),
+            "is_required": utils.get_changed_file(utils.BUILD_CUSTOMIZATION_FILE_NAME),
+        },
     ]
-
     return [{"name": r["name"], "teams": r["teams"]} for r in requirements if r["is_required"]]
 
 
 def write_review_requirements_file():
     mandatory_reviewers = find_mandatory_reviewers()
-
     if mandatory_reviewers:
         requirements_file_content = [dict(r, paths=["**"]) for r in mandatory_reviewers]
         with open(REVIEW_REQUIREMENTS_FILE_PATH, "w") as requirements_file:

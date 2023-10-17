@@ -3,12 +3,13 @@
 #
 
 import shutil
+from pathlib import Path
 from typing import List
 
 import git
 import pytest
 import yaml
-from connector_ops import required_reviewer_checks
+from connector_ops import required_reviewer_checks, utils
 
 
 @pytest.fixture
@@ -31,6 +32,24 @@ def pokeapi_metadata_path():
 @pytest.fixture
 def ga_connector_file():
     return "airbyte-integrations/connectors/source-amplitude/acceptance-test-config.yml"
+
+
+@pytest.fixture
+def build_customization_existing_file() -> str:
+    for connector in utils.get_all_connectors_in_repo():
+        build_customization_file = connector.code_directory / utils.BUILD_CUSTOMIZATION_FILE_NAME
+        if build_customization_file.exists():
+            return str(build_customization_file)
+    pytest.skip("No connector with build customization file found")
+
+
+@pytest.fixture
+def build_customization_not_existing_file() -> str:
+    for connector in utils.get_all_connectors_in_repo():
+        build_customization_file = connector.code_directory / utils.BUILD_CUSTOMIZATION_FILE_NAME
+        if not build_customization_file.exists():
+            return str(build_customization_file)
+    pytest.skip("No connector without build customization file found")
 
 
 @pytest.fixture
@@ -122,6 +141,29 @@ def ga_connector_test_strictness_level_file_change_expected_team(tmp_path, ga_co
 
 
 @pytest.fixture
+def build_customization_file_change_expected_team(tmp_path, build_customization_existing_file):
+
+    expected_teams = list(required_reviewer_checks.BUILD_CUSTOMIZATION_REVIEWERS)
+    backup_path = tmp_path / "build_customization.backup"
+    shutil.copyfile(build_customization_existing_file, backup_path)
+    Path(build_customization_existing_file).write_text("foobar")
+    yield expected_teams
+    shutil.copyfile(backup_path, build_customization_existing_file)
+
+
+@pytest.fixture
+def build_customization_file_creation_expected_team(build_customization_not_existing_file):
+    repo = git.Repo(search_parent_directories=True)
+    expected_teams = list(required_reviewer_checks.BUILD_CUSTOMIZATION_REVIEWERS)
+    build_customization_not_existing_path = Path(build_customization_not_existing_file)
+    build_customization_not_existing_path.write_text("foobar")
+    repo.git.add(build_customization_not_existing_file)
+    yield expected_teams
+    repo.git.reset(build_customization_not_existing_file)
+    build_customization_not_existing_path.unlink()
+
+
+@pytest.fixture
 def test_breaking_change_release_expected_team(tmp_path, pokeapi_metadata_path) -> List:
     expected_teams = list(required_reviewer_checks.BREAKING_CHANGE_REVIEWERS)
     backup_path = tmp_path / "backup_poke_metadata"
@@ -197,3 +239,16 @@ def test_find_mandatory_reviewers_breaking_change_release(mock_diffed_branched, 
 
 def test_find_mandatory_reviewers_no_tracked_changed(mock_diffed_branched, capsys, not_ga_not_tracked_change_expected_team):
     check_review_requirements_file(capsys, not_ga_not_tracked_change_expected_team)
+
+
+def test_find_mandatory_reviewers_build_customization_change(
+    mock_diffed_branched, capsys, build_customization_file_change_expected_team, build_customization_file_creation_expected_team
+):
+    check_review_requirements_file(capsys, build_customization_file_change_expected_team)
+    check_review_requirements_file(capsys, build_customization_file_creation_expected_team)
+
+
+def test_find_mandatory_reviewers_build_customization_creation(
+    mock_diffed_branched, capsys, build_customization_file_creation_expected_team
+):
+    check_review_requirements_file(capsys, build_customization_file_creation_expected_team)

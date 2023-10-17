@@ -34,6 +34,7 @@ SCAFFOLD_CONNECTOR_GLOB = "-scaffold-"
 
 
 ACCEPTANCE_TEST_CONFIG_FILE_NAME = "acceptance-test-config.yml"
+BUILD_CUSTOMIZATION_FILE_NAME = "build_customization.py"
 METADATA_FILE_NAME = "metadata.yaml"
 AIRBYTE_DOCKER_REPO = "airbyte"
 AIRBYTE_REPO_DIRECTORY_NAME = "airbyte"
@@ -119,12 +120,14 @@ def get_changed_file(file_name: str, diff_regex: Optional[str] = None) -> Set[st
     else:
         diff_command_args = ("--name-only", f"-G{diff_regex}", DIFFED_BRANCH)
 
-    changed_acceptance_test_config_paths = {
+    modified_files = airbyte_repo.git.diff(*diff_command_args).split("\n")
+    changed_connector_paths = {
         file_path
-        for file_path in airbyte_repo.git.diff(*diff_command_args).split("\n")
-        if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) and file_path.endswith(file_name)
+        for file_path in modified_files
+        if (file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) or file_path.startswith(DESTINATION_CONNECTOR_PATH_PREFIX))
+        and file_path.endswith(file_name)
     }
-    return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_acceptance_test_config_paths}
+    return {Connector(get_connector_name_from_path(changed_file)) for changed_file in changed_connector_paths}
 
 
 def has_local_cdk_ref(build_file: Path) -> bool:
