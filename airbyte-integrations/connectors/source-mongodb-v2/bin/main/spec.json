@@ -1,0 +1,166 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/mongodb-v2",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/mongodb-v2",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MongoDb Source Spec",
+    "type": "object",
+    "required": ["database_config"],
+    "additionalProperties": true,
+    "properties": {
+      "database_config": {
+        "type": "object",
+        "title": "Cluster Type",
+        "description": "Configures the MongoDB cluster type.",
+        "order": 1,
+        "group": "connection",
+        "display_type": "radio",
+        "oneOf": [
+          {
+            "title": "MongoDB Atlas Replica Set",
+            "description": "MongoDB Atlas-hosted cluster configured as a replica set",
+            "required": [
+              "cluster_type",
+              "connection_string",
+              "database",
+              "username",
+              "password",
+              "auth_source"
+            ],
+            "additionalProperties": true,
+            "properties": {
+              "cluster_type": {
+                "type": "string",
+                "const": "ATLAS_REPLICA_SET",
+                "order": 1
+              },
+              "connection_string": {
+                "title": "Connection String",
+                "type": "string",
+                "description": "The connection string of the cluster that you want to replicate.",
+                "examples": ["mongodb+srv://cluster0.abcd1.mongodb.net/"],
+                "order": 2
+              },
+              "database": {
+                "title": "Database Name",
+                "type": "string",
+                "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
+                "order": 3
+              },
+              "username": {
+                "title": "Username",
+                "type": "string",
+                "description": "The username which is used to access the database.",
+                "order": 4
+              },
+              "password": {
+                "title": "Password",
+                "type": "string",
+                "description": "The password associated with this username.",
+                "airbyte_secret": true,
+                "order": 5
+              },
+              "auth_source": {
+                "title": "Authentication Source",
+                "type": "string",
+                "description": "The authentication source where the user information is stored.  See https://www.mongodb.com/docs/manual/reference/connection-string/#mongodb-urioption-urioption.authSource for more details.",
+                "default": "admin",
+                "examples": ["admin"],
+                "order": 6
+              }
+            }
+          },
+          {
+            "title": "Self-Managed Replica Set",
+            "description": "MongoDB self-hosted cluster configured as a replica set",
+            "required": ["cluster_type", "connection_string", "database"],
+            "additionalProperties": true,
+            "properties": {
+              "cluster_type": {
+                "type": "string",
+                "const": "SELF_MANAGED_REPLICA_SET",
+                "order": 1
+              },
+              "connection_string": {
+                "title": "Connection String",
+                "type": "string",
+                "description": "The connection string of the cluster that you want to replicate.  https://www.mongodb.com/docs/manual/reference/connection-string/#find-your-self-hosted-deployment-s-connection-string for more information.",
+                "examples": [
+                  "mongodb://example1.host.com:27017,example2.host.com:27017,example3.host.com:27017/",
+                  "mongodb://example.host.com:27017/"
+                ],
+                "order": 2
+              },
+              "database": {
+                "title": "Database Name",
+                "type": "string",
+                "description": "The name of the MongoDB database that contains the collection(s) to replicate.",
+                "order": 3
+              },
+              "username": {
+                "title": "Username",
+                "type": "string",
+                "description": "The username which is used to access the database.",
+                "order": 4
+              },
+              "password": {
+                "title": "Password",
+                "type": "string",
+                "description": "The password associated with this username.",
+                "airbyte_secret": true,
+                "order": 5
+              },
+              "auth_source": {
+                "title": "Authentication Source",
+                "type": "string",
+                "description": "The authentication source where the user information is stored.",
+                "default": "admin",
+                "examples": ["admin"],
+                "order": 6
+              }
+            }
+          }
+        ]
+      },
+      "initial_waiting_seconds": {
+        "type": "integer",
+        "title": "Initial Waiting Time in Seconds (Advanced)",
+        "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.",
+        "default": 300,
+        "order": 7,
+        "min": 120,
+        "max": 1200,
+        "group": "advanced"
+      },
+      "queue_size": {
+        "type": "integer",
+        "title": "Size of the queue (Advanced)",
+        "description": "The size of the internal queue. This may interfere with memory consumption and efficiency of the connector, please be careful.",
+        "default": 10000,
+        "order": 8,
+        "min": 1000,
+        "max": 10000,
+        "group": "advanced"
+      },
+      "discover_sample_size": {
+        "type": "integer",
+        "title": "Document discovery sample size (Advanced)",
+        "description": "The maximum number of documents to sample when attempting to discover the unique fields for a collection.",
+        "default": 10000,
+        "order": 9,
+        "minimum": 1000,
+        "maximum": 100000,
+        "group": "advanced"
+      }
+    },
+    "groups": [
+      {
+        "id": "connection"
+      },
+      {
+        "id": "advanced",
+        "title": "Advanced"
+      }
+    ]
+  }
+}

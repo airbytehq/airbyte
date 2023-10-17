@@ -1,0 +1,52 @@
+[
+  {
+    "testCase": "simple_schema",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "field1": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  {
+    "testCase": "format",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "date_field": {
+          "type": "string",
+          "format": "date"
+        },
+        "datetime_field": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  {
+    "testCase": "array_with_object_items",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "field1": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "created_time": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+]
