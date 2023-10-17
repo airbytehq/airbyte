@@ -71,10 +71,12 @@ properties:
         enum:
           - api
           - database
+          - datalake
           - file
           - custom
           - message_queue
           - unknown
+          - vectorstore
       releaseStage:
         "$ref": ReleaseStage.yaml
       supportLevel:
