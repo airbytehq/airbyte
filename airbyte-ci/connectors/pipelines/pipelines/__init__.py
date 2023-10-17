@@ -28,5 +28,3 @@ logging.basicConfig(
 )
 
 main_logger = logging.getLogger(__name__)
-0
-322+60
