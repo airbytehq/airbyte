@@ -13,9 +13,11 @@ To authenticate the Notion source connector, you need to use **one** of the foll
 - OAuth2.0 authorization (recommended for Airbyte Cloud)
 - Access Token
 
+<!-- env:cloud -->
 :::note
 **For Airbyte Cloud users:** We highly recommend using OAuth2.0 authorization to connect to Notion, as this method significantly simplifies the setup process. If you use OAuth2.0 authorization in Airbyte Cloud, you do **not** need to create and configure a new integration in Notion. Instead, you can proceed straight to [setting up the connector in Airbyte](#step-3-set-up-the-notion-connector-in-airbyte).
 :::
+<!-- /env:cloud -->
 
 We have provided a quick setup guide for creating an integration in Notion below. If you would like more detailed information and context on Notion integrations, or experience any difficulties with the integration setup process, please refer to the [official Notion documentation](https://developers.notion.com/docs).
 
@@ -58,20 +60,24 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 ### Step 3: Set up the Notion connector in Airbyte
 
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account, or navigate to your Airbyte Open Source dashboard.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **New source**.
 3. Find and select **Notion** from the list of available sources.
 4. Enter a **Source name** of your choosing.
 5. Choose the method of authentication from the dropdown menu:
 
+<!-- env:cloud -->
 #### Authentication for Airbyte Cloud
 
 - **OAuth2.0** (Recommended): Click **Authenticate your Notion account**. When the popup appears, click **Select pages**. Check the pages you want to give Airbyte access to, and click **Allow access**.
 - **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your private integration's page.
+<!-- /env:cloud -->
 
+<!-- env:oss -->
 #### Authentication for Airbyte Open Source
 
 - **Access Token**: Copy and paste the Access Token found in the **Secrets** tab of your private integration's page.
 - **OAuth2.0**: Copy and paste the Client ID, Client Secret and Access Token you acquired after setting up your public integration.
+<!-- /env:oss -->
 
 6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. When using incremental syncs, only data generated after this date will be replicated. If left blank, Airbyte will set the start date two years from the current date by default.
 7. Click **Set up source** and wait for the tests to complete.
@@ -106,6 +112,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| 2.0.1   | 2023-10-17 | [31507](https://github.com/airbytehq/airbyte/pull/31507) | Add start_date validation checks                                             |
 | 2.0.0   | 2023-10-09 | [30587](https://github.com/airbytehq/airbyte/pull/30587) | Source-wide schema update                                                    |
 | 1.3.0   | 2023-10-09 | [30324](https://github.com/airbytehq/airbyte/pull/30324) | Add `Comments` stream                                                        |
 | 1.2.2   | 2023-10-09 | [30780](https://github.com/airbytehq/airbyte/pull/30780) | Update Start Date in config to optional field                                |
