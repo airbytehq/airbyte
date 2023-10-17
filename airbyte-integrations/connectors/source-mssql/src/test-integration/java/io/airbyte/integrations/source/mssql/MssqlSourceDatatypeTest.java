@@ -20,7 +20,7 @@ import org.jooq.DSLContext;
 import org.testcontainers.containers.MSSQLServerContainer;
 
 public class MssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest {
-
+  
   @Override
   protected Database setupDatabase() throws Exception {
     container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest")

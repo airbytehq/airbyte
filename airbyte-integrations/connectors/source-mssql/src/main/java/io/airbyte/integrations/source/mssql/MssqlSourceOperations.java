@@ -16,6 +16,7 @@ import com.microsoft.sqlserver.jdbc.Geography;
 import com.microsoft.sqlserver.jdbc.Geometry;
 import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.cdk.db.jdbc.JdbcSourceOperations;
+import io.airbyte.protocol.models.JsonSchemaType;
 import java.nio.charset.Charset;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
@@ -88,6 +89,28 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
           || typeName.equalsIgnoreCase("hierarchyid")) {
         return JDBCType.VARCHAR;
       }
+
+      /**
+       * Per Microsoft SQL Server docs
+       * java.sql.Timestamp values can no longer be used to compare values from a datetime column starting from SQL Server 2016.
+       * This limitation is due to a server-side change that converts datetime to datetime2 differently,
+       * resulting in non-equal values.
+       * The workaround to this issue is to either change datetime columns to datetime2(3),
+       * use String instead of java.sql.Timestamp,
+       *or change database compatibility level to 120 or lower.
+       */
+      if (typeName.equalsIgnoreCase("datetime")) {
+        return JDBCType.VARCHAR;
+      }
+
+      if (typeName.equalsIgnoreCase("datetimeoffset")) {
+        return JDBCType.TIMESTAMP_WITH_TIMEZONE;
+      }
+
+      if (typeName.equalsIgnoreCase("real")) {
+        return JDBCType.REAL;
+      }
+
       return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
     } catch (final IllegalArgumentException ex) {
       LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
@@ -126,4 +149,20 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
     node.put(columnName, Geography.deserialize(resultSet.getBytes(index)).toString());
   }
 
+  @Override
+  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
+    return switch (jdbcType) {
+      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
+      case DOUBLE, DECIMAL, FLOAT, NUMERIC, REAL -> JsonSchemaType.NUMBER;
+      case BOOLEAN, BIT -> JsonSchemaType.BOOLEAN;
+      case NULL -> JsonSchemaType.NULL;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
+      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+      case DATE -> JsonSchemaType.STRING_DATE;
+      default -> JsonSchemaType.STRING;
+    };
+  }
 }
+
