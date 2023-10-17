@@ -156,7 +156,7 @@ def test_read(test_read_config):
 
 
 def test_read_network_issues(test_read_config):
-    test_read_config.update(format='excel')
+    test_read_config.update(format="excel")
     client = Client(**test_read_config)
     client.sleep_on_retry_sec = 0  # just for test
     with patch.object(client, "_cache_stream", side_effect=ProtocolError), pytest.raises(AirbyteTracedException):
@@ -177,8 +177,8 @@ def test_urlfile_open_backoff_sftp(monkeypatch, mocker):
     sleep_mock = mocker.patch("time.sleep")
     monkeypatch.setattr(URLFile, "_open", patched_open)
 
-    provider = {'storage': 'SFTP', 'user': 'user', 'password': 'password', 'host': 'sftp.domain.com', 'port': 22}
-    reader = URLFile(url='/DISTDA.CSV', provider=provider, binary=False)
+    provider = {"storage": "SFTP", "user": "user", "password": "password", "host": "sftp.domain.com", "port": 22}
+    reader = URLFile(url="/DISTDA.CSV", provider=provider, binary=False)
     with pytest.raises(SSHException):
         reader.open()
     assert reader._file is None

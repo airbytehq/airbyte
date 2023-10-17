@@ -1,29 +1,30 @@
-### WARNING ###
-# The Java connector Dockerfiles will soon be deprecated.
-# This Dockerfile is not used to build the connector image we publish to DockerHub.
-# The new logic to build the connector image is declared with Dagger here:
-# https://github.com/airbytehq/airbyte/blob/master/tools/ci_connector_ops/ci_connector_ops/pipelines/actions/environments.py#L649
+FROM python:3.9-slim as base
 
-# If you need to add a custom logic to build your connector image, you can do it by adding a finalize_build.sh or finalize_build.py script in the connector folder.
-# Please reach out to the Connectors Operations team if you have any question.
-FROM airbyte/integration-base-java:dev AS build
+# build and load all requirements
+FROM base as builder
+RUN apt-get update
+WORKDIR /airbyte/integration_code
 
-WORKDIR /airbyte
+COPY setup.py ./
+# install necessary packages to a temporary folder
+RUN pip install --prefix=/install .
 
-ENV APPLICATION source-azure-blob-storage
+# build a clean environment
+FROM base
+WORKDIR /airbyte/integration_code
 
-COPY build/distributions/${APPLICATION}*.tar ${APPLICATION}.tar
+# copy all loaded and built libraries to a pure basic image
+COPY --from=builder /install /usr/local
+# add default timezone settings
+COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
+RUN echo "Etc/UTC" > /etc/timezone
 
-RUN tar xf ${APPLICATION}.tar --strip-components=1 && rm -rf ${APPLICATION}.tar
+# copy payload code only
+COPY main.py ./
+COPY source_azure_blob_storage ./source_azure_blob_storage
 
-FROM airbyte/integration-base-java:dev
+ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-WORKDIR /airbyte
-
-ENV APPLICATION source-azure-blob-storage
-
-COPY --from=build /airbyte /airbyte
-
-# Airbyte's build system uses these labels to know what to name and tag the docker images produced by this Dockerfile.
-LABEL io.airbyte.version=0.1.0
+LABEL io.airbyte.version=0.2.0
 LABEL io.airbyte.name=airbyte/source-azure-blob-storage

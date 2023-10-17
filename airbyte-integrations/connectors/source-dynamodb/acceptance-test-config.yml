@@ -5,4 +5,3 @@ acceptance-tests:
   spec:
     tests:
       - spec_path: "main/resources/spec.json"
-        

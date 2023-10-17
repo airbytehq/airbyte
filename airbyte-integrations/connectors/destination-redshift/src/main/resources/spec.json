@@ -15,6 +15,7 @@
         "description": "Host Endpoint of the Redshift Cluster (must include the cluster-id, region and end with .redshift.amazonaws.com)",
         "type": "string",
         "title": "Host",
+        "group": "connection",
         "order": 1
       },
       "port": {
@@ -25,12 +26,14 @@
         "default": 5439,
         "examples": ["5439"],
         "title": "Port",
+        "group": "connection",
         "order": 2
       },
       "username": {
         "description": "Username to use to access the database.",
         "type": "string",
         "title": "Username",
+        "group": "connection",
         "order": 3
       },
       "password": {
@@ -38,12 +41,14 @@
         "type": "string",
         "airbyte_secret": true,
         "title": "Password",
+        "group": "connection",
         "order": 4
       },
       "database": {
         "description": "Name of the database.",
         "type": "string",
         "title": "Database",
+        "group": "connection",
         "order": 5
       },
       "schema": {
@@ -51,6 +56,7 @@
         "type": "string",
         "examples": ["public"],
         "default": "public",
+        "group": "connection",
         "title": "Default Schema",
         "order": 6
       },
@@ -58,26 +64,20 @@
         "title": "JDBC URL Params",
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
         "type": "string",
+        "group": "connection",
         "order": 7
       },
       "uploading_method": {
         "title": "Uploading Method",
         "type": "object",
-        "description": "The method how the data will be uploaded to the database.",
+        "description": "The way data will be uploaded to Redshift.",
+        "group": "connection",
         "order": 8,
+        "display_type": "radio",
         "oneOf": [
           {
-            "title": "Standard",
-            "required": ["method"],
-            "properties": {
-              "method": {
-                "type": "string",
-                "const": "Standard"
-              }
-            }
-          },
-          {
             "title": "S3 Staging",
+            "description": "<i>(recommended)</i> Uploads data to S3 and then uses a COPY to insert the data into Redshift. COPY is recommended for production workloads for better speed and scalability. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html\">AWS docs</a> for more details.",
             "required": [
               "method",
               "s3_bucket_name",
@@ -93,7 +93,7 @@
               "s3_bucket_name": {
                 "title": "S3 Bucket Name",
                 "type": "string",
-                "description": "The name of the staging S3 bucket to use if utilising a COPY strategy. COPY is recommended for production workloads for better speed and scalability. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html\">AWS docs</a> for more details.",
+                "description": "The name of the staging S3 bucket.",
                 "examples": ["airbyte.staging"]
               },
               "s3_bucket_path": {
@@ -106,7 +106,7 @@
                 "title": "S3 Bucket Region",
                 "type": "string",
                 "default": "",
-                "description": "The region of the S3 staging bucket to use if utilising a COPY strategy. See <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html#:~:text=In-,Region,-%2C%20choose%20the%20AWS\">AWS docs</a> for details.",
+                "description": "The region of the S3 staging bucket.",
                 "enum": [
                   "",
                   "us-east-1",
@@ -217,9 +217,26 @@
                 "examples": ["10"]
               }
             }
+          },
+          {
+            "title": "Standard",
+            "required": ["method"],
+            "description": "<i>(not recommended)</i> Direct loading using SQL INSERT statements. This method is extremely inefficient and provided only for quick testing. In all other cases, you should use S3 uploading.",
+            "properties": {
+              "method": {
+                "type": "string",
+                "const": "Standard"
+              }
+            }
           }
         ]
       }
-    }
+    },
+    "groups": [
+      {
+        "id": "connection",
+        "title": "Connection"
+      }
+    ]
   }
 }

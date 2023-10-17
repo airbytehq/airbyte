@@ -11,31 +11,47 @@ This project requires Python 3.10 and pipx.
 
 The recommended way to install `ci_credentials` is using pipx. This ensures the tool and its dependencies are isolated from your other Python projects.
 
+If you havent installed pyenv, you can do it with brew:
+
+```bash
+brew update
+brew install pyenv
+```
+
 If you haven't installed pipx, you can do it with pip:
 
 ```bash
+cd airbyte-ci/connectors/ci_credentials/
+pyenv install # ensure you have the correct python version
 python -m pip install --user pipx
 python -m pipx ensurepath
 ```
 
-Once pipx is installed, navigate to the root directory of the project, then run:
+Once pyenv and pipx is installed then run the following:
 
 ```bash
-pipx install airbyte-ci/connectors/ci_credentials/
+pipx install --editable --force --python=python3.10 airbyte-ci/connectors/ci_credentials/
 ```
 
-This command installs ci_credentials and makes it globally available in your terminal.
+This command installs `ci_credentials` and makes it globally available in your terminal.
+
+_Note: `--force` is required to ensure updates are applied on subsequent installs._
+_Note: `--python=python3.10` is required to ensure the correct python version is used._
+_Note: `--editable` is required to ensure the correct python version is used._
+
+If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
+
 
 ## Get GSM access
 Download a Service account json key that has access to Google Secrets Manager.
 
 ### Create Service Account
-* Go to https://console.cloud.google.com/iam-admin/serviceaccounts/create?project=dataline-integration-testing
+* Go to https://console.cloud.google.com/iam-admin/serviceaccounts/create?project=ab-connector-integration-test
 * In step #1 `Service account details`, set a name and a relevant description
 * In step #2 `Grant this service account access to project`, select role `Owner` (there is a role that is more scope but I based this decision on others `<user>-testing` service account)
 
 ### Create Service Account Token
-* Go to https://console.cloud.google.com/iam-admin/serviceaccounts?project=dataline-integration-testing
+* Go to https://console.cloud.google.com/iam-admin/serviceaccounts?project=ab-connector-integration-test
 * Find your service account and click on it
 * Go in the tab "KEYS"
 * Click on "ADD KEY -> Create new key" and select JSON. This will download a file on your computer
