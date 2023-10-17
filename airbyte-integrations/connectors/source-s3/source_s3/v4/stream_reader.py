@@ -3,7 +3,6 @@
 #
 
 import logging
-from contextlib import contextmanager
 from io import IOBase
 from typing import Iterable, List, Optional, Set
 
@@ -87,7 +86,6 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 endpoint=self.config.endpoint,
             ) from exc
 
-    @contextmanager
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         try:
             params = {"client": self.s3_client}
@@ -102,11 +100,9 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
                 f"Check whether key {file.uri} exists in `{self.config.bucket}` bucket and/or has proper ACL permissions"
             )
-        # see https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager for why we do this
-        try:
-            yield result
-        finally:
-            result.close()
+
+        # we can simply return the result here as it is a context manager itself that will release all resources
+        return result
 
     @staticmethod
     def _is_folder(file) -> bool:
