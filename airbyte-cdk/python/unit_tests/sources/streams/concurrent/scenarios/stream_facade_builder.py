@@ -54,5 +54,9 @@ class StreamFacadeSourceBuilder(SourceBuilder[StreamFacadeSource]):
         self._streams = streams
         return self
 
+    def set_max_workers(self, max_workers: int):
+        self._max_workers = max_workers
+        return self
+
     def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> StreamFacadeSource:
         return StreamFacadeSource(self._streams, self._max_workers)

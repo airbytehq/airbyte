@@ -10,7 +10,7 @@ from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenari
 from unit_tests.sources.streams.concurrent.scenarios.stream_facade_builder import StreamFacadeSourceBuilder
 
 
-class _MockStream(Stream):
+class _MockStreamNoStreamSlices(Stream):
     def __init__(self, records, name, json_schema, primary_key=None):
         self._records = records
         self._name = name
@@ -24,7 +24,6 @@ class _MockStream(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        # FIXME: test stream slice or something
         yield from self._records
 
     @property
@@ -40,7 +39,42 @@ class _MockStream(Stream):
         return self._json_schema
 
 
-_stream1 = _MockStream(
+class _MockStreamWithStreamSlices(Stream):
+    def __init__(self, slice_key, slice_values_to_records, name, json_schema, primary_key=None):
+        self._slice_key = slice_key
+        self._slice_values_to_records = slice_values_to_records
+        self._name = name
+        self._json_schema = json_schema
+        self._primary_key = primary_key
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        yield from self._slice_values_to_records[stream_slice[self._slice_key]]
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        return self._primary_key
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        return self._json_schema
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for slice_value in self._slice_values_to_records.keys():
+            yield {self._slice_key: slice_value}
+
+
+_stream1 = _MockStreamNoStreamSlices(
     [{"id": "1"}, {"id": "2"}],
     "stream1",
     json_schema={
@@ -51,7 +85,7 @@ _stream1 = _MockStream(
     },
 )
 
-_stream_with_primary_key = _MockStream(
+_stream_with_primary_key = _MockStreamNoStreamSlices(
     [{"id": "1"}, {"id": "2"}],
     "stream1",
     json_schema={
@@ -63,9 +97,36 @@ _stream_with_primary_key = _MockStream(
     primary_key="id",
 )
 
-_stream2 = _MockStream(
+_stream2 = _MockStreamNoStreamSlices(
     [{"id": "A"}, {"id": "B"}],
     "stream2",
+    json_schema={
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "string"]},
+        },
+    },
+)
+
+_stream_with_single_slice = _MockStreamWithStreamSlices(
+    "slice_key",
+    {"s1": [{"id": "1"}, {"id": "2"}]},
+    "stream1",
+    json_schema={
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "string"]},
+        },
+    },
+)
+
+_stream_with_multiple_slices = _MockStreamWithStreamSlices(
+    "slice_key",
+    {
+        "s1": [{"id": "1"}, {"id": "2"}],
+        "s2": [{"id": "3"}, {"id": "4"}],
+    },
+    "stream1",
     json_schema={
         "type": "object",
         "properties": {
@@ -173,6 +234,103 @@ test_stream_facade_multiple_streams = (
                     "name": "stream2",
                     "supported_sync_modes": ["full_refresh"],
                 },
+            ]
+        }
+    )
+    .build()
+)
+
+test_stream_facade_single_stream_with_single_slice = (
+    TestScenarioBuilder()
+    .set_name("test_stream_facade_single_stream_with_single_slice")
+    .set_config({})
+    .set_source_builder(StreamFacadeSourceBuilder().set_streams([_stream1]))
+    .set_expected_records(
+        [
+            {"data": {"id": "1"}, "stream": "stream1"},
+            {"data": {"id": "2"}, "stream": "stream1"},
+        ]
+    )
+    # FIXME: add a test with the logs
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": ["null", "string"]},
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            ]
+        }
+    )
+    .build()
+)
+
+test_stream_facade_single_stream_with_multiple_slices = (
+    TestScenarioBuilder()
+    .set_name("test_stream_facade_single_stream_with_multiple_slice")
+    .set_config({})
+    .set_source_builder(StreamFacadeSourceBuilder().set_streams([_stream_with_multiple_slices]))
+    .set_expected_records(
+        [
+            {"data": {"id": "1"}, "stream": "stream1"},
+            {"data": {"id": "2"}, "stream": "stream1"},
+            {"data": {"id": "3"}, "stream": "stream1"},
+            {"data": {"id": "4"}, "stream": "stream1"},
+        ]
+    )
+    # FIXME: add a test with the logs
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": ["null", "string"]},
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            ]
+        }
+    )
+    .build()
+)
+
+test_stream_facade_single_stream_with_multiple_slices_with_concurrency_level_two = (
+    TestScenarioBuilder()
+    .set_name("test_stream_facade_single_stream_with_multiple_slice_with_concurrency_level_2")
+    .set_config({})
+    .set_source_builder(StreamFacadeSourceBuilder().set_streams([_stream_with_multiple_slices]))
+    .set_expected_records(
+        [
+            {"data": {"id": "1"}, "stream": "stream1"},
+            {"data": {"id": "2"}, "stream": "stream1"},
+            {"data": {"id": "3"}, "stream": "stream1"},
+            {"data": {"id": "4"}, "stream": "stream1"},
+        ]
+    )
+    # FIXME: add a test with the logs
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": ["null", "string"]},
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh"],
+                }
             ]
         }
     )
