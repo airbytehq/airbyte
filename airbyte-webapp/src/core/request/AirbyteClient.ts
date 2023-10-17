@@ -24,6 +24,7 @@ Change Management:
 
  * OpenAPI spec version: 1.0.0
  */
+import { FilterSourceRequestBody } from "./DaspireClient";
 import { apiOverride } from "./apiOverride";
 /**
  * Input failed validation
@@ -2060,6 +2061,25 @@ export const listSourcesForWorkspace = (
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: workspaceIdRequestBody,
+    },
+    options
+  );
+};
+
+/**
+ * List sources for workspace. Does not return deleted sources.
+ * @summary List sources for workspace
+ */
+export const paginatedSources = (
+  filterSourceRequestBody: FilterSourceRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceReadList>(
+    {
+      url: `/sources/page`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: filterSourceRequestBody,
     },
     options
   );

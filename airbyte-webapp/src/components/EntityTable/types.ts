@@ -14,7 +14,14 @@ interface EntityTableDataItem {
   lastSync?: number | null;
   connectorIcon?: string;
 }
-
+interface SourceTableDataItem {
+  sourceId: string;
+  name: string;
+  sourceName: string;
+  sourceDefinitionId: string;
+  workspaceId: string;
+  connectionConfiguration: any;
+}
 interface ITableDataItem {
   connectionId: string;
   name: string;
@@ -43,5 +50,5 @@ enum SortOrderEnum {
   ASC = "asc",
 }
 
-export type { ITableDataItem, EntityTableDataItem };
+export type { ITableDataItem, EntityTableDataItem, SourceTableDataItem };
 export { Status, SortOrderEnum };
