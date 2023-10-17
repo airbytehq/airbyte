@@ -423,7 +423,7 @@ class SourceStripe(AbstractSource):
             ),
         ]
         if self._use_concurrent_cdk:
-            concurrency_level = 2
+            concurrency_level = config.get("concurrency_level", 1)
             streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
             return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level) for stream in streams]
         else:
