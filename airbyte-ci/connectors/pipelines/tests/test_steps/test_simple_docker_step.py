@@ -5,9 +5,9 @@
 from pathlib import Path
 
 import pytest
+from pipelines.helpers.utils import get_exec_result
 from pipelines.models.contexts import PipelineContext
 from pipelines.models.steps import MountPath
-from pipelines.helpers.utils import get_exec_result
 from pipelines.pipeline.steps.docker import SimpleDockerStep
 
 pytestmark = [

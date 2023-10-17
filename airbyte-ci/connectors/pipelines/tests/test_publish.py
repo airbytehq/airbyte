@@ -7,10 +7,10 @@ import random
 from typing import List
 
 import anyio
+import pipelines.pipeline.metadata.pipeline
 import pytest
 from pipelines import publish
 from pipelines.models.steps import StepStatus
-import pipelines.pipeline.metadata.pipeline
 
 pytestmark = [
     pytest.mark.anyio,

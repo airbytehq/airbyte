@@ -10,13 +10,13 @@ import anyio
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification
 from dagger import Container, ExecError, File, ImageLayerCompression, QueryError
 from pipelines import consts
-from pipelines.dagger.actions.system import docker
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
+from pipelines.dagger.actions.system import docker
 from pipelines.models.steps import Step, StepResult, StepStatus
 from pipelines.pipeline.connectors.builds import steps
 from pipelines.pipeline.connectors.publish.context import PublishConnectorContext
 from pipelines.pipeline.connectors.reports import ConnectorReport
-from pipelines.pipeline.metadata.pipeline import MetadataValidation, MetadataUpload
+from pipelines.pipeline.metadata.pipeline import MetadataUpload, MetadataValidation
 from pydantic import ValidationError
 
 
@@ -206,6 +206,7 @@ class UploadSpecToCache(Step):
 
 
 ## Pipeline
+
 
 async def run_connector_publish_pipeline(context: PublishConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
     """Run a publish pipeline for a single connector.

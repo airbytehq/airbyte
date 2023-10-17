@@ -9,15 +9,19 @@ from typing import List, Optional
 import anyio
 import asyncer
 from dagger import Directory, File, QueryError
-from pipelines.dagger.actions.system import docker, secrets
-from pipelines.models.steps import StepResult, StepStatus
-from pipelines.pipeline.connectors.builds.steps.java_connectors import BuildConnectorDistributionTar, BuildConnectorImages, dist_tar_directory_path
-from pipelines.pipeline.connectors.builds.steps.normalization import BuildOrPullNormalization
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.pipeline.connectors.context import ConnectorContext
-from pipelines.pipeline.steps import GradleTask
-from pipelines.pipeline.connectors.test.steps.common import AcceptanceTests
+from pipelines.dagger.actions.system import docker, secrets
 from pipelines.helpers.utils import export_container_to_tarball
+from pipelines.models.steps import StepResult, StepStatus
+from pipelines.pipeline.connectors.builds.steps.java_connectors import (
+    BuildConnectorDistributionTar,
+    BuildConnectorImages,
+    dist_tar_directory_path,
+)
+from pipelines.pipeline.connectors.builds.steps.normalization import BuildOrPullNormalization
+from pipelines.pipeline.connectors.context import ConnectorContext
+from pipelines.pipeline.connectors.test.steps.common import AcceptanceTests
+from pipelines.pipeline.steps import GradleTask
 
 
 class IntegrationTests(GradleTask):

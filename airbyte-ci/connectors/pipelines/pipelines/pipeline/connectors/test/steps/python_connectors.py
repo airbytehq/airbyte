@@ -8,17 +8,17 @@ from abc import ABC, abstractmethod
 from typing import Callable, Iterable, List, Tuple
 
 import asyncer
+import pipelines.dagger.actions.python.common
+import pipelines.dagger.actions.system.docker
 from dagger import Container, File
 from pipelines.actions import environments
-import pipelines.dagger.actions.python.common
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
-import pipelines.dagger.actions.system.docker
+from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import Step, StepResult, StepStatus
 from pipelines.pipeline.connectors.builds.steps.python_connectors import BuildConnectorImages
-from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.pipeline.connectors.context import ConnectorContext
 from pipelines.pipeline.connectors.test.steps.common import AcceptanceTests
-from pipelines.helpers.utils import export_container_to_tarball
 
 
 class CodeFormatChecks(Step):

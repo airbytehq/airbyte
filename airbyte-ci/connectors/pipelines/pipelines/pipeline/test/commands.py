@@ -1,8 +1,6 @@
-from pipelines.pipeline.test.pipeline import run_test
-
-
 import anyio
 import click
+from pipelines.pipeline.test.pipeline import run_test
 
 
 @click.command()

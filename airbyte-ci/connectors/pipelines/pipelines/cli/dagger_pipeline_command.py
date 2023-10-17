@@ -13,11 +13,11 @@ from typing import Any
 import click
 from dagger import DaggerError
 from pipelines import consts, main_logger
-from pipelines.consts import GCS_PUBLIC_DOMAIN
+from pipelines.consts import GCS_PUBLIC_DOMAIN, STATIC_REPORT_PREFIX
 from pipelines.helpers import sentry_utils
-from pipelines.helpers.utils import slugify
 from pipelines.helpers.gcs import upload_to_gcs
-from pipelines.consts import STATIC_REPORT_PREFIX
+from pipelines.helpers.utils import slugify
+
 
 class DaggerPipelineCommand(click.Command):
     @sentry_utils.with_command_context

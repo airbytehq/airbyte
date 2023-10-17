@@ -1,11 +1,9 @@
-from connector_ops.utils import Connector
-
-
 from pathlib import Path
 from typing import FrozenSet, Set, Union
+
+from connector_ops.utils import Connector
 from pipelines import main_logger
 from pipelines.helpers.utils import IGNORED_FILE_EXTENSIONS
-
 
 
 def get_connector_modified_files(connector: Connector, all_modified_files: Set[Path]) -> FrozenSet[Path]:

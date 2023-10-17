@@ -1,10 +1,9 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from dagger import Container
-
-
 from typing import List
+
+from dagger import Container
 
 
 def with_debian_packages(base_container: Container, packages_to_install: List[str]) -> Container:

@@ -8,11 +8,11 @@ from typing import Optional
 
 from dagger import Secret
 from github import PullRequest
-from pipelines.helpers.gcs import sanitize_gcs_credentials
-from pipelines.models.bases import ConnectorWithModifiedFiles
-from pipelines.helpers.utils import format_duration
-from pipelines.pipeline.connectors import ConnectorContext
 from pipelines.consts import ContextState
+from pipelines.helpers.gcs import sanitize_gcs_credentials
+from pipelines.helpers.utils import format_duration
+from pipelines.models.bases import ConnectorWithModifiedFiles
+from pipelines.pipeline.connectors import ConnectorContext
 
 
 class PublishConnectorContext(ConnectorContext):

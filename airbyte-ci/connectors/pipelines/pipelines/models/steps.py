@@ -3,33 +3,29 @@
 #
 from __future__ import annotations
 
+import logging
+import typing
 from abc import abstractmethod
 from dataclasses import dataclass, field
-from datetime import timedelta
+from datetime import datetime, timedelta
 from enum import Enum
 from pathlib import Path
-import typing
-from typing import Optional, Any
+from typing import Any, Optional
 
 import anyio
 import asyncer
-from datetime import datetime
-import logging
-from dagger import DaggerError, Container
-from pipelines.helpers import sentry_utils
+from dagger import Container, DaggerError
 from pipelines import main_logger
+from pipelines.helpers import sentry_utils
 from pipelines.helpers.utils import format_duration, get_exec_result
 
 if typing.TYPE_CHECKING:
     from pipelines.models.contexts import PipelineContext
 
-
-
 from abc import ABC
 from typing import ClassVar
 
 from rich.style import Style
-
 
 
 @dataclass

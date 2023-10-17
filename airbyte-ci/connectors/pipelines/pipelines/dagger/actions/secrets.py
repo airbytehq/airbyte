@@ -13,8 +13,7 @@ from pipelines.helpers.utils import get_file_contents, get_secret_host_variable
 
 if TYPE_CHECKING:
     from dagger import Container
-    from pipelines.pipeline.connectors.context import ConnectorContext
-    from pipelines.pipeline.connectors.context import PipelineContext
+    from pipelines.pipeline.connectors.context import ConnectorContext, PipelineContext
 
 
 async def get_secrets_to_mask(ci_credentials_with_downloaded_secrets: Container) -> list[str]:

@@ -3,9 +3,9 @@
 #
 
 from dagger import Client, Container, Directory, Secret
-from pipelines.models.steps import Step, StepResult
 from pipelines.helpers.github import AIRBYTE_GITHUB_REPO
 from pipelines.helpers.utils import sh_dash_c
+from pipelines.models.steps import Step, StepResult
 
 
 def with_git(dagger_client, ci_git_user: str = "octavia") -> Container:

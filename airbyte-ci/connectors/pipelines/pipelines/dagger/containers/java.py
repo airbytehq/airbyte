@@ -1,14 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from pipelines.dagger.actions.connector.hooks import finalize_build
+from dagger import CacheVolume, Container, File, Platform
 from pipelines.consts import AMAZONCORRETTO_IMAGE
+from pipelines.dagger.actions.connector.hooks import finalize_build
 from pipelines.dagger.actions.connector.normalization import DESTINATION_NORMALIZATION_BUILD_CONFIGURATION, with_normalization
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.pipeline.connectors.context import ConnectorContext, PipelineContext
-
-
-from dagger import CacheVolume, Container, File, Platform
 
 
 def with_integration_base(context: PipelineContext, build_platform: Platform) -> Container:

@@ -1,11 +1,8 @@
-from pipelines.pipeline.connectors.context import ConnectorContext
-
+import importlib.util
 
 from dagger import Container
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
-
-
-import importlib.util
+from pipelines.pipeline.connectors.context import ConnectorContext
 
 
 async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:

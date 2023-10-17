@@ -1,10 +1,7 @@
-from pipelines.pipeline.metadata.pipeline import run_metadata_orchestrator_deploy_pipeline
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-
-
 import anyio
 import click
-
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.pipeline.metadata.pipeline import run_metadata_orchestrator_deploy_pipeline
 
 # MAIN GROUP
 

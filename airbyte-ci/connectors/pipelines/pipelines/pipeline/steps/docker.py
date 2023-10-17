@@ -1,13 +1,10 @@
+from typing import List, Optional
+
+import dagger
 from pipelines.dagger.actions.python.pipx import with_installed_pipx_package
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.models.contexts import PipelineContext
 from pipelines.models.steps import MountPath, Step, StepResult
-
-
-import dagger
-
-
-from typing import List, Optional
 
 
 class SimpleDockerStep(Step):

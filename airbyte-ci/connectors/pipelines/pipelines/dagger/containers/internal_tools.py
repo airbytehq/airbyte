@@ -1,10 +1,8 @@
+from dagger import Container, Secret
 from pipelines.dagger.actions.python.pipx import with_installed_pipx_package
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.internal_tools.internal import INTERNAL_TOOL_PATHS
 from pipelines.pipeline.connectors.context import PipelineContext
-
-
-from dagger import Container, Secret
 
 
 async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> Container:

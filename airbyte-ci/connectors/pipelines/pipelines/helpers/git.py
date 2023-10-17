@@ -1,9 +1,9 @@
-import anyio
-from dagger import Connection
 from typing import List, Set
-import git
-from github import PullRequest
 
+import anyio
+import git
+from dagger import Connection
+from github import PullRequest
 from pipelines.helpers.utils import AIRBYTE_REPO_URL, DAGGER_CONFIG, DIFF_FILTER
 
 
@@ -110,11 +110,3 @@ def get_modified_files_in_commit(current_git_branch: str, current_git_revision: 
 def get_modified_files_in_pull_request(pull_request: PullRequest) -> List[str]:
     """Retrieve the list of modified files in a pull request."""
     return [f.filename for f in pull_request.get_files()]
-
-
-
-
-
-
-
-

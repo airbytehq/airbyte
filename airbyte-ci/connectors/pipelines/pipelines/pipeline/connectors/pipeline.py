@@ -12,11 +12,11 @@ import anyio
 import dagger
 from connector_ops.utils import ConnectorLanguage
 from dagger import Config
-from pipelines.dagger.actions.system import docker
-from pipelines.models.bases import NoOpStep, Report, StepResult, StepStatus
 from pipelines.consts import DOCKER_CLI_IMAGE, DOCKER_HOST_NAME, DOCKER_HOST_PORT
-from pipelines.pipeline.connectors.context import ConnectorContext, ContextState
+from pipelines.dagger.actions.system import docker
 from pipelines.helpers.utils import create_and_open_file
+from pipelines.models.bases import NoOpStep, Report, StepResult, StepStatus
+from pipelines.pipeline.connectors.context import ConnectorContext, ContextState
 
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"

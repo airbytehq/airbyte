@@ -6,8 +6,7 @@ from pathlib import Path
 
 import pytest
 from pipelines.models.steps import StepStatus
-from pipelines.pipeline.connectors.builds.steps import python_connectors
-from pipelines.pipeline.connectors.builds.steps import build_customization
+from pipelines.pipeline.connectors.builds.steps import build_customization, python_connectors
 from pipelines.pipeline.connectors.context import ConnectorContext
 
 pytestmark = [

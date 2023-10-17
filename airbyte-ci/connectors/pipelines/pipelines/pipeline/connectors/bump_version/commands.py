@@ -1,12 +1,10 @@
+import anyio
+import click
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.pipeline.connectors.bump_version.pipeline import run_connector_version_bump_pipeline
 from pipelines.pipeline.connectors.commands import connectors
 from pipelines.pipeline.connectors.context import ConnectorContext
 from pipelines.pipeline.connectors.pipeline import run_connectors_pipelines
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-
-
-import anyio
-import click
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Bump a connector version: update metadata.yaml and changelog.")

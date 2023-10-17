@@ -32,7 +32,6 @@ DIFF_FILTER = "MADRT"  # Modified, Added, Deleted, Renamed, Type changed
 IGNORED_FILE_EXTENSIONS = [".md"]
 
 
-
 # This utils will probably be redundant once https://github.com/dagger/dagger/issues/3764 is implemented
 async def check_path_in_workdir(container: Container, path: str) -> bool:
     """Check if a local path is mounted to the working directory of a container.

@@ -1,9 +1,7 @@
-from pipelines.pipeline.connectors.commands import connectors
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-
-
 import click
 from connector_ops.utils import console
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.pipeline.connectors.commands import connectors
 from rich.table import Table
 from rich.text import Text
 

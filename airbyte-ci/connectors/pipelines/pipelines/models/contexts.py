@@ -15,13 +15,12 @@ from asyncer import asyncify
 from dagger import Client, Directory, File, Secret
 from github import PullRequest
 from pipelines import hacks
-from pipelines.consts import CIContext
-from pipelines.consts import ContextState
+from pipelines.consts import CIContext, ContextState
 from pipelines.helpers.gcs import sanitize_gcs_credentials
-from pipelines.models.reports import Report
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import AIRBYTE_REPO_URL
+from pipelines.models.reports import Report
 
 
 class PipelineContext:

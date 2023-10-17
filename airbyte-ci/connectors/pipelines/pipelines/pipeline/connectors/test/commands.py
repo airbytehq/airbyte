@@ -1,17 +1,14 @@
+import sys
+
+import anyio
+import click
 from pipelines import main_logger
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
 from pipelines.pipeline.connectors.commands import connectors
 from pipelines.pipeline.connectors.context import ConnectorContext, ContextState
 from pipelines.pipeline.connectors.pipeline import run_connectors_pipelines
 from pipelines.pipeline.connectors.test.steps import run_connector_test_pipeline
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-
-
-import anyio
-import click
-
-
-import sys
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")

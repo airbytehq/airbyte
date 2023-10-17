@@ -1,13 +1,10 @@
-from pipelines.consts import DOCKER_VERSION
-from pipelines.helpers.utils import sh_dash_c
-
-
-import dagger
-
-
 import logging
 import os
 import sys
+
+import dagger
+from pipelines.consts import DOCKER_VERSION
+from pipelines.helpers.utils import sh_dash_c
 
 
 async def run_test(poetry_package_path: str, test_directory: str) -> bool:

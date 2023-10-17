@@ -1,7 +1,6 @@
+from dagger import Container, Platform
 from pipelines.pipeline.connectors.context import ConnectorContext
 
-
-from dagger import Container, Platform
 BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
     "destination-clickhouse": {
         "dockerfile": "clickhouse.Dockerfile",

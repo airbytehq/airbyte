@@ -6,22 +6,19 @@
 
 from __future__ import annotations
 
-import anyio
-import typing
 import json
-
+import typing
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
-
-
 from typing import List
 
+import anyio
 from anyio import Path
 from connector_ops.utils import console
 from pipelines.consts import GCS_PUBLIC_DOMAIN, LOCAL_REPORTS_PATH_ROOT
 from pipelines.dagger.actions import remote_storage
-from pipelines.models.steps import StepResult, StepStatus
 from pipelines.helpers.utils import format_duration
+from pipelines.models.steps import StepResult, StepStatus
 from rich.console import Group
 from rich.panel import Panel
 from rich.style import Style
@@ -30,6 +27,7 @@ from rich.text import Text
 
 if typing.TYPE_CHECKING:
     from pipelines.models.steps import PipelineContext
+
 
 @dataclass(frozen=True)
 class Report:
@@ -182,4 +180,3 @@ class Report:
 
         main_panel = Panel(Group(*to_render), title=main_panel_title, subtitle=duration_subtitle)
         console.print(main_panel)
-

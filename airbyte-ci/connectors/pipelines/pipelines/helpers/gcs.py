@@ -1,14 +1,11 @@
-from pipelines import main_logger
-from pipelines.consts import GCS_PUBLIC_DOMAIN
-
-
-from google.cloud import storage
-from google.oauth2 import service_account
-
-
 import json
 from pathlib import Path
 from typing import Optional, Tuple
+
+from google.cloud import storage
+from google.oauth2 import service_account
+from pipelines import main_logger
+from pipelines.consts import GCS_PUBLIC_DOMAIN
 
 
 def upload_to_gcs(file_path: Path, bucket_name: str, object_name: str, credentials: str) -> Tuple[str, str]:

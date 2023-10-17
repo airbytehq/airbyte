@@ -5,10 +5,10 @@
 from typing import List, Optional, Tuple, Union
 
 from dagger import Container, Directory, ExecError, File, Host, Platform, QueryError
+from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.containers import java
 from pipelines.models.steps import StepResult, StepStatus
 from pipelines.pipeline.connectors.builds.steps.common import BuildConnectorImagesBase
-from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.pipeline.connectors.context import ConnectorContext
 from pipelines.pipelines.models.steps import GradleTask
 

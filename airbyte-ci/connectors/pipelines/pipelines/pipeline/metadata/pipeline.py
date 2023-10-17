@@ -1,25 +1,21 @@
-
 import uuid
 from typing import Optional
 
 import dagger
+from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH
 from pipelines.dagger.actions.python.common import with_pip_packages
 from pipelines.dagger.containers.python import with_python_base
-from pipelines.models.steps import Step, StepResult
-from pipelines.models.reports import Report
-from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH
-from pipelines.pipeline.connectors.context import ConnectorContext, PipelineContext
 from pipelines.helpers.steps import run_steps
-from pipelines.models.steps import MountPath
 from pipelines.helpers.utils import DAGGER_CONFIG, get_secret_host_variable
-from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH
-from pipelines.pipeline.connectors.context import ConnectorContext
-from pipelines.models.steps import MountPath
 from pipelines.internal_tools.internal import INTERNAL_TOOL_PATHS
+from pipelines.models.reports import Report
+from pipelines.models.steps import MountPath, Step, StepResult
+from pipelines.pipeline.connectors.context import ConnectorContext, PipelineContext
 from pipelines.pipeline.steps.docker import SimpleDockerStep
 from pipelines.pipeline.steps.poetry import PoetryRunStep
 
 # STEPS
+
 
 class MetadataValidation(SimpleDockerStep):
     def __init__(self, context: ConnectorContext):
@@ -41,6 +37,7 @@ class MetadataValidation(SimpleDockerStep):
                 DOCS_DIRECTORY_ROOT_PATH,
             ],
         )
+
 
 class MetadataUpload(SimpleDockerStep):
     # When the metadata service exits with this code, it means the metadata is valid but the upload was skipped because the metadata is already uploaded

@@ -1,13 +1,11 @@
 import json
-from typing import Callable
 import uuid
+from typing import Callable
+
+from dagger import Client, Container, File
 from pipelines import consts
 from pipelines.consts import DOCKER_HOST_NAME, DOCKER_HOST_PORT, DOCKER_TMP_VOLUME_NAME
 from pipelines.helpers.utils import sh_dash_c
-
-
-from dagger import Client, Container, File
-
 from pipelines.pipeline.connectors.context import ConnectorContext, PipelineContext
 
 

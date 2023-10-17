@@ -1,17 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from pathlib import Path
 import re
+from pathlib import Path
+from typing import List, Optional
+
+from dagger import Container, Directory
 from pipelines.dagger.containers.python import with_python_base, with_testing_dependencies
 from pipelines.helpers.utils import check_path_in_workdir, get_file_contents
 from pipelines.pipeline.connectors.context import ConnectorContext, PipelineContext
-
-
-from dagger import Container, Directory
-
-
-from typing import List, Optional
 
 
 def with_python_package(

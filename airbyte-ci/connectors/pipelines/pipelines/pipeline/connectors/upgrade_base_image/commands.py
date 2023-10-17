@@ -1,12 +1,10 @@
-from pipelines.pipeline.connectors.migrate_to_base_image.pipeline import run_connector_base_image_upgrade_pipeline
-from pipelines.pipeline.connectors.commands import connectors
-from pipelines.pipeline.connectors.context import ConnectorContext
-from pipelines.pipeline.connectors.pipeline import run_connectors_pipelines
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-
-
 import anyio
 import click
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.pipeline.connectors.commands import connectors
+from pipelines.pipeline.connectors.context import ConnectorContext
+from pipelines.pipeline.connectors.migrate_to_base_image.pipeline import run_connector_base_image_upgrade_pipeline
+from pipelines.pipeline.connectors.pipeline import run_connectors_pipelines
 
 
 @connectors.command(cls=DaggerPipelineCommand, help="Upgrades the base image version used by the selected connectors..")

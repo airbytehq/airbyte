@@ -1,17 +1,14 @@
+from abc import ABC
+from typing import ClassVar, List
+
 import pipelines.dagger.actions.system.docker
+from dagger import CacheSharingMode, CacheVolume
 from pipelines import hacks
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts import PipelineContext
 from pipelines.models.steps import Step, StepResult
-
-
-from dagger import CacheSharingMode, CacheVolume
-
-
-from abc import ABC
-from typing import ClassVar, List
 
 
 class GradleTask(Step, ABC):

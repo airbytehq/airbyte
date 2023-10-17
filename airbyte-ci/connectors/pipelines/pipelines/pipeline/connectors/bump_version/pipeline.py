@@ -1,7 +1,8 @@
-from copy import deepcopy
-from dagger import Container
 import datetime
+from copy import deepcopy
+
 import semver
+from dagger import Container
 from pipelines import consts
 from pipelines.helpers.connectors import metadata_change_helpers
 from pipelines.models.steps import Step, StepResult, StepStatus

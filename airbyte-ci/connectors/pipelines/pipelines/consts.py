@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from enum import Enum
 import platform
+from enum import Enum
 
 import git
 from dagger import Platform

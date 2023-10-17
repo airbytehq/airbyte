@@ -14,11 +14,11 @@ from asyncer import asyncify
 from dagger import Directory
 from github import PullRequest
 from pipelines.dagger.actions import secrets
-from pipelines.models.bases import ConnectorWithModifiedFiles
-from pipelines.models.contexts import PipelineContext
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
 from pipelines.helpers.utils import METADATA_FILE_NAME
+from pipelines.models.bases import ConnectorWithModifiedFiles
+from pipelines.models.contexts import PipelineContext
 from pipelines.pipeline.connectors.reports import ConnectorReport
 
 
@@ -232,4 +232,3 @@ class ConnectorContext(PipelineContext):
 
     def create_slack_message(self) -> str:
         raise NotImplementedError
-

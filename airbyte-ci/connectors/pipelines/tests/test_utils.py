@@ -5,10 +5,10 @@
 from pathlib import Path
 from unittest import mock
 
+import pipelines.helpers.git
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
 from pipelines.helpers import utils
-import pipelines.helpers.git
 from tests.utils import pick_a_random_connector
 
 

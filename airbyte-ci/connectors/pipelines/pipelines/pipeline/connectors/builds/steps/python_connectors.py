@@ -4,8 +4,7 @@
 
 
 from dagger import Container, Platform
-from pipelines.dagger.actions.python.common import with_python_connector_installed
-from pipelines.dagger.actions.python.common import apply_python_development_overrides
+from pipelines.dagger.actions.python.common import apply_python_development_overrides, with_python_connector_installed
 from pipelines.models.steps import StepResult
 from pipelines.pipeline.connectors.builds.steps import build_customization
 from pipelines.pipeline.connectors.builds.steps.common import BuildConnectorImagesBase

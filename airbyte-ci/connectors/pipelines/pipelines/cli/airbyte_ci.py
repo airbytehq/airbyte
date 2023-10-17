@@ -10,16 +10,17 @@ from typing import List
 import click
 from github import PullRequest
 from pipelines import main_logger
-from pipelines.helpers import github
-from pipelines.helpers.git import get_current_git_branch, get_current_git_revision, get_modified_files_in_branch, get_modified_files_in_commit, get_modified_files_in_pull_request
-from pipelines.consts import CIContext
-from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
 from pipelines.cli.telemetry import track_command
-from pipelines.helpers.utils import (
-    get_current_epoch_time,
-    transform_strs_to_paths,
+from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH, CIContext
+from pipelines.helpers import github
+from pipelines.helpers.git import (
+    get_current_git_branch,
+    get_current_git_revision,
+    get_modified_files_in_branch,
+    get_modified_files_in_commit,
+    get_modified_files_in_pull_request,
 )
-
+from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_paths
 from pipelines.pipeline.connectors.commands import connectors
 from pipelines.pipeline.metadata.commands import metadata
 from pipelines.pipeline.test.commands import test

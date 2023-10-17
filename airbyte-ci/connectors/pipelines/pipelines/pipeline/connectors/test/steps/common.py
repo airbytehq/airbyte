@@ -16,11 +16,11 @@ import yaml
 from connector_ops.utils import Connector
 from dagger import Container, Directory, File
 from pipelines import hacks
+from pipelines.consts import CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.containers import internal_tools
-from pipelines.models.steps import Step, StepResult, StepStatus
 from pipelines.helpers.utils import METADATA_FILE_NAME
-from pipelines.consts import CIContext
+from pipelines.models.steps import Step, StepResult, StepStatus
 
 
 class VersionCheck(Step, ABC):
