@@ -1,24 +1,20 @@
 data:
   registries:
     cloud:
-      enabled: false # strict encrypt connectors are deployed to Cloud by their non strict encrypt sibling.
+      enabled: false
     oss:
-      enabled: false # strict encrypt connectors are not used on OSS.
+      enabled: true
   connectorSubtype: database
   connectorType: destination
-  definitionId: 25c5221d-dce2-4163-ade9-739ef790f503
-  dockerImageTag: 0.4.0
+  definitionId: 59d6e524-2a53-4af3-8015-8b174caea14c
+  dockerImageTag: 0.1.0
   dockerRepository: airbyte/destination-snowflake-bulk-load
-  githubIssueLabel: destination-postgres
-  icon: postgresql.svg
+  githubIssueLabel: destination-snowflake
+  icon: snowflake.svg
   license: ELv2
-  name: Postgres
-  normalizationConfig:
-    normalizationIntegrationType: postgres
-    normalizationRepository: airbyte/normalization
-    normalizationTag: 0.4.1
+  name: Snowflake (Bulk Load)
   releaseStage: alpha
-  documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake-bulk-load
   supportsDbt: true
   tags:
     - language:java
