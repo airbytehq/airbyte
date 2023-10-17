@@ -60,5 +60,7 @@ def test_raises_notimplemented_auth(config_not_implemented_auth_method):
 def test_raises_missing_access_token(config_missing_access_token):
     config_missing_access_token["authenticator"] = ShopifyAuthenticator(config=(config_missing_access_token))
     failed_check = ConnectionCheckTest(config_missing_access_token).test_connection()
-    assert failed_check == (False, "The `access_token` is missing or wasn't obtained correctly, please `Re-authenticate` in the `Source > Settings`.")
-        
+    assert failed_check == (
+        False,
+        "The `access_token` is missing or wasn't obtained correctly, please `Re-authenticate` in the `Source > Settings`.",
+    )
