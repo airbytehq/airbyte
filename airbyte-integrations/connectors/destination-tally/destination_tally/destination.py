@@ -27,6 +27,12 @@ class DestinationTally(Destination):
         logger = AirbyteLogger()
         for airbyte_message in input_messages:
             if airbyte_message.type == Type.RECORD:
+                # check if airbyte stream contains any of supported_streams
+                supported_streams = ["ledger", "item", "payment"]
+                if not any(supported_stream in airbyte_message.record.stream for supported_stream in supported_streams):
+                    logger.warn(f"The data that you are trying to sync does not match any tally streams in [ledger, item, payment voucher]")
+                    continue
+
                 if "ledger" in airbyte_message.record.stream:
                     ledger_url = "https://api.excel2tally.in/api/User/LedgerMaster"
                     insert_ledger_master_to_tally(
@@ -42,8 +48,6 @@ class DestinationTally(Destination):
                     insert_payment_voucher_to_tally(
                         config=config, data=airbyte_message.record.data, payment_voucher_template_url=payment_voucher_url, logger=logger
                     )
-                else:
-                    logger.error(f"The data that you are trying to sync does not match any tally template [ledger, item, payment voucher]")
             elif airbyte_message.type == Type.STATE:
                 yield airbyte_message
 
