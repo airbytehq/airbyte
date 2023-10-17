@@ -120,84 +120,57 @@ class DeleteConnectorFile(Step):
         )
 
 
-class AddBuildInstructionsToDoc(Step):
-    title = "Add build instructions to doc"
+class AddBuildInstructionsToReadme(Step):
+    title = "Add build instructions to README.md"
 
     def __init__(self, context: PipelineContext, repo_dir: Directory) -> None:
         super().__init__(context)
         self.repo_dir = repo_dir
 
     async def _run(self) -> StepResult:
-        doc_path = self.context.connector.documentation_file_path
-        if not doc_path.exists():
+        readme_path = self.context.connector.code_directory / "README.md"
+        if not readme_path.exists():
             return StepResult(
                 self,
                 StepStatus.SKIPPED,
                 stdout="Connector does not have a documentation file.",
-                output_artifact=self.container_with_airbyte_repo,
+                output_artifact=self.repo_dir,
             )
-        current_doc = await self.repo_dir.file(str(doc_path)).contents()
+        current_readme = await (await self.context.get_connector_dir(include=["README.md"])).file("README.md").contents()
         try:
-            updated_doc = self.add_build_instructions(current_doc)
+            updated_readme = self.add_build_instructions(current_readme)
         except Exception as e:
             return StepResult(
                 self,
                 StepStatus.FAILURE,
-                stderr=f"Could not add the build instructions: {e}",
-                output_artifact=self.container_with_airbyte_repo,
+                stdout=str(e),
+                output_artifact=self.repo_dir,
             )
-        updated_repo_dir = await self.repo_dir.with_new_file(str(doc_path), updated_doc)
+        updated_repo_dir = await self.repo_dir.with_new_file(str(readme_path), updated_readme)
         return StepResult(
             self,
             StepStatus.SUCCESS,
-            stdout=f"Added changelog entry to {doc_path}",
+            stdout=f"Added build instructions to {readme_path}",
             output_artifact=updated_repo_dir,
         )
 
     def add_build_instructions(self, og_doc_content) -> str:
-        line_no_for_build_instructions = None
-        og_lines = og_doc_content.splitlines()
-        for line_no, line in enumerate(og_lines):
-            if "## Build instructions" in line:
-                return og_doc_content
-            if "## Changelog" in line:
-                line_no_for_build_instructions = line_no
-        if line_no_for_build_instructions is None:
-            line_no_for_build_instructions = len(og_lines) - 1
 
         build_instructions_template = Template(
             textwrap.dedent(
                 """
-            ## Build instructions
-            ### Build your own connector image
-            This connector is built using our dynamic built process.
-            The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
-            The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
-            It does not rely on a Dockerfile.
 
-            If you would like to patch our connector and build your own a simple approach would be:
+            #### Use `airbyte-ci` to build your connector
+            The Airbyte way of building this connector is to use our `airbyte-ci` tool.
+            You can follow install instructions [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md#L1).
+            Then running the following command will build your connector:
 
-            1. Create your own Dockerfile based on the latest version of the connector image.
-            ```Dockerfile
-            FROM {{ connector_image }}:latest
-
-            COPY . ./airbyte/integration_code
-            RUN pip install ./airbyte/integration_code
-
-            # The entrypoint and default env vars are already set in the base image
-            # ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
-            # ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
-            ```
-            Please use this as an example. This is not optimized.
-
-            2. Build your image:
             ```bash
-            docker build -t {{ connector_image }}:dev .
-            # Running the spec command against your patched connector
-            docker run {{ connector_image }}:dev spec
+            airbyte-ci connectors --name {{ connector_technical_name }} build
             ```
+            Once the command is done, you will find your connector image in your local docker registry: `{{ connector_image }}:dev`.
 
-            ### Customizing our build process
+            ##### Customizing our build process
             When contributing on our connector you might need to customize the build process to add a system dependency or set an env var.
             You can customize our build process by adding a `build_customization.py` module to your connector.
             This module should contain a `pre_connector_install` and `post_connector_install` async function that will mutate the base image and the connector container respectively.
@@ -221,13 +194,60 @@ class AddBuildInstructionsToDoc(Step):
             async def post_connector_install(connector_container: Container) -> Container:
                 return await connector_container.with_env_variable("MY_POST_BUILD_ENV_VAR", "my_post_build_env_var_value")
             ```
+
+            #### Build your own connector image
+            This connector is built using our dynamic built process in `airbyte-ci`.
+            The base image used to build it is defined within the metadata.yaml file under the `connectorBuildOptions`.
+            The build logic is defined using [Dagger](https://dagger.io/) [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/pipelines/builds/python_connectors.py).
+            It does not rely on a Dockerfile.
+
+            If you would like to patch our connector and build your own a simple approach would be to:
+
+            1. Create your own Dockerfile based on the latest version of the connector image.
+            ```Dockerfile
+            FROM {{ connector_image }}:latest
+
+            COPY . ./airbyte/integration_code
+            RUN pip install ./airbyte/integration_code
+
+            # The entrypoint and default env vars are already set in the base image
+            # ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+            # ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+            ```
+            Please use this as an example. This is not optimized.
+
+            2. Build your image:
+            ```bash
+            docker build -t {{ connector_image }}:dev .
+            # Running the spec command against your patched connector
+            docker run {{ connector_image }}:dev spec
+            ```
             """
             )
         )
 
-        build_instructions = build_instructions_template.render({"connector_image": self.context.connector.metadata["dockerRepository"]})
+        build_instructions = build_instructions_template.render(
+            {
+                "connector_image": self.context.connector.metadata["dockerRepository"],
+                "connector_technical_name": self.context.connector.technical_name,
+            }
+        )
 
-        new_doc = "\n".join(og_lines[:line_no_for_build_instructions] + [build_instructions] + og_lines[line_no_for_build_instructions:])
+        og_lines = og_doc_content.splitlines()
+        build_instructions_index = None
+        run_instructions_index = None
+
+        for line_no, line in enumerate(og_lines):
+            if "#### Build" in line:
+                build_instructions_index = line_no
+            if "#### Run" in line:
+                run_instructions_index = line_no
+                break
+
+        if build_instructions_index is None or run_instructions_index is None:
+            raise Exception("Could not find build or run instructions in README.md")
+
+        new_doc = "\n".join(og_lines[:build_instructions_index] + build_instructions.splitlines() + og_lines[run_instructions_index:])
         return new_doc
 
 
@@ -307,7 +327,7 @@ async def run_connector_migration_to_base_image_pipeline(context: ConnectorConte
             steps_results.append(add_changelog_entry_result)
 
             # UPDATE DOC
-            add_build_instructions_to_doc = AddBuildInstructionsToDoc(
+            add_build_instructions_to_doc = AddBuildInstructionsToReadme(
                 context,
                 add_changelog_entry_result.output_artifact,
             )
