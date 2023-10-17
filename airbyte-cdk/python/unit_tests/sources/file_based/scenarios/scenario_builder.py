@@ -7,7 +7,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Any, Generic, List, Mapping, Optional, Tuple, Type, TypeVar
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import SyncMode, AirbyteAnalyticsTraceMessage
 from airbyte_cdk.sources import AbstractSource
 
 
@@ -45,6 +45,7 @@ class TestScenario(Generic[SourceType]):
         expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]],
         expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
         incremental_scenario_config: Optional[IncrementalScenarioConfig],
+        expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]] = None,
     ):
         self.name = name
         self.config = config
@@ -58,6 +59,7 @@ class TestScenario(Generic[SourceType]):
         self.expected_discover_error = expected_discover_error
         self.expected_read_error = expected_read_error
         self.incremental_scenario_config = incremental_scenario_config
+        self.expected_analytics = expected_analytics
         self.validate()
 
     def validate(self) -> None:
@@ -109,6 +111,7 @@ class TestScenarioBuilder(Generic[SourceType]):
         self._expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
         self.source_builder: Optional[SourceBuilder[SourceType]] = None
+        self._expected_analytics = None
 
     def set_name(self, name: str) -> "TestScenarioBuilder[SourceType]":
         self._name = name
@@ -157,6 +160,10 @@ class TestScenarioBuilder(Generic[SourceType]):
     def set_source_builder(self, source_builder: SourceBuilder[SourceType]) -> "TestScenarioBuilder[SourceType]":
         self.source_builder = source_builder
         return self
+    
+    def set_expected_analytics(self, expected_analytics: List[AirbyteAnalyticsTraceMessage]) -> "TestScenarioBuilder[SourceType]":
+        self._expected_analytics = expected_analytics
+        return self
 
     def copy(self) -> "TestScenarioBuilder[SourceType]":
         return deepcopy(self)
@@ -180,6 +187,7 @@ class TestScenarioBuilder(Generic[SourceType]):
             self._expected_discover_error,
             self._expected_read_error,
             self._incremental_scenario_config,
+            self._expected_analytics,
         )
 
     def _configured_catalog(self, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:

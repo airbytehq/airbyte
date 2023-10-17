@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -342,6 +343,96 @@ single_csv_scenario = (
             },
         ]
     )
+).build()
+
+multi_format_analytics_scenario = (
+    TestScenarioBuilder()
+    .set_name("multi_format_analytics")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "format": {"filetype": "csv"},
+                    "globs": ["file1.csv"],
+                    "validation_policy": "Emit Record",
+                },
+                {
+                    "name": "stream2",
+                    "format": {"filetype": "csv"},
+                    "globs": ["file2.csv"],
+                    "validation_policy": "Emit Record",
+                },
+                {
+                    "name": "stream3",
+                    "format": {"filetype": "jsonl"},
+                    "globs": ["file3.jsonl"],
+                    "validation_policy": "Emit Record",
+                }
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "file1.csv": {
+                    "contents": [],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "file2.csv": {
+                    "contents": [],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "file3.jsonl": {
+                    "contents": [],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {},
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {},
+                    },
+                    "name": "stream2",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {},
+                    },
+                    "name": "stream3",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+            ]
+        }
+    )
+    .set_expected_records([])
+    .set_expected_analytics([
+        AirbyteAnalyticsTraceMessage(type="file-cdk-csv-stream-count", value="2"),
+        AirbyteAnalyticsTraceMessage(type="file-cdk-jsonl-stream-count", value="1"),
+    ])
 ).build()
 
 multi_csv_scenario = (

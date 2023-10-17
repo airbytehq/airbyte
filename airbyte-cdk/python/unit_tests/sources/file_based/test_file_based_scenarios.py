@@ -57,6 +57,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario,
     schemaless_with_user_input_schema_fails_connection_check_scenario,
     single_csv_scenario,
+    multi_format_analytics_scenario,
 )
 from unit_tests.sources.file_based.scenarios.incremental_scenarios import (
     multi_csv_different_timestamps_scenario,
@@ -202,6 +203,7 @@ read_scenarios = discover_scenarios + [
     skip_record_scenario_single_stream,
     wait_for_rediscovery_scenario_multi_stream,
     wait_for_rediscovery_scenario_single_stream,
+    multi_format_analytics_scenario,
 ]
 
 spec_scenarios = [
