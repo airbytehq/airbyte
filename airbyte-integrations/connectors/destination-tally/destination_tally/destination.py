@@ -42,6 +42,8 @@ class DestinationTally(Destination):
                     insert_payment_voucher_to_tally(
                         config=config, data=airbyte_message.record.data, payment_voucher_template_url=payment_voucher_url, logger=logger
                     )
+                else:
+                    logger.error(f"The data that you are trying to sync does not match any tally template [ledger, item, payment voucher]")
             elif airbyte_message.type == Type.STATE:
                 yield airbyte_message
 
