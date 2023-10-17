@@ -14,7 +14,6 @@ from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import Abstr
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, ValidationPolicy
 from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types import default_parsers
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.schema_validation_policies import DEFAULT_SCHEMA_VALIDATION_POLICIES, AbstractSchemaValidationPolicy
@@ -28,7 +27,7 @@ from pydantic.error_wrappers import ValidationError
 class FileBasedSource(AbstractSource, ABC):
     def __init__(
         self,
-        stream_reader: AbstractFileBasedStreamReader,
+        stream_reader: str,
         spec_class: Type[AbstractFileBasedSpec],
         catalog_path: Optional[str] = None,
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,
