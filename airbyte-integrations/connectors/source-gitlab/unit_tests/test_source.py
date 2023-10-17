@@ -47,7 +47,7 @@ def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
     assert status is False, msg.startswith('Unable to connect to Gitlab API with the provided credentials - "DefaultBackoffException"')
 
 
-def test_connection_fail_due_to_expired_access_token_error(oauth_config, mocker, requests_mock):
+def test_connection_fail_due_to_expired_access_token_error(oauth_config, requests_mock):
     expected = "Unable to refresh the `access_token`, please re-auth in Source > Settings."
     requests_mock.post("https://gitlab.com/oauth/token", status_code=401)
     source = SourceGitlab()
@@ -55,7 +55,7 @@ def test_connection_fail_due_to_expired_access_token_error(oauth_config, mocker,
     assert status is False, expected in msg
 
 
-def test_refresh_expired_access_token_on_error(oauth_config, mocker, requests_mock):
+def test_refresh_expired_access_token_on_error(oauth_config, requests_mock):
     test_response = {
         "access_token": "new_access_token",
         "expires_in": 7200,

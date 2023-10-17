@@ -1,0 +1,34 @@
+name: Connector Performance Harness Cron
+on: workflow_dispatch
+
+jobs:
+  postgres-1m-run:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: connectors/source-postgres
+      dataset: 1m
+  postgres-10m-run:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: connectors/source-postgres
+      dataset: 10m
+  postgres-20m-run:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: connectors/source-postgres
+      dataset: 20m
+  mysql-1m-run:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: connectors/source-mysql
+      dataset: 1m
+  mysql-10m-run:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: connectors/source-mysql
+      dataset: 10m
+  mysql-20m-run:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: connectors/source-mysql
+      dataset: 20m
