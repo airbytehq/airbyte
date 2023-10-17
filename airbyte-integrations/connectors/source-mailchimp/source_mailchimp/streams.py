@@ -243,7 +243,6 @@ class Unsubscribes(IncrementalMailChimpStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        stream_state = stream_state or {}
         campaigns = Campaigns(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
         for campaign in campaigns:
             yield {"campaign_id": campaign["id"]}
@@ -254,9 +253,9 @@ class Unsubscribes(IncrementalMailChimpStream):
     
     def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        
         # Exclude the _links field, as it is not user-relevant data
         params["exclude_fields"] = "unsubscribes._links"
+        print(params)
         return params
     
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
