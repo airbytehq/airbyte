@@ -148,8 +148,47 @@ class CustomFields(WorkspaceRelatedStream):
 
 
 class Events(AsanaStream):
+    primary_key = "created_at"
+    sync_token = None
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "events"
+
+    def read_records(self, *args, **kwargs):
+        # Check if sync token is available
+        if self.sync_token is not None:
+            # Pass the sync token as a request parameter
+            kwargs["next_page_token"] = {"sync": self.sync_token}
+
+        yield from super().read_records(*args, **kwargs)
+
+        # After reading records, update the sync token
+        self.sync_token = self.get_latest_sync_token()
+
+    def get_latest_sync_token(self) -> str:
+        latest_sync_token = self.state.get("last_sync_token")  # Get the previous sync token
+
+        if latest_sync_token is None:
+            return None
+
+        return latest_sync_token["sync"]  # Extract the sync token value
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code == 412:  # Check if response is a 412 error
+            response_json = response.json()
+            if "sync" in response_json:  # Check if new sync token is available
+                self.sync_token = response_json["sync"]
+            else:
+                self.sync_token = None
+            self.logger.warning("Sync token expired. Fetch the full dataset for this query now.")
+        else:
+            response_json = response.json()
+
+            # Check if response has new sync token
+            if "sync" in response_json:
+                self.sync_token = response_json["sync"]
+
+            yield from response_json.get("data", [])
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()

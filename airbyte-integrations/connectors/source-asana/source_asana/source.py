@@ -14,7 +14,6 @@ from source_asana.oauth import AsanaOauth2Authenticator
 
 from .streams import (
     CustomFields,
-    Events,
     Projects,
     Sections,
     SectionsCompact,
@@ -59,7 +58,6 @@ class SourceAsana(AbstractSource):
         args = {"authenticator": self._get_authenticator(config)}
         return [
             CustomFields(**args),
-            Events(**args),
             Projects(**args),
             SectionsCompact(**args),
             Sections(**args),
