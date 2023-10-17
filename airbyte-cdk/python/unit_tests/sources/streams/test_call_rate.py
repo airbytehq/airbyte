@@ -76,8 +76,7 @@ def test_http_request_matchers(mocker):
 class TestCallRatePolicy:
 
     def test_limit_rate(self):
-        """try_acquire must respect configured call rate and throw CallRateLimitHit when hit the limit.
-        """
+        """try_acquire must respect configured call rate and throw CallRateLimitHit when hit the limit."""
         policy = CallRatePolicy(rates=[Rate(10, Duration.MINUTE)])
 
         for i in range(10):
@@ -96,8 +95,7 @@ class TestCallRatePolicy:
         assert excinfo2.value.time_to_wait < excinfo1.value.time_to_wait, "time to wait must decrease over time"
 
     def test_limit_rate_support_custom_weight(self):
-        """try_acquire must take into account provided weight and throw CallRateLimitHit when hit the limit.
-        """
+        """try_acquire must take into account provided weight and throw CallRateLimitHit when hit the limit."""
         policy = CallRatePolicy(rates=[Rate(10, Duration.MINUTE)])
 
         policy.try_acquire("call", weight=2), "1 call"
@@ -106,8 +104,7 @@ class TestCallRatePolicy:
         assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60, 0.1)
 
     def test_multiple_limit_rates(self):
-        """try_acquire must take into all call rates and apply stricter.
-        """
+        """try_acquire must take into all call rates and apply stricter."""
         policy = CallRatePolicy(
             rates=[
                 Rate(10, Duration.MINUTE),
@@ -152,8 +149,7 @@ class TestHttpStreamIntegration:
         assert CallRatePolicy.try_acquire.call_count == 10
 
     def test_with_cache(self, mocker):
-        """Test that HttpStream will use call budget when provided and not cached
-        """
+        """Test that HttpStream will use call budget when provided and not cached"""
         response = requests.Response()
         response.status_code = 200
         response.request = requests.PreparedRequest()
