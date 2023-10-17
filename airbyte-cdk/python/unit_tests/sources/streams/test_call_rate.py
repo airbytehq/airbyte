@@ -7,6 +7,7 @@ import time
 from typing import Iterable, Mapping
 
 import pytest
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRateLimitHit, CallRatePolicy, Duration, HttpRequestMatcher, Rate
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -43,7 +44,43 @@ def enable_cache_fixture():
         os.environ[ENV_REQUEST_CACHE_PATH] = prev_cache_path
 
 
-def test_http_request_matchers(mocker):
+class TestHttpRequestMatcher:
+    def test_url(self):
+        matcher = HttpRequestMatcher(url="some_url")
+        assert not matcher(Request())
+        assert not matcher(Request(url="wrong"))
+        assert matcher(Request(url="some_url"))
+
+    def test_method(self):
+        matcher = HttpRequestMatcher(method="GET")
+        assert not matcher(Request())
+        assert not matcher(Request(method="POST"))
+        assert matcher(Request(method="GET"))
+
+    def test_params(self):
+        matcher = HttpRequestMatcher(params={"param1": 10, "param2": 15})
+        assert not matcher(Request(url="some_url"))
+        assert not matcher(Request(params={"param1": 10, "param3": 100}))
+        assert not matcher(Request(params={"param1": 10, "param2": 10}))
+        assert matcher(Request(params={"param1": 10, "param2": 15, "param3": 100}))
+
+    def test_header(self):
+        matcher = HttpRequestMatcher(headers={"header1": 10, "header2": 15})
+        assert not matcher(Request(url="some_url"))
+        assert not matcher(Request(headers={"header1": 10, "header3": 100}))
+        assert not matcher(Request(headers={"header1": 10, "header2": 10}))
+        assert matcher(Request(headers={"header1": 10, "header2": 15, "header3": 100}))
+
+    def test_combination(self):
+        matcher = HttpRequestMatcher(method="GET", url="some_url", headers={"header1": 10}, params={"param2": "test"})
+        assert matcher(Request(method="GET", url="some_url", headers={"header1": 10}, params={"param2": "test"}))
+        assert not matcher(Request(method="GET", url="some_url", headers={"header1": 10}, ))
+        assert not matcher(Request(method="GET", url="some_url", ))
+        assert not matcher(Request(method="GET", ))
+
+
+def test_http_request_matching(mocker):
+    """Test policy lookup based on matchers."""
     users_policy = mocker.Mock(spec=CallRatePolicy)
     groups_policy = mocker.Mock(spec=CallRatePolicy)
     root_policy = mocker.Mock(spec=CallRatePolicy)
