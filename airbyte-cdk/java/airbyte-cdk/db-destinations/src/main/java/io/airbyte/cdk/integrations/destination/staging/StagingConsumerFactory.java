@@ -139,7 +139,13 @@ public class StagingConsumerFactory {
         outputRecordCollector,
         GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
         // todo (cgardens) - wrapping the old close function to avoid more code churn.
-        () -> GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false),
+        (hasFailed) -> {
+          try {
+            GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper).accept(false);
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        },
         flusher,
         catalog,
         new BufferManager(getMemoryLimit(bufferMemoryLimit)),
