@@ -36,7 +36,7 @@ def verify_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: 
             _verify_expected_logs(logs, discover_logs)
 
 
-def verify_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: str) -> None:
+def verify_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
     caplog.handler.setFormatter(AirbyteLogFormatter())
     if scenario.incremental_scenario_config:
         run_test_read_incremental(capsys, caplog, tmp_path, scenario)
