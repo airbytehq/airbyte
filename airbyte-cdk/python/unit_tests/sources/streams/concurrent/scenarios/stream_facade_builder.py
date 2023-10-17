@@ -48,7 +48,7 @@ class StreamFacadeSourceBuilder(SourceBuilder[StreamFacadeSource]):
     def __init__(self):
         self._source = None
         self._streams = []
-        self._max_workers = 1  # FIXME: Need to make this configurable
+        self._max_workers = 1
 
     def set_streams(self, streams: List[Stream]) -> "StreamFacadeSourceBuilder":
         self._streams = streams
