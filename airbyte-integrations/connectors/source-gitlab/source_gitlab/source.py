@@ -13,6 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
+from airbyte_cdk.utils import AirbyteTracedException
 from requests.auth import AuthBase
 from requests.exceptions import HTTPError
 
@@ -166,7 +167,7 @@ class SourceGitlab(AbstractSource):
                 emit_configuration_as_airbyte_control_message(config)
                 logger.info("The `access_token` was successfully refreshed.")
                 return config
-            except HTTPError as http_error:
+            except (AirbyteTracedException, HTTPError) as http_error:
                 raise http_error
             except Exception as e:
                 raise Exception(f"Unknown error occurred while refreshing the `access_token`, details: {e}")
@@ -192,7 +193,7 @@ class SourceGitlab(AbstractSource):
             return True, None  # in case there's no projects
         except HTTPError as http_error:
             if config["credentials"]["auth_type"] == "oauth2.0":
-                if http_error.response.status_code in (400, 401):
+                if http_error.response.status_code == 401:
                     return self._handle_expired_access_token_error(logger, config)
                 elif http_error.response.status_code == 500:
                     return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(http_error)}"
