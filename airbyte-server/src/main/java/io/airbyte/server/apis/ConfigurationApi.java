@@ -365,6 +365,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
+  public SourcePageReadList pageSourcesForWorkspace(PageRequestBody pageRequestBody) {
+    return execute(() -> sourceHandler.pageSourcesForWorkspace(pageRequestBody));
+  }
+
+  @Override
   public SourceReadList searchSources(final SourceSearch sourceSearch) {
     return execute(() -> sourceHandler.searchSources(sourceSearch));
   }
@@ -540,6 +545,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return execute(() -> destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public DestinationPageReadList pageDestinationsForWorkspace(final PageRequestBody pageRequestBody) {
+    return execute(() -> destinationHandler.pageDestinationsForWorkspace(pageRequestBody));
   }
 
   @Override
