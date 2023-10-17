@@ -19,6 +19,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import (
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE, StreamAvailable, StreamUnavailable
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 @pytest.mark.parametrize(
@@ -77,8 +78,21 @@ def test_stream_partition_generator(sync_mode):
     assert slices == stream_slices
 
 
-def test_stream_partition():
+@pytest.mark.parametrize(
+    "transformer, expected_records",
+    [
+        pytest.param(TypeTransformer(TransformConfig.NoTransform), [Record({"data": "1"}), Record({"data": "2"})], id="test_no_transform"),
+        pytest.param(
+            TypeTransformer(TransformConfig.DefaultSchemaNormalization),
+            [Record({"data": 1}), Record({"data": 2})],
+            id="test_default_transform",
+        ),
+    ],
+)
+def test_stream_partition(transformer, expected_records):
     stream = Mock()
+    stream.get_json_schema.return_value = {"type": "object", "properties": {"data": {"type": ["integer"]}}}
+    stream.transformer = transformer
     message_repository = InMemoryMessageRepository()
     _slice = None
     partition = StreamPartition(stream, _slice, message_repository)
@@ -91,16 +105,11 @@ def test_stream_partition():
         ),
     )
 
-    stream_data = [a_log_message, {"data": 1}, {"data": 2}]
+    stream_data = [a_log_message, {"data": "1"}, {"data": "2"}]
     stream.read_records.return_value = stream_data
 
     records = list(partition.read())
     messages = list(message_repository.consume_queue())
-
-    expected_records = [
-        Record({"data": 1}),
-        Record({"data": 2}),
-    ]
 
     assert records == expected_records
     assert messages == [a_log_message]
