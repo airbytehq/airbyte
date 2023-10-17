@@ -8,15 +8,15 @@ definitions:
       field_path: ["entities"]
 
   requester:
-    type: HttpRequester
+    type: "CustomRequester"
     url_base: "https://api.{{ parameters['{{ config['tenant_endpoint'] }}'] }}//api/v2/"
     http_method: "GET"
     authenticator:
       type: OAuthAuthenticator
-        token_refresh_endpoint: "https://login.{{ parameters['{{ config['tenant_endpoint'] }}'] }}/oauth/token"
-        client_id: "{{ config['client_id'] }}"
-        client_secret: "{{ config['client_secret'] }}"
-        refresh_token: ""
+      token_refresh_endpoint: "https://login.{{ parameters['{{ config['tenant_endpoint'] }}'] }}/oauth/token"
+      client_id: "{{ config['client_id'] }}"
+      client_secret: "{{ config['client_secret'] }}"
+      refresh_token: ""
     $parameters:
       Americas (US East): mypurecloud.com
       Americas (US East 2): use2.us-gov-pure.cloud
@@ -29,12 +29,12 @@ definitions:
       Asia Pacific (Mumbai): aps1.pure.cloud
       Asia Pacific (Seoul): apne2.pure.cloud
       Asia Pacific (Sydney): mypurecloud.com.au
-    error_handler:
-      backoff_strategies:
-        type: "WaitTimeFromHeader"
-        header: "Retry-After"
+    # error_handler:
+    #   backoff_strategies:
+    #     type: "WaitTimeFromHeader"
+    #     header: "Retry-After"
     request_parameters:
-      pageSize: 500
+      pageSize: "500"
 
   paginator:
     pagination_strategy:
@@ -200,8 +200,8 @@ check:
 
 spec:
   type: Spec
-  documentationUrl: https://docs.airbyte.io/integrations/sources/genesys
-  connectionSpecification:
+  documentation_url: https://docs.airbyte.io/integrations/sources/genesys
+  connection_specification:
     "$schema": http://json-schema.org/draft-07/schema#
     title: Genesys Connector Configuration
     type: object

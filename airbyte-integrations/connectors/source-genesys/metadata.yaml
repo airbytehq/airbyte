@@ -1,8 +1,20 @@
 data:
   allowedHosts:
     hosts:
-      - https://api.{{ parameters['{{ config['tenant_endpoint'] }}'] }}//api/v2/
-      - https://login.{{ parameters['{{ config['tenant_endpoint'] }}'] }}/oauth/token
+      - https://api.{{ parameters['{ config['tenant_endpoint'] }'] }}//api/v2/
+      - https://login.{{ parameters['{ config['tenant_endpoint'] }'] }}/oauth/token
+    $parameters:
+      Americas (US East): mypurecloud.com
+      Americas (US East 2): use2.us-gov-pure.cloud
+      Americas (US West): usw2.pure.cloud
+      Americas (Canada): cac1.pure.cloud
+      Americas (São Paulo): sae1.pure.cloud
+      EMEA (Frankfurt): mypurecloud.de
+      EMEA (Dublin): mypurecloud.ie
+      EMEA (London): euw2.pure.cloud
+      Asia Pacific (Mumbai): aps1.pure.cloud
+      Asia Pacific (Seoul): apne2.pure.cloud
+      Asia Pacific (Sydney): mypurecloud.com.au
   connectorSubtype: api
   connectorType: source
   definitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
