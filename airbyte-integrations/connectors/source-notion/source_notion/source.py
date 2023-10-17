@@ -7,6 +7,8 @@ import logging
 from itertools import islice
 from typing import Any, List, Mapping, Tuple
 
+import pendulum
+import re
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -29,8 +31,26 @@ class SourceNotion(AbstractSource):
         # We can maintain backwards compatibility for OG connections by checking for the deprecated "access_token" key, just in case.
         if config.get("access_token"):
             return TokenAuthenticator(config["access_token"])
+        
+    def _validate_start_date(self, config: Mapping[str, Any]):
+        start_date = config.get("start_date")
+
+        if start_date:
+            pattern = re.compile(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z')
+            if not pattern.match(start_date):
+                return "Please check the format of the start date against the pattern descriptor."
+            
+            parsed_start_date = pendulum.parse(start_date)
+            if parsed_start_date > pendulum.now("UTC"):
+                return "The start date cannot be greater than the current date."
+            
+        return None
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+        # First confirm that if start_date is set by user, it is valid.
+        validation_error = self._validate_start_date(config)
+        if validation_error:
+            return False, validation_error
         try:
             authenticator = self._get_authenticator(config)
             stream = Pages(authenticator=authenticator, config=config)
