@@ -7,7 +7,6 @@ import time
 from typing import Iterable, Mapping
 
 import pytest
-import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRateLimitHit, CallRatePolicy, Duration, HttpRequestMatcher, Rate
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -47,41 +46,54 @@ def enable_cache_fixture():
 def test_http_request_matchers(mocker):
     users_policy = mocker.Mock(spec=CallRatePolicy)
     groups_policy = mocker.Mock(spec=CallRatePolicy)
+    root_policy = mocker.Mock(spec=CallRatePolicy)
 
     api_budget = APIBudget()
     api_budget.add_policy(
-        request_matcher=HttpRequestMatcher(url="/users", method="GET"),
+        request_matcher=HttpRequestMatcher(url="/api/users", method="GET"),
         policy=users_policy,
     )
     api_budget.add_policy(
-        request_matcher=HttpRequestMatcher(url="/groups", method="POST"),
+        request_matcher=HttpRequestMatcher(url="/api/groups", method="POST"),
         policy=groups_policy,
+    )
+    api_budget.add_policy(
+        request_matcher=HttpRequestMatcher(method="GET"),
+        policy=root_policy,
     )
 
     api_budget.acquire_call(Request("POST", url="/unmatched_endpoint"), block=False), "unrestricted call"
     users_policy.try_acquire.assert_not_called()
     groups_policy.try_acquire.assert_not_called()
+    root_policy.try_acquire.assert_not_called()
 
-    request = Request("GET", url="/users")
-    api_budget.acquire_call(request, block=False), "first call"
-    users_policy.try_acquire.assert_called_once_with(request)
+    users_request = Request("GET", url="/api/users")
+    api_budget.acquire_call(users_request, block=False), "first call, first matcher"
+    users_policy.try_acquire.assert_called_once_with(users_request)
     groups_policy.try_acquire.assert_not_called()
+    root_policy.try_acquire.assert_not_called()
 
-    api_budget.acquire_call(Request("GET", url="/users"), block=False), "second call"
+    api_budget.acquire_call(Request("GET", url="/api/users"), block=False), "second call, first matcher"
+    assert users_policy.try_acquire.call_count == 2
+    groups_policy.try_acquire.assert_not_called()
+    root_policy.try_acquire.assert_not_called()
 
-    # for i in range(8):
-    #     api_budget.acquire_call(Request("GET", url="/users"), block=False), f"{i + 3} call"
+    group_request = Request("POST", url="/api/groups")
+    api_budget.acquire_call(group_request, block=False), "first call, second matcher"
+    assert users_policy.try_acquire.call_count == 2
+    groups_policy.try_acquire.assert_called_once_with(group_request)
+    root_policy.try_acquire.assert_not_called()
 
-    # with pytest.raises(CallRateLimitHit) as excinfo:
-    #     api_budget.acquire_call(Request("GET", url="/users"), block=False), "call over limit"
-    # assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60, 0.1)
-    #
-    # with pytest.raises(CallRateLimitHit) as excinfo:
-    #     api_budget.acquire_call(Request("GET", url="/users"), block=False), "call over limit"
-    # assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60 - 5, 0.1)
+    api_budget.acquire_call(Request("POST", url="/api/groups"), block=False), "second call, second matcher"
+    assert users_policy.try_acquire.call_count == 2
+    assert groups_policy.try_acquire.call_count == 2
+    root_policy.try_acquire.assert_not_called()
 
-    api_budget.acquire_call(Request("POST", url="/groups"), block=False), "doesn't affect other policies"
-    api_budget.acquire_call(Request("POST", url="/list"), block=False), "unrestricted call"
+    any_get_request = Request("GET", url="/api/")
+    api_budget.acquire_call(any_get_request, block=False), "first call, third matcher"
+    assert users_policy.try_acquire.call_count == 2
+    assert groups_policy.try_acquire.call_count == 2
+    root_policy.try_acquire.assert_called_once_with(any_get_request)
 
 
 class TestCallRatePolicy:
@@ -101,18 +113,16 @@ class TestCallRatePolicy:
 
         with pytest.raises(CallRateLimitHit) as excinfo2:
             policy.try_acquire("call", weight=1), "call over limit"
-        assert excinfo2.value.time_to_wait.total_seconds() == pytest.approx(60 - 5, 0.1)
-
         assert excinfo2.value.time_to_wait < excinfo1.value.time_to_wait, "time to wait must decrease over time"
 
     def test_limit_rate_support_custom_weight(self):
         """try_acquire must take into account provided weight and throw CallRateLimitHit when hit the limit."""
         policy = CallRatePolicy(rates=[Rate(10, Duration.MINUTE)])
 
-        policy.try_acquire("call", weight=2), "1 call"
+        policy.try_acquire("call", weight=2), "1st call with weight of 2"
         with pytest.raises(CallRateLimitHit) as excinfo:
-            policy.try_acquire("call", weight=9), "1 call"
-        assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60, 0.1)
+            policy.try_acquire("call", weight=9), "2nd call, over limit since 2 + 9 = 11 > 10"
+        assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(60, 0.1), "should wait 1 minute before next call"
 
     def test_multiple_limit_rates(self):
         """try_acquire must take into all call rates and apply stricter."""

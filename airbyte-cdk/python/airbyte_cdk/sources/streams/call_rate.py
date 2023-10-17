@@ -206,6 +206,7 @@ class APIBudget(AbstractAPIBudget):
         for matcher, policy in self._policies:
             if matcher(request):
                 self._do_acquire(request, policy, block, timeout)
+                break
 
     def _do_acquire(self, request, policy, block: bool, timeout: Optional[float]) -> None:
         """Internal method to try to acquire a call credit
