@@ -467,7 +467,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
     final String pkEquivalent = stream.primaryKey().stream().map(pk -> {
       final String quotedColumnName = pk.name(QUOTE);
-      return "target_table." + quotedColumnName + " = new_record." + quotedColumnName;
+      // treat nulls as equal
+      return "(target_table." + quotedColumnName + " = new_record." + quotedColumnName
+          + " OR (target_table." + quotedColumnName + " IS NULL AND new_record." + quotedColumnName + " IS NULL))";
     }).collect(joining(" AND "));
 
     final String columnList = stream.columns().keySet().stream()
@@ -480,9 +482,11 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String cursorComparison;
     if (stream.cursor().isPresent()) {
       final String cursor = stream.cursor().get().name(QUOTE);
-      // If there is a cursor, then we compare the cursor, breaking ties with extracted_at
-      cursorComparison = "target_table." + cursor + " < new_record." + cursor
-          + " OR (target_table." + cursor + " = new_record." + cursor + " AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)";
+      // If there is a cursor, then we compare the cursor, breaking ties with extracted_at.
+      // If either cursor is null, then we just compare extracted_at.
+      cursorComparison = "(target_table." + cursor + " < new_record." + cursor
+          + " OR (target_table." + cursor + " = new_record." + cursor + " AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)"
+          + " OR ((target_table." + cursor + " IS NULL OR new_record." + cursor + " IS NULL) AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at))";
     } else {
       // If there's no cursor, then we just take the most-recently-emitted record
       cursorComparison = "target_table._airbyte_extracted_at < new_record._airbyte_extracted_at";
@@ -605,7 +609,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               FROM intermediate_data""");
     } else {
       // When deduping, we need to dedup the raw records. Note the row_number() invocation in the SQL statement.
-      // Do the same extrac+cast CTE + airbyte_meta construction, but then add row_number so that we only
+      // Do the same extract+cast CTE + airbyte_meta construction, but then add row_number so that we only
       // take the most-recent raw record for each PK.
 
       // We also explicitly include old CDC deletion records, which act as tombstones to correctly delete out-of-order records.
