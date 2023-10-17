@@ -24,18 +24,14 @@ acceptance_tests:
           disable_for_version: "1.0.0"
   basic_read:
     tests:
-      - config_path: "secrets/config_oauth.json"
+      - config_path: "secrets/config.json"
         empty_streams:
-          - name: shifts
+          - name: cash_drawers
             bypass_reason: "Not able to fill stream"
-          - name: orders
-            bypass_reason: "Not able to fill stream"
-          - name: payments
-            bypass_reason: "Not able to fill stream"
-          - name: refunds
+          - name: bank_accounts
             bypass_reason: "Not able to fill stream"
         expect_records:
-          path: "integration_tests/expected_records_oauth.jsonl"
+          path: "integration_tests/expected_records.jsonl"
         ignored_fields:
           items:
             - name: version
