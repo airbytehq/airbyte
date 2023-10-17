@@ -64,6 +64,9 @@
     },
     "is_smart_performance_campaign": {
       "type": ["null", "boolean"]
+    },
+    "is_search_campaign": {
+      "type": ["null", "boolean"]
     }
   }
 }
