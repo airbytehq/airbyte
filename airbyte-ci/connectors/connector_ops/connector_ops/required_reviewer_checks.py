@@ -63,7 +63,7 @@ def write_review_requirements_file():
     mandatory_reviewers = find_mandatory_reviewers()
 
     if mandatory_reviewers:
-        requirements_file_content = [dict(r, paths="unmatched") for r in mandatory_reviewers]
+        requirements_file_content = [dict(r, paths=["**"]) for r in mandatory_reviewers]
         with open(REVIEW_REQUIREMENTS_FILE_PATH, "w") as requirements_file:
             yaml.safe_dump(requirements_file_content, requirements_file)
         print("CREATED_REQUIREMENTS_FILE=true")
