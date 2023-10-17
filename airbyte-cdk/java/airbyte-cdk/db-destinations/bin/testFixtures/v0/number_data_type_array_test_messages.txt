@@ -1,0 +1,2 @@
+{"type": "RECORD", "record": {"stream": "array_test_1", "emitted_at": 1602637589100, "data": { "array_number" : [-12345.678, 100000000000000000.1234],"array_float" : [-12345.678, 0, 1000000000000000000000000000000000000000000000000000.1234], "array_integer" : [42, 0, 12345]}}}
+{"type": "STATE", "state": { "data": {"start_date": "2022-02-14"}}}

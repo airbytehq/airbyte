@@ -1,0 +1,225 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/snowflake",
+  "supportsIncremental": true,
+  "supportsNormalization": true,
+  "supportsDBT": true,
+  "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Snowflake Destination Spec",
+    "type": "object",
+    "required": ["host", "role", "warehouse", "database", "schema", "username"],
+    "additionalProperties": true,
+    "properties": {
+      "host": {
+        "description": "Enter your Snowflake account's <a href=\"https://docs.snowflake.com/en/user-guide/admin-account-identifier.html#using-an-account-locator-as-an-identifier\">locator</a> (in the format <account_locator>.<region>.<cloud>.snowflakecomputing.com)",
+        "examples": [
+          "accountname.us-east-2.aws.snowflakecomputing.com",
+          "accountname.snowflakecomputing.com"
+        ],
+        "type": "string",
+        "title": "Host",
+        "pattern": "^(http(s)?:\\/\\/)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.)?([^./?#]+\\.snowflakecomputing\\.com)$",
+        "pattern_descriptor": "{account_name}.snowflakecomputing.com or {accountname}.{aws_location}.aws.snowflakecomputing.com",
+        "order": 0
+      },
+      "role": {
+        "description": "Enter the <a href=\"https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles\">role</a> that you want to use to access Snowflake",
+        "examples": ["AIRBYTE_ROLE"],
+        "type": "string",
+        "title": "Role",
+        "order": 1
+      },
+      "warehouse": {
+        "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses\">warehouse</a> that you want to sync data into",
+        "examples": ["AIRBYTE_WAREHOUSE"],
+        "type": "string",
+        "title": "Warehouse",
+        "order": 2
+      },
+      "database": {
+        "description": "Enter the name of the <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">database</a> you want to sync data into",
+        "examples": ["AIRBYTE_DATABASE"],
+        "type": "string",
+        "title": "Database",
+        "order": 3
+      },
+      "schema": {
+        "description": "Enter the name of the default <a href=\"https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl\">schema</a>",
+        "examples": ["AIRBYTE_SCHEMA"],
+        "type": "string",
+        "title": "Default Schema",
+        "order": 4
+      },
+      "username": {
+        "description": "Enter the name of the user you want to use to access the database",
+        "examples": ["AIRBYTE_USER"],
+        "type": "string",
+        "title": "Username",
+        "order": 5
+      },
+      "credentials": {
+        "title": "Authorization Method",
+        "description": "",
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "OAuth2.0",
+            "type": "object",
+            "order": 0,
+            "required": ["access_token", "refresh_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "OAuth2.0",
+                "enum": ["OAuth2.0"],
+                "default": "OAuth2.0",
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "Enter your application's Client ID",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "Enter your application's Client secret",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "Enter you application's Access Token",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "type": "string",
+                "title": "Refresh Token",
+                "description": "Enter your application's Refresh Token",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Key Pair Authentication",
+            "type": "object",
+            "order": 1,
+            "required": ["private_key"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Key Pair Authentication",
+                "enum": ["Key Pair Authentication"],
+                "default": "Key Pair Authentication",
+                "order": 0
+              },
+              "private_key": {
+                "type": "string",
+                "title": "Private Key",
+                "description": "RSA Private key to use for Snowflake connection. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake\">docs</a> for more information on how to obtain this key.",
+                "multiline": true,
+                "airbyte_secret": true
+              },
+              "private_key_password": {
+                "type": "string",
+                "title": "Passphrase",
+                "description": "Passphrase for private key",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "title": "Username and Password",
+            "type": "object",
+            "required": ["password"],
+            "order": 2,
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Username and Password",
+                "enum": ["Username and Password"],
+                "default": "Username and Password",
+                "order": 0
+              },
+              "password": {
+                "description": "Enter the password associated with the username.",
+                "type": "string",
+                "airbyte_secret": true,
+                "title": "Password",
+                "order": 1
+              }
+            }
+          }
+        ],
+        "order": 6
+      },
+      "jdbc_url_params": {
+        "description": "Enter the additional properties to pass to the JDBC URL string when connecting to the database (formatted as key=value pairs separated by the symbol &). Example: key1=value1&key2=value2&key3=value3",
+        "title": "JDBC URL Params",
+        "type": "string",
+        "order": 7
+      },
+      "raw_data_schema": {
+        "type": "string",
+        "description": "The schema to write raw tables into",
+        "title": "Destinations V2 Raw Table Schema",
+        "order": 10
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "OAuth2.0",
+    "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "properties": {
+          "host": {
+            "type": "string",
+            "path_in_connector_config": ["host"]
+          }
+        }
+      },
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          },
+          "refresh_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "refresh_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      }
+    }
+  }
+}

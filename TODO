@@ -1,0 +1,21 @@
+Starting Docker Compose
+WARN[0000] The "DEPLOYMENT_MODE" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "TEMPORAL_HISTORY_RETENTION_IN_DAYS" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "UPDATE_DEFINITIONS_CRON_ENABLED" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "APPLY_FIELD_SELECTION" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "DEPLOYMENT_MODE" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "FIELD_SELECTION_WORKSPACES" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "JOB_ERROR_REPORTING_SENTRY_DSN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "LAUNCHDARKLY_KEY" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "LOG_CONNECTOR_MESSAGES" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "SECRET_PERSISTENCE" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "DEPLOYMENT_MODE" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "CDK_VERSION" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "DEPLOYMENT_MODE" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "PYTHON_VERSION" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "GITHUB_STORE_BRANCH" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "JOB_ERROR_REPORTING_SENTRY_DSN" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "LAUNCHDARKLY_KEY" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "NEW_SCHEDULER" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "SECRET_PERSISTENCE" variable is not set. Defaulting to a blank string. 
+WARN[0000] The "WORKER_ENVIRONMENT" variable is not set. Defaulting to a blank string. 
