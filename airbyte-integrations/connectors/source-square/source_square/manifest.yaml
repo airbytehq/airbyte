@@ -351,6 +351,13 @@ definitions:
         request_body_json:
           limit: "{{ 500 }}"
 
+  bank_accounts_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "bank_accounts"
+      primary_key: "id"
+      path: "/bank-accounts"
+
 streams:
   - "#/definitions/customers_stream"
   - "#/definitions/locations_stream"
@@ -366,6 +373,7 @@ streams:
   - "#/definitions/inventory_stream"
   - "#/definitions/payments_stream"
   - "#/definitions/orders_stream"
+  - "#/definitions/bank_accounts_stream"
   - "#/definitions/cash_drawers_stream"
   - "#/definitions/loyalty_stream"
 
