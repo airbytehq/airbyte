@@ -12,7 +12,7 @@ jobs:
     name: "Check if a review is required from Connector teams"
     runs-on: ubuntu-latest
 
-    if: ${{ github.repository == 'airbytehq/airbyte' && github.event.pull_request.draft == false }}
+    if: ${{ github.repository == 'airbytehq/airbyte' }}
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -34,7 +34,7 @@ jobs:
         id: get-mandatory-reviewers
         run: print-mandatory-reviewers >> $GITHUB_OUTPUT
       - name: Check if the review requirements are met
-        if: steps.write-review-requirements-file.outputs.CREATED_REQUIREMENTS_FILE == 'true'
+        if: ! github.event.pull_request.draft && steps.write-review-requirements-file.outputs.CREATED_REQUIREMENTS_FILE == 'true'
         uses: Automattic/action-required-review@v3
         with:
           status: ${{ steps.get-mandatory-reviewers.outputs.MANDATORY_REVIEWERS  }}
