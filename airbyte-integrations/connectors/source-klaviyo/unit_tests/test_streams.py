@@ -8,6 +8,7 @@ from unittest import mock
 import pendulum
 import pytest
 import requests
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from pydantic import BaseModel
 from source_klaviyo.streams import EmailTemplates, Events, IncrementalKlaviyoStreamV1, KlaviyoStreamV1, ReverseIncrementalKlaviyoStreamV1
 
@@ -77,6 +78,10 @@ class TestKlaviyoStreamV1:
         result = stream.parse_response(response)
 
         assert list(result) == response.json.return_value["data"]
+
+    def test_availability_strategy(self):
+        stream = SomeStream(api_key="some_key")
+        assert isinstance(stream.availability_strategy, HttpAvailabilityStrategy)
 
 
 class TestIncrementalKlaviyoStreamV1:

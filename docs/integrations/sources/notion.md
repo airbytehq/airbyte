@@ -5,6 +5,7 @@ This page contains the setup guide and reference information for the Notion sour
 ## Prerequisites
 
 - Access to a [Notion](https://notion.so/login) workspace
+
 ## Setup guide​
 
 To authenticate the Notion source connector, you need to use **one** of the following two methods:
@@ -105,6 +106,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| 2.0.0   | 2023-10-09 | [30587](https://github.com/airbytehq/airbyte/pull/30587) | Source-wide schema update                                                    |
 | 1.3.0   | 2023-10-09 | [30324](https://github.com/airbytehq/airbyte/pull/30324) | Add `Comments` stream                                                        |
 | 1.2.2   | 2023-10-09 | [30780](https://github.com/airbytehq/airbyte/pull/30780) | Update Start Date in config to optional field                                |
 | 1.2.1   | 2023-10-08 | [30750](https://github.com/airbytehq/airbyte/pull/30750) | Add availability strategy                                                    |

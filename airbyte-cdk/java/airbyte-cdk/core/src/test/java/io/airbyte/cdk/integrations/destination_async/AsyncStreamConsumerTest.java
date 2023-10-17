@@ -35,6 +35,7 @@ import io.airbyte.protocol.models.v0.CatalogHelpers;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
@@ -235,6 +236,22 @@ class AsyncStreamConsumerTest {
             .withData(PAYLOAD));
     final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
     final String airbyteRecordString = Jsons.serialize(PAYLOAD);
+    final PartialAirbyteMessage partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
+    assertEquals(airbyteRecordString, partial.getSerialized());
+  }
+
+  @Test
+  void deserializeAirbyteMessageWithBigDecimalAirbyteRecord() {
+    final JsonNode payload = Jsons.jsonNode(Map.of(
+        "foo", new BigDecimal("1234567890.1234567890")));
+    final AirbyteMessage airbyteMessage = new AirbyteMessage()
+        .withType(Type.RECORD)
+        .withRecord(new AirbyteRecordMessage()
+            .withStream(STREAM_NAME)
+            .withNamespace(SCHEMA_NAME)
+            .withData(payload));
+    final String serializedAirbyteMessage = Jsons.serialize(airbyteMessage);
+    final String airbyteRecordString = Jsons.serialize(payload);
     final PartialAirbyteMessage partial = AsyncStreamConsumer.deserializeAirbyteMessage(serializedAirbyteMessage);
     assertEquals(airbyteRecordString, partial.getSerialized());
   }

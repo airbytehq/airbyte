@@ -110,7 +110,8 @@ class DeployOrchestrator(Step):
     ]
 
     async def _run(self) -> StepResult:
-        parent_dir = self.context.get_repo_dir(METADATA_DIR)
+        # mount metadata_service/lib and metadata_service/orchestrator
+        parent_dir = self.context.get_repo_dir("airbyte-ci/connectors/metadata_service")
         python_base = with_python_base(self.context, "3.9")
         python_with_dependencies = with_pip_packages(python_base, ["dagster-cloud==1.2.6", "pydantic==1.10.6", "poetry2setup==1.1.0"])
         dagster_cloud_api_token_secret: dagger.Secret = get_secret_host_variable(
@@ -120,7 +121,7 @@ class DeployOrchestrator(Step):
         container_to_run = (
             python_with_dependencies.with_mounted_directory("/src", parent_dir)
             .with_secret_variable("DAGSTER_CLOUD_API_TOKEN", dagster_cloud_api_token_secret)
-            .with_workdir(f"/src/{METADATA_ORCHESTRATOR_MODULE_PATH}")
+            .with_workdir(f"/src/orchestrator")
             .with_exec(["/bin/sh", "-c", "poetry2setup >> setup.py"])
             .with_exec(self.deploy_dagster_command)
         )
@@ -141,75 +142,6 @@ class TestOrchestrator(PoetryRunStep):
 
 
 # PIPELINES
-
-
-async def run_metadata_lib_test_pipeline(
-    is_local: bool,
-    git_branch: str,
-    git_revision: str,
-    gha_workflow_run_url: Optional[str],
-    dagger_logs_url: Optional[str],
-    pipeline_start_timestamp: Optional[int],
-    ci_context: Optional[str],
-) -> bool:
-    metadata_pipeline_context = PipelineContext(
-        pipeline_name="Metadata Service Lib Unit Test Pipeline",
-        is_local=is_local,
-        git_branch=git_branch,
-        git_revision=git_revision,
-        gha_workflow_run_url=gha_workflow_run_url,
-        dagger_logs_url=dagger_logs_url,
-        pipeline_start_timestamp=pipeline_start_timestamp,
-        ci_context=ci_context,
-    )
-
-    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
-        async with metadata_pipeline_context:
-            test_lib_step = PoetryRunStep(
-                context=metadata_pipeline_context,
-                title="Test Metadata Service Lib",
-                parent_dir_path="airbyte-ci/connectors/metadata_service",
-                module_path="lib",
-            )
-            result = await test_lib_step.run(["pytest"])
-            metadata_pipeline_context.report = Report(
-                pipeline_context=metadata_pipeline_context, steps_results=[result], name="METADATA LIB TEST RESULTS"
-            )
-
-    return metadata_pipeline_context.report.success
-
-
-async def run_metadata_orchestrator_test_pipeline(
-    is_local: bool,
-    git_branch: str,
-    git_revision: str,
-    gha_workflow_run_url: Optional[str],
-    dagger_logs_url: Optional[str],
-    pipeline_start_timestamp: Optional[int],
-    ci_context: Optional[str],
-) -> bool:
-    metadata_pipeline_context = PipelineContext(
-        pipeline_name="Metadata Service Orchestrator Unit Test Pipeline",
-        is_local=is_local,
-        git_branch=git_branch,
-        git_revision=git_revision,
-        gha_workflow_run_url=gha_workflow_run_url,
-        dagger_logs_url=dagger_logs_url,
-        pipeline_start_timestamp=pipeline_start_timestamp,
-        ci_context=ci_context,
-    )
-
-    async with dagger.Connection(DAGGER_CONFIG) as dagger_client:
-        metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
-        async with metadata_pipeline_context:
-            test_orch_step = TestOrchestrator(context=metadata_pipeline_context)
-            result = await test_orch_step.run()
-            metadata_pipeline_context.report = Report(
-                pipeline_context=metadata_pipeline_context, steps_results=[result], name="METADATA ORCHESTRATOR TEST RESULTS"
-            )
-
-    return metadata_pipeline_context.report.success
 
 
 async def run_metadata_orchestrator_deploy_pipeline(
