@@ -16,6 +16,7 @@ from github import PullRequest
 from pipelines import github, main_logger
 from pipelines.bases import CIContext
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH
+from pipelines.telemetry import track_command
 from pipelines.utils import (
     get_current_epoch_time,
     get_current_git_branch,
@@ -170,6 +171,7 @@ def get_modified_files(
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click.pass_context
+@track_command
 def airbyte_ci(
     ctx: click.Context,
     is_local: bool,
