@@ -7,7 +7,6 @@ import time
 from typing import Iterable, Mapping
 
 import pytest
-
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRateLimitHit, CallRatePolicy, Duration, HttpRequestMatcher, Rate
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -74,9 +73,24 @@ class TestHttpRequestMatcher:
     def test_combination(self):
         matcher = HttpRequestMatcher(method="GET", url="some_url", headers={"header1": 10}, params={"param2": "test"})
         assert matcher(Request(method="GET", url="some_url", headers={"header1": 10}, params={"param2": "test"}))
-        assert not matcher(Request(method="GET", url="some_url", headers={"header1": 10}, ))
-        assert not matcher(Request(method="GET", url="some_url", ))
-        assert not matcher(Request(method="GET", ))
+        assert not matcher(
+            Request(
+                method="GET",
+                url="some_url",
+                headers={"header1": 10},
+            )
+        )
+        assert not matcher(
+            Request(
+                method="GET",
+                url="some_url",
+            )
+        )
+        assert not matcher(
+            Request(
+                method="GET",
+            )
+        )
 
 
 def test_http_request_matching(mocker):
@@ -134,7 +148,6 @@ def test_http_request_matching(mocker):
 
 
 class TestCallRatePolicy:
-
     def test_limit_rate(self):
         """try_acquire must respect configured call rate and throw CallRateLimitHit when hit the limit."""
         policy = CallRatePolicy(rates=[Rate(10, Duration.MINUTE)])
@@ -177,7 +190,7 @@ class TestCallRatePolicy:
             policy.try_acquire("call", weight=1), "1 call"
 
         assert excinfo.value.time_to_wait.total_seconds() == pytest.approx(3600, 0.1)
-        assert str(excinfo.value) == 'Bucket for item=call with Rate limit=2/1.0h is already full'
+        assert str(excinfo.value) == "Bucket for item=call with Rate limit=2/1.0h is already full"
 
 
 class TestHttpStreamIntegration:
