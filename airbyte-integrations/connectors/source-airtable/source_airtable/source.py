@@ -78,7 +78,7 @@ class SourceAirtable(AbstractSource):
             base_id = base.get("id")
             base_name = SchemaHelpers.clean_name(base.get("name"))
             # list and process each table under each base to generate the JSON Schema
-            for table in list(AirtableTables(base_id, authenticator=auth).read_records(sync_mode=None)):
+            for table in AirtableTables(base_id, authenticator=auth).read_records(sync_mode=None):
                 self.streams_catalog.append(
                     {
                         "stream_path": f"{base_id}/{table.get('id')}",

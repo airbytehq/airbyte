@@ -47,7 +47,7 @@ def with_python_base(context: PipelineContext, python_version: str = "3.10") -> 
         Container: The python base environment container.
     """
 
-    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
+    pip_cache: CacheVolume = context.dagger_client.cache_volume(f"pip_cache-{python_version}")
 
     base_container = (
         context.dagger_client.container()
@@ -87,7 +87,7 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
     )
 
 
-def with_git(dagger_client, ci_github_access_token_secret, ci_git_user) -> Container:
+def with_git(dagger_client, ci_git_user: str = "octavia") -> Container:
     return (
         dagger_client.container()
         .from_("alpine:latest")
@@ -102,7 +102,6 @@ def with_git(dagger_client, ci_github_access_token_secret, ci_git_user) -> Conta
                 ]
             )
         )
-        .with_secret_variable("GITHUB_TOKEN", ci_github_access_token_secret)
         .with_workdir("/ghcli")
         .with_exec(
             sh_dash_c(
