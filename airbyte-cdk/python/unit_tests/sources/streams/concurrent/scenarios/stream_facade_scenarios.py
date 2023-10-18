@@ -28,7 +28,6 @@ class _MockStreamNoStreamSlices(Stream):
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        # FIXME: probably test this
         return self._primary_key
 
     @property
@@ -146,7 +145,6 @@ test_stream_facade_single_stream = (
             {"data": {"id": "2"}, "stream": "stream1"},
         ]
     )
-    # FIXME: add a test with the logs
     .set_expected_catalog(
         {
             "streams": [
@@ -163,6 +161,22 @@ test_stream_facade_single_stream = (
             ]
         }
     )
+    .set_expected_logs(
+        {
+            "read": [
+                {"level": "INFO", "message": "Starting syncing StreamFacadeSource"},
+                {"level": "INFO", "message": "Marking stream stream1 as STARTED"},
+                {"level": "INFO", "message": "Syncing stream: stream1"},
+                {"level": "INFO", "message": "Marking stream stream1 as RUNNING"},
+                {"level": "INFO", "message": "Read 2 records from stream1 stream"},
+                {"level": "INFO", "message": "Marking stream stream1 as STOPPED"},
+                {"level": "INFO", "message": "Finished syncing stream1"},
+                {"level": "INFO", "message": "StreamFacadeSource runtimes"},
+                {"level": "INFO", "message": "Finished syncing StreamFacadeSource"},
+            ]
+        }
+    )
+    .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
     .build()
 )
 
@@ -177,7 +191,6 @@ test_stream_facade_single_stream_with_primary_key = (
             {"data": {"id": "2"}, "stream": "stream1"},
         ]
     )
-    # FIXME: add a test with the logs
     .set_expected_catalog(
         {
             "streams": [
@@ -210,7 +223,6 @@ test_stream_facade_multiple_streams = (
             {"data": {"id": "B"}, "stream": "stream2"},
         ]
     )
-    # FIXME: add a test with the logs
     .set_expected_catalog(
         {
             "streams": [
@@ -251,7 +263,6 @@ test_stream_facade_single_stream_with_single_slice = (
             {"data": {"id": "2"}, "stream": "stream1"},
         ]
     )
-    # FIXME: add a test with the logs
     .set_expected_catalog(
         {
             "streams": [
@@ -284,7 +295,6 @@ test_stream_facade_single_stream_with_multiple_slices = (
             {"data": {"id": "4"}, "stream": "stream1"},
         ]
     )
-    # FIXME: add a test with the logs
     .set_expected_catalog(
         {
             "streams": [
@@ -306,7 +316,7 @@ test_stream_facade_single_stream_with_multiple_slices = (
 
 test_stream_facade_single_stream_with_multiple_slices_with_concurrency_level_two = (
     TestScenarioBuilder()
-    .set_name("test_stream_facade_single_stream_with_multiple_slice_with_concurrency_level_2")
+    .set_name("test_stream_facade_single_stream_with_multiple_slice_with_concurrency_level_two")
     .set_config({})
     .set_source_builder(StreamFacadeSourceBuilder().set_streams([_stream_with_multiple_slices]))
     .set_expected_records(
@@ -317,7 +327,6 @@ test_stream_facade_single_stream_with_multiple_slices_with_concurrency_level_two
             {"data": {"id": "4"}, "stream": "stream1"},
         ]
     )
-    # FIXME: add a test with the logs
     .set_expected_catalog(
         {
             "streams": [
