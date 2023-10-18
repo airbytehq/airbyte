@@ -161,18 +161,14 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
-  private ConnectorSpecification modifySpec(final ConnectorSpecification originalSpec) {
-    final ConnectorSpecification spec = Jsons.clone(originalSpec);
-    final ObjectNode properties = (ObjectNode) spec.getConnectionSpecification().get("properties");
-    ((ObjectNode) properties.get(SSL_MODE)).put("default", SSL_MODE_REQUIRE);
-
-    return spec;
-  }
-
   @Override
   public ConnectorSpecification spec() throws Exception {
     if (DEPLOYMENT_MODE != null && DEPLOYMENT_MODE.equalsIgnoreCase(AdaptiveSourceRunner.CLOUD_MODE)) {
-      return modifySpec(super.spec());
+      final ConnectorSpecification spec = Jsons.clone(super.spec());
+      final ObjectNode properties = (ObjectNode) spec.getConnectionSpecification().get("properties");
+      ((ObjectNode) properties.get(SSL_MODE)).put("default", SSL_MODE_REQUIRE);
+
+      return spec;
     }
     return super.spec();
   }
@@ -725,7 +721,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
     // and not over SSH tunnel
-    if (DEPLOYMENT_MODE != null && DEPLOYMENT_MODE.equalsIgnoreCase(AdaptiveSourceRunner.CLOUD_MODE)) {
+    if (AdaptiveSourceRunner.CLOUD_MODE.equalsIgnoreCase(DEPLOYMENT_MODE)) {
       LOGGER.info("Source configured as in Cloud Deployment mode");
       if (config.has(TUNNEL_METHOD)
           && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
