@@ -4,11 +4,11 @@
 
 from typing import Any, List, Mapping, Optional
 from unittest.mock import MagicMock
-from airbyte_cdk.destinations.vector_db_based.config import FieldNameMappingConfigModel
 
 import pytest
 from airbyte_cdk.destinations.vector_db_based.config import (
     CodeSplitterConfigModel,
+    FieldNameMappingConfigModel,
     MarkdownHeaderSplitterConfigModel,
     ProcessingConfigModel,
     SeparatorSplitterConfigModel,
@@ -412,10 +412,7 @@ def test_rename_metadata_fields(
     record = AirbyteRecordMessage(
         stream="stream1",
         namespace="namespace1",
-        data={
-            **fields,
-            "text": "abc"
-        },
+        data={**fields, "text": "abc"},
         emitted_at=1234,
     )
 
