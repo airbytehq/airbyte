@@ -58,19 +58,19 @@ public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination {
   }
 
   public SnowflakeBulkLoadDestination(final NamingConventionTransformer nameTransformer) {
-    super("", nameTransformer, new SnowflakeBulkLoadSqlOperations(nameTransformer));
+    super("", nameTransformer, new SnowflakeBulkLoadSqlOperations(nameTransformer, "", ""));
     this.airbyteEnvironment = AIRBYTE_CLOUD;
   }
 
   public SnowflakeBulkLoadDestination(final NamingConventionTransformer nameTransformer, final String airbyteEnvironment) {
-    super("", nameTransformer, new SnowflakeBulkLoadSqlOperations(nameTransformer));
+    super("", nameTransformer, new SnowflakeBulkLoadSqlOperations(nameTransformer, "", ""));
     this.airbyteEnvironment = airbyteEnvironment;
   }
 
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     final NamingConventionTransformer nameTransformer = getNamingResolver();
-    final SnowflakeBulkLoadSqlOperations snowflakeBulkLoadSqlOperations = new SnowflakeBulkLoadSqlOperations(nameTransformer);
+    final SnowflakeBulkLoadSqlOperations snowflakeBulkLoadSqlOperations = new SnowflakeBulkLoadSqlOperations(nameTransformer, "", "");
     final DataSource dataSource = getDataSource(config);
     try {
       final JdbcDatabase database = getDatabase(dataSource);

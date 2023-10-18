@@ -9,6 +9,8 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.commons.string.Strings;
+
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -18,26 +20,55 @@ import java.util.stream.Stream;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
+import java.io.FileReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 
 public class SnowflakeBulkLoadSqlOperations extends SnowflakeInternalStagingSqlOperations {
 
   public static final int UPLOAD_RETRY_LIMIT = 3;
+  public static final String BULK_LOAD_FILE_FORMAT = "bulk_load_file_format";
+  public static final String BULK_LOAD_S3_STAGES = "bulk_load_s3_stages";
 
   private static final String PUT_FILE_QUERY = "PUT file://%s @%s/%s PARALLEL = %d;";
-  private static final String LIST_STAGE_QUERY = "LIST @%s/%s/%s;";
   // the 1s1t copy query explicitly quotes the raw table+schema name.
   private static final String COPY_QUERY_EXTERNAL_STAGE =
       """
       COPY INTO "%s"."%s" FROM '@%s/'
       file_format = %s
       """;
+  
+
+  // The name of the file format and stage to use for the BULK LOAD operation
+  private String bulkLoadFileFormatName;
+  private String bulkLoadStageName;
+
+  // The name of the record property that contains the file paths
+  private String bulkLoadFilePropertyNameInRecord;
+  private List<String> bulkLoadFilesList = new ArrayList<>();
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
-  public SnowflakeBulkLoadSqlOperations(final NamingConventionTransformer nameTransformer) {
+  public SnowflakeBulkLoadSqlOperations(
+        final NamingConventionTransformer nameTransformer,
+        final String bulkFileFormatName,
+        final String bulkFilePropertyNameInRecord) {
     super(nameTransformer);
+    this.bulkLoadFileFormatName = bulkFileFormatName;
+    this.bulkLoadStageName = bulkFilePropertyNameInRecord;
   }
 
+  public void initialize(final JsonNode config) {
+    this.bulkLoadFileFormatName = config.get(BULK_LOAD_FILE_FORMAT).asText();
+    this.bulkLoadFilePropertyNameInRecord = config.get(BULK_LOAD_S3_STAGES).asText();
+    this.bulkLoadFilesList.clear();
+  }
+
+  @Override
   public String uploadRecordsToStage(final JdbcDatabase database,
                                      final SerializableBuffer recordsData,
                                      final String namespace,
@@ -56,6 +87,7 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeInternalStagingSqlO
               (stagingPath + "/" + recordsData.getFilename()).replaceAll("/+", "/")));
           throw new RuntimeException("Upload failed");
         }
+        appendBulkLoadFiles(recordsData);
         succeeded = true;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into stage {}", stagingPath, e);
@@ -73,9 +105,49 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeInternalStagingSqlO
     return recordsData.getFilename();
   }
 
+  private List<String> appendBulkLoadFiles(final SerializableBuffer recordsData) {
+    final List<String> filesListFromRecords = new ArrayList<>();
+    // Get the list of files from each items in the recordsData 'files' field:
+    // Declare the csvFile
+    try {
+      String csvFilePath = recordsData.getFile().getAbsolutePath();
+      Reader reader = new FileReader(csvFilePath);
+      CSVParser parser = new CSVParser(reader, CSVFormat.DEFAULT);
+
+      // Iterate through the CSV records
+      for (CSVRecord record : parser) {
+        // Access individual fields by index or header name
+        String bulkLoadFilePath = record.get(this.bulkLoadFilePropertyNameInRecord);
+        System.out.println("Found file path: " + bulkLoadFilePath);
+        this.bulkLoadFilesList.add(bulkLoadFilePath);
+      }
+      parser.close();
+      reader.close();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return filesListFromRecords;
+  }
+
+  private void bulkUploadRecordFilesToSecondaryTable(
+      final JdbcDatabase database,
+      final String stageName,
+      final List<String> filesList,
+      final String tableName,
+      final String schemaName) throws SQLException {
+    try {
+      final String query = getCopyQuery(stageName, filesList, tableName, schemaName, this.bulkLoadFileFormatName);
+      LOGGER.debug("Executing query: {}", query);
+      database.execute(query);
+    } catch (final SQLException e) {
+      throw checkForKnownConfigExceptions(e).orElseThrow(() -> e);
+    }
+  }
+
   protected String getPutQuery(final String stageName, final String stagingPath, final String filePath) {
     return String.format(PUT_FILE_QUERY, filePath, stageName, stagingPath, Runtime.getRuntime().availableProcessors());
   }
+
   public void copyIntoTableFromStage(final JdbcDatabase database,
                                      final String stageName,
                                      final List<String> stagedFiles,
@@ -84,6 +156,7 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeInternalStagingSqlO
                                      final String fileFormatName)
       throws SQLException {
     try {
+      bulkUploadRecordFilesToSecondaryTable(database, this.bulkLoadStageName, this.bulkLoadFilesList, tableName + "_bulk", schemaName);
       final String query = getCopyQuery(stageName, stagedFiles, tableName, schemaName, fileFormatName);
       LOGGER.debug("Executing query: {}", query);
       database.execute(query);

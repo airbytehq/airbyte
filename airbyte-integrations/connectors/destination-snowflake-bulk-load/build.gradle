@@ -26,4 +26,6 @@ dependencies {
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 
+    implementation 'org.apache.commons:commons-csv:1.4'
+
 }

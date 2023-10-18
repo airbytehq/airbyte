@@ -25,7 +25,7 @@ class SnowflakeBulkLoadSqlOperationsTest {
   public void setup() {
     DestinationConfig.initialize(Jsons.emptyObject());
     snowflakeBulkLoadSqlOperations =
-        new SnowflakeBulkLoadSqlOperations(new SnowflakeSQLNameTransformer());
+        new SnowflakeBulkLoadSqlOperations(new SnowflakeSQLNameTransformer(), "", "");
   }
 
   @Test
