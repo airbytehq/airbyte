@@ -69,7 +69,8 @@ class UnstructuredParser(FileTypeParser):
         filetype = self._get_filetype(file_handle, file_name)
 
         if filetype == FileType.MD:
-            return optional_decode(file_handle.read())
+            file_content: bytes = file_handle.read()
+            return optional_decode(file_content)
         if filetype not in self._supported_file_types():
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file_name)
         elements = partition(file=file_handle, metadata_filename=file_name)
@@ -87,7 +88,7 @@ class UnstructuredParser(FileTypeParser):
             file_filename=file_name,
         )
 
-    def _supported_file_types(self):
+    def _supported_file_types(self) -> List[Any]:
         from unstructured.file_utils.filetype import FileType
 
         return [FileType.MD, FileType.PDF, FileType.DOCX]
@@ -106,7 +107,7 @@ class UnstructuredParser(FileTypeParser):
         elif type(el) == Formula:
             return f"```\n{el.text}\n```"
         else:
-            return el.text if hasattr(el, "text") else ""
+            return str(el.text) if hasattr(el, "text") else ""
 
     @property
     def file_read_mode(self) -> FileReadMode:
