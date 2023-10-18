@@ -508,13 +508,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     }
 
     final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
+    final String extractedAtCondition = buildExtractedAtCondition(minRawTimestamp);
 
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       // When deduping, we need to dedup the raw records. Note the row_number() invocation in the SQL
       // statement. Do the same extract+cast CTE + airbyte_meta construction as in non-dedup mode, but
       // then add a row_number column so that we only take the most-recent raw record for each PK.
-      // We also don't use the extractedAtCondition here, because we need to scan all raw records for
-      // deletion records.
 
       // We also explicitly include old CDC deletion records, which act as tombstones to correctly delete
       // out-of-order records.
@@ -539,6 +538,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           "column_casts", columnCasts,
           "column_errors", columnErrors,
           "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
+          "extractedAtCondition", extractedAtCondition,
           "column_list", columnList,
           "pk_list", pkList,
           "cursor_order_clause", cursorOrderClause)).replace(
@@ -550,9 +550,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                 _airbyte_raw_id,
                 _airbyte_extracted_at
                 FROM ${project_id}.${raw_table_id}
-                WHERE
-                  _airbyte_loaded_at IS NULL
-                  ${cdcConditionalOrIncludeStatement}
+                WHERE (
+                    _airbyte_loaded_at IS NULL
+                    ${cdcConditionalOrIncludeStatement}
+                  ) ${extractedAtCondition}
               ), new_records AS (
                 SELECT
                 ${column_list}
@@ -572,7 +573,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     } else {
       // When not deduplicating, we just need to handle type casting.
       // Extract+cast the not-yet-loaded records in a CTE, then select that CTE and build airbyte_meta.
-      final String extractedAtCondition = buildExtractedAtCondition(minRawTimestamp);
 
       return new StringSubstitutor(Map.of(
           "project_id", '`' + projectId + '`',

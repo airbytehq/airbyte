@@ -821,7 +821,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_updateafterdelete_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty());
+    final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(cdcIncrementalAppendStream.id());
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", minTimestampForSync);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
@@ -858,7 +859,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "",
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_insertafterdelete_inputrecords_final.jsonl"));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty());
+    final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(cdcIncrementalAppendStream.id());
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", minTimestampForSync);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
