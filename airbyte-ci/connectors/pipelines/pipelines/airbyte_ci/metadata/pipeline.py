@@ -6,6 +6,9 @@ import uuid
 from typing import Optional
 
 import dagger
+from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
+from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
+from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
 from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.common import with_pip_packages
 from pipelines.dagger.containers.python import with_python_base
@@ -13,9 +16,6 @@ from pipelines.helpers.steps import run_steps
 from pipelines.helpers.utils import DAGGER_CONFIG, get_secret_host_variable
 from pipelines.models.reports import Report
 from pipelines.models.steps import MountPath, Step, StepResult
-from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
-from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
 
 # STEPS
 

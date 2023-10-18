@@ -7,10 +7,10 @@ from typing import List, Tuple
 
 import docker
 from dagger import Container, ExecError, Platform, QueryError
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.consts import BUILD_PLATFORMS
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import Step, StepResult, StepStatus
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
 class BuildConnectorImagesBase(Step, ABC):

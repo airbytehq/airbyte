@@ -4,8 +4,8 @@
 
 import anyio
 import click
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.airbyte_ci.metadata.pipeline import run_metadata_orchestrator_deploy_pipeline
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 # MAIN GROUP
 

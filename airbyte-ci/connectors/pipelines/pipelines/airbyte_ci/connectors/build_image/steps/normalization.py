@@ -3,9 +3,9 @@
 #
 
 from dagger import Platform
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.dagger.actions.connector import normalization
 from pipelines.models.steps import Step, StepResult, StepStatus
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
 # TODO this class could be deleted

@@ -4,10 +4,10 @@
 
 import anyio
 import click
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build_pipeline
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
 @click.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
