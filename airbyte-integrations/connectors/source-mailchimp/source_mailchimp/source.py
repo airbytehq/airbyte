@@ -70,5 +70,5 @@ class SourceMailchimp(AbstractSource):
             Automations(authenticator=authenticator),
             EmailActivity(authenticator=authenticator, campaign_id=campaign_id),
             Reports(authenticator=authenticator),
-            Unsubscribes(authenticator=authenticator),
+            Unsubscribes(authenticator=authenticator, campaign_id=campaign_id),
         ]

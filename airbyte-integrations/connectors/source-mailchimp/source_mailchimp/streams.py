@@ -240,10 +240,20 @@ class Unsubscribes(IncrementalMailChimpStream):
     # consisting of the campaign_id, email_id, and timestamp.
     primary_key = ["campaign_id", "email_id", "timestamp"]
 
+    def __init__(self, campaign_id: Optional[str] = None, **kwargs):
+        super().__init__(**kwargs)
+        self.campaign_id = campaign_id
+
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        campaigns = Campaigns(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
+        
+        if self.campaign_id:
+            # Similar to EmailActivity stream, this is a workaround to speed up SATs 
+            # and enable incremental tests by reading from a single campaign
+            campaigns = [{"id": self.campaign_id}]
+        else:
+            campaigns = Campaigns(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
         for campaign in campaigns:
             yield {"campaign_id": campaign["id"]}
 
@@ -255,7 +265,6 @@ class Unsubscribes(IncrementalMailChimpStream):
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         # Exclude the _links field, as it is not user-relevant data
         params["exclude_fields"] = "unsubscribes._links"
-        print(params)
         return params
     
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
