@@ -6,7 +6,7 @@ import anyio
 import click
 from pipelines import main_logger
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.models.contexts import ContextState
+from pipelines.consts import ContextState
 from pipelines.pipeline.connectors.pipeline import run_connectors_pipelines
 from pipelines.pipeline.connectors.publish.context import PublishConnectorContext
 from pipelines.pipeline.connectors.publish.pipeline import reorder_contexts, run_connector_publish_pipeline
