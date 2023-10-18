@@ -173,7 +173,7 @@ public class PostgresQueryUtils {
             cursorField,
             cursorField,
             fullTableName);
-        LOGGER.debug("Querying for max cursor value: {}", cursorBasedSyncStatusQuery);
+        LOGGER.info("Querying for max cursor value: {}", cursorBasedSyncStatusQuery);
         final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.prepareStatement(cursorBasedSyncStatusQuery).executeQuery(),
             resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
         final CursorBasedStatus cursorBasedStatus = new CursorBasedStatus();
