@@ -61,7 +61,7 @@ def test_connection_fail_due_to_api_error(errror_code, expected_status, config, 
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), config)
     assert status is False
-    assert msg.startswith('Unable to connect to Gitlab API with the provided Private Access Token')
+    assert msg.startswith("Unable to connect to Gitlab API with the provided Private Access Token")
 
 
 def test_connection_fail_due_to_expired_access_token_error(oauth_config, requests_mock):

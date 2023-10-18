@@ -43,6 +43,5 @@ def config_with_project_groups():
         "api_url": "https://gitlab.com",
         "credentials": {"auth_type": "access_token", "access_token": "token"},
         "groups_list": ["g1"],
-        "projects_list": ["p1"]
+        "projects_list": ["p1"],
     }
-
