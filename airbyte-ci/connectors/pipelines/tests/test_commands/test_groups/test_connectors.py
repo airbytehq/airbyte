@@ -6,7 +6,6 @@ from typing import Callable
 
 import pipelines.pipeline.connectors.builds.commands
 import pipelines.pipeline.connectors.commands
-import pipelines.pipeline.connectors.format.commands
 import pipelines.pipeline.connectors.publish.commands
 import pipelines.pipeline.connectors.test.commands
 import pytest
