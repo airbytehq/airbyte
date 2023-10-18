@@ -1,12 +1,15 @@
-import copy
 import functools
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional, Protocol, Tuple
+from typing import Any, List, Mapping, Optional, Protocol, Tuple
 
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+
+
+def _extract_value(mapping: Mapping[str, Any], path: List[str]) -> Any:
+    return functools.reduce(lambda a, b: a[b], path, mapping)
 
 
 class Comparable(Protocol):
@@ -22,7 +25,7 @@ class CursorField:
         self._path = path
 
     def extract_value(self, record: Record) -> Comparable:
-        return functools.reduce(lambda a, b: a[b], self._path, record.data)
+        return _extract_value(record.data, self._path)  # type: ignore  # we assume that the value the path points at is a comparable
 
 
 class Cursor(ABC):
@@ -67,6 +70,11 @@ class ConcurrentCursor(Cursor):
         }
 
     def observe(self, record: Record) -> None:
+        if self._slice_boundary_fields:
+            # Given that slicing is done using the cursor field, we don't need to observe the record as slices will describe what has been
+            # emitted. Assuming there is a chance that records might not be yet populated for the most recent slice, use lookback window
+            return
+
         if not self._most_recent_record or self._extract_cursor_value(self._most_recent_record) < self._extract_cursor_value(record):
             self._most_recent_record = record
 
@@ -74,25 +82,29 @@ class ConcurrentCursor(Cursor):
         return self._cursor_field.extract_value(record)
 
     def close_partition(self, partition: Partition) -> None:
+        slice_count_before = len(self._state["slices"])
         self._add_slice_to_state(partition)
-        self._emit_state_message()
+        if slice_count_before < len(self._state["slices"]):
+            self._merge_partitions()
+            self._emit_state_message()
 
-    def _add_slice_to_state(self, partition):
+    def _add_slice_to_state(self, partition) -> None:
+        partition_identifier = partition.identifier() or {}
         if self._slice_boundary_fields:
             self._state["slices"].append({
                 "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
                 "end": self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
-                **self._slice_without_cursor_fields(partition),
+                **partition_identifier,
             })
         elif self._most_recent_record:
             # State is observed by records and not by slices
             self._state["slices"].append({
                 "start": 0,  # FIXME this only works with int datetime
                 "end": self._extract_cursor_value(self._most_recent_record),
-                **self._slice_without_cursor_fields(partition),
+                **partition_identifier,
             })
 
-    def _emit_state_message(self):
+    def _emit_state_message(self) -> None:
         self._connector_state_manager.update_state_for_stream(self._stream_name, self._stream_namespace, self._state)
         state_message = self._connector_state_manager.create_state_message(
             self._stream_name,
@@ -100,17 +112,9 @@ class ConcurrentCursor(Cursor):
             send_per_stream_state=True  # FIXME AbstracSource.per_stream_state_enabled returns True and I don't see any re-implementation
         )
         self._message_repository.emit_message(state_message)
-        self._merge_partitions()
 
     def _merge_partitions(self):
         pass  # TODO eventually
-
-    def _slice_without_cursor_fields(self, partition: Partition):
-        # FIXME the name is terrible, I'm sorry :'(
-        partition_without_cursor = copy.deepcopy(partition.to_slice())
-        for key in self._slice_boundary_fields:
-            partition_without_cursor.pop(key, None)
-        return partition_without_cursor
 
     def _extract_from_slice(self, partition: Partition, key: str):
         return partition.to_slice()[key]

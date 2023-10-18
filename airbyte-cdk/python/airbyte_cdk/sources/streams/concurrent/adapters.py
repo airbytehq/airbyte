@@ -243,7 +243,7 @@ class StreamPartition(Partition):
         stream: Stream,
         _slice: Optional[Mapping[str, Any]],
         message_repository: MessageRepository,
-        state: MutableMapping[str, Any]
+        state: MutableMapping[str, Any],
     ):
         """
         :param stream: The stream to delegate to
@@ -291,6 +291,11 @@ class StreamPartition(Partition):
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         return self._slice
+
+    def identifier(self) -> Optional[Mapping[str, Any]]:
+        # TODO in order to support per partition state, this will need to be implemented. As this is not needed for Stripe, we will punt on
+        #  that
+        return None
 
     def __hash__(self) -> int:
         if self._slice:

@@ -30,6 +30,13 @@ class Partition(ABC):
         pass
 
     @abstractmethod
+    def identifier(self) -> Optional[Mapping[str, Any]]:
+        """
+        :return: A mapping representing the identifier of the partition
+        """
+        pass
+
+    @abstractmethod
     def __hash__(self) -> int:
         """
         Returns a hash of the partition.

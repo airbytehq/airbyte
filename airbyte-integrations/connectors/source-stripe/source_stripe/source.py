@@ -109,8 +109,80 @@ class SourceStripe(AbstractSource):
             event_types=["customer.created", "customer.updated", "customer.deleted"],
             **args,
         )
+        bank_accounts = UpdatedCursorIncrementalStripeLazySubStream(
+            name="bank_accounts",
+            path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice[self.parent_id]}/sources",
+            parent=customers,
+            event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"],
+            legacy_cursor_field=None,
+            parent_id="customer_id",
+            sub_items_attr="sources",
+            response_filter={"attr": "object", "value": "bank_account"},
+            extra_request_params={"object": "bank_account"},
+            record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
+            **args,
+        )
+        # invoices = IncrementalStripeStream(
+        #     name="invoices",
+        #     path="invoices",
+        #     use_cache=True,
+        #     event_types=[
+        #         "invoice.created",
+        #         "invoice.finalization_failed",
+        #         "invoice.finalized",
+        #         "invoice.marked_uncollectible",
+        #         "invoice.paid",
+        #         "invoice.payment_action_required",
+        #         "invoice.payment_failed",
+        #         "invoice.payment_succeeded",
+        #         "invoice.sent",
+        #         "invoice.updated",
+        #         "invoice.voided",
+        #         "invoice.deleted",
+        #     ],
+        #     **args,
+        # )
+        # invoice_line_items = StripeLazySubStream(
+        #     name="invoice_line_items",
+        #     path=lambda self, *args, stream_slice, **kwargs: f"invoices/{stream_slice[self.parent_id]}/lines",
+        #     parent=invoices,
+        #     parent_id="invoice_id",
+        #     sub_items_attr="lines",
+        #     add_parent_id=True,
+        #     **args,
+        # )
+        # subscriptions = IncrementalStripeStream(
+        #     name="subscriptions",
+        #     path="subscriptions",
+        #     use_cache=True,
+        #     extra_request_params={"status": "all"},
+        #     event_types=[
+        #         "customer.subscription.created",
+        #         "customer.subscription.paused",
+        #         "customer.subscription.pending_update_applied",
+        #         "customer.subscription.pending_update_expired",
+        #         "customer.subscription.resumed",
+        #         "customer.subscription.trial_will_end",
+        #         "customer.subscription.updated",
+        #         "customer.subscription.deleted",
+        #     ],
+        #     **args,
+        # )
+        # subscription_items = StripeLazySubStream(
+        #     name="subscription_items",
+        #     path="subscription_items",
+        #     extra_request_params=lambda self, *args, stream_slice, **kwargs: {"subscription": stream_slice[self.parent_id]},
+        #     parent=subscriptions,
+        #     use_cache=True,
+        #     parent_id="subscription_id",
+        #     sub_items_attr="items",
+        #     **args,
+        # )
         streams = [
-            customers
+            bank_accounts,
+            # customers,
+            #invoice_line_items,
+            #subscription_items,
         ]
         if self._use_concurrent_cdk:
             state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
@@ -128,14 +200,19 @@ class SourceStripe(AbstractSource):
                         self.message_repository,
                         state_manager,
                         CursorField(stream.cursor_field if type(stream.cursor_field) == list else [stream.cursor_field]),
-                        None if state_manager.get_stream_state(stream.name, stream.namespace) else ("created[gte]", "created[lte]"),
+                        self._get_slice_boundary_fields(stream, state_manager)
                     ) if self._is_incremental(stream) else NoopCursor(),
                 ) for stream in streams
             ]
         else:
             return streams
 
-    def _is_incremental(self, stream):
+    def _get_slice_boundary_fields(self, stream: Stream, state_manager: ConnectorStateManager):
+        if isinstance(stream, UpdatedCursorIncrementalStripeLazySubStream):
+            return None  # TODO validate on incremental with state
+        return None if state_manager.get_stream_state(stream.name, stream.namespace) else ("created[gte]", "created[lte]")
+
+    def _is_incremental(self, stream: Stream):
         catalog_stream = [catalog_stream for catalog_stream in self._catalog.streams if catalog_stream.stream.name == stream.name]
         if len(catalog_stream) != 1:
             raise ValueError(f"Stream {stream.name} is in catalog {len(catalog_stream)} times")
