@@ -2,10 +2,33 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Optional
+from typing import List, Optional, Union
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from pydantic import AnyUrl, Field, ValidationError, root_validator
+from airbyte_cdk.sources.file_based.config.avro_format import AvroFormat
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from airbyte_cdk.sources.file_based.config.parquet_format import ParquetFormat
+from pydantic import AnyUrl, BaseModel, Field, ValidationError, root_validator
+
+
+class UnstructuredFormat(BaseModel):
+    class Config:
+        title = "Markdown/PDF/Docx Format (Experimental)"
+        schema_extra = {"description": "Extract text from document formats and emit as one record per file."}
+
+    filetype: str = Field(
+        "unstructured",
+        const=True,
+    )
+
+
+class S3FileBasedStreamConfig(FileBasedStreamConfig):
+    format: Union[AvroFormat, CsvFormat, JsonlFormat, ParquetFormat, UnstructuredFormat] = Field(
+        title="Format",
+        description="The configuration options that are used to alter how to read incoming files that deviate from the standard formatting.",
+    )
 
 
 class Config(AbstractFileBasedSpec):
@@ -40,6 +63,12 @@ class Config(AbstractFileBasedSpec):
 
     endpoint: Optional[str] = Field(
         "", title="Endpoint", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4
+    )
+
+    streams: List[S3FileBasedStreamConfig] = Field(
+        title="The list of streams to sync",
+        description='Each instance of this configuration defines a <a href="https://docs.airbyte.com/cloud/core-concepts#stream">stream</a>. Use this to define which files belong in the stream, their format, and how they should be parsed and validated. When sending data to warehouse destination such as Snowflake or BigQuery, each stream is a separate table.',
+        order=10,
     )
 
     @root_validator
