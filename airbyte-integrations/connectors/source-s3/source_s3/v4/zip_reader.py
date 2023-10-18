@@ -1,10 +1,12 @@
 import io
 import struct
 import zipfile
-from typing import IO, Any, Dict, List, Optional, Tuple, Union
+from typing import IO, List, Optional, Tuple, Union
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
+
+from source_s3.v4.config import Config
 
 # Buffer constants
 BUFFER_SIZE_DEFAULT = 1024 * 1024
@@ -39,7 +41,7 @@ class ZipFileHandler:
     ZIP64_EOCD_SIZE: int = 56
     ZIP64_CENTRAL_DIR_START_OFFSET: int = 48
 
-    def __init__(self, s3_client: BaseClient, config: Dict[str, Any]):
+    def __init__(self, s3_client: BaseClient, config: Config):
         """
         Initialize the ZipFileHandler with an S3 client and configuration.
 
@@ -361,7 +363,7 @@ class ZipContentReader:
         data = self.buffer[:size]
         self.buffer = self.buffer[size:]
 
-        return data.decode(self.encoding) if self.encoding else data
+        return data.decode(self.encoding) if self.encoding else bytes(data)
 
     def seek(self, offset: int, whence: int = io.SEEK_SET) -> int:
         """
