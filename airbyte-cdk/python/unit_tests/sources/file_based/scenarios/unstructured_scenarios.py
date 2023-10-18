@@ -4,6 +4,7 @@
 import os
 
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 
 simple_markdown_scenario = (
@@ -21,19 +22,24 @@ simple_markdown_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.md": {
-                "contents": bytes("# Title 1\n\n## Title 2\n\n### Title 3\n\n#### Title 4\n\n##### Title 5\n\n###### Title 6\n\n", "UTF-8"),
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.md": {
-                "contents": bytes("Just some text", "UTF-8"),
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.md": {
+                    "contents": bytes(
+                        "# Title 1\n\n## Title 2\n\n### Title 3\n\n#### Title 4\n\n##### Title 5\n\n###### Title 6\n\n", "UTF-8"
+                    ),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.md": {
+                    "contents": bytes("Just some text", "UTF-8"),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("unstructured")
     )
-    .set_file_type("unstructured")
     .set_expected_catalog(
         {
             "streams": [
@@ -102,15 +108,18 @@ unstructured_invalid_file_type_discover_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.txt": {
-                "contents": bytes("Just a humble text file", "UTF-8"),
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.txt": {
+                    "contents": bytes("Just a humble text file", "UTF-8"),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("unstructured")
     )
-    .set_file_type("unstructured")
     .set_expected_catalog(
         {
             "streams": [
@@ -159,19 +168,22 @@ unstructured_invalid_file_type_read_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.md": {
-                "contents": bytes("A harmless markdown file", "UTF-8"),
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-            "b.txt": {
-                "contents": bytes("An evil text file", "UTF-8"),
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.md": {
+                    "contents": bytes("A harmless markdown file", "UTF-8"),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "b.txt": {
+                    "contents": bytes("An evil text file", "UTF-8"),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("unstructured")
     )
-    .set_file_type("unstructured")
     .set_expected_catalog(
         {
             "streams": [
@@ -231,15 +243,18 @@ simple_pdf_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "sample.pdf": {
-                "contents": bytearray(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "sample.pdf"), mode="rb").read()),
-                "last_modified": "2023-06-05T03:54:07.000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "sample.pdf": {
+                    "contents": bytearray(open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "sample.pdf"), mode="rb").read()),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("unstructured")
     )
-    .set_file_type("unstructured")
     .set_expected_catalog(
         {
             "streams": [
