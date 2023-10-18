@@ -10,10 +10,8 @@ from typing import List
 import click
 from github import PullRequest
 from pipelines import main_logger
-from pipelines.airbyte_ci.connectors.commands import connectors
-from pipelines.airbyte_ci.metadata.commands import metadata
-from pipelines.airbyte_ci.test.commands import test
 from pipelines.cli.telemetry import track_command
+from pipelines.cli.lazy_group import LazyGroup
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH, CIContext
 from pipelines.helpers import github
 from pipelines.helpers.git import (
@@ -88,7 +86,15 @@ def get_modified_files(
 # COMMANDS
 
 
-@click.group(help="Airbyte CI top-level command group.")
+@click.group(
+    cls=LazyGroup,
+    help="Airbyte CI top-level command group.",
+    lazy_subcommands={
+        "connectors": "pipelines.airbyte_ci.connectors.commands.connectors",
+        "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
+        "test": "pipelines.airbyte_ci.test.commands.test",
+    },
+)
 @click.version_option(__installed_version__)
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
@@ -174,10 +180,6 @@ def airbyte_ci(
         main_logger.info(f"Pipeline Start Timestamp: {pipeline_start_timestamp}")
         main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
 
-
-airbyte_ci.add_command(connectors)
-airbyte_ci.add_command(metadata)
-airbyte_ci.add_command(test)
 
 if __name__ == "__main__":
     airbyte_ci()
