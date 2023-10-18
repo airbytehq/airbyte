@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.source.relationaldb.state;
 
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -94,6 +95,7 @@ public class CursorManager<S> {
                                                                                 final Function<S, Long> cursorRecordCountFunction,
                                                                                 final Function<S, AirbyteStreamNameNamespacePair> namespacePairFunction,
                                                                                 final boolean onlyIncludeIncrementalStreams) {
+    LOGGER.error("Catalog {}", Jsons.serialize(catalog));
     final Set<AirbyteStreamNameNamespacePair> allStreamNames = catalog.getStreams()
         .stream()
         .filter(c -> {
