@@ -161,6 +161,7 @@ class HttpStream(Stream, ABC):
     ) -> Mapping[str, Any]:
         """
         Override to return any non-auth headers. Authentication headers will overwrite any overlapping headers returned from this method.
+        test
         """
         return {}
 
