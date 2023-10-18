@@ -10,10 +10,10 @@ import platform
 import anyio
 from connector_ops.utils import ConnectorLanguage
 from pipelines.models.steps import StepResult
-from pipelines.airbyte_ci.connectors.build.steps import python_connectors
-from pipelines.airbyte_ci.connectors.build.steps.common import LoadContainerToLocalDockerHost, StepStatus
+from pipelines.airbyte_ci.connectors.build_image.steps import python_connectors
+from pipelines.airbyte_ci.connectors.build_image.steps.common import LoadContainerToLocalDockerHost, StepStatus
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.airbyte_ci.connectors.build.steps import java_connectors
+from pipelines.airbyte_ci.connectors.build_image.steps import java_connectors
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 

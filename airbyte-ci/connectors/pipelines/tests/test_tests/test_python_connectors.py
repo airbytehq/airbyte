@@ -5,7 +5,7 @@
 import pytest
 from connector_ops.utils import Connector
 from pipelines.models.steps import StepResult
-from pipelines.airbyte_ci.connectors.build.steps.python_connectors import BuildConnectorImages
+from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.python_connectors import UnitTests
 

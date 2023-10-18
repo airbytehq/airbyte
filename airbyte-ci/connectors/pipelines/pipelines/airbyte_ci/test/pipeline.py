@@ -48,7 +48,7 @@ async def run_test(poetry_package_path: str, test_directory: str) -> bool:
                     "/airbyte",
                     dagger_client.host().directory(
                         ".",
-                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**.log", "**/build", "**/.gradle"],
+                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**.log", "**/.gradle"],
                         include=directories_to_mount,
                     ),
                 )

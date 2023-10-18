@@ -14,12 +14,12 @@ from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import StepResult, StepStatus
-from pipelines.airbyte_ci.connectors.build.steps.java_connectors import (
+from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     BuildConnectorDistributionTar,
     BuildConnectorImages,
     dist_tar_directory_path,
 )
-from pipelines.airbyte_ci.connectors.build.steps.normalization import BuildOrPullNormalization
+from pipelines.airbyte_ci.connectors.build_image.steps.normalization import BuildOrPullNormalization
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.airbyte_ci.steps.gradle import GradleTask

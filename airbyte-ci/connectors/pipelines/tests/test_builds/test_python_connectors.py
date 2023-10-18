@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 from pipelines.models.steps import StepStatus
-from pipelines.airbyte_ci.connectors.build.steps import build_customization, python_connectors
+from pipelines.airbyte_ci.connectors.build_image.steps import build_customization, python_connectors
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 pytestmark = [

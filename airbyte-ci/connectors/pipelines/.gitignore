@@ -1,3 +1,2 @@
 pipeline_reports
 .venv
-!pipelines/airbyte_ci/connectors/build/
