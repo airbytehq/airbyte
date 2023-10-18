@@ -123,6 +123,22 @@ definitions:
     $parameters:
       path: "/leads"
 
+  goals_stream:
+    $ref: "#/definitions/base_stream"
+    name: "goals"
+    primary_key: "id"
+    $parameters:
+      path: "/goals/find"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "goals"]
+      paginator:
+        type: "NoPagination"
+
   notes_stream:
     $ref: "#/definitions/base_stream"
     name: "notes"
@@ -326,6 +342,7 @@ streams:
   - "#/definitions/stages_stream"
   - "#/definitions/users_stream"
   - "#/definitions/deal_products_stream"
+  - "#/definitions/goals_stream"
 
 check:
   type: CheckStream
