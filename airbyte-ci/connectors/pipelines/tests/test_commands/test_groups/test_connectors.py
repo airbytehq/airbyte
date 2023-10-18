@@ -13,7 +13,7 @@ import pytest
 from click.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 from pipelines.commands.groups import connectors
-from pipelines.models.bases import ConnectorWithModifiedFiles
+from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from tests.utils import pick_a_random_connector
 
 
