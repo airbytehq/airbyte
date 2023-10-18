@@ -10,7 +10,6 @@ from pipelines import main_logger
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import ContextState
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
-from pipelines.consts import ContextState
 from pipelines.pipeline.connectors.context import ConnectorContext
 from pipelines.pipeline.connectors.pipeline import run_connectors_pipelines
 from pipelines.pipeline.connectors.test.steps import run_connector_test_pipeline

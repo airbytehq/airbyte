@@ -12,8 +12,8 @@ from pipelines import main_logger
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
 from pipelines.pipeline.connectors.builds.commands import build
 from pipelines.pipeline.connectors.bump_version.commands import bump_version
-from pipelines.pipeline.connectors.migrate_to_base_image.commands import migrate_to_base_image
 from pipelines.pipeline.connectors.list.commands import list
+from pipelines.pipeline.connectors.migrate_to_base_image.commands import migrate_to_base_image
 from pipelines.pipeline.connectors.publish.commands import publish
 from pipelines.pipeline.connectors.test.commands import test
 from pipelines.pipeline.connectors.upgrade_base_image.commands import upgrade_base_image
@@ -206,6 +206,7 @@ def connectors(
         enable_dependency_scanning,
     )
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])
+
 
 connectors.add_command(build)
 connectors.add_command(bump_version)
