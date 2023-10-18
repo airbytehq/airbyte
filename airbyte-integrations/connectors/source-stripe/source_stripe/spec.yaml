@@ -57,3 +57,13 @@ connectionSpecification:
         the less requests will be made and faster the sync will be. On the other hand, the more seldom
         the state is persisted.
       order: 4
+    concurrency_level:
+      type: integer
+      title: Concurrency Level
+      minimum: 1
+      default: 1
+      examples: [1, 3, 10]
+      description: >-
+        The number of worker thread to use for the sync. The bigger the value is, the faster the sync will be.
+        Be careful as rate limiting is not implemented.
+      order: 5

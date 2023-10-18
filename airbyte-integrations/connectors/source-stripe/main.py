@@ -5,9 +5,12 @@
 
 import sys
 
-from airbyte_cdk.entrypoint import launch
+from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from source_stripe import SourceStripe
 
 if __name__ == "__main__":
-    source = SourceStripe()
-    launch(source, sys.argv[1:])
+    args = sys.argv[1:]
+    state = AirbyteEntrypoint.extract_state(args)
+    use_concurrent_cdk = state is None
+    source = SourceStripe(use_concurrent_cdk=use_concurrent_cdk)
+    launch(source, args)

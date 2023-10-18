@@ -175,64 +175,6 @@ test_concurrent_cdk_single_stream = (
     .build()
 )
 
-test_concurrent_cdk_single_stream_with_slice_logger = (
-    TestScenarioBuilder()
-    .set_name("test_concurrent_cdk_single_stream_with_slice_logger")
-    .set_config({})
-    .set_source_builder(
-        ConcurrentSourceBuilder()
-        .set_streams(
-            [
-                _id_only_stream_with_slice_logger,
-            ]
-        )
-        .set_message_repository(InMemoryMessageRepository())
-    )
-    .set_expected_records(
-        [
-            {"data": {"id": "1"}, "stream": "stream1"},
-            {"data": {"id": "2"}, "stream": "stream1"},
-        ]
-    )
-    .set_expected_catalog(
-        {
-            "streams": [
-                {
-                    "json_schema": {
-                        "type": "object",
-                        "properties": {
-                            "id": {"type": ["null", "string"]},
-                        },
-                    },
-                    "name": "stream1",
-                    "supported_sync_modes": ["full_refresh"],
-                }
-            ]
-        }
-    )
-    .set_expected_logs(
-        {
-            "read": [
-                {
-                    "level": "INFO",
-                    "message": "slice:null",
-                },  # Worth noting that the logs are coming out of order. I think it's because of how the4 the message repository and the logging interact. Haven't dug into this much...
-                {"level": "INFO", "message": "Starting syncing ConcurrentCdkSource"},
-                {"level": "INFO", "message": "Marking stream stream1 as STARTED"},
-                {"level": "INFO", "message": "Syncing stream: stream1"},
-                {"level": "INFO", "message": "Marking stream stream1 as RUNNING"},
-                {"level": "INFO", "message": "Read 2 records from stream1 stream"},
-                {"level": "INFO", "message": "Marking stream stream1 as STOPPED"},
-                {"level": "INFO", "message": "Finished syncing stream1"},
-                {"level": "INFO", "message": "ConcurrentCdkSource runtimes"},
-                {"level": "INFO", "message": "Finished syncing ConcurrentCdkSource"},
-            ]
-        }
-    )
-    .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
-    .build()
-)
-
 test_concurrent_cdk_single_stream_with_primary_key = (
     TestScenarioBuilder()
     .set_name("test_concurrent_cdk_single_stream_with_primary_key")
