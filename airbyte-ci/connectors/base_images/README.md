@@ -24,6 +24,7 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 ENV POETRY_VIRTUALENVS_IN_PROJECT=false
 ENV POETRY_NO_INTERACTION=1
 RUN pip install poetry==1.6.1
+RUN sh -c apt update && apt-get install -y socat=1.7.4.4-2
 ```
 
 
@@ -35,6 +36,7 @@ RUN pip install poetry==1.6.1
 
 | Version | Published | Docker Image Address | Changelog | 
 |---------|-----------|--------------|-----------|
+|  1.1.0 | ✅| docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c | Install socat |
 |  1.0.0 | ✅| docker.io/airbyte/python-connector-base:1.0.0@sha256:dd17e347fbda94f7c3abff539be298a65af2d7fc27a307d89297df1081a45c27 | Initial release: based on Python 3.9.18, on slim-bookworm system, with pip==23.2.1 and poetry==1.6.1 |
 
 
