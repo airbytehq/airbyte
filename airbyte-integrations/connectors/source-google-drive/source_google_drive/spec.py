@@ -4,10 +4,11 @@
 
 
 from typing import Any, Dict, Literal, Union
-import dpath.util
 
+import dpath.util
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from pydantic import BaseModel, Field
+
 
 class OAuthCredentials(BaseModel):
     class Config:
@@ -30,6 +31,7 @@ class OAuthCredentials(BaseModel):
         airbyte_secret=True,
     )
 
+
 class ServiceAccountCredentials(BaseModel):
     class Config:
         title = "Service Account Key Authentication"
@@ -41,6 +43,7 @@ class ServiceAccountCredentials(BaseModel):
         airbyte_secret=True,
     )
 
+
 class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
     class Config:
         title = "Google Drive Source Spec"
@@ -48,9 +51,7 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
     folder_url: str = Field(description="URL for the folder you want to sync", order=0)
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
-        title="Authentication",
-        description="Credentials for connecting to the Google Drive API",
-        discriminator="auth_type"
+        title="Authentication", description="Credentials for connecting to the Google Drive API", discriminator="auth_type"
     )
 
     @classmethod

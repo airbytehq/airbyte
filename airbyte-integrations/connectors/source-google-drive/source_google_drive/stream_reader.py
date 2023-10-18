@@ -22,7 +22,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
 from google.auth.transport.requests import Request
-from google.oauth2 import service_account, credentials
+from google.oauth2 import credentials, service_account
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
