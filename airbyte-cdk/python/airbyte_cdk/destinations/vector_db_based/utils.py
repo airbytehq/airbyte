@@ -20,6 +20,7 @@ def create_chunks(iterable: Iterable[Any], batch_size: int) -> Iterator[Tuple[An
         yield chunk
         chunk = tuple(itertools.islice(it, batch_size))
 
+
 def create_stream_identifier(stream: Union[AirbyteStream, AirbyteRecordMessage]) -> str:
     if isinstance(stream, AirbyteStream):
         return str(stream.name if stream.namespace is None else f"{stream.namespace}_{stream.name}")
