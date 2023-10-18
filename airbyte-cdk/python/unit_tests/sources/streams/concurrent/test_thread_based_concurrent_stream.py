@@ -103,6 +103,19 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
 
         self._message_repository.emit_message.assert_called_once_with(slice_log_message)
 
+    def test_wait_while_task_queue_is_full(self):
+        f1 = Mock()
+        f2 = Mock()
+
+        # Verify that the done() method will be called until only one future is still running
+        f1.done.side_effect = [False, False]
+        f2.done.side_effect = [False, True]
+        futures = [f1, f2]
+        self._stream._wait_while_too_many_pending_futures(futures)
+
+        f1.done.assert_has_calls([call(), call()])
+        f2.done.assert_has_calls([call(), call()])
+
     def test_as_airbyte_stream(self):
         expected_airbyte_stream = AirbyteStream(
             name=self._name,
@@ -117,15 +130,144 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
 
         assert expected_airbyte_stream == actual_airbyte_stream
 
-    def test_wait_while_task_queue_is_full(self):
-        f1 = Mock()
-        f2 = Mock()
+    def test_as_airbyte_stream_with_primary_key(self):
+        json_schema = {
+            "type": "object",
+            "properties": {
+                "id_a": {"type": ["null", "string"]},
+                "id_b": {"type": ["null", "string"]},
+            },
+        }
+        stream = ThreadBasedConcurrentStream(
+            self._partition_generator,
+            self._max_workers,
+            self._name,
+            json_schema,
+            self._availability_strategy,
+            ["id"],
+            self._cursor_field,
+            self._slice_logger,
+            self._logger,
+            self._message_repository,
+            1,
+            2,
+            0,
+        )
 
-        # Verify that the done() method will be called until only one future is still running
-        f1.done.side_effect = [False, False]
-        f2.done.side_effect = [False, True]
-        futures = [f1, f2]
-        self._stream._wait_while_too_many_pending_futures(futures)
+        expected_airbyte_stream = AirbyteStream(
+            name=self._name,
+            json_schema=json_schema,
+            supported_sync_modes=[SyncMode.full_refresh],
+            source_defined_cursor=None,
+            default_cursor_field=None,
+            source_defined_primary_key=[["id"]],
+            namespace=None,
+        )
 
-        f1.done.assert_has_calls([call(), call()])
-        f2.done.assert_has_calls([call(), call()])
+        airbyte_stream = stream.as_airbyte_stream()
+        assert expected_airbyte_stream == airbyte_stream
+
+    def test_as_airbyte_stream_with_composite_primary_key(self):
+        json_schema = {
+            "type": "object",
+            "properties": {
+                "id_a": {"type": ["null", "string"]},
+                "id_b": {"type": ["null", "string"]},
+            },
+        }
+        stream = ThreadBasedConcurrentStream(
+            self._partition_generator,
+            self._max_workers,
+            self._name,
+            json_schema,
+            self._availability_strategy,
+            ["id_a", "id_b"],
+            self._cursor_field,
+            self._slice_logger,
+            self._logger,
+            self._message_repository,
+            1,
+            2,
+            0,
+        )
+
+        expected_airbyte_stream = AirbyteStream(
+            name=self._name,
+            json_schema=json_schema,
+            supported_sync_modes=[SyncMode.full_refresh],
+            source_defined_cursor=None,
+            default_cursor_field=None,
+            source_defined_primary_key=[["id_a", "id_b"]],
+            namespace=None,
+        )
+
+        airbyte_stream = stream.as_airbyte_stream()
+        assert expected_airbyte_stream == airbyte_stream
+
+    def test_as_airbyte_stream_with_a_cursor(self):
+
+        json_schema = {
+            "type": "object",
+            "properties": {
+                "id": {"type": ["null", "string"]},
+                "date": {"type": ["null", "string"]},
+            },
+        }
+        stream = ThreadBasedConcurrentStream(
+            self._partition_generator,
+            self._max_workers,
+            self._name,
+            json_schema,
+            self._availability_strategy,
+            self._primary_key,
+            "date",
+            self._slice_logger,
+            self._logger,
+            self._message_repository,
+            1,
+            2,
+            0,
+        )
+
+        expected_airbyte_stream = AirbyteStream(
+            name=self._name,
+            json_schema=json_schema,
+            supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental],
+            source_defined_cursor=True,
+            default_cursor_field=["date"],
+            source_defined_primary_key=None,
+            namespace=None,
+        )
+
+        airbyte_stream = stream.as_airbyte_stream()
+        assert expected_airbyte_stream == airbyte_stream
+
+    def test_as_airbyte_stream_with_namespace(self):
+        stream = ThreadBasedConcurrentStream(
+            self._partition_generator,
+            self._max_workers,
+            self._name,
+            self._json_schema,
+            self._availability_strategy,
+            self._primary_key,
+            self._cursor_field,
+            self._slice_logger,
+            self._logger,
+            self._message_repository,
+            1,
+            2,
+            0,
+            namespace="test",
+        )
+        expected_airbyte_stream = AirbyteStream(
+            name=self._name,
+            json_schema=self._json_schema,
+            supported_sync_modes=[SyncMode.full_refresh],
+            source_defined_cursor=None,
+            default_cursor_field=None,
+            source_defined_primary_key=None,
+            namespace="test",
+        )
+        actual_airbyte_stream = stream.as_airbyte_stream()
+
+        assert expected_airbyte_stream == actual_airbyte_stream
