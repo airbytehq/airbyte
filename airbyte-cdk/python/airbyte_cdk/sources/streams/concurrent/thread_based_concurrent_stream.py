@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
 import concurrent
 import time
 from concurrent.futures import Future
@@ -10,6 +9,7 @@ from logging import Logger
 from queue import Queue
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
+import _queue
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
@@ -91,32 +91,37 @@ class ThreadBasedConcurrentStream(AbstractStream):
         # True -> partition is done
         # False -> partition is not done
         partitions_to_done: Dict[Partition, bool] = {}
-
         finished_partitions = False
-        while record_or_partition := queue.get(block=True, timeout=self._timeout_seconds):
-            if record_or_partition == PARTITIONS_GENERATED_SENTINEL:
-                # All partitions were generated
-                finished_partitions = True
-            elif isinstance(record_or_partition, PartitionCompleteSentinel):
-                # All records for a partition were generated
-                if record_or_partition.partition not in partitions_to_done:
-                    raise RuntimeError(
-                        f"Received sentinel for partition {record_or_partition.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support.partitions:\n{partitions_to_done}"
-                    )
-                partitions_to_done[record_or_partition.partition] = True
-            elif isinstance(record_or_partition, Record):
-                # Emit records
-                yield record_or_partition
-            elif isinstance(record_or_partition, Partition):
-                # A new partition was generated and must be processed
-                partitions_to_done[record_or_partition] = False
-                if self._slice_logger.should_log_slice_message(self._logger):
-                    self._message_repository.emit_message(self._slice_logger.create_slice_log_message(record_or_partition.to_slice()))
-                self._submit_task(futures, partition_reader.process_partition, record_or_partition)
-            if finished_partitions and all(partitions_to_done.values()):
-                # All partitions were generated and process. We're done here
-                break
-        self._check_for_errors(futures)
+
+        try:
+            while record_or_partition := queue.get(block=True, timeout=self._timeout_seconds):
+                if record_or_partition == PARTITIONS_GENERATED_SENTINEL:
+                    # All partitions were generated
+                    finished_partitions = True
+                elif isinstance(record_or_partition, PartitionCompleteSentinel):
+                    # All records for a partition were generated
+                    if record_or_partition.partition not in partitions_to_done:
+                        raise RuntimeError(
+                            f"Received sentinel for partition {record_or_partition.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support.partitions:\n{partitions_to_done}"
+                        )
+                    partitions_to_done[record_or_partition.partition] = True
+                elif isinstance(record_or_partition, Record):
+                    # Emit records
+                    yield record_or_partition
+                elif isinstance(record_or_partition, Partition):
+                    # A new partition was generated and must be processed
+                    partitions_to_done[record_or_partition] = False
+                    if self._slice_logger.should_log_slice_message(self._logger):
+                        self._message_repository.emit_message(self._slice_logger.create_slice_log_message(record_or_partition.to_slice()))
+                    self._submit_task(futures, partition_reader.process_partition, record_or_partition)
+                if finished_partitions and all(partitions_to_done.values()):
+                    # All partitions were generated and process. We're done here
+                    break
+                self._check_for_errors(futures)
+        except _queue.Empty:
+            self._check_for_errors(futures)
+        if futures:
+            raise RuntimeError(f"Failed reading from stream {self.name} with futures not done: {futures}")
 
     def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
@@ -136,9 +141,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]
         if exceptions_from_futures:
             raise RuntimeError(f"Failed reading from stream {self.name} with errors: {exceptions_from_futures}")
-        futures_not_done = [f for f in futures if not f.done()]
-        if futures_not_done:
-            raise RuntimeError(f"Failed reading from stream {self.name} with futures not done: {futures_not_done}")
+        futures[:] = [f for f in futures if not f.done()]
 
     @property
     def name(self) -> str:
