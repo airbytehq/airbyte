@@ -12,11 +12,8 @@ import pytest
 import click
 from click.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
-from pipelines.pipeline.connectors.commands import connectors
 
 from pipelines.pipeline.connectors import commands as connectors_commands
-from pipelines.pipeline.connectors import context as connectors_context
-from pipelines.pipeline.connectors.publish import context as connectors_publish_context
 from pipelines.pipeline.connectors.publish import commands as connectors_publish_command
 from pipelines.pipeline.connectors.test import commands as connectors_test_command
 from pipelines.pipeline.connectors.builds import commands as connectors_build_command
@@ -296,8 +293,9 @@ def test_commands_do_not_override_connector_selection(
 
     mocker.patch.object(click, "confirm")
     mock_connector_context = mocker.MagicMock()
-    mocker.patch.object(connectors_context, "ConnectorContext", mock_connector_context)
-    mocker.patch.object(connectors_publish_context, "PublishConnectorContext", mock_connector_context)
+    mocker.patch.object(connectors_test_command, "ConnectorContext", mock_connector_context)
+    mocker.patch.object(connectors_build_command, "ConnectorContext", mock_connector_context)
+    mocker.patch.object(connectors_publish_command, "PublishConnectorContext", mock_connector_context)
     runner.invoke(command, command_args, catch_exceptions=False, obj=click_context_obj)
     assert mock_connector_context.call_count == 1
     # If the connector selection is overriden the context won't be instantiated with the selected connector mock instance
