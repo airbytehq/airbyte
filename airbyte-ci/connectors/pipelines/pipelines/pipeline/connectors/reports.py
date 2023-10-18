@@ -102,7 +102,7 @@ class ConnectorReport(Report):
         self.pipeline_context.pull_request.create_issue_comment(markdown_comment)
 
     async def to_html(self) -> str:
-        env = Environment(loader=PackageLoader("pipelines.tests"), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
+        env = Environment(loader=PackageLoader("pipeline.connectors.test.steps"), autoescape=select_autoescape(), trim_blocks=False, lstrip_blocks=True)
         template = env.get_template("test_report.html.j2")
         template.globals["StepStatus"] = StepStatus
         template.globals["format_duration"] = format_duration
