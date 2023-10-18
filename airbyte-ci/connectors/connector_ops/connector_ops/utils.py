@@ -277,7 +277,8 @@ class ConnectorLanguageError(Exception):
 class Connector:
     """Utility class to gather metadata about a connector."""
 
-    # The technical name of the connector, e.g. source-google-sheets or third-party/farosai/airbyte-pagerduty-source
+    # Path to the connector directory relative to the CONNECTOR_PATH_PREFIX
+    # e.g source-google-sheets or third-party/farosai/airbyte-pagerduty-source
     relative_connector_path: str
 
     def _get_type_and_name_from_technical_name(self) -> Tuple[str, str]:
