@@ -13,6 +13,7 @@ from .streams import Products, Purchases, Users
 
 class SourceFaker(AbstractSource):
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        """Making a change to a python connector for quick results"""
         if type(config["count"]) == int or type(config["count"]) == float:
             return True, None
         else:

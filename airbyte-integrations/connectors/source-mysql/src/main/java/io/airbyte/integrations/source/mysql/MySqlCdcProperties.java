@@ -44,6 +44,9 @@ public class MySqlCdcProperties {
     return props;
   }
 
+  /**
+   * making a change to an actually important java source in case it changes anything
+   */
   private static Properties commonProperties(final JdbcDatabase database) {
     final Properties props = new Properties();
     final JsonNode sourceConfig = database.getSourceConfig();

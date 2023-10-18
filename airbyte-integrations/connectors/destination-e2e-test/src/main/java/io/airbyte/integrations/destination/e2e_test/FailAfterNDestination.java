@@ -39,6 +39,9 @@ public class FailAfterNDestination extends BaseConnector implements Destination 
     private final long numMessagesAfterWhichToFail;
     private long numMessagesSoFar;
 
+    /**
+     * Making a change to a simple java connector for quick results
+     */
     public FailAfterNConsumer(final long numMessagesAfterWhichToFail, final Consumer<AirbyteMessage> outputRecordCollector) {
       this.numMessagesAfterWhichToFail = numMessagesAfterWhichToFail;
       this.outputRecordCollector = outputRecordCollector;
