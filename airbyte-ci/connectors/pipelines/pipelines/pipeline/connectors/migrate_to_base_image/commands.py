@@ -5,15 +5,14 @@
 import anyio
 import click
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.pipeline.connectors.commands import connectors
 from pipelines.pipeline.connectors.context import ConnectorContext
 from pipelines.pipeline.connectors.migrate_to_base_image.pipeline import run_connector_migration_to_base_image_pipeline
 from pipelines.pipeline.connectors.pipeline import run_connectors_pipelines
 
 
-@connectors.command(
+@click.command(
     cls=DaggerPipelineCommand,
-    help="Make the selected connectors use our base image: remove dockerfile, update metadata.yaml and update documentation.",
+    short_help="Make the selected connectors use our base image: remove dockerfile, update metadata.yaml and update documentation.",
 )
 @click.argument("pull-request-number", type=str)
 @click.option(
