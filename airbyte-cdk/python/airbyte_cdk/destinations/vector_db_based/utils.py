@@ -4,6 +4,8 @@
 
 import itertools
 import traceback
+from typing import Union
+from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream
 
 
 def format_exception(exception: Exception) -> str:
@@ -17,3 +19,9 @@ def create_chunks(iterable, batch_size):
     while chunk:
         yield chunk
         chunk = tuple(itertools.islice(it, batch_size))
+
+def create_stream_identifier(stream: Union[AirbyteStream, AirbyteRecordMessage]) -> str:
+    if isinstance(stream, AirbyteStream):
+        return str(stream.name if stream.namespace is None else f"{stream.namespace}_{stream.name}")
+    else:
+        return str(stream.stream if stream.namespace is None else f"{stream.namespace}_{stream.stream}")
