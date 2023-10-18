@@ -122,8 +122,9 @@ class GradleTask(Step, ABC):
                     ]
                 )
             )
-            # Set GRADLE_HOME and GRADLE_USER_HOME to the directory which will be rsync-ed with the gradle cache volume.
+            # Set GRADLE_HOME to the directory which will be rsync-ed with the gradle cache volume.
             .with_env_variable("GRADLE_HOME", "/root/.gradle")
+            # Same for GRADLE_USER_HOME.
             .with_env_variable("GRADLE_USER_HOME", "/root/.gradle")
             # Set RUN_IN_AIRBYTE_CI to tell gradle how to configure its build cache.
             # This is consumed by settings.gradle in the repo root.
@@ -172,8 +173,9 @@ class GradleTask(Step, ABC):
             gradle_container_base
             # TODO: remove this once we finish the project to boost source-postgres CI performance.
             .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger))
-            # Mount the whole repo.
+            # Mount the connector-agnostic whitelisted files in the git repo.
             .with_mounted_directory("/airbyte", self.context.get_repo_dir(".", include=include))
+            # Mount the sources for the connector and its dependencies.
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             # Mount the cache volume for the transient gradle cache used for this connector only.
             # This volume is PRIVATE meaning it exists only for the duration of the dagger pipeline.
