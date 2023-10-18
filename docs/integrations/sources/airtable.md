@@ -24,7 +24,7 @@ This page contains the setup guide and reference information for the [Airtable](
 
     ![Add Scopes](../../.gitbook/assets/source/airtable/add_scopes.png)
 3. Select required bases or allow access to all available and press the `Create Token` button.
-    ![Add Scopes](../../.gitbook/assets/source/airtable/add_bases.png)
+    ![Add Bases](../../.gitbook/assets/source/airtable/add_bases.png)
 4. Save token from the popup window.
 <!-- /env:oss -->
 
