@@ -5,7 +5,7 @@
 from dagger import CacheVolume, Container
 from pipelines.consts import CONNECTOR_TESTING_REQUIREMENTS, LICENSE_SHORT_FILE_PATH, PYPROJECT_TOML_FILE_PATH
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.pipeline.connectors.context import PipelineContext
+from pipelines.airbyte_ci.connectors.context import PipelineContext
 
 
 def with_python_base(context: PipelineContext, python_version: str = "3.10") -> Container:

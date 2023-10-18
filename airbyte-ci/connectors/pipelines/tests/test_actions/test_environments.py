@@ -4,7 +4,7 @@
 
 import pytest
 from pipelines.dagger.actions.python import common
-from pipelines.pipeline.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 pytestmark = [
     pytest.mark.anyio,

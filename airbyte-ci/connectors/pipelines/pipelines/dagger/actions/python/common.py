@@ -9,7 +9,7 @@ from typing import List, Optional
 from dagger import Container, Directory
 from pipelines.dagger.containers.python import with_python_base, with_testing_dependencies
 from pipelines.helpers.utils import check_path_in_workdir, get_file_contents
-from pipelines.pipeline.connectors.context import ConnectorContext, PipelineContext
+from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 
 
 def with_python_package(

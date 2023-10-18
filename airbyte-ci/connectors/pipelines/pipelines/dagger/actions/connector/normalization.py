@@ -3,7 +3,7 @@
 #
 
 from dagger import Container, Platform
-from pipelines.pipeline.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 BASE_DESTINATION_NORMALIZATION_BUILD_CONFIGURATION = {
     "destination-clickhouse": {

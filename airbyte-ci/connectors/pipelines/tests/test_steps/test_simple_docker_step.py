@@ -8,7 +8,7 @@ import pytest
 from pipelines.helpers.utils import get_exec_result
 from pipelines.models.contexts import PipelineContext
 from pipelines.models.steps import MountPath
-from pipelines.pipeline.steps.docker import SimpleDockerStep
+from pipelines.airbyte_ci.steps.docker import SimpleDockerStep
 
 pytestmark = [
     pytest.mark.anyio,

@@ -7,7 +7,7 @@ from typing import List, Optional
 from dagger import Container
 from pipelines.dagger.actions.python.common import with_pip_packages, with_python_package
 from pipelines.dagger.actions.python.poetry import find_local_dependencies_in_pyproject_toml
-from pipelines.pipeline.connectors.context import PipelineContext
+from pipelines.airbyte_ci.connectors.context import PipelineContext
 
 
 def with_pipx(base_python_container: Container) -> Container:

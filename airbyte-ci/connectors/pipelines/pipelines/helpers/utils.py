@@ -22,7 +22,7 @@ from dagger import Client, Config, Container, ExecError, File, ImageLayerCompres
 from more_itertools import chunked
 
 if TYPE_CHECKING:
-    from pipelines.pipeline.connectors.context import ConnectorContext
+    from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 DAGGER_CONFIG = Config(log_output=sys.stderr)
 AIRBYTE_REPO_URL = "https://github.com/airbytehq/airbyte.git"

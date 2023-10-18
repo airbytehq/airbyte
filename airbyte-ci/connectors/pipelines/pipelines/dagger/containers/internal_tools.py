@@ -6,7 +6,7 @@ from dagger import Container, Secret
 from pipelines.consts import INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.pipx import with_installed_pipx_package
 from pipelines.dagger.containers.python import with_python_base
-from pipelines.pipeline.connectors.context import PipelineContext
+from pipelines.airbyte_ci.connectors.context import PipelineContext
 
 
 async def with_ci_credentials(context: PipelineContext, gsm_secret: Secret) -> Container:

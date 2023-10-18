@@ -10,7 +10,7 @@ from dagger import Client, Container, File
 from pipelines import consts
 from pipelines.consts import DOCKER_HOST_NAME, DOCKER_HOST_PORT, DOCKER_TMP_VOLUME_NAME
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.pipeline.connectors.context import ConnectorContext, PipelineContext
+from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 
 
 def with_global_dockerd_service(dagger_client: Client) -> Container:

@@ -9,7 +9,7 @@ from typing import List
 import anyio
 import pytest
 from pipelines.models.steps import StepStatus
-from pipelines.pipeline.connectors.publish import pipeline as publish_pipeline
+from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
 
 pytestmark = [
     pytest.mark.anyio,

@@ -12,7 +12,7 @@ from pipelines.dagger.actions.python.common import with_pip_packages, with_pytho
 from pipelines.dagger.actions.system.common import with_debian_packages
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.helpers.utils import get_file_contents
-from pipelines.pipeline.connectors.context import PipelineContext
+from pipelines.airbyte_ci.connectors.context import PipelineContext
 
 
 async def find_local_dependencies_in_pyproject_toml(

@@ -21,9 +21,9 @@ from pipelines.helpers.git import (
     get_modified_files_in_pull_request,
 )
 from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_paths
-from pipelines.pipeline.connectors.commands import connectors
-from pipelines.pipeline.metadata.commands import metadata
-from pipelines.pipeline.test.commands import test
+from pipelines.airbyte_ci.connectors.commands import connectors
+from pipelines.airbyte_ci.metadata.commands import metadata
+from pipelines.airbyte_ci.test.commands import test
 
 # HELPERS
 
