@@ -88,7 +88,7 @@ class UnstructuredParser(FileTypeParser):
             file_filename=file_name,
         )
 
-    def _supported_file_types(self) -> List[Any]:
+    def _supported_file_types(self):
         from unstructured.file_utils.filetype import FileType
 
         return [FileType.MD, FileType.PDF, FileType.DOCX]
