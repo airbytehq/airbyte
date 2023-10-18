@@ -7,6 +7,7 @@ connectionSpecification:
     - source_name
     - client_id
     - client_secret
+    - region
   additionalProperties: false
   properties:
     source_name:
@@ -14,17 +15,30 @@ connectionSpecification:
       type: string
       description: Table Source Identification.
       order: 1
-    client_id:
-      title: Client Id
+    region:
+      title: Region
       type: string
-      description: Walmart client id.
+      enum:
+        - US
+        - CA
+      description: Region to pull data from US/CA.
       order: 2
-    client_secret:
-      title: Client Secret
+    client_id:
+      title: Client Id / Consumer Id
       type: string
-      description: Walmart client secret.
+      description: Walmart client id of US, Consumer Id of CA.
       order: 3
+    client_secret:
+      title: Client Secret / Private Key
+      type: string
+      description: Walmart client secret of US, Private Key of CA.
+      order: 4
       airbyte_secret: true
+    channel_type:
+      title: CHANNEL TYPE
+      type: string
+      description: Walmart Channel Type of CA.
+      order: 5
     tunnel_method:
       type: "object"
       title: "Acquisition Method"

@@ -205,6 +205,33 @@ public class DestinationHandler {
     return new DestinationReadList().destinations(reads);
   }
 
+  public DestinationPageReadList pageDestinationsForWorkspace(final PageRequestBody pageRequestBody)
+          throws IOException {
+    if (pageRequestBody.getPageSize() == null || pageRequestBody.getPageSize() == 0) {
+      pageRequestBody.setPageSize(10);
+    }
+    if (pageRequestBody.getPageCurrent() == null || pageRequestBody.getPageCurrent() == 0) {
+      pageRequestBody.setPageCurrent(1);
+    }
+    List<DestinationConnection> destinationConnections = configRepository.pageWorkspaceDestinationConnection(pageRequestBody.getWorkspaceId(),
+            pageRequestBody.getPageSize(), pageRequestBody.getPageCurrent());
+    final List<DestinationRead> destinationReads = Lists.newArrayList();
+    for (final DestinationConnection destinationConnection : destinationConnections) {
+      try {
+        StandardDestinationDefinition standardDestinationDefinition =
+                configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+        final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
+                standardDestinationDefinition.getSpec().getConnectionSpecification());
+        destinationConnection.setConfiguration(sanitizedConfig);
+        destinationReads.add(toDestinationRead(destinationConnection, standardDestinationDefinition));
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return new DestinationPageReadList().destinations(destinationReads).total(configRepository.pageWorkspaceDestinationCount(pageRequestBody.getWorkspaceId()))
+            .pageCurrent(pageRequestBody.getPageCurrent()).pageSize(pageRequestBody.getPageSize());
+  }
+
   public DestinationReadList listDestinationsForDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<DestinationRead> reads = Lists.newArrayList();
