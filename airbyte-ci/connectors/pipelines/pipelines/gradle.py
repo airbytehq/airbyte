@@ -190,6 +190,7 @@ class GradleTask(Step, ABC):
             # Mount the sources for the connector and its dependencies in the git repo.
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             # Populate the local maven repository.
+            # Awaiting on this other container's directory ensures that the caches have been warmed.
             .with_directory("/root/.m2", await with_whole_git_repo.directory("/root/.m2"))
             # Mount the cache volume for the transient gradle cache used for this connector only.
             # We deliberately don't mount any cache volumes before mounting the git repo otherwise these will effectively be always empty.
