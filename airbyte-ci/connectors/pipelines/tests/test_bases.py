@@ -7,7 +7,7 @@ from datetime import timedelta
 import anyio
 import pytest
 from dagger import DaggerError
-from pipelines.models import steps
+from pipelines.models import steps, reports
 
 pytestmark = [
     pytest.mark.anyio,
@@ -85,23 +85,23 @@ class TestReport:
         return mocker.Mock()
 
     def test_report_failed_if_it_has_no_step_result(self, test_context):
-        report = bases.Report(test_context, [])
+        report = reports.Report(test_context, [])
         assert not report.success
-        report = bases.Report(test_context, [steps.StepResult(None, steps.StepStatus.FAILURE)])
+        report = reports.Report(test_context, [steps.StepResult(None, steps.StepStatus.FAILURE)])
         assert not report.success
 
-        report = bases.Report(
+        report = reports.Report(
             test_context, [steps.StepResult(None, steps.StepStatus.FAILURE), steps.StepResult(None, steps.StepStatus.SUCCESS)]
         )
         assert not report.success
 
-        report = bases.Report(test_context, [steps.StepResult(None, steps.StepStatus.SUCCESS)])
+        report = reports.Report(test_context, [steps.StepResult(None, steps.StepStatus.SUCCESS)])
         assert report.success
 
-        report = bases.Report(
+        report = reports.Report(
             test_context, [steps.StepResult(None, steps.StepStatus.SUCCESS), steps.StepResult(None, steps.StepStatus.SKIPPED)]
         )
         assert report.success
 
-        report = bases.Report(test_context, [steps.StepResult(None, steps.StepStatus.SKIPPED)])
+        report = reports.Report(test_context, [steps.StepResult(None, steps.StepStatus.SKIPPED)])
         assert report.success
