@@ -72,7 +72,6 @@ class GradleTask(Step, ABC):
         )
 
     async def _run(self) -> StepResult:
-        connector_code_directory = str(self.context.connector.code_directory)
         include = [
             ".root",
             ".env",
@@ -167,6 +166,16 @@ class GradleTask(Step, ABC):
                     ]
                 )
             )
+            # Also mount the transient cache volume.
+            .with_mounted_cache("/root/gradle-transient-cache", self.connector_transient_cache_volume, sharing=CacheSharingMode.LOCKED)
+            .with_exec(
+                sh_dash_c(
+                    [
+                        # Store to the transient cache.
+                        "(rsync -a --stats /root/.gradle/ /root/gradle-transient-cache || true)",
+                    ]
+                )
+            )
         )
 
         # Mount only the code needed to build the connector.
@@ -177,13 +186,11 @@ class GradleTask(Step, ABC):
             # TODO: remove this once we finish the project to boost source-postgres CI performance.
             .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger))
             # Mount the connector-agnostic whitelisted files in the git repo.
-            .with_mounted_directory("/airbyte", await with_whole_git_repo.directory("/airbyte", include=include))
-            # Mount the sources for the connector and its dependencies.
-            .with_mounted_directory(connector_code_directory, await with_whole_git_repo.directory(connector_code_directory))
-            # Warm the gradle cache.
-            .with_mounted_directory("/root/.gradle", await with_whole_git_repo.directory("/root/.gradle"))
+            .with_mounted_directory("/airbyte", self.context.get_repo_dir(".", include=include))
+            # Mount the sources for the connector and its dependencies in the git repo.
+            .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             # Populate the local maven repository.
-            .with_mounted_directory("/root/.m2", await with_whole_git_repo.directory("/root/.m2"))
+            .with_directory("/root/.m2", await with_whole_git_repo.directory("/root/.m2"))
             # Mount the cache volume for the transient gradle cache used for this connector only.
             # We deliberately don't mount any cache volumes before mounting the git repo otherwise these will effectively be always empty.
             # This volume is LOCKED instead of SHARED and we rsync to it instead of mounting it directly to $GRADLE_HOME.
