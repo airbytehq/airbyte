@@ -35,7 +35,7 @@ def test_check_connection(mocker, requests_mock):
 )
 def test_check_connection_errors(mocker, requests_mock, status_code, json_response, expected_message):
     source = SourceNotion()
-    logger_mock, config_mock = MagicMock(), MagicMock()
+    logger_mock, config_mock = MagicMock(), {"access_token": "test_token", "start_date": "2021-01-01T00:00:00.000Z"}
     requests_mock.post("https://api.notion.com/v1/search", status_code=status_code, json=json_response)
     result, message = source.check_connection(logger_mock, config_mock)
 
@@ -68,3 +68,19 @@ def test_get_authenticator(config, expected_token):
         assert authenticator.token == expected_token  # Replace with the actual way to access the token from the authenticator
     else:
         assert authenticator is None
+
+
+@pytest.mark.parametrize(
+    "config, expected_return",
+    [
+        ({}, None),
+        ({"start_date": "2021-01-01T00:00:00.000Z"}, None),
+        ({"start_date": "2021-99-99T79:89:99.123Z"}, "The provided start date is not a valid date. Please check the format and try again."),
+        ({"start_date": "2021-01-01T00:00:00.000"}, "Please check the format of the start date against the pattern descriptor."),
+        ({"start_date": "2025-01-25T00:00:00.000Z"}, "The start date cannot be greater than the current date."),
+    ],
+)
+def test_validate_start_date(config, expected_return):
+    source = SourceNotion()
+    result = source._validate_start_date(config)
+    assert result == expected_return

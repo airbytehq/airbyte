@@ -6,59 +6,44 @@
     "lago_id": {
       "type": ["null", "string"]
     },
+    "lago_customer_id": {
+      "type": ["null", "string"]
+    },
+    "external_customer_id": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
     "name": {
       "type": ["null", "string"]
     },
-    "code": {
+    "rate_amount": {
       "type": ["null", "string"]
     },
-    "coupon_type": {
+    "credits_balance": {
       "type": ["null", "string"]
     },
-    "amount_cents": {
+    "balance_cents": {
       "type": ["null", "integer"]
     },
-    "amount_currency": {
+    "consumed_credits": {
       "type": ["null", "string"]
-    },
-    "percentage_rate": {
-      "type": ["null", "string"]
-    },
-    "frequency": {
-      "type": ["null", "string"]
-    },
-    "frequency_duration": {
-      "type": ["null", "integer"]
     },
     "created_at": {
-      "type": ["null", "string"]
-    },
-    "expiration": {
-      "type": ["null", "string"]
-    },
-    "expiration_date": {
-      "type": ["null", "string"]
-    },
-    "billable_metric_codes": {
-      "type": ["null", "array"]
-    },
-    "description": {
       "type": ["null", "string"]
     },
     "expiration_at": {
       "type": ["null", "string"]
     },
-    "limited_billable_metrics": {
-      "type": ["null", "boolean"]
+    "last_balance_sync_at": {
+      "type": ["null", "string"]
     },
-    "limited_plans": {
-      "type": ["null", "boolean"]
-    },
-    "plan_codes": {
-      "type": ["null", "array"]
-    },
-    "reusable": {
-      "type": ["null", "boolean"]
+    "last_consumed_credit_at": {
+      "type": ["null", "string"]
     },
     "terminated_at": {
       "type": ["null", "string"]
