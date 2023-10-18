@@ -39,12 +39,29 @@ def test_connection_success(config, requests_mock, url_mocks):
     assert (status, msg) == (True, None)
 
 
-def test_connection_fail_due_to_api_error(config, mocker, requests_mock):
+def test_connection_invalid_projects_and_projects(config_with_project_groups, requests_mock):
+    requests_mock.register_uri("GET", "https://gitlab.com/api/v4/groups/g1?per_page=50", status_code=404)
+    requests_mock.register_uri("GET", "https://gitlab.com/api/v4/groups/g1/descendant_groups?per_page=50", status_code=404)
+    requests_mock.register_uri("GET", "https://gitlab.com/api/v4/projects/p1?per_page=50&statistics=1", status_code=404)
+    source = SourceGitlab()
+    status, msg = source.check_connection(logging.getLogger(), config_with_project_groups)
+    assert (status, msg) == (False, "Groups and/or projects that you provide are invalid or you don't have permission to view it.")
+
+
+@pytest.mark.parametrize(
+    "errror_code, expected_status",
+    (
+        (500, False),
+        (401, False),
+    ),
+)
+def test_connection_fail_due_to_api_error(errror_code, expected_status, config, mocker, requests_mock):
     mocker.patch("time.sleep")
-    requests_mock.get("/api/v4/groups", status_code=500)
+    requests_mock.get("/api/v4/groups", status_code=errror_code)
     source = SourceGitlab()
     status, msg = source.check_connection(logging.getLogger(), config)
-    assert status is False, msg.startswith('Unable to connect to Gitlab API with the provided credentials - "DefaultBackoffException"')
+    assert status is False
+    assert msg.startswith("Unable to connect to Gitlab API with the provided Private Access Token")
 
 
 def test_connection_fail_due_to_expired_access_token_error(oauth_config, requests_mock):
@@ -65,6 +82,7 @@ def test_refresh_expired_access_token_on_error(oauth_config, requests_mock):
     }
     expected_token_expiry_date = "2025-01-01T02:00:00+00:00"
     requests_mock.post("https://gitlab.com/oauth/token", status_code=200, json=test_response)
+    requests_mock.get("https://gitlab.com/api/v4/groups?per_page=50", status_code=200, json=[])
     source = SourceGitlab()
     source.check_connection(logging.getLogger("airbyte"), oauth_config)
     # check the updated config values
