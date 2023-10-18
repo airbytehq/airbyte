@@ -105,13 +105,6 @@ module.exports = function (plop) {
         base: pythonDestinationInputRoot,
         templateFiles: `${pythonDestinationInputRoot}/**/**`,
       },
-      // plop doesn't add dotfiles by default so we manually add them
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${pythonDestinationInputRoot}/.dockerignore`,
-        path: `${pythonDestinationOutputRoot}/.dockerignore`
-      },
       {type: 'emitSuccess', outputPath: pythonDestinationOutputRoot}
     ]
   })
@@ -137,13 +130,6 @@ module.exports = function (plop) {
         base: connectorAcceptanceTestFilesInputRoot,
         templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
       },
-      // plop doesn't add dotfiles by default so we manually add them
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${httpApiInputRoot}/.dockerignore.hbs`,
-        path: `${httpApiOutputRoot}/.dockerignore`
-      },
       {type: 'emitSuccess', outputPath: httpApiOutputRoot}
     ]
   });
@@ -168,13 +154,6 @@ module.exports = function (plop) {
         destination: pythonSourceOutputRoot,
         base: connectorAcceptanceTestFilesInputRoot,
         templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
-      },
-      // plop doesn't add dotfiles by default so we manually add them
-      {
-        type:'add',
-        abortOnFail: true,
-        templateFile: `${lowCodeSourceInputRoot}/.dockerignore.hbs`,
-        path: `${pythonSourceOutputRoot}/.dockerignore`
       },
       {type: 'emitSuccess', outputPath: pythonSourceOutputRoot}
     ]
@@ -244,12 +223,6 @@ module.exports = function (plop) {
               destination: pythonSourceOutputRoot,
               base: connectorAcceptanceTestFilesInputRoot,
               templateFiles: `${connectorAcceptanceTestFilesInputRoot}/**/**`,
-            },
-            {
-                type:'add',
-                abortOnFail: true,
-                templateFile: `${pythonSourceInputRoot}/.dockerignore.hbs`,
-                path: `${pythonSourceOutputRoot}/.dockerignore`
             },
             {type: 'emitSuccess', outputPath: pythonSourceOutputRoot, message: "For a checklist of what to do next go to https://docs.airbyte.com/connector-development/tutorials/building-a-python-source"}]
     });

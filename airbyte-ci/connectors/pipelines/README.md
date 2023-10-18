@@ -81,7 +81,6 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
 - [`connectors` command subgroup](#connectors-command-subgroup)
   * [Options](#options-1)
 - [`connectors list` command](#connectors-list-command)
-- [`connectors format` command](#connectors-format-command)
 - [`connectors test` command](#connectors-test-command)
   * [Examples](#examples-)
   * [What it runs](#what-it-runs-)
@@ -170,32 +169,6 @@ List connectors with a specific language:
 List connectors with multiple filters:
 
 `airbyte-ci connectors --language=low-code --support-level=certified list`
-
-### <a id="connectors-list-command"></a>`connectors format` command
-Run a code formatter on one or multiple connectors.
-
-For Python connectors we run the following tools, using the configuration defined in `pyproject.toml`:
-* `black` for code formatting
-* `isort` for import sorting
-* `licenseheaders` for adding license headers
-
-For Java connectors we run `./gradlew format`.
-
-In local CLI execution the formatted code is exported back the local repository. No commit or push is performed.
-In CI execution the formatted code is pushed to the remote branch. One format commit per connector.
-
-#### Examples
-Format a specific connector:
-
-`airbyte-ci connectors --name=source-pokeapi format`
-
-Format all Python connectors:
-
-`airbyte-ci connectors --language=python format`
-
-Format all connectors modified on the current branch:
-
-`airbyte-ci connectors --modified format`
 
 
 ### <a id="connectors-test-command"></a>`connectors test` command
@@ -382,9 +355,9 @@ Make a connector using a Dockerfile migrate to the base image by:
 Migrate source-openweather to use the base image: `airbyte-ci connectors --name=source-openweather migrate-to-base-image`
 
 ### Arguments
-| Argument              | Description                                                            |
-| --------------------- | ---------------------------------------------------------------------- |
-| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry            |
+| Argument              | Description                                                 |
+| --------------------- | ----------------------------------------------------------- |
+| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry |
 
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 
@@ -425,7 +398,13 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 1.9.1   | [#31455](https://github.com/airbytehq/airbyte/pull/31455)  | Fix `None` docker credentials on publish.                              |
+| 2.0.2  | [#31533](https://github.com/airbytehq/airbyte/pull/31533)  | Pip cache volume by python version.                                                            |
+| 2.0.1   | [#31545](https://github.com/airbytehq/airbyte/pull/31545)  | Reword the changelog entry when using `migrate-to-base-image`.                                                            |
+| 2.0.0   | [#31424](https://github.com/airbytehq/airbyte/pull/31424)  | Remove `airbyte-ci connectors format` command.                                                            |
+| 1.9.4   | [#31478](https://github.com/airbytehq/airbyte/pull/31478)  | Fix running tests for connector-ops package.                                                              |
+| 1.9.3   | [#31457](https://github.com/airbytehq/airbyte/pull/31457)  | Improve the connector documentation for connectors migrated to our base image.                            |
+| 1.9.2   | [#31426](https://github.com/airbytehq/airbyte/pull/31426)  | Concurrent execution of java connectors tests.                                                            |
+| 1.9.1   | [#31455](https://github.com/airbytehq/airbyte/pull/31455)  | Fix `None` docker credentials on publish.                                                                 |
 | 1.9.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade-base-image`, `migrate-to-base-image`.                              |
 | 1.8.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade-base-image`, `migrate-to-base-image`.                              |
 | 1.7.2   | [#31343](https://github.com/airbytehq/airbyte/pull/31343)  | Bind Pytest integration tests to a dockerhost.                                                            |

@@ -1,5 +1,13 @@
 name: Connector Performance Harness
 on:
+  workflow_call:
+    inputs:
+      connector:
+        type: string
+        required: true
+      dataset:
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       connector:
@@ -169,16 +177,15 @@ jobs:
           PREFIX: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
           SUFFIX: '"}}'
           HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
         run: |
           kubectl apply -f ./tools/bin/admin-service-account.yaml
           connector_name=$(echo $CONN | cut -d / -f 2)
           kind load docker-image airbyte/$connector_name:dev --name chart-testing
           kind load docker-image airbyte/$HARNESS_TYPE:dev --name chart-testing
-          # envsubst requires variables to be exported
+          # envsubst requires variables to be exported or setup in the env field in this step.
           export CONNECTOR_IMAGE_NAME=${CONN/connectors/airbyte}:dev
           export DATASET=$DS
-          export STREAM_NUMBER=$STREAM_NUMBER
-          export SYNC_MODE=$SYNC_MODE
           export HARNESS=$HARNESS_TYPE
           envsubst < ./tools/bin/run-harness-process.yaml | kubectl create -f -
           echo "harness is ${{ steps.which-harness.outputs.harness_type }}"

@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, Mock, patch
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_pinecone.config import ConfigModel
-from destination_pinecone.destination import DestinationPinecone, embedder_map
+from destination_pinecone.destination import DestinationPinecone
 
 
 class TestDestinationPinecone(unittest.TestCase):
@@ -26,11 +26,11 @@ class TestDestinationPinecone(unittest.TestCase):
         self.logger = AirbyteLogger()
 
     @patch("destination_pinecone.destination.PineconeIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_check(self, MockedPineconeIndexer):
+    @patch("destination_pinecone.destination.create_from_config")
+    def test_check(self, MockedEmbedder, MockedPineconeIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
-        embedder_map["openai"].return_value = mock_embedder
+        MockedEmbedder.return_value = mock_embedder
         MockedPineconeIndexer.return_value = mock_indexer
 
         mock_embedder.check.return_value = None
@@ -44,11 +44,11 @@ class TestDestinationPinecone(unittest.TestCase):
         mock_indexer.check.assert_called_once()
 
     @patch("destination_pinecone.destination.PineconeIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_check_with_errors(self, MockedPineconeIndexer):
+    @patch("destination_pinecone.destination.create_from_config")
+    def test_check_with_errors(self, MockedEmbedder, MockedPineconeIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
-        embedder_map["openai"].return_value = mock_embedder
+        MockedEmbedder.return_value = mock_embedder
         MockedPineconeIndexer.return_value = mock_indexer
 
         embedder_error_message = "Embedder Error"
@@ -68,13 +68,13 @@ class TestDestinationPinecone(unittest.TestCase):
 
     @patch("destination_pinecone.destination.Writer")
     @patch("destination_pinecone.destination.PineconeIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_write(self, MockedPineconeIndexer, MockedWriter):
+    @patch("destination_pinecone.destination.create_from_config")
+    def test_write(self, MockedEmbedder, MockedPineconeIndexer, MockedWriter):
         mock_embedder = Mock()
         mock_indexer = Mock()
+        MockedEmbedder.return_value = mock_embedder
         mock_writer = Mock()
 
-        embedder_map["openai"].return_value = mock_embedder
         MockedPineconeIndexer.return_value = mock_indexer
         MockedWriter.return_value = mock_writer
 
