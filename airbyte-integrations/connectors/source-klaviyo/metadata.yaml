@@ -18,6 +18,11 @@ data:
     oss:
       enabled: true
   releaseStage: generally_available
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: In this release, for 'events' stream changed type of 'event_properties/items/quantity' field from integer to number. Users will need to refresh the source schema and reset events streams after upgrading.
+        upgradeDeadline: "2023-11-31"
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   tags:
     - language:python
