@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Callable, List, Optional
 
 import toml
-from dagger import CacheVolume, Client, Container, DaggerError, Directory, File, Platform, Secret
+from dagger import CacheVolume, Client, Container, Directory, File, Platform, Secret
 from dagger.engine._version import CLI_VERSION as dagger_engine_version
 from pipelines import consts
 from pipelines.consts import (
@@ -47,7 +47,7 @@ def with_python_base(context: PipelineContext, python_version: str = "3.10") -> 
         Container: The python base environment container.
     """
 
-    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
+    pip_cache: CacheVolume = context.dagger_client.cache_volume(f"pip_cache-{python_version}")
 
     base_container = (
         context.dagger_client.container()
@@ -87,7 +87,7 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
     )
 
 
-def with_git(dagger_client, ci_github_access_token_secret, ci_git_user) -> Container:
+def with_git(dagger_client, ci_git_user: str = "octavia") -> Container:
     return (
         dagger_client.container()
         .from_("alpine:latest")
@@ -102,7 +102,6 @@ def with_git(dagger_client, ci_github_access_token_secret, ci_git_user) -> Conta
                 ]
             )
         )
-        .with_secret_variable("GITHUB_TOKEN", ci_github_access_token_secret)
         .with_workdir("/ghcli")
         .with_exec(
             sh_dash_c(
@@ -151,6 +150,7 @@ def with_python_package(
     python_environment: Container,
     package_source_code_path: str,
     exclude: Optional[List] = None,
+    include: Optional[List] = None,
 ) -> Container:
     """Load a python package source code to a python environment container.
 
@@ -164,7 +164,7 @@ def with_python_package(
     Returns:
         Container: A python environment container with the python package source code.
     """
-    package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude)
+    package_source_code_directory: Directory = context.get_repo_dir(package_source_code_path, exclude=exclude, include=include)
     work_dir_path = f"/{package_source_code_path}"
     container = python_environment.with_mounted_directory(work_dir_path, package_source_code_directory).with_workdir(work_dir_path)
     return container
@@ -308,13 +308,13 @@ def _install_python_dependencies_from_setup_py(
     container: Container,
     additional_dependency_groups: Optional[List] = None,
 ) -> Container:
-    install_connector_package_cmd = ["python", "-m", "pip", "install", "."]
+    install_connector_package_cmd = ["pip", "install", "."]
     container = container.with_exec(install_connector_package_cmd)
 
     if additional_dependency_groups:
         # e.g. .[dev,tests]
         group_string = f".[{','.join(additional_dependency_groups)}]"
-        group_install_cmd = ["python", "-m", "pip", "install", group_string]
+        group_install_cmd = ["pip", "install", group_string]
 
         container = container.with_exec(group_install_cmd)
 
@@ -322,7 +322,7 @@ def _install_python_dependencies_from_setup_py(
 
 
 def _install_python_dependencies_from_requirements_txt(container: Container) -> Container:
-    install_requirements_cmd = ["python", "-m", "pip", "install", "-r", "requirements.txt"]
+    install_requirements_cmd = ["pip", "install", "-r", "requirements.txt"]
     return container.with_exec(install_requirements_cmd)
 
 
@@ -330,9 +330,9 @@ def _install_python_dependencies_from_poetry(
     container: Container,
     additional_dependency_groups: Optional[List] = None,
 ) -> Container:
-    pip_install_poetry_cmd = ["python", "-m", "pip", "install", "poetry"]
+    pip_install_poetry_cmd = ["pip", "install", "poetry"]
     poetry_disable_virtual_env_cmd = ["poetry", "config", "virtualenvs.create", "false"]
-    poetry_install_no_venv_cmd = ["poetry", "install", "--no-root"]
+    poetry_install_no_venv_cmd = ["poetry", "install"]
     if additional_dependency_groups:
         for group in additional_dependency_groups:
             poetry_install_no_venv_cmd += ["--with", group]
@@ -346,6 +346,7 @@ async def with_installed_python_package(
     package_source_code_path: str,
     additional_dependency_groups: Optional[List] = None,
     exclude: Optional[List] = None,
+    include: Optional[List] = None,
 ) -> Container:
     """Install a python package in a python environment container.
 
@@ -359,7 +360,7 @@ async def with_installed_python_package(
     Returns:
         Container: A python environment container with the python package installed.
     """
-    container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude)
+    container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude, include=include)
 
     local_dependencies = await find_local_python_dependencies(context, package_source_code_path)
 
@@ -371,7 +372,7 @@ async def with_installed_python_package(
     has_pyproject_toml = await check_path_in_workdir(container, "pyproject.toml")
 
     if has_pyproject_toml:
-        container = _install_python_dependencies_from_poetry(container)
+        container = _install_python_dependencies_from_poetry(container, additional_dependency_groups)
     elif has_setup_py:
         container = _install_python_dependencies_from_setup_py(container, additional_dependency_groups)
     elif has_requirements_txt:
@@ -402,7 +403,7 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
         path_to_cdk = "airbyte-cdk/python/"
         directory_to_mount = context.get_repo_dir(path_to_cdk)
 
-        context.logger.info(f"Mounting {directory_to_mount}")
+        context.logger.info(f"Mounting CDK from {directory_to_mount}")
 
         # Install the airbyte-cdk package from the local directory
         # We use --no-deps to avoid conflicts with the airbyte-cdk version required by the connector
@@ -413,33 +414,22 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
     return connector_container
 
 
-async def with_python_connector_installed(context: ConnectorContext) -> Container:
-    """Install an airbyte connector python package in a testing environment.
-
-    Args:
-        context (ConnectorContext): The current test context, providing the repository directory from which the connector sources will be pulled.
-    Returns:
-        Container: A python environment container (with the connector installed).
-    """
-    connector_source_path = str(context.connector.code_directory)
-    testing_environment: Container = with_testing_dependencies(context)
-    exclude = [
-        f"{context.connector.code_directory}/{item}"
-        for item in [
-            "secrets",
-            "metadata.yaml",
-            "bootstrap.md",
-            "icon.svg",
-            "README.md",
-            "Dockerfile",
-            "acceptance-test-docker.sh",
-            "build.gradle",
-            ".hypothesis",
-            ".dockerignore",
-        ]
-    ]
+async def with_python_connector_installed(
+    context: PipelineContext,
+    python_container: Container,
+    connector_source_path: str,
+    additional_dependency_groups: Optional[List] = None,
+    exclude: Optional[List] = None,
+    include: Optional[List] = None,
+) -> Container:
+    """Install an airbyte python connectors  dependencies."""
     container = await with_installed_python_package(
-        context, testing_environment, connector_source_path, additional_dependency_groups=["dev", "tests", "main"], exclude=exclude
+        context,
+        python_container,
+        connector_source_path,
+        additional_dependency_groups=additional_dependency_groups,
+        exclude=exclude,
+        include=include,
     )
 
     container = await apply_python_development_overrides(context, container)
@@ -910,45 +900,6 @@ async def with_airbyte_java_connector(context: ConnectorContext, connector_java_
     return await finalize_build(context, connector_container)
 
 
-async def get_cdk_version_from_python_connector(python_connector: Container) -> Optional[str]:
-    pip_freeze_stdout = await python_connector.with_entrypoint("pip").with_exec(["freeze"]).stdout()
-    cdk_dependency_line = next((line for line in pip_freeze_stdout.split("\n") if "airbyte-cdk" in line), None)
-    if not cdk_dependency_line:
-        return None
-
-    if "file://" in cdk_dependency_line:
-        return "LOCAL"
-
-    _, cdk_version = cdk_dependency_line.split("==")
-    return cdk_version
-
-
-async def with_airbyte_python_connector(context: ConnectorContext, build_platform: Platform) -> Container:
-    if context.connector.technical_name == "source-file-secure":
-        return await with_airbyte_python_connector_full_dagger(context, build_platform)
-
-    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    connector_container = (
-        context.dagger_client.container(platform=build_platform)
-        .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .build(await context.get_connector_dir())
-        .with_label("io.airbyte.name", context.metadata["dockerRepository"])
-    )
-
-    connector_container = await apply_python_development_overrides(context, connector_container)
-
-    cdk_version = await get_cdk_version_from_python_connector(connector_container)
-    if cdk_version:
-        context.logger.info(f"Connector has a cdk dependency, using cdk version {cdk_version}")
-        connector_container = connector_container.with_label("io.airbyte.cdk_version", cdk_version)
-        context.cdk_version = cdk_version
-    if not await connector_container.label("io.airbyte.version") == context.metadata["dockerImageTag"]:
-        raise DaggerError(
-            "Abusive caching might be happening. The connector container should have been built with the correct version as defined in metadata.yaml"
-        )
-    return await finalize_build(context, connector_container)
-
-
 async def finalize_build(context: ConnectorContext, connector_container: Container) -> Container:
     """Finalize build by adding dagger engine version label and running finalize_build.sh or finalize_build.py if present in the connector directory."""
     connector_container = connector_container.with_label("io.dagger.engine_version", dagger_engine_version)
@@ -987,60 +938,6 @@ async def finalize_build(context: ConnectorContext, connector_container: Contain
         )
 
     return connector_container.with_entrypoint(original_entrypoint)
-
-
-async def with_airbyte_python_connector_full_dagger(context: ConnectorContext, build_platform: Platform) -> Container:
-    setup_dependencies_to_mount = await find_local_python_dependencies(
-        context, str(context.connector.code_directory), search_dependencies_in_setup_py=True, search_dependencies_in_requirements_txt=False
-    )
-
-    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
-    base = context.dagger_client.container(platform=build_platform).from_("python:3.9-slim")
-    snake_case_name = context.connector.technical_name.replace("-", "_")
-    entrypoint = ["python", "/airbyte/integration_code/main.py"]
-    builder = (
-        base.with_workdir("/airbyte/integration_code")
-        .with_env_variable("DAGGER_BUILD", "1")
-        .with_mounted_cache("/root/.cache/pip", pip_cache)
-        .with_exec(
-            sh_dash_c(
-                [
-                    "apt-get update",
-                    "apt-get install -y tzdata",
-                    "pip install --upgrade pip",
-                ]
-            )
-        )
-        .with_file("setup.py", (await context.get_connector_dir(include="setup.py")).file("setup.py"))
-    )
-
-    for dependency_path in setup_dependencies_to_mount:
-        in_container_dependency_path = f"/local_dependencies/{Path(dependency_path).name}"
-        builder = builder.with_mounted_directory(in_container_dependency_path, context.get_repo_dir(dependency_path))
-
-    builder = builder.with_exec(["pip", "install", "--prefix=/install", "."])
-
-    connector_container = (
-        base.with_workdir("/airbyte/integration_code")
-        .with_exec(
-            sh_dash_c(
-                [
-                    "apt-get update",
-                    "apt-get install -y bash",
-                ]
-            )
-        )
-        .with_directory("/usr/local", builder.directory("/install"))
-        .with_file("/usr/localtime", builder.file("/usr/share/zoneinfo/Etc/UTC"))
-        .with_new_file("/etc/timezone", contents="Etc/UTC")
-        .with_file("main.py", (await context.get_connector_dir(include="main.py")).file("main.py"))
-        .with_directory(snake_case_name, (await context.get_connector_dir(include=snake_case_name)).directory(snake_case_name))
-        .with_env_variable("AIRBYTE_ENTRYPOINT", " ".join(entrypoint))
-        .with_entrypoint(entrypoint)
-        .with_label("io.airbyte.version", context.metadata["dockerImageTag"])
-        .with_label("io.airbyte.name", context.metadata["dockerRepository"])
-    )
-    return await finalize_build(context, connector_container)
 
 
 def with_crane(
@@ -1102,7 +999,7 @@ async def mounted_connector_secrets(context: PipelineContext, secret_directory_p
             contents[secret_file_name] = await secret.plaintext()
 
         def with_secrets_mounted_as_regular_files(container: Container) -> Container:
-            container = container.with_exec(["mkdir", secret_directory_path], skip_entrypoint=True)
+            container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
             for secret_file_name, secret_content_str in contents.items():
                 container = container.with_new_file(f"{secret_directory_path}/{secret_file_name}", secret_content_str, permissions=0o600)
             return container
@@ -1110,7 +1007,7 @@ async def mounted_connector_secrets(context: PipelineContext, secret_directory_p
         return with_secrets_mounted_as_regular_files
 
     def with_secrets_mounted_as_dagger_secrets(container: Container) -> Container:
-        container = container.with_exec(["mkdir", secret_directory_path], skip_entrypoint=True)
+        container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
         for secret_file_name, secret in context.connector_secrets.items():
             container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
         return container

@@ -2,9 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
+
 import pytest
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_stripe.streams import IncrementalStripeStream, StripeLazySubStream
+
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 
 @pytest.fixture(name="config")
