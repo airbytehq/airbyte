@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.util.stream.Stream;
 import org.junit.jupiter.params.provider.Arguments;
 
-public class MsSqlRdsSourcePerformanceSecretTest extends AbstractSourcePerformanceTest {
+public class MssqlSourcePerformanceTest extends AbstractSourcePerformanceTest {
 
   private static final String PERFORMANCE_SECRET_CREDS = "secrets/performance-config.json";
 

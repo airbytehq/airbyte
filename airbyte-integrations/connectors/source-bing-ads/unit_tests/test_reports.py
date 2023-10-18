@@ -3,11 +3,19 @@
 #
 
 import copy
+from unittest.mock import Mock
 
 import pendulum
+import pytest
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
 from source_bing_ads.reports import PerformanceReportsMixin, ReportsMixin
-from source_bing_ads.source import SourceBingAds
+from source_bing_ads.source import (
+    GeographicPerformanceReportDaily,
+    GeographicPerformanceReportHourly,
+    GeographicPerformanceReportMonthly,
+    GeographicPerformanceReportWeekly,
+    SourceBingAds,
+)
 
 
 class TestClient:
@@ -137,3 +145,23 @@ def test_report_get_start_date_performance_report_wo_stream_state():
     stream_state = {}
     account_id = "123"
     assert reports_start_date.subtract(days=days_to_subtract) == test_report.get_start_date(stream_state, account_id)
+
+
+@pytest.mark.parametrize(
+    "performance_report_cls",
+    (
+        GeographicPerformanceReportDaily,
+        GeographicPerformanceReportHourly,
+        GeographicPerformanceReportMonthly,
+        GeographicPerformanceReportWeekly,
+    ),
+)
+def test_geographic_performance_report_pk(performance_report_cls):
+    config = {
+        "developer_token": "developer_token",
+        "client_id": "client_id",
+        "refresh_token": "refresh_token",
+        "reports_start_date": "2020-01-01T00:00:00Z",
+    }
+    stream = performance_report_cls(client=Mock(), config=config)
+    assert stream.primary_key is None

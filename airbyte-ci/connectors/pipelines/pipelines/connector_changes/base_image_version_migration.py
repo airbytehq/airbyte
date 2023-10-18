@@ -320,7 +320,7 @@ async def run_connector_migration_to_base_image_pipeline(context: ConnectorConte
                 context,
                 bump_version_in_metadata_result.output_artifact,
                 new_version,
-                "Use our base image and remove Dockerfile",
+                "Base image migration: remove Dockerfile and use the python-connector-base image",
                 pull_request_number,
             )
             add_changelog_entry_result = await add_changelog_entry.run()
