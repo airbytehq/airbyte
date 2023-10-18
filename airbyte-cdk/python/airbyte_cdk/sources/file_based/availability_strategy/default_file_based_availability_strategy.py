@@ -70,10 +70,9 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
     def _check_list_files(self, stream: "AbstractFileBasedStream") -> List[RemoteFile]:
         try:
             files = stream.list_files()
-        except CustomFileBasedSourceException as custom_exc:
-            raise custom_exc
         except Exception as exc:
-            raise CheckAvailabilityError(FileBasedSourceError.ERROR_LISTING_FILES, stream=stream.name) from exc
+            error_message = exc.error_message if hasattr(exc, "error_message") else FileBasedSourceError.ERROR_LISTING_FILES
+            raise CheckAvailabilityError(error_message, stream=stream.name) from exc
 
         if not files:
             raise CheckAvailabilityError(FileBasedSourceError.EMPTY_STREAM, stream=stream.name)

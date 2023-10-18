@@ -40,9 +40,13 @@ class FileBasedSourceError(Enum):
 
 
 class BaseFileBasedSourceError(Exception):
-    def __init__(self, error: FileBasedSourceError, **kwargs):  # type: ignore # noqa
+    def __init__(self, error: Union[FileBasedSourceError, str], **kwargs):  # type: ignore # noqa
+        is_default_error = isinstance(error, FileBasedSourceError)
+        if is_default_error:
+            error = FileBasedSourceError(error).value
+        self.error_message = error
         super().__init__(
-            f"{FileBasedSourceError(error).value} Contact Support if you need assistance.\n{' '.join([f'{k}={v}' for k, v in kwargs.items()])}"
+            f"{error} Contact Support if you need assistance.\n{' '.join([f'{k}={v}' for k, v in kwargs.items()])}"
         )
 
 
@@ -83,10 +87,4 @@ class StopSyncPerValidationPolicy(BaseFileBasedSourceError):
 
 
 class ErrorListingFiles(BaseFileBasedSourceError):
-    pass
-
-
-class CustomFileBasedSourceException(AirbyteTracedException):
-    """Custom exception that can be raised in connectors using file_based to avoid catching in DefaultFileBasedAvailabilityStrategy"""
-
     pass

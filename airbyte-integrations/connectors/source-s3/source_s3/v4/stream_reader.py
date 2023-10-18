@@ -5,13 +5,12 @@
 import logging
 from datetime import datetime
 from io import IOBase
-from typing import Iterable, List, Optional, Set
+from typing import Iterable, Union, List, Optional, Set
 
 import boto3.session
 import pytz
 import smart_open
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedSourceException, ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
@@ -68,37 +67,32 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         prefixes = [prefix] if prefix else self.get_prefixes_from_globs(globs)
         seen = set()
         total_n_keys = 0
-        raise_exception = None
 
         try:
-            if prefixes:
-                for prefix in prefixes:
-                    for remote_file in self._page(s3, globs, self.config.bucket, prefix, seen, logger):
-                        total_n_keys += 1
-                        yield remote_file
-            else:
-                for remote_file in self._page(s3, globs, self.config.bucket, None, seen, logger):
+            for current_prefix in (prefixes if prefixes else [None]):
+                for remote_file in self._page(s3, globs, self.config.bucket, current_prefix, seen, logger):
                     total_n_keys += 1
                     yield remote_file
 
             logger.info(f"Finished listing objects from S3. Found {total_n_keys} objects total ({len(seen)} unique objects).")
         except ClientError as exc:
             if exc.response["Error"]["Code"] == "NoSuchBucket":
-                raise CustomFileBasedSourceException.from_exception(
-                    exc, message=f"The bucket {self.config.bucket} does not exist.", failure_type=FailureType.config_error
-                ) from exc
-            raise_exception = exc
+                error = f"The bucket {self.config.bucket} does not exist."
+            else:
+                error = FileBasedSourceError.ERROR_LISTING_FILES
+            self.raise_error_listing_files(error, globs, exc)
         except Exception as exc:
-            raise_exception = exc
+            self.raise_error_listing_files(FileBasedSourceError.ERROR_LISTING_FILES, globs, exc)
 
-        if raise_exception:
-            raise ErrorListingFiles(
-                FileBasedSourceError.ERROR_LISTING_FILES,
-                source="s3",
-                bucket=self.config.bucket,
-                globs=globs,
-                endpoint=self.config.endpoint,
-            ) from raise_exception
+    def raise_error_listing_files(self, error_message: Union[str, FileBasedSourceError], globs: List[str], exc: Optional[Exception] = None):
+        """Helper method to raise the ErrorListingFiles exception."""
+        raise ErrorListingFiles(
+            error_message,
+            source="s3",
+            bucket=self.config.bucket,
+            globs=globs,
+            endpoint=self.config.endpoint,
+        ) from exc
 
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         try:
