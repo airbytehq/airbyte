@@ -117,6 +117,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
                 # All partitions were generated and process. We're done here
                 break
             self._check_for_errors(futures)
+        self._check_for_errors(futures)    
         if futures:
             raise RuntimeError(f"Failed reading from stream {self.name} with futures not done: {futures}")
 
