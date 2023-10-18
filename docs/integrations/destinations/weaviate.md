@@ -83,6 +83,7 @@ As properties have to start will a lowercase letter in Weaviate, field names mig
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                          |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| 0.2.2   | 2023-10-15 | [#31329](https://github.com/airbytehq/airbyte/pull/31329) | Add OpenAI-compatible embedder option |
 | 0.2.1   | 2023-10-04 | [#31075](https://github.com/airbytehq/airbyte/pull/31075) | Fix OpenAI embedder batch size and conflict field name handling |
 | 0.2.0   | 2023-09-22 | [#30151](https://github.com/airbytehq/airbyte/pull/30151) | Add embedding capabilities, overwrite and dedup support and API key auth mode, make certified. 🚨 Breaking changes - check migrations guide. |
 | 0.1.1   | 2022-02-08 | [\#22527](https://github.com/airbytehq/airbyte/pull/22527) | Multiple bug fixes: Support String based IDs, arrays of uknown type and additionalProperties of type object and array of objects |
