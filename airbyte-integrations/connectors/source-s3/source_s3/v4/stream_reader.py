@@ -5,12 +5,13 @@
 import logging
 from datetime import datetime
 from io import IOBase
-from typing import Iterable, Union, List, Optional, Set
+from typing import Iterable, List, Optional, Set
 
 import boto3.session
 import pytz
 import smart_open
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
@@ -77,17 +78,17 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             logger.info(f"Finished listing objects from S3. Found {total_n_keys} objects total ({len(seen)} unique objects).")
         except ClientError as exc:
             if exc.response["Error"]["Code"] == "NoSuchBucket":
-                error = f"The bucket {self.config.bucket} does not exist."
-            else:
-                error = FileBasedSourceError.ERROR_LISTING_FILES
-            self.raise_error_listing_files(error, globs, exc)
+                raise CustomFileBasedException(
+                    f"The bucket {self.config.bucket} does not exist.", failure_type=FailureType.config_error, exception=exc
+                )
+            self._raise_error_listing_files(globs, exc)
         except Exception as exc:
-            self.raise_error_listing_files(FileBasedSourceError.ERROR_LISTING_FILES, globs, exc)
+            self._raise_error_listing_files(globs, exc)
 
-    def raise_error_listing_files(self, error_message: Union[str, FileBasedSourceError], globs: List[str], exc: Optional[Exception] = None):
+    def _raise_error_listing_files(self, globs: List[str], exc: Optional[Exception] = None):
         """Helper method to raise the ErrorListingFiles exception."""
         raise ErrorListingFiles(
-            error_message,
+            FileBasedSourceError.ERROR_LISTING_FILES,
             source="s3",
             bucket=self.config.bucket,
             globs=globs,

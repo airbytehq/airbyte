@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
-from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, CustomFileBasedSourceException, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, CustomFileBasedException, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import conforms_to_schema
@@ -70,9 +70,10 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
     def _check_list_files(self, stream: "AbstractFileBasedStream") -> List[RemoteFile]:
         try:
             files = stream.list_files()
+        except CustomFileBasedException as exc:
+            raise CheckAvailabilityError(str(exc), stream=stream.name) from exc
         except Exception as exc:
-            error_message = exc.error_message if hasattr(exc, "error_message") else FileBasedSourceError.ERROR_LISTING_FILES
-            raise CheckAvailabilityError(error_message, stream=stream.name) from exc
+            raise CheckAvailabilityError(FileBasedSourceError.ERROR_LISTING_FILES, stream=stream.name) from exc
 
         if not files:
             raise CheckAvailabilityError(FileBasedSourceError.EMPTY_STREAM, stream=stream.name)
