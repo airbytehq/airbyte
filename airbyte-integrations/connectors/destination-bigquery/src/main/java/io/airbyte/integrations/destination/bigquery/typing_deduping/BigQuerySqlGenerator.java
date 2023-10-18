@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -442,9 +441,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   private String insertNewRecords(final StreamConfig stream,
-                          final String finalSuffix,
-                          final boolean forceSafeCasting,
-                          final Optional<Instant> minRawTimestamp) {
+                                  final String finalSuffix,
+                                  final boolean forceSafeCasting,
+                                  final Optional<Instant> minRawTimestamp) {
     final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
     final String extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting, minRawTimestamp);
 
@@ -490,12 +489,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       cursorComparison =
           // First, compare the cursors.
           "(target_table." + cursor + " < new_record." + cursor
-              // Then, break ties with extracted_at. (also explicitly check for both new_record and final table having null cursor
-              // because NULL != NULL in SQL)
-          + " OR (target_table." + cursor + " = new_record." + cursor + " AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)"
-          + " OR (target_table." + cursor + " IS NULL AND new_record." + cursor + " IS NULL AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)"
-              // Or, if the final table has null cursor but new_record has non-null cursor, then take the new record.
-          + " OR (target_table." + cursor + " IS NULL AND new_record." + cursor + " IS NOT NULL))";
+          // Then, break ties with extracted_at. (also explicitly check for both new_record and final table
+          // having null cursor
+          // because NULL != NULL in SQL)
+              + " OR (target_table." + cursor + " = new_record." + cursor
+              + " AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)"
+              + " OR (target_table." + cursor + " IS NULL AND new_record." + cursor
+              + " IS NULL AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)"
+              // Or, if the final table has null cursor but new_record has non-null cursor, then take the new
+              // record.
+              + " OR (target_table." + cursor + " IS NULL AND new_record." + cursor + " IS NOT NULL))";
     } else {
       // If there's no cursor, then we just take the most-recently-emitted record
       cursorComparison = "target_table._airbyte_extracted_at < new_record._airbyte_extracted_at";
@@ -531,29 +534,29 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "cdcSkipInsertClause", cdcSkipInsertClause,
         "column_list", columnList,
         "newRecordColumnList", newRecordColumnList)).replace(
-        """
-        MERGE ${project_id}.${final_table_id} target_table
-        USING (
-          ${extractNewRawRecords}
-        ) new_record
-        ON ${pkEquivalent}
-        ${cdcDeleteClause}
-        WHEN MATCHED AND ${cursorComparison} THEN UPDATE SET
-          ${columnAssignments}
-          _airbyte_meta = new_record._airbyte_meta,
-          _airbyte_raw_id = new_record._airbyte_raw_id,
-          _airbyte_extracted_at = new_record._airbyte_extracted_at
-        WHEN NOT MATCHED ${cdcSkipInsertClause} THEN INSERT (
-          ${column_list}
-          _airbyte_meta,
-          _airbyte_raw_id,
-          _airbyte_extracted_at
-        ) VALUES (
-          ${newRecordColumnList}
-          new_record._airbyte_meta,
-          new_record._airbyte_raw_id,
-          new_record._airbyte_extracted_at
-        );""");
+            """
+            MERGE ${project_id}.${final_table_id} target_table
+            USING (
+              ${extractNewRawRecords}
+            ) new_record
+            ON ${pkEquivalent}
+            ${cdcDeleteClause}
+            WHEN MATCHED AND ${cursorComparison} THEN UPDATE SET
+              ${columnAssignments}
+              _airbyte_meta = new_record._airbyte_meta,
+              _airbyte_raw_id = new_record._airbyte_raw_id,
+              _airbyte_extracted_at = new_record._airbyte_extracted_at
+            WHEN NOT MATCHED ${cdcSkipInsertClause} THEN INSERT (
+              ${column_list}
+              _airbyte_meta,
+              _airbyte_raw_id,
+              _airbyte_extracted_at
+            ) VALUES (
+              ${newRecordColumnList}
+              new_record._airbyte_meta,
+              new_record._airbyte_raw_id,
+              new_record._airbyte_extracted_at
+            );""");
   }
 
   /**
