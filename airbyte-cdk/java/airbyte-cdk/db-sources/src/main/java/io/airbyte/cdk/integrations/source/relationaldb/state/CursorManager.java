@@ -120,7 +120,6 @@ public class CursorManager<S> {
       localMap.put(pair,
           createCursorInfoForStream(pair, stateOptional, streamOptional, cursorFunction, cursorFieldFunction, cursorRecordCountFunction));
     }
-    LOGGER.info("returning cursor map: " + localMap);
 
     return localMap;
   }
