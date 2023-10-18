@@ -22,7 +22,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
 from google.auth.transport.requests import Request
-from google.oauth2 import service_account
+from google.oauth2 import service_account, credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -61,7 +61,10 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             # list or read files.
             raise ValueError("Source config is missing; cannot create the Google Drive client.")
         if self._drive_service is None:
-            creds = service_account.Credentials.from_service_account_info(json.loads(self.config.service_account_json))
+            if self.config.credentials.auth_type == "Client":
+                creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
+            else:
+                creds = service_account.Credentials.from_service_account_info(json.loads(self.config.credentials.service_account_info))
             self._drive_service = build("drive", "v3", credentials=creds)
         return self._drive_service
 
