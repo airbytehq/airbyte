@@ -12,7 +12,7 @@ from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigMode
 from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.document_loaders.base import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter, Language
 from langchain.utils import stringify_dict
 
 METADATA_STREAM_FIELD = "_ab_stream"
@@ -60,7 +60,7 @@ class DocumentProcessor:
                     return f"Invalid separator: {s}. Separator needs to be a valid JSON string using double quotes."
         return None
 
-    def _get_text_splitter(self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel]):
+    def _get_text_splitter(self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel]) -> RecursiveCharacterTextSplitter:
         if splitter_config is None:
             splitter_config = SeparatorSplitterConfigModel(mode="separator")
         if splitter_config.mode == "separator":
@@ -82,7 +82,7 @@ class DocumentProcessor:
             return RecursiveCharacterTextSplitter.from_tiktoken_encoder(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
-                separators=RecursiveCharacterTextSplitter.get_separators_for_language(splitter_config.language),
+                separators=RecursiveCharacterTextSplitter.get_separators_for_language(Language(splitter_config.language)),
             )
 
     def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog):
@@ -160,7 +160,7 @@ class DocumentProcessor:
         return "_".join(primary_key)
 
     def _split_document(self, doc: Document) -> List[Document]:
-        chunks = self.splitter.split_documents([doc])
+        chunks: List[Document] = self.splitter.split_documents([doc])
         return chunks
 
     def _remap_field_names(self, fields: Dict[str, Any]) -> Dict[str, Any]:
