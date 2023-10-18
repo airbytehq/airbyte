@@ -20,11 +20,11 @@ from .fields import API_REPORT_BUILDER_MAPPING, sanitize
 
 # Mapping between the schema names and the report types in the report builder
 REPORT_TYPE_MAPPING = {
-    "audience_composition": "TYPE_AUDIENCE_COMPOSITION",
-    "reach": "TYPE_REACH_AND_FREQUENCY",
+    "audience_composition": "AUDIENCE_COMPOSITION",
+    "reach": "REACH",
     "floodlight": "FLOODLIGHT",
-    "standard": "TYPE_GENERAL",
-    "unique_reach_audience": "TYPE_REACH_AUDIENCE",
+    "standard": "STANDARD",
+    "unique_reach_audience": "UNIQUE_REACH_AUDIENCE",
 }
 
 
@@ -62,14 +62,19 @@ class DBM:
     QUERY_TEMPLATE_PATH = "source_dv_360/queries/query_template.json"  # Template for creating the query object
     DBM_SCOPE = "doubleclickbidmanager"  # Scope required to fetch data
 
-    def __init__(self, credentials: Credentials, partner_id: str, scope: str = DBM_SCOPE, version: str = "v1.1"):
+    def __init__(self, credentials: Credentials, partner_id: str, scope: str = DBM_SCOPE, version: str = "v2"):
         self.service = build(scope, version, credentials=credentials)  # build a service with scope dbm
         self.partner_id = partner_id
-
+    
     @staticmethod
-    def get_date_params_ms(start_date: str, end_date: str = None) -> Tuple[str, str]:
+    def get_date_objects(start_date: str, end_date: str = None) -> Tuple[Mapping[str, Any], Mapping[str, Any]]:
         """
-        Returns `start_date` and `end_date` in milliseconds
+        Returns `start_date` and `end_date` in the form below:
+        {
+            "year": integer,
+            "month": integer,
+            "day": integer
+        }
         """
         start_date = pendulum.parse(start_date)
         # if end_date is null, take date until yesterday
@@ -79,10 +84,10 @@ class DBM:
         if start_date > end_date:
             start_date = end_date
 
-        start_date_ms = str(int(start_date.timestamp() * 1000))
-        end_date_ms = str(int(end_date.timestamp() * 1000))
+        start_date_object = {"year": start_date.year, "month": start_date.month, "day": start_date.day}
+        end_date_object = {"year": end_date.year, "month": end_date.month, "day": end_date.day}
 
-        return start_date_ms, end_date_ms
+        return start_date_object, end_date_object
 
     @staticmethod
     def get_fields_from_schema(schema: Mapping[str, Any], catalog_fields: List[str]) -> List[str]:
@@ -170,16 +175,16 @@ class DBM:
             query_body = json.loads(template.read())
 
         # get dates in ms
-        start_date_ms, end_date_ms = DBM.get_date_params_ms(start_date, end_date)
+        start_date_object, end_date_object = DBM.get_date_objects(start_date, end_date)
 
         DBM.set_partner_filter(query_body, partner_id)  # Set partner Id in the filter
         query_body["metadata"]["title"] = report_name
+        query_body["metadata"]["dataRange"]["customStartDate"] = start_date_object
+        query_body["metadata"]["dataRange"]["customEndDate"] = end_date_object
         query_body["params"]["type"] = REPORT_TYPE_MAPPING[report_name]  # get the report type from the mapping
         query_body["params"]["groupBys"] = dimensions  # dimensions are put in the groupBy section of the query
         query_body["params"]["filters"].extend(filters)  # Add additional filters if needed
         query_body["params"]["metrics"] = metrics
-        query_body["reportDataStartTimeMs"] = start_date_ms
-        query_body["reportDataEndTimeMs"] = end_date_ms
         return query_body
 
     def convert_schema_into_query(
@@ -212,9 +217,11 @@ class DBM:
             partner_id=partner_id,
             filters=filters or [],
         )
-        create_query = self.service.queries().createquery(body=query).execute()  # Create query
+        create_query = self.service.queries().create(body=query).execute()  # Create query
+        queryId = create_query.get("queryId")
+        self.service.queries().run(queryId=queryId, synchronous=True).execute()  # run query
         get_query = (
-            self.service.queries().getquery(queryId=create_query.get("queryId")).execute()
+            self.service.queries().get(queryId=queryId).execute()
         )  # get the query which will include the report url
         return get_query
 

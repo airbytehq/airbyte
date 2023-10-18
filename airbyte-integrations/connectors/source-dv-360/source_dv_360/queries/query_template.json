@@ -1,13 +1,21 @@
 {
-  "kind": "doubleclickbidmanager#query",
   "queryId": "0",
   "metadata": {
     "title": "",
-    "dataRange": "CUSTOM_DATES",
+    "dataRange": {
+      "range": "CUSTOM_DATES",
+      "customStartDate": {
+        "year": 0,
+        "month": 0,
+        "day": 0
+      },
+      "customEndDate": {
+        "year": 0,
+        "month": 0,
+        "day": 0
+      }
+    },
     "format": "CSV",
-    "running": false,
-    "googleCloudStoragePathForLatestReport": "",
-    "latestReportRunTimeMs": "0",
     "sendNotification": false
   },
   "params": {
@@ -26,8 +34,5 @@
   },
   "schedule": {
     "frequency": "ONE_TIME"
-  },
-  "reportDataStartTimeMs": "",
-  "reportDataEndTimeMs": "",
-  "timezoneCode": "UTC"
+  }
 }

@@ -44,8 +44,8 @@ class SourceDV360(AbstractSource):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            dbm_service = build("doubleclickbidmanager", "v1.1", credentials=self.get_credentials(config))
-            request = dbm_service.queries().listqueries().execute()
+            dbm_service = build("doubleclickbidmanager", "v2", credentials=self.get_credentials(config))
+            request = dbm_service.queries().list().execute()
             if request:
                 return True, None
         except Exception as err:
