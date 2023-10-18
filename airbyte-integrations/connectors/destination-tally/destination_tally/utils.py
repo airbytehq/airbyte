@@ -252,7 +252,7 @@ def prepare_item_master_payload(data: Dict[str, Any], logger: AirbyteLogger):
 
     item_master_payload = {}
     for key, value in data.items():
-        if( key in item_master_fields) and (str(value) != ""):
+        if (key in item_master_fields) and (str(value) != ""):
             item_master_payload[key] = value
 
     return json.dumps({"body": [item_master_payload]})
