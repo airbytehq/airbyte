@@ -394,6 +394,7 @@ def test_text_splitter_check(label, split_config, has_error_message):
     else:
         assert error is None
 
+
 @pytest.mark.parametrize(
     "mappings, fields, expected_chunk_metadata",
     [
