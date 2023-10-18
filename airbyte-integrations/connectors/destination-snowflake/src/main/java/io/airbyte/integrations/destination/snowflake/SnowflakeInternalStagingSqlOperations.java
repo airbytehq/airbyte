@@ -7,19 +7,26 @@ package io.airbyte.integrations.destination.snowflake;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
+import io.airbyte.cdk.integrations.destination.s3.csv.CsvSerializedBuffer;
+import io.airbyte.cdk.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOperations {
+public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlOperations {
 
   public static final int UPLOAD_RETRY_LIMIT = 3;
 
@@ -66,6 +73,29 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
         writeDatetime.dayOfMonth().get(),
         writeDatetime.hourOfDay().get(),
         connectionId));
+  }
+
+  /**
+   * This method is used in Check connection method to make sure that user has the Write permission
+   */
+  protected void attemptWriteToStage(final String outputSchema,
+                                     final String stageName,
+                                     final JdbcDatabase database)
+      throws Exception {
+
+    final CsvSerializedBuffer csvSerializedBuffer = new CsvSerializedBuffer(
+        new FileBuffer(CsvSerializedBuffer.CSV_GZ_SUFFIX),
+        new StagingDatabaseCsvSheetGenerator(true),
+        true);
+
+    // create a dummy stream\records that will bed used to test uploading
+    csvSerializedBuffer.accept(new AirbyteRecordMessage()
+        .withData(Jsons.jsonNode(Map.of("testKey", "testValue")))
+        .withEmittedAt(System.currentTimeMillis()));
+    csvSerializedBuffer.flush();
+
+    uploadRecordsToStage(database, csvSerializedBuffer, outputSchema, stageName,
+        stageName.endsWith("/") ? stageName : stageName + "/");
   }
 
   @Override
