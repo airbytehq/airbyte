@@ -54,7 +54,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                      |
 |:---------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------|
-| `1.0.0`  | 2023-10-18 | [31379](https://github.com/airbytehq/airbyte/pull/31379)   | added new known fields for 'events' stream                                                   | 
+| `1.0.0`  | 2023-10-18 | [31565](https://github.com/airbytehq/airbyte/pull/31565)   | added new known fields for 'events' stream                                                   | 
 | `0.3.3`  | 2023-10-13 | [31379](https://github.com/airbytehq/airbyte/pull/31379)   | Skip streams that the connector no longer has access to                                      |
 | `0.3.2`  | 2023-06-20 | [27498](https://github.com/airbytehq/airbyte/pull/27498)   | Do not store state in the future                                                             |
 | `0.3.1`  | 2023-06-08 | [27162](https://github.com/airbytehq/airbyte/pull/27162)   | Anonymize check connection error message                                                     |
