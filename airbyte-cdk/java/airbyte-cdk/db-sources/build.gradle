@@ -18,7 +18,6 @@ plugins {
 }
 
 test {
-    systemProperty 'user.timezone', 'UTC'
     testLogging {
         // TODO: Remove this after debugging
         showStandardStreams = true

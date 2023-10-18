@@ -698,7 +698,12 @@ class GeographicPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "geographic_performance_report"
-    primary_key = [
+
+    # Need to override the primary key here because the one inherited from the PerformanceReportsMixin
+    # is incorrect for the geographic performance reports
+    primary_key = None
+
+    report_columns = [
         "AccountId",
         "CampaignId",
         "AdGroupId",
@@ -713,10 +718,6 @@ class GeographicPerformanceReport(PerformanceReportsMixin, BingAdsStream):
         "DeviceOS",
         "TopVsOther",
         "BidMatchType",
-    ]
-
-    report_columns = [
-        *primary_key,
         "MetroArea",
         "State",
         "City",
