@@ -9,11 +9,11 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, SeparatorSplitterConfigModel, TextSplitterConfigModel
-from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier
+from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.document_loaders.base import Document
-from langchain.text_splitter import RecursiveCharacterTextSplitter, Language
+from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
 from langchain.utils import stringify_dict
 
 METADATA_STREAM_FIELD = "_ab_stream"
@@ -61,7 +61,9 @@ class DocumentProcessor:
                     return f"Invalid separator: {s}. Separator needs to be a valid JSON string using double quotes."
         return None
 
-    def _get_text_splitter(self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel]) -> RecursiveCharacterTextSplitter:
+    def _get_text_splitter(
+        self, chunk_size: int, chunk_overlap: int, splitter_config: Optional[TextSplitterConfigModel]
+    ) -> RecursiveCharacterTextSplitter:
         if splitter_config is None:
             splitter_config = SeparatorSplitterConfigModel(mode="separator")
         if splitter_config.mode == "separator":
