@@ -99,7 +99,8 @@ Exponential [Backoff](https://developer.squareup.com/forums/t/current-square-api
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
-| :------ |:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.5.0   | 2023-10-16 | [31045](https://github.com/airbytehq/airbyte/pull/31045) | Added New Stream bank_accounts                                            |
 | 1.4.0   | 2023-10-13 | [31106](https://github.com/airbytehq/airbyte/pull/31106) | Add new stream Loyalty                                                    |
 | 1.3.0   | 2023-10-12 | [31107](https://github.com/airbytehq/airbyte/pull/31107) | Add new stream Inventory                                                  |
 | 1.2.0   | 2023-10-10 | [31065](https://github.com/airbytehq/airbyte/pull/31065) | Add new stream Cash drawers shifts                                        |
