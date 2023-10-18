@@ -116,7 +116,9 @@ class ThreadBasedConcurrentStream(AbstractStream):
             if finished_partitions and all(partitions_to_done.values()):
                 # All partitions were generated and process. We're done here
                 break
-        self._check_for_errors(futures)
+            self._check_for_errors(futures)
+        if futures:
+            raise RuntimeError(f"Failed reading from stream {self.name} with futures not done: {futures}")
 
     def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
@@ -136,9 +138,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]
         if exceptions_from_futures:
             raise RuntimeError(f"Failed reading from stream {self.name} with errors: {exceptions_from_futures}")
-        futures_not_done = [f for f in futures if not f.done()]
-        if futures_not_done:
-            raise RuntimeError(f"Failed reading from stream {self.name} with futures not done: {futures_not_done}")
+        futures[:] = [f for f in futures if not f.done()]
 
     @property
     def name(self) -> str:

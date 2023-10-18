@@ -121,6 +121,27 @@ _id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurren
     timeout_seconds=300,
 )
 
+_stream_raising_exception = ThreadBasedConcurrentStream(
+    partition_generator=InMemoryPartitionGenerator(
+        [InMemoryPartition("partition1", None, [Record({"id": "1"}), ValueError("test exception")])]
+    ),
+    max_workers=1,
+    name="stream1",
+    json_schema={
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "string"]},
+        },
+    },
+    availability_strategy=AlwaysAvailableAvailabilityStrategy(),
+    primary_key=[],
+    cursor_field=None,
+    slice_logger=NeverLogSliceLogger(),
+    logger=logging.getLogger("test_logger"),
+    message_repository=None,
+    timeout_seconds=300,
+)
+
 test_concurrent_cdk_single_stream = (
     TestScenarioBuilder()
     .set_name("test_concurrent_cdk_single_stream")
@@ -276,6 +297,44 @@ test_concurrent_cdk_multiple_streams = (
                     "name": "stream2",
                     "supported_sync_modes": ["full_refresh"],
                 },
+            ]
+        }
+    )
+    .build()
+)
+
+test_concurrent_cdk_partition_raises_exception = (
+    TestScenarioBuilder()
+    .set_name("test_concurrent_partition_raises_exception")
+    .set_config({})
+    .set_source_builder(
+        ConcurrentSourceBuilder()
+        .set_streams(
+            [
+                _stream_raising_exception,
+            ]
+        )
+        .set_message_repository(InMemoryMessageRepository())
+    )
+    .set_expected_records(
+        [
+            {"data": {"id": "1"}, "stream": "stream1"},
+        ]
+    )
+    .set_expected_read_error(RuntimeError, "test exception")
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": ["null", "string"]},
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh"],
+                }
             ]
         }
     )

@@ -67,7 +67,11 @@ class InMemoryPartition(Partition):
         self._records = records
 
     def read(self) -> Iterable[Record]:
-        yield from self._records
+        for record_or_exception in self._records:
+            if isinstance(record_or_exception, Exception):
+                raise record_or_exception
+            else:
+                yield record_or_exception
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         return self._slice

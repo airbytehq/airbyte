@@ -44,7 +44,7 @@ class TestScenario(Generic[SourceType]):
         expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]],
         expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
         incremental_scenario_config: Optional[IncrementalScenarioConfig],
-        log_levels=None,
+        log_levels: Optional[Set[str]] = None,
     ):
         if log_levels is None:
             log_levels = {"ERROR", "WARN", "WARNING"}
