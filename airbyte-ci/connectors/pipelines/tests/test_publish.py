@@ -9,8 +9,8 @@ from typing import List
 import anyio
 import pipelines.pipeline.metadata.pipeline
 import pytest
-from pipelines.pipeline.connectors import publish
 from pipelines.models.steps import StepStatus
+from pipelines.pipeline.connectors import publish
 
 pytestmark = [
     pytest.mark.anyio,
@@ -84,7 +84,9 @@ class TestUploadSpecToCache:
         )
         if not valid_spec:
             mocker.patch.object(
-                publish.pipeline.UploadSpecToCache, "_get_connector_spec", mocker.Mock(side_effect=publish.pipeline.InvalidSpecOutputError("Invalid spec."))
+                publish.pipeline.UploadSpecToCache,
+                "_get_connector_spec",
+                mocker.Mock(side_effect=publish.pipeline.InvalidSpecOutputError("Invalid spec.")),
             )
 
         step = publish.pipeline.UploadSpecToCache(publish_context)

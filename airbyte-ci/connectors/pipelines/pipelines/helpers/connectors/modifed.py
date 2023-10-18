@@ -5,8 +5,8 @@
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import FrozenSet, Set, Union
-from anyio import Path
 
+from anyio import Path
 from connector_ops.utils import Connector
 from pipelines import main_logger
 from pipelines.helpers.utils import IGNORED_FILE_EXTENSIONS, METADATA_FILE_NAME

@@ -4,8 +4,8 @@
 
 from pathlib import Path
 
-import pytest
 import pipelines.helpers.connectors.modifed
+import pytest
 from pipelines.models import steps
 from pipelines.pipeline.steps import gradle
 

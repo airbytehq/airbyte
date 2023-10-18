@@ -9,9 +9,9 @@ from typing import Optional
 from dagger import Secret
 from github import PullRequest
 from pipelines.consts import ContextState
+from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.utils import format_duration
-from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.pipeline.connectors import ConnectorContext
 
 
