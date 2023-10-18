@@ -5,7 +5,7 @@
 import abc
 import time
 from datetime import timedelta
-from typing import Any, Optional, Union, Mapping
+from typing import Any, Mapping, Optional, Union
 
 import requests
 from pyrate_limiter import Duration as OrgDuration
@@ -99,7 +99,11 @@ class HttpRequestMatcher(RequestMatcher):
     """Simple implementation of RequestMatcher for http requests case"""
 
     def __init__(
-        self, method: Optional[str] = None, url: Optional[str] = None, params: Optional[Mapping[str, Any]] = None, headers: Optional[Mapping[str, Any]] = None
+        self,
+        method: Optional[str] = None,
+        url: Optional[str] = None,
+        params: Optional[Mapping[str, Any]] = None,
+        headers: Optional[Mapping[str, Any]] = None,
     ):
         """Constructor
 
