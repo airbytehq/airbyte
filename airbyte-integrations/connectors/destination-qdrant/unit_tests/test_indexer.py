@@ -150,13 +150,14 @@ class TestQdrantIndexer(unittest.TestCase):
                 Mock(metadata={"key": "value1"}, page_content="some content", embedding=[1.0, 2.0, 3.0]),
                 Mock(metadata={"key": "value2"}, page_content="some other content", embedding=[4.0, 5.0, 6.0]),
             ],
-            [],
+            None,
+            "some_stream",
         )
 
         self.qdrant_indexer._client.upload_records.assert_called_once()
 
     def test_index_calls_delete(self):
-        self.qdrant_indexer.index([], ["some_id", "another_id"])
+        self.qdrant_indexer.delete(["some_id", "another_id"], None, "some_stream")
 
         self.qdrant_indexer._client.delete.assert_called_with(
             collection_name=self.mock_config.collection,

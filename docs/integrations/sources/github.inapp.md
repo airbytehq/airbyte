@@ -1,12 +1,13 @@
 ## Prerequisites
 
-- Access to a Github repository
+- List of GitHub Repositories (and access for them in case they are private)
 
 ## Setup guide
 
 1. Name your source.
 2. Click `Authenticate your GitHub account` or use a [Personal Access Token](https://github.com/settings/tokens) for Authentication. For Personal Access Tokens, refer to the list of required [permissions and scopes](https://docs.airbyte.com/integrations/sources/github#permissions-and-scopes).
-3. **Start date** Enter the date you'd like to replicate data from. 
+3. **GitHub Repositories** - Enter a list of GitHub organizations or repositories.
+4. (Optional) **Start date** Enter the date you'd like to replicate data from. 
 
 These streams will only sync records generated on or after the **Start Date**: 
 
@@ -15,8 +16,6 @@ These streams will only sync records generated on or after the **Start Date**:
 The **Start Date** does not apply to the streams below and all data will be synced for these streams:
 
 `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `pull_request_stats`, `repositories`,  `tags`,  `teams`, `users`
-
-4. **GitHub Repositories** - Enter a space-delimited list of GitHub organizations or repositories.
 
 Example of a single repository:
 ```
@@ -32,7 +31,7 @@ airbytehq/*
 ```
 Repositories which have a misspelled name, do not exist, or have the wrong name format will return an error.
 
-5. (Optional) **Branch** - Enter a space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
+5. (Optional) **Branch** - Enter a list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 6. (Optional) **Max requests per hour** - The GitHub API allows for a maximum of 5000 requests per hour (15,000 for Github Enterprise). You can specify a lower value to limit your use of the API quota.
 
 ### Incremental Sync Methods

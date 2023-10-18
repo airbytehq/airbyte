@@ -23,6 +23,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 # TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "2016-09-01"
+MINIMUM_START_DATE = "2012-01-01"
 DEFAULT_END_DATE = str(datetime.now().date())
 NOT_AUDIENCE_METRICS = [
     "reach",
