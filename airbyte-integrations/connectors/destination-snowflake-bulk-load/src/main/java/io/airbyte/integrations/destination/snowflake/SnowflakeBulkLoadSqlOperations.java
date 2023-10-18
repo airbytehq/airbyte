@@ -19,7 +19,7 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
+public class SnowflakeBulkLoadSqlOperations extends SnowflakeInternalStagingSqlOperations {
 
   public static final int UPLOAD_RETRY_LIMIT = 3;
 
@@ -34,22 +34,8 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
-  private final NamingConventionTransformer nameTransformer;
-  private final boolean use1s1t;
-
   public SnowflakeBulkLoadSqlOperations(final NamingConventionTransformer nameTransformer) {
-    this.nameTransformer = nameTransformer;
-    this.use1s1t = true;
-  }
-
-  public String getStagingPath(final UUID connectionId, final String namespace, final String streamName, final DateTime writeDatetime) {
-    // see https://docs.snowflake.com/en/user-guide/data-load-considerations-stage.html
-    return nameTransformer.applyDefaultCase(String.format("%s/%02d/%02d/%02d/%s/",
-        writeDatetime.year().get(),
-        writeDatetime.monthOfYear().get(),
-        writeDatetime.dayOfMonth().get(),
-        writeDatetime.hourOfDay().get(),
-        connectionId));
+    super(nameTransformer);
   }
 
   public String uploadRecordsToStage(final JdbcDatabase database,
@@ -60,9 +46,16 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
       throws IOException {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     boolean succeeded = false;
+    final String query = getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT && !succeeded) {
       try {
-        uploadRecordsToBucket(database, stageName, stagingPath, recordsData);
+        LOGGER.debug("Executing query: {}", query);
+        database.execute(query);
+        if (!checkStageObjectExists(database, stageName, stagingPath, recordsData.getFilename())) {
+          LOGGER.error(String.format("Failed to upload data into stage, object @%s not found",
+              (stagingPath + "/" + recordsData.getFilename()).replaceAll("/+", "/")));
+          throw new RuntimeException("Upload failed");
+        }
         succeeded = true;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into stage {}", stagingPath, e);
@@ -80,41 +73,9 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeSqlOperations {
     return recordsData.getFilename();
   }
 
-  private void uploadRecordsToBucket(final JdbcDatabase database,
-                                     final String stageName,
-                                     final String stagingPath,
-                                     final SerializableBuffer recordsData) {
-    // No-op;
-    return;
-  }
-
   protected String getPutQuery(final String stageName, final String stagingPath, final String filePath) {
     return String.format(PUT_FILE_QUERY, filePath, stageName, stagingPath, Runtime.getRuntime().availableProcessors());
   }
-
-  private boolean checkStageObjectExists(final JdbcDatabase database, final String stageName, final String stagingPath, final String filename)
-      throws SQLException {
-    final String query = getListQuery(stageName, stagingPath, filename);
-    LOGGER.debug("Executing query: {}", query);
-    final boolean result;
-    try (final Stream<JsonNode> stream = database.unsafeQuery(query)) {
-      result = stream.findAny().isPresent();
-    }
-    return result;
-  }
-
-  /**
-   * Creates a SQL query to list all files that have been staged
-   *
-   * @param stageName name of staging folder
-   * @param stagingPath path to the files within the staging folder
-   * @param filename name of the file within staging area
-   * @return SQL query string
-   */
-  protected String getListQuery(final String stageName, final String stagingPath, final String filename) {
-    return String.format(LIST_STAGE_QUERY, stageName, stagingPath, filename).replaceAll("/+", "/");
-  }
-
   public void copyIntoTableFromStage(final JdbcDatabase database,
                                      final String stageName,
                                      final List<String> stagedFiles,
