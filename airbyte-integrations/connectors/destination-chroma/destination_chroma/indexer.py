@@ -4,10 +4,9 @@
 
 import json
 import uuid
-from typing import List
 
 import chromadb
-from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD, Chunk
+from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.utils import format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
@@ -46,9 +45,11 @@ class ChromaIndexer(Indexer):
         finally:
             del client
 
-    def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
+    def delete(self, delete_ids, namespace, stream):
         if len(delete_ids) > 0:
             self._delete_by_filter(field_name=METADATA_RECORD_ID_FIELD, field_values=delete_ids)
+
+    def index(self, document_chunks, namespace, stream):
         entities = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]

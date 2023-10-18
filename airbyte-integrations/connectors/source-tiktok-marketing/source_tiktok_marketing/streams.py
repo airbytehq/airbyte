@@ -15,7 +15,6 @@ import pendulum
 import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -171,10 +170,6 @@ class TiktokStream(HttpStream, ABC):
 
         self._advertiser_id = kwargs.get("advertiser_id")
         self.is_sandbox = kwargs.get("is_sandbox")
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """All responses have the similar structure:
