@@ -30,8 +30,7 @@ jobs:
         shell: bash
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
         id: extract_branch
-      - name: Test source-postgres [WORKFLOW DISPATCH]
-        if: github.event_name == 'workflow_dispatch'
+      - name: Test source-postgres
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "master"
