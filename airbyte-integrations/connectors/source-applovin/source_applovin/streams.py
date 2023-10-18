@@ -24,6 +24,41 @@ class ApplovinStream(HttpStream):
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 500:
             logging.warning("Received error: " + str(response.status_code) + " " + response.text)
+            logging.warning("URL:", response.url)
+            logging.warning("Status Code:", response.status_code)
+            logging.warning("Reason:", response.reason)
+            logging.warning("HTTP Version:", response.raw.version)
+
+            logging.warning("\n---- HEADERS ----")
+            for key, value in response.headers.items():
+                logging.warning(f"{key}: {value}")
+
+            logging.warning("\n---- COOKIES ----")
+            for name, value in response.cookies.items():
+                logging.warning(f"{name}: {value}")
+
+            logging.warning("\n---- CONTENT ----")
+            logging.warning(response.text)
+
+            logging.warning("\n---- REDIRECT HISTORY ----")
+            for resp in response.history:
+                logging.warning(f"Redirected to {resp.url} with status code {resp.status_code}")
+
+            logging.warning("\n---- REQUEST INFO ----")
+            logging.warning("Request Method:", response.request.method)
+            logging.warning("Request URL:", response.request.url)
+            logging.warning("Request Headers:")
+            for key, value in response.request.headers.items():
+                logging.warning(f"  {key}: {value}")
+
+            if response.request.body:
+                logging.warning("\nRequest Body:", response.request.body)
+
+            logging.warning("\n---- OTHER INFO ----")
+            logging.warning("Elapsed Time:", response.elapsed)
+            logging.warning("Encoding:", response.encoding)
+            logging.warning("Content Length:", len(response.content))
+
             return False
         if response.status_code == 429 or 501 <= response.status_code < 600:
             return True
