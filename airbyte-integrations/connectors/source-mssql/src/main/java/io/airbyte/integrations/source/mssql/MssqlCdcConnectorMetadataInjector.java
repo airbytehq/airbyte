@@ -18,7 +18,7 @@ public class MssqlCdcConnectorMetadataInjector implements CdcMetadataInjector<Lo
 
   private final long emittedAtConverted;
 
-  // This now makes this class stateful. Please make sure to use the same instance within a sync
+  // This now makes this class stateful. Please make sure to use the same instance within a sync.
   private final AtomicLong recordCounter = new AtomicLong(1);
   private static final long ONE_HUNDRED_MILLION = 100_000_000;
   private static MssqlCdcConnectorMetadataInjector mssqlCdcConnectorMetadataInjector;
