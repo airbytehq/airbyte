@@ -10,7 +10,7 @@ import click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
-from pipelines.airbyte_ci.connectors.builds.commands import build
+from pipelines.airbyte_ci.connectors.build.commands import build
 from pipelines.airbyte_ci.connectors.bump_version.commands import bump_version
 from pipelines.airbyte_ci.connectors.list.commands import list
 from pipelines.airbyte_ci.connectors.migrate_to_base_image.commands import migrate_to_base_image

@@ -8,7 +8,7 @@ from dagger import Container, Directory, ExecError, File, Host, Platform, QueryE
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.containers import java
 from pipelines.models.steps import StepResult, StepStatus
-from pipelines.airbyte_ci.connectors.builds.steps.common import BuildConnectorImagesBase
+from pipelines.airbyte_ci.connectors.build.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.gradle import GradleTask
 

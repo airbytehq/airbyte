@@ -5,7 +5,7 @@
 from typing import Callable
 
 import click
-import pipelines.airbyte_ci.connectors.builds.commands
+import pipelines.airbyte_ci.connectors.build.commands
 import pipelines.airbyte_ci.connectors.commands
 import pipelines.airbyte_ci.connectors.publish.commands
 import pipelines.airbyte_ci.connectors.test.commands
@@ -14,7 +14,7 @@ from click.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.airbyte_ci.connectors import commands as connectors_commands
-from pipelines.airbyte_ci.connectors.builds import commands as connectors_build_command
+from pipelines.airbyte_ci.connectors.build import commands as connectors_build_command
 from pipelines.airbyte_ci.connectors.publish import commands as connectors_publish_command
 from pipelines.airbyte_ci.connectors.test import commands as connectors_test_command
 from tests.utils import pick_a_random_connector
