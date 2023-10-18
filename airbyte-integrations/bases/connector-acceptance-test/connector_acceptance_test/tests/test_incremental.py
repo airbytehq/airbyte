@@ -136,7 +136,13 @@ class TestIncremental(BaseTest):
         if is_per_stream:
             latest_state = construct_latest_state_from_messages(states_1)
             state_input = list(
-                {"type": "STREAM", "stream": {"stream_descriptor": {"name": stream_name, "namespace": stream_state['stream_namespace']}, "stream_state": stream_state}}
+                {
+                    "type": "STREAM",
+                    "stream": {
+                        "stream_descriptor": {"name": stream_name, "namespace": stream_state["stream_namespace"]},
+                        "stream_state": stream_state,
+                    },
+                }
                 for stream_name, stream_state in latest_state.items()
             )
         else:
