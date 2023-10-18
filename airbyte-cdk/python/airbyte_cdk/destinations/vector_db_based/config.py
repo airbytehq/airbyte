@@ -116,7 +116,7 @@ class ProcessingConfigModel(BaseModel):
     field_name_mappings: Optional[List[FieldNameMappingConfigModel]] = Field(
         default=[],
         title="Field name mappings",
-        description="Used to rename source fields. For example, `user.name` -> `username`.",
+        description="List of fields to rename. Not applicable for nested fields, but can be used to rename fields already flattened via dot notation.",
     )
 
     class Config:
