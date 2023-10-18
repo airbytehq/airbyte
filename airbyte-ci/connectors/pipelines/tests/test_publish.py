@@ -10,7 +10,6 @@ import anyio
 import pytest
 from pipelines.models.steps import StepStatus
 from pipelines.pipeline.connectors.publish import pipeline as publish_pipeline
-from pipelines.pipeline.metadata import pipeline as metadata_pipeline
 
 pytestmark = [
     pytest.mark.anyio,
@@ -146,8 +145,8 @@ class TestUploadSpecToCache:
 
 
 STEPS_TO_PATCH = [
-    (metadata_pipeline, "MetadataValidation"),
-    (metadata_pipeline, "MetadataUpload"),
+    (publish_pipeline, "MetadataValidation"),
+    (publish_pipeline, "MetadataUpload"),
     (publish_pipeline, "CheckConnectorImageDoesNotExist"),
     (publish_pipeline, "UploadSpecToCache"),
     (publish_pipeline, "PushConnectorImageToRegistry"),
@@ -162,7 +161,7 @@ async def test_run_connector_publish_pipeline_when_failed_validation(mocker, pre
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 
-    run_metadata_validation = metadata_pipeline.MetadataValidation.return_value.run
+    run_metadata_validation = publish_pipeline.MetadataValidation.return_value.run
     run_metadata_validation.return_value = mocker.Mock(status=StepStatus.FAILURE)
 
     context = mocker.MagicMock(pre_release=pre_release)
@@ -198,7 +197,7 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
 
-    run_metadata_validation = metadata_pipeline.MetadataValidation.return_value.run
+    run_metadata_validation = publish_pipeline.MetadataValidation.return_value.run
     run_metadata_validation.return_value = mocker.Mock(status=StepStatus.SUCCESS)
 
     # ensure spec always succeeds
@@ -208,7 +207,7 @@ async def test_run_connector_publish_pipeline_when_image_exists_or_failed(mocker
     run_check_connector_image_does_not_exist = publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run
     run_check_connector_image_does_not_exist.return_value = mocker.Mock(status=check_image_exists_status)
 
-    run_metadata_upload = metadata_pipeline.MetadataUpload.return_value.run
+    run_metadata_upload = publish_pipeline.MetadataUpload.return_value.run
 
     semaphore = anyio.Semaphore(1)
     report = await publish_pipeline.run_connector_publish_pipeline(publish_context, semaphore)
@@ -269,7 +268,7 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     """We check that the full pipeline is executed as expected when the connector image does not exist and the metadata validation passed."""
     for module, to_mock in STEPS_TO_PATCH:
         mocker.patch.object(module, to_mock, return_value=mocker.AsyncMock())
-    metadata_pipeline.MetadataValidation.return_value.run.return_value = mocker.Mock(
+    publish_pipeline.MetadataValidation.return_value.run.return_value = mocker.Mock(
         name="metadata_validation_result", status=StepStatus.SUCCESS
     )
     publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run.return_value = mocker.Mock(
@@ -295,7 +294,7 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     publish_pipeline.UploadSpecToCache.return_value.run.return_value = mocker.Mock(
         name="upload_spec_to_cache_result", status=upload_to_spec_cache_step_status
     )
-    metadata_pipeline.MetadataUpload.return_value.run.return_value = mocker.Mock(
+    publish_pipeline.MetadataUpload.return_value.run.return_value = mocker.Mock(
         name="metadata_upload_result", status=metadata_upload_step_status
     )
 
@@ -306,7 +305,7 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
     report = await publish_pipeline.run_connector_publish_pipeline(context, semaphore)
 
     steps_to_run = [
-        metadata_pipeline.MetadataValidation.return_value.run,
+        publish_pipeline.MetadataValidation.return_value.run,
         publish_pipeline.CheckConnectorImageDoesNotExist.return_value.run,
         publish_pipeline.steps.run_connector_build,
         publish_pipeline.PushConnectorImageToRegistry.return_value.run,
@@ -332,4 +331,4 @@ async def test_run_connector_publish_pipeline_when_image_does_not_exist(
         publish_pipeline.PushConnectorImageToRegistry.return_value.run.assert_not_called()
         publish_pipeline.PullConnectorImageFromRegistry.return_value.run.assert_not_called()
         publish_pipeline.UploadSpecToCache.return_value.run.assert_not_called()
-        metadata_pipeline.MetadataUpload.return_value.run.assert_not_called()
+        publish_pipeline.MetadataUpload.return_value.run.assert_not_called()
