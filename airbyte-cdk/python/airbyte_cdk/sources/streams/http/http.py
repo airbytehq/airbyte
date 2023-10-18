@@ -66,7 +66,7 @@ class HttpStream(Stream, ABC):
         return False
 
     def request_cache(self) -> requests.Session:
-        cache_dir = Path(os.getenv(ENV_REQUEST_CACHE_PATH))
+        cache_dir = Path(os.environ[ENV_REQUEST_CACHE_PATH])
         return requests_cache.CachedSession(str(cache_dir / self.cache_filename), backend="sqlite")
 
     def clear_cache(self) -> None:
@@ -302,7 +302,7 @@ class HttpStream(Stream, ABC):
                 args["json"] = json
             elif data:
                 args["data"] = data
-        return self._session.prepare_request(requests.Request(**args))
+        return self._session.prepare_request(requests.Request(**args))  # type: ignore
 
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:

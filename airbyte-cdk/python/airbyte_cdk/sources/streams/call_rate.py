@@ -5,7 +5,7 @@
 import abc
 import time
 from datetime import timedelta
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, Mapping
 
 import requests
 from pyrate_limiter import Duration as OrgDuration
@@ -41,7 +41,7 @@ class AbstractCallRatePolicy(abc.ABC):
     """
 
     @abc.abstractmethod
-    def try_acquire(self, request: Any, weight: int):
+    def try_acquire(self, request: Any, weight: int) -> None:
         """Try to acquire request
 
         :param request: request object representing single call to API
@@ -68,17 +68,17 @@ class CallRatePolicy(AbstractCallRatePolicy):
         # Limiter will create background task that clears old requests in the bucket
         self._limiter = Limiter(self._bucket)
 
-    def try_acquire(self, request: Any, weight: int = 1):
+    def try_acquire(self, request: Any, weight: int = 1) -> None:
         try:
             self._limiter.try_acquire(request, weight=weight)
         except BucketFullException as exc:
             item = self._limiter.bucket_factory.wrap_item(request, weight)
-            time_to_wait = self._bucket.waiting(item)
+            time_to_wait: int = self._bucket.waiting(item)  # type: ignore
             raise CallRateLimitHit(
-                error=exc.meta_info["error"],
+                error=str(exc.meta_info["error"]),
                 item=request,
                 weight=int(exc.meta_info["weight"]),
-                rate=exc.meta_info["rate"],
+                rate=str(exc.meta_info["rate"]),
                 time_to_wait=timedelta(milliseconds=time_to_wait),
             )
 
@@ -99,7 +99,7 @@ class HttpRequestMatcher(RequestMatcher):
     """Simple implementation of RequestMatcher for http requests case"""
 
     def __init__(
-        self, method: Optional[str] = None, url: Optional[str] = None, params: Optional[dict] = None, headers: Optional[dict] = None
+        self, method: Optional[str] = None, url: Optional[str] = None, params: Optional[Mapping[str, Any]] = None, headers: Optional[Mapping[str, Any]] = None
     ):
         """Constructor
 
@@ -114,7 +114,7 @@ class HttpRequestMatcher(RequestMatcher):
         self._headers = headers
 
     @staticmethod
-    def _match_dict(obj: dict, pattern: dict) -> bool:
+    def _match_dict(obj: Mapping[str, Any], pattern: Mapping[str, Any]) -> bool:
         """Check that all elements from pattern dict present and have the same values in obj dict
 
         :param obj:
@@ -158,7 +158,7 @@ class AbstractAPIBudget(abc.ABC):
     """
 
     @abc.abstractmethod
-    def add_policy(self, request_matcher: RequestMatcher, policy: CallRatePolicy):
+    def add_policy(self, request_matcher: RequestMatcher, policy: CallRatePolicy) -> None:
         """Add policy for calls
 
         :param request_matcher: callable to match request object with corresponding policy
@@ -180,11 +180,11 @@ class AbstractAPIBudget(abc.ABC):
 class APIBudget(AbstractAPIBudget):
     """Default APIBudget implementation"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Constructor"""
         self._policies: list[tuple[RequestMatcher, CallRatePolicy]] = []
 
-    def add_policy(self, request_matcher: RequestMatcher, policy: CallRatePolicy):
+    def add_policy(self, request_matcher: RequestMatcher, policy: CallRatePolicy) -> None:
         """Add policy for calls
 
         :param request_matcher: callable to match request object with corresponding policy
@@ -208,7 +208,7 @@ class APIBudget(AbstractAPIBudget):
                 self._do_acquire(request, policy, block, timeout)
                 break
 
-    def _do_acquire(self, request, policy, block: bool, timeout: Optional[float]) -> None:
+    def _do_acquire(self, request: Any, policy: CallRatePolicy, block: bool, timeout: Optional[float]) -> None:
         """Internal method to try to acquire a call credit
 
         :param request:
@@ -231,47 +231,6 @@ class APIBudget(AbstractAPIBudget):
                 raise
 
 
-class SessionWithCallRate(requests.Session):
-    def __init__(self, api_budget: AbstractAPIBudget):
-        """Constructor
-
-        :param api_budget: api call rate limiter
-        """
-        self._api_budget = api_budget
-        super().__init__()
-
-    def send(self, request, **kwargs):
-        """Send a given PreparedRequest. We override it to respect call rate limits.
-
-        :rtype: requests.Response
-        """
-        self._api_budget.acquire_call(request)
-
-        return super().send(request, **kwargs)
-
-
-class CachedSessionWithCallRate(CachedSession):
-    def __init__(self, *args, api_budget: AbstractAPIBudget, **kwargs):
-        """Constructor
-
-        :param args: all positional arguments from CachedSession
-        :param api_budget: api call rate limiter
-        :param kwargs: all keyword arguments from CachedSession
-        """
-        self._api_budget = api_budget
-        super().__init__(*args, **kwargs)
-
-    def send(self, request, **kwargs):
-        """Send a given PreparedRequest. We override it to respect call rate limits.
-
-        :rtype: requests.Response
-        """
-        if not self.cache.contains(request=request):
-            self._api_budget.acquire_call(request)
-
-        return super().send(request, **kwargs)
-
-
 class SessionProxyWithCallRate:
     def __init__(self, session: Union[requests.Session, CachedSession], api_budget: APIBudget):
         """Wraps Session to take into account API call rate limits
@@ -282,7 +241,7 @@ class SessionProxyWithCallRate:
         self._session = session
         self._api_budget = api_budget
 
-    def __getattr__(self, item):
+    def __getattr__(self, item: str) -> Any:
         """Forward everything to original Session class
 
         :param item: attribute name
@@ -290,7 +249,11 @@ class SessionProxyWithCallRate:
         """
         return getattr(self._session, item)
 
-    def send(self, request, **kwargs):
+    def __setattr__(self, key: str, value: Any) -> None:
+        """Forward everything to original Session class"""
+        return object.__setattr__(self._session, key, value)
+
+    def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:
         """Override method to respect API call rate limits
 
         :param request:
