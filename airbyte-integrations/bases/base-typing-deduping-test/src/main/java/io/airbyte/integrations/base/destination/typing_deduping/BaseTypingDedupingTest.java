@@ -228,7 +228,7 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
@@ -263,7 +263,7 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
@@ -272,7 +272,7 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_append_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
@@ -302,7 +302,7 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
@@ -311,7 +311,7 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_append_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
@@ -339,7 +339,7 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
@@ -348,7 +348,7 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_append_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }
@@ -374,7 +374,7 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1, null, streamName);
 
@@ -383,7 +383,7 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_append_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2, null, streamName);
   }
@@ -426,7 +426,7 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
@@ -439,7 +439,7 @@ public abstract class BaseTypingDedupingTest {
     runSync(catalog, messages2);
 
     // The raw data is unaffected by the schema, but the final table should not have a `name` column.
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_append_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl").stream()
         .peek(record -> ((ObjectNode) record).remove(getSqlGenerator().buildColumnId("name").name()))
         .toList();
@@ -502,12 +502,12 @@ public abstract class BaseTypingDedupingTest {
     runSync(catalog, messages1);
 
     verifySyncResult(
-        readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl"),
+        readRecords("dat/sync1_expectedrecords_raw.jsonl"),
         readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
         namespace1,
         streamName);
     verifySyncResult(
-        readRecords("dat/sync1_expectedrecords_dedup_raw2.jsonl"),
+        readRecords("dat/sync1_expectedrecords_raw2.jsonl"),
         readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
         namespace2,
         streamName);
@@ -520,12 +520,12 @@ public abstract class BaseTypingDedupingTest {
     runSync(catalog, messages2);
 
     verifySyncResult(
-        readRecords("dat/sync2_expectedrecords_append_raw.jsonl"),
+        readRecords("dat/sync2_expectedrecords_raw.jsonl"),
         readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl"),
         namespace1,
         streamName);
     verifySyncResult(
-        readRecords("dat/sync2_expectedrecords_incremental_dedup_raw2.jsonl"),
+        readRecords("dat/sync2_expectedrecords_raw2.jsonl"),
         readRecords("dat/sync2_expectedrecords_incremental_dedup_final2.jsonl"),
         namespace2,
         streamName);
