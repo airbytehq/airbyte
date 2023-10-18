@@ -3,10 +3,7 @@
 #
 
 import asyncclick as click
-from pipelines.pipelines.metadata import (
-    run_metadata_orchestrator_deploy_pipeline,
-    run_metadata_orchestrator_test_pipeline,
-)
+from pipelines.pipelines.metadata import run_metadata_orchestrator_deploy_pipeline, run_metadata_orchestrator_test_pipeline
 from pipelines.utils import DaggerPipelineCommand
 
 # MAIN GROUP

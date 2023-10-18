@@ -18,8 +18,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, FrozenSet, List, Optional, Set, Tuple, Union
 
 import anyio
-import asyncer
 import asyncclick as click
+import asyncer
 import git
 from connector_ops.utils import get_changed_connectors
 from dagger import Client, Config, Connection, Container, DaggerError, ExecError, File, ImageLayerCompression, QueryError, Secret
@@ -261,7 +261,9 @@ def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch:
     return set(modified_files)
 
 
-async def get_modified_files_in_branch(current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
+async def get_modified_files_in_branch(
+    current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True
+) -> Set[str]:
     """Retrieve the list of modified files on the branch."""
     if is_local:
         return get_modified_files_in_branch_local(current_git_revision, diffed_branch)
