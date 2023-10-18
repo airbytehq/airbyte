@@ -167,8 +167,9 @@ class GradleTask(Step, ABC):
                 )
             )
             # Also mount the transient cache volume.
-            .with_mounted_cache("/root/gradle-transient-cache", self.connector_transient_cache_volume, sharing=CacheSharingMode.LOCKED)
-            .with_exec(
+            .with_mounted_cache(
+                "/root/gradle-transient-cache", self.connector_transient_cache_volume, sharing=CacheSharingMode.LOCKED
+            ).with_exec(
                 sh_dash_c(
                     [
                         # Store to the transient cache.
