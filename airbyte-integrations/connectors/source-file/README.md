@@ -149,7 +149,6 @@ All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The re
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 1. Make sure your changes are passing unit and integration tests
 2. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use SemVer).
-3. In addition to bumping the connector version of `source-file`, you must also increment the version of `source-file-secure` which depends on this source. The versions of these connectors should always remain in sync. Depending on the changes to `source-file`, you may also need to make changes to `source-file-secure` to retain compatibility.
-4. Create a Pull Request
-5. Pat yourself on the back for being an awesome contributor
-6. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master
+3. Create a Pull Request
+4. Pat yourself on the back for being an awesome contributor
+5. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master

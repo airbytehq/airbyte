@@ -3,8 +3,8 @@
 #
 
 import platform
-from pathlib import Path
 
+import git
 from dagger import Platform
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
@@ -32,8 +32,11 @@ GRADLE_CACHE_PATH = "/root/.gradle/caches"
 GRADLE_BUILD_CACHE_PATH = f"{GRADLE_CACHE_PATH}/build-cache-1"
 GRADLE_READ_ONLY_DEPENDENCY_CACHE_PATH = "/root/gradle_dependency_cache"
 LOCAL_REPORTS_PATH_ROOT = "airbyte-ci/connectors/pipelines/pipeline_reports/"
+LOCAL_PIPELINE_PACKAGE_PATH = "airbyte-ci/connectors/pipelines/"
 DOCS_DIRECTORY_ROOT_PATH = "docs/"
 GCS_PUBLIC_DOMAIN = "https://storage.cloud.google.com"
 DOCKER_HOST_NAME = "global-docker-host"
 DOCKER_HOST_PORT = 2375
 DOCKER_TMP_VOLUME_NAME = "shared-tmp"
+REPO = git.Repo(search_parent_directories=True)
+REPO_PATH = REPO.working_tree_dir
