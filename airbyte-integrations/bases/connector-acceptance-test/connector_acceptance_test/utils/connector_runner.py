@@ -74,7 +74,7 @@ class ConnectorRunner:
         self,
         config: SecretDict,
         catalog: ConfiguredAirbyteCatalog,
-        state: dict,
+        state: Union[dict, list],
         raise_container_error: bool = False,
         enable_caching: bool = True,
     ) -> List[AirbyteMessage]:
@@ -187,8 +187,12 @@ class ConnectorRunner:
             container = container.with_new_file(self.IN_CONTAINER_CATALOG_PATH, catalog.json())
         for key, value in self._custom_environment_variables.items():
             container = container.with_env_variable(key, str(value))
+        container = container.with_env_variable("LOG_LEVEL", "DEBUG")
         try:
             output = await self._read_output_from_stdout(airbyte_command, container)
+            if state is not None:
+                catalog_content = await container.file(self.IN_CONTAINER_CATALOG_PATH).contents()
+                breakpoint()
         except dagger.QueryError as e:
             output_too_big = bool([error for error in e.errors if error.message.startswith("file size")])
             if output_too_big:
