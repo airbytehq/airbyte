@@ -525,7 +525,7 @@ public abstract class BaseTypingDedupingTest {
         namespace1,
         streamName);
     verifySyncResult(
-        readRecords("dat/sync2_expectedrecords_append_raw2.jsonl"),
+        readRecords("dat/sync2_expectedrecords_incremental_dedup_raw2.jsonl"),
         readRecords("dat/sync2_expectedrecords_incremental_dedup_final2.jsonl"),
         namespace2,
         streamName);
