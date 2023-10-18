@@ -187,6 +187,9 @@ pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
                 if f == "int32" || f == "int64" {
                     // Insert updates values
                     map.insert("format".to_string(), json!("integer"));
+                } else if f == "base64" {
+                    // a non-standard format output by salesforce connector
+                    map.remove("format");
                 }
             }
         },
@@ -540,7 +543,8 @@ mod test {
                         },
                         "id": {
                             "type": ["string", "null"],
-                            "group": "test"
+                            "group": "test",
+                            "format": "base64"
                         }
                     }
                 }
