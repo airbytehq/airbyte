@@ -33,6 +33,7 @@ from source_stripe.streams import (
 class SourceStripe(AbstractSource):
     @staticmethod
     def validate_and_fill_with_defaults(config: MutableMapping) -> MutableMapping:
+        """Making a change to an actually important python connector in case its important"""
         start_date, lookback_window_days, slice_range = (
             config.get("start_date"),
             config.get("lookback_window_days"),
