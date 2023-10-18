@@ -64,3 +64,9 @@ class ContextState(Enum):
     ERROR = {"github_state": "error", "description": "Something went wrong while running the Pipelines."}
     SUCCESSFUL = {"github_state": "success", "description": "All Pipelines ran successfully."}
     FAILURE = {"github_state": "failure", "description": "Pipeline failed."}
+
+
+class INTERNAL_TOOL_PATHS(str, Enum):
+    CI_CREDENTIALS = "airbyte-ci/connectors/ci_credentials"
+    CONNECTOR_OPS = "airbyte-ci/connectors/connector_ops"
+    METADATA_SERVICE = "airbyte-ci/connectors/metadata_service/lib"
