@@ -6,10 +6,6 @@ plugins {
     id 'airbyte-docker-legacy'
 }
 
-airbytePython {
-    moduleDirectory 'octavia_cli'
-}
-
 def generateApiClient = tasks.register('generateApiClient', GenerateTask) {
     inputSpec =  "$rootDir.absolutePath/airbyte-api/src/main/openapi/config.yaml"
     outputDir = "$buildDir/airbyte_api_client"

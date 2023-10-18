@@ -46,6 +46,10 @@ acceptance_tests:
           exact_order: no
           extra_records: yes
         timeout_seconds: 1200
+        ignored_fields:
+          ads:
+            - name: "profile_image_url"
+              bypass_reason: "Volatile URLs"
         empty_streams:
           - name: ads_reports_hourly
             bypass_reason: "Tested with daily granularity."
@@ -97,6 +101,10 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         timeout_seconds: 7200
+        ignored_fields:
+          ads:
+            - name: "profile_image_url"
+              bypass_reason: "Volatile URLs"
   incremental:
     tests:
       - config_path: "secrets/config.json"
