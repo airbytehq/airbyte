@@ -5,7 +5,6 @@ from typing import IO, List, Optional, Tuple, Union
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
-
 from source_s3.v4.config import Config
 
 # Buffer constants
@@ -66,11 +65,11 @@ class ZipFileHandler:
         return response["Body"].read()
 
     def _find_signature(
-            self,
-            filename: str,
-            signature: bytes,
-            initial_buffer_size: int = BUFFER_SIZE_DEFAULT,
-            max_buffer_size: int = MAX_BUFFER_SIZE_DEFAULT,
+        self,
+        filename: str,
+        signature: bytes,
+        initial_buffer_size: int = BUFFER_SIZE_DEFAULT,
+        max_buffer_size: int = MAX_BUFFER_SIZE_DEFAULT,
     ) -> Optional[bytes]:
         """
         Search for a specific signature in the file by checking chunks of increasing size.
@@ -392,7 +391,7 @@ class ZipContentReader:
         """
         return self._closed
 
-    def __enter__(self) -> 'ZipContentReader':
+    def __enter__(self) -> "ZipContentReader":
         """Enter the runtime context for the reader."""
         return self
 
