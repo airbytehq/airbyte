@@ -158,6 +158,15 @@ public class DestinationHandler {
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
+  public DestionationReadWithConnection getDestinationWithConnection(final DestinationIdRequestBody destinationIdRequestBody)
+          throws JsonValidationException, IOException, ConfigNotFoundException {
+    DestinationRead destinationRead = buildDestinationRead(destinationIdRequestBody.getDestinationId());
+    ConnectionReadList connectionReadList =
+            connectionsHandler.listConnectionsForWorkspaceWithoutOperation(new WorkspaceIdRequestBody().workspaceId(destinationRead.getWorkspaceId()),
+                    false);
+    return new DestionationReadWithConnection().destinationRead(destinationRead).connectionReadList(connectionReadList);
+  }
+  
   public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // read destination configuration from db
@@ -293,8 +302,12 @@ public class DestinationHandler {
   }
 
   private DestinationRead buildDestinationRead(final UUID destinationId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    final ConnectorSpecification spec = getSpec(configRepository.getDestinationConnection(destinationId).getDestinationDefinitionId());
-    return buildDestinationRead(destinationId, spec);
+    DestinationConnection destinationConnection = configRepository.getDestinationConnection(destinationId);
+    final StandardDestinationDefinition standardDestinationDefinition =
+            configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+    destinationConnection.setConfiguration(secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
+            standardDestinationDefinition.getSpec().getConnectionSpecification()));
+    return toDestinationRead(destinationConnection, standardDestinationDefinition);
   }
 
   private DestinationRead buildDestinationRead(final UUID destinationId, final ConnectorSpecification spec)
