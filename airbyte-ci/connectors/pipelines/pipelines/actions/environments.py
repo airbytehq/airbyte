@@ -47,7 +47,7 @@ def with_python_base(context: PipelineContext, python_version: str = "3.10") -> 
         Container: The python base environment container.
     """
 
-    pip_cache: CacheVolume = context.dagger_client.cache_volume("pip_cache")
+    pip_cache: CacheVolume = context.dagger_client.cache_volume(f"pip_cache-{python_version}")
 
     base_container = (
         context.dagger_client.container()
