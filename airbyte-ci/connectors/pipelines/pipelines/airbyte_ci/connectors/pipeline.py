@@ -12,13 +12,13 @@ import anyio
 import dagger
 from connector_ops.utils import ConnectorLanguage
 from dagger import Config
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.steps.no_op import NoOpStep
 from pipelines.consts import DOCKER_CLI_IMAGE, DOCKER_HOST_NAME, DOCKER_HOST_PORT, ContextState
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.utils import create_and_open_file
 from pipelines.models.reports import Report
 from pipelines.models.steps import StepResult, StepStatus
-from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.steps.no_op import NoOpStep
 
 GITHUB_GLOBAL_CONTEXT = "[POC please ignore] Connectors CI"
 GITHUB_GLOBAL_DESCRIPTION = "Running connectors tests"

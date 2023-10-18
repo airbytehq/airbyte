@@ -3,11 +3,11 @@
 #
 
 from dagger import CacheVolume, Container, File, Platform
+from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 from pipelines.consts import AMAZONCORRETTO_IMAGE
 from pipelines.dagger.actions.connector.hooks import finalize_build
 from pipelines.dagger.actions.connector.normalization import DESTINATION_NORMALIZATION_BUILD_CONFIGURATION, with_normalization
 from pipelines.helpers.utils import sh_dash_c
-from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
 
 
 def with_integration_base(context: PipelineContext, build_platform: Platform) -> Container:

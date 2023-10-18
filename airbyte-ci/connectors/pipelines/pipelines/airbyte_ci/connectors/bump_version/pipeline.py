@@ -8,10 +8,10 @@ from copy import deepcopy
 import semver
 from dagger import Container
 from pipelines import consts
-from pipelines.helpers.connectors import metadata_change_helpers
-from pipelines.models.steps import Step, StepResult, StepStatus
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
+from pipelines.helpers.connectors import metadata_change_helpers
+from pipelines.models.steps import Step, StepResult, StepStatus
 
 
 def get_bumped_version(version: str, bump_type: str) -> str:

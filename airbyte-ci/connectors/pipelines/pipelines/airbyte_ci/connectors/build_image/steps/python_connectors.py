@@ -4,11 +4,11 @@
 
 
 from dagger import Container, Platform
-from pipelines.dagger.actions.python.common import apply_python_development_overrides, with_python_connector_installed
-from pipelines.models.steps import StepResult
 from pipelines.airbyte_ci.connectors.build_image.steps import build_customization
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.dagger.actions.python.common import apply_python_development_overrides, with_python_connector_installed
+from pipelines.models.steps import StepResult
 
 
 class BuildConnectorImages(BuildConnectorImagesBase):

@@ -3,8 +3,8 @@
 #
 
 import pytest
-from pipelines.dagger.actions.python import common
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.dagger.actions.python import common
 
 pytestmark = [
     pytest.mark.anyio,

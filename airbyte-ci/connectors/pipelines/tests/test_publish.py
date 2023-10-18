@@ -8,8 +8,8 @@ from typing import List
 
 import anyio
 import pytest
-from pipelines.models.steps import StepStatus
 from pipelines.airbyte_ci.connectors.publish import pipeline as publish_pipeline
+from pipelines.models.steps import StepStatus
 
 pytestmark = [
     pytest.mark.anyio,

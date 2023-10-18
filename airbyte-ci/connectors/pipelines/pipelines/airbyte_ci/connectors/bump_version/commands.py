@@ -4,10 +4,10 @@
 
 import anyio
 import click
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import run_connector_version_bump_pipeline
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
 
 @click.command(cls=DaggerPipelineCommand, short_help="Bump a connector version: update metadata.yaml and changelog.")

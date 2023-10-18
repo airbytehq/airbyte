@@ -5,12 +5,12 @@
 from typing import List, Optional, Tuple, Union
 
 from dagger import Container, Directory, ExecError, File, Host, Platform, QueryError
-from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.dagger.containers import java
-from pipelines.models.steps import StepResult, StepStatus
 from pipelines.airbyte_ci.connectors.build_image.steps.common import BuildConnectorImagesBase
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.steps.gradle import GradleTask
+from pipelines.consts import LOCAL_BUILD_PLATFORM
+from pipelines.dagger.containers import java
+from pipelines.models.steps import StepResult, StepStatus
 
 
 class BuildConnectorDistributionTar(GradleTask):

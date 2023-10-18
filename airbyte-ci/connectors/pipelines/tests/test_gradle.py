@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pipelines.helpers.connectors.modifed
 import pytest
-from pipelines.models import steps
 from pipelines.airbyte_ci.steps import gradle
+from pipelines.models import steps
 
 pytestmark = [
     pytest.mark.anyio,

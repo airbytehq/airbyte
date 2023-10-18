@@ -5,11 +5,11 @@
 import anyio
 import click
 from pipelines import main_logger
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import ContextState
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.publish.pipeline import reorder_contexts, run_connector_publish_pipeline
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.consts import ContextState
 
 
 @click.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")

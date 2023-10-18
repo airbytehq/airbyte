@@ -7,12 +7,12 @@ import sys
 import anyio
 import click
 from pipelines import main_logger
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.consts import ContextState
-from pipelines.helpers.github import update_global_commit_status_check_for_tests
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.test.steps import run_connector_test_pipeline
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.consts import ContextState
+from pipelines.helpers.github import update_global_commit_status_check_for_tests
 
 
 @click.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")

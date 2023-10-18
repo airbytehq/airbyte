@@ -10,6 +10,9 @@ from typing import List
 import click
 from github import PullRequest
 from pipelines import main_logger
+from pipelines.airbyte_ci.connectors.commands import connectors
+from pipelines.airbyte_ci.metadata.commands import metadata
+from pipelines.airbyte_ci.test.commands import test
 from pipelines.cli.telemetry import track_command
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH, CIContext
 from pipelines.helpers import github
@@ -21,9 +24,6 @@ from pipelines.helpers.git import (
     get_modified_files_in_pull_request,
 )
 from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_paths
-from pipelines.airbyte_ci.connectors.commands import connectors
-from pipelines.airbyte_ci.metadata.commands import metadata
-from pipelines.airbyte_ci.test.commands import test
 
 # HELPERS
 

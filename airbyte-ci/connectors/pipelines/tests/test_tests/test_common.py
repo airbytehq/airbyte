@@ -11,10 +11,10 @@ import dagger
 import pytest
 import yaml
 from freezegun import freeze_time
+from pipelines.airbyte_ci.connectors.test.steps import common
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.models.steps import StepStatus
-from pipelines.airbyte_ci.connectors.test.steps import common
 
 pytestmark = [
     pytest.mark.anyio,

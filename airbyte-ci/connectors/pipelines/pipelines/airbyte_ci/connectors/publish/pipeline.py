@@ -10,13 +10,13 @@ import anyio
 from airbyte_protocol.models.airbyte_protocol import ConnectorSpecification
 from dagger import Container, ExecError, File, ImageLayerCompression, QueryError
 from pipelines import consts
-from pipelines.dagger.actions.remote_storage import upload_to_gcs
-from pipelines.dagger.actions.system import docker
-from pipelines.models.steps import Step, StepResult, StepStatus
 from pipelines.airbyte_ci.connectors.build_image import steps
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.metadata.pipeline import MetadataUpload, MetadataValidation
+from pipelines.dagger.actions.remote_storage import upload_to_gcs
+from pipelines.dagger.actions.system import docker
+from pipelines.models.steps import Step, StepResult, StepStatus
 from pydantic import ValidationError
 
 

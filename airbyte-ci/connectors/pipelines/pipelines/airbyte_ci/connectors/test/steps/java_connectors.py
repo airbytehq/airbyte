@@ -9,11 +9,6 @@ from typing import List, Optional
 import anyio
 import asyncer
 from dagger import Directory, File, QueryError
-from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.dagger.actions import secrets
-from pipelines.dagger.actions.system import docker
-from pipelines.helpers.utils import export_container_to_tarball
-from pipelines.models.steps import StepResult, StepStatus
 from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     BuildConnectorDistributionTar,
     BuildConnectorImages,
@@ -23,6 +18,11 @@ from pipelines.airbyte_ci.connectors.build_image.steps.normalization import Buil
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.airbyte_ci.steps.gradle import GradleTask
+from pipelines.consts import LOCAL_BUILD_PLATFORM
+from pipelines.dagger.actions import secrets
+from pipelines.dagger.actions.system import docker
+from pipelines.helpers.utils import export_container_to_tarball
+from pipelines.models.steps import StepResult, StepStatus
 
 
 class IntegrationTests(GradleTask):
