@@ -5,7 +5,7 @@
 import logging
 import traceback
 from abc import ABC
-from collections import defaultdict
+from collections import Counter, defaultdict
 from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
@@ -122,12 +122,8 @@ class FileBasedSource(AbstractSource, ABC):
     ) -> Iterator[AirbyteMessage]:
         yield from super().read(logger, config, catalog, state)
         # count streams using a certain parser
-        stream_by_parser: Dict[str, int] = defaultdict(lambda: 0)
         parsed_config = self._get_parsed_config(config)
-        for stream in parsed_config.streams:
-            stream_by_parser[stream.format.filetype] += 1
-
-        for (parser, count) in stream_by_parser.items():
+        for parser, count in Counter(stream.format.filetype for stream in parsed_config.streams).items():
             yield create_analytics_message(f"file-cdk-{parser}-stream-count", count)
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
