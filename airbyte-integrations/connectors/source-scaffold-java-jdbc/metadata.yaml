@@ -9,7 +9,7 @@ data:
       enabled: false
   connectorSubtype: database
   connectorType: source
-  definitionId: bf75d39e-90f6-4ff7-b56f-1c4bf527c84a
+  definitionId: c2801af6-9426-40a5-840a-2cfc5fe97e6e
   dockerImageTag: 0.1.0
   dockerRepository: airbyte/source-scaffold-java-jdbc
   githubIssueLabel: source-scaffold-java-jdbc
