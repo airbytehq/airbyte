@@ -3,6 +3,7 @@
 #
 
 import logging
+from datetime import datetime
 from io import IOBase
 from typing import Iterable, List, Optional, Set
 
@@ -15,6 +16,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
 from source_s3.v4.config import Config
+from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
@@ -94,7 +96,14 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         logger.debug(f"try to open {file.uri}")
         try:
-            result = smart_open.open(f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding)
+            if isinstance(file, RemoteFileInsideArchive):
+                s3_file_object = smart_open.open(f"s3://{self.config.bucket}/{file.uri.split('#')[0]}", transport_params=params, mode="rb")
+                decompressed_stream = DecompressedStream(s3_file_object, file)
+                result = ZipContentReader(decompressed_stream, encoding)
+            else:
+                result = smart_open.open(
+                    f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding
+                )
         except OSError:
             logger.warning(
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
@@ -126,10 +135,11 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 for file in response["Contents"]:
                     if self._is_folder(file):
                         continue
-                    remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"].astimezone(pytz.utc).replace(tzinfo=None))
-                    if self.file_matches_globs(remote_file, globs) and remote_file.uri not in seen:
-                        seen.add(remote_file.uri)
-                        yield remote_file
+
+                    for remote_file in self._handle_file(file):
+                        if self.file_matches_globs(remote_file, globs) and remote_file.uri not in seen:
+                            seen.add(remote_file.uri)
+                            yield remote_file
             else:
                 logger.warning(f"Invalid response from S3; missing 'Contents' key. kwargs={kwargs}.")
 
@@ -138,6 +148,31 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             else:
                 logger.info(f"Finished listing objects from S3 for prefix={prefix}. Found {total_n_keys_for_prefix} objects.")
                 break
+
+    def _handle_file(self, file):
+        if file["Key"].endswith("zip"):
+            yield from self._handle_zip_file(file)
+        else:
+            yield self._handle_regular_file(file)
+
+    def _handle_zip_file(self, file):
+        zip_handler = ZipFileHandler(self.s3_client, self.config)
+        zip_members, cd_start = zip_handler.get_zip_files(file["Key"])
+
+        for zip_member in zip_members:
+            remote_file = RemoteFileInsideArchive(
+                uri=file["Key"] + "#" + zip_member.filename,
+                last_modified=datetime(*zip_member.date_time).astimezone(pytz.utc).replace(tzinfo=None),
+                start_offset=zip_member.header_offset + cd_start,
+                compressed_size=zip_member.compress_size,
+                uncompressed_size=zip_member.file_size,
+                compression_method=zip_member.compress_type,
+            )
+            yield remote_file
+
+    def _handle_regular_file(self, file):
+        remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"].astimezone(pytz.utc).replace(tzinfo=None))
+        return remote_file
 
 
 def _get_s3_compatible_client_args(config: Config) -> dict:
