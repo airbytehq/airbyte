@@ -194,9 +194,10 @@ definitions:
       name: "email_thread_activities"
       path: "activity/emailthread"
   email_activities_stream:
-    $ref: "#/definitions/activities_base_stream"
+    $ref: "#/definitions/base_stream"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync__cursor_date_created"
     $parameters:
-      $ref: "#/definitions/activities_base_stream/$parameters"
       name: "email_activities"
       path: "activity/email"
   sms_activities_stream:
