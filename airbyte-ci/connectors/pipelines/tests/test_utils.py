@@ -7,10 +7,10 @@ from unittest import mock
 
 import pytest
 from connector_ops.utils import Connector, ConnectorLanguage
-from pipelines.helpers import utils
-from pipelines.helpers.connectors.modifed import get_modified_connectors, get_connector_modified_files
-from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines import consts
+from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.helpers import utils
+from pipelines.helpers.connectors.modifed import get_connector_modified_files, get_modified_connectors
 from tests.utils import pick_a_random_connector
 
 

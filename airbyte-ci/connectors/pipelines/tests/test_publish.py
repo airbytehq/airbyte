@@ -79,7 +79,9 @@ class TestUploadSpecToCache:
 
         upload_exit_code = 0 if successful_upload else 1
         mocker.patch.object(
-            publish_pipeline, "upload_to_gcs", mocker.AsyncMock(return_value=(upload_exit_code, "upload_to_gcs_stdout", "upload_to_gcs_stderr"))
+            publish_pipeline,
+            "upload_to_gcs",
+            mocker.AsyncMock(return_value=(upload_exit_code, "upload_to_gcs_stdout", "upload_to_gcs_stderr")),
         )
         if not valid_spec:
             mocker.patch.object(

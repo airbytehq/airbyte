@@ -4,22 +4,19 @@
 
 from typing import Callable
 
+import click
 import pipelines.pipeline.connectors.builds.commands
 import pipelines.pipeline.connectors.commands
 import pipelines.pipeline.connectors.publish.commands
 import pipelines.pipeline.connectors.test.commands
 import pytest
-import click
 from click.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
-
+from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.pipeline.connectors import commands as connectors_commands
+from pipelines.pipeline.connectors.builds import commands as connectors_build_command
 from pipelines.pipeline.connectors.publish import commands as connectors_publish_command
 from pipelines.pipeline.connectors.test import commands as connectors_test_command
-from pipelines.pipeline.connectors.builds import commands as connectors_build_command
-
-
-from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from tests.utils import pick_a_random_connector
 
 
