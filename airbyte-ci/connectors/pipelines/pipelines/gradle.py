@@ -39,12 +39,13 @@ class GradleTask(Step, ABC):
     @property
     def persistent_cache_volume(self) -> CacheVolume:
         """This cache volume is for sharing gradle state across all pipeline runs."""
-        return self.context.dagger_client.cache_volume("gradle-persistent-cache")
+        return self.context.dagger_client.cache_volume("gradle-dependency-cache")
 
     @property
     def connector_transient_cache_volume(self) -> CacheVolume:
         """This cache volume is for sharing gradle state across tasks within a single connector pipeline run."""
-        return self.context.dagger_client.cache_volume(f"gradle-{self.context.connector.technical_name}-transient-cache")
+        volume_name = f"gradle-{self.context.connector.technical_name}-transient-cache-{self.context.git_revision}"
+        return self.context.dagger_client.cache_volume(volume_name)
 
     @property
     def build_include(self) -> List[str]:
@@ -71,6 +72,7 @@ class GradleTask(Step, ABC):
         )
 
     async def _run(self) -> StepResult:
+        connector_code_directory = str(self.context.connector.code_directory)
         include = [
             ".root",
             ".env",
@@ -139,10 +141,11 @@ class GradleTask(Step, ABC):
         with_whole_git_repo = (
             gradle_container_base
             # Mount the whole repo.
-            .with_mounted_directory("/airbyte", self.context.get_repo_dir("."))
+            .with_mounted_directory("/airbyte", self.context.get_repo_dir(".").with_timestamps(1))
             # Mount the cache volume for the gradle cache which is persisted throughout all pipeline runs.
             # We deliberately don't mount any cache volumes before mounting the git repo otherwise these will effectively be always empty.
-            # This volume is LOCKED instead of SHARED because gradle doesn't cope well with concurrency.
+            # This volume is LOCKED instead of SHARED and we rsync to it instead of mounting it directly to $GRADLE_HOME.
+            # This is because gradle doesn't cope well with concurrency.
             .with_mounted_cache("/root/gradle-persistent-cache", self.persistent_cache_volume, sharing=CacheSharingMode.LOCKED)
             # Update the persistent gradle cache by resolving all dependencies.
             # The idea here is to have this persistent cache contain little more than jars and poms.
@@ -174,17 +177,18 @@ class GradleTask(Step, ABC):
             # TODO: remove this once we finish the project to boost source-postgres CI performance.
             .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger))
             # Mount the connector-agnostic whitelisted files in the git repo.
-            .with_mounted_directory("/airbyte", self.context.get_repo_dir(".", include=include))
+            .with_mounted_directory("/airbyte", await with_whole_git_repo.directory("/airbyte", include=include))
             # Mount the sources for the connector and its dependencies.
-            .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
-            # Mount the cache volume for the transient gradle cache used for this connector only.
-            # This volume is PRIVATE meaning it exists only for the duration of the dagger pipeline.
-            # We deliberately don't mount at $GRADLE_HOME, instead we rsync, again because gradle doesn't cope well with concurrency.
-            .with_mounted_cache("/root/gradle-transient-cache", self.connector_transient_cache_volume, sharing=CacheSharingMode.PRIVATE)
+            .with_mounted_directory(connector_code_directory, await with_whole_git_repo.directory(connector_code_directory))
             # Warm the gradle cache.
             .with_mounted_directory("/root/.gradle", await with_whole_git_repo.directory("/root/.gradle"))
             # Populate the local maven repository.
             .with_mounted_directory("/root/.m2", await with_whole_git_repo.directory("/root/.m2"))
+            # Mount the cache volume for the transient gradle cache used for this connector only.
+            # We deliberately don't mount any cache volumes before mounting the git repo otherwise these will effectively be always empty.
+            # This volume is LOCKED instead of SHARED and we rsync to it instead of mounting it directly to $GRADLE_HOME.
+            # This is because gradle doesn't cope well with concurrency.
+            .with_mounted_cache("/root/gradle-transient-cache", self.connector_transient_cache_volume, sharing=CacheSharingMode.LOCKED)
         )
 
         # From this point on, we add layers which are task-dependent.
