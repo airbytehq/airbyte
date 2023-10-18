@@ -77,9 +77,16 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
       throws IOException {
     final List<Exception> exceptionsThrown = new ArrayList<>();
     boolean succeeded = false;
+    final String query = getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
     while (exceptionsThrown.size() < UPLOAD_RETRY_LIMIT && !succeeded) {
       try {
-        uploadRecordsToBucket(database, stageName, stagingPath, recordsData);
+        LOGGER.debug("Executing query: {}", query);
+        database.execute(query);
+        if (!checkStageObjectExists(database, stageName, stagingPath, recordsData.getFilename())) {
+          LOGGER.error(String.format("Failed to upload data into stage, object @%s not found",
+              (stagingPath + "/" + recordsData.getFilename()).replaceAll("/+", "/")));
+          throw new RuntimeException("Upload failed");
+        }
         succeeded = true;
       } catch (final Exception e) {
         LOGGER.error("Failed to upload records into stage {}", stagingPath, e);
@@ -95,21 +102,6 @@ public class SnowflakeInternalStagingSqlOperations extends SnowflakeSqlStagingOp
     }
     LOGGER.info("Successfully loaded records to stage {} with {} re-attempt(s)", stagingPath, exceptionsThrown.size());
     return recordsData.getFilename();
-  }
-
-  private void uploadRecordsToBucket(final JdbcDatabase database,
-                                     final String stageName,
-                                     final String stagingPath,
-                                     final SerializableBuffer recordsData)
-      throws Exception {
-    final String query = getPutQuery(stageName, stagingPath, recordsData.getFile().getAbsolutePath());
-    LOGGER.debug("Executing query: {}", query);
-    database.execute(query);
-    if (!checkStageObjectExists(database, stageName, stagingPath, recordsData.getFilename())) {
-      LOGGER.error(String.format("Failed to upload data into stage, object @%s not found",
-          (stagingPath + "/" + recordsData.getFilename()).replaceAll("/+", "/")));
-      throw new RuntimeException("Upload failed");
-    }
   }
 
   protected String getPutQuery(final String stageName, final String stagingPath, final String filePath) {
