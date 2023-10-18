@@ -3,9 +3,9 @@
 #
 
 from dagger import Container, Secret
+from pipelines.consts import INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.pipx import with_installed_pipx_package
 from pipelines.dagger.containers.python import with_python_base
-from pipelines.consts import INTERNAL_TOOL_PATHS
 from pipelines.pipeline.connectors.context import PipelineContext
 
 
