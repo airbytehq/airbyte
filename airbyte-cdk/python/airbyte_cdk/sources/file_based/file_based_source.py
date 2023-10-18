@@ -5,8 +5,8 @@
 import logging
 import traceback
 from abc import ABC
-from collections import Counter, defaultdict
-from typing import Any, Dict, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from collections import Counter
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
