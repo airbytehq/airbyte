@@ -10,7 +10,8 @@ import anyio
 import asyncer
 from dagger import Directory, File, QueryError
 from pipelines.consts import LOCAL_BUILD_PLATFORM
-from pipelines.dagger.actions.system import docker, secrets
+from pipelines.dagger.actions import secrets
+from pipelines.dagger.actions.system import docker
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import StepResult, StepStatus
 from pipelines.pipeline.connectors.builds.steps.java_connectors import (
@@ -21,7 +22,7 @@ from pipelines.pipeline.connectors.builds.steps.java_connectors import (
 from pipelines.pipeline.connectors.builds.steps.normalization import BuildOrPullNormalization
 from pipelines.pipeline.connectors.context import ConnectorContext
 from pipelines.pipeline.connectors.test.steps.common import AcceptanceTests
-from pipelines.pipeline.steps import GradleTask
+from pipelines.pipeline.steps.gradle import GradleTask
 
 
 class IntegrationTests(GradleTask):

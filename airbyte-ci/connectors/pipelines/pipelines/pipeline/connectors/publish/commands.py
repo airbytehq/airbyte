@@ -6,14 +6,13 @@ import anyio
 import click
 from pipelines import main_logger
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.pipeline.connectors.commands import connectors
-from pipelines.pipeline.connectors.context import ContextState
+from pipelines.consts import ContextState
 from pipelines.pipeline.connectors.pipeline import run_connectors_pipelines
 from pipelines.pipeline.connectors.publish.context import PublishConnectorContext
-from pipelines.publish import reorder_contexts, run_connector_publish_pipeline
+from pipelines.pipeline.connectors.publish.pipeline import reorder_contexts, run_connector_publish_pipeline
 
 
-@connectors.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
+@click.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
 @click.option("--pre-release/--main-release", help="Use this flag if you want to publish pre-release images.", default=True, type=bool)
 @click.option(
     "--spec-cache-gcs-credentials",

@@ -2,12 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import FrozenSet, Set, Union
 
+from anyio import Path
 from connector_ops.utils import Connector
 from pipelines import main_logger
-from pipelines.helpers.utils import IGNORED_FILE_EXTENSIONS
+from pipelines.helpers.utils import IGNORED_FILE_EXTENSIONS, METADATA_FILE_NAME
 
 
 def get_connector_modified_files(connector: Connector, all_modified_files: Set[Path]) -> FrozenSet[Path]:
@@ -58,3 +60,12 @@ def get_modified_connectors(modified_files: Set[Path], all_connectors: Set[Conne
         if not _is_ignored_file(modified_file):
             modified_connectors.update(_find_modified_connectors(modified_file, all_connectors, dependency_scanning))
     return modified_connectors
+
+
+@dataclass(frozen=True)
+class ConnectorWithModifiedFiles(Connector):
+    modified_files: Set[Path] = field(default_factory=frozenset)
+
+    @property
+    def has_metadata_change(self) -> bool:
+        return any(path.name == METADATA_FILE_NAME for path in self.modified_files)

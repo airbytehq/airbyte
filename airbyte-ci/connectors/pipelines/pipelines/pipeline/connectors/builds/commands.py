@@ -6,12 +6,11 @@ import anyio
 import click
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.pipeline.connectors.builds.steps import run_connector_build_pipeline
-from pipelines.pipeline.connectors.commands import connectors
 from pipelines.pipeline.connectors.context import ConnectorContext
 from pipelines.pipeline.connectors.pipeline import run_connectors_pipelines
 
 
-@connectors.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
+@click.command(cls=DaggerPipelineCommand, help="Build all images for the selected connectors.")
 @click.option(
     "--use-host-gradle-dist-tar",
     is_flag=True,

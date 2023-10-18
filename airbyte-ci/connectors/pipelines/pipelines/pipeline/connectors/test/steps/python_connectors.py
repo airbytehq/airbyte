@@ -11,8 +11,7 @@ import asyncer
 import pipelines.dagger.actions.python.common
 import pipelines.dagger.actions.system.docker
 from dagger import Container, File
-from pipelines.actions import environments
-from pipelines.consts import LOCAL_BUILD_PLATFORM
+from pipelines.consts import LOCAL_BUILD_PLATFORM, PYPROJECT_TOML_FILE_PATH
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import Step, StepResult, StepStatus
@@ -26,9 +25,9 @@ class CodeFormatChecks(Step):
 
     title = "Code format checks"
 
-    RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check", "."]
-    RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{environments.PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
-    RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{environments.PYPROJECT_TOML_FILE_PATH}", "."]
+    RUN_BLACK_CMD = ["python", "-m", "black", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "--check", "."]
+    RUN_ISORT_CMD = ["python", "-m", "isort", f"--settings-file=/{PYPROJECT_TOML_FILE_PATH}", "--check-only", "--diff", "."]
+    RUN_FLAKE_CMD = ["python", "-m", "pflake8", f"--config=/{PYPROJECT_TOML_FILE_PATH}", "."]
 
     async def _run(self) -> StepResult:
         """Run a code format check on the container source code.

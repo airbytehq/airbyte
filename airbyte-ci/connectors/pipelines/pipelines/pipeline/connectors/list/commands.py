@@ -5,12 +5,11 @@
 import click
 from connector_ops.utils import console
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
-from pipelines.pipeline.connectors.commands import connectors
 from rich.table import Table
 from rich.text import Text
 
 
-@connectors.command(cls=DaggerPipelineCommand, help="List all selected connectors.")
+@click.command(cls=DaggerPipelineCommand, help="List all selected connectors.")
 @click.pass_context
 def list(
     ctx: click.Context,

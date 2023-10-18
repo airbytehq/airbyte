@@ -6,12 +6,11 @@ import anyio
 import click
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.pipeline.connectors.bump_version.pipeline import run_connector_version_bump_pipeline
-from pipelines.pipeline.connectors.commands import connectors
 from pipelines.pipeline.connectors.context import ConnectorContext
 from pipelines.pipeline.connectors.pipeline import run_connectors_pipelines
 
 
-@connectors.command(cls=DaggerPipelineCommand, help="Bump a connector version: update metadata.yaml and changelog.")
+@click.command(cls=DaggerPipelineCommand, short_help="Bump a connector version: update metadata.yaml and changelog.")
 @click.argument("bump-type", type=click.Choice(["patch", "minor", "major"]))
 @click.argument("pull-request-number", type=str)
 @click.argument("changelog-entry", type=str)

@@ -11,7 +11,8 @@ import dagger
 import pytest
 import yaml
 from freezegun import freeze_time
-from pipelines.models.bases import ConnectorWithModifiedFiles, StepStatus
+from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+from pipelines.models.steps import StepStatus
 from pipelines.pipeline.connectors.test.steps import common
 
 pytestmark = [

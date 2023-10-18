@@ -6,14 +6,13 @@ from typing import Callable
 
 import pipelines.pipeline.connectors.builds.commands
 import pipelines.pipeline.connectors.commands
-import pipelines.pipeline.connectors.format.commands
 import pipelines.pipeline.connectors.publish.commands
 import pipelines.pipeline.connectors.test.commands
 import pytest
 from click.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
-from pipelines.commands.groups import connectors
-from pipelines.models.bases import ConnectorWithModifiedFiles
+from pipelines.pipeline.connectors.commands import connectors
+from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from tests.utils import pick_a_random_connector
 
 

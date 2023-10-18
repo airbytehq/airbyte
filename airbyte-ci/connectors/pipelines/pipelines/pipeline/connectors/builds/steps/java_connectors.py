@@ -10,7 +10,7 @@ from pipelines.dagger.containers import java
 from pipelines.models.steps import StepResult, StepStatus
 from pipelines.pipeline.connectors.builds.steps.common import BuildConnectorImagesBase
 from pipelines.pipeline.connectors.context import ConnectorContext
-from pipelines.pipelines.models.steps import GradleTask
+from pipelines.pipeline.steps.gradle import GradleTask
 
 
 class BuildConnectorDistributionTar(GradleTask):
