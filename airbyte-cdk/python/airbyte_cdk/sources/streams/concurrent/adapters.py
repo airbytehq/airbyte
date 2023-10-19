@@ -47,13 +47,13 @@ class StreamFacade(Stream):
 
     @classmethod
     def create_from_stream(
-            cls,
-            stream: Stream,
-            source: AbstractSource,
-            logger: logging.Logger,
-            max_workers: int,
-            state: MutableMapping[str, Any],
-            cursor: Cursor,
+        cls,
+        stream: Stream,
+        source: AbstractSource,
+        logger: logging.Logger,
+        max_workers: int,
+        state: MutableMapping[str, Any],
+        cursor: Cursor,
     ) -> Stream:
         """
         Create a ConcurrentStream from a Stream object.

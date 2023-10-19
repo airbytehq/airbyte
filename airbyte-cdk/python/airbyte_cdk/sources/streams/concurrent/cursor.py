@@ -109,7 +109,7 @@ class ConcurrentCursor(Cursor):
         state_message = self._connector_state_manager.create_state_message(
             self._stream_name,
             self._stream_namespace,
-            send_per_stream_state=True  # FIXME AbstracSource.per_stream_state_enabled returns True and I don't see any re-implementation
+            send_per_stream_state=True
         )
         self._message_repository.emit_message(state_message)
 

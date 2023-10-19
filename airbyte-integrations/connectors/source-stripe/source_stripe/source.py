@@ -458,6 +458,8 @@ class SourceStripe(AbstractSource):
 
     def _is_incremental(self, stream: Stream):
         catalog_stream = [catalog_stream for catalog_stream in self._catalog.streams if catalog_stream.stream.name == stream.name]
+        if len(catalog_stream) == 0:
+            return False  # it does not matter if it's incremental or not as it's not configured
         if len(catalog_stream) != 1:
             raise ValueError(f"Stream {stream.name} is in catalog {len(catalog_stream)} times")
         # FIXME This seems to create duplication with AbstractSource which I'm not a big fan of
