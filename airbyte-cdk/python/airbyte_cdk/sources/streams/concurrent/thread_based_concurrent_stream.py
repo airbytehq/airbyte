@@ -69,15 +69,16 @@ class ThreadBasedConcurrentStream(AbstractStream):
         Algorithm:
         1. Submit a future to generate the stream's partition to process.
           - This has to be done asynchronously because we sometimes need to submit requests to the API to generate all partitions (eg for substreams).
-          - The future will add the partitions to process on a work queue
+          - The future will add the partitions to process on a work queue.
         2. Continuously poll work from the work queue until all partitions are generated and processed
+          - If the next work item is an Exception, stop the threadpool and raise it.
           - If the next work item is a partition, submit a future to process it.
-            - The future will add the records to emit on the work queue
-            - Add the partitions to the partitions_to_done dict so we know it needs to complete for the sync to succeed
-          - If the next work item is a record, yield the record
-          - If the next work item is PARTITIONS_GENERATED_SENTINEL, all the partitions were generated
-          - If the next work item is a PartitionCompleteSentinel, a partition is done processing
-            - Update the value in partitions_to_done to True so we know the partition is completed
+            - The future will add the records to emit on the work queue.
+            - Add the partitions to the partitions_to_done dict so we know it needs to complete for the sync to succeed.
+          - If the next work item is a record, yield the record.
+          - If the next work item is PARTITIONS_GENERATED_SENTINEL, all the partitions were generated.
+          - If the next work item is a PartitionCompleteSentinel, a partition is done processing.
+            - Update the value in partitions_to_done to True so we know the partition is completed.
         """
         self._logger.debug(f"Processing stream slices for {self.name} (sync_mode: full_refresh)")
         futures: List[Future[Any]] = []
