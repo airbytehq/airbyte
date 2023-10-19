@@ -152,7 +152,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
 
     def _stop_and_raise_exception(self, exception: BaseException) -> None:
         # Stop the threadpool and raise the exception
-        self._threadpool.shutdown(wait=False)
+        self._threadpool.shutdown(wait=False, cancel_futures=True)
         raise exception
 
     @property
