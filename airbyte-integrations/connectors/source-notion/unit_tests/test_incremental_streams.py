@@ -2,14 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import time
 from unittest.mock import MagicMock, patch
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
 from pytest import fixture, mark
 from source_notion.streams import Blocks, Comments, IncrementalNotionStream, Pages
-from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
-
-import time
 
 
 @fixture
@@ -229,14 +228,14 @@ def test_invalid_start_cursor(parent, requests_mock, caplog):
     [
         (400, "validation_error", "The start_cursor provided is invalid: wrong_start_cursor", 10),
         (429, "rate_limited", "Rate Limited", 5),  # Assuming retry-after header value is 5
-        (500, "internal_server_error", "Internal server error", 80)  # Using default retry_factor of 5, the final backoff time should be 80
-    ]
+        (500, "internal_server_error", "Internal server error", 80),  # Using default retry_factor of 5, the final backoff time should be 80
+    ],
 )
 def test_retry_logic(status_code, error_code, error_message, expected_backoff_time, parent, requests_mock, caplog):
     stream = parent
     exception_info = None
 
-    with patch.object(time, 'sleep', return_value=None):
+    with patch.object(time, "sleep", return_value=None):
         search_endpoint = requests_mock.post(
             "https://api.notion.com/v1/search",
             status_code=status_code,
@@ -250,12 +249,12 @@ def test_retry_logic(status_code, error_code, error_message, expected_backoff_ti
             list(stream.read_records(**inputs))
         except (UserDefinedBackoffException, DefaultBackoffException) as error:
             exception_info = error
-    
+
         # For 429 errors, assert the backoff time matches retry-header value
         if status_code == 429:
             assert exception_info.backoff == expected_backoff_time
-    
-        # For 500 cases, assert the backoff time in the penultimate log message 
+
+        # For 500 cases, assert the backoff time in the penultimate log message
         # is 80 (given the default retry_factor of 5) to ensure exponential backoff is applied
         if status_code == 500:
             log_messages = [record.message for record in caplog.records]
@@ -263,6 +262,7 @@ def test_retry_logic(status_code, error_code, error_message, expected_backoff_ti
             assert expected_log_message in log_messages[-2]
         # For all test cases, assert the endpoint was hit 6 times
         assert search_endpoint.call_count == 6
+
 
 # Tests for Comments stream
 def test_comments_path(comments):
