@@ -11,7 +11,7 @@ from typing import Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
-from dagger import Directory
+from dagger import Directory, Secret
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.dagger.actions import secrets
@@ -126,6 +126,18 @@ class ConnectorContext(PipelineContext):
             ci_github_access_token=ci_github_access_token,
             open_report_in_browser=open_report_in_browser,
         )
+
+    @property
+    def s3_build_cache_access_key_id_secret(self) -> Optional[Secret]:
+        if self.s3_build_cache_access_key_id:
+            return self.dagger_client.set_secret("s3_build_cache_access_key_id", self.s3_build_cache_access_key_id)
+        return None
+
+    @property
+    def s3_build_cache_secret_key_secret(self) -> Optional[Secret]:
+        if self.s3_build_cache_access_key_id and self.s3_build_cache_secret_key:
+            return self.dagger_client.set_secret("s3_build_cache_secret_key", self.s3_build_cache_secret_key)
+        return None
 
     @property
     def modified_files(self):

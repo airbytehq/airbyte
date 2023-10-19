@@ -156,9 +156,9 @@ async def mounted_connector_secrets(context: PipelineContext, secret_directory_p
         return with_secrets_mounted_as_regular_files
 
     def with_secrets_mounted_as_dagger_secrets(container: Container) -> Container:
-        if context.s3_build_cache_access_key_id_secret:
+        if context.s3_build_cache_access_key_id:
             container = container.with_secret_variable("S3_BUILD_CACHE_ACCESS_KEY_ID", context.s3_build_cache_access_key_id_secret)
-            if context.s3_build_cache_secret_key_secret:
+            if context.s3_build_cache_secret_key:
                 container = container.with_secret_variable("S3_BUILD_CACHE_SECRET_KEY", context.s3_build_cache_secret_key_secret)
         if secret_directory_path:
             container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
