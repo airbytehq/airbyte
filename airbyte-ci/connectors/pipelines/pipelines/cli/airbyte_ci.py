@@ -104,6 +104,7 @@ def get_modified_files(
         "connectors": "pipelines.airbyte_ci.connectors.commands.connectors",
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
+        "playground": "pipelines.airbyte_ci.playground.commands.playground",
     },
 )
 @click.version_option(__installed_version__)
