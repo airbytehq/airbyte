@@ -53,6 +53,11 @@ acceptance_tests:
           creative_assets_images:
             - name: "image_url"
               bypass_reason: "Volatile URL params"
+          creative_assets_videos:
+            - name: "preview_url"
+              bypass_reason: "Volatile URL params"
+            - name: "video_cover_url"
+              bypass_reason: "Volatile URL params"
         empty_streams:
           - name: ads_reports_hourly
             bypass_reason: "Tested with daily granularity."
@@ -80,6 +85,8 @@ acceptance_tests:
             bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
           - name: creative_assets_portfolios
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: creative_assets_music
+            bypass_reason: "System music provided by TikTok - very volatile data."
         # Old style streams with granularity config (for < 0.1.13)
         # Note: not needed to be tested separately in full and incremental tests, because code of
         # these streams is called directly in new style streams
@@ -90,6 +97,18 @@ acceptance_tests:
           exact_order: no
           extra_records: yes
         timeout_seconds: 1200
+        ignored_fields:
+          ads:
+            - name: "profile_image_url"
+              bypass_reason: "Volatile URLs"
+          creative_assets_images:
+            - name: "image_url"
+              bypass_reason: "Volatile URL params"
+          creative_assets_videos:
+            - name: "preview_url"
+              bypass_reason: "Volatile URL params"
+            - name: "video_cover_url"
+              bypass_reason: "Volatile URL params"
         empty_streams:
           - name: ad_groups
             bypass_reason: "This stream is tested on the new style config."
@@ -103,6 +122,8 @@ acceptance_tests:
             bypass_reason: "This stream is tested on the new style config."
           - name: creative_assets_portfolios
             bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
+          - name: creative_assets_music
+            bypass_reason: "System music provided by TikTok - very volatile data."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
@@ -114,6 +135,11 @@ acceptance_tests:
               bypass_reason: "Volatile URLs"
           creative_assets_images:
             - name: "image_url"
+              bypass_reason: "Volatile URL params"
+          creative_assets_videos:
+            - name: "preview_url"
+              bypass_reason: "Volatile URL params"
+            - name: "video_cover_url"
               bypass_reason: "Volatile URL params"
   incremental:
     tests:
