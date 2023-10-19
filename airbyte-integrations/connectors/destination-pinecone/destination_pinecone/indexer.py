@@ -82,9 +82,7 @@ class PineconeIndexer(Indexer):
 
         return result
 
-    def index(self, document_chunks, delete_ids):
-        if len(delete_ids) > 0:
-            self.delete_vectors(filter={METADATA_RECORD_ID_FIELD: {"$in": delete_ids}})
+    def index(self, document_chunks, namespace, stream):
         pinecone_docs = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
@@ -99,6 +97,10 @@ class PineconeIndexer(Indexer):
             ]
             # Wait for and retrieve responses (this raises in case of error)
             [async_result.result() for async_result in async_results]
+
+    def delete(self, delete_ids, namespace, stream):
+        if len(delete_ids) > 0:
+            self.delete_vectors(filter={METADATA_RECORD_ID_FIELD: {"$in": delete_ids}})
 
     def check(self) -> Optional[str]:
         try:

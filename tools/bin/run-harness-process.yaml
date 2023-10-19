@@ -20,6 +20,11 @@ spec:
         requests:
           cpu: "2.5"
           memory: "2Gi"
+      env:
+        - name: DD_API_KEY
+          value: $DD_API_KEY
+        - name: DD_SITE
+          value: "datadoghq.com"
   volumes:
     - name: secrets-volume
       hostPath:

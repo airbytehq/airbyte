@@ -14,6 +14,7 @@ import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.ssh.SshHelpers;
 import io.airbyte.cdk.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.Field;
@@ -51,13 +52,13 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
       db = new MSSQLServerContainer<>(DockerImageName
           .parse("airbyte/mssql_ssltest:dev")
           .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-              .acceptLicense();
+              .acceptLicense().withUrlParam("trustServerCertificate", "true");
       db.start();
     }
 
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put(JdbcUtils.HOST_KEY, db.getHost())
-        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(db))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(db))
         .put(JdbcUtils.USERNAME_KEY, db.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
         .build());
@@ -68,8 +69,8 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
         configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%s;encrypt=true;trustServerCertificate=true;",
-            configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
-            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()),
+            db.getHost(),
+            db.getFirstMappedPort()),
         null)) {
       final Database database = getDatabase(dslContext);
       database.query(ctx -> {

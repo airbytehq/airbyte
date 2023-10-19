@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk[vector-db-based]==0.51.28",
+    "airbyte-cdk[vector-db-based]==0.51.34",
     "chromadb",
 ]
 
