@@ -229,7 +229,7 @@ def test_invalid_start_cursor(parent, requests_mock, caplog):
     [
         (400, "validation_error", "The start_cursor provided is invalid: wrong_start_cursor", 10),
         (429, "rate_limited", "Rate Limited", 5),  # Assuming retry-after header value is 5
-        (500, "internal_server_error", "Internal server error", 80)  # Assuming backoff_time returns 10 for this case
+        (500, "internal_server_error", "Internal server error", 80)  # Using default retry_factor of 5, the final backoff time should be 80
     ]
 )
 def test_retry_logic(status_code, error_code, error_message, expected_backoff_time, parent, requests_mock, caplog):
@@ -249,7 +249,7 @@ def test_retry_logic(status_code, error_code, error_message, expected_backoff_ti
         try:
             list(stream.read_records(**inputs))
         except (UserDefinedBackoffException, DefaultBackoffException) as error:
-            exception_info = error # Ignore the exception as we are only testing the retry logic here
+            exception_info = error
     
         # For 429 errors, assert the backoff time matches retry-header value
         if status_code == 429:
