@@ -18,7 +18,7 @@ from pipelines.airbyte_ci.connectors.build_image.steps.normalization import Buil
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
 from pipelines.airbyte_ci.steps.gradle import GradleTask
-from pipelines.consts import LOCAL_BUILD_PLATFORM
+from pipelines.consts import LOCAL_BUILD_PLATFORM, NUM_CPUS
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.system import docker
 from pipelines.helpers.utils import export_container_to_tarball
@@ -112,9 +112,9 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
 
         async with asyncer.create_task_group() as docker_build_dependent_group:
-            soon_integration_tests_results = docker_build_dependent_group.soonify(IntegrationTests(context).run)(
-                connector_tar_file=connector_image_tar_file, normalization_tar_file=normalization_tar_file
-            )
+            soon_integration_tests_results = docker_build_dependent_group.soonify(
+                IntegrationTests(context, num_cpus=int(NUM_CPUS / 2)).run
+            )(connector_tar_file=connector_image_tar_file, normalization_tar_file=normalization_tar_file)
             soon_cat_results = docker_build_dependent_group.soonify(AcceptanceTests(context).run)(
                 connector_under_test_image_tar=connector_image_tar_file
             )
@@ -123,7 +123,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         return step_results
 
     async with asyncer.create_task_group() as test_task_group:
-        soon_unit_tests_result = test_task_group.soonify(UnitTests(context).run)()
+        soon_unit_tests_result = test_task_group.soonify(UnitTests(context, num_cpus=int(NUM_CPUS / 2)).run)()
         soon_docker_build_dependent_steps_results = test_task_group.soonify(run_docker_build_dependent_steps)(dist_tar_dir)
 
     return step_results + [soon_unit_tests_result.value] + soon_docker_build_dependent_steps_results.value

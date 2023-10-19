@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 import platform
 from enum import Enum
 
@@ -42,6 +43,7 @@ DOCKER_TMP_VOLUME_NAME = "shared-tmp"
 REPO = git.Repo(search_parent_directories=True)
 REPO_PATH = REPO.working_tree_dir
 STATIC_REPORT_PREFIX = "airbyte-ci"
+NUM_CPUS = os.cpu_count()
 
 
 class CIContext(str, Enum):

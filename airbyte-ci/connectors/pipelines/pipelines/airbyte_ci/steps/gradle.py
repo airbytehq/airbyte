@@ -3,12 +3,12 @@
 #
 
 from abc import ABC
-from typing import ClassVar, List
+from typing import ClassVar, List, Optional
 
 import pipelines.dagger.actions.system.docker
 from dagger import CacheSharingMode, CacheVolume
 from pipelines import hacks
-from pipelines.consts import AMAZONCORRETTO_IMAGE
+from pipelines.consts import AMAZONCORRETTO_IMAGE, NUM_CPUS
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts import PipelineContext
@@ -32,8 +32,9 @@ class GradleTask(Step, ABC):
     bind_to_docker_host: ClassVar[bool] = False
     mount_connector_secrets: ClassVar[bool] = False
 
-    def __init__(self, context: PipelineContext) -> None:
+    def __init__(self, context: PipelineContext, num_cpus: Optional[int] = None) -> None:
         super().__init__(context)
+        self.num_cpus = num_cpus if num_cpus is not None else NUM_CPUS
 
     @property
     def connector_java_build_cache(self) -> CacheVolume:
@@ -61,7 +62,7 @@ class GradleTask(Step, ABC):
             [
                 # The gradle command is chained in between a couple of rsyncs which load from- and store to the cache volume.
                 "(rsync -a --stats /root/gradle-cache/ /root/.gradle || true)",
-                f"./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS)} {task}",
+                f"./gradlew --max-workers={self.num_cpus} {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS)} {task}",
                 "(rsync -a --stats /root/.gradle/ /root/gradle-cache || true)",
             ]
         )
