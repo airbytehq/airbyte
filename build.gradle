@@ -7,24 +7,7 @@ import com.hierynomus.gradle.license.tasks.LicenseFormat
 // This is separate from application dependencies.
 // See https://stackoverflow.com/questions/17773817/purpose-of-buildscript-block-in-gradle.
 buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
     dependencies {
-        classpath 'com.bmuschko:gradle-docker-plugin:8.0.0'
-        // 6.x version of OpenApi generator is only compatible with jackson-core 2.13.x onwards.
-        // This conflicts with the jackson depencneis the bmuschko plugin is pulling in.
-        // Since api generation is only used in the airbyte-api module and the base gradle files
-        // are loaded in first, Gradle is not able to intelligently resolve this before loading in
-        // the bmuschko plugin and thus placing an older jackson version on the class path.
-        // The alternative is to import the openapi plugin for all modules.
-        // This might need to be updated when we change openapi plugin versions.
-        classpath 'com.fasterxml.jackson.core:jackson-core:2.13.0'
-
-        classpath 'org.codehaus.groovy:groovy-yaml:3.0.3'
-
         classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.20.0'
         classpath 'gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.16.1'
     }
@@ -83,28 +66,6 @@ allprojects {
     project.base.archivesName = "${project.group}-${project.name}"
 
     version = rootProject.ext.version
-
-    repositories {
-        // # Gradle looks for dependency artifacts in repositories listed in 'repositories' blocks in descending order.
-
-        // Start with the local filesystem.
-        mavenLocal()
-
-        // ## Look into repos controlled by Airbyte.
-
-        // This repo hosts our public artifacts and can be referenced by anyone.
-        maven { url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/' }
-
-        // TODO: We might want to add a private proxy repo for maven central at some point.
-
-        // ## Look into other, public repos.
-
-        // Maven Central has most of everything.
-        mavenCentral()
-
-        // Jitpack is used to pull dependencies whose package names start with 'com.github.'
-        maven { url 'https://jitpack.io' }
-    }
 }
 
 // License generation logic.
@@ -149,9 +110,12 @@ node {
     download = true
     version = '18.18.0'
     npmVersion = '10.1.0'
-    // when setting both these directories, npm and node will be in separate directories
+    // When setting both these directories, npm and node will be in separate directories.
     workDir = file("${buildDir}/nodejs")
     npmWorkDir = file("${buildDir}/npm")
+    // Do not declare the repository.
+    distBaseUrl = null
+
 }
 
 // python is required by the root project to apply python formatters like isort or black.
