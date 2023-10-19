@@ -45,7 +45,7 @@ def hash(value: Any, hash_type: str = "md5", salt: Optional[str] = None) -> str:
         hash_obj.update(str(value).encode("utf-8"))
         if salt:
             hash_obj.update(str(salt).encode("utf-8"))
-        computed_hash = hash_obj.hexdigest()
+        computed_hash: str = hash_obj.hexdigest()
     else:
         raise AttributeError("No hashing function named {hname}".format(hname=hash_type))
 
