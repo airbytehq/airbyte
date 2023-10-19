@@ -50,7 +50,7 @@ repos:
         args: ["--config-file", "pyproject.toml"]
         exclude: |
           (?x)^.*(
-              octavia-cli/unit_tests/|
+              octavia-cli/unit_tests/
           ).?$
   - repo: local
     hooks:
