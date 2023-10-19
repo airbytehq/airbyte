@@ -26,7 +26,7 @@ class GradleTask(Step, ABC):
         mount_connector_secrets (bool): Whether to mount connector secrets.
     """
 
-    DEFAULT_GRADLE_TASK_OPTIONS = ("--no-daemon", "--scan", "--build-cache", "--console=plain")
+    DEFAULT_GRADLE_TASK_OPTIONS = ("--no-daemon", "--no-watch-fs", "--scan", "--build-cache", "--console=plain")
 
     gradle_task_name: ClassVar[str]
     bind_to_docker_host: ClassVar[bool] = False
