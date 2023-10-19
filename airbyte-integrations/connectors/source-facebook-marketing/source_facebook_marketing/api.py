@@ -210,7 +210,8 @@ class API:
                                           "FROM `dolead-gsp-2020.dbt_mart.new_core_ppc_accounts` "
                                           "WHERE publisher = 'FB_ADS' "
                                           "AND is_active = TRUE "
-                                          "LIMIT 2")
+                                          "AND publisher_account_id = '772736977050113'"
+                                          "LIMIT 2 ")
             results = query.result()
             for res in results:
                 id = str(res.publisher_account_id)
