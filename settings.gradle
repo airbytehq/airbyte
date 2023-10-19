@@ -146,7 +146,7 @@ if (isCiServer || isAirbyteCI) {
             enabled = isAirbyteCI
         }
         remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
-            region = 'us-west-2'
+            region = 'us-west-2' // close to dagger runners
             bucket = 'ab-ci-cache'
             prefix = 'connectors-ci-cache/'
             push = isAirbyteCI
