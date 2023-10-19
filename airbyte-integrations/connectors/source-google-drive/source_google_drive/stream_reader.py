@@ -38,6 +38,7 @@ class GoogleDriveRemoteFile(RemoteFile):
     id: str
     mimeType: str
 
+
 class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
         super().__init__()
@@ -86,7 +87,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         seen: Set[str] = set()
         while len(folder_id_queue) > 0:
             (path, folder_id) = folder_id_queue.pop()
-            request = service.files().list(q=f"'{folder_id}' in parents", pageSize=10, fields="nextPageToken, files(id, name, modifiedTime, mimeType)")
+            request = service.files().list(
+                q=f"'{folder_id}' in parents", pageSize=10, fields="nextPageToken, files(id, name, modifiedTime, mimeType)"
+            )
             while True:
                 results = request.execute()
                 new_files = results.get("files", [])
@@ -100,7 +103,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                         folder_id_queue.append((f"{file_name}/", new_file["id"]))
                         continue
                     last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
-                    remote_file = GoogleDriveRemoteFile(uri=file_name, last_modified=last_modified, id=new_file["id"], mimeType=new_file["mimeType"])
+                    remote_file = GoogleDriveRemoteFile(
+                        uri=file_name, last_modified=last_modified, id=new_file["id"], mimeType=new_file["mimeType"]
+                    )
                     print(remote_file)
                     if self.file_matches_globs(remote_file, globs):
                         yield remote_file
@@ -127,7 +132,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         if file.mimeType.startswith(DOC_MIME_TYPE_PREFIX):
             if mode == FileReadMode.READ:
                 raise ValueError("Cannot read Google Docs/Sheets/Presentations and so on as text. Please set the format to PDF")
-            request = self.google_drive_service.files().export_media(fileId=file.id, mimeType='application/pdf')
+            request = self.google_drive_service.files().export_media(fileId=file.id, mimeType="application/pdf")
         else:
             request = self.google_drive_service.files().get_media(fileId=file.id)
         handle = io.BytesIO()
