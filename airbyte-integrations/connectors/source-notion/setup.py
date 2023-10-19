@@ -7,12 +7,14 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
+    "pendulum==2.1.2",
 ]
 
 TEST_REQUIREMENTS = [
     "pytest~=6.1",
     "pytest-mock~=3.6.1",
     "requests-mock",
+    "freezegun",
 ]
 
 setup(

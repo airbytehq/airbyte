@@ -17,8 +17,8 @@ public class AdaptiveSourceRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AdaptiveSourceRunner.class);
 
-  private static final String DEPLOYMENT_MODE_KEY = "DEPLOYMENT_MODE";
-  private static final String COULD_MODE = "CLOUD";
+  public static final String DEPLOYMENT_MODE_KEY = "DEPLOYMENT_MODE";
+  public static final String CLOUD_MODE = "CLOUD";
 
   public static OssSourceBuilder baseOnEnv() {
     final String mode = System.getenv(DEPLOYMENT_MODE_KEY);
@@ -71,7 +71,7 @@ public class AdaptiveSourceRunner {
 
     private Source getSource() {
       LOGGER.info("Running source under deployment mode: {}", deploymentMode);
-      if (deploymentMode != null && deploymentMode.equals(COULD_MODE)) {
+      if (deploymentMode != null && deploymentMode.equals(CLOUD_MODE)) {
         return cloudSourceSupplier.get();
       }
       if (deploymentMode == null) {
