@@ -25,6 +25,8 @@ on:
       - opened
       - synchronize
       - ready_for_review
+    paths-ignore:
+      - "**/*.md"
 jobs:
   connectors_ci:
     name: Connectors CI
