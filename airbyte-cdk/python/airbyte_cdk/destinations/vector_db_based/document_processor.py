@@ -5,11 +5,12 @@
 import json
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import dpath.util
 from airbyte_cdk.destinations.vector_db_based.config import ProcessingConfigModel, SeparatorSplitterConfigModel, TextSplitterConfigModel
-from airbyte_cdk.models import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
+from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier
+from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from langchain.document_loaders.base import Document
 from langchain.text_splitter import Language, RecursiveCharacterTextSplitter
@@ -88,19 +89,13 @@ class DocumentProcessor:
             )
 
     def __init__(self, config: ProcessingConfigModel, catalog: ConfiguredAirbyteCatalog):
-        self.streams = {self._stream_identifier(stream.stream): stream for stream in catalog.streams}
+        self.streams = {create_stream_identifier(stream.stream): stream for stream in catalog.streams}
 
         self.splitter = self._get_text_splitter(config.chunk_size, config.chunk_overlap, config.text_splitter)
         self.text_fields = config.text_fields
         self.metadata_fields = config.metadata_fields
         self.field_name_mappings = config.field_name_mappings
         self.logger = logging.getLogger("airbyte.document_processor")
-
-    def _stream_identifier(self, stream: Union[AirbyteStream, AirbyteRecordMessage]) -> str:
-        if isinstance(stream, AirbyteStream):
-            return str(stream.name if stream.namespace is None else f"{stream.namespace}_{stream.name}")
-        else:
-            return str(stream.stream if stream.namespace is None else f"{stream.namespace}_{stream.stream}")
 
     def process(self, record: AirbyteRecordMessage) -> Tuple[List[Chunk], Optional[str]]:
         """
@@ -144,7 +139,7 @@ class DocumentProcessor:
 
     def _extract_metadata(self, record: AirbyteRecordMessage) -> Dict[str, Any]:
         metadata = self._extract_relevant_fields(record, self.metadata_fields)
-        stream_identifier = self._stream_identifier(record)
+        stream_identifier = create_stream_identifier(record)
         current_stream: ConfiguredAirbyteStream = self.streams[stream_identifier]
         metadata[METADATA_STREAM_FIELD] = stream_identifier
         # if the sync mode is deduping, use the primary key to upsert existing records instead of appending new ones
