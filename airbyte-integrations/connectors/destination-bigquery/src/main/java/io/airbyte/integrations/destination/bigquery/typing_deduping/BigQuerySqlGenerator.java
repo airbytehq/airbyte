@@ -31,6 +31,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -372,7 +373,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String dropTempTable = dropTableIfExists(stream, SOFT_RESET_SUFFIX);
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
-    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
+    // We just unset loaded_at on all raw records, so we need to process all of them (i.e. should not
+    // filter on extracted_at)
+    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, Optional.empty());
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
     return String.join("\n", dropTempTable, createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
@@ -396,15 +399,30 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix) {
-    return updateTable(stream, finalSuffix, true);
+  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp) {
+    final var unsafeUpdate = updateTableQueryBuilder(stream, finalSuffix, false, minRawTimestamp);
+    final var safeUpdate = updateTableQueryBuilder(stream, finalSuffix, true, minRawTimestamp);
+    return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate)).replace(
+        """
+        BEGIN
+
+        ${unsafe_update}
+
+        EXCEPTION WHEN ERROR THEN
+        ROLLBACK TRANSACTION;
+
+        ${safe_update}
+
+        END;
+
+        """);
   }
 
   private String updateTableQueryBuilder(final StreamConfig stream,
                                          final String finalSuffix,
-                                         final boolean verifyPrimaryKeys,
-                                         final boolean forceSafeCasting) {
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), forceSafeCasting);
+                                         final boolean forceSafeCasting,
+                                         final Optional<Instant> minRawTimestamp) {
+    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), forceSafeCasting, minRawTimestamp);
     String dedupFinalTable = "";
     String cdcDeletes = "";
     String dedupRawTable = "";
@@ -414,7 +432,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns(), forceSafeCasting);
     }
-    final String commitRawTable = commitRawTable(stream.id());
+    final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
 
     return new StringSubstitutor(Map.of(
         "insert_new_records", insertNewRecords,
@@ -433,33 +451,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             """);
   }
 
-  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
-    final var unsafeUpdate = updateTableQueryBuilder(stream, finalSuffix, verifyPrimaryKeys, false);
-    final var safeUpdate = updateTableQueryBuilder(stream, finalSuffix, verifyPrimaryKeys, true);
-    final String pkVarDeclaration = verifyPrimaryKeys ? "DECLARE missing_pk_count INT64;" : "";
-    return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate, "pk_var_declaration", pkVarDeclaration)).replace(
-        """
-        ${pk_var_declaration}
-
-        BEGIN
-
-        ${unsafe_update}
-
-        EXCEPTION WHEN ERROR THEN
-        ROLLBACK TRANSACTION;
-
-        ${safe_update}
-
-        END;
-
-        """);
-  }
-
   @VisibleForTesting
   String insertNewRecords(final StreamConfig stream,
                           final String finalSuffix,
                           final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
-                          final boolean forceSafeCasting) {
+                          final boolean forceSafeCasting,
+                          final Optional<Instant> minRawTimestamp) {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue(), forceSafeCasting) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
@@ -498,6 +495,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                                          """;
     }
 
+    final String extractedAtCondition = buildExtractedAtCondition(minRawTimestamp);
+
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
         "raw_table_id", stream.id().rawTableId(QUOTE),
@@ -505,6 +504,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
+        "extractedAtCondition", extractedAtCondition,
         "column_list", columnList)).replace(
             """
             INSERT INTO ${project_id}.${final_table_id}
@@ -524,6 +524,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               WHERE
                 _airbyte_loaded_at IS NULL
                 ${cdcConditionalOrIncludeStatement}
+                ${extractedAtCondition}
             )
             SELECT
             ${column_list}
@@ -531,6 +532,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               _airbyte_raw_id,
               _airbyte_extracted_at
             FROM intermediate_data;""");
+  }
+
+  private static String buildExtractedAtCondition(final Optional<Instant> minRawTimestamp) {
+    return minRawTimestamp
+        .map(ts -> " AND _airbyte_extracted_at > '" + ts + "'")
+        .orElse("");
   }
 
   @VisibleForTesting
@@ -622,14 +629,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String commitRawTable(final StreamId id) {
+  String commitRawTable(final StreamId id, final Optional<Instant> minRawTimestamp) {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
-        "raw_table_id", id.rawTableId(QUOTE))).replace(
+        "raw_table_id", id.rawTableId(QUOTE),
+        "extractedAtCondition", buildExtractedAtCondition(minRawTimestamp))).replace(
             """
             UPDATE ${project_id}.${raw_table_id}
             SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
             WHERE `_airbyte_loaded_at` IS NULL
+              ${extractedAtCondition}
             ;""");
   }
 
@@ -710,7 +719,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .replace("'", "\\'");
   }
 
-  private static String cast(final String content, final String asType, boolean useSafeCast) {
+  private static String cast(final String content, final String asType, final boolean useSafeCast) {
     final var open = useSafeCast ? "SAFE_CAST(" : "CAST(";
     return wrap(open, content + " as " + asType, ")");
   }
