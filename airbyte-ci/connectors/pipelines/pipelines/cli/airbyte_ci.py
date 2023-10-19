@@ -34,14 +34,16 @@ __installed_version__ = importlib.metadata.version("pipelines")
 
 
 def display_welcome_message() -> None:
-    print('''
+    print(
+        """
              █████╗ ██╗██████╗ ██████╗ ██╗   ██╗████████╗███████╗
             ██╔══██╗██║██╔══██╗██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝
             ███████║██║██████╔╝██████╔╝ ╚████╔╝    ██║   █████╗
             ██╔══██║██║██╔══██╗██╔══██╗  ╚██╔╝     ██║   ██╔══╝
             ██║  ██║██║██║  ██║██████╔╝   ██║      ██║   ███████╗
             ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═════╝    ╚═╝      ╚═╝   ╚══════╝
-        ''')
+        """
+    )
 
 
 def check_up_to_date() -> bool:
@@ -147,6 +149,7 @@ def get_modified_files(
             return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
     return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
 
+
 def log_git_info(ctx: click.Context):
     main_logger.info("Running airbyte-ci in CI mode.")
     main_logger.info(f"CI Context: {ctx.obj['ci_context']}")
@@ -159,10 +162,12 @@ def log_git_info(ctx: click.Context):
     main_logger.info(f"Pipeline Start Timestamp: {ctx.obj['pipeline_start_timestamp']}")
     main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
 
+
 def _get_gha_workflow_run_id(ctx: click.Context) -> Optional[str]:
     if ctx.obj["is_local"]:
         return "TESTEST"
     return ctx.obj["gha_workflow_run_id"]
+
 
 def _get_pull_request(ctx: click.Context):
     pull_request_number = ctx.obj["pull_request_number"]
@@ -174,6 +179,7 @@ def _get_pull_request(ctx: click.Context):
 
     return github.get_pull_request(pull_request_number, ci_github_access_token)
 
+
 def _get_modified_files(ctx: click.Context) -> List[Path]:
     return transform_strs_to_paths(
         get_modified_files(
@@ -182,11 +188,13 @@ def _get_modified_files(ctx: click.Context) -> List[Path]:
             ctx.obj["diffed_branch"],
             ctx.obj["is_local"],
             ctx.obj["ci_context"],
-            ctx.obj["pull_request"]
+            ctx.obj["pull_request"],
         )
     )
 
+
 # COMMANDS
+
 
 @click.group(
     cls=LazyGroup,

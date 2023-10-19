@@ -39,6 +39,7 @@ def click_track_command(f):
     """
     Decorator to track CLI commands with segment.io
     """
+
     def wrapper(*args, **kwargs):
         ctx = get_current_context()
         top_level_command = ctx.command_path

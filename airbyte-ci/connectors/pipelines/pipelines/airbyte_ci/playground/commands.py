@@ -3,12 +3,11 @@
 #
 
 import click
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.click_decorators import LazyPassDecorator, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext
-from pipelines.cli.click_decorators import LazyPassDecorator
-
 
 pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContext)
+
 
 @click.command()
 @click.argument("hold")
@@ -62,8 +61,4 @@ def playground(
     # await pytest_container
     # return True
 
-
-
     print(f"params: {ctx.params}")
-
-

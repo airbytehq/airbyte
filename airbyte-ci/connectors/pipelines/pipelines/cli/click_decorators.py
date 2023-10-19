@@ -1,26 +1,18 @@
-
-
 import functools
-from functools import wraps
 import inspect
+from functools import wraps
 from typing import Any, Callable, Type
+
 import click
 
 
-
 def _contains_var_kwarg(f):
-    return any(
-        param.kind == inspect.Parameter.VAR_KEYWORD
-        for param in inspect.signature(f).parameters.values()
-    )
+    return any(param.kind == inspect.Parameter.VAR_KEYWORD for param in inspect.signature(f).parameters.values())
 
 
 def _is_kwarg_of(key, f):
     param = inspect.signature(f).parameters.get(key, False)
-    return param and (
-        param.kind is inspect.Parameter.KEYWORD_ONLY or
-        param.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD
-    )
+    return param and (param.kind is inspect.Parameter.KEYWORD_ONLY or param.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD)
 
 
 def click_ignore_unused_kwargs(f):
@@ -36,12 +28,9 @@ def click_ignore_unused_kwargs(f):
 
     @functools.wraps(f)
     def inner(*args, **kwargs):
-        filtered_kwargs = {
-            key: value
-            for key, value in kwargs.items()
-            if _is_kwarg_of(key, f)
-        }
+        filtered_kwargs = {key: value for key, value in kwargs.items() if _is_kwarg_of(key, f)}
         return f(*args, **filtered_kwargs)
+
     return inner
 
 
@@ -69,6 +58,7 @@ def click_merge_args_into_context_obj(f):
 
     return wrapper
 
+
 def click_append_to_context_object(key: str, value: Callable | Any):
     """
     Decorator to append a value to the click context object.
@@ -84,7 +74,9 @@ def click_append_to_context_object(key: str, value: Callable | Any):
             else:
                 ctx.obj[key] = value
             return f(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 
@@ -102,10 +94,11 @@ class LazyPassDecorator:
             # Create an instance of the class
             instance = self.cls(*self.args, **decorator_kwargs)
             # If function has **kwargs, we can put the instance there
-            if 'kwargs' in kwargs:
-                kwargs['kwargs'] = instance
+            if "kwargs" in kwargs:
+                kwargs["kwargs"] = instance
             # Otherwise, add it to positional arguments
             else:
                 args = (*args, instance)
             return f(*args, **kwargs)
+
         return decorated_function

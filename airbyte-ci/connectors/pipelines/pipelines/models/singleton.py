@@ -11,10 +11,11 @@ class Singleton:
     The __new__ method ensures that only one instance of each subclass is created.
     The _initialized dictionary is used to control when the initialization logic of each subclass is executed.
     """
-    _instances: dict[Type['Singleton'], Any] = {}
-    _initialized: dict[Type['Singleton'], bool] = {}
 
-    def __new__(cls: Type['Singleton'], *args: Any, **kwargs: Any) -> Any:
+    _instances: dict[Type["Singleton"], Any] = {}
+    _initialized: dict[Type["Singleton"], bool] = {}
+
+    def __new__(cls: Type["Singleton"], *args: Any, **kwargs: Any) -> Any:
 
         if cls not in cls._instances:
             cls._instances[cls] = super().__new__(cls)

@@ -2,15 +2,14 @@ import sys
 from typing import Any, Callable, Optional, Union
 
 import dagger
-
-# TODO ben set up for async
-# from asyncclick import Context, get_current_context
-
 from click import Context, get_current_context
 from dagger.api.gen import Client, Container
 from pydantic import BaseModel, Field, PrivateAttr
 
 from ..singleton import Singleton
+
+# TODO ben set up for async
+# from asyncclick import Context, get_current_context
 
 
 # this is a bit of a hack to get around how prefect resolves parameters
@@ -19,6 +18,7 @@ from ..singleton import Singleton
 # wrapping it in a function like this prevents that from happening
 def get_context() -> Context:
     return get_current_context()
+
 
 class ClickPipelineContext(BaseModel, Singleton):
     dockerd_service: Optional[Container] = Field(default=None)
@@ -41,7 +41,7 @@ class ClickPipelineContext(BaseModel, Singleton):
         return {**click_obj, **click_params}
 
     class Config:
-        arbitrary_types_allowed=True
+        arbitrary_types_allowed = True
 
     def __init__(self, **data: dict[str, Any]):
         """
@@ -67,8 +67,7 @@ class ClickPipelineContext(BaseModel, Singleton):
             async with self._dagger_client_lock:
                 if not self._dagger_client:
                     connection = dagger.Connection(dagger.Config(log_output=sys.stdout))
-                    self._dagger_client = await self._click_context().with_async_resource(connection) # type: ignore
+                    self._dagger_client = await self._click_context().with_async_resource(connection)  # type: ignore
         client = self._dagger_client
         assert client, "Error initializing Dagger client"
         return client.pipeline(pipeline_name) if pipeline_name else client
-
