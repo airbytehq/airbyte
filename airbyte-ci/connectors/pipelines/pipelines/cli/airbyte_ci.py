@@ -10,8 +10,8 @@ from typing import List
 import click
 from github import PullRequest
 from pipelines import main_logger
-from pipelines.cli.telemetry import track_command
 from pipelines.cli.lazy_group import LazyGroup
+from pipelines.cli.telemetry import track_command
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH, CIContext
 from pipelines.helpers import github
 from pipelines.helpers.git import (
