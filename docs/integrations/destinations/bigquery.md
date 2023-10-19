@@ -72,11 +72,12 @@ The BigQuery destination connector supports the following [sync modes](https://d
 
 Airbyte outputs each stream into its own table in BigQuery. Each table contains three columns:
 
-- `_airbyte_ab_id`: A UUID assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
-- `_airbyte_emitted_at`: A timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
-- `_airbyte_data`: A JSON blob representing the event data. The column type in BigQuery is `String`.
+- `airbyte_raw_id`: A UUID assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
+- `airbyte_extracted_at`: A timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
+- `_airbyte_meta`: A JSON blob representing typing errors. You can query these results to audit misformatted or unexpected data. The column type in BigQuery is `JSON`.
+... and a column of the proper data type for each of the top-level properties from your source's schema.  Arrays and Objects will remain as JSON columns in BigQuery. Learn more about Typing and Deduping [here](/understanding-airbyte/typing-deduping)
 
-The output tables in BigQuery are partitioned and clustered by the Time-unit column `_airbyte_emitted_at` at a daily granularity. Partitions boundaries are based on UTC time.
+The output tables in BigQuery are partitioned by the Time-unit column `airbyte_extracted_at` at a daily granularity and clustered by `airbyte_extracted_at` and the table Primary Keys. Partitions boundaries are based on UTC time.
 This is useful to limit the number of partitions scanned when querying these partitioned tables, by using a predicate filter (a `WHERE` clause). Filters on the partitioning column are used to prune the partitions and reduce the query cost. (The parameter **Require partition filter** is not enabled by Airbyte, but you may toggle it by updating the produced tables.)
 
 ## BigQuery Naming Conventions
