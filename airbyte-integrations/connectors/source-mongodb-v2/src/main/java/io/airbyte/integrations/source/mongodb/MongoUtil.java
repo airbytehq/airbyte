@@ -252,7 +252,7 @@ public class MongoUtil {
      */
     final AggregateIterable<Document> output = collection.aggregate(aggregateList);
 
-    try (final MongoCursor<Document> cursor = output.cursor()) {
+    try (final MongoCursor<Document> cursor = output.allowDiskUse(true).cursor()) {
       while (cursor.hasNext()) {
         final Map<String, String> fields = ((List<Map<String, String>>) cursor.next().get("fields")).get(0);
         discoveredFields.addAll(fields.entrySet().stream()
