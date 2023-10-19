@@ -9,7 +9,7 @@ from typing import List, Set, Tuple
 import click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_pass_context_and_args_to_children
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
 
@@ -178,7 +178,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     default=True,
     type=bool,
 )
-@click_pass_context_and_args_to_children
+@click_merge_args_into_context_obj
 @click_ignore_unused_kwargs
 def connectors(
     ctx: click.Context,
@@ -194,7 +194,6 @@ def connectors(
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
 
-    ctx.ensure_object(dict)
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
         names,
         support_levels,

@@ -2,6 +2,7 @@
 
 import functools
 import inspect
+from typing import Any, Callable
 import click
 
 
@@ -43,7 +44,7 @@ def click_ignore_unused_kwargs(f):
     return inner
 
 
-def click_pass_context_and_args_to_children(f):
+def click_merge_args_into_context_obj(f):
     """
     Decorator to pass click context and args to children commands.
     """
@@ -66,3 +67,21 @@ def click_pass_context_and_args_to_children(f):
         return f(*args, **kwargs)
 
     return wrapper
+
+def click_append_to_context_object(key: str, value: Callable | Any):
+    """
+    Decorator to append a value to the click context object.
+    """
+
+    def decorator(f):
+        def wrapper(*args, **kwargs):
+            ctx = click.get_current_context()
+            ctx.ensure_object(dict)
+
+            if callable(value):
+                ctx.obj[key] = value(ctx)
+            else:
+                ctx.obj[key] = value
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator

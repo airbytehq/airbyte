@@ -3,7 +3,7 @@
 #
 
 import click
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_pass_context_and_args_to_children
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.stolen.base import ClickPipelineContext
 from pipelines.stolen.lazy_decorator import LazyPassDecorator
 
@@ -29,8 +29,7 @@ def playground(
     # args = GlobalSettings(PLATFORM='Darwin')
     # kwargs = {'opt': 'tight', 'hold': 'holdme'}
 
-    import pdb; pdb.set_trace()
-    print(f"ctx: {ctx._click_context().obj}")
+    print(f"params: {ctx.params}")
 
     # (Pdb) ctx._click_context().args
     # []

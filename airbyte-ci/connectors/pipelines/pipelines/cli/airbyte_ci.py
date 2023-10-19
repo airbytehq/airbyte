@@ -8,13 +8,13 @@ import importlib
 import logging
 import os
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 import click
 import git
 from github import PullRequest
 from pipelines import main_logger
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_pass_context_and_args_to_children
+from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.cli.telemetry import click_track_command
 from pipelines.consts import LOCAL_PIPELINE_PACKAGE_PATH, CIContext
@@ -159,6 +159,33 @@ def log_git_info(ctx: click.Context):
     main_logger.info(f"Pipeline Start Timestamp: {ctx.obj['pipeline_start_timestamp']}")
     main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
 
+def _get_gha_workflow_run_id(ctx: click.Context) -> Optional[str]:
+    if ctx.obj["is_local"]:
+        return "TESTEST"
+    return ctx.obj["gha_workflow_run_id"]
+
+def _get_pull_request(ctx: click.Context):
+    pull_request_number = ctx.obj["pull_request_number"]
+    ci_github_access_token = ctx.obj["ci_github_access_token"]
+
+    can_get_pull_request = pull_request_number and ci_github_access_token
+    if not can_get_pull_request:
+        return None
+
+    return github.get_pull_request(pull_request_number, ci_github_access_token)
+
+def _get_modified_files(ctx: click.Context) -> List[Path]:
+    return transform_strs_to_paths(
+        get_modified_files(
+            ctx.obj["git_branch"],
+            ctx.obj["git_revision"],
+            ctx.obj["diffed_branch"],
+            ctx.obj["is_local"],
+            ctx.obj["ci_context"],
+            ctx.obj["pull_request"]
+        )
+    )
+
 # COMMANDS
 
 @click.group(
@@ -198,33 +225,18 @@ def log_git_info(ctx: click.Context):
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click_track_command
-@click_pass_context_and_args_to_children
+@click_merge_args_into_context_obj
+@click_append_to_context_object("is_ci", lambda ctx: not ctx.obj["is_local"])
+@click_append_to_context_object("gha_workflow_run_url", _get_gha_workflow_run_id)
+@click_append_to_context_object("pull_request", _get_pull_request)
+@click_append_to_context_object("modified_files", _get_modified_files)
 @click_ignore_unused_kwargs
 def airbyte_ci(
     ctx: click.Context,
     is_local: bool,
-    git_branch: str,
-    git_revision: str,
-    diffed_branch: str,
-    gha_workflow_run_id: str,
-    ci_context: str,
-    pull_request_number: int,
-    ci_github_access_token: str,
 ):  # noqa D103
     display_welcome_message()
     check_up_to_date()
-
-    ctx.obj["is_ci"] = not is_local
-    ctx.obj["gha_workflow_run_url"] = (
-        f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
-    )
-
-    can_get_pull_request = pull_request_number and ci_github_access_token
-    ctx.obj["pull_request"] = github.get_pull_request(pull_request_number, ci_github_access_token) if can_get_pull_request else None
-
-    ctx.obj["modified_files"] = transform_strs_to_paths(
-        get_modified_files(git_branch, git_revision, diffed_branch, is_local, ci_context, ctx.obj["pull_request"])
-    )
 
     if not is_local:
         log_git_info(ctx)
