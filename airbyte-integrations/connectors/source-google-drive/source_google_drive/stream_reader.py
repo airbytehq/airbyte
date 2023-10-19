@@ -30,6 +30,13 @@ from googleapiclient.http import MediaIoBaseDownload
 
 from .spec import SourceGoogleDriveSpec as Config
 
+FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
+DOC_MIME_TYPE_PREFIX = "application/vnd.google-apps."
+
+
+class GoogleDriveRemoteFile(RemoteFile):
+    id: str
+    mimeType: str
 
 class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
     def __init__(self):
@@ -73,39 +80,33 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         Get all files matching the specified glob patterns.
         """
         service = self.google_drive_service
-        folder_id = self.get_folder_id(self.config.folder_url)
+        root_folder_id = self.get_folder_id(self.config.folder_url)
 
-        request = service.files().list(q=f"'{folder_id}' in parents", pageSize=10, fields="nextPageToken, files(id, name, modifiedTime)")
-        while True:
-            results = request.execute()
-            new_files = results.get("files", [])
-            for new_file in new_files:
-                last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
-                remote_file = RemoteFile(uri=new_file["name"], last_modified=last_modified)
-                if self.file_matches_globs(remote_file, globs):
-                    # the glob matching operates on file names, but google drive uses auto-generated ids. So rewrite the RemoteFile instance after it matched
-                    yield RemoteFile(uri=self.get_uri(new_file["id"]), last_modified=last_modified)
-            request = service.files().list_next(request, results)
-            if request is None:
-                break
-
-    def get_uri(self, id: str):
-        return f"https://drive.google.com/file/d/{id}"
-
-    def get_file_id(self, url):
-        # Regular expression pattern to check the URL structure and extract the ID
-        pattern = r"^https://drive\.google\.com/file/d/(.+)$"
-
-        # Find the pattern in the URL
-        match = re.search(pattern, url)
-
-        if match:
-            # The matched group is the ID
-            drive_id = match.group(1)
-            return drive_id
-        else:
-            # If no match is found
-            raise ValueError(f"Could not extract file ID from {url}")
+        folder_id_queue = [("/", root_folder_id)]
+        seen: Set[str] = set()
+        while len(folder_id_queue) > 0:
+            (path, folder_id) = folder_id_queue.pop()
+            request = service.files().list(q=f"'{folder_id}' in parents", pageSize=10, fields="nextPageToken, files(id, name, modifiedTime, mimeType)")
+            while True:
+                results = request.execute()
+                new_files = results.get("files", [])
+                for new_file in new_files:
+                    # It's possible files and folders are linked up multiple times, this prevents us from getting stuck in a loop
+                    if new_file["id"] in seen:
+                        continue
+                    seen.add(new_file["id"])
+                    file_name = path + new_file["name"]
+                    if new_file["mimeType"] == FOLDER_MIME_TYPE:
+                        folder_id_queue.append((f"{file_name}/", new_file["id"]))
+                        continue
+                    last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                    remote_file = GoogleDriveRemoteFile(uri=file_name, last_modified=last_modified, id=new_file["id"], mimeType=new_file["mimeType"])
+                    print(remote_file)
+                    if self.file_matches_globs(remote_file, globs):
+                        yield remote_file
+                request = service.files().list_next(request, results)
+                if request is None:
+                    break
 
     def get_folder_id(self, url):
         # Regular expression pattern to check the URL structure and extract the ID
@@ -122,10 +123,13 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             # If no match is found
             raise ValueError(f"Could not extract folder ID from {url}")
 
-    @contextmanager
-    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-
-        request = self.google_drive_service.files().get_media(fileId=self.get_file_id(file.uri))
+    def open_file(self, file: GoogleDriveRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+        if file.mimeType.startswith(DOC_MIME_TYPE_PREFIX):
+            if mode == FileReadMode.READ:
+                raise ValueError("Cannot read Google Docs/Sheets/Presentations and so on as text. Please set the format to PDF")
+            request = self.google_drive_service.files().export_media(fileId=file.id, mimeType='application/pdf')
+        else:
+            request = self.google_drive_service.files().get_media(fileId=file.id)
         handle = io.BytesIO()
         downloader = MediaIoBaseDownload(handle, request)
         done = False
@@ -135,15 +139,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         handle.seek(0)
 
         if mode == FileReadMode.READ_BINARY:
-            try:
-                yield handle
-            finally:
-                handle.close()
+            return handle
         else:
             # repack the bytes into a string with the right encoding
-            try:
-                text_handle = io.StringIO(handle.read().decode(encoding))
-                yield text_handle
-            finally:
-                text_handle.close()
-                handle.close()
+            text_handle = io.StringIO(handle.read().decode(encoding))
+            handle.close()
+            return text_handle
