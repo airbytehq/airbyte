@@ -9,6 +9,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     AzureOpenAIEmbeddingConfigModel,
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
+    OpenAICompatibleEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
@@ -40,7 +41,11 @@ class ConfigModel(BaseModel):
     indexing: PineconeIndexingModel
 
     embedding: Union[
-        OpenAIEmbeddingConfigModel, CohereEmbeddingConfigModel, FakeEmbeddingConfigModel, AzureOpenAIEmbeddingConfigModel
+        OpenAIEmbeddingConfigModel,
+        CohereEmbeddingConfigModel,
+        FakeEmbeddingConfigModel,
+        AzureOpenAIEmbeddingConfigModel,
+        OpenAICompatibleEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     processing: ProcessingConfigModel
 
