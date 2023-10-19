@@ -3,10 +3,10 @@
 #
 import base64
 import hashlib
-from typing import Any
+from typing import Any, Optional
 
 
-def hash(value: Any, hash_type: str = "md5", salt: str = None) -> str:
+def hash(value: Any, hash_type: str = "md5", salt: Optional[str] = None) -> str:
     """
       Implementation of a custom Jinja2 hash filter
       Hash type defaults to 'md5' if one is not specified.
