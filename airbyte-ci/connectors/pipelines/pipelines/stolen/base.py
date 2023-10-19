@@ -43,7 +43,6 @@ class PipelineContext(BaseModel, Singleton):
         """
         if not Singleton._initialized[PipelineContext]:
             super().__init__(global_settings=global_settings, **data)
-            self.set_global_prefect_tag_context()
             Singleton._initialized[PipelineContext] = True
 
     import asyncio
