@@ -1,6 +1,7 @@
 # Source: https://click.palletsprojects.com/en/8.1.x/complex/
 
 import importlib
+from typing import Dict, List, Optional
 
 import click
 
@@ -10,7 +11,7 @@ class LazyGroup(click.Group):
     A click Group that can lazily load subcommands.
     """
 
-    def __init__(self, *args, lazy_subcommands=None, **kwargs):
+    def __init__(self, *args, lazy_subcommands: Optional[Dict[str, str]] = None, **kwargs):
         super().__init__(*args, **kwargs)
         # lazy_subcommands is a map of the form:
         #
@@ -18,17 +19,17 @@ class LazyGroup(click.Group):
         #
         self.lazy_subcommands = lazy_subcommands or {}
 
-    def list_commands(self, ctx):
+    def list_commands(self, ctx: click.Context) -> List[str]:
         base = super().list_commands(ctx)
         lazy = sorted(self.lazy_subcommands.keys())
         return base + lazy
 
-    def get_command(self, ctx, cmd_name):
+    def get_command(self, ctx: click.Context, cmd_name: str) -> Optional[click.Command]:
         if cmd_name in self.lazy_subcommands:
             return self._lazy_load(cmd_name)
         return super().get_command(ctx, cmd_name)
 
-    def _lazy_load(self, cmd_name):
+    def _lazy_load(self, cmd_name: str) -> click.BaseCommand:
         # lazily loading a command, first get the module name and attribute name
         import_path = self.lazy_subcommands[cmd_name]
         modname, cmd_object_name = import_path.rsplit(".", 1)
