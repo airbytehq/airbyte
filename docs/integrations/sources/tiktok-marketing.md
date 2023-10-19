@@ -581,6 +581,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 3.5.1 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 3.5.0   | 2023-10-16 | [31445](https://github.com/airbytehq/airbyte/pull/31445) | Apply minimum date restrictions                                                                  |
 | 3.4.1   | 2023-08-04 | [29083](https://github.com/airbytehq/airbyte/pull/29083) | Added new `is_smart_performance_campaign` property to `ad groups` stream schema                  |
 | 3.4.0   | 2023-07-13 | [27910](https://github.com/airbytehq/airbyte/pull/27910) | Added `include_deleted` config param - include deleted `ad_groups`, `ad`, `campaigns` to reports |
