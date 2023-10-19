@@ -3,6 +3,7 @@
 #
 
 import platform
+from enum import Enum
 
 import git
 from dagger import Platform
@@ -40,3 +41,32 @@ DOCKER_HOST_PORT = 2375
 DOCKER_TMP_VOLUME_NAME = "shared-tmp"
 REPO = git.Repo(search_parent_directories=True)
 REPO_PATH = REPO.working_tree_dir
+STATIC_REPORT_PREFIX = "airbyte-ci"
+
+
+class CIContext(str, Enum):
+    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""
+
+    MANUAL = "manual"
+    PULL_REQUEST = "pull_request"
+    NIGHTLY_BUILDS = "nightly_builds"
+    MASTER = "master"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class ContextState(Enum):
+    """Enum to characterize the current context state, values are used for external representation on GitHub commit checks."""
+
+    INITIALIZED = {"github_state": "pending", "description": "Pipelines are being initialized..."}
+    RUNNING = {"github_state": "pending", "description": "Pipelines are running..."}
+    ERROR = {"github_state": "error", "description": "Something went wrong while running the Pipelines."}
+    SUCCESSFUL = {"github_state": "success", "description": "All Pipelines ran successfully."}
+    FAILURE = {"github_state": "failure", "description": "Pipeline failed."}
+
+
+class INTERNAL_TOOL_PATHS(str, Enum):
+    CI_CREDENTIALS = "airbyte-ci/connectors/ci_credentials"
+    CONNECTOR_OPS = "airbyte-ci/connectors/connector_ops"
+    METADATA_SERVICE = "airbyte-ci/connectors/metadata_service/lib"

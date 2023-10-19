@@ -581,6 +581,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 3.7.0   | 2023-10-19 | [31493](https://github.com/airbytehq/airbyte/pull/31493) | Add fields to Ads stream                                                                         |
 | 3.6.0   | 2023-10-18 | [31537](https://github.com/airbytehq/airbyte/pull/31537) | Use default availability strategy                                                                |
 | 3.5.0   | 2023-10-16 | [31445](https://github.com/airbytehq/airbyte/pull/31445) | Apply minimum date restrictions                                                                  |
 | 3.4.1   | 2023-08-04 | [29083](https://github.com/airbytehq/airbyte/pull/29083) | Added new `is_smart_performance_campaign` property to `ad groups` stream schema                  |
