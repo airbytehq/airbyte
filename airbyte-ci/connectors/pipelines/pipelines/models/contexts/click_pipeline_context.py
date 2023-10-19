@@ -10,7 +10,7 @@ from click import Context, get_current_context
 from dagger.api.gen import Client, Container
 from pydantic import BaseModel, Field, PrivateAttr
 
-from .singleton import Singleton
+from ..singleton import Singleton
 
 
 # this is a bit of a hack to get around how prefect resolves parameters
