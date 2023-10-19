@@ -13,7 +13,7 @@ import requests
 
 if TYPE_CHECKING:
     from dagger import Client, Container
-    from pipelines.contexts import ConnectorContext
+    from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
 async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "pip_cache") -> None:

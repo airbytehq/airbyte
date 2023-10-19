@@ -35,9 +35,9 @@ Currencies are `number` and the date is a `string`.
 
 ### Setup guide
 
-In order to get an `API Access Key` please go to [this](https://manage.exchangeratesapi.io/signup/free) page and enter needed info. After registration and login you will see your `API Access Key`, also you may find it [here](https://manage.exchangeratesapi.io/dashboard).
+In order to get an `API Access Key` please go to [this](https://apilayer.com/signup) page and enter needed info. After registration and login you will see your `API Access Key`, also you may find it [here](https://apilayer.com/account). You will then need to subscribe your account to the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api)
 
-If you have `free` subscription plan \(you may check it [here](https://manage.exchangeratesapi.io/plan)\) this means that you will have 2 limitations:
+If you have `free` subscription plan \(you may check it [here](https://apilayer.com/marketplace/exchangerates_data-api)\) this means that you will have 2 limitations:
 
 1. 1000 API calls per month.
 2. You won't be able to specify the `base` parameter, meaning that you will be dealing only with default base value which is EUR.
