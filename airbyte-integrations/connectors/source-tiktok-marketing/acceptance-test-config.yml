@@ -75,6 +75,8 @@ acceptance_tests:
             bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
           - name: ads_audience_reports_by_platform_daily
             bypass_reason: "Stream is added by the Contributor. We should seed the sandbox later on."
+          - name: creative_assets_portfolios
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
         # Old style streams with granularity config (for < 0.1.13)
         # Note: not needed to be tested separately in full and incremental tests, because code of
         # these streams is called directly in new style streams
@@ -96,6 +98,8 @@ acceptance_tests:
             bypass_reason: "This stream is tested on the new style config."
           - name: campaigns
             bypass_reason: "This stream is tested on the new style config."
+          - name: creative_assets_portfolios
+            bypass_reason: "No data in the integration test account. We should seed the sandbox later on."
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
