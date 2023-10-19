@@ -5,6 +5,7 @@
     "id": { "type": "string" },
     "name": { "type": "string" },
     "status": { "type": "string" },
+    "archived": { "type": "boolean" },
     "created": { "type": "string", "format": "date-time" },
     "updated": { "type": "string", "format": "date-time" },
     "customer_filter": { "type": ["null", "object"] },
