@@ -17,7 +17,7 @@ class SmartsheetStream(Stream):
         self.smartsheet = smartsheet
         self._state = {}
         self._config = config
-        self._start_datetime = self._config.get("start_datetime") or "2020-01-01T00:00:00+00:00"
+        self._start_datetime = "2020-01-01T00:00:00+00:00"
 
     @property
     def primary_key(self) -> str:
@@ -33,7 +33,7 @@ class SmartsheetStream(Stream):
     @property
     def state(self) -> Mapping[str, Any]:
         if not self._state:
-            self._state = {self.cursor_field: self._start_datetime}
+            self._state = {self.cursor_field: "modifiedAt"}
         return self._state
 
     @state.setter
