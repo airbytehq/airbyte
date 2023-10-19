@@ -229,7 +229,7 @@ def test_invalid_start_cursor(parent, requests_mock, caplog):
     [
         (400, "validation_error", "The start_cursor provided is invalid: wrong_start_cursor", 10),
         (429, "rate_limited", "Rate Limited", 5),  # Assuming retry-after header value is 5
-        (500, "internal_server_error", "Internal server error", 80)  # Using default retry_factor of 5, the final backoff time should be 80
+        (500, "internal_server_error", "Internal server error", 128)  # Using retry_factor of 8, the final backoff time should be 128 seconds
     ]
 )
 def test_retry_logic(status_code, error_code, error_message, expected_backoff_time, parent, requests_mock, caplog):
@@ -256,7 +256,7 @@ def test_retry_logic(status_code, error_code, error_message, expected_backoff_ti
             assert exception_info.backoff == expected_backoff_time
     
         # For 500 cases, assert the backoff time in the penultimate log message 
-        # is 80 (given the default retry_factor of 5) to ensure exponential backoff is applied
+        # is 128 (given a retry_factor of 8) to ensure exponential backoff is applied
         if status_code == 500:
             log_messages = [record.message for record in caplog.records]
             expected_log_message = f"Waiting {expected_backoff_time} seconds then retrying..."
