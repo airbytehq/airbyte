@@ -168,8 +168,6 @@ class GradleTask(Step, ABC):
             .with_directory("/root/.m2", await with_whole_git_repo.directory("/root/.m2"))
             # Mount the cache volume for the persistent gradle dependency cache.
             .with_mounted_cache("/root/gradle-persistent-cache", self.persistent_cache_volume, sharing=CacheSharingMode.LOCKED)
-            # Warm the gradle cache.
-            .with_exec(sh_dash_c(["(rsync -a --stats --mkpath /root/gradle-persistent-cache/ /root/.gradle || true)"]))
         )
 
         # From this point on, we add layers which are task-dependent.
@@ -183,5 +181,14 @@ class GradleTask(Step, ABC):
 
         # Run the gradle task that we actually care about.
         connector_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
-        gradle_container = gradle_container.with_exec(sh_dash_c([self._get_gradle_command(connector_task)]))
+        gradle_container = gradle_container.with_exec(
+            sh_dash_c(
+                [
+                    # Warm the gradle cache.
+                    "(rsync -a --stats --mkpath /root/gradle-persistent-cache/ /root/.gradle || true)",
+                    # Run the gradle task.
+                    self._get_gradle_command(connector_task),
+                ]
+            )
+        )
         return await self.get_step_result(gradle_container)
