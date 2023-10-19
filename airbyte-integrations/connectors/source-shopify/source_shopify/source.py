@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import ConnectionError, InvalidURL, JSONDecodeError, RequestException, SSLError
 
-from .auth import ShopifyAuthenticator
+from .auth import MissingAccessTokenError, ShopifyAuthenticator
 from .graphql import get_query_products
 from .transform import DataTypeEnforcer
 from .utils import SCOPES_MAPPING, ApiTypeEnum
@@ -940,6 +940,7 @@ class ConnectionCheckTest:
             "connection_error": f"Connection could not be established using `Shopify Store`: {shop_name}. Make sure it's valid and try again.",
             "request_exception": f"Request was not successfull, check your `input configuation` and try again. Details: {details}",
             "index_error": f"Failed to access the Shopify store `{shop_name}`. Verify the entered Shopify store or API Key in `input configuration`.",
+            "missing_token_error": "Authentication was unsuccessful. Please verify your authentication credentials or login is correct.",
             # add the other patterns and description, if needed...
         }
         return connection_check_errors_map.get(pattern)
@@ -963,6 +964,8 @@ class ConnectionCheckTest:
             return False, self.describe_error("request_exception", details=req_error)
         except IndexError:
             return False, self.describe_error("index_error", shop_name, response)
+        except MissingAccessTokenError:
+            return False, self.describe_error("missing_token_error")
 
 
 class SourceShopify(AbstractSource):
