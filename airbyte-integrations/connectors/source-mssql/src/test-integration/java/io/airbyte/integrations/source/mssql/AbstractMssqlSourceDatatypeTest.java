@@ -160,7 +160,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("'1753-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04'",
                 "'9999-12-31T13:00:04.123'", "null")
             .addExpectedValues("1753-01-01T00:00:00.000000", "9999-12-31T00:00:00.000000", "9999-12-31T13:00:04",

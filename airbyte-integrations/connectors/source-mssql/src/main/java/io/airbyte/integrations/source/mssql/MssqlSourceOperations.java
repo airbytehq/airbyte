@@ -90,17 +90,8 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
         return JDBCType.VARCHAR;
       }
 
-      /**
-       * Per Microsoft SQL Server docs java.sql.Timestamp values can no longer be used to compare values
-       * from a datetime column starting from SQL Server 2016. This limitation is due to a server-side
-       * change that converts datetime to datetime2 differently, resulting in non-equal values. The
-       * workaround to this issue is to either change datetime columns to datetime2(3), use String instead
-       * of java.sql.Timestamp, or change database compatibility level to 120 or lower.
-       *
-       * So, we will treat datetime columns as VARCHAR
-       */
       if (typeName.equalsIgnoreCase("datetime")) {
-        return JDBCType.VARCHAR;
+        return JDBCType.TIMESTAMP;
       }
 
       if (typeName.equalsIgnoreCase("datetimeoffset")) {

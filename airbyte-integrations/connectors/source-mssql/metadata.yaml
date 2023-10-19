@@ -29,10 +29,10 @@ data:
     - language:python
   releases:
     breakingChanges:
-      2.0.0:
-        message: "Add default cursor for cdc"
-        upgradeDeadline: "2023-08-23"
       3.0.0:
         message: "Updated some column datatype discovery"
         upgradeDeadline: "2023-10-31"
+      2.0.0:
+        message: "Add default cursor for cdc"
+        upgradeDeadline: "2023-08-23"
 metadataSpecVersion: "1.0"
