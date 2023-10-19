@@ -150,9 +150,7 @@ if (isCiServer || isAirbyteCI) {
             bucket = 'airbyte-buildcache'
             prefix = 'cache/'
             push = isCiServer
-            enabled = isCiServer || isAirbyteCI
-            // Credentials will be taken from  S3_BUILD_CACHE_... environment variables
-            // anonymous access will be used if environment variables are missing
+            enabled = System.getenv().containsKey("S3_BUILD_CACHE_ACCESS_KEY_ID")
         }
     }
 }
