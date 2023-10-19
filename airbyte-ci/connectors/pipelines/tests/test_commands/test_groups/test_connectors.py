@@ -4,11 +4,19 @@
 
 from typing import Callable
 
+import click
+import pipelines.airbyte_ci.connectors.build_image.commands
+import pipelines.airbyte_ci.connectors.commands
+import pipelines.airbyte_ci.connectors.publish.commands
+import pipelines.airbyte_ci.connectors.test.commands
 import pytest
 from click.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
-from pipelines.bases import ConnectorWithModifiedFiles
-from pipelines.commands.groups import connectors
+from pipelines.airbyte_ci.connectors import commands as connectors_commands
+from pipelines.airbyte_ci.connectors.build_image import commands as connectors_build_command
+from pipelines.airbyte_ci.connectors.publish import commands as connectors_publish_command
+from pipelines.airbyte_ci.connectors.test import commands as connectors_test_command
+from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from tests.utils import pick_a_random_connector
 
 
@@ -19,7 +27,7 @@ def runner():
 
 def test_get_selected_connectors_by_name_no_file_modification():
     connector = pick_a_random_connector()
-    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
         selected_names=(connector.technical_name,),
         selected_support_levels=(),
         selected_languages=(),
@@ -36,7 +44,7 @@ def test_get_selected_connectors_by_name_no_file_modification():
 
 
 def test_get_selected_connectors_by_support_level_no_file_modification():
-    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
         selected_names=(),
         selected_support_levels=["certified"],
         selected_languages=(),
@@ -50,7 +58,7 @@ def test_get_selected_connectors_by_support_level_no_file_modification():
 
 
 def test_get_selected_connectors_by_language_no_file_modification():
-    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
         selected_names=(),
         selected_support_levels=(),
         selected_languages=(ConnectorLanguage.LOW_CODE,),
@@ -66,7 +74,7 @@ def test_get_selected_connectors_by_language_no_file_modification():
 def test_get_selected_connectors_by_name_with_file_modification():
     connector = pick_a_random_connector()
     modified_files = {connector.code_directory / "setup.py"}
-    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
         selected_names=(connector.technical_name,),
         selected_support_levels=(),
         selected_languages=(),
@@ -85,7 +93,7 @@ def test_get_selected_connectors_by_name_with_file_modification():
 def test_get_selected_connectors_by_name_and_support_level_or_languages_leads_to_intersection():
     connector = pick_a_random_connector()
     modified_files = {connector.code_directory / "setup.py"}
-    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
         selected_names=(connector.technical_name,),
         selected_support_levels=(connector.support_level,),
         selected_languages=(connector.language,),
@@ -102,7 +110,7 @@ def test_get_selected_connectors_with_modified():
     first_modified_connector = pick_a_random_connector()
     second_modified_connector = pick_a_random_connector(other_picked_connectors=[first_modified_connector])
     modified_files = {first_modified_connector.code_directory / "setup.py", second_modified_connector.code_directory / "setup.py"}
-    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
         selected_names=(),
         selected_support_levels=(),
         selected_languages=(),
@@ -119,7 +127,7 @@ def test_get_selected_connectors_with_modified_and_language():
     first_modified_connector = pick_a_random_connector(language=ConnectorLanguage.PYTHON)
     second_modified_connector = pick_a_random_connector(language=ConnectorLanguage.JAVA, other_picked_connectors=[first_modified_connector])
     modified_files = {first_modified_connector.code_directory / "setup.py", second_modified_connector.code_directory / "setup.py"}
-    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
         selected_names=(),
         selected_support_levels=(),
         selected_languages=(ConnectorLanguage.JAVA,),
@@ -137,7 +145,7 @@ def test_get_selected_connectors_with_modified_and_support_level():
     first_modified_connector = pick_a_random_connector(support_level="community")
     second_modified_connector = pick_a_random_connector(support_level="certified", other_picked_connectors=[first_modified_connector])
     modified_files = {first_modified_connector.code_directory / "setup.py", second_modified_connector.code_directory / "setup.py"}
-    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
         selected_names=(),
         selected_support_levels=["certified"],
         selected_languages=(),
@@ -159,7 +167,7 @@ def test_get_selected_connectors_with_modified_and_metadata_only():
         second_modified_connector.code_directory / METADATA_FILE_NAME,
         second_modified_connector.code_directory / "setup.py",
     }
-    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
         selected_names=(),
         selected_support_levels=(),
         selected_languages=(),
@@ -185,7 +193,7 @@ def test_get_selected_connectors_with_metadata_only():
         second_modified_connector.code_directory / METADATA_FILE_NAME,
         second_modified_connector.code_directory / "setup.py",
     }
-    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
         selected_names=(),
         selected_support_levels=(),
         selected_languages=(),
@@ -206,7 +214,7 @@ def test_get_selected_connectors_with_metadata_only():
 def test_get_selected_connectors_with_metadata_query():
     connector = pick_a_random_connector()
     metadata_query = f"data.dockerRepository == '{connector.metadata['dockerRepository']}'"
-    selected_connectors = connectors.get_selected_connectors_with_modified_files(
+    selected_connectors = connectors_commands.get_selected_connectors_with_modified_files(
         selected_names=(),
         selected_support_levels=(),
         selected_languages=(),
@@ -248,9 +256,9 @@ def click_context_obj():
 @pytest.mark.parametrize(
     "command, command_args",
     [
-        (connectors.test, []),
+        (connectors_test_command.test, []),
         (
-            connectors.publish,
+            connectors_publish_command.publish,
             [
                 "--spec-cache-gcs-credentials",
                 "test",
@@ -266,7 +274,7 @@ def click_context_obj():
                 "test",
             ],
         ),
-        (connectors.build, []),
+        (connectors_build_command.build, []),
     ],
 )
 def test_commands_do_not_override_connector_selection(
@@ -280,10 +288,11 @@ def test_commands_do_not_override_connector_selection(
     selected_connector = mocker.MagicMock()
     click_context_obj["selected_connectors_with_modified_files"] = [selected_connector]
 
-    mocker.patch.object(connectors.click, "confirm")
+    mocker.patch.object(click, "confirm")
     mock_connector_context = mocker.MagicMock()
-    mocker.patch.object(connectors, "ConnectorContext", mock_connector_context)
-    mocker.patch.object(connectors, "PublishConnectorContext", mock_connector_context)
+    mocker.patch.object(connectors_test_command, "ConnectorContext", mock_connector_context)
+    mocker.patch.object(connectors_build_command, "ConnectorContext", mock_connector_context)
+    mocker.patch.object(connectors_publish_command, "PublishConnectorContext", mock_connector_context)
     runner.invoke(command, command_args, catch_exceptions=False, obj=click_context_obj)
     assert mock_connector_context.call_count == 1
     # If the connector selection is overriden the context won't be instantiated with the selected connector mock instance
