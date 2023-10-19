@@ -121,15 +121,15 @@ class DefaultFileBasedStream(AbstractFileBasedStream, IncrementalMixin):
                     ),
                 )
 
-            except Exception:
-                yield AirbyteMessage(
-                    type=MessageType.LOG,
-                    log=AirbyteLogMessage(
-                        level=Level.ERROR,
-                        message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
-                        stack_trace=traceback.format_exc(),
-                    ),
-                )
+            # except Exception:
+            #     yield AirbyteMessage(
+            #         type=MessageType.LOG,
+            #         log=AirbyteLogMessage(
+            #             level=Level.ERROR,
+            #             message=f"{FileBasedSourceError.ERROR_PARSING_RECORD.value} stream={self.name} file={file.uri} line_no={line_no} n_skipped={n_skipped}",
+            #             stack_trace=traceback.format_exc(),
+            #         ),
+            #     )
 
             finally:
                 if n_skipped:
