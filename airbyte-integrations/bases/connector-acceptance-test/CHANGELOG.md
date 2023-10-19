@@ -1,7 +1,7 @@
 # Changelog
 
 ## 2.0.2
-Fix bug in `test_two_sequential_reads` incremental test definition.
+Make `test_two_sequential_reads` handle namespace property in stream descriptor.
 
 ## 2.0.1
 Changing `format` or `airbyte_type` in a field definition of a schema or specification is now a breaking change.
