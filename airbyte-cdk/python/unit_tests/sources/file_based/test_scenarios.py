@@ -12,13 +12,14 @@ from _pytest.capture import CaptureFixture
 from _pytest.reports import ExceptionInfo
 from airbyte_cdk.entrypoint import launch
 from airbyte_cdk.logger import AirbyteLogFormatter
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
+from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 
 
-def verify_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
+def verify_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> None:
     expected_exc, expected_msg = scenario.expected_discover_error
     expected_logs = scenario.expected_logs
     if expected_exc:
@@ -36,7 +37,9 @@ def verify_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: 
             _verify_expected_logs(logs, discover_logs)
 
 
-def verify_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
+def verify_read(
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
+) -> None:
     caplog.handler.setFormatter(AirbyteLogFormatter())
     if scenario.incremental_scenario_config:
         run_test_read_incremental(capsys, caplog, tmp_path, scenario)
@@ -44,7 +47,9 @@ def verify_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path
         run_test_read_full_refresh(capsys, caplog, tmp_path, scenario)
 
 
-def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
+def run_test_read_full_refresh(
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
+) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     if expected_exc:
         with pytest.raises(expected_exc) as exc:  # noqa
@@ -56,7 +61,9 @@ def run_test_read_full_refresh(capsys: CaptureFixture[str], caplog: LogCaptureFi
         _verify_read_output(output, scenario)
 
 
-def run_test_read_incremental(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
+def run_test_read_incremental(
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
+) -> None:
     expected_exc, expected_msg = scenario.expected_read_error
     if expected_exc:
         with pytest.raises(expected_exc):
@@ -66,7 +73,7 @@ def run_test_read_incremental(capsys: CaptureFixture[str], caplog: LogCaptureFix
         _verify_read_output(output, scenario)
 
 
-def _verify_read_output(output: Dict[str, Any], scenario: TestScenario) -> None:
+def _verify_read_output(output: Dict[str, Any], scenario: TestScenario[AbstractSource]) -> None:
     records, logs = output["records"], output["logs"]
     logs = [log for log in logs if log.get("level") in ("ERROR", "WARN", "WARNING")]
     expected_records = scenario.expected_records
@@ -88,6 +95,21 @@ def _verify_read_output(output: Dict[str, Any], scenario: TestScenario) -> None:
         assert len(logs) == (len(read_logs) if read_logs else 0)
         _verify_expected_logs(logs, read_logs)
 
+    if scenario.expected_analytics:
+        analytics = output["analytics"]
+
+        _verify_analytics(analytics, scenario.expected_analytics)
+
+
+def _verify_analytics(analytics: List[Dict[str, Any]], expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]]) -> None:
+    if expected_analytics:
+        for actual, expected in zip(analytics, expected_analytics):
+            actual_type, actual_value = actual["type"], actual["value"]
+            expected_type = expected.type
+            expected_value = expected.value
+            assert actual_type == expected_type
+            assert actual_value == expected_value
+
 
 def _verify_expected_logs(logs: List[Dict[str, Any]], expected_logs: Optional[List[Mapping[str, Any]]]) -> None:
     if expected_logs:
@@ -99,11 +121,11 @@ def _verify_expected_logs(logs: List[Dict[str, Any]], expected_logs: Optional[Li
             assert expected_message in actual_message
 
 
-def verify_spec(capsys: CaptureFixture[str], scenario: TestScenario) -> None:
+def verify_spec(capsys: CaptureFixture[str], scenario: TestScenario[AbstractSource]) -> None:
     assert spec(capsys, scenario) == scenario.expected_spec
 
 
-def verify_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
+def verify_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> None:
     expected_exc, expected_msg = scenario.expected_check_error
 
     if expected_exc:
@@ -119,7 +141,7 @@ def verify_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: Tes
         assert output["status"] == scenario.expected_check_status
 
 
-def spec(capsys: CaptureFixture[str], scenario: TestScenario) -> Mapping[str, Any]:
+def spec(capsys: CaptureFixture[str], scenario: TestScenario[AbstractSource]) -> Mapping[str, Any]:
     launch(
         scenario.source,
         ["spec"],
@@ -128,7 +150,7 @@ def spec(capsys: CaptureFixture[str], scenario: TestScenario) -> Mapping[str, An
     return json.loads(captured.out.splitlines()[0])["spec"]  # type: ignore
 
 
-def check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
+def check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> Dict[str, Any]:
     launch(
         scenario.source,
         ["check", "--config", make_file(tmp_path / "config.json", scenario.config)],
@@ -137,7 +159,7 @@ def check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenar
     return json.loads(captured.out.splitlines()[0])["connectionStatus"]  # type: ignore
 
 
-def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
+def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> Dict[str, Any]:
     launch(
         scenario.source,
         ["discover", "--config", make_file(tmp_path / "config.json", scenario.config)],
@@ -150,7 +172,9 @@ def discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestSce
     }
 
 
-def read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> Dict[str, Any]:
+def read(
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
+) -> Dict[str, Any]:
     with caplog.handler.stream as logger_stream:
         launch(
             scenario.source,
@@ -167,11 +191,16 @@ def read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: Posix
         return {
             "records": [msg for msg in (json.loads(line) for line in captured) if msg["type"] == "RECORD"],
             "logs": [msg["log"] for msg in (json.loads(line) for line in captured) if msg["type"] == "LOG"],
+            "analytics": [
+                msg["trace"]["analytics"]
+                for msg in (json.loads(line) for line in captured)
+                if msg["type"] == "TRACE" and msg["trace"]["type"] == "ANALYTICS"
+            ],
         }
 
 
 def read_with_state(
-    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
 ) -> Dict[str, List[Any]]:
     launch(
         scenario.source,
