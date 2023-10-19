@@ -662,6 +662,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/sources/connection/get:
+    post:
+      tags:
+        - source
+      summary: Get source with connection
+      operationId: getSourceWithConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceReadWithConnection"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"        
   /v1/sources/search:
     post:
       tags:
@@ -1205,6 +1228,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destinations/connection/get:
+    post:
+      tags:
+        - destination
+      summary: Get destination with connection
+      operationId: getDestinationWithConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestionationReadWithConnection"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"        
   /v1/destinations/search:
     post:
       tags:
@@ -2956,6 +3002,15 @@ components:
           type: string
         sourceName:
           type: string
+    SourceReadWithConnection:
+      type: object
+      required:
+        - SourceRead
+      properties:
+        SourceRead:
+          $ref: "#/components/schemas/SourceRead"
+        ConnectionReadList:
+          $ref: "#/components/schemas/ConnectionReadList"      
     SourceReadList:
       type: object
       required:
@@ -3253,6 +3308,15 @@ components:
           type: string
         destinationName:
           type: string
+    DestionationReadWithConnection:
+      type: object
+      required:
+        - DestinationRead
+      properties:
+        DestinationRead:
+          $ref: "#/components/schemas/DestinationRead"
+        ConnectionReadList:
+          $ref: "#/components/schemas/ConnectionReadList"      
     DestinationReadList:
       type: object
       required:
