@@ -160,7 +160,7 @@ public class GlueOperations implements MetastoreOperations {
   private Set<String> filterTypes(JsonNode type) {
     // An unknown or null type isn't really going to be readable here by downstream systems (e.g. Redshift).
     // Set this to be binary as the 'safest' choice to allow consumers to best determine how to read it
-    if (type == null) {
+    if (type == null || type.equals("unknown")) {
       return Set.of("binary");
     }
     if (type.isArray()) {
