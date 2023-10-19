@@ -133,7 +133,7 @@ def test_empty_blocks_results(requests_mock):
         (429, None, 5.0),  # Case for 429 error without retry-after header, should default to 5.0
         (504, None, None),  # Case for 500-level error, should default to None and use CDK exponential backoff
         (400, None, 10.0),  # Case for specific 400-level error handled by check_invalid_start_cursor
-    ]
+    ],
 )
 def test_backoff_time(status_code, retry_after_header, expected_backoff, patch_base_class):
     response_mock = MagicMock(spec=requests.Response)
@@ -142,6 +142,7 @@ def test_backoff_time(status_code, retry_after_header, expected_backoff, patch_b
     stream = NotionStream(config=MagicMock())
 
     assert stream.backoff_time(response_mock) == expected_backoff
+
 
 def test_users_request_params(patch_base_class):
     stream = Users(config=MagicMock())
