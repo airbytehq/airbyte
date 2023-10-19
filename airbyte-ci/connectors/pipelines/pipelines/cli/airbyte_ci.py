@@ -97,7 +97,7 @@ def get_airbyte_repo() -> git.Repo:
 
 
 def get_airbyte_repo_path_with_fallback() -> Path:
-    """Get the airbyte repo path."""
+    """Get the path to the airbyte repo."""
     try:
         return get_airbyte_repo().working_tree_dir
     except git.exc.InvalidGitRepositoryError:
