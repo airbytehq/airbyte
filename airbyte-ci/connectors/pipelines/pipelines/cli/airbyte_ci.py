@@ -28,6 +28,17 @@ from pipelines.helpers.utils import get_current_epoch_time, transform_strs_to_pa
 __installed_version__ = importlib.metadata.version("pipelines")
 
 
+def display_welcome_message() -> None:
+    print('''
+             █████╗ ██╗██████╗ ██████╗ ██╗   ██╗████████╗███████╗
+            ██╔══██╗██║██╔══██╗██╔══██╗╚██╗ ██╔╝╚══██╔══╝██╔════╝
+            ███████║██║██████╔╝██████╔╝ ╚████╔╝    ██║   █████╗
+            ██╔══██║██║██╔══██╗██╔══██╗  ╚██╔╝     ██║   ██╔══╝
+            ██║  ██║██║██║  ██║██████╔╝   ██║      ██║   ███████╗
+            ╚═╝  ╚═╝╚═╝╚═╝  ╚═╝╚═════╝    ╚═╝      ╚═╝   ╚══════╝
+        ''')
+
+
 def check_up_to_date() -> bool:
     """Check if the installed version of pipelines is up to date."""
     latest_version = get_latest_version()
@@ -140,6 +151,7 @@ def airbyte_ci(
     ci_job_key: str,
     show_dagger_logs: bool,
 ):  # noqa D103
+    display_welcome_message()
     ctx.ensure_object(dict)
     check_up_to_date()
     ctx.obj["is_local"] = is_local
