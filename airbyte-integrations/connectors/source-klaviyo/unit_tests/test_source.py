@@ -44,3 +44,6 @@ def test_streams():
     streams = source.streams(config)
     expected_streams_number = 8
     assert len(streams) == expected_streams_number
+
+    # ensure only unique stream names are returned
+    assert len({stream.name for stream in streams}) == expected_streams_number
