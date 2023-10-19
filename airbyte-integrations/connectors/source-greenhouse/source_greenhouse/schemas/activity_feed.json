@@ -17,34 +17,27 @@
             "type": "integer"
           },
           "subject": {
-            "type": ["null", "string"]
+            "type": "string"
           },
           "user": {
-            "anyOf": [
-              {
-                "type": "null"
+            "properties": {
+              "employee_id": {
+                "type": "string"
               },
-              {
-                "properties": {
-                  "employee_id": {
-                    "type": ["null", "string"]
-                  },
-                  "first_name": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "integer"
-                  },
-                  "last_name": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
+              "first_name": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer"
+              },
+              "last_name": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
               }
-            ]
+            },
+            "type": "object"
           }
         },
         "type": "object"
@@ -64,7 +57,7 @@
             "type": "string"
           },
           "from": {
-            "type": ["null", "string"]
+            "type": "string"
           },
           "id": {
             "type": "integer"
@@ -73,34 +66,27 @@
             "type": "string"
           },
           "to": {
-            "type": ["null", "string"]
+            "type": "string"
           },
           "user": {
-            "anyOf": [
-              {
-                "type": "null"
+            "properties": {
+              "employee_id": {
+                "type": "string"
               },
-              {
-                "properties": {
-                  "employee_id": {
-                    "type": ["null", "string"]
-                  },
-                  "first_name": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "integer"
-                  },
-                  "last_name": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
+              "first_name": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer"
+              },
+              "last_name": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
               }
-            ]
+            },
+            "type": "object"
           }
         },
         "type": "object"
@@ -120,7 +106,7 @@
             "type": "string"
           },
           "from": {
-            "type": ["null", "string"]
+            "type": "string"
           },
           "id": {
             "type": "integer"
@@ -129,34 +115,27 @@
             "type": "string"
           },
           "to": {
-            "type": ["null", "string"]
+            "type": "string"
           },
           "user": {
-            "anyOf": [
-              {
-                "type": "null"
+            "properties": {
+              "employee_id": {
+                "type": "string"
               },
-              {
-                "properties": {
-                  "employee_id": {
-                    "type": ["null", "string"]
-                  },
-                  "first_name": {
-                    "type": "string"
-                  },
-                  "id": {
-                    "type": "integer"
-                  },
-                  "last_name": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
+              "first_name": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer"
+              },
+              "last_name": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
               }
-            ]
+            },
+            "type": "object"
           }
         },
         "type": "object"
@@ -184,7 +163,7 @@
           "user": {
             "properties": {
               "employee_id": {
-                "type": ["null", "string"]
+                "type": "string"
               },
               "first_name": {
                 "type": "string"

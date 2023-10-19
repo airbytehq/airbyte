@@ -81,8 +81,8 @@ definitions:
     incremental_sync:
       type: CustomIncrementalSync
       class_name: source_greenhouse.components.GreenHouseSlicer
-      request_cursor_field: "created_after"
-      cursor_field: "applied_at"
+      request_cursor_field: "last_activity_after"
+      cursor_field: "last_activity_at"
   candidates_stream:
     $ref: "#/definitions/base_incremental_stream"
     $parameters:

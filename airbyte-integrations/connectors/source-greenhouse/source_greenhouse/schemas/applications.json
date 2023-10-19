@@ -42,49 +42,35 @@
       "type": "integer"
     },
     "credited_to": {
-      "anyOf": [
-        {
-          "type": "null"
+      "properties": {
+        "employee_id": {
+          "type": "string"
         },
-        {
-          "properties": {
-            "employee_id": {
-              "type": "string"
-            },
-            "first_name": {
-              "type": "string"
-            },
-            "id": {
-              "type": "integer"
-            },
-            "last_name": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            }
-          },
-          "type": "object"
+        "first_name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
         }
-      ]
+      },
+      "type": "object"
     },
     "current_stage": {
-      "anyOf": [
-        {
-          "type": "null"
+      "properties": {
+        "id": {
+          "type": "integer"
         },
-        {
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "name": {
-              "type": "string"
-            }
-          },
-          "type": "object"
+        "name": {
+          "type": "string"
         }
-      ]
+      },
+      "type": "object"
     },
     "custom_fields": {
       "type": "object"
@@ -116,19 +102,12 @@
       "type": "string"
     },
     "location": {
-      "anyOf": [
-        {
-          "type": "null"
-        },
-        {
-          "properties": {
-            "address": {
-              "type": "string"
-            }
-          },
-          "type": "object"
+      "properties": {
+        "address": {
+          "type": "string"
         }
-      ]
+      },
+      "type": "object"
     },
     "prospect": {
       "type": "boolean"
@@ -232,51 +211,37 @@
       "type": "object"
     },
     "rejection_reason": {
-      "anyOf": [
-        {
-          "type": "null"
+      "properties": {
+        "id": {
+          "type": "integer"
         },
-        {
+        "name": {
+          "type": "string"
+        },
+        "type": {
           "properties": {
             "id": {
               "type": "integer"
             },
             "name": {
               "type": "string"
-            },
-            "type": {
-              "properties": {
-                "id": {
-                  "type": "integer"
-                },
-                "name": {
-                  "type": "string"
-                }
-              },
-              "type": "object"
             }
           },
           "type": "object"
         }
-      ]
+      },
+      "type": "object"
     },
     "source": {
-      "anyOf": [
-        {
-          "type": "null"
+      "properties": {
+        "id": {
+          "type": "integer"
         },
-        {
-          "properties": {
-            "id": {
-              "type": "integer"
-            },
-            "public_name": {
-              "type": "string"
-            }
-          },
-          "type": "object"
+        "public_name": {
+          "type": "string"
         }
-      ]
+      },
+      "type": "object"
     },
     "status": {
       "type": "string"
