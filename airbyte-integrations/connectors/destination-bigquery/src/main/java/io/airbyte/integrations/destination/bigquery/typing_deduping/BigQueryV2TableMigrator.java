@@ -21,7 +21,7 @@ import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryV2TableMigrator implements V2TableMigrator<TableDefinition> {
+public class BigQueryV2TableMigrator implements V2TableMigrator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryV2TableMigrator.class);
 

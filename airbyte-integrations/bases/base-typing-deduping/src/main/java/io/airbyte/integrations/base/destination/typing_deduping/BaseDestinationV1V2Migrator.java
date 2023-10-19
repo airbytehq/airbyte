@@ -13,14 +13,14 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implements DestinationV1V2Migrator {
+public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implements DestinationV1V2Migrator<DialectTableDefinition> {
 
   protected static final Logger LOGGER = LoggerFactory.getLogger(BaseDestinationV1V2Migrator.class);
 
   @Override
   public void migrateIfNecessary(
-                                 final SqlGenerator sqlGenerator,
-                                 final DestinationHandler destinationHandler,
+                                 final SqlGenerator<DialectTableDefinition> sqlGenerator,
+                                 final DestinationHandler<DialectTableDefinition> destinationHandler,
                                  final StreamConfig streamConfig)
       throws TableNotMigratedException, UnexpectedSchemaException, Exception {
     LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
