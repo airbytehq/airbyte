@@ -84,7 +84,8 @@ def get_selected_connectors_with_modified_files(
     selected_connectors_with_modified_files = []
     for connector in selected_connectors:
         connector_with_modified_files = ConnectorWithModifiedFiles(
-            technical_name=connector.technical_name, modified_files=get_connector_modified_files(connector, modified_files)
+            relative_connector_path=connector.relative_connector_path,
+            modified_files=get_connector_modified_files(connector, modified_files),
         )
         if not metadata_changes_only:
             selected_connectors_with_modified_files.append(connector_with_modified_files)
