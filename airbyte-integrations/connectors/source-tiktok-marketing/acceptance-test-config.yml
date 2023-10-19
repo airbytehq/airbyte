@@ -50,6 +50,9 @@ acceptance_tests:
           ads:
             - name: "profile_image_url"
               bypass_reason: "Volatile URLs"
+          creative_assets_images:
+            - name: "image_url"
+              bypass_reason: "Volatile URL params"
         empty_streams:
           - name: ads_reports_hourly
             bypass_reason: "Tested with daily granularity."
@@ -109,6 +112,9 @@ acceptance_tests:
           ads:
             - name: "profile_image_url"
               bypass_reason: "Volatile URLs"
+          creative_assets_images:
+            - name: "image_url"
+              bypass_reason: "Volatile URL params"
   incremental:
     tests:
       - config_path: "secrets/config.json"
