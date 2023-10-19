@@ -1,7 +1,7 @@
 {
   "org_id": "12345678",
   "credentials": {
-    "auth_method": "access_token",
+    "auth_method": "access_token or oAuth2.0",
     "access_token": "example_token_string123"
   }
 }
