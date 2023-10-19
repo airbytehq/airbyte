@@ -14,7 +14,7 @@ from typing import Optional
 
 import pkg_resources
 import requests
-from pipelines.commands.airbyte_ci import set_working_directory_to_root
+from pipelines.cli.airbyte_ci import set_working_directory_to_root
 
 LOGGER = logging.getLogger(__name__)
 BIN_DIR = Path.home() / "bin"
