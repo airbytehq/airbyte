@@ -31,3 +31,91 @@ connectionSpecification:
       description: "The end date for retrieving tweets must be a minimum of 10 seconds prior to the request time."
       format: date-time
       order: 3
+    tweet_fields:
+      title: tweet.fields
+      type: array
+      items:
+        enum:
+          - attachments
+          - author_id
+          - context_annotations
+          - conversation_id
+          - created_at
+          - edit_controls
+          - entities
+          - geo
+          - id
+          - in_reply_to_user_id
+          - lang
+          - non_public_metrics
+          - public_metrics
+          - organic_metrics
+          - promoted_metrics
+          - possibly_sensitive
+          - referenced_tweets
+          - reply_settings
+          - source
+          - text
+          - withheld
+    user_fields:
+      title: user.fields
+      type: array
+      items:
+        enum:
+          - created_at
+          - description
+          - entities
+          - id
+          - location
+          - most_recent_tweet_id
+          - name
+          - pinned_tweet_id
+          - profile_image_url
+          - protected
+          - public_metrics
+          - url
+          - username
+          - verified
+          - verified_type
+          - withheld
+    media_fields:
+      title: media.fields
+      type: array
+      items:
+        enum:
+          - duration_ms
+          - height
+          - media_key
+          - preview_image_url
+          - type
+          - url
+          - width
+          - public_metrics
+          - non_public_metrics
+          - organic_metrics
+          - promoted_metrics
+          - alt_text
+          - variants
+    poll_fields:
+      title: poll.fields
+      type: array
+      items:
+        enum:
+          duration_minutes
+          - end_datetime
+          - id
+          - options
+          - voting_status
+    place_fields:
+      title: place.fields
+      type: array
+      items:
+        enum:
+          - contained_within
+          - country
+          - country_code
+          - full_name
+          - geo
+          - id
+          - name
+          - place_type
