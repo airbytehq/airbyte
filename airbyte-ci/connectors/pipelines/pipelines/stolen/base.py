@@ -10,7 +10,6 @@ from click import Context, get_current_context
 from dagger.api.gen import Client, Container
 from pydantic import BaseModel, Field, PrivateAttr
 
-from .settings import GlobalSettings
 from .singleton import Singleton
 
 
@@ -22,7 +21,6 @@ def get_context() -> Context:
     return get_current_context()
 
 class ClickPipelineContext(BaseModel, Singleton):
-    global_settings: GlobalSettings
     dockerd_service: Optional[Container] = Field(default=None)
     _dagger_client: Optional[Client] = PrivateAttr(default=None)
     _click_context: Callable[[], Context] = PrivateAttr(default_factory=lambda: get_context)
@@ -34,9 +32,8 @@ class ClickPipelineContext(BaseModel, Singleton):
         click_params = ctx.params
         command_name = ctx.command.name
 
-
         # Error if click_obj and click_params have the same key
-        all_click_params_keys = [p.name for p in ctx.command.params.keys]
+        all_click_params_keys = [p.name for p in ctx.command.params]
         intersection = set(click_obj.keys()) & set(all_click_params_keys)
         if intersection:
             raise ValueError(f"Your command '{command_name}' has defined options/arguments with the same key as its parent: {intersection}")
@@ -46,7 +43,7 @@ class ClickPipelineContext(BaseModel, Singleton):
     class Config:
         arbitrary_types_allowed=True
 
-    def __init__(self, global_settings: GlobalSettings, **data: dict[str, Any]):
+    def __init__(self, **data: dict[str, Any]):
         """
         Initialize the ClickPipelineContext instance.
 
@@ -58,7 +55,7 @@ class ClickPipelineContext(BaseModel, Singleton):
         This can be useful if the initialization logic is expensive (e.g., it involves network requests or database queries).
         """
         if not Singleton._initialized[ClickPipelineContext]:
-            super().__init__(global_settings=global_settings, **data)
+            super().__init__(**data)
             Singleton._initialized[ClickPipelineContext] = True
 
     import asyncio
@@ -75,10 +72,3 @@ class ClickPipelineContext(BaseModel, Singleton):
         assert client, "Error initializing Dagger client"
         return client.pipeline(pipeline_name) if pipeline_name else client
 
-
-class GlobalContext(BaseModel, Singleton):
-    pipeline_context: Optional[ClickPipelineContext] = Field(default=None)
-    click_context: Optional[Context] = Field(default=None)
-
-    class Config:
-        arbitrary_types_allowed = True

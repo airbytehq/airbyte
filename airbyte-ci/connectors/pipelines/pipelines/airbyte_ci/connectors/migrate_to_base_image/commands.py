@@ -55,7 +55,7 @@ def migrate_to_base_image(
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
-            open_report_in_browser=False,
+            enable_report_auto_open=False,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
         )

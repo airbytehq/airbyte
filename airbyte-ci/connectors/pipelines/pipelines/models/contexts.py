@@ -62,7 +62,7 @@ class PipelineContext:
         ci_gcs_credentials: Optional[str] = None,
         ci_git_user: Optional[str] = None,
         ci_github_access_token: Optional[str] = None,
-        open_report_in_browser: bool = True,
+        enable_report_auto_open: bool = True,
     ):
         """Initialize a pipeline context.
 
@@ -105,7 +105,7 @@ class PipelineContext:
         self.started_at = None
         self.stopped_at = None
         self.secrets_to_mask = []
-        self.open_report_in_browser = open_report_in_browser
+        self.enable_report_auto_open = enable_report_auto_open
         update_commit_status_check(**self.github_commit_status)
 
     @property

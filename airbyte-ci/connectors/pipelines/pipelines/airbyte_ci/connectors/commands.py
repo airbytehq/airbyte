@@ -9,6 +9,7 @@ from typing import List, Set, Tuple
 import click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_pass_context_and_args_to_children
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
 
@@ -177,7 +178,8 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     default=True,
     type=bool,
 )
-@click.pass_context
+@click_pass_context_and_args_to_children
+@click_ignore_unused_kwargs
 def connectors(
     ctx: click.Context,
     use_remote_secrets: bool,
@@ -187,21 +189,12 @@ def connectors(
     modified: bool,
     metadata_changes_only: bool,
     metadata_query: str,
-    concurrency: int,
-    execute_timeout: int,
     enable_dependency_scanning: bool,
-    use_local_cdk: bool,
-    enable_report_auto_open: bool,
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
 
     ctx.ensure_object(dict)
-    ctx.obj["use_remote_secrets"] = use_remote_secrets
-    ctx.obj["concurrency"] = concurrency
-    ctx.obj["execute_timeout"] = execute_timeout
-    ctx.obj["use_local_cdk"] = use_local_cdk
-    ctx.obj["open_report_in_browser"] = enable_report_auto_open
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
         names,
         support_levels,

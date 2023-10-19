@@ -3,26 +3,20 @@
 #
 
 import click
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_pass_context_and_args_to_children
 from pipelines.stolen.base import ClickPipelineContext
 from pipelines.stolen.lazy_decorator import LazyPassDecorator
 
-from pipelines.stolen.settings import GlobalSettings
 
-# Stolen
-settings = GlobalSettings()
-pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContext, global_settings=settings)
-# pass_global_settings: LazyPassDecorator = LazyPassDecorator(GlobalSettings)
-
-# NEW
+pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContext)
 
 @click.command()
 @click.argument("hold")
 @click.option("--opt", default="default_value")
 @pass_pipeline_context
-# @pass_global_settings
+@click_ignore_unused_kwargs
 def playground(
     ctx: ClickPipelineContext,
-    **kwargs,
 ):
     """Runs the tests for the given airbyte-ci package.
 
