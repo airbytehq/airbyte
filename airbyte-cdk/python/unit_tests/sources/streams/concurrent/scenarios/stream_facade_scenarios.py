@@ -10,42 +10,17 @@ from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenari
 from unit_tests.sources.streams.concurrent.scenarios.stream_facade_builder import StreamFacadeSourceBuilder
 
 
-class _MockStreamNoStreamSlices(Stream):
-    def __init__(self, records, name, json_schema, primary_key=None):
-        self._records_or_exceptions = records
-        self._name = name
-        self._json_schema = json_schema
-        self._primary_key = primary_key
-
-    def read_records(
+class _MockStream(Stream):
+    def __init__(
         self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        for record_or_exception in self._records_or_exceptions:
-            if isinstance(record_or_exception, Exception):
-                raise record_or_exception
-            else:
-                yield record_or_exception
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._primary_key
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        return self._json_schema
-
-
-class _MockStreamWithStreamSlices(Stream):
-    def __init__(self, slice_key, slice_values_to_records, name, json_schema, primary_key=None):
+        slice_key,
+        slice_values_to_records_or_exception: Mapping[Optional[str], List[Union[Mapping[str, Any], Exception]]],
+        name,
+        json_schema,
+        primary_key=None,
+    ):
         self._slice_key = slice_key
-        self._slice_values_to_records = slice_values_to_records
+        self._slice_values_to_records = slice_values_to_records_or_exception
         self._name = name
         self._json_schema = json_schema
         self._primary_key = primary_key
@@ -57,11 +32,19 @@ class _MockStreamWithStreamSlices(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        for record_or_exception in self._slice_values_to_records[stream_slice[self._slice_key]]:
+        for record_or_exception in self._get_record_or_exception_iterable(stream_slice):
             if isinstance(record_or_exception, Exception):
                 raise record_or_exception
             else:
                 yield record_or_exception
+
+    def _get_record_or_exception_iterable(
+        self, stream_slice: Optional[Mapping[str, Any]] = None
+    ) -> Iterable[Union[Mapping[str, Any], Exception]]:
+        if stream_slice is None:
+            return self._slice_values_to_records[None]
+        else:
+            return self._slice_values_to_records[stream_slice[self._slice_key]]
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -77,12 +60,16 @@ class _MockStreamWithStreamSlices(Stream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        for slice_value in self._slice_values_to_records.keys():
-            yield {self._slice_key: slice_value}
+        if self._slice_key:
+            for slice_value in self._slice_values_to_records.keys():
+                yield {self._slice_key: slice_value}
+        else:
+            yield None
 
 
-_stream1 = _MockStreamNoStreamSlices(
-    [{"id": "1"}, {"id": "2"}],
+_stream1 = _MockStream(
+    None,
+    {None: [{"id": "1"}, {"id": "2"}]},
     "stream1",
     json_schema={
         "type": "object",
@@ -92,8 +79,9 @@ _stream1 = _MockStreamNoStreamSlices(
     },
 )
 
-_stream_raising_exception = _MockStreamNoStreamSlices(
-    [{"id": "1"}, ValueError("test exception")],
+_stream_raising_exception = _MockStream(
+    None,
+    {None: [{"id": "1"}, ValueError("test exception")]},
     "stream1",
     json_schema={
         "type": "object",
@@ -103,8 +91,9 @@ _stream_raising_exception = _MockStreamNoStreamSlices(
     },
 )
 
-_stream_with_primary_key = _MockStreamNoStreamSlices(
-    [{"id": "1"}, {"id": "2"}],
+_stream_with_primary_key = _MockStream(
+    None,
+    {None: [{"id": "1"}, {"id": "2"}]},
     "stream1",
     json_schema={
         "type": "object",
@@ -115,8 +104,9 @@ _stream_with_primary_key = _MockStreamNoStreamSlices(
     primary_key="id",
 )
 
-_stream2 = _MockStreamNoStreamSlices(
-    [{"id": "A"}, {"id": "B"}],
+_stream2 = _MockStream(
+    None,
+    {None: [{"id": "A"}, {"id": "B"}]},
     "stream2",
     json_schema={
         "type": "object",
@@ -126,7 +116,7 @@ _stream2 = _MockStreamNoStreamSlices(
     },
 )
 
-_stream_with_single_slice = _MockStreamWithStreamSlices(
+_stream_with_single_slice = _MockStream(
     "slice_key",
     {"s1": [{"id": "1"}, {"id": "2"}]},
     "stream1",
@@ -138,7 +128,7 @@ _stream_with_single_slice = _MockStreamWithStreamSlices(
     },
 )
 
-_stream_with_multiple_slices = _MockStreamWithStreamSlices(
+_stream_with_multiple_slices = _MockStream(
     "slice_key",
     {
         "s1": [{"id": "1"}, {"id": "2"}],
