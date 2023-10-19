@@ -96,6 +96,8 @@ class ThreadBasedConcurrentStream(AbstractStream):
         finished_partitions = False
         while record_or_partition_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
             if isinstance(record_or_partition_or_exception, Exception):
+                # An exception was raised while processing the stream
+                # Stop the threadpool and raise it
                 self._stop_and_raise_exception(record_or_partition_or_exception)
             elif record_or_partition_or_exception == PARTITIONS_GENERATED_SENTINEL:
                 # All partitions were generated
