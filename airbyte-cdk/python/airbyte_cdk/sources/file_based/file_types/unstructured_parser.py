@@ -70,13 +70,14 @@ class UnstructuredParser(FileTypeParser):
 
         if filetype == FileType.MD:
             file_content: bytes = file_handle.read()
-            return optional_decode(file_content)
+            decoded_content: str = optional_decode(file_content)
+            return decoded_content
         if filetype not in self._supported_file_types():
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file_name)
         elements = partition(file=file_handle, metadata_filename=file_name)
         return self._render_markdown(elements)
 
-    def _get_filetype(self, file: IOBase, file_name: str):
+    def _get_filetype(self, file: IOBase, file_name: str) -> Any:
         from unstructured.file_utils.filetype import detect_filetype
 
         # set name to none, otherwise unstructured will try to get the modified date from the local file system
