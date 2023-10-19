@@ -9,24 +9,17 @@ import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
 import io.airbyte.cdk.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.commons.string.Strings;
-
-import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.stream.Stream;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-
-import java.io.FileReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SnowflakeBulkLoadSqlOperations extends SnowflakeInternalStagingSqlOperations {
 
@@ -41,7 +34,6 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeInternalStagingSqlO
       COPY INTO "%s"."%s" FROM '@%s/'
       file_format = %s
       """;
-  
 
   // The name of the file format and stage to use for the BULK LOAD operation
   private String bulkLoadFileFormatName;
@@ -54,9 +46,9 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeInternalStagingSqlO
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
 
   public SnowflakeBulkLoadSqlOperations(
-        final NamingConventionTransformer nameTransformer,
-        final String bulkFileFormatName,
-        final String bulkFilePropertyNameInRecord) {
+                                        final NamingConventionTransformer nameTransformer,
+                                        final String bulkFileFormatName,
+                                        final String bulkFilePropertyNameInRecord) {
     super(nameTransformer);
     this.bulkLoadFileFormatName = bulkFileFormatName;
     this.bulkLoadStageName = bulkFilePropertyNameInRecord;
@@ -130,11 +122,12 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeInternalStagingSqlO
   }
 
   private void bulkUploadRecordFilesToSecondaryTable(
-      final JdbcDatabase database,
-      final String stageName,
-      final List<String> filesList,
-      final String tableName,
-      final String schemaName) throws SQLException {
+                                                     final JdbcDatabase database,
+                                                     final String stageName,
+                                                     final List<String> filesList,
+                                                     final String tableName,
+                                                     final String schemaName)
+      throws SQLException {
     try {
       final String query = getCopyQuery(stageName, filesList, tableName, schemaName, this.bulkLoadFileFormatName);
       LOGGER.debug("Executing query: {}", query);

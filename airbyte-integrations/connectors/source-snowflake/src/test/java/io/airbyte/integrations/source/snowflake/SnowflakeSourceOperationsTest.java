@@ -38,7 +38,8 @@ public class SnowflakeSourceOperationsTest {
     Assertions.assertEquals(JsonSchemaType.STRING, sourceOps.getAirbyteType(sourceOps.getDatabaseFieldType("VARIANT")));
 
     // INT, BIGINT, FIXED, etc.
-    // JsonSchemaType airbyteInt = new JsonSchemaType(Map.of("$ref", "WellKnownTypes.json#/definitions/Integer"));
+    // JsonSchemaType airbyteInt = new JsonSchemaType(Map.of("$ref",
+    // "WellKnownTypes.json#/definitions/Integer"));
     // Assertions.assertEquals(JsonSchemaType.INTEGER, sourceOps.getAirbyteType(SnowflakeType.INTEGER));
     Assertions.assertEquals(JsonSchemaType.NUMBER, sourceOps.getAirbyteType(SnowflakeType.FIXED));
     // Assertions.assertEquals(JsonSchemaType.INTEGER, sourceOps.getAirbyteType(SnowflakeType.));
