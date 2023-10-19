@@ -160,7 +160,7 @@ public class MongoUtil {
       final MongoCollection<Document> collection = mongoDatabase.getCollection(stream.getStream().getName());
       final AggregateIterable<Document> output = collection.aggregate(List.of(new Document("$collStats", collStats)));
 
-      try (final MongoCursor<Document> cursor = output.cursor()) {
+      try (final MongoCursor<Document> cursor = output.allowDiskUse(true).cursor()) {
         if (cursor.hasNext()) {
           final Document stats = cursor.next();
           final Map<String, Object> storageStats = (Map<String, Object>) stats.get(MongoConstants.STORAGE_STATS_KEY);
