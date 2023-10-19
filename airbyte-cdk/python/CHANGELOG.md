@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.41
+Vector DB CDK: Expose stream identifier logic, add field remapping to processing | File CDK: Emit analytics message for used streams
+
 ## 0.51.40
 Add filters for base64 encode and decode in Jinja Interpolation 
 
