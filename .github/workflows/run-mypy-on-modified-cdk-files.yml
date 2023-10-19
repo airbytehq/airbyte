@@ -22,9 +22,7 @@ jobs:
         id: changed-py-files
         uses: tj-actions/changed-files@v23
         with:
-          files: |
-            *.py
-            **/*.py
+          files: "airbyte-cdk/python/airbyte_cdk/**/*.py"
       - name: Run if any of the listed files above is changed
         if: steps.changed-py-files.outputs.any_changed == 'true'
         run: mypy ${{ steps.changed-py-files.outputs.all_changed_files }} --config-file airbyte-cdk/python/mypy.ini --install-types --non-interactive
