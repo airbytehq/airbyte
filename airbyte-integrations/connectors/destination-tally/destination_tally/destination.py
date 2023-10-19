@@ -30,7 +30,9 @@ class DestinationTally(Destination):
                 # check if airbyte stream contains any of supported_streams
                 supported_streams = ["ledger", "item", "payment"]
                 if not any(supported_stream in airbyte_message.record.stream for supported_stream in supported_streams):
-                    logger.warn("Skipping this stream as it does not match any tally streams in [ledger, item, payment voucher]")
+                    logger.warn(
+                        f"Skipping this stream : {airbyte_message.record.stream}, as it does not match any tally streams in [ledger, item, payment voucher]"
+                    )
                     continue
 
                 if "ledger" in airbyte_message.record.stream:
