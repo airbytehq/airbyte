@@ -124,6 +124,14 @@ public class SourceHandler {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
+  public SourceReadWithConnection getSourceWithConnection(final SourceIdRequestBody sourceIdRequestBody)
+          throws JsonValidationException, IOException, ConfigNotFoundException {
+    SourceRead sourceRead = buildSourceRead(sourceIdRequestBody.getSourceId());
+    ConnectionReadList connectionReadList =
+            connectionsHandler.listConnectionsForWorkspaceWithoutOperation(new WorkspaceIdRequestBody().workspaceId(sourceRead.getWorkspaceId()), false);
+    return new SourceReadWithConnection().sourceRead(sourceRead).connectionReadList(connectionReadList);
+  }
+
   public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // read source configuration from db
@@ -264,11 +272,14 @@ public class SourceHandler {
   }
 
   private SourceRead buildSourceRead(final UUID sourceId)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    // read configuration from db
-    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
-    final ConnectorSpecification spec = sourceDef.getSpec();
-    return buildSourceRead(sourceId, spec);
+          throws ConfigNotFoundException, IOException, JsonValidationException {
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
+    final StandardSourceDefinition standardSourceDefinition = configRepository
+            .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+    final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(),
+            standardSourceDefinition.getSpec().getConnectionSpecification());
+    sourceConnection.setConfiguration(sanitizedConfig);
+    return toSourceRead(sourceConnection, standardSourceDefinition);
   }
 
   private SourceRead buildSourceRead(final UUID sourceId, final ConnectorSpecification spec)

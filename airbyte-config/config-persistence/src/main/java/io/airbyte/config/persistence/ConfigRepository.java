@@ -52,6 +52,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -609,6 +610,18 @@ public class ConfigRepository {
         .on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
         .where(CONNECTION_OPERATION.OPERATION_ID.eq(operationId))).fetch();
     return getStandardSyncsFromResult(result);
+  }
+
+  public List<StandardSync> listWorkspaceStandardSyncsWithoutOperations(final UUID workspaceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+            .from(CONNECTION)
+            .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+            .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
+    final List<StandardSync> standardSyncs = new ArrayList<>();
+    for (final Record record : result) {
+      standardSyncs.add(DbConverter.buildStandardSync(record, Collections.emptyList()));
+    }
+    return standardSyncs;
   }
 
   public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId) throws IOException {

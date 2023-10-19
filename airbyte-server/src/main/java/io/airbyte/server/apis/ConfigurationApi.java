@@ -380,6 +380,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
+  public SourceReadWithConnection getSourceWithConnection(final SourceIdRequestBody sourceIdRequestBody) {
+    return execute(() -> sourceHandler.getSourceWithConnection(sourceIdRequestBody));
+  }
+
+  @Override
   public void deleteSource(final SourceIdRequestBody sourceIdRequestBody) {
     execute(() -> {
       sourceHandler.deleteSource(sourceIdRequestBody);
@@ -560,6 +565,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
+  }
+
+  @Override
+  public DestionationReadWithConnection getDestinationWithConnection(final DestinationIdRequestBody destinationIdRequestBody) {
+    return execute(() -> destinationHandler.getDestinationWithConnection(destinationIdRequestBody));
   }
 
   @Override

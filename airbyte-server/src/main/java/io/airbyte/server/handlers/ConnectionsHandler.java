@@ -257,6 +257,20 @@ public class ConnectionsHandler {
     LOGGER.info("listConnectionsForWorkspace() outside for loop:  time -> {}", OffsetDateTime.now());
     return new ConnectionReadList().connections(connectionReads);
   }
+
+  public ConnectionReadList listConnectionsForWorkspaceWithoutOperation(final WorkspaceIdRequestBody workspaceIdRequestBody,
+                                                                        final boolean includeDeleted)
+          throws IOException {
+    final List<ConnectionRead> connectionReads = Lists.newArrayList();
+    for (final StandardSync standardSync : configRepository.listWorkspaceStandardSyncsWithoutOperations(workspaceIdRequestBody.getWorkspaceId())) {
+      if (standardSync.getStatus() == StandardSync.Status.DEPRECATED && !includeDeleted) {
+        continue;
+      }
+      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
+    }
+    return new ConnectionReadList().connections(connectionReads);
+  }
+  
   public ConnectionReadList pageConnectionsForWorkspace(final WorkspaceIdPageRequestBody workspaceIdRequestBody)
       throws IOException{
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
