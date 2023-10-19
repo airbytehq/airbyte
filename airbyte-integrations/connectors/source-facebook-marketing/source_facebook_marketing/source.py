@@ -201,8 +201,7 @@ class SourceFacebookMarketing(AbstractSource):
             api=api,
             start_date=report_start_date,
             end_date=config.end_date,
-            insights_lookback_window=config.insights_lookback_window,
-            fields=
+            insights_lookback_window=config.insights_lookback_window
         )
         streams = [
             AdAccount(api=api),

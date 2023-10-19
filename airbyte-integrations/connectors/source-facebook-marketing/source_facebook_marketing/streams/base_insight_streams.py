@@ -122,8 +122,10 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
+        docs = []
         try:
             for obj in job.get_result():
+                docs.append(obj.export_all_data())
                 yield obj.export_all_data()
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
@@ -132,11 +134,9 @@ class AdsInsights(FBMarketingIncrementalStream):
                 failure_type=FailureType.system_error,
             ) from e
 
-        except FacebookRequestError as exc:
-            raise traced_exception(exc)
-
         # job = InsightAsyncJob(api=job._api, interval=job.interval, edge_object=job.edge_object, params=job._params)
         # job = ParentAsyncJob(jobs=[], api=job._api, interval=job.interval)
+        logger.info("{} documents were exported for account id {}".format(len(docs), job._edge_object.get("account_id")))
         if type(job) != ParentAsyncJob:
             account_id = job._edge_object.get("account_id")
 
@@ -154,7 +154,7 @@ class AdsInsights(FBMarketingIncrementalStream):
                 for j in job._jobs:
                     self.logger.error(str(j))
             self.logger.error("We will select the account ID of the first job of the list of jobs")
-            account_id = job._jobs[0].edge_object.get("account_id")
+            account_id = job._jobs[0]._edge_object.get("account_id")
 
             self._completed_slices[account_id] = self._completed_slices.get(account_id, set())
             self._completed_slices[account_id].add(job.interval.start)
@@ -194,13 +194,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         # if the time increment configured for this stream is different from the one in the previous state
         # then the previous state object is invalid and we should start replicating data from scratch
         # to achieve this, we skip setting the state
-        if value.get("time_increment", 1) != self.time_increment:
-            logger.info(f"Ignoring bookmark for {self.name} because of different `time_increment` option.")
-            return
 
-        self._cursor_value = pendulum.parse(value[self.cursor_field]).date() if value.get(self.cursor_field) else None
-        self._completed_slices = set(pendulum.parse(v).date() for v in value.get("slices", []))
-        self._next_cursor_value = self._get_start_date()
+        for k, v in value.items():
+            if v.get("time_increment", 1) != self.time_increment:
+                logger.info(f"Ignoring bookmark for {self.name} account[{k}] because of different `time_increment` option.")
+                continue
+
+            self._cursor_value = {**self._cursor_value,
+                                  k: pendulum.parse(v[self.cursor_field]).date() if v.get(self.cursor_field) else None}
+            self._completed_slices = {**self._completed_slices, k: set(pendulum.parse(_v).date() for _v in v.get("slices", []))}
+            self._next_cursor_value = {**self._next_cursor_value, **self._get_start_date(k)}
 
     def get_updated_state(self,
                           current_stream_state: MutableMapping[str, Any],
@@ -328,7 +331,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             "action_attribution_windows": self.action_attribution_windows,
         }
 
-    def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Works differently for insights, so remove it"""
         return {}
 
