@@ -16,12 +16,6 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-repositories {
-    maven {
-        url "https://packages.confluent.io/maven"
-    }
-}
-
 dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
