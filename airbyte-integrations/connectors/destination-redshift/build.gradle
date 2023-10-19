@@ -18,12 +18,6 @@ application {
                                  '-XX:GCLockerRetryAllocationCount=100',]
 }
 
-repositories {
-    maven {
-        url "https://s3.amazonaws.com/redshift-maven-repository/release"
-    }
-}
-
 dependencies {
     implementation project(':airbyte-integrations:bases:base-typing-deduping')
     testImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')

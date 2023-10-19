@@ -9,7 +9,7 @@ name: source-postgres ci - for testing only
 on:
   schedule:
     # Run three time a day to collect performance metrics and observe variance
-    - cron: "0 8,12,16 * * *"
+    - cron: "0 9,13,17 * * *"
   workflow_dispatch:
     inputs:
       runner:
@@ -30,8 +30,7 @@ jobs:
         shell: bash
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
         id: extract_branch
-      - name: Test source-postgres [WORKFLOW DISPATCH]
-        if: github.event_name == 'workflow_dispatch'
+      - name: Test source-postgres
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "master"
