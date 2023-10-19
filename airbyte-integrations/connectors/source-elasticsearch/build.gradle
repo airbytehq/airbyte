@@ -37,14 +37,3 @@ dependencies {
     testImplementation libs.testcontainers.elasticsearch
     integrationTestJavaImplementation libs.testcontainers.elasticsearch
 }
-
-repositories {
-    maven {
-        name = "ESSnapshots"
-        url = "https://snapshots.elastic.co/maven/"
-    }
-    maven {
-        name = "ESJavaGithubPackages"
-        url = "https://maven.pkg.github.com/elastic/elasticsearch-java"
-    }
-}
