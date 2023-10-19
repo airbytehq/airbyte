@@ -13,8 +13,8 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from source_asana.oauth import AsanaOauth2Authenticator
 
 from .streams import (
-    AttachmentsCompact,
     Attachments,
+    AttachmentsCompact,
     CustomFields,
     Projects,
     Sections,
