@@ -79,7 +79,7 @@ definitions:
             value: "{{ record['business_hours'] }}"
       - type: RemoveFields
         field_pointers:
-          - [ "business_hours" ]
+          - ["business_hours"]
   canned_response_folders_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -322,7 +322,7 @@ definitions:
     $parameters:
       name: "surveys"
       path: "surveys"
-  
+
 streams:
   - "#/definitions/agents_stream"
   - "#/definitions/business_hours_stream"

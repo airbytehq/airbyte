@@ -17,7 +17,7 @@ connectionSpecification:
     api_key:
       type: string
       title: "API Key"
-      description: "Freshdesk API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/freshdesk\">docs</a> for more information on how to obtain this key."
+      description: 'Freshdesk API Key. See the <a href="https://docs.airbyte.com/integrations/sources/freshdesk">docs</a> for more information on how to obtain this key.'
       airbyte_secret: true
     requests_per_minute:
       title: "Requests per minute"
