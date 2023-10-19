@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.40
+Add filters for base64 encode and decode in Jinja Interpolation 
+
 ## 0.51.39
 Few bug fixes for concurrent cdk
 
