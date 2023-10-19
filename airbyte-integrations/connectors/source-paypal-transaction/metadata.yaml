@@ -1,29 +1,31 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - api-m.paypal.com
       - api-m.sandbox.paypal.com
-  registries:
-    oss:
-      enabled: true
-    cloud:
-      enabled: true
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: d913b0f2-cc51-4e55-a44c-8ba1697b9239
-  dockerImageTag: 2.1.0
+  dockerImageTag: 2.1.1
   dockerRepository: airbyte/source-paypal-transaction
+  documentationUrl: https://docs.airbyte.com/integrations/sources/paypal-transaction
   githubIssueLabel: source-paypal-transaction
   icon: paypal.svg
   license: MIT
   name: Paypal Transaction
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
   releaseDate: 2021-06-10
   releaseStage: generally_available
   supportLevel: certified
-  documentationUrl: https://docs.airbyte.com/integrations/sources/paypal-transaction
   tags:
     - language:low-code
-  ab_internal:
-    sl: 200
-    ql: 400
 metadataSpecVersion: "1.0"
