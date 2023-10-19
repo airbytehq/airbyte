@@ -150,6 +150,7 @@ Now that you have set up the Salesforce source connector, check out the followin
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.5 | 2023-10-18 | [31543](https://github.com/airbytehq/airbyte/pull/31543) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 2.1.4   | 2023-08-17 | [29538](https://github.com/airbytehq/airbyte/pull/29538) | Fix encoding guess                                                                                                                   |
 | 2.1.3   | 2023-08-17 | [29500](https://github.com/airbytehq/airbyte/pull/29500) | handle expired refresh token error                                                                                                   |
 | 2.1.2   | 2023-08-10 | [28781](https://github.com/airbytehq/airbyte/pull/28781) | Fix pagination for BULK API jobs; Add option to force use BULK API                                                                   |
