@@ -54,9 +54,11 @@ class SourceNotion(AbstractSource):
         Return a human-readable error message from a Notion API response, for use in connection check.
         """
         error_json = response.json()
-        error_code = error_json.get('code', 'unknown_error')
-        error_message = error_json.get('message', 'An unspecified error occurred while connecting to Notion. Please check your credentials and try again.')
-    
+        error_code = error_json.get("code", "unknown_error")
+        error_message = error_json.get(
+            "message", "An unspecified error occurred while connecting to Notion. Please check your credentials and try again."
+        )
+
         if error_code == "unauthorized":
             return "The provided API access token is invalid. Please double-check that you input the correct token and have granted the necessary permissions to your Notion integration."
         if error_code == "restricted_resource":
@@ -84,8 +86,6 @@ class SourceNotion(AbstractSource):
 
         except requests.exceptions.RequestException as e:
             return False, str(e)
-        
-
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 
