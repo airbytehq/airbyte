@@ -146,6 +146,28 @@ def get_modified_files(
             return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
     return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
 
+# TO MOVE
+
+def pass_click_context_and_args_to_children(f):
+    """
+    TODO
+    """
+
+    def wrapper(*args, **kwargs):
+        ctx = args[0]
+        ctx.ensure_object(dict)
+        click_obj = ctx.obj
+        click_params = ctx.params
+        command_name = ctx.command.name
+
+        # Error if click_obj and click_params have the same key
+        intersection = set(click_obj.keys()) & set(click_params.keys())
+        if intersection:
+            raise ValueError(f"Your command '{command_name}' has defined options/arguments with the same key as its parent: {intersection}")
+
+        return f(*args, **kwargs)
+
+    return wrapper
 
 # COMMANDS
 
@@ -187,6 +209,7 @@ def get_modified_files(
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click.pass_context
+@pass_click_context_and_args_to_children
 @track_command
 def airbyte_ci(
     ctx: click.Context,
@@ -206,24 +229,24 @@ def airbyte_ci(
     show_dagger_logs: bool,
 ):  # noqa D103
     display_welcome_message()
-    ctx.ensure_object(dict)
+
     check_up_to_date()
-    ctx.obj["is_local"] = is_local
+    # ctx.obj["is_local"] = is_local
     ctx.obj["is_ci"] = not is_local
-    ctx.obj["git_branch"] = git_branch
-    ctx.obj["git_revision"] = git_revision
-    ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
+    # ctx.obj["git_branch"] = git_branch
+    # ctx.obj["git_revision"] = git_revision
+    # ctx.obj["gha_workflow_run_id"] = gha_workflow_run_id
     ctx.obj["gha_workflow_run_url"] = (
         f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}" if gha_workflow_run_id else None
     )
-    ctx.obj["ci_context"] = ci_context
-    ctx.obj["ci_report_bucket_name"] = ci_report_bucket_name
-    ctx.obj["ci_gcs_credentials"] = ci_gcs_credentials
-    ctx.obj["ci_git_user"] = ci_git_user
-    ctx.obj["ci_github_access_token"] = ci_github_access_token
-    ctx.obj["ci_job_key"] = ci_job_key
-    ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
-    ctx.obj["show_dagger_logs"] = show_dagger_logs
+    # ctx.obj["ci_context"] = ci_context
+    # ctx.obj["ci_report_bucket_name"] = ci_report_bucket_name
+    # ctx.obj["ci_gcs_credentials"] = ci_gcs_credentials
+    # ctx.obj["ci_git_user"] = ci_git_user
+    # ctx.obj["ci_github_access_token"] = ci_github_access_token
+    # ctx.obj["ci_job_key"] = ci_job_key
+    # ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
+    # ctx.obj["show_dagger_logs"] = show_dagger_logs
 
     if pull_request_number and ci_github_access_token:
         ctx.obj["pull_request"] = github.get_pull_request(pull_request_number, ci_github_access_token)
