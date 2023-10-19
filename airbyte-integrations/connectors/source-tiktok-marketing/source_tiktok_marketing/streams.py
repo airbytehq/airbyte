@@ -76,7 +76,7 @@ NOT_AUDIENCE_METRICS = [
     "cost_per_sales_lead",
     "cost_per_total_sales_lead",
     "cost_per_total_app_event_add_to_cart",
-    "total_app_event_add_to_cart"
+    "total_app_event_add_to_cart",
 ]
 
 T = TypeVar("T")
