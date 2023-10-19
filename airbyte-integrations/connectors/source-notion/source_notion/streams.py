@@ -59,7 +59,7 @@ class NotionStream(HttpStream, ABC):
     @property
     def availability_strategy(self) -> HttpAvailabilityStrategy:
         return NotionAvailabilityStrategy()
-    
+
     @property
     def retry_factor(self) -> float:
         return 8
