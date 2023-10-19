@@ -16,11 +16,6 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-repositories {
-    maven { url "https://mvnrepository.com/artifact/com.rockset/rockset-java" }
-    maven { url "https://mvnrepository.com/artifact/org.awaitility/awaitility" }
-}
-
 dependencies {
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation libs.airbyte.protocol
