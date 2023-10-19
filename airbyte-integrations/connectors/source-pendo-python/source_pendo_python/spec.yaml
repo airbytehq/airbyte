@@ -4,9 +4,10 @@ connectionSpecification:
   title: Pendo Python Spec
   type: object
   required:
-    - TODO
+    - api_key
   properties:
-    # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    api_key:
       type: string
-      description: describe me
+      title: API Key
+      airbyte_secret: true
+  additionalProperties: true

@@ -56,7 +56,7 @@ class PendoPythonStream(HttpStream, ABC):
     """
 
     # TODO: Fill in the url base. Required.
-    url_base = "https://example-api.com/v1/"
+    url_base = "https://app.pendo.io/api/v1/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
@@ -92,24 +92,6 @@ class PendoPythonStream(HttpStream, ABC):
         yield {}
 
 
-class Customers(PendoPythonStream):
-    """
-    TODO: Change class name to match the table/data source this stream corresponds to.
-    """
-
-    # TODO: Fill in the primary key. Required. This is usually a unique field in the stream, like an ID or a timestamp.
-    primary_key = "customer_id"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        """
-        TODO: Override this method to define the path this stream corresponds to. E.g. if the url is https://example-api.com/v1/customers then this
-        should return "customers". Required.
-        """
-        return "customers"
-
-
 # Basic incremental stream
 class IncrementalPendoPythonStream(PendoPythonStream, ABC):
     """
@@ -137,6 +119,76 @@ class IncrementalPendoPythonStream(PendoPythonStream, ABC):
         the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
         """
         return {}
+
+
+class Visitors(PendoPythonStream):
+    primary_key = "visitorId"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "aggregation"
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        return {
+            "response": {
+                "mimeType": "application/json"
+            },
+            "request": {
+                "requestId": "visitor-list",
+                "pipeline": [
+                    {
+                        "source": {
+                            "visitors": {
+                                "identified": True
+                            }
+                        }
+                    },
+                    {
+                        "sort": ["visitorId"]
+                    }
+                ]
+            }
+        }
+
+
+class Accounts(PendoPythonStream):
+    primary_key = "accountId"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "aggregation"
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ):
+        return {
+            "response": {
+                "mimeType": "application/json"
+            },
+            "request": {
+                "requestId": "account-list",
+                "pipeline": [
+                    {
+                        "source": {
+                            "accounts": {}
+                        }
+                    },
+                    {
+                        "sort": ["accountId"]
+                    }
+                ]
+            }
+        }
 
 
 class Employees(IncrementalPendoPythonStream):
@@ -183,24 +235,18 @@ class Employees(IncrementalPendoPythonStream):
 # Source
 class SourcePendoPython(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
-
-        See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
-        for an example.
-
-        :param config:  the user-input config object conforming to the connector's spec.yaml
-        :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
-        """
-        return True, None
+        config = self._validate_and_transform(config)
+        authenticator = self.get_authenticator(config)
+        url = f"{PendoPythonStream.url_base}page"
+        auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
+        try:
+            session = requests.get(url, headers=auth_headers)
+            session.raise_for_status()
+            return True, None
+        except requests.exceptions.RequestException as e:
+            return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        """
-        TODO: Replace the streams below with your own streams.
-
-        :param config: A Mapping of the user input configuration as defined in the connector spec.
-        """
         # TODO remove the authenticator if not required.
         auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
-        return [Customers(authenticator=auth), Employees(authenticator=auth)]
+        return [Visitors(authenticator=auth), Accounts(authenticator=auth), Employees(authenticator=auth)]
