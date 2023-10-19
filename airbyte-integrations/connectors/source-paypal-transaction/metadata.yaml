@@ -20,6 +20,7 @@ data:
   name: Paypal Transaction
   registries:
     cloud:
+      dockerImageTag: 2.1.0  #https://github.com/airbytehq/oncall/issues/3347
       enabled: true
     oss:
       enabled: true
