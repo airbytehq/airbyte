@@ -321,7 +321,7 @@ test_concurrent_cdk_partition_raises_exception = (
             {"data": {"id": "1"}, "stream": "stream1"},
         ]
     )
-    .set_expected_read_error(RuntimeError, "test exception")
+    .set_expected_read_error(ValueError, "test exception")
     .set_expected_catalog(
         {
             "streams": [

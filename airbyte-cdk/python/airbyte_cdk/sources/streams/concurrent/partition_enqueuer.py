@@ -32,6 +32,9 @@ class PartitionEnqueuer:
         :param sync_mode: The sync mode used
         :return:
         """
-        for partition in partition_generator.generate(sync_mode=sync_mode):
-            self._queue.put(partition)
-        self._queue.put(self._sentinel)
+        try:
+            for partition in partition_generator.generate(sync_mode=sync_mode):
+                self._queue.put(partition)
+            self._queue.put(self._sentinel)
+        except Exception as e:
+            self._queue.put(e)

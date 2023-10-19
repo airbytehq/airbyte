@@ -12,6 +12,7 @@ from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenari
 from unit_tests.sources.file_based.test_scenarios import verify_discover, verify_read
 from unit_tests.sources.streams.concurrent.scenarios.stream_facade_scenarios import (
     test_stream_facade_multiple_streams,
+    test_stream_facade_raises_exception,
     test_stream_facade_single_stream,
     test_stream_facade_single_stream_with_multiple_slices,
     test_stream_facade_single_stream_with_multiple_slices_with_concurrency_level_two,
@@ -41,6 +42,7 @@ scenarios = [
     test_stream_facade_single_stream_with_single_slice,
     test_stream_facade_single_stream_with_multiple_slices,
     test_stream_facade_single_stream_with_multiple_slices_with_concurrency_level_two,
+    test_stream_facade_raises_exception,
 ]
 
 

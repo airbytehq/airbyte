@@ -28,6 +28,9 @@ class PartitionReader:
         :param partition: The partition to read data from
         :return: None
         """
-        for record in partition.read():
-            self._queue.put(record)
-        self._queue.put(PartitionCompleteSentinel(partition))
+        try:
+            for record in partition.read():
+                self._queue.put(record)
+            self._queue.put(PartitionCompleteSentinel(partition))
+        except Exception as e:
+            self._queue.put(e)

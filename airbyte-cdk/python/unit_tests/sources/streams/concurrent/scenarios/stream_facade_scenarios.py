@@ -12,7 +12,7 @@ from unit_tests.sources.streams.concurrent.scenarios.stream_facade_builder impor
 
 class _MockStreamNoStreamSlices(Stream):
     def __init__(self, records, name, json_schema, primary_key=None):
-        self._records = records
+        self._records_or_exceptions = records
         self._name = name
         self._json_schema = json_schema
         self._primary_key = primary_key
@@ -24,7 +24,11 @@ class _MockStreamNoStreamSlices(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._records
+        for record_or_exception in self._records_or_exceptions:
+            if isinstance(record_or_exception, Exception):
+                raise record_or_exception
+            else:
+                yield record_or_exception
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -53,7 +57,11 @@ class _MockStreamWithStreamSlices(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        yield from self._slice_values_to_records[stream_slice[self._slice_key]]
+        for record_or_exception in self._slice_values_to_records[stream_slice[self._slice_key]]:
+            if isinstance(record_or_exception, Exception):
+                raise record_or_exception
+            else:
+                yield record_or_exception
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -75,6 +83,17 @@ class _MockStreamWithStreamSlices(Stream):
 
 _stream1 = _MockStreamNoStreamSlices(
     [{"id": "1"}, {"id": "2"}],
+    "stream1",
+    json_schema={
+        "type": "object",
+        "properties": {
+            "id": {"type": ["null", "string"]},
+        },
+    },
+)
+
+_stream_raising_exception = _MockStreamNoStreamSlices(
+    [{"id": "1"}, ValueError("test exception")],
     "stream1",
     json_schema={
         "type": "object",
@@ -177,6 +196,36 @@ test_stream_facade_single_stream = (
         }
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
+    .build()
+)
+
+test_stream_facade_raises_exception = (
+    TestScenarioBuilder()
+    .set_name("test_stream_facade_raises_exception")
+    .set_config({})
+    .set_source_builder(StreamFacadeSourceBuilder().set_streams([_stream_raising_exception]))
+    .set_expected_records(
+        [
+            {"data": {"id": "1"}, "stream": "stream1"},
+        ]
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": ["null", "string"]},
+                        },
+                    },
+                    "name": "stream1",
+                    "supported_sync_modes": ["full_refresh"],
+                }
+            ]
+        }
+    )
+    .set_expected_read_error(ValueError, "test exception")
     .build()
 )
 
