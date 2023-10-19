@@ -188,8 +188,12 @@ class SourceGitlab(AbstractSource):
         try:
             projects = self._projects_stream(config)
             for stream_slice in projects.stream_slices(sync_mode=SyncMode.full_refresh):
-                next(projects.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
-                return True, None
+                try:
+                    next(projects.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice))
+                    return True, None
+                except StopIteration:
+                    # in case groups/projects provided and 404 occurs
+                    return False, "Groups and/or projects that you provide are invalid or you don't have permission to view it."
             return True, None  # in case there's no projects
         except HTTPError as http_error:
             if config["credentials"]["auth_type"] == "oauth2.0":
