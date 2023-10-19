@@ -14,7 +14,7 @@ class OAuthCredentials(BaseModel):
     class Config:
         title = "Authenticate via Google (OAuth)"
 
-    auth_type: Literal["Client"] = Field("client", const=True)
+    auth_type: Literal["Client"] = Field("Client", const=True)
     client_id: str = Field(
         title="Client ID",
         description="Client ID for the Google Drive API",
@@ -51,7 +51,7 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
     folder_url: str = Field(description="URL for the folder you want to sync", order=0)
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
-        title="Authentication", description="Credentials for connecting to the Google Drive API", discriminator="auth_type"
+        title="Authentication", description="Credentials for connecting to the Google Drive API", discriminator="auth_type", type="object"
     )
 
     @classmethod
@@ -71,31 +71,5 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         schema = super().schema(*args, **kwargs)
 
         cls.remove_discriminator(schema)
-
-        schema["advanced_auth"] = {
-            "auth_flow_type": "oauth2.0",
-            "predicate_key": ["credentials", "auth_type"],
-            "predicate_value": "Client",
-            "oauth_config_specification": {
-                "complete_oauth_output_specification": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "properties": {"refresh_token": {"type": "string", "path_in_connector_config": ["credentials", "refresh_token"]}},
-                },
-                "complete_oauth_server_input_specification": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "properties": {"client_id": {"type": "string"}, "client_secret": {"type": "string"}},
-                },
-                "complete_oauth_server_output_specification": {
-                    "type": "object",
-                    "additionalProperties": False,
-                    "properties": {
-                        "client_id": {"type": "string", "path_in_connector_config": ["credentials", "client_id"]},
-                        "client_secret": {"type": "string", "path_in_connector_config": ["credentials", "client_secret"]},
-                    },
-                },
-            },
-        }
 
         return schema
