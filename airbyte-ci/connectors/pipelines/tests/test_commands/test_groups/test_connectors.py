@@ -266,7 +266,6 @@ def click_context_obj():
                 "test",
             ],
         ),
-        (connectors.format_code, []),
         (connectors.build, []),
     ],
 )

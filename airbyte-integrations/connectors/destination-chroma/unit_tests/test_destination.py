@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, Mock, patch
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_chroma.config import ConfigModel
-from destination_chroma.destination import DestinationChroma, embedder_map
+from destination_chroma.destination import DestinationChroma
 
 
 class TestDestinationChroma(unittest.TestCase):
@@ -25,12 +25,12 @@ class TestDestinationChroma(unittest.TestCase):
         self.logger = AirbyteLogger()
 
     @patch("destination_chroma.destination.ChromaIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_check(self, MockedChromaIndexer):
+    @patch("destination_chroma.destination.create_from_config")
+    def test_check(self, MockedEmbedder, MockedChromaIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
-        embedder_map["openai"].return_value = mock_embedder
         MockedChromaIndexer.return_value = mock_indexer
+        MockedEmbedder.return_value = mock_embedder
 
         mock_embedder.check.return_value = None
         mock_indexer.check.return_value = None
@@ -43,12 +43,12 @@ class TestDestinationChroma(unittest.TestCase):
         mock_indexer.check.assert_called_once()
 
     @patch("destination_chroma.destination.ChromaIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_check_with_errors(self, MockedChromaIndexer):
+    @patch("destination_chroma.destination.create_from_config")
+    def test_check_with_errors(self, MockedEmbedder, MockedChromaIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
-        embedder_map["openai"].return_value = mock_embedder
         MockedChromaIndexer.return_value = mock_indexer
+        MockedEmbedder.return_value = mock_embedder
 
         embedder_error_message = "Embedder Error"
         indexer_error_message = "Indexer Error"
@@ -67,15 +67,15 @@ class TestDestinationChroma(unittest.TestCase):
 
     @patch("destination_chroma.destination.Writer")
     @patch("destination_chroma.destination.ChromaIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_write(self, MockedChromaIndexer, MockedWriter):
+    @patch("destination_chroma.destination.create_from_config")
+    def test_write(self, MockedEmbedder, MockedChromaIndexer, MockedWriter):
         mock_embedder = Mock()
         mock_indexer = Mock()
         mock_writer = Mock()
 
-        embedder_map["openai"].return_value = mock_embedder
         MockedChromaIndexer.return_value = mock_indexer
         MockedWriter.return_value = mock_writer
+        MockedEmbedder.return_value = mock_embedder
 
         mock_writer.write.return_value = []
 
