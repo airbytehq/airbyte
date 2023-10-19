@@ -340,6 +340,8 @@ class ConnectorContext(PipelineContext):
         open_report_in_browser: bool = True,
         docker_hub_username: Optional[str] = None,
         docker_hub_password: Optional[str] = None,
+        s3_build_cache_access_key_id: Optional[str] = None,
+        s3_build_cache_secret_key: Optional[str] = None,
     ):
         """Initialize a connector context.
 
@@ -365,6 +367,8 @@ class ConnectorContext(PipelineContext):
             open_report_in_browser (bool, optional): Open HTML report in browser window. Defaults to True.
             docker_hub_username (Optional[str], optional): Docker Hub username to use to read registries. Defaults to None.
             docker_hub_password (Optional[str], optional): Docker Hub password to use to read registries. Defaults to None.
+            s3_build_cache_access_key_id (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
+            s3_build_cache_secret_key (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
         """
 
         self.pipeline_name = pipeline_name
@@ -384,6 +388,8 @@ class ConnectorContext(PipelineContext):
         self.open_report_in_browser = open_report_in_browser
         self.docker_hub_username = docker_hub_username
         self.docker_hub_password = docker_hub_password
+        self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
+        self.s3_build_cache_secret_key = s3_build_cache_secret_key
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -431,6 +437,18 @@ class ConnectorContext(PipelineContext):
     @property
     def should_save_updated_secrets(self) -> bool:  # noqa D102
         return self.use_remote_secrets and self.updated_secrets_dir is not None
+
+    @property
+    def s3_build_cache_access_key_id_secret(self) -> Optional[Secret]:
+        if self.s3_build_cache_access_key_id:
+            return self.dagger_client.set_secret("s3_build_cache_access_key_id", self.s3_build_cache_access_key_id)
+        return None
+
+    @property
+    def s3_build_cache_secret_key_secret(self) -> Optional[Secret]:
+        if self.s3_build_cache_secret_key:
+            return self.dagger_client.set_secret("s3_build_cache_secret_key", self.s3_build_cache_secret_key)
+        return None
 
     @property
     def host_image_export_dir_path(self) -> str:
@@ -541,6 +559,8 @@ class PublishConnectorContext(ConnectorContext):
         ci_context: Optional[str] = None,
         ci_gcs_credentials: str = None,
         pull_request: PullRequest = None,
+        s3_build_cache_access_key_id: Optional[str] = None,
+        s3_build_cache_secret_key: Optional[str] = None,
     ):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
@@ -568,6 +588,8 @@ class PublishConnectorContext(ConnectorContext):
             should_save_report=True,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
+            s3_build_cache_access_key_id=s3_build_cache_access_key_id,
+            s3_build_cache_secret_key=s3_build_cache_secret_key,
         )
 
     @property

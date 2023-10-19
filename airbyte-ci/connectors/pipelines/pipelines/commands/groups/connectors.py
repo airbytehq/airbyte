@@ -281,6 +281,8 @@ def test(
             fast_tests_only=fast_tests_only,
             code_tests_only=code_tests_only,
             use_local_cdk=ctx.obj.get("use_local_cdk"),
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
@@ -339,6 +341,8 @@ def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
             use_local_cdk=ctx.obj.get("use_local_cdk"),
             open_report_in_browser=ctx.obj.get("open_report_in_browser"),
             use_host_gradle_dist_tar=use_host_gradle_dist_tar,
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
@@ -461,6 +465,8 @@ def publish(
                 ci_context=ctx.obj.get("ci_context"),
                 ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
                 pull_request=ctx.obj.get("pull_request"),
+                s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+                s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
@@ -554,6 +560,8 @@ def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker_hub_u
             open_report_in_browser=False,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
@@ -603,6 +611,8 @@ def bump_version(
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
             open_report_in_browser=False,
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
@@ -671,6 +681,8 @@ def migrate_to_base_image(
             open_report_in_browser=False,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]

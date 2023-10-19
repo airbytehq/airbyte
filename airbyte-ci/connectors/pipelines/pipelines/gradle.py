@@ -42,12 +42,6 @@ class GradleTask(Step, ABC):
         return self.context.dagger_client.cache_volume("gradle-dependency-cache")
 
     @property
-    def connector_transient_cache_volume(self) -> CacheVolume:
-        """This cache volume is for sharing gradle state across tasks within a single connector pipeline run."""
-        volume_name = f"gradle-{self.context.connector.technical_name}-transient-cache-{self.context.git_revision}"
-        return self.context.dagger_client.cache_volume(volume_name)
-
-    @property
     def build_include(self) -> List[str]:
         """Retrieve the list of source code directory required to run a Java connector Gradle task.
 
@@ -61,15 +55,8 @@ class GradleTask(Step, ABC):
             for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
 
-    def _get_gradle_command(self, task: str) -> List[str]:
-        return sh_dash_c(
-            [
-                # The gradle command is chained in between a couple of rsyncs which load from- and store to the transient cache volume.
-                "(rsync -a --stats /root/gradle-transient-cache/ /root/.gradle || true)",
-                f"./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS)} {task}",
-                "(rsync -a --stats /root/.gradle/ /root/gradle-transient-cache || true)",
-            ]
-        )
+    def _get_gradle_command(self, task: str, *args) -> str:
+        return f"./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS + args)} {task}"
 
     async def _run(self) -> StepResult:
         include = [
@@ -147,7 +134,6 @@ class GradleTask(Step, ABC):
             # This is because gradle doesn't cope well with concurrency.
             .with_mounted_cache("/root/gradle-persistent-cache", self.persistent_cache_volume, sharing=CacheSharingMode.LOCKED)
             # Update the persistent gradle cache by resolving all dependencies.
-            # The idea here is to have this persistent cache contain little more than jars and poms.
             # Also, build the java CDK and publish it to the local maven repository.
             .with_exec(
                 sh_dash_c(
@@ -155,25 +141,13 @@ class GradleTask(Step, ABC):
                         # Ensure that the local maven repository root directory exists.
                         "mkdir -p /root/.m2",
                         # Load from the persistent cache.
-                        "(rsync -a --stats /root/gradle-persistent-cache/ /root/.gradle || true)",
+                        "(rsync -a --stats --mkpath /root/gradle-persistent-cache/ /root/.gradle || true)",
                         # Resolve all dependencies and write their checksums to './gradle/verification-metadata.dryrun.xml'.
-                        f"./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS)} --write-verification-metadata sha256 help --dry-run",
+                        self._get_gradle_command("help", "--write-verification-metadata", "sha256", "--dry-run"),
+                        # Build the CDK and publish it to the local maven repository.
+                        self._get_gradle_command(":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"),
                         # Store to the persistent cache.
                         "(rsync -a --stats /root/.gradle/ /root/gradle-persistent-cache || true)",
-                        # Build the CDK and publish it to the local maven repository.
-                        # Do this last to not pollute the persistent cache.
-                        f"./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS)} :airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded",
-                    ]
-                )
-            )
-            # Also mount the transient cache volume.
-            .with_mounted_cache(
-                "/root/gradle-transient-cache", self.connector_transient_cache_volume, sharing=CacheSharingMode.LOCKED
-            ).with_exec(
-                sh_dash_c(
-                    [
-                        # Store to the transient cache.
-                        "(rsync -a --stats /root/.gradle/ /root/gradle-transient-cache || true)",
                     ]
                 )
             )
@@ -193,18 +167,15 @@ class GradleTask(Step, ABC):
             # Populate the local maven repository.
             # Awaiting on this other container's directory ensures that the caches have been warmed.
             .with_directory("/root/.m2", await with_whole_git_repo.directory("/root/.m2"))
-            # Mount the cache volume for the transient gradle cache used for this connector only.
-            # We deliberately don't mount any cache volumes before mounting the git repo otherwise these will effectively be always empty.
-            # This volume is LOCKED instead of SHARED and we rsync to it instead of mounting it directly to $GRADLE_HOME.
-            # This is because gradle doesn't cope well with concurrency.
-            .with_mounted_cache("/root/gradle-transient-cache", self.connector_transient_cache_volume, sharing=CacheSharingMode.LOCKED)
+            # Mount the cache volume for the persistent gradle dependency cache.
+            .with_mounted_cache("/root/gradle-persistent-cache", self.persistent_cache_volume, sharing=CacheSharingMode.LOCKED)
+            # Warm the gradle cache.
+            .with_exec(sh_dash_c(["(rsync -a --stats --mkpath /root/gradle-persistent-cache/ /root/.gradle || true)"]))
         )
 
         # From this point on, we add layers which are task-dependent.
-        if self.mount_connector_secrets:
-            gradle_container = gradle_container.with_(
-                await environments.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets")
-            )
+        secrets_dir = f"{self.context.connector.code_directory}/secrets" if self.mount_connector_secrets else None
+        gradle_container = gradle_container.with_(await environments.mounted_connector_secrets(self.context, secrets_dir))
         if self.bind_to_docker_host:
             # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
             gradle_container = environments.with_bound_docker_host(self.context, gradle_container)
@@ -213,5 +184,5 @@ class GradleTask(Step, ABC):
 
         # Run the gradle task that we actually care about.
         connector_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
-        gradle_container = gradle_container.with_exec(self._get_gradle_command(connector_task))
+        gradle_container = gradle_container.with_exec(sh_dash_c([self._get_gradle_command(connector_task)]))
         return await self.get_step_result(gradle_container)
