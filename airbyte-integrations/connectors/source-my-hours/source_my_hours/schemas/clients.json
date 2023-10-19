@@ -1,9 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": ["number"]
+      "type": ["null", "number"]
+    },
+    "customId": {
+      "type": ["null", "number"]
     },
     "contactName": {
       "type": ["null", "string"]

@@ -3,17 +3,22 @@
 #
 
 import json
-from typing import Any, Mapping, MutableMapping, Tuple
+from dataclasses import dataclass
+from typing import Any, Mapping, MutableMapping, Tuple, Union
 
 import pendulum
 import requests
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import Oauth2Authenticator
 
 from .constants import REQUEST_HEADERS, URL_BASE
 
 
+@dataclass
 class MyHoursAuthenticator(Oauth2Authenticator):
-    def __init__(self, email: str, password: str):
+    email: Union[InterpolatedString, str]
+    password: Union[InterpolatedString, str]
+    def __init__(self):
         super().__init__(
             token_refresh_endpoint=f"{URL_BASE}/tokens/refresh",
             client_id=None,
@@ -23,11 +28,11 @@ class MyHoursAuthenticator(Oauth2Authenticator):
             expires_in_name="expiresIn",
         )
 
-        self.retrieve_refresh_token(email, password)
+        self.retrieve_refresh_token()
 
-    def retrieve_refresh_token(self, email: str, password: str):
+    def retrieve_refresh_token(self):
         t0 = pendulum.now()
-        payload = json.dumps({"grantType": "password", "email": email, "password": password, "clientId": "api"})
+        payload = json.dumps({"grantType": "password", "email": self.email, "password": self.password, "clientId": "api"})
         response = requests.post(f"{URL_BASE}/tokens/login", headers=REQUEST_HEADERS, data=payload)
         response.raise_for_status()
         json_response = response.json()

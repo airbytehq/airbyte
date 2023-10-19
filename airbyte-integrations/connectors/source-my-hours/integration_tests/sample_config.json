@@ -1,6 +1,8 @@
 {
-  "email": "email",
-  "password": "password",
+  "credentials": {
+    "auth_type": "oauth2_access_token",
+    "access_token": "api-key-just-for-testing"
+  },
   "start_date": "2016-01-01",
   "logs_batch_size": 30
 }

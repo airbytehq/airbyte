@@ -1,9 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "logId": {
-      "type": ["number"]
+      "type": ["null", "number"]
     },
     "userId": {
       "type": ["null", "number"]

@@ -11,20 +11,19 @@ MAIN_REQUIREMENTS = [
 
 TEST_REQUIREMENTS = [
     "requests-mock~=1.9.3",
-    "pytest~=6.1",
+    "pytest~=6.2",
     "pytest-mock~=3.6.1",
-    "requests_mock==1.8.0",
-    "responses~=0.16.0",
+    "connector-acceptance-test",
 ]
 
 setup(
     name="source_my_hours",
     description="Source implementation for My Hours.",
-    author="Wisse Jelgersma",
-    author_email="wisse@vrowl.nl",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },
