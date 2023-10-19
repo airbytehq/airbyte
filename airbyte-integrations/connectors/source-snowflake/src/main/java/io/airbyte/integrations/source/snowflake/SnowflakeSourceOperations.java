@@ -61,6 +61,105 @@ public class SnowflakeSourceOperations extends AbstractJdbcCompatibleSourceOpera
   }
 
   @Override
+  protected void putDouble(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
+    try {
+      final double value = resultSet.getDouble(index);
+      node.put(columnName, value);
+    } catch (final SQLException e) {
+      node.put(columnName, (Double) null);
+    }
+  }
+
+  public JDBCType getDatabaseJDBCType(final JsonNode field) {
+    try {
+      return JDBCType.valueOf(field.get(INTERNAL_COLUMN_TYPE).asInt());
+    } catch (final IllegalArgumentException ex) {
+      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
+          field.get(INTERNAL_COLUMN_NAME),
+          field.get(INTERNAL_SCHEMA_NAME),
+          field.get(INTERNAL_TABLE_NAME),
+          field.get(INTERNAL_COLUMN_TYPE)));
+      return JDBCType.VARCHAR;
+    }
+  }
+
+  @Override
+  public SnowflakeType getDatabaseFieldType(final JsonNode field) {
+    try {
+      final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText();
+      return getDatabaseFieldType(typeName);
+    } catch (final IllegalArgumentException ex) {
+      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
+          field.get(INTERNAL_COLUMN_NAME),
+          field.get(INTERNAL_SCHEMA_NAME),
+          field.get(INTERNAL_TABLE_NAME),
+          field.get(INTERNAL_COLUMN_TYPE)));
+      return SnowflakeType.TEXT;
+    }
+  }
+
+  public SnowflakeType getDatabaseFieldType(final String internalSnowflakeTypeName) throws IllegalArgumentException {
+    try {
+      return SnowflakeType.fromString(internalSnowflakeTypeName);
+    } catch (final IllegalArgumentException ex) {
+      LOGGER.error(String.format("Could not detect Snowflake type from type name '%s'.", internalSnowflakeTypeName));
+      throw ex;
+    }
+  }
+
+  @Override
+  protected void putBigInt(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
+    try {
+      final var value = resultSet.getBigDecimal(index);
+      node.put(columnName, value);
+    } catch (final SQLException e) {
+      node.put(columnName, (BigDecimal) null);
+    }
+  }
+
+  @Override
+  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    preparedStatement.setString(parameterIndex, value);
+  }
+
+  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
+      throws SQLException {
+    preparedStatement.setString(parameterIndex, value);
+  }
+
+  protected void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    preparedStatement.setString(parameterIndex, value);
+  }
+
+  public JsonNode getAirbyteSourceType(final JDBCType jdbcType) {
+    // Return a json node containing the database dialect and the source type
+    return Jsons.jsonNode(
+        ImmutableMap.builder()
+            .put("dialect", SQL_DIALECT)
+            .put("type", jdbcType.getName())
+            .build());
+  }
+
+  public JsonSchemaType getAirbyteTypeFromJDBCType(final JDBCType jdbcType) {
+    return switch (jdbcType) {
+      case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
+      case REAL, FLOAT, DOUBLE, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
+      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
+      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> JsonSchemaType.STRING;
+      case DATE -> JsonSchemaType.STRING_DATE;
+      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
+      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
+      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
+      case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
+      case ARRAY -> JsonSchemaType.ARRAY;
+      // since column types aren't necessarily meaningful to Airbyte, liberally convert all unrecgonised
+      // types to String
+      default -> JsonSchemaType.STRING;
+    };
+  }
+
+  @Override
   public JsonSchemaType getAirbyteType(SnowflakeType snowflakeType) {
     switch (snowflakeType) {
       case BINARY -> {
@@ -108,95 +207,9 @@ public class SnowflakeSourceOperations extends AbstractJdbcCompatibleSourceOpera
   }
 
   @Override
-  protected void putDouble(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
-    try {
-      final double value = resultSet.getDouble(index);
-      node.put(columnName, value);
-    } catch (final SQLException e) {
-      node.put(columnName, (Double) null);
-    }
-  }
-
-  @Override
-  public SnowflakeType getDatabaseFieldType(final JsonNode field) {
-    try {
-      final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
-      return getDatabaseFieldType(typeName);
-    } catch (final IllegalArgumentException ex) {
-      LOGGER.warn(String.format("Could not convert column: %s from table: %s.%s with type: %s. Casting to VARCHAR.",
-          field.get(INTERNAL_COLUMN_NAME),
-          field.get(INTERNAL_SCHEMA_NAME),
-          field.get(INTERNAL_TABLE_NAME),
-          field.get(INTERNAL_COLUMN_TYPE)));
-      return SnowflakeType.TEXT;
-    }
-  }
-
-  public SnowflakeType getDatabaseFieldType(final String internalSnowflakeTypeName) throws IllegalArgumentException {
-    try {
-      return SnowflakeType.valueOf(internalSnowflakeTypeName);
-    } catch (final IllegalArgumentException ex) {
-      LOGGER.error(String.format("Could not detect Snowflake type from type name '%s'.", internalSnowflakeTypeName));
-      throw ex;
-    }
-  }
-
-  @Override
-  protected void putBigInt(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
-    try {
-      final var value = resultSet.getBigDecimal(index);
-      node.put(columnName, value);
-    } catch (final SQLException e) {
-      node.put(columnName, (BigDecimal) null);
-    }
-  }
-
-  @Override
-  protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    preparedStatement.setString(parameterIndex, value);
-  }
-
-  protected void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value)
-      throws SQLException {
-    preparedStatement.setString(parameterIndex, value);
-  }
-
-  protected void setTimeWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    preparedStatement.setString(parameterIndex, value);
-  }
-
-  public JsonNode getAirbyteSourceType(final JDBCType jdbcType) {
-    // Return a json node containing the database dialect and the source type
-    return Jsons.jsonNode(
-        ImmutableMap.builder()
-            .put("dialect", SQL_DIALECT)
-            .put("type", jdbcType.getName())
-            .build());
-  }
-
-  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
-    return switch (jdbcType) {
-      case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
-      case REAL, FLOAT, DOUBLE, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
-      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
-      case CHAR, NCHAR, NVARCHAR, VARCHAR, LONGVARCHAR -> JsonSchemaType.STRING;
-      case DATE -> JsonSchemaType.STRING_DATE;
-      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
-      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
-      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
-      case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
-      case ARRAY -> JsonSchemaType.ARRAY;
-      // since column types aren't necessarily meaningful to Airbyte, liberally convert all unrecgonised
-      // types to String
-      default -> JsonSchemaType.STRING;
-    };
-  }
-
-  @Override
   public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
-    final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
+    final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toUpperCase();
     final SnowflakeType snowflakeType = getDatabaseFieldType(columnTypeName);
 
     final String stringValue = resultSet.getString(colIndex);

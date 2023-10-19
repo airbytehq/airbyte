@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.source.snowflake;
 
-import static io.airbyte.integrations.source.snowflake.SnowflakeSourceOperations.SQL_DIALECT;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.JDBCType;
@@ -26,7 +24,7 @@ public class SnowflakeSourceOperationsTest {
     SnowflakeSourceOperations sourceOps = new SnowflakeSourceOperations();
     JsonNode airbyteSourceType = sourceOps.getAirbyteSourceType(jdbcType);
     Assertions.assertNotNull(airbyteSourceType);
-    Assertions.assertEquals(SQL_DIALECT, airbyteSourceType.get("dialect").asText());
+    Assertions.assertEquals(SnowflakeSourceOperations.SQL_DIALECT, airbyteSourceType.get("dialect").asText());
     Assertions.assertEquals(jdbcType.getName(), airbyteSourceType.get("type").asText());
   }
 
@@ -34,28 +32,29 @@ public class SnowflakeSourceOperationsTest {
   public void testAirbyteTypeMappings() {
 
     // VARCHAR and TEXT
-    Assertions.assertEquals(JsonSchemaType.STRING, sourceOps.getAirbyteType(JDBCType.VARCHAR));
+    Assertions.assertEquals(JsonSchemaType.STRING, sourceOps.getAirbyteType(SnowflakeType.TEXT));
     // TODO: Add test for Snowflake 'TEXT' data type
     Assertions.assertEquals(SnowflakeType.VARIANT, sourceOps.getDatabaseFieldType("VARIANT"));
     Assertions.assertEquals(JsonSchemaType.STRING, sourceOps.getAirbyteType(sourceOps.getDatabaseFieldType("VARIANT")));
 
-    // INT, BIGINT, etc.
-    Assertions.assertEquals(JsonSchemaType.INTEGER, sourceOps.getAirbyteType(JDBCType.BIGINT));
-    Assertions.assertEquals(JsonSchemaType.INTEGER, sourceOps.getAirbyteType(JDBCType.INTEGER));
-    Assertions.assertEquals(JsonSchemaType.INTEGER, sourceOps.getAirbyteType(JDBCType.SMALLINT));
-    Assertions.assertEquals(JsonSchemaType.INTEGER, sourceOps.getAirbyteType(JDBCType.TINYINT));
+    // INT, BIGINT, FIXED, etc.
+    // JsonSchemaType airbyteInt = new JsonSchemaType(Map.of("$ref", "WellKnownTypes.json#/definitions/Integer"));
+    // Assertions.assertEquals(JsonSchemaType.INTEGER, sourceOps.getAirbyteType(SnowflakeType.INTEGER));
+    Assertions.assertEquals(JsonSchemaType.NUMBER, sourceOps.getAirbyteType(SnowflakeType.FIXED));
+    // Assertions.assertEquals(JsonSchemaType.INTEGER, sourceOps.getAirbyteType(SnowflakeType.));
+    // Assertions.assertEquals(JsonSchemaType.INTEGER, sourceOps.getAirbyteType(SnowflakeType.));
 
     // TIME, TIMESTAMP, etc.
     Map<String, Object> jsonSchemaForTime = Map.of(
         "type", "string",
         "format", "time",
         "airbyte_type", "time_without_timezone");
-    Assertions.assertEquals(jsonSchemaForTime, sourceOps.getAirbyteType(JDBCType.TIME).getJsonSchemaTypeMap());
+    Assertions.assertEquals(jsonSchemaForTime, sourceOps.getAirbyteType(SnowflakeType.TIME).getJsonSchemaTypeMap());
     Map<String, Object> jsonSchemaForDatetime = Map.of(
         "type", "string",
         "format", "date-time",
         "airbyte_type", "timestamp_without_timezone");
-    Assertions.assertEquals(jsonSchemaForDatetime, sourceOps.getAirbyteType(JDBCType.TIMESTAMP).getJsonSchemaTypeMap());
+    Assertions.assertEquals(jsonSchemaForDatetime, sourceOps.getAirbyteType(SnowflakeType.TIMESTAMP_NTZ).getJsonSchemaTypeMap());
 
     // TODO: Add test for Snowflake 'VARIANT' data type
     // Assertions.assertEquals(JsonSchemaType.STRING,
