@@ -18,8 +18,6 @@ on:
       - opened
       - reopened
       - synchronize
-    paths-ignore:
-      - "**/*.md"
 
 jobs:
   # In case of self-hosted EC2 errors, remove this block.
