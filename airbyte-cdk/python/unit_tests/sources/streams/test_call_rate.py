@@ -10,6 +10,7 @@ import pytest
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRateLimitHit, CallRatePolicy, Duration, HttpRequestMatcher, Rate
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from requests import Request
 
@@ -44,53 +45,47 @@ def enable_cache_fixture():
 
 
 class TestHttpRequestMatcher:
-    def test_url(self):
-        matcher = HttpRequestMatcher(url="some_url")
-        assert not matcher(Request())
-        assert not matcher(Request(url="wrong"))
-        assert matcher(Request(url="some_url"))
+    try_all_types_of_requests = pytest.mark.parametrize(
+        "request_factory",
+        [Request, lambda *args, **kwargs: Request(*args, **kwargs).prepare()],
+    )
 
-    def test_method(self):
+    @try_all_types_of_requests
+    def test_url(self, request_factory):
+        matcher = HttpRequestMatcher(url="http://some_url/")
+        assert not matcher(request_factory(url="http://some_wrong_url"))
+        assert matcher(request_factory(url="http://some_url"))
+
+    @try_all_types_of_requests
+    def test_method(self, request_factory):
         matcher = HttpRequestMatcher(method="GET")
-        assert not matcher(Request())
-        assert not matcher(Request(method="POST"))
-        assert matcher(Request(method="GET"))
+        assert not matcher(request_factory(url="http://some_url"))
+        assert not matcher(request_factory(url="http://some_url", method="POST"))
+        assert matcher(request_factory(url="http://some_url", method="GET"))
 
-    def test_params(self):
+    @try_all_types_of_requests
+    def test_params(self, request_factory):
         matcher = HttpRequestMatcher(params={"param1": 10, "param2": 15})
-        assert not matcher(Request(url="some_url"))
-        assert not matcher(Request(params={"param1": 10, "param3": 100}))
-        assert not matcher(Request(params={"param1": 10, "param2": 10}))
-        assert matcher(Request(params={"param1": 10, "param2": 15, "param3": 100}))
+        assert not matcher(request_factory(url="http://some_url/"))
+        assert not matcher(request_factory(url="http://some_url/", params={"param1": 10, "param3": 100}))
+        assert not matcher(request_factory(url="http://some_url/", params={"param1": 10, "param2": 10}))
+        assert matcher(request_factory(url="http://some_url/", params={"param1": 10, "param2": 15, "param3": 100}))
 
-    def test_header(self):
+    @try_all_types_of_requests
+    def test_header(self, request_factory):
         matcher = HttpRequestMatcher(headers={"header1": 10, "header2": 15})
-        assert not matcher(Request(url="some_url"))
-        assert not matcher(Request(headers={"header1": 10, "header3": 100}))
-        assert not matcher(Request(headers={"header1": 10, "header2": 10}))
-        assert matcher(Request(headers={"header1": 10, "header2": 15, "header3": 100}))
+        assert not matcher(request_factory(url="http://some_url"))
+        assert not matcher(request_factory(url="http://some_url", headers={"header1": "10", "header3": "100"}))
+        assert not matcher(request_factory(url="http://some_url", headers={"header1": "10", "header2": "10"}))
+        assert matcher(request_factory(url="http://some_url", headers={"header1": "10", "header2": "15", "header3": "100"}))
 
-    def test_combination(self):
-        matcher = HttpRequestMatcher(method="GET", url="some_url", headers={"header1": 10}, params={"param2": "test"})
-        assert matcher(Request(method="GET", url="some_url", headers={"header1": 10}, params={"param2": "test"}))
-        assert not matcher(
-            Request(
-                method="GET",
-                url="some_url",
-                headers={"header1": 10},
-            )
-        )
-        assert not matcher(
-            Request(
-                method="GET",
-                url="some_url",
-            )
-        )
-        assert not matcher(
-            Request(
-                method="GET",
-            )
-        )
+    @try_all_types_of_requests
+    def test_combination(self, request_factory):
+        matcher = HttpRequestMatcher(method="GET", url="http://some_url/", headers={"header1": 10}, params={"param2": "test"})
+        assert matcher(request_factory(method="GET", url="http://some_url", headers={"header1": "10"}, params={"param2": "test"}))
+        assert not matcher(request_factory(method="GET", url="http://some_url", headers={"header1": "10"}))
+        assert not matcher(request_factory(method="GET", url="http://some_url"))
+        assert not matcher(request_factory(url="http://some_url"))
 
 
 def test_http_request_matching(mocker):
@@ -101,11 +96,11 @@ def test_http_request_matching(mocker):
 
     api_budget = APIBudget()
     api_budget.add_policy(
-        request_matcher=HttpRequestMatcher(url="/api/users", method="GET"),
+        request_matcher=HttpRequestMatcher(url="http://domain/api/users", method="GET"),
         policy=users_policy,
     )
     api_budget.add_policy(
-        request_matcher=HttpRequestMatcher(url="/api/groups", method="POST"),
+        request_matcher=HttpRequestMatcher(url="http://domain/api/groups", method="POST"),
         policy=groups_policy,
     )
     api_budget.add_policy(
@@ -113,34 +108,34 @@ def test_http_request_matching(mocker):
         policy=root_policy,
     )
 
-    api_budget.acquire_call(Request("POST", url="/unmatched_endpoint"), block=False), "unrestricted call"
+    api_budget.acquire_call(Request("POST", url="http://domain/unmatched_endpoint"), block=False), "unrestricted call"
     users_policy.try_acquire.assert_not_called()
     groups_policy.try_acquire.assert_not_called()
     root_policy.try_acquire.assert_not_called()
 
-    users_request = Request("GET", url="/api/users")
+    users_request = Request("GET", url="http://domain/api/users")
     api_budget.acquire_call(users_request, block=False), "first call, first matcher"
     users_policy.try_acquire.assert_called_once_with(users_request)
     groups_policy.try_acquire.assert_not_called()
     root_policy.try_acquire.assert_not_called()
 
-    api_budget.acquire_call(Request("GET", url="/api/users"), block=False), "second call, first matcher"
+    api_budget.acquire_call(Request("GET", url="http://domain/api/users"), block=False), "second call, first matcher"
     assert users_policy.try_acquire.call_count == 2
     groups_policy.try_acquire.assert_not_called()
     root_policy.try_acquire.assert_not_called()
 
-    group_request = Request("POST", url="/api/groups")
+    group_request = Request("POST", url="http://domain/api/groups")
     api_budget.acquire_call(group_request, block=False), "first call, second matcher"
     assert users_policy.try_acquire.call_count == 2
     groups_policy.try_acquire.assert_called_once_with(group_request)
     root_policy.try_acquire.assert_not_called()
 
-    api_budget.acquire_call(Request("POST", url="/api/groups"), block=False), "second call, second matcher"
+    api_budget.acquire_call(Request("POST", url="http://domain/api/groups"), block=False), "second call, second matcher"
     assert users_policy.try_acquire.call_count == 2
     assert groups_policy.try_acquire.call_count == 2
     root_policy.try_acquire.assert_not_called()
 
-    any_get_request = Request("GET", url="/api/")
+    any_get_request = Request("GET", url="http://domain/api/")
     api_budget.acquire_call(any_get_request, block=False), "first call, third matcher"
     assert users_policy.try_acquire.call_count == 2
     assert groups_policy.try_acquire.call_count == 2
@@ -210,7 +205,7 @@ class TestHttpStreamIntegration:
             ),
         )
 
-        stream = StubDummyHttpStream(api_budget=api_budget)
+        stream = StubDummyHttpStream(api_budget=api_budget, authenticator=TokenAuthenticator(token="ABCD"))
         records = stream.read_records(SyncMode.full_refresh)
         for i in range(10):
             assert next(records) == {"data": "some_data"}

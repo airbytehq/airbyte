@@ -6,6 +6,7 @@ import abc
 import time
 from datetime import timedelta
 from typing import Any, Mapping, Optional, Union
+from urllib import parse
 
 import requests
 from pyrate_limiter import Duration as OrgDuration
@@ -73,7 +74,9 @@ class CallRatePolicy(AbstractCallRatePolicy):
             self._limiter.try_acquire(request, weight=weight)
         except BucketFullException as exc:
             item = self._limiter.bucket_factory.wrap_item(request, weight)
-            time_to_wait: int = self._bucket.waiting(item)  # type: ignore
+            # Argument 1 to "waiting" of "AbstractBucket" has incompatible type "Union[RateItem, Awaitable[RateItem]]"; expected "RateItem"
+            # Incompatible types in assignment (expression has type "Union[int, Awaitable[int]]", variable has type "int")
+            time_to_wait: int = self._bucket.waiting(item)  # type: ignore[assignment,arg-type]
             raise CallRateLimitHit(
                 error=str(exc.meta_info["error"]),
                 item=request,
@@ -114,8 +117,8 @@ class HttpRequestMatcher(RequestMatcher):
         """
         self._method = method
         self._url = url
-        self._params = params
-        self._headers = headers
+        self._params = {str(k): str(v) for k, v in (params or {}).items()}
+        self._headers = {str(k): str(v) for k, v in (headers or {}).items()}
 
     @staticmethod
     def _match_dict(obj: Mapping[str, Any], pattern: Mapping[str, Any]) -> bool:
@@ -133,22 +136,29 @@ class HttpRequestMatcher(RequestMatcher):
         :param request:
         :return: True if pattern matches the provided request object, False - otherwise
         """
-        if isinstance(request, (requests.Request, requests.PreparedRequest)):
-            if self._method is not None:
-                if request.method != self._method:
-                    return False
-            if self._url is not None:
-                if request.url != self._url:
-                    return False
-            if self._params is not None:
-                if not self._match_dict(request.params, self._params):
-                    return False
-            if self._headers is not None:
-                if not self._match_dict(request.headers, self._headers):
-                    return False
-            return True
+        if isinstance(request, requests.Request):
+            prepared_request = request.prepare()
+        elif isinstance(request, requests.PreparedRequest):
+            prepared_request = request
+        else:
+            return False
 
-        return False
+        if self._method is not None:
+            if prepared_request.method != self._method:
+                return False
+        if self._url is not None and prepared_request.url is not None:
+            url_without_params = prepared_request.url.split("?")[0]
+            if url_without_params != self._url:
+                return False
+        if self._params is not None:
+            parsed_url = parse.urlsplit(prepared_request.url)
+            params = dict(parse.parse_qsl(str(parsed_url.query)))
+            if not self._match_dict(params, self._params):
+                return False
+        if self._headers is not None:
+            if not self._match_dict(prepared_request.headers, self._headers):
+                return False
+        return True
 
 
 class AbstractAPIBudget(abc.ABC):
@@ -251,10 +261,12 @@ class SessionProxyWithCallRate:
         :param item: attribute name
         :return:
         """
-        return getattr(self._session, item)
+        return object.__getattribute__(self._session, item)
 
     def __setattr__(self, key: str, value: Any) -> None:
         """Forward everything to original Session class"""
+        if key.startswith("_"):
+            object.__setattr__(self, key, value)  # Call original __setattr__
         return object.__setattr__(self._session, key, value)
 
     def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:

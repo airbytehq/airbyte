@@ -74,7 +74,8 @@ class HttpStream(Stream, ABC):
         clear cached requests for current session, can be called any time
         """
         if isinstance(self._session, requests_cache.CachedSession):
-            self._session.cache.clear()
+            # Call to untyped function "clear" in typed context
+            self._session.cache.clear()  # type: ignore[no-untyped-call]
 
     @property
     @abstractmethod
@@ -302,7 +303,8 @@ class HttpStream(Stream, ABC):
                 args["json"] = json
             elif data:
                 args["data"] = data
-        return self._session.prepare_request(requests.Request(**args))  # type: ignore
+        # Returning Any from function declared to return "PreparedRequest"
+        return self._session.prepare_request(requests.Request(**args))  # type: ignore[no-any-return]
 
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:
@@ -435,7 +437,7 @@ class HttpStream(Stream, ABC):
         :param exception: The exception that was raised
         :return: A user-friendly message that indicates the cause of the error
         """
-        if isinstance(exception, requests.HTTPError):
+        if isinstance(exception, requests.HTTPError) and exception.response is not None:
             return self.parse_response_error_message(exception.response)
         return None
 
