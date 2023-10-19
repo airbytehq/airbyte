@@ -189,9 +189,7 @@
         "name": "audiences",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [
-          ["audience_id"]
-        ]
+        "source_defined_primary_key": [["audience_id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
@@ -202,9 +200,7 @@
         "name": "creative_assets_portfolios",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [
-          ["creative_portfolio_id"]
-        ]
+        "source_defined_primary_key": [["creative_portfolio_id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
@@ -215,9 +211,7 @@
         "name": "creative_assets_music",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
-        "source_defined_primary_key": [
-          ["music_id"]
-        ]
+        "source_defined_primary_key": [["music_id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
@@ -230,9 +224,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["modify_time"],
-        "source_defined_primary_key": [
-          ["image_id"]
-        ]
+        "source_defined_primary_key": [["image_id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
@@ -246,9 +238,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["modify_time"],
-        "source_defined_primary_key": [
-          ["video_id"]
-        ]
+        "source_defined_primary_key": [["video_id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
