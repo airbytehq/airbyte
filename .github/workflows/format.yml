@@ -9,8 +9,6 @@ on:
     branches:
       - master
   pull_request:
-    paths-ignore:
-      - "**/*.md"
 jobs:
   format-and-commit:
     runs-on: ubuntu-latest
