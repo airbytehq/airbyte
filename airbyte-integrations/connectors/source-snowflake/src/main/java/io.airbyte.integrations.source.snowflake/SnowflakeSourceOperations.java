@@ -24,13 +24,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.chrono.IsoChronology;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.ResolverStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,7 +125,6 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
     preparedStatement.setDate(parameterIndex, Date.valueOf(date));
   }
 
-
   private static final DateTimeFormatter SNOWFLAKE_TIMESTAMPTZ_FORMATTER = new DateTimeFormatterBuilder()
       .parseCaseInsensitive()
       .append(DateTimeFormatter.ISO_LOCAL_DATE)
@@ -138,6 +134,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
       .appendLiteral(' ')
       .append(DateTimeFormatter.ofPattern("XX"))
       .toFormatter();
+
   @Override
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
       throws SQLException {
