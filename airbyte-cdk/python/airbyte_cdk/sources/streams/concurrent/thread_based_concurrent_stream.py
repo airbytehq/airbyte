@@ -137,15 +137,17 @@ class ThreadBasedConcurrentStream(AbstractStream):
             time.sleep(self._sleep_time)
 
     def _check_for_errors(self, futures: List[Future[Any]]) -> None:
-        # FIXME This should call _stop_and_raise_exception I think
         exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]
         if exceptions_from_futures:
-            raise RuntimeError(f"Failed reading from stream {self.name} with errors: {exceptions_from_futures}")
-        futures_not_done = [f for f in futures if not f.done()]
-        if futures_not_done:
-            raise RuntimeError(f"Failed reading from stream {self.name} with futures not done: {futures_not_done}")
+            exception = RuntimeError(f"Failed reading from stream {self.name} with errors: {exceptions_from_futures}")
+            self._stop_and_raise_exception(exception)
+        else:
+            futures_not_done = [f for f in futures if not f.done()]
+            if futures_not_done:
+                exception = RuntimeError(f"Failed reading from stream {self.name} with futures not done: {futures_not_done}")
+                self._stop_and_raise_exception(exception)
 
-    def _stop_and_raise_exception(self, exception: Exception) -> None:
+    def _stop_and_raise_exception(self, exception: BaseException) -> None:
         # Stop the threadpool and raise the exception
         self._threadpool.shutdown(wait=False)
         raise exception
