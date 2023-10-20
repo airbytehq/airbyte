@@ -21,6 +21,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.TableNotMigrated
 import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -105,10 +106,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String createTable(final StreamConfig stream, final String suffix, final boolean force) {
-    final Set<String> pks = getPks(stream);
     final String columnDeclarations = stream.columns().entrySet().stream()
-        .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()) + " "
-            + (pks.contains(column.getKey().name()) ? "NOT NULL" : ""))
+        .map(column -> "," + column.getKey().name(QUOTE) + " " + toDialectType(column.getValue()))
         .collect(joining("\n"));
     final String forceCreateTable = force ? "OR REPLACE" : "";
 
@@ -145,23 +144,22 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         .collect(LinkedHashMap::new,
             (map, column) -> map.put(column.getKey(), column.getValue().type()),
             LinkedHashMap::putAll);
-    final boolean hasPksWithoutNullConstraint = existingTable.columns().entrySet().stream()
-        .anyMatch(c -> pks.contains(c.getKey()) && c.getValue().isNullable());
+    // soft-resetting https://github.com/airbytehq/airbyte/pull/31082
+    final boolean hasPksWithNonNullConstraint = existingTable.columns().entrySet().stream()
+        .anyMatch(c -> pks.contains(c.getKey()) && !c.getValue().isNullable());
 
-    return actualColumns.equals(intendedColumns)
-        && !hasPksWithoutNullConstraint
+    final boolean sameColumns = actualColumns.equals(intendedColumns)
+        && !hasPksWithNonNullConstraint
         && "TEXT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_RAW_ID.toUpperCase()).type())
         && "TIMESTAMP_TZ".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT.toUpperCase()).type())
         && "VARIANT".equals(existingTable.columns().get(JavaBaseConstants.COLUMN_NAME_AB_META.toUpperCase()).type());
+
+    return sameColumns;
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix) {
-    return updateTable(stream, finalSuffix, true);
-  }
-
-  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns());
+  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp) {
+    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), minRawTimestamp);
     String dedupFinalTable = "";
     String cdcDeletes = "";
     String dedupRawTable = "";
@@ -171,7 +169,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
     }
-    final String commitRawTable = commitRawTable(stream.id());
+    final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
 
     return new StringSubstitutor(Map.of(
         "insert_new_records", insertNewRecords,
@@ -300,7 +298,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream, final String finalSuffix, final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
+  String insertNewRecords(final StreamConfig stream,
+                          final String finalSuffix,
+                          final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
+                          final Optional<Instant> minRawTimestamp) {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
@@ -331,12 +332,15 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                                          """;
     }
 
+    final String extractedAtCondition = buildExtractedAtCondition(minRawTimestamp);
+
     return new StringSubstitutor(Map.of(
         "raw_table_id", stream.id().rawTableId(QUOTE),
         "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()),
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
+        "extractedAtCondition", extractedAtCondition,
         "column_list", columnList)).replace(
             """
             INSERT INTO ${final_table_id}
@@ -356,6 +360,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
               WHERE
                 "_airbyte_loaded_at" IS NULL
                 ${cdcConditionalOrIncludeStatement}
+                ${extractedAtCondition}
             )
             SELECT
             ${column_list}
@@ -363,6 +368,12 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
               "_airbyte_raw_id" AS "_AIRBYTE_RAW_ID",
               "_airbyte_extracted_at" AS "_AIRBYTE_EXTRACTED_AT"
             FROM intermediate_data;""");
+  }
+
+  private static String buildExtractedAtCondition(final Optional<Instant> minRawTimestamp) {
+    return minRawTimestamp
+        .map(ts -> " AND \"_airbyte_extracted_at\" > '" + ts + "'")
+        .orElse("");
   }
 
   @VisibleForTesting
@@ -445,9 +456,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @VisibleForTesting
-  String commitRawTable(final StreamId id) {
+  String commitRawTable(final StreamId id, final Optional<Instant> minRawTimestamp) {
     return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE))).replace(
+        "raw_table_id", id.rawTableId(QUOTE),
+        "extractedAtCondition", buildExtractedAtCondition(minRawTimestamp))).replace(
             """
             UPDATE ${raw_table_id}
             SET "_airbyte_loaded_at" = CURRENT_TIMESTAMP()
@@ -472,7 +484,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public String softReset(final StreamConfig stream) {
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
-    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), false);
+    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), Optional.empty());
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX.toUpperCase());
     return String.join("\n", createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
@@ -556,14 +568,14 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     return RESERVED_COLUMN_NAMES.stream().anyMatch(k -> k.equalsIgnoreCase(columnName)) ? "_" + columnName : columnName;
   }
 
-  private static Set<String> getPks(final StreamConfig stream) {
-    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
-  }
-
   public static String escapeSingleQuotedString(final String str) {
     return str
         .replace("\\", "\\\\")
         .replace("'", "\\'");
+  }
+
+  private static Set<String> getPks(final StreamConfig stream) {
+    return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
 }

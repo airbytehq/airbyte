@@ -15,8 +15,8 @@ from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v11.services.services.google_ads_service.pagers import SearchPager
 
 from .google_ads import GoogleAds
-from .models import Customer
-from .utils import REPORT_MAPPING, ExpiredPageTokenError, traced_exception
+from .models import CustomerModel
+from .utils import ExpiredPageTokenError, get_resource_name, traced_exception
 
 
 def parse_dates(stream_slice):
@@ -86,13 +86,13 @@ def chunk_date_range(
 class GoogleAdsStream(Stream, ABC):
     CATCH_CUSTOMER_NOT_ENABLED_ERROR = True
 
-    def __init__(self, api: GoogleAds, customers: List[Customer]):
+    def __init__(self, api: GoogleAds, customers: List[CustomerModel]):
         self.google_ads_client = api
         self.customers = customers
 
     def get_query(self, stream_slice: Mapping[str, Any]) -> str:
         fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
-        table_name = REPORT_MAPPING[self.name]
+        table_name = get_resource_name(self.name)
         query = GoogleAds.convert_schema_into_query(fields=fields, table_name=table_name)
         return query
 
@@ -232,7 +232,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
-        table_name = REPORT_MAPPING[self.name]
+        table_name = get_resource_name(self.name)
 
         start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
         cursor_condition = [f"{self.cursor_field} >= '{start_date}' AND {self.cursor_field} <= '{end_date}'"]
@@ -243,9 +243,9 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         return query
 
 
-class Accounts(IncrementalGoogleAdsStream):
+class Customer(IncrementalGoogleAdsStream):
     """
-    Accounts stream: https://developers.google.com/google-ads/api/fields/v11/customer
+    Customer stream: https://developers.google.com/google-ads/api/fields/v11/customer
     """
 
     primary_key = ["customer.id", "segments.date"]
@@ -257,9 +257,9 @@ class Accounts(IncrementalGoogleAdsStream):
             yield record
 
 
-class AccountLabels(GoogleAdsStream):
+class CustomerLabel(GoogleAdsStream):
     """
-    Account Labels stream: https://developers.google.com/google-ads/api/fields/v14/customer_label
+    Customer Label stream: https://developers.google.com/google-ads/api/fields/v14/customer_label
     """
 
     primary_key = ["customer_label.resource_name"]
@@ -274,9 +274,9 @@ class ServiceAccounts(GoogleAdsStream):
     primary_key = ["customer.id"]
 
 
-class Campaigns(IncrementalGoogleAdsStream):
+class Campaign(IncrementalGoogleAdsStream):
     """
-    Campaigns stream: https://developers.google.com/google-ads/api/fields/v11/campaign
+    Campaign stream: https://developers.google.com/google-ads/api/fields/v11/campaign
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -298,16 +298,16 @@ class CampaignBudget(IncrementalGoogleAdsStream):
     ]
 
 
-class CampaignBiddingStrategies(IncrementalGoogleAdsStream):
+class CampaignBiddingStrategy(IncrementalGoogleAdsStream):
     """
-    Campaign Bidding Strategies stream: https://developers.google.com/google-ads/api/fields/v14/campaign
+    Campaign Bidding Strategy stream: https://developers.google.com/google-ads/api/fields/v14/campaign
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["campaign.id", "bidding_strategy.id", "segments.date"]
 
 
-class CampaignLabels(GoogleAdsStream):
+class CampaignLabel(GoogleAdsStream):
     """
     Campaign labels stream: https://developers.google.com/google-ads/api/fields/v11/campaign_label
     """
@@ -316,15 +316,15 @@ class CampaignLabels(GoogleAdsStream):
     primary_key = ["campaign.id", "label.id"]
 
 
-class AdGroups(IncrementalGoogleAdsStream):
+class AdGroup(IncrementalGoogleAdsStream):
     """
-    AdGroups stream: https://developers.google.com/google-ads/api/fields/v11/ad_group
+    AdGroup stream: https://developers.google.com/google-ads/api/fields/v11/ad_group
     """
 
     primary_key = ["ad_group.id", "segments.date"]
 
 
-class AdGroupLabels(GoogleAdsStream):
+class AdGroupLabel(GoogleAdsStream):
     """
     Ad Group Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_label
     """
@@ -333,7 +333,7 @@ class AdGroupLabels(GoogleAdsStream):
     primary_key = ["ad_group.id", "label.id"]
 
 
-class AdGroupBiddingStrategies(IncrementalGoogleAdsStream):
+class AdGroupBiddingStrategy(IncrementalGoogleAdsStream):
     """
     Ad Group Bidding Strategies stream: https://developers.google.com/google-ads/api/fields/v14/ad_group
     """
@@ -342,24 +342,24 @@ class AdGroupBiddingStrategies(IncrementalGoogleAdsStream):
     primary_key = ["ad_group.id", "bidding_strategy.id", "segments.date"]
 
 
-class AdGroupCriterionLabels(GoogleAdsStream):
+class AdGroupCriterionLabel(GoogleAdsStream):
     """
-    Ad Group Criterion Labels stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label
+    Ad Group Criterion Label stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion_label
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = ["ad_group_criterion_label.resource_name"]
 
 
-class AdGroupAds(IncrementalGoogleAdsStream):
+class AdGroupAd(IncrementalGoogleAdsStream):
     """
-    AdGroups stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad
+    Ad Group Ad stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad
     """
 
     primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date"]
 
 
-class AdGroupAdLabels(GoogleAdsStream):
+class AdGroupAdLabel(GoogleAdsStream):
     """
     Ad Group Ad Labels stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad_label
     """
@@ -376,7 +376,7 @@ class AccountPerformanceReport(IncrementalGoogleAdsStream):
     primary_key = ["customer.id", "segments.date", "segments.ad_network_type", "segments.device"]
 
 
-class AdGroupAdReport(IncrementalGoogleAdsStream):
+class AdGroupAdLegacy(IncrementalGoogleAdsStream):
     """
     AdGroupAdReport stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance
@@ -385,9 +385,9 @@ class AdGroupAdReport(IncrementalGoogleAdsStream):
     primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date", "segments.ad_network_type"]
 
 
-class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
+class DisplayKeywordView(IncrementalGoogleAdsStream):
     """
-    DisplayKeywordPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v11/display_keyword_view
+    DisplayKeywordView stream: https://developers.google.com/google-ads/api/fields/v11/display_keyword_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_keyword_performance
     """
 
@@ -400,7 +400,7 @@ class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
     ]
 
 
-class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
+class TopicView(IncrementalGoogleAdsStream):
     """
     DisplayTopicsPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v11/topic_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#display_topics_performance
@@ -415,16 +415,16 @@ class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
     ]
 
 
-class ShoppingPerformanceReport(IncrementalGoogleAdsStream):
+class ShoppingPerformanceView(IncrementalGoogleAdsStream):
     """
-    ShoppingPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v11/shopping_performance_view
+    ShoppingPerformanceView stream: https://developers.google.com/google-ads/api/fields/v11/shopping_performance_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#shopping_performance
     """
 
 
-class UserLocationReport(IncrementalGoogleAdsStream):
+class UserLocationView(IncrementalGoogleAdsStream):
     """
-    UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/user_location_view
+    UserLocationView stream: https://developers.google.com/google-ads/api/fields/v11/user_location_view
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#geo_performance
     """
 
@@ -437,7 +437,7 @@ class UserLocationReport(IncrementalGoogleAdsStream):
     ]
 
 
-class GeographicReport(IncrementalGoogleAdsStream):
+class GeographicView(IncrementalGoogleAdsStream):
     """
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/geographic_view
     """
@@ -445,7 +445,7 @@ class GeographicReport(IncrementalGoogleAdsStream):
     primary_key = ["customer.id", "geographic_view.country_criterion_id", "geographic_view.location_type", "segments.date"]
 
 
-class KeywordReport(IncrementalGoogleAdsStream):
+class KeywordView(IncrementalGoogleAdsStream):
     """
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/keyword_view
     """
@@ -481,9 +481,9 @@ class Audience(GoogleAdsStream):
     primary_key = ["customer.id", "audience.id"]
 
 
-class Labels(GoogleAdsStream):
+class Label(GoogleAdsStream):
     """
-    Labels stream: https://developers.google.com/google-ads/api/fields/v14/label
+    Label stream: https://developers.google.com/google-ads/api/fields/v14/label
     """
 
     primary_key = ["label.id"]
@@ -548,7 +548,7 @@ class ChangeStatus(IncrementalGoogleAdsStream):
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
-        table_name = REPORT_MAPPING[self.name]
+        table_name = get_resource_name(self.name)
 
         start_date, end_date = stream_slice.get("start_date"), stream_slice.get("end_date")
         conditions = [f"{self.cursor_field} >= '{start_date}' AND {self.cursor_field} <= '{end_date}'"]
@@ -698,7 +698,7 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         self._update_state()
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
-        table_name = REPORT_MAPPING[self.name]
+        table_name = get_resource_name(self.name)
 
         fields = GoogleAds.get_fields_from_schema(self.get_json_schema())
         # delete fields that are obtained from parent stream and should not be requested from API
@@ -716,9 +716,9 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         return query
 
 
-class AdGroupCriterions(IncrementalEventsStream):
+class AdGroupCriterion(IncrementalEventsStream):
     """
-    Ad Group Criterions stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
+    Ad Group Criterion stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
@@ -729,9 +729,9 @@ class AdGroupCriterions(IncrementalEventsStream):
     cursor_field = "change_status.last_change_date_time"
 
 
-class AdListingGroupCriterions(AdGroupCriterions):
+class AdListingGroupCriterion(AdGroupCriterion):
     """
-    Ad Listing Group Criterions stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
+    Ad Listing Group Criterion stream: https://developers.google.com/google-ads/api/fields/v14/ad_group_criterion
     While this stream utilizes the same resource as the AdGroupCriterions,
     it specifically targets the listing group and has distinct schemas.
     """
