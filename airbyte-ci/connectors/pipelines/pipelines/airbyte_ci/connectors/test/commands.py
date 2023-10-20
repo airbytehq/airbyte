@@ -76,6 +76,18 @@ def test(
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
+
+    """
+    contexts = [to_context(connector) for connector in ctx.obj["selected_connectors_with_modified_files"]]
+    contexts_with_steps = [context, compute_connector_test_steps(context) for context in contexts]
+    for context, steps in contexts_with_steps:
+        steps_results = await run_steps(steps)
+        context.report = Report(
+            pipeline_context=context,
+            steps_results=steps_results,
+            name="Connector test RESULTS"
+        )
+    """
     try:
         anyio.run(
             run_connectors_pipelines,

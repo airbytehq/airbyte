@@ -132,6 +132,9 @@ class Step(ABC):
 
     retry_delay = timedelta(seconds=10)
 
+    id: ClassVar[str] = ""
+    extra_args: ClassVar[dict] = {}
+
     def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
         self.retry_count = 0

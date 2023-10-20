@@ -97,32 +97,48 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         return []
 
 
-async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
-    """Run a test pipeline for a single connector.
+# async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
+#     """Run a test pipeline for a single connector.
 
-    A visual DAG can be found on the README.md file of the pipelines modules.
+#     A visual DAG can be found on the README.md file of the pipelines modules.
 
-    Args:
-        context (ConnectorContext): The initialized connector context.
+#     Args:
+#         context (ConnectorContext): The initialized connector context.
 
-    Returns:
-        ConnectorReport: The test reports holding tests results.
+#     Returns:
+#         ConnectorReport: The test reports holding tests results.
+#     """
+#     async with semaphore:
+#         async with context:
+#             async with asyncer.create_task_group() as task_group:
+#                 tasks = [
+#                     task_group.soonify(run_all_tests)(context),
+#                     task_group.soonify(run_code_format_checks)(context),
+#                 ]
+#                 if not context.code_tests_only:
+#                     tasks += [
+#                         task_group.soonify(run_metadata_validation)(context),
+#                         task_group.soonify(run_version_checks)(context),
+#                         task_group.soonify(run_qa_checks)(context),
+#                     ]
+#             results = list(itertools.chain(*(task.value for task in tasks)))
+#             context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
+
+#         return context.report
+
+
+def compute_connector_test_steps(context: ConnectorContext):
+    """Compute the steps to run for a connector test pipeline.
     """
-    async with semaphore:
-        async with context:
-            async with asyncer.create_task_group() as task_group:
-                tasks = [
-                    task_group.soonify(run_all_tests)(context),
-                    task_group.soonify(run_code_format_checks)(context),
-                ]
-                if not context.code_tests_only:
-                    tasks += [
-                        task_group.soonify(run_metadata_validation)(context),
-                        task_group.soonify(run_version_checks)(context),
-                        task_group.soonify(run_qa_checks)(context),
-                    ]
-            results = list(itertools.chain(*(task.value for task in tasks)))
-            context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
 
-        return context.report
-
+    steps = [
+        run_all_tests,
+        run_code_format_checks,
+    ]
+    if not context.code_tests_only:
+        steps += [
+            run_metadata_validation,
+            run_version_checks,
+            run_qa_checks,
+        ]
+    return steps
