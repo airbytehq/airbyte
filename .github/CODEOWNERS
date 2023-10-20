@@ -60,3 +60,6 @@
 
 # Build customization file change
 /airbyte-integrations/connectors/**/build_customization.py @airbytehq/connector-operations
+
+# airbyte-ci
+/airbyte-ci @airbytehq/connector-operations
