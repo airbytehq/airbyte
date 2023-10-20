@@ -333,9 +333,9 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
       cursorComparison =
           // First, compare the cursors.
           "(TARGET_TABLE." + cursor + " < NEW_RECORD." + cursor
-              // Then, break ties with extracted_at. (also explicitly check for both NEW_RECORD and final table
-              // having null cursor
-              // because NULL != NULL in SQL)
+          // Then, break ties with extracted_at. (also explicitly check for both NEW_RECORD and final table
+          // having null cursor
+          // because NULL != NULL in SQL)
               + " OR (TARGET_TABLE." + cursor + " = NEW_RECORD." + cursor
               + " AND TARGET_TABLE._AIRBYTE_EXTRACTED_AT < NEW_RECORD._AIRBYTE_EXTRACTED_AT)"
               + " OR (TARGET_TABLE." + cursor + " IS NULL AND NEW_RECORD." + cursor
@@ -377,29 +377,29 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "cdcSkipInsertClause", cdcSkipInsertClause,
         "column_list", columnList,
         "newRecordColumnList", newRecordColumnList)).replace(
-        """
-        MERGE INTO ${final_table_id} AS TARGET_TABLE
-        USING (
-          ${extractNewRawRecords}
-        ) NEW_RECORD
-        ON ${pkEquivalent}
-        ${cdcDeleteClause}
-        WHEN MATCHED AND ${cursorComparison} THEN UPDATE SET
-          ${columnAssignments}
-          _AIRBYTE_META = NEW_RECORD._AIRBYTE_META,
-          _AIRBYTE_RAW_ID = NEW_RECORD._AIRBYTE_RAW_ID,
-          _AIRBYTE_EXTRACTED_AT = NEW_RECORD._AIRBYTE_EXTRACTED_AT
-        WHEN NOT MATCHED ${cdcSkipInsertClause} THEN INSERT (
-          ${column_list}
-          _AIRBYTE_META,
-          _AIRBYTE_RAW_ID,
-          _AIRBYTE_EXTRACTED_AT
-        ) VALUES (
-          ${newRecordColumnList}
-          NEW_RECORD._AIRBYTE_META,
-          NEW_RECORD._AIRBYTE_RAW_ID,
-          NEW_RECORD._AIRBYTE_EXTRACTED_AT
-        );""");
+            """
+            MERGE INTO ${final_table_id} AS TARGET_TABLE
+            USING (
+              ${extractNewRawRecords}
+            ) NEW_RECORD
+            ON ${pkEquivalent}
+            ${cdcDeleteClause}
+            WHEN MATCHED AND ${cursorComparison} THEN UPDATE SET
+              ${columnAssignments}
+              _AIRBYTE_META = NEW_RECORD._AIRBYTE_META,
+              _AIRBYTE_RAW_ID = NEW_RECORD._AIRBYTE_RAW_ID,
+              _AIRBYTE_EXTRACTED_AT = NEW_RECORD._AIRBYTE_EXTRACTED_AT
+            WHEN NOT MATCHED ${cdcSkipInsertClause} THEN INSERT (
+              ${column_list}
+              _AIRBYTE_META,
+              _AIRBYTE_RAW_ID,
+              _AIRBYTE_EXTRACTED_AT
+            ) VALUES (
+              ${newRecordColumnList}
+              NEW_RECORD._AIRBYTE_META,
+              NEW_RECORD._AIRBYTE_RAW_ID,
+              NEW_RECORD._AIRBYTE_EXTRACTED_AT
+            );""");
   }
 
   private String extractNewRawRecords(final StreamConfig stream, final Optional<Instant> minRawTimestamp) {
