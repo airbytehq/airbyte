@@ -22,7 +22,7 @@ public abstract class BaseDestinationV1V2Migrator<DialectTableDefinition> implem
                                  final SqlGenerator<DialectTableDefinition> sqlGenerator,
                                  final DestinationHandler<DialectTableDefinition> destinationHandler,
                                  final StreamConfig streamConfig)
-      throws TableNotMigratedException, UnexpectedSchemaException, Exception {
+      throws Exception {
     LOGGER.info("Assessing whether migration is necessary for stream {}", streamConfig.id().finalName());
     if (shouldMigrate(streamConfig)) {
       LOGGER.info("Starting v2 Migration for stream {}", streamConfig.id().finalName());

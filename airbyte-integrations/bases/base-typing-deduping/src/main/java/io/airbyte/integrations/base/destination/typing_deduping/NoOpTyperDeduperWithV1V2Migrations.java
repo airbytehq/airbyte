@@ -68,7 +68,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
   }
 
   @Override
-  public void typeAndDedupe(String originalNamespace, String originalName, boolean mustRun) throws Exception {
+  public void typeAndDedupe(String originalNamespace, String originalName, boolean mustRun) {
     log.info("Skipping TypeAndDedupe");
   }
 
@@ -82,7 +82,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
       }
 
       @Override
-      public void lockInterruptibly() throws InterruptedException {
+      public void lockInterruptibly() {
 
       }
 
@@ -93,7 +93,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
       }
 
       @Override
-      public boolean tryLock(final long time, final TimeUnit unit) throws InterruptedException {
+      public boolean tryLock(final long time, final TimeUnit unit) {
         // To mimic NoOp behavior always return true that lock is acquired
         return true;
       }
@@ -113,12 +113,12 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
   }
 
   @Override
-  public void typeAndDedupe() throws Exception {
+  public void typeAndDedupe() {
     log.info("Skipping TypeAndDedupe final");
   }
 
   @Override
-  public void commitFinalTables() throws Exception {
+  public void commitFinalTables() {
     log.info("Skipping commitFinalTables final");
   }
 
