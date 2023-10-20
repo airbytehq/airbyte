@@ -4,7 +4,7 @@ data:
     sl: 200
   allowedHosts:
     hosts:
-    - '*.freshdesk.com'
+      - "*.freshdesk.com"
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
@@ -25,5 +25,5 @@ data:
   releaseStage: generally_available
   supportLevel: certified
   tags:
-  - language:low-code
-metadataSpecVersion: '1.0'
+    - language:low-code
+metadataSpecVersion: "1.0"
