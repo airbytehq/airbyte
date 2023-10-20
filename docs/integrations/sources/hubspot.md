@@ -221,6 +221,7 @@ becomes
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.6.1 | 2023-10-20 | [31644](https://github.com/airbytehq/airbyte/pull/31644) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.6.0   | 2023-10-19 | [31606](https://github.com/airbytehq/airbyte/pull/31606) | Added new field `aifeatures` to the `marketing emails` stream schema     |
 | 1.5.1   | 2023-10-04 | [31050](https://github.com/airbytehq/airbyte/pull/31050) | Add type transformer for `Engagements` stream                                                                                                                                      |
 | 1.5.0   | 2023-09-11 | [30322](https://github.com/airbytehq/airbyte/pull/30322) | Unnest stream schemas                                                                                                                                                              |
