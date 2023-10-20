@@ -58,6 +58,8 @@ acceptance_tests:
               bypass_reason: "Volatile URL params"
             - name: "video_cover_url"
               bypass_reason: "Volatile URL params"
+            - name: "preview_url_expire_time"
+              bypass_reason: "Changes over time"
         empty_streams:
           - name: ads_reports_hourly
             bypass_reason: "Tested with daily granularity."
@@ -109,6 +111,8 @@ acceptance_tests:
               bypass_reason: "Volatile URL params"
             - name: "video_cover_url"
               bypass_reason: "Volatile URL params"
+            - name: "preview_url_expire_time"
+              bypass_reason: "Changes over time"
         empty_streams:
           - name: ad_groups
             bypass_reason: "This stream is tested on the new style config."
@@ -141,6 +145,8 @@ acceptance_tests:
               bypass_reason: "Volatile URL params"
             - name: "video_cover_url"
               bypass_reason: "Volatile URL params"
+            - name: "preview_url_expire_time"
+              bypass_reason: "Changes over time"
   incremental:
     tests:
       - config_path: "secrets/config.json"
