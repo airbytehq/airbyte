@@ -226,7 +226,6 @@ flowchart TD
 | Option              | Multiple | Default value | Description                                                                                                                                                                                              |
 | ------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--fail-fast`       | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
-| `--fast-tests-only` | True     | False         | Run unit tests only, skipping integration tests or any tests explicitly tagged as slow. Use this for more frequent checks, when it is not feasible to run the entire test suite.                         |
 | `--code-tests-only` | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 
 Note:

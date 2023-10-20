@@ -30,19 +30,11 @@ from pipelines.helpers.github import update_global_commit_status_check_for_tests
     type=bool,
     is_flag=True,
 )
-@click.option(
-    "--fast-tests-only",
-    help="When enabled, slow tests are skipped.",
-    default=False,
-    type=bool,
-    is_flag=True,
-)
 @click.pass_context
 def test(
     ctx: click.Context,
     code_tests_only: bool,
     fail_fast: bool,
-    fast_tests_only: bool,
 ) -> bool:
     # TODO bring back the fail fast option
     """Runs a test pipeline for the selected connectors.
@@ -77,8 +69,7 @@ def test(
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
-            fast_tests_only=fast_tests_only,
-            code_tests_only=code_tests_only,
+            code_tests_only=code_tests_only, # TODO ben: remove
             use_local_cdk=ctx.obj.get("use_local_cdk"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
