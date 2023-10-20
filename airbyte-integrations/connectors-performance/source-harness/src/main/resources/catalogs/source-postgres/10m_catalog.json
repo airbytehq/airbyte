@@ -69,10 +69,10 @@
         "source_defined_cursor": true,
         "source_defined_primary_key": [["id"]]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "%s",
       "primary_key": [["id"]],
       "cursor_field": [],
-      "destination_sync_mode": "overwrite"
+      "destination_sync_mode": "append"
     }
   ]
 }
