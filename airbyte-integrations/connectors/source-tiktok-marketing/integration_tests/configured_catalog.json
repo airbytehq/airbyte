@@ -183,6 +183,56 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [["advertiser_id"], ["stat_time_day"], ["gender"], ["age"]]
+    },
+    {
+      "stream": {
+        "name": "audiences",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["audience_id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["audience_id"]]
+    },
+    {
+      "stream": {
+        "name": "creative_assets_portfolios",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["creative_portfolio_id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["creative_portfolio_id"]]
+    },
+    {
+      "stream": {
+        "name": "creative_assets_images",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modify_time"],
+        "source_defined_primary_key": [["image_id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["modify_time"],
+      "primary_key": [["image_id"]]
+    },
+    {
+      "stream": {
+        "name": "creative_assets_videos",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["modify_time"],
+        "source_defined_primary_key": [["video_id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["modify_time"],
+      "primary_key": [["video_id"]]
     }
   ]
 }

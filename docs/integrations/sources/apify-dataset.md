@@ -8,11 +8,9 @@ description: Web scraping and automation platform.
 
 [Apify](https://apify.com/) is a web scraping and web automation platform providing both ready-made and custom solutions, an open-source [JavaScript SDK](https://docs.apify.com/sdk/js/) and [Python SDK](https://docs.apify.com/sdk/python/) for web scraping, proxies, and many other tools to help you build and run web automation jobs at scale.
 
-The results of a scraping job are usually stored in the [Apify Dataset](https://docs.apify.com/storage/dataset). This Airbyte connector provides streams to work with the datasets, including syncing their contents to your chosen destination using Airbyte.
+The results of a scraping job are usually stored in the [Apify Dataset](https://docs.apify.com/storage/dataset). This Airbyte connector provides streams to work with the datasets, including syncing their content to your chosen destination using Airbyte.
 
-To sync data from a dataset, all you need to know is its ID. You will find it in [Apify console](https://my.apify.com/) under storages.
-
-Currently, only datasets provided by the Website Content Crawler Actor are supported. Adding streams for other Actors or a stream for the general dataset (with dynamic schema) will be added soon.
+To sync data from a dataset, all you need to know is your API token and dataset ID. You can find your personal API token in the Apify Console in the [Settings -> Integrations](https://console.apify.com/account/integrations) and the dataset ID in the [Storage -> Datasets](https://console.apify.com/storage/datasets).
 
 ### Running Airbyte sync from Apify webhook
 
@@ -46,19 +44,26 @@ The Apify dataset connector uses [Apify Python Client](https://docs.apify.com/ap
     - Apify Personal API token (you can find it [here](https://console.apify.com/account/integrations))
     - Dataset ID (check the [docs](https://docs.apify.com/platform/storage/dataset))
 
-### `item_collection_website_content_crawler`
+### `item_collection`
 
 - Calls `api.apify.com/v2/datasets/{datasetId}/items` ([docs](https://docs.apify.com/api/v2#/reference/datasets/item-collection/get-items))
 - Properties:
     - Apify Personal API token (you can find it [here](https://console.apify.com/account/integrations))
     - Dataset ID (check the [docs](https://docs.apify.com/platform/storage/dataset))
 - Limitations:
-    - Currently works only for the datasets produced by [Website Content Crawler](https://apify.com/apify/website-content-crawler).
+    - The stream uses a dynamic schema (all the data are stored under the `"data"` key), so it should support all the Apify Datasets (produced by whatever Actor).
+
+### `item_collection_website_content_crawler`
+
+- Calls the same endpoint and uses the same properties as the `item_collection` stream.
+- Limitations:
+    - The stream uses a static schema which corresponds to the datasets produced by [Website Content Crawler](https://apify.com/apify/website-content-crawler) Actor. So only datasets produced by this Actor are supported.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                                 | Subject                                                                     |
 | :------ | :--------- | :----------------------------------------------------------- | :-------------------------------------------------------------------------- |
+| 2.1.0   | 2023-10-13 | [31333](https://github.com/airbytehq/airbyte/pull/31333)     | Add stream for arbitrary datasets                                           |
 | 2.0.0   | 2023-09-18 | [30428](https://github.com/airbytehq/airbyte/pull/30428)     | Fix broken stream, manifest refactor                                        |
 | 1.0.0   | 2023-08-25 | [29859](https://github.com/airbytehq/airbyte/pull/29859)     | Migrate to lowcode                                                          |
 | 0.2.0   | 2022-06-20 | [28290](https://github.com/airbytehq/airbyte/pull/28290)     | Make connector work with platform changes not syncing empty stream schemas. |

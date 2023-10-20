@@ -38,13 +38,13 @@ Once pyenv and pipx is installed then run the following:
 
 ```bash
 # install airbyte-ci
-pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/
+pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/
 ```
 
 This command installs `airbyte-ci` and makes it globally available in your terminal.
 
 _Note: `--force` is required to ensure updates are applied on subsequent installs._
-_Note: `--version=python3.10` is required to ensure the correct python version is used._
+_Note: `--python=python3.10` is required to ensure the correct python version is used._
 _Note: `--editable` is required to ensure the correct python version is used._
 
 If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
@@ -81,7 +81,6 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
 - [`connectors` command subgroup](#connectors-command-subgroup)
   * [Options](#options-1)
 - [`connectors list` command](#connectors-list-command)
-- [`connectors format` command](#connectors-format-command)
 - [`connectors test` command](#connectors-test-command)
   * [Examples](#examples-)
   * [What it runs](#what-it-runs-)
@@ -90,7 +89,9 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
 - [`connectors publish` command](#connectors-publish-command)
 - [Examples](#examples)
 - [Options](#options-2)
-  * [What it runs](#what-it-runs-1)
+- [`connectors bump-version` command](#connectors-bump-version)
+- [`connectors upgrade-base-image` command](#connectors-upgrade-base-image)
+- [`connectors migrate-to-base-image` command](#connectors-migrate-to-base-image)
 - [`metadata` command subgroup](#metadata-command-subgroup)
 - [`metadata validate` command](#metadata-validate-command)
   * [Example](#example)
@@ -168,32 +169,6 @@ List connectors with a specific language:
 List connectors with multiple filters:
 
 `airbyte-ci connectors --language=low-code --support-level=certified list`
-
-### <a id="connectors-list-command"></a>`connectors format` command
-Run a code formatter on one or multiple connectors.
-
-For Python connectors we run the following tools, using the configuration defined in `pyproject.toml`:
-* `black` for code formatting
-* `isort` for import sorting
-* `licenseheaders` for adding license headers
-
-For Java connectors we run `./gradlew format`.
-
-In local CLI execution the formatted code is exported back the local repository. No commit or push is performed.
-In CI execution the formatted code is pushed to the remote branch. One format commit per connector.
-
-#### Examples
-Format a specific connector:
-
-`airbyte-ci connectors --name=source-pokeapi format`
-
-Format all Python connectors:
-
-`airbyte-ci connectors --language=python format`
-
-Format all connectors modified on the current branch:
-
-`airbyte-ci connectors --modified format`
 
 
 ### <a id="connectors-test-command"></a>`connectors test` command
@@ -342,11 +317,51 @@ flowchart TD
     validate-->check-->build-->upload_spec-->push-->pull-->upload_metadata
 ```
 
+
+### <a id="connectors-bump-version"></a>`connectors bump-version` command
+Bump the version of the selected connectors.
+
+### Examples
+Bump source-openweather: `airbyte-ci connectors --name=source-openweather bump-version patch <pr-number> "<changelog-entry>"`
+
+#### Arguments
+| Argument              | Description                                                            |
+| --------------------- | ---------------------------------------------------------------------- |
+| `BUMP_TYPE`           | major, minor or patch                                                  |
+| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry            |
+| `CHANGELOG_ENTRY`     | The changelog entry that will get added to the connector documentation |
+
+### <a id="connectors-upgrade-base-image"></a>`connectors upgrade-base-image` command
+Modify the selected connector metadata to use the latest base image version.
+
+### Examples
+Upgrade the base image for source-openweather: `airbyte-ci connectors --name=source-openweather upgrade-base-image`
+
+### Options
+| Option                  | Required | Default | Mapped environment variable | Description                                                                                                     |
+| ----------------------- | -------- | ------- | --------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `--docker-hub-username` | True     |         | `DOCKER_HUB_USERNAME`       | Your username to connect to DockerHub. It's used to read the base image registry.                               |
+| `--docker-hub-password` | True     |         | `DOCKER_HUB_PASSWORD`       | Your password to connect to DockerHub. It's used to read the base image registry.                               |
+| `--set-if-not-exists`   | False    | True    |                             | Whether to set or not the baseImage metadata if no connectorBuildOptions is declared in the connector metadata. |
+
+### <a id="connectors-migrate-to-base-image"></a>`connectors migrate-to-base-image` command
+Make a connector using a Dockerfile migrate to the base image by:
+* Removing its Dockerfile
+* Updating its metadata to use the latest base image version
+* Updating its documentation to explain the build process
+* Bumping by a patch version
+
+### Examples
+Migrate source-openweather to use the base image: `airbyte-ci connectors --name=source-openweather migrate-to-base-image`
+
+### Arguments
+| Argument              | Description                                                 |
+| --------------------- | ----------------------------------------------------------- |
+| `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry |
+
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 
 Available commands:
-* `airbyte-ci metadata test lib`
-* `airbyte-ci metadata test orchestrator`
 * `airbyte-ci metadata deploy orchestrator`
 
 ### <a id="metadata-upload-orchestrator"></a>`metadata deploy orchestrator` command
@@ -361,18 +376,6 @@ The `DAGSTER_CLOUD_METADATA_API_TOKEN` environment variable must be set.
 flowchart TD
     test[Run orchestrator tests] --> deploy[Deploy orchestrator to Dagster Cloud]
 ```
-
-### <a id="metadata-test-lib-command"></a>`metadata test lib` command
-This command runs tests for the metadata service library.
-
-#### Example
-`airbyte-ci metadata test lib`
-
-### <a id="metadata-test-orchestrator-command"></a>`metadata test orchestrator` command
-This command runs tests for the metadata service orchestrator.
-
-#### Example
-`airbyte-ci metadata test orchestrator`
 
 ### <a id="tests-command"></a>`tests` command
 This command runs the Python tests for a airbyte-ci poetry package.
@@ -394,7 +397,27 @@ This command runs the Python tests for a airbyte-ci poetry package.
 
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
-| ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+|---------| ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.2.1   | [#31653](https://github.com/airbytehq/airbyte/pull/31653)  | Fix CheckBaseImageIsUsed failing on non certified connectors.   
+| 2.2.0   | [#30527](https://github.com/airbytehq/airbyte/pull/30527)  | Add a new check for python connectors to make sure certified connectors use our base image.   
+| 2.1.1   | [#31488](https://github.com/airbytehq/airbyte/pull/31488)  | Improve `airbyte-ci` start time with Click Lazy load                                                      |
+| 2.1.0   | [#31412](https://github.com/airbytehq/airbyte/pull/31412)  | Run airbyte-ci from any where in airbyte project                                                          |
+| 2.0.4   | [#31487](https://github.com/airbytehq/airbyte/pull/31487)  | Allow for third party connector selections                                                                |
+| 2.0.3   | [#31525](https://github.com/airbytehq/airbyte/pull/31525)  | Refactor folder structure                                                                                 |
+| 2.0.2   | [#31533](https://github.com/airbytehq/airbyte/pull/31533)  | Pip cache volume by python version.                                                                       |
+| 2.0.1   | [#31545](https://github.com/airbytehq/airbyte/pull/31545)  | Reword the changelog entry when using `migrate-to-base-image`.                                            |
+| 2.0.0   | [#31424](https://github.com/airbytehq/airbyte/pull/31424)  | Remove `airbyte-ci connectors format` command.                                                            |
+| 1.9.4   | [#31478](https://github.com/airbytehq/airbyte/pull/31478)  | Fix running tests for connector-ops package.                                                              |
+| 1.9.3   | [#31457](https://github.com/airbytehq/airbyte/pull/31457)  | Improve the connector documentation for connectors migrated to our base image.                            |
+| 1.9.2   | [#31426](https://github.com/airbytehq/airbyte/pull/31426)  | Concurrent execution of java connectors tests.                                                            |
+| 1.9.1   | [#31455](https://github.com/airbytehq/airbyte/pull/31455)  | Fix `None` docker credentials on publish.                                                                 |
+| 1.9.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade-base-image`, `migrate-to-base-image`.                              |
+| 1.8.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade-base-image`, `migrate-to-base-image`.                              |
+| 1.7.2   | [#31343](https://github.com/airbytehq/airbyte/pull/31343)  | Bind Pytest integration tests to a dockerhost.                                                            |
+| 1.7.1   | [#31332](https://github.com/airbytehq/airbyte/pull/31332)  | Disable Gradle step caching on source-postgres.                                                           |
+| 1.7.0   | [#30526](https://github.com/airbytehq/airbyte/pull/30526)  | Implement pre/post install hooks support.                                                                 |
+| 1.6.0   | [#30474](https://github.com/airbytehq/airbyte/pull/30474)  | Test connector inside their containers.                                                                   |
+| 1.5.1   | [#31227](https://github.com/airbytehq/airbyte/pull/31227)  | Use python 3.11 in amazoncorretto-bazed gradle containers, run 'test' gradle task instead of 'check'.     |
 | 1.5.0   | [#30456](https://github.com/airbytehq/airbyte/pull/30456)  | Start building Python connectors using our base images.                                                   |
 | 1.4.6   | [ #31087](https://github.com/airbytehq/airbyte/pull/31087) | Throw error if airbyte-ci tools is out of date                                                            |
 | 1.4.5   | [#31133](https://github.com/airbytehq/airbyte/pull/31133)  | Fix bug when building containers using `with_integration_base_java_and_normalization`.                    |
@@ -452,9 +475,9 @@ To fix this, you can either:
 
 
 ## python3.10 not found
-If you get the following error when running `pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/`:
+If you get the following error when running `pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/`:
 ```bash
-$ pipx install --editable --force --version=python3.10 airbyte-ci/connectors/pipelines/
+$ pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipelines/
 Error: Python 3.10 not found on your system.
 ```
 
