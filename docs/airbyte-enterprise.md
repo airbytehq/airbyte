@@ -1,16 +1,14 @@
 # Airbyte Enterprise
 
-Airbyte Enterprise is a self-hosted version of Airbyte with additional features for enterprise customers. Airbyte Enterprise is currently in early development. Interested in Airbyte Enterprise for your organization? [Learn more](https://airbyte.com/solutions/airbyte-enterprise).
+[Airbyte Enterprise](https://airbyte.com/solutions/airbyte-enterprise) is a self-managed version of Airbyte with additional features for enterprise customers. Airbyte Enterprise is in an early access stage for select priority users. A valid license key is required to get started with Airbyte Enterprise. [Talk to sales](https://airbyte.com/company/talk-to-sales) to receive your license key.
 
-## Airbyte Enterprise License Key
-
-A valid license key is required for Airbyte Enterprise. Talk to your Sales Representative to receive your license key before installing Airbyte Enterprise.
+The following instructions outline how to:
+1. Configure Okta for Single Sign-On (SSO) with Airbyte Enterprise
+2. Deploy Airbyte Enterprise using Kubernetes (License Key Required)
 
 ## Single Sign-On (SSO)
 
-Airbyte Enterprise supports Single Sign-On, allowing an organization to manage user acces to their Airbyte Enterprise instance through the configuration of an Identity Provider (IdP).
-
-Airbyte Enterprise currently supports SSO via OIDC with [Okta](https://www.okta.com/) as an IdP.
+Airbyte Enterprise supports Single Sign-On, allowing an organization to manage user access to their Airbyte Enterprise instance through the configuration of an Identity Provider (IdP). Airbyte Enterprise currently supports SSO via OIDC with [Okta](https://www.okta.com/) as an IdP.
 
 ### Setting up Okta for SSO
 
@@ -50,9 +48,9 @@ _Example values_
 
 `<your-airbyte-domain>` should point to where your Airbyte instance will be available, including the http/https protocol.
 
-#### Deploying Airbyte Enterprise with Okta
+## Deploying Airbyte Enterprise with Okta
 
-Your Okta app is now set up and you're ready to deploy Airbyte with SSO! Take note of the following configuration values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
+Once your Okta app is set up, you're ready to deploy Airbyte with SSO. Take note of the following configuration values, as you will need them to configure Airbyte to use your new Okta SSO app integration:
 
 - Okta domain ([how to find your Okta domain](https://developer.okta.com/docs/guides/find-your-domain/main/))
 - App integration name

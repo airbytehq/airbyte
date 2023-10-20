@@ -255,6 +255,46 @@
             },
             "required": ["openai_key", "api_base", "deployment"],
             "description": "Use the Azure-hosted OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
+          },
+          {
+            "title": "OpenAI-compatible",
+            "type": "object",
+            "properties": {
+              "mode": {
+                "title": "Mode",
+                "default": "openai_compatible",
+                "const": "openai_compatible",
+                "enum": ["openai_compatible"],
+                "type": "string"
+              },
+              "api_key": {
+                "title": "API key",
+                "default": "",
+                "airbyte_secret": true,
+                "type": "string"
+              },
+              "base_url": {
+                "title": "Base URL",
+                "description": "The base URL for your OpenAI-compatible service",
+                "examples": ["https://your-service-name.com"],
+                "type": "string"
+              },
+              "model_name": {
+                "title": "Model name",
+                "description": "The name of the model to use for embedding",
+                "default": "text-embedding-ada-002",
+                "examples": ["text-embedding-ada-002"],
+                "type": "string"
+              },
+              "dimensions": {
+                "title": "Embedding dimensions",
+                "description": "The number of dimensions the embedding model is generating",
+                "examples": [1536, 384],
+                "type": "integer"
+              }
+            },
+            "required": ["base_url", "dimensions"],
+            "description": "Use a service that's compatible with the OpenAI API to embed text."
           }
         ]
       },
