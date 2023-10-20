@@ -87,7 +87,8 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           LOGGER.info("Debezium engine shutdown. Engine terminated successfully : {}", success);
           LOGGER.info(message);
           thrownError.set(error);
-          // If debezium has not shutdown correctly, it can indicate an error with the connector configuration or a partial sync success.
+          // If debezium has not shutdown correctly, it can indicate an error with the connector configuration
+          // or a partial sync success.
           // In situations like these, the preference is to fail loud and clear.
           if (thrownError.get() != null && !success) {
             thrownError.set(new RuntimeException(message));
