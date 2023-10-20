@@ -235,10 +235,8 @@ class Employees(IncrementalPendoPythonStream):
 # Source
 class SourcePendoPython(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        config = self._validate_and_transform(config)
-        authenticator = self.get_authenticator(config)
         url = f"{PendoPythonStream.url_base}page"
-        auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
+        auth_headers = {"Accept": "application/json", "X-Pendo-Integration-Key": config["api_key"]}
         try:
             session = requests.get(url, headers=auth_headers)
             session.raise_for_status()
