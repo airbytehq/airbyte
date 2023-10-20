@@ -64,7 +64,7 @@ To access the Sandbox environment:
 ## Supported streams and sync modes
 
 | Stream                                    | Environment  | Key                                        | Incremental |
-| :---------------------------------------- | ------------ | ------------------------------------------ | :---------- |
+|:------------------------------------------| ------------ |--------------------------------------------|:------------|
 | Advertisers                               | Prod,Sandbox | advertiser_id                              | No          |
 | AdGroups                                  | Prod,Sandbox | adgroup_id                                 | Yes         |
 | Ads                                       | Prod,Sandbox | ad_id                                      | Yes         |
@@ -78,9 +78,14 @@ To access the Sandbox environment:
 | AdGroupsReportsHourly                     | Prod,Sandbox | adgroup_id, stat_time_hour                 | Yes         |
 | AdGroupsReportsDaily                      | Prod,Sandbox | adgroup_id, stat_time_day                  | Yes         |
 | AdGroupsReportsLifetime                   | Prod,Sandbox | adgroup_id                                 | No          |
+| Audiences                                 | Prod,Sandbox | audience_id                                | No          |
 | CampaignsReportsHourly                    | Prod,Sandbox | campaign_id, stat_time_hour                | Yes         |
 | CampaignsReportsDaily                     | Prod,Sandbox | campaign_id, stat_time_day                 | Yes         |
 | CampaignsReportsLifetime                  | Prod,Sandbox | campaign_id                                | No          |
+| CreativeAssetsImages                      | Prod,Sandbox | image_id                                   | Yes         |
+| CreativeAssetsMusic                       | Prod,Sandbox | music_id                                   | Yes         |
+| CreativeAssetsPortfolio                   | Prod,Sandbox | creative_portfolio_id                      | No          |
+| CreativeAssetsVideo                       | Prod,Sandbox | video_id                                   | Yes         |
 | AdvertisersAudienceReportsDaily           | Prod         | advertiser_id, stat_time_day, gender, age  | Yes         |
 | AdvertisersAudienceReportsByCountryDaily  | Prod         | advertiser_id, stat_time_day, country_code | Yes         |
 | AdvertisersAudienceReportsByPlatformDaily | Prod         | advertiser_id, stat_time_day, platform     | Yes         |
@@ -581,7 +586,8 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
-| 3.7.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 3.8.0   | 2023-10-19 | [31610](https://github.com/airbytehq/airbyte/pull/31610) | Add Creative Assets and Audiences streams                                                        |
+| 3.7.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                  |
 | 3.7.0   | 2023-10-19 | [31493](https://github.com/airbytehq/airbyte/pull/31493) | Add fields to Ads stream                                                                         |
 | 3.6.0   | 2023-10-18 | [31537](https://github.com/airbytehq/airbyte/pull/31537) | Use default availability strategy                                                                |
 | 3.5.0   | 2023-10-16 | [31445](https://github.com/airbytehq/airbyte/pull/31445) | Apply minimum date restrictions                                                                  |
