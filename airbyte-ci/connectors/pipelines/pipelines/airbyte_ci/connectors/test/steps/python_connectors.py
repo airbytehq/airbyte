@@ -181,6 +181,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
     connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
 
+    # Question: Do we even need this?
     context.connector_secrets = await secrets.get_connector_secrets(context)
 
     unit_test_results = await UnitTests(context).run(connector_container)
@@ -196,4 +197,27 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         ]
 
     return step_results + [task.value for task in tasks]
+
+@dataclass
+def WrappedStep():
+    id: str
+    step: Step
+    depends_on: List[str] = field(default_factory=list)
+
+
+def construct_steps(context: ConnectorContext) -> List[Step]:
+    """Construct the steps to run for a connector test pipeline.
+
+    Args:
+        context (ConnectorContext): The current connector context.
+
+    Returns:
+        List[Step]: The steps to run for a connector test pipeline.
+    """
+    steps = [
+        WrappedStep(id="build_image", step=lambda ctx: BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run()),
+
+
+    ]
+    return steps
 
