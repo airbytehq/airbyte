@@ -285,7 +285,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                             },
                                         },
                                         {
-                                            "title": "Markdown/PDF/Docx Format (Experimental)",
+                                            "title": "Document File Type Format (Experimental)",
                                             "type": "object",
                                             "properties": {
                                                 "filetype": {
@@ -295,7 +295,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                     "type": "string",
                                                 }
                                             },
-                                            "description": "Extract text from document formats and emit as one record per file.",
+                                            "description": "Extract text from document formats (.pdf, .docx, .md) and emit as one record per file.",
                                         },
                                     ],
                                 },
