@@ -44,7 +44,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
 
         For the stream:
         - Verify that we can list files from the stream using the configured globs.
-        - Verify that we can read one file from the stream.
+        - Verify that we can read one file from the stream as long as the stream parser is not setting parser_max_n_files_for_parsability to 0.
 
         This method will also check that the files and their contents are consistent
         with the configured options, as follows:
@@ -53,9 +53,15 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         - If the user provided a schema in the config, check that a subset of records in
           one file conform to the schema via a call to stream.conforms_to_schema(schema).
         """
+        parser = stream.get_parser()
         try:
             files = self._check_list_files(stream)
-            self._check_parse_record(stream, files[0], logger)
+            if not parser.parser_max_n_files_for_parsability == 0:
+                self._check_parse_record(stream, files[0], logger)
+            else:
+                # If the parser is set to not check parsability, we still want to check that we can open the file.
+                handle = stream.stream_reader.open_file(files[0], parser.file_read_mode, None, logger)
+                handle.close()
         except CheckAvailabilityError:
             return False, "".join(traceback.format_exc())
 

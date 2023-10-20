@@ -121,6 +121,14 @@ public class Jsons {
     }
   }
 
+  public static <T> Optional<T> tryDeserializeExact(final String jsonString, final Class<T> klass) {
+    try {
+      return Optional.of(OBJECT_MAPPER_EXACT.readValue(jsonString, klass));
+    } catch (final Throwable e) {
+      return Optional.empty();
+    }
+  }
+
   public static Optional<JsonNode> tryDeserialize(final String jsonString) {
     try {
       return Optional.of(OBJECT_MAPPER.readTree(jsonString));
