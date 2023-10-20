@@ -4,11 +4,12 @@ connectionSpecification:
   title: Persistiq Spec
   type: object
   required:
-  - api_key
-  additionalProperties: false
+    - api_key
+  additionalProperties: true
   properties:
     api_key:
       type: string
-      description: PersistIq API Key. See the <a href="https://apidocs.persistiq.com/#authentication">docs</a>
+      description:
+        PersistIq API Key. See the <a href="https://apidocs.persistiq.com/#authentication">docs</a>
         for more information on where to find that key.
       airbyte_secret: true
