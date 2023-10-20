@@ -17,6 +17,7 @@ from source_orb.source import (
     Plans,
     Subscriptions,
     SubscriptionUsage,
+    SubscriptionVersions,
 )
 
 
@@ -662,3 +663,26 @@ def test_source_defined_cursor(patch_incremental_base_class):
 def test_stream_checkpoint_interval(patch_incremental_base_class):
     stream = IncrementalOrbStream()
     assert stream.state_checkpoint_interval is None
+
+
+@pytest.mark.parametrize(
+    ("current_stream_state", "latest_record", "expected_state"),
+    [
+        # No state
+        (
+            {},
+            dict(modified_at="2022-01-26T12:00:00+00:00"),
+            dict(modified_at="2022-01-26T12:00:00+00:00"),
+        ),
+        # Existing state
+        (
+            dict(modified_at="2022-01-26T12:00:00+00:00"),
+            dict(modified_at="2023-01-26T12:00:00+00:00"),
+            dict(modified_at="2023-01-26T12:00:00+00:00"),
+        ),
+    ],
+)
+def test_subscription_versions_get_updated_state(mocker, current_stream_state, latest_record, expected_state):
+    stream = SubscriptionVersions()
+    inputs = {"current_stream_state": current_stream_state, "latest_record": latest_record}
+    assert stream.get_updated_state(**inputs) == expected_state
