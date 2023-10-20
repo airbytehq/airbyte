@@ -29,6 +29,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
 import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoOpTyperDeduperWithV1V2Migrations;
 import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
 import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
@@ -216,9 +217,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector)
-      throws Exception {
-    throw new IllegalStateException("Should use getSerializedMessageConsumer");
+                                            final Consumer<AirbyteMessage> outputRecordCollector) {
+    throw new UnsupportedOperationException("Should use getSerializedMessageConsumer");
   }
 
   @Override
@@ -227,31 +227,20 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
-    if (uploadingMethod == UploadingMethod.STANDARD) {
-      final String defaultNamespace = BigQueryUtils.getDatasetId(config);
-      setDefaultStreamNamespace(catalog, defaultNamespace);
-
-      final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
-      final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
-      final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation);
-      final BigQuery bigquery = getBigQuery(config);
-      final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation);
-
-      LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
-          "Please use the GCS upload mode if you are syncing a large amount of data.");
-      return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
-    }
-
-    // Shared code start
     final String defaultNamespace = BigQueryUtils.getDatasetId(config);
     setDefaultStreamNamespace(catalog, defaultNamespace);
-
+    final boolean disableTypeDedupe = BigQueryUtils.getDisableTypeDedupFlag(config);
     final String datasetLocation = BigQueryUtils.getDatasetLocation(config);
     final BigQuerySqlGenerator sqlGenerator = new BigQuerySqlGenerator(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText(), datasetLocation);
     final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation);
     final BigQuery bigquery = getBigQuery(config);
-    final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation);
-    // Shared code end
+    final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
+
+    if (uploadingMethod == UploadingMethod.STANDARD) {
+      LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
+          "Please use the GCS upload mode if you are syncing a large amount of data.");
+      return getStandardRecordConsumer(bigquery, config, catalog, parsedCatalog, outputRecordCollector, typerDeduper);
+    }
 
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
     final GcsDestinationConfig gcsConfig = BigQueryUtils.getGcsCsvDestinationConfig(config);
@@ -433,12 +422,21 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   private TyperDeduper buildTyperDeduper(final BigQuerySqlGenerator sqlGenerator,
                                          final ParsedCatalog parsedCatalog,
                                          final BigQuery bigquery,
-                                         final String datasetLocation) {
+                                         final String datasetLocation,
+                                         final boolean disableTypeDedupe) {
     final BigQueryV1V2Migrator migrator = new BigQueryV1V2Migrator(bigquery, namingResolver);
     final BigQueryV2TableMigrator v2RawTableMigrator = new BigQueryV2TableMigrator(bigquery);
+    final BigQueryDestinationHandler destinationHandler = new BigQueryDestinationHandler(bigquery, datasetLocation);
+
+    if (disableTypeDedupe) {
+      return new NoOpTyperDeduperWithV1V2Migrations<>(
+          sqlGenerator, destinationHandler, parsedCatalog, migrator, v2RawTableMigrator, 8
+      );
+    }
+
     return new DefaultTyperDeduper<>(
         sqlGenerator,
-        new BigQueryDestinationHandler(bigquery, datasetLocation),
+        destinationHandler,
         parsedCatalog,
         migrator,
         v2RawTableMigrator,
