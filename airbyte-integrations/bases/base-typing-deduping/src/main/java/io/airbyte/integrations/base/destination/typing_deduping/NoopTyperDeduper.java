@@ -37,12 +37,14 @@ public class NoopTyperDeduper implements TyperDeduper {
 
       @Override
       public boolean tryLock() {
-        return false;
+        // To mimic NoOp behavior always return true that lock is acquired
+        return true;
       }
 
       @Override
       public boolean tryLock(final long time, final TimeUnit unit) throws InterruptedException {
-        return false;
+        // To mimic NoOp behavior always return true that lock is acquired
+        return true;
       }
 
       @Override

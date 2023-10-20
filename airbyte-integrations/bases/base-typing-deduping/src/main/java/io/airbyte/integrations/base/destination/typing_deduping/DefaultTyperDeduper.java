@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * <li>{@link #typeAndDedupe(String, String, boolean)} as needed throughout the sync</li>
  * <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
- * Note that createFinalTables initializes some internal state. The other methods will throw an
+ * Note that #prepareTables() initializes some internal state. The other methods will throw an
  * exception if that method was not called.
  */
 public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper {
