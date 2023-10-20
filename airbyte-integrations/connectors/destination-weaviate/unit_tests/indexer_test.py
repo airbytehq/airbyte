@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from collections import defaultdict
 import unittest
+from collections import defaultdict
 from unittest.mock import ANY, Mock, call, patch
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import Chunk
