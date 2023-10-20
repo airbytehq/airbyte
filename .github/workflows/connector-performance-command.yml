@@ -32,6 +32,10 @@ on:
         required: false
         type: string
         default: "full_refresh"
+      report-to-datadog:
+        description: "Whether to report the performance test results to Datadog."
+        required: false
+        default: "true"
   workflow_dispatch:
     inputs:
       connector:
@@ -74,7 +78,7 @@ on:
           - full_refresh
           - incremental
         default: "full_refresh"
-      reportToDatadog:
+      report-to-datadog:
         description: "Whether to report the performance test results to Datadog."
         required: false
         default: "false"
@@ -207,7 +211,7 @@ jobs:
           DS: ${{ inputs.dataset }}
           STREAM_NUMBER: ${{ inputs.stream-number }}
           SYNC_MODE: ${{ inputs.sync-mode }}
-          REPORT_TO_DATADOG: ${{ inputs.reportToDatadog }}
+          REPORT_TO_DATADOG: ${{ inputs.report-to-datadog }}
           PREFIX: '{"type":"LOG","log":{"level":"INFO","message":"INFO i.a.i.p.PerformanceTest(runTest):165'
           SUFFIX: '"}}'
           HARNESS_TYPE: ${{ steps.which-harness.outputs.harness_type }}
