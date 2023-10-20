@@ -13,9 +13,9 @@ from typing import Iterable, List, Optional, Set
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from google.oauth2 import credentials, service_account
+from googleapiclient._apis.drive.v3.resources import DriveResource
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
-from googleapiclient._apis.drive.v3.resources import DriveResource
 
 from .spec import SourceGoogleDriveSpec as Config
 
@@ -50,7 +50,6 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         """
         assert isinstance(value, Config)
         self._config = value
-
 
     @property
     def google_drive_service(self) -> DriveResource:
