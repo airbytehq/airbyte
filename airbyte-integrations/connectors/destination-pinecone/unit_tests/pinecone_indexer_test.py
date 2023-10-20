@@ -184,7 +184,7 @@ def generate_catalog():
 def test_pinecone_pre_sync(mock_describe_index):
     indexer = create_pinecone_indexer()
     indexer.pre_sync(generate_catalog())
-    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_stream": "example_stream2"}, namespace="ns2")
+    indexer.pinecone_index.delete.assert_called_with(filter={"_ab_stream": "ns2_example_stream2"}, namespace="ns2")
 
 
 def test_pinecone_pre_sync_starter(mock_describe_index):
@@ -196,7 +196,7 @@ def test_pinecone_pre_sync_starter(mock_describe_index):
     ]
     indexer.pre_sync(generate_catalog())
     indexer.pinecone_index.query.assert_called_with(
-        vector=[0, 0, 0], filter={"_ab_stream": "example_stream2"}, top_k=10_000, namespace="ns2"
+        vector=[0, 0, 0], filter={"_ab_stream": "ns2_example_stream2"}, top_k=10_000, namespace="ns2"
     )
     indexer.pinecone_index.delete.assert_called_with(ids=["doc_id1", "doc_id2"], namespace="ns2")
 
