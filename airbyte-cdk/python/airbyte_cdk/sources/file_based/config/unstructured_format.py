@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field
 
 class UnstructuredFormat(BaseModel):
     class Config:
-        title = "Markdown/PDF/Docx Format (Experimental)"
-        schema_extra = {"description": "Extract text from document formats and emit as one record per file."}
+        title = "Document File Type Format (Experimental)"
+        schema_extra = {"description": "Extract text from document formats (.pdf, .docx, .md) and emit as one record per file."}
 
     filetype: str = Field(
         "unstructured",
