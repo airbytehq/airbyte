@@ -451,6 +451,12 @@
     "status": { "type": ["null", "string"] },
     "payment_method_configuration_details": {
       "$ref": "payment_method_configuration_details.json"
+    },
+    "client_secret": {
+      "type": ["null", "string"]
+    },
+    "ui_mode": {
+      "type": ["null", "string"]
     }
   }
 }

@@ -3,8 +3,9 @@
 #
 
 import platform
-from pathlib import Path
+from enum import Enum
 
+import git
 from dagger import Platform
 
 PYPROJECT_TOML_FILE_PATH = "pyproject.toml"
@@ -23,7 +24,13 @@ CONNECTOR_TESTING_REQUIREMENTS = [
 ]
 
 BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
-LOCAL_BUILD_PLATFORM = Platform(f"linux/{platform.machine()}")
+
+PLATFORM_MACHINE_TO_DAGGER_PLATFORM = {
+    "x86_64": Platform("linux/amd64"),
+    "arm64": Platform("linux/arm64"),
+    "amd64": Platform("linux/amd64"),
+}
+LOCAL_BUILD_PLATFORM = PLATFORM_MACHINE_TO_DAGGER_PLATFORM[platform.machine()]
 AMAZONCORRETTO_IMAGE = "amazoncorretto:17.0.8-al2023"
 DOCKER_VERSION = "24.0.2"
 DOCKER_DIND_IMAGE = f"docker:{DOCKER_VERSION}-dind"
@@ -38,3 +45,34 @@ GCS_PUBLIC_DOMAIN = "https://storage.cloud.google.com"
 DOCKER_HOST_NAME = "global-docker-host"
 DOCKER_HOST_PORT = 2375
 DOCKER_TMP_VOLUME_NAME = "shared-tmp"
+REPO = git.Repo(search_parent_directories=True)
+REPO_PATH = REPO.working_tree_dir
+STATIC_REPORT_PREFIX = "airbyte-ci"
+
+
+class CIContext(str, Enum):
+    """An enum for Ci context values which can be ["manual", "pull_request", "nightly_builds"]."""
+
+    MANUAL = "manual"
+    PULL_REQUEST = "pull_request"
+    NIGHTLY_BUILDS = "nightly_builds"
+    MASTER = "master"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+class ContextState(Enum):
+    """Enum to characterize the current context state, values are used for external representation on GitHub commit checks."""
+
+    INITIALIZED = {"github_state": "pending", "description": "Pipelines are being initialized..."}
+    RUNNING = {"github_state": "pending", "description": "Pipelines are running..."}
+    ERROR = {"github_state": "error", "description": "Something went wrong while running the Pipelines."}
+    SUCCESSFUL = {"github_state": "success", "description": "All Pipelines ran successfully."}
+    FAILURE = {"github_state": "failure", "description": "Pipeline failed."}
+
+
+class INTERNAL_TOOL_PATHS(str, Enum):
+    CI_CREDENTIALS = "airbyte-ci/connectors/ci_credentials"
+    CONNECTOR_OPS = "airbyte-ci/connectors/connector_ops"
+    METADATA_SERVICE = "airbyte-ci/connectors/metadata_service/lib"
