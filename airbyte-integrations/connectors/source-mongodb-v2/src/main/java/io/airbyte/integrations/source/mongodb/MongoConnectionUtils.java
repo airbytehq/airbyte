@@ -41,7 +41,7 @@ public class MongoConnectionUtils {
 
     if (config.hasAuthCredentials()) {
       final String authSource = config.getAuthSource();
-      final String user = config.getUsername();
+      final String user = URLEncoder.encode(config.getUsername(), StandardCharsets.UTF_8);
       final String password = URLEncoder.encode(config.getPassword(), StandardCharsets.UTF_8);
       mongoClientSettingsBuilder.credential(MongoCredential.createCredential(user, authSource, password.toCharArray()));
     }

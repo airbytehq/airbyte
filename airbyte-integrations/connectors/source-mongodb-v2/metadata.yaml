@@ -22,9 +22,6 @@ data:
   tags:
     - language:java
   releases:
-    1.0.1:
-      message: >
-        Patched bug where passwords with special characters were not being handled correctly.
     breakingChanges:
       1.0.0:
         message: >
