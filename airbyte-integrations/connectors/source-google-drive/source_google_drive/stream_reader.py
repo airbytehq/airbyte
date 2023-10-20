@@ -6,27 +6,16 @@ import io
 import json
 import logging
 import re
-from contextlib import contextmanager
 from datetime import datetime
 from io import IOBase
-from typing import Any, Iterable, List, Optional, Set
+from typing import Iterable, List, Optional, Set
 
-import boto3.session
-import pytz
-import smart_open
-from airbyte_cdk.models import ConnectorSpecification
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
-from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
-from botocore.client import BaseClient
-from botocore.client import Config as ClientConfig
-from google.auth.transport.requests import Request
 from google.oauth2 import credentials, service_account
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient._apis.drive.v3.resources import DriveResource
 
 from .spec import SourceGoogleDriveSpec as Config
 
@@ -62,8 +51,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, Config)
         self._config = value
 
+
     @property
-    def google_drive_service(self) -> BaseClient:
+    def google_drive_service(self) -> DriveResource:
         if self.config is None:
             # We shouldn't hit this; config should always get set before attempting to
             # list or read files.
