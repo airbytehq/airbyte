@@ -125,7 +125,7 @@ def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaign
 @pytest.mark.parametrize(
     "stream_state, expected_records",
     [
-        (   # Test case 1: all records >= state
+        (  # Test case 1: all records >= state
             {"campaign_1": {"timestamp": "2022-01-01T00:00:00Z"}},
             [
                 {"campaign_id": "campaign_1", "email_id": "email_1", "timestamp": "2022-01-02T00:00:00Z"},
@@ -134,7 +134,7 @@ def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaign
                 {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-03T00:00:00Z"},
             ],
         ),
-        (   # Test case 2: one record < state
+        (  # Test case 2: one record < state
             {"campaign_1": {"timestamp": "2022-01-02T00:00:00Z"}},
             [
                 {"campaign_id": "campaign_1", "email_id": "email_1", "timestamp": "2022-01-02T00:00:00Z"},
@@ -142,21 +142,21 @@ def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaign
                 {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-03T00:00:00Z"},
             ],
         ),
-        (   # Test case 3: one record >= state
+        (  # Test case 3: one record >= state
             {"campaign_1": {"timestamp": "2022-01-03T00:00:00Z"}},
             [
                 {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-03T00:00:00Z"},
             ],
         ),
-        (   # Test case 4: no state, all records returned
+        (  # Test case 4: no state, all records returned
             {},
             [
                 {"campaign_id": "campaign_1", "email_id": "email_1", "timestamp": "2022-01-02T00:00:00Z"},
                 {"campaign_id": "campaign_1", "email_id": "email_2", "timestamp": "2022-01-02T00:00:00Z"},
                 {"campaign_id": "campaign_1", "email_id": "email_3", "timestamp": "2022-01-01T00:00:00Z"},
                 {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-03T00:00:00Z"},
-            ]
-        )
+            ],
+        ),
     ],
 )
 def test_parse_response(stream_state, expected_records, unsubscribes_stream):
@@ -178,23 +178,64 @@ def test_parse_response(stream_state, expected_records, unsubscribes_stream):
     [
         # Test case 1: latest_record > and updates the state of campaign_1
         (
-            {"email_id": "email_1", "email_address": "address1@email.io", "reason": "None given", "timestamp": "2022-01-05T00:00:00Z", "campaign_id": "campaign_1"},
-            {"campaign_1": {"timestamp": "2022-01-05T00:00:00Z"}, "campaign_2": {"timestamp": "2022-01-02T00:00:00Z"}, "campaign_3": {"timestamp": "2022-01-03T00:00:00Z"}},
+            {
+                "email_id": "email_1",
+                "email_address": "address1@email.io",
+                "reason": "None given",
+                "timestamp": "2022-01-05T00:00:00Z",
+                "campaign_id": "campaign_1",
+            },
+            {
+                "campaign_1": {"timestamp": "2022-01-05T00:00:00Z"},
+                "campaign_2": {"timestamp": "2022-01-02T00:00:00Z"},
+                "campaign_3": {"timestamp": "2022-01-03T00:00:00Z"},
+            },
         ),
         # Test case 2: latest_record > and updates the state of campaign_2
         (
-            {"email_id": "email_2", "email_address": "address2@email.io", "reason": "Inappropriate content", "timestamp": "2022-01-05T00:00:00Z", "campaign_id": "campaign_2"},
-            {"campaign_1": {"timestamp": "2022-01-01T00:00:00Z"}, "campaign_2": {"timestamp": "2022-01-05T00:00:00Z"}, "campaign_3": {"timestamp": "2022-01-03T00:00:00Z"}},
+            {
+                "email_id": "email_2",
+                "email_address": "address2@email.io",
+                "reason": "Inappropriate content",
+                "timestamp": "2022-01-05T00:00:00Z",
+                "campaign_id": "campaign_2",
+            },
+            {
+                "campaign_1": {"timestamp": "2022-01-01T00:00:00Z"},
+                "campaign_2": {"timestamp": "2022-01-05T00:00:00Z"},
+                "campaign_3": {"timestamp": "2022-01-03T00:00:00Z"},
+            },
         ),
         # Test case 3: latest_record < and does not update the state of campaign_3
         (
-            {"email_id": "email_3", "email_address": "address3@email.io", "reason": "No longer interested", "timestamp": "2021-01-01T00:00:00Z", "campaign_id": "campaign_3"},
-            {"campaign_1": {"timestamp": "2022-01-01T00:00:00Z"}, "campaign_2": {"timestamp": "2022-01-02T00:00:00Z"}, "campaign_3": {"timestamp": "2022-01-03T00:00:00Z"}},
+            {
+                "email_id": "email_3",
+                "email_address": "address3@email.io",
+                "reason": "No longer interested",
+                "timestamp": "2021-01-01T00:00:00Z",
+                "campaign_id": "campaign_3",
+            },
+            {
+                "campaign_1": {"timestamp": "2022-01-01T00:00:00Z"},
+                "campaign_2": {"timestamp": "2022-01-02T00:00:00Z"},
+                "campaign_3": {"timestamp": "2022-01-03T00:00:00Z"},
+            },
         ),
         # Test case 4: latest_record sets state campaign_4
         (
-            {"email_id": "email_4", "email_address": "address4@email.io", "reason": "No longer interested", "timestamp": "2022-01-04T00:00:00Z", "campaign_id": "campaign_4"},
-            {"campaign_1": {"timestamp": "2022-01-01T00:00:00Z"}, "campaign_2": {"timestamp": "2022-01-02T00:00:00Z"}, "campaign_3": {"timestamp": "2022-01-03T00:00:00Z"}, "campaign_4": {"timestamp": "2022-01-04T00:00:00Z"}},
+            {
+                "email_id": "email_4",
+                "email_address": "address4@email.io",
+                "reason": "No longer interested",
+                "timestamp": "2022-01-04T00:00:00Z",
+                "campaign_id": "campaign_4",
+            },
+            {
+                "campaign_1": {"timestamp": "2022-01-01T00:00:00Z"},
+                "campaign_2": {"timestamp": "2022-01-02T00:00:00Z"},
+                "campaign_3": {"timestamp": "2022-01-03T00:00:00Z"},
+                "campaign_4": {"timestamp": "2022-01-04T00:00:00Z"},
+            },
         ),
     ],
 )

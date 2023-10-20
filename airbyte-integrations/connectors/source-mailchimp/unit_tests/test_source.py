@@ -3,6 +3,7 @@
 #
 
 import logging
+
 import pytest
 import requests
 from airbyte_cdk.logger import AirbyteLogger

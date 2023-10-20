@@ -39,9 +39,9 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { 
+      "stream_state": {
         "00f14fbfd8": { "timestamp": "2231-09-26T05:42:10+00:00" }
-    },
+      },
       "stream_descriptor": { "name": "unsubscribes" }
     }
   }
