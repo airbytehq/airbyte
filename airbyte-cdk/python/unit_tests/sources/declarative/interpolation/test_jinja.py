@@ -13,7 +13,7 @@ interpolation = JinjaInterpolation()
 
 
 def test_get_value_from_config():
-    s = "{{ \"config['date']\" }}"
+    s = "{{ config['date'] }}"
     config = {"date": "2022-01-01"}
     val = interpolation.eval(s, config)
     assert val == "2022-01-01"
