@@ -17,7 +17,7 @@ class AddedFieldDefinition:
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
-    value_type: Optional[Type]
+    value_type: Optional[Type[Any]]
     parameters: InitVar[Mapping[str, Any]]
 
 
@@ -27,7 +27,7 @@ class ParsedAddFieldDefinition:
 
     path: FieldPointer
     value: InterpolatedString
-    value_type: Optional[Type]
+    value_type: Optional[Type[Any]]
     parameters: InitVar[Mapping[str, Any]]
 
 
@@ -87,10 +87,10 @@ class AddFields(RecordTransformation):
     parameters: InitVar[Mapping[str, Any]]
     _parsed_fields: List[ParsedAddFieldDefinition] = field(init=False, repr=False, default_factory=list)
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         for add_field in self.fields:
             if len(add_field.path) < 1:
-                raise f"Expected a non-zero-length path for the AddFields transformation {add_field}"
+                raise ValueError(f"Expected a non-zero-length path for the AddFields transformation {add_field}")
 
             if not isinstance(add_field.value, InterpolatedString):
                 if not isinstance(add_field.value, str):
@@ -116,6 +116,8 @@ class AddFields(RecordTransformation):
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
+        if config is None:
+            config = {}
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
         for parsed_field in self._parsed_fields:
             valid_types = (parsed_field.value_type,) if parsed_field.value_type else None
@@ -124,5 +126,5 @@ class AddFields(RecordTransformation):
 
         return record
 
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+    def __eq__(self, other: Any) -> bool:
+        return bool(self.__dict__ == other.__dict__)
