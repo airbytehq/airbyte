@@ -108,6 +108,7 @@ def insert_ledger_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any
     ledger_master_payload = prepare_ledger_master_payload(data=data, logger=logger)
 
     try:
+        logger.info(f"ledger master payload : {ledger_master_payload}")
         response = requests.request(
             method="POST", url=ledger_master_template_url, data=ledger_master_payload, headers=ledger_master_headers
         )
@@ -267,6 +268,7 @@ def insert_item_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
     item_master_payload = prepare_item_master_payload(data=data, logger=logger)
 
     try:
+        logger.info(f"item payload : {item_master_payload}")
         response = requests.request(method="POST", url=item_master_template_url, data=item_master_payload, headers=item_master_headers)
     except Exception as e:
         logger.error(f'request for item : {data["Item Name"]} not successful, {e}')
@@ -434,6 +436,7 @@ def insert_payment_voucher_to_tally(
     payment_voucher_payload = prepare_payment_voucher_payload(data=data, logger=logger)
 
     try:
+        logger.info(f"payment voucher payload : {payment_voucher_payload}")
         response = requests.request(
             method="POST", url=payment_voucher_template_url, data=payment_voucher_payload, headers=payment_voucher_headers
         )
