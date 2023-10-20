@@ -260,8 +260,6 @@ class ModelToComponentFactory:
             ValueType.number: float,
             ValueType.integer: int,
             ValueType.boolean: bool,
-            ValueType.object: dict,
-            ValueType.array: list,
         }
         return names_to_types[value_type]
 

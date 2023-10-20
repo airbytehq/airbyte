@@ -666,8 +666,6 @@ class ValueType(Enum):
     number = "number"
     integer = "integer"
     boolean = "boolean"
-    object = "object"
-    array = "array"
 
 
 class WaitTimeFromHeader(BaseModel):

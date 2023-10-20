@@ -1501,62 +1501,6 @@ class TestCreateTransformations:
         ]
         self._test_add_fields(content, expected)
 
-    def test_add_fields_value_type_is_object(self):
-        content = f"""
-        the_stream:
-            type: DeclarativeStream
-            $parameters:
-                {self.base_parameters}
-                transformations:
-                    - type: AddFields
-                      fields:
-                        - path: ["field1"]
-                          value: "{{}}"
-                          value_type: object
-        """
-        expected = [
-            AddFields(
-                fields=[
-                    AddedFieldDefinition(
-                        path=["field1"],
-                        value=InterpolatedString(string="{}", default="{}", parameters={}),
-                        value_type=dict,
-                        parameters={},
-                    )
-                ],
-                parameters={},
-            )
-        ]
-        self._test_add_fields(content, expected)
-
-    def test_add_fields_value_type_is_array(self):
-        content = f"""
-        the_stream:
-            type: DeclarativeStream
-            $parameters:
-                {self.base_parameters}
-                transformations:
-                    - type: AddFields
-                      fields:
-                        - path: ["field1"]
-                          value: "[]"
-                          value_type: array
-        """
-        expected = [
-            AddFields(
-                fields=[
-                    AddedFieldDefinition(
-                        path=["field1"],
-                        value=InterpolatedString(string="[]", default="[]", parameters={}),
-                        value_type=list,
-                        parameters={},
-                    )
-                ],
-                parameters={},
-            )
-        ]
-        self._test_add_fields(content, expected)
-
     def _test_add_fields(self, content, expected):
         parsed_manifest = YamlDeclarativeSource._parse(content)
         resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
