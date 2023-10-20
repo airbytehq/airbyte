@@ -92,6 +92,12 @@ class GradleTask(Step, ABC):
             self.dagger_client.container()
             # Use a linux+jdk base image with long-term support, such as amazoncorretto.
             .from_(AMAZONCORRETTO_IMAGE)
+            # Mount the persistent cache volume, but not to $GRADLE_HOME, because gradle doesn't expect concurrent modifications.
+            .with_mounted_cache("/root/gradle-cache", self.persistent_cache_volume, sharing=CacheSharingMode.LOCKED)
+            # Set GRADLE_HOME to the directory which will be rsync-ed with the gradle cache volume.
+            .with_env_variable("GRADLE_HOME", "/root/.gradle")
+            # Same for GRADLE_USER_HOME.
+            .with_env_variable("GRADLE_USER_HOME", "/root/.gradle")
             # Install a bunch of packages as early as possible.
             .with_exec(
                 sh_dash_c(
@@ -109,10 +115,6 @@ class GradleTask(Step, ABC):
                     ]
                 )
             )
-            # Set GRADLE_HOME to the directory which will be rsync-ed with the gradle cache volume.
-            .with_env_variable("GRADLE_HOME", "/root/.gradle")
-            # Same for GRADLE_USER_HOME.
-            .with_env_variable("GRADLE_USER_HOME", "/root/.gradle")
             # Set RUN_IN_AIRBYTE_CI to tell gradle how to configure its build cache.
             # This is consumed by settings.gradle in the repo root.
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
@@ -127,8 +129,6 @@ class GradleTask(Step, ABC):
             gradle_container_base
             # Mount the whole repo.
             .with_directory("/airbyte", self.context.get_repo_dir("."))
-            # Mount the persistent cache volume, but not to $GRADLE_HOME, because gradle doesn't expect concurrent modifications.
-            .with_mounted_cache("/root/gradle-cache", self.persistent_cache_volume, sharing=CacheSharingMode.LOCKED)
             # Update the cache in place by executing a gradle task which will update all dependencies and build the CDK.
             .with_exec(
                 sh_dash_c(
@@ -159,8 +159,6 @@ class GradleTask(Step, ABC):
             .with_mounted_directory("/airbyte", self.context.get_repo_dir(".", include=include))
             # Mount the sources for the connector and its dependencies in the git repo.
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
-            # Mount the cache volume for the persistent gradle dependency cache.
-            .with_mounted_cache("/root/gradle-cache", self.persistent_cache_volume)
         )
 
         # From this point on, we add layers which are task-dependent.
