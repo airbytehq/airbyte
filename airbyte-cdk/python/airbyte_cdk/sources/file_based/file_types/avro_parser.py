@@ -45,7 +45,7 @@ class AvroParser(FileTypeParser):
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
+        stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
         avro_format = config.format
@@ -130,7 +130,7 @@ class AvroParser(FileTypeParser):
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
+        stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:

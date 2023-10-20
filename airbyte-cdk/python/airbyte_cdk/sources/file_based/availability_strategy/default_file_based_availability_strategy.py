@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy):
-    def __init__(self, stream_reader: AbstractFileBasedStreamReader[RemoteFile]):
+    def __init__(self, stream_reader: AbstractFileBasedStreamReader):
         self.stream_reader = stream_reader
 
     def check_availability(self, stream: "AbstractFileBasedStream", logger: logging.Logger, _: Optional[Source]) -> Tuple[bool, Optional[str]]:  # type: ignore[override]

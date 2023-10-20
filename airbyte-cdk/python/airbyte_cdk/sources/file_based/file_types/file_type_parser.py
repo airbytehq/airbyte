@@ -39,7 +39,7 @@ class FileTypeParser(ABC):
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
+        stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
         """
@@ -52,7 +52,7 @@ class FileTypeParser(ABC):
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
+        stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Record]:

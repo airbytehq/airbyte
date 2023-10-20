@@ -71,7 +71,7 @@ class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
         self._validation_policies = validation_policies
         return self
 
-    def set_stream_reader(self, stream_reader: AbstractFileBasedStreamReader[RemoteFile]) -> "FileBasedSourceBuilder":
+    def set_stream_reader(self, stream_reader: AbstractFileBasedStreamReader) -> "FileBasedSourceBuilder":
         self._stream_reader = stream_reader
         return self
 

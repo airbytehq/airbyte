@@ -39,7 +39,7 @@ class AbstractFileBasedStream(Stream):
         self,
         config: FileBasedStreamConfig,
         catalog_schema: Optional[Mapping[str, Any]],
-        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
+        stream_reader: AbstractFileBasedStreamReader,
         availability_strategy: AbstractFileBasedAvailabilityStrategy,
         discovery_policy: AbstractDiscoveryPolicy,
         parsers: Dict[Type[Any], FileTypeParser],

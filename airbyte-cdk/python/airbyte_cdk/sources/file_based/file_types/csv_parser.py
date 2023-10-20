@@ -29,7 +29,7 @@ class _CsvReader:
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
+        stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
         file_read_mode: FileReadMode,
     ) -> Generator[Dict[str, Any], None, None]:
@@ -127,7 +127,7 @@ class CsvParser(FileTypeParser):
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
+        stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
     ) -> SchemaType:
         input_schema = config.get_input_schema()
@@ -168,7 +168,7 @@ class CsvParser(FileTypeParser):
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
+        stream_reader: AbstractFileBasedStreamReader,
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
