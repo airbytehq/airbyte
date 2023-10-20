@@ -3,7 +3,7 @@
 #
 
 from dataclasses import InitVar, dataclass, field
-from typing import Any, List, Mapping, Optional, Union
+from typing import Any, List, Mapping, Optional, Type, Union
 
 import dpath.util
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -17,7 +17,7 @@ class AddedFieldDefinition:
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
-    value_type: Optional[InterpolatedString]
+    value_type: Optional[Type]
     parameters: InitVar[Mapping[str, Any]]
 
 
@@ -27,7 +27,7 @@ class ParsedAddFieldDefinition:
 
     path: FieldPointer
     value: InterpolatedString
-    value_type: Optional[InterpolatedString]
+    value_type: Optional[Type]
     parameters: InitVar[Mapping[str, Any]]
 
 
@@ -120,7 +120,7 @@ class AddFields(RecordTransformation):
         for parsed_field in self._parsed_fields:
             if parsed_field.value_type:
                 # FIXMEvalue = parsed_field.value.eval(config, valid_types=(parsed_field.value_type,), **kwargs)
-                value = parsed_field.value.eval(config, valid_types=(str,), **kwargs)
+                value = parsed_field.value.eval(config, valid_types=(parsed_field.value_type,), **kwargs)
             else:
                 value = parsed_field.value.eval(config, **kwargs)
             dpath.util.new(record, parsed_field.path, value)

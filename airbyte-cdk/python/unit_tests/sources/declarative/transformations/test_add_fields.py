@@ -11,9 +11,18 @@ from airbyte_cdk.sources.declarative.types import FieldPointer
 
 
 @pytest.mark.parametrize(
-    ["input_record", "field", "field_value", "kwargs", "expected"],
+    ["input_record", "field", "field_type", "kwargs", "expected"],
     [
         pytest.param({"k": "v"}, [(["path"], "static_value")], None, {}, {"k": "v", "path": "static_value"}, id="add new static value"),
+        pytest.param({"k": "v"}, [(["path"], "{{ 1 }}")], None, {}, {"k": "v", "path": 1}, id="add an expression evaluated as a number"),
+        pytest.param(
+            {"k": "v"},
+            [(["path"], "{{ 1 }}")],
+            str,
+            {},
+            {"k": "v", "path": "1"},
+            id="add an expression evaluated as a string using the value_type field",
+        ),
         pytest.param(
             {"k": "v"},
             [(["path"], "static_value"), (["path2"], "static_value2")],
@@ -118,9 +127,9 @@ from airbyte_cdk.sources.declarative.types import FieldPointer
 def test_add_fields(
     input_record: Mapping[str, Any],
     field: List[Tuple[FieldPointer, str]],
-    field_value: Optional[str],
+    field_type: Optional[str],
     kwargs: Mapping[str, Any],
     expected: Mapping[str, Any],
 ):
-    inputs = [AddedFieldDefinition(path=v[0], value=v[1], value_type=field_value, parameters={}) for v in field]
+    inputs = [AddedFieldDefinition(path=v[0], value=v[1], value_type=field_type, parameters={}) for v in field]
     assert AddFields(fields=inputs, parameters={"alas": "i live"}).transform(input_record, **kwargs) == expected

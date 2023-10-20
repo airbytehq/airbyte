@@ -239,11 +239,30 @@ class ModelToComponentFactory:
     def create_add_fields(self, model: AddFieldsModel, config: Config, **kwargs: Any) -> AddFields:
         added_field_definitions = [
             self._create_component_from_model(
-                model=added_field_definition_model, value_type=added_field_definition_model.value_type, config=config
+                model=added_field_definition_model,
+                value_type=self._json_schema_type_name_to_type(added_field_definition_model.value_type),
+                config=config,
             )
             for added_field_definition_model in model.fields
         ]
         return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
+
+    def _json_schema_type_name_to_type(self, json_schema_type_name: Optional[str]) -> Optional[Type]:
+        # FIXME: need to unit test all branches
+        if not json_schema_type_name:
+            return None
+        names_to_types = {
+            "string": str,
+            "number": float,
+            "integer": int,
+            "boolean": bool,
+            "object": dict,
+            "array": list,
+        }
+        if json_schema_type_name not in names_to_types:
+            raise ValueError(f"Unknown JSON schema type name: {json_schema_type_name}")
+        else:
+            return names_to_types[json_schema_type_name]
 
     @staticmethod
     def create_api_key_authenticator(
