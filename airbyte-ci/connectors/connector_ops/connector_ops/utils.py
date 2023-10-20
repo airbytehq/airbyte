@@ -433,7 +433,6 @@ class Connector:
             query_string (str): The query string to evaluate.
 
         Returns:
-            bool: True if the query string matches the connector metadata, False otherwise.
         """
         try:
             matches = simple_eval(query_string, names={"data": self.metadata})
