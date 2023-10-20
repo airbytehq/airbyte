@@ -77,7 +77,11 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["timestamp"],
-        "source_defined_primary_key": [["campaign_id"], ["email_id"], ["timestamp"]]
+        "source_defined_primary_key": [
+          ["campaign_id"],
+          ["email_id"],
+          ["timestamp"]
+        ]
       },
       "sync_mode": "incremental",
       "cursor_field": ["timestamp"],

@@ -247,9 +247,9 @@ class Unsubscribes(IncrementalMailChimpStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        
+
         if self.campaign_id:
-            # Similar to EmailActivity stream, this is a workaround to speed up SATs 
+            # Similar to EmailActivity stream, this is a workaround to speed up SATs
             # and enable incremental tests by reading from a single campaign
             campaigns = [{"id": self.campaign_id}]
         else:
@@ -260,15 +260,15 @@ class Unsubscribes(IncrementalMailChimpStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice.get("campaign_id")
         return f"reports/{campaign_id}/unsubscribed"
-    
+
     def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         # Exclude the _links field, as it is not user-relevant data
         params["exclude_fields"] = "unsubscribes._links"
         return params
-    
+
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
-        
+
         response = super().parse_response(response, **kwargs)
 
         # Unsubscribes endpoint does not support sorting, so we need to filter out records that are older than the current state

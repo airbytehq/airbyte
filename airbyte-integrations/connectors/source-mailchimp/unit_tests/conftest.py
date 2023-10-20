@@ -6,6 +6,7 @@ from pytest import fixture
 from source_mailchimp.source import MailChimpAuthenticator
 from source_mailchimp.streams import Campaigns, Unsubscribes
 
+
 @fixture(name="data_center")
 def data_center_fixture():
     return "some_dc"

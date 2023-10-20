@@ -10,7 +10,7 @@
       "type": ["null", "string"]
     },
     "merge_fields": {
-      "type": ["null", "object"], 
+      "type": ["null", "object"],
       "additionalProperties": true
     },
     "vip": {
