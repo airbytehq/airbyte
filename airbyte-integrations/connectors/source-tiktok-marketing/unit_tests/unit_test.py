@@ -134,8 +134,8 @@ def test_random_items(prepared_prod_args):
 @pytest.mark.parametrize(
     "config, stream_len",
     [
-        (PROD_CONFIG_FILE, 30),
-        (SANDBOX_CONFIG_FILE, 22),
+        (PROD_CONFIG_FILE, 35),
+        (SANDBOX_CONFIG_FILE, 27),
     ],
 )
 def test_source_streams(config, stream_len):
