@@ -49,7 +49,6 @@ class ConnectorContext(PipelineContext):
         reporting_slack_channel: Optional[str] = None,
         pull_request: PullRequest = None,
         should_save_report: bool = True,
-        fail_fast: bool = False,
         fast_tests_only: bool = False,
         code_tests_only: bool = False,
         use_local_cdk: bool = False,
@@ -77,7 +76,6 @@ class ConnectorContext(PipelineContext):
             slack_webhook (Optional[str], optional): The slack webhook to send messages to. Defaults to None.
             reporting_slack_channel (Optional[str], optional): The slack channel to send messages to. Defaults to None.
             pull_request (PullRequest, optional): The pull request object if the pipeline was triggered by a pull request. Defaults to None.
-            fail_fast (bool, optional): Whether to fail fast. Defaults to False.
             fast_tests_only (bool, optional): Whether to run only fast tests. Defaults to False.
             code_tests_only (bool, optional): Whether to ignore non-code tests like QA and metadata checks. Defaults to False.
             use_host_gradle_dist_tar (bool, optional): Used when developing java connectors with gradle. Defaults to False.
@@ -97,7 +95,6 @@ class ConnectorContext(PipelineContext):
         self._updated_secrets_dir = None
         self.cdk_version = None
         self.should_save_report = should_save_report
-        self.fail_fast = fail_fast
         self.fast_tests_only = fast_tests_only
         self.code_tests_only = code_tests_only
         self.use_local_cdk = use_local_cdk

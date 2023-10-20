@@ -44,6 +44,7 @@ def test(
     fail_fast: bool,
     fast_tests_only: bool,
 ) -> bool:
+    # TODO bring back the fail fast option
     """Runs a test pipeline for the selected connectors.
 
     Args:
@@ -76,7 +77,6 @@ def test(
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
-            fail_fast=fail_fast,
             fast_tests_only=fast_tests_only,
             code_tests_only=code_tests_only,
             use_local_cdk=ctx.obj.get("use_local_cdk"),
