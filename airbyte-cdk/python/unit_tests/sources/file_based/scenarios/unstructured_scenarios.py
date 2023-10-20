@@ -313,7 +313,7 @@ simple_unstructured_scenario = (
             {
                 "data": {
                     "document_key": "sample.docx",
-                    "content": "Content",
+                    "content": "# Content",
                     "_ab_source_file_last_modified": "2023-06-06T03:54:07.000000Z",
                     "_ab_source_file_url": "sample.docx",
                 },
