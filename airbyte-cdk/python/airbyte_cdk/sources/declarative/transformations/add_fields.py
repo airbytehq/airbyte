@@ -118,11 +118,8 @@ class AddFields(RecordTransformation):
     ) -> Record:
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
         for parsed_field in self._parsed_fields:
-            if parsed_field.value_type:
-                # FIXMEvalue = parsed_field.value.eval(config, valid_types=(parsed_field.value_type,), **kwargs)
-                value = parsed_field.value.eval(config, valid_types=(parsed_field.value_type,), **kwargs)
-            else:
-                value = parsed_field.value.eval(config, **kwargs)
+            valid_types = (parsed_field.value_type,) if parsed_field.value_type else None
+            value = parsed_field.value.eval(config, valid_types=valid_types, **kwargs)
             dpath.util.new(record, parsed_field.path, value)
 
         return record
