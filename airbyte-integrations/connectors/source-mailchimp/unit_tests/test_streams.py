@@ -5,6 +5,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 import responses
 from airbyte_cdk.models import SyncMode
 from source_mailchimp.streams import Campaigns, EmailActivity, Lists
@@ -118,7 +119,58 @@ def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaign
 
     expected_slices = [{"campaign_id": "campaign_1"}, {"campaign_id": "campaign_2"}, {"campaign_id": "campaign_3"}]
     slices = list(unsubscribes_stream.stream_slices(sync_mode=SyncMode.incremental))
-    assert slices == expected_slices 
+    assert slices == expected_slices
+
+
+@pytest.mark.parametrize(
+    "stream_state, expected_records",
+    [
+        (   # Test case 1: all records >= state
+            {"campaign_1": {"timestamp": "2022-01-01T00:00:00Z"}},
+            [
+                {"campaign_id": "campaign_1", "email_id": "email_1", "timestamp": "2022-01-02T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_2", "timestamp": "2022-01-02T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_3", "timestamp": "2022-01-01T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-03T00:00:00Z"},
+            ],
+        ),
+        (   # Test case 2: one record < state
+            {"campaign_1": {"timestamp": "2022-01-02T00:00:00Z"}},
+            [
+                {"campaign_id": "campaign_1", "email_id": "email_1", "timestamp": "2022-01-02T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_2", "timestamp": "2022-01-02T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-03T00:00:00Z"},
+            ],
+        ),
+        (   # Test case 3: one record >= state
+            {"campaign_1": {"timestamp": "2022-01-03T00:00:00Z"}},
+            [
+                {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-03T00:00:00Z"},
+            ],
+        ),
+        (   # Test case 4: no state, all records returned
+            {},
+            [
+                {"campaign_id": "campaign_1", "email_id": "email_1", "timestamp": "2022-01-02T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_2", "timestamp": "2022-01-02T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_3", "timestamp": "2022-01-01T00:00:00Z"},
+                {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-03T00:00:00Z"},
+            ]
+        )
+    ],
+)
+def test_parse_response(stream_state, expected_records, unsubscribes_stream):
+    mock_response = MagicMock(spec=requests.Response)
+    mock_response.json.return_value = {
+        "unsubscribes": [
+            {"campaign_id": "campaign_1", "email_id": "email_1", "timestamp": "2022-01-02T00:00:00Z"},
+            {"campaign_id": "campaign_1", "email_id": "email_2", "timestamp": "2022-01-02T00:00:00Z"},
+            {"campaign_id": "campaign_1", "email_id": "email_3", "timestamp": "2022-01-01T00:00:00Z"},
+            {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-03T00:00:00Z"},
+        ]
+    }
+    records = list(unsubscribes_stream.parse_response(response=mock_response, stream_state=stream_state))
+    assert records == expected_records
 
 
 @pytest.mark.parametrize(

@@ -267,11 +267,22 @@ class Unsubscribes(IncrementalMailChimpStream):
         params["exclude_fields"] = "unsubscribes._links"
         return params
     
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        
+        response = super().parse_response(response, **kwargs)
+
+        # Unsubscribes endpoint does not support sorting, so we need to filter out records that are older than the current state
+        for record in response:
+            current_cursor_value = stream_state.get(record.get("campaign_id"), {}).get(self.cursor_field)
+            record_cursor_value = record.get(self.cursor_field)
+            if current_cursor_value is None or record_cursor_value >= current_cursor_value:
+                yield record
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
         campaign_id = latest_record.get("campaign_id")
         latest_cursor_value = latest_record.get(self.cursor_field)
-        
+
         # Get the current state value for this campaign, if it exists
         campaign_state = current_stream_state.get(campaign_id, {})
         current_cursor_value = campaign_state.get(self.cursor_field, latest_cursor_value)
