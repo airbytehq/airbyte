@@ -101,7 +101,7 @@ from unit_tests.sources.file_based.scenarios.parquet_scenarios import (
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.scenarios.unstructured_scenarios import (
     simple_markdown_scenario,
-    simple_pdf_scenario,
+    simple_unstructured_scenario,
     unstructured_invalid_file_type_discover_scenario,
     unstructured_invalid_file_type_read_scenario,
 )
@@ -202,7 +202,7 @@ discover_scenarios = [
     parquet_with_invalid_config_scenario,
     single_partitioned_parquet_scenario,
     simple_markdown_scenario,
-    simple_pdf_scenario,
+    simple_unstructured_scenario,
     unstructured_invalid_file_type_discover_scenario,
     unstructured_invalid_file_type_read_scenario,
 ]
