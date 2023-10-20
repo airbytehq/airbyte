@@ -110,13 +110,12 @@ class WeaviateIndexer(Indexer):
 
     def delete(self, delete_ids, namespace, stream):
         if len(delete_ids) > 0:
-            # Delete ids in all classes that have the record id metadata
-            for class_name in self.has_record_id_metadata.keys():
-                if self.has_record_id_metadata[class_name]:
-                    self.client.batch.delete_objects(
-                        class_name=class_name,
-                        where={"path": [METADATA_RECORD_ID_FIELD], "operator": "ContainsAny", "valueStringArray": delete_ids},
-                    )
+            class_name = self.stream_to_class_name(stream)
+            if self.has_record_id_metadata[class_name]:
+                self.client.batch.delete_objects(
+                    class_name=class_name,
+                    where={"path": [METADATA_RECORD_ID_FIELD], "operator": "ContainsAny", "valueStringArray": delete_ids},
+                )
 
     def index(self, document_chunks, namespace, stream):
         if len(document_chunks) == 0:
