@@ -75,7 +75,7 @@ class WeaviateIndexer(Indexer):
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
         classes = {c["class"]: c for c in self.client.schema.get().get("classes", [])}
-        self.has_record_id_metadata = defaultdict(None)
+        self.has_record_id_metadata = defaultdict(lambda: False)
         for stream in catalog.streams:
             class_name = self.stream_to_class_name(stream.stream.name)
             schema = classes[class_name] if class_name in classes else None
