@@ -11,8 +11,10 @@ import dagger
 import pytest
 import yaml
 from freezegun import freeze_time
-from pipelines.bases import ConnectorWithModifiedFiles, StepStatus
-from pipelines.tests import common
+from pipelines.airbyte_ci.connectors.test.steps import common
+from pipelines.dagger.actions.system import docker
+from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
+from pipelines.models.steps import StepStatus
 
 pytestmark = [
     pytest.mark.anyio,
@@ -153,8 +155,8 @@ class TestAcceptanceTests:
         test_context.connector_acceptance_test_image = "bash:latest"
         test_context.connector_secrets = {"config.json": dagger_client.set_secret("config.json", "connector_secret")}
 
-        mocker.patch.object(common.environments, "load_image_to_docker_host", return_value="image_sha")
-        mocker.patch.object(common.environments, "with_bound_docker_host", lambda _, cat_container: cat_container)
+        mocker.patch.object(docker, "load_image_to_docker_host", return_value="image_sha")
+        mocker.patch.object(docker, "with_bound_docker_host", lambda _, cat_container: cat_container)
         return common.AcceptanceTests(test_context)
 
     async def test_cat_container_provisioning(
@@ -230,3 +232,56 @@ class TestAcceptanceTests:
             cat_container = cat_container.with_exec(["date"])
             fourth_date_result = await cat_container.stdout()
             assert fourth_date_result != third_date_result
+
+
+class TestCheckBaseImageIsUsed:
+    @pytest.fixture
+    def certified_connector_no_base_image(self, all_connectors):
+        for connector in all_connectors:
+            if connector.metadata.get("supportLevel") == "certified":
+                if connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is None:
+                    return connector
+        pytest.skip("No certified connector without base image found")
+
+    @pytest.fixture
+    def certified_connector_with_base_image(self, all_connectors):
+        for connector in all_connectors:
+            if connector.metadata.get("supportLevel") == "certified":
+                if connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is not None:
+                    return connector
+        pytest.skip("No certified connector with base image found")
+
+    @pytest.fixture
+    def community_connector_no_base_image(self, all_connectors):
+        for connector in all_connectors:
+            if connector.metadata.get("supportLevel") == "community":
+                if connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is None:
+                    return connector
+        pytest.skip("No certified connector without base image found")
+
+    @pytest.fixture
+    def test_context(self, mocker, dagger_client):
+        return mocker.MagicMock(dagger_client=dagger_client)
+
+    async def test_pass_on_community_connector_no_base_image(self, mocker, dagger_client, community_connector_no_base_image):
+        test_context = mocker.MagicMock(dagger_client=dagger_client, connector=community_connector_no_base_image)
+        check_base_image_is_used_step = common.CheckBaseImageIsUsed(test_context)
+        step_result = await check_base_image_is_used_step.run()
+        assert step_result.status == StepStatus.SKIPPED
+
+    async def test_pass_on_certified_connector_with_base_image(self, mocker, dagger_client, certified_connector_with_base_image):
+        dagger_connector_dir = dagger_client.host().directory(str(certified_connector_with_base_image.code_directory))
+        test_context = mocker.MagicMock(
+            dagger_client=dagger_client,
+            connector=certified_connector_with_base_image,
+            get_connector_dir=mocker.AsyncMock(return_value=dagger_connector_dir),
+        )
+        check_base_image_is_used_step = common.CheckBaseImageIsUsed(test_context)
+        step_result = await check_base_image_is_used_step.run()
+        assert step_result.status == StepStatus.SUCCESS
+
+    async def test_fail_on_certified_connector_no_base_image(self, mocker, dagger_client, certified_connector_no_base_image):
+        test_context = mocker.MagicMock(dagger_client=dagger_client, connector=certified_connector_no_base_image)
+        check_base_image_is_used_step = common.CheckBaseImageIsUsed(test_context)
+        step_result = await check_base_image_is_used_step.run()
+        assert step_result.status == StepStatus.FAILURE

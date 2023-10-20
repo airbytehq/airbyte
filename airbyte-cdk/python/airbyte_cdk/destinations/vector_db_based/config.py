@@ -75,6 +75,11 @@ class CodeSplitterConfigModel(BaseModel):
 TextSplitterConfigModel = Union[SeparatorSplitterConfigModel, MarkdownHeaderSplitterConfigModel, CodeSplitterConfigModel]
 
 
+class FieldNameMappingConfigModel(BaseModel):
+    from_field: str = Field(title="From field name", description="The field name in the source")
+    to_field: str = Field(title="To field name", description="The field name to use in the destination")
+
+
 class ProcessingConfigModel(BaseModel):
     chunk_size: int = Field(
         ...,
@@ -108,6 +113,11 @@ class ProcessingConfigModel(BaseModel):
         type="object",
         description="Split text fields into chunks based on the specified method.",
     )
+    field_name_mappings: Optional[List[FieldNameMappingConfigModel]] = Field(
+        default=[],
+        title="Field name mappings",
+        description="List of fields to rename. Not applicable for nested fields, but can be used to rename fields already flattened via dot notation.",
+    )
 
     class Config:
         schema_extra = {"group": "processing"}
@@ -122,6 +132,27 @@ class OpenAIEmbeddingConfigModel(BaseModel):
         schema_extra = {
             "description": "Use the OpenAI API to embed text. This option is using the text-embedding-ada-002 model with 1536 embedding dimensions."
         }
+
+
+class OpenAICompatibleEmbeddingConfigModel(BaseModel):
+    mode: Literal["openai_compatible"] = Field("openai_compatible", const=True)
+    api_key: str = Field(title="API key", default="", airbyte_secret=True)
+    base_url: str = Field(
+        ..., title="Base URL", description="The base URL for your OpenAI-compatible service", examples=["https://your-service-name.com"]
+    )
+    model_name: str = Field(
+        title="Model name",
+        description="The name of the model to use for embedding",
+        default="text-embedding-ada-002",
+        examples=["text-embedding-ada-002"],
+    )
+    dimensions: int = Field(
+        title="Embedding dimensions", description="The number of dimensions the embedding model is generating", examples=[1536, 384]
+    )
+
+    class Config:
+        title = "OpenAI-compatible"
+        schema_extra = {"description": "Use a service that's compatible with the OpenAI API to embed text."}
 
 
 class AzureOpenAIEmbeddingConfigModel(BaseModel):

@@ -10,6 +10,8 @@ from pytest import fixture
 from responses import matchers
 from source_jira.streams import Projects
 
+os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
+
 
 @fixture
 def config():

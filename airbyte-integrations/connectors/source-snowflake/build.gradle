@@ -16,12 +16,21 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
+configurations {
+    all {
+        resolutionStrategy {
+            force 'org.jooq:jooq:3.13.4'
+        }
+    }
+}
+
 dependencies {
     implementation libs.airbyte.protocol
-    implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.13.22'
+    implementation group: 'net.snowflake', name: 'snowflake-jdbc', version: '3.14.1'
     implementation 'com.zaxxer:HikariCP:5.0.1'
 
     testImplementation project(':airbyte-test-utils')
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 }
