@@ -1,9 +1,8 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "title": "Accounts collection schema",
   "description": "A schema for retrieving the accounts of the chart of accounts.",
   "type": "object",
-  "restdocs": "http://restdocs.e-conomic.com/#get-accounts",
   "properties": {
     "accountNumber": {
       "type": "integer",
@@ -42,11 +41,11 @@
       "filterable": true,
       "description": "Determines if the account can be manually updated with entries."
     },
-    "department":{
-      "type":["null","object"]
+    "department": {
+      "type": ["null", "object"]
     },
-    "departmentalDistribution":{
-      "type":["null","object"]
+    "departmentalDistribution": {
+      "type": ["null", "object"]
     },
     "contraAccount": {
       "type": "object",
@@ -157,7 +156,7 @@
       "description": "A unique reference to the account resource."
     },
     "openingAccount": {
-      "type": ["null","object"],
+      "type": ["null", "object"],
       "properties": {
         "accountNumber": {
           "type": "integer"
@@ -169,6 +168,5 @@
         }
       }
     }
-
   }
 }
