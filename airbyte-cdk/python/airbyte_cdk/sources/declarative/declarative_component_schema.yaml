@@ -70,7 +70,9 @@ definitions:
           - "{{ record['MetaData']['LastUpdatedTime'] }}"
           - "{{ stream_partition['segment_id'] }}"
       value_type:
-        type: string
+        title: Value Type
+        description: Type of the value. If not specified, the type will be inferred from the value.
+        "$ref": "#/definitions/ValueType"
       $parameters:
         type: object
         additionalProperties: true
@@ -1989,6 +1991,17 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  ValueType:
+    title: Value Type
+    description: The type of a value.
+    type: string
+    enum:
+      - string
+      - number
+      - integer
+      - boolean
+      - object
+      - array
   WaitTimeFromHeader:
     title: Wait Time Extracted From Response Header
     description: Extract wait time from a HTTP header in the response.

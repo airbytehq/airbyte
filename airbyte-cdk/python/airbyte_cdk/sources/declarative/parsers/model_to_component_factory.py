@@ -80,6 +80,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamPartitionRouter as SubstreamPartitionRouterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ValueType
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
@@ -251,21 +252,18 @@ class ModelToComponentFactory:
         return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
 
     @staticmethod
-    def _json_schema_type_name_to_type(json_schema_type_name: Optional[str]) -> Optional[Type]:
-        if not json_schema_type_name:
+    def _json_schema_type_name_to_type(value_type: Optional[ValueType]) -> Optional[Type]:
+        if not value_type:
             return None
         names_to_types = {
-            "string": str,
-            "number": float,
-            "integer": int,
-            "boolean": bool,
-            "object": dict,
-            "array": list,
+            ValueType.string: str,
+            ValueType.number: float,
+            ValueType.integer: int,
+            ValueType.boolean: bool,
+            ValueType.object: dict,
+            ValueType.array: list,
         }
-        if json_schema_type_name not in names_to_types:
-            raise ValueError(f"Unknown JSON schema type name: {json_schema_type_name}")
-        else:
-            return names_to_types[json_schema_type_name]
+        return names_to_types[value_type]
 
     @staticmethod
     def create_api_key_authenticator(
