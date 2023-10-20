@@ -143,7 +143,6 @@ class GradleTask(Step, ABC):
                         self._get_gradle_command(":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"),
                         # Store to the cache volume.
                         "(rsync -a --stats /root/.gradle/ /root/gradle-cache || true)",
-
                     ]
                 )
             )
