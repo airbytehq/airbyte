@@ -430,8 +430,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     if (disableTypeDedupe) {
       return new NoOpTyperDeduperWithV1V2Migrations<>(
-          sqlGenerator, destinationHandler, parsedCatalog, migrator, v2RawTableMigrator, 8
-      );
+          sqlGenerator, destinationHandler, parsedCatalog, migrator, v2RawTableMigrator, 8);
     }
 
     return new DefaultTyperDeduper<>(

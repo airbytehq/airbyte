@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.base.destination.typing_deduping;
 
 import static io.airbyte.cdk.integrations.base.IntegrationRunner.TYPE_AND_DEDUPE_THREAD_NAME;
@@ -17,8 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
 /**
- * This is a NoOp implementation which skips and Typing and Deduping operations and does not emit the final tables.
- * However, this implementation still performs V1->V2 migrations and V2 json->string migrations in the raw tables.
+ * This is a NoOp implementation which skips and Typing and Deduping operations and does not emit
+ * the final tables. However, this implementation still performs V1->V2 migrations and V2
+ * json->string migrations in the raw tables.
  */
 @Slf4j
 public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implements TyperDeduper {
@@ -42,7 +47,7 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
     this.v1V2Migrator = v1V2Migrator;
     this.v2TableMigrator = v2TableMigrator;
     this.executorService = Executors.newFixedThreadPool(countOfTypingDedupingThreads(defaultThreadCount),
-                                                        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
+        new BasicThreadFactory.Builder().namingPattern(TYPE_AND_DEDUPE_THREAD_NAME).build());
   }
 
   @Override
@@ -126,4 +131,5 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
   public void cleanup() {
     log.info("Skipping cleanup");
   }
+
 }
