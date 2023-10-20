@@ -32,7 +32,6 @@ class DestinationPinecone(Destination):
         config_model = ConfigModel.parse_obj(config)
         self._init_indexer(config_model)
         writer = Writer(config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE)
-        print(writer)
         yield from writer.write(configured_catalog, input_messages)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
