@@ -9,13 +9,12 @@ from typing import List
 import anyio
 import asyncer
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
-from pipelines.models.steps import StepResult
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
-from pipelines.airbyte_ci.connectors.test.steps import java_connectors
-from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
-from pipelines.airbyte_ci.connectors.test.steps import python_connectors
+from pipelines.airbyte_ci.connectors.test.steps import java_connectors, python_connectors
 from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
+from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
+from pipelines.models.steps import StepResult
 
 LANGUAGE_MAPPING = {
     "run_all_tests": {
