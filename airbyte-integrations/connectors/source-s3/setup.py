@@ -15,7 +15,8 @@ MAIN_REQUIREMENTS = [
     "fastavro==1.4.11",
     "python-snappy==0.6.1",
     "unstructured==0.10.19",
-    "unstructured[pdf]==0.10.19",
+    "pdf2image==1.16.3",
+    "pdfminer.six==20221105",
     "unstructured[docx]==0.10.19",
     "markdown",
 ]
