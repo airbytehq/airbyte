@@ -4,7 +4,7 @@
 
 import logging
 import traceback
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
 
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
@@ -70,7 +70,7 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
     def _check_list_files(self, stream: "AbstractFileBasedStream") -> RemoteFile:
         """
         Check that we can list files from the stream.
-        
+
         Returns the first file if successful, otherwise raises a CheckAvailabilityError.
         """
         try:
