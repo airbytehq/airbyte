@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import datetime
 import logging
 from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optional, Union
 
@@ -121,6 +121,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
+        time_start: datetime = datetime.datetime.now()
         job = stream_slice["insight_job"]
         docs = []
         try:
@@ -136,7 +137,14 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         # job = InsightAsyncJob(api=job._api, interval=job.interval, edge_object=job.edge_object, params=job._params)
         # job = ParentAsyncJob(jobs=[], api=job._api, interval=job.interval)
-        logger.info("{} documents were exported for account id {}".format(len(docs), job._edge_object.get("account_id")))
+        time_end: datetime = datetime.datetime.now()
+        time = time_end - time_start
+        with open("test_results_dev_version.txt", "a") as file:
+            file.write("{} documents were exported for account id {} and date {}. The sync took {} \n".format(
+                len(docs),
+                job._edge_object.get("account_id"),
+                job.interval.start,
+                time))
         if type(job) != ParentAsyncJob:
             account_id = job._edge_object.get("account_id")
 
