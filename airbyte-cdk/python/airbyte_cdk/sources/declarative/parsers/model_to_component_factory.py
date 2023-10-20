@@ -233,22 +233,25 @@ class ModelToComponentFactory:
     def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config, **kwargs: Any) -> AddedFieldDefinition:
         interpolated_value = InterpolatedString.create(model.value, parameters=model.parameters or {})
         return AddedFieldDefinition(
-            path=model.path, value=interpolated_value, value_type=model.value_type, parameters=model.parameters or {}
+            path=model.path,
+            value=interpolated_value,
+            value_type=ModelToComponentFactory._json_schema_type_name_to_type(model.value_type),
+            parameters=model.parameters or {},
         )
 
     def create_add_fields(self, model: AddFieldsModel, config: Config, **kwargs: Any) -> AddFields:
         added_field_definitions = [
             self._create_component_from_model(
                 model=added_field_definition_model,
-                value_type=self._json_schema_type_name_to_type(added_field_definition_model.value_type),
+                value_type=ModelToComponentFactory._json_schema_type_name_to_type(added_field_definition_model.value_type),
                 config=config,
             )
             for added_field_definition_model in model.fields
         ]
         return AddFields(fields=added_field_definitions, parameters=model.parameters or {})
 
-    def _json_schema_type_name_to_type(self, json_schema_type_name: Optional[str]) -> Optional[Type]:
-        # FIXME: need to unit test all branches
+    @staticmethod
+    def _json_schema_type_name_to_type(json_schema_type_name: Optional[str]) -> Optional[Type]:
         if not json_schema_type_name:
             return None
         names_to_types = {
