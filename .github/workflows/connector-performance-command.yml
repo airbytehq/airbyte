@@ -35,6 +35,7 @@ on:
       report-to-datadog:
         description: "Whether to report the performance test results to Datadog."
         required: false
+        type: string
         default: "true"
   workflow_dispatch:
     inputs:
