@@ -11,8 +11,6 @@ on:
       - opened
       - reopened
       - synchronize
-    paths-ignore:
-      - "**/*.md"
 jobs:
   run-airbyte-ci-tests:
     name: Run Airbyte CI tests
