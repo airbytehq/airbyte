@@ -148,7 +148,7 @@ if (isCiServer || isAirbyteCI) {
         remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
             region = 'us-west-2' // close to dagger runners
             bucket = 'ab-ci-cache'
-            prefix = 'connectors-ci-cache/'
+            prefix = "${System.getProperty('s3BuildCachePrefix', 'connectors')}-ci-cache/"
             push = isAirbyteCI
             enabled = System.getenv().containsKey("S3_BUILD_CACHE_ACCESS_KEY_ID")
         }

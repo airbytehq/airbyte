@@ -127,19 +127,23 @@ class GradleTask(Step, ABC):
             gradle_container_base
             # Mount the whole repo.
             .with_directory("/airbyte", self.context.get_repo_dir("."))
-            # Mount the cache volume to $GRADLE_HOME.
-            # We can only do this because we never write to the cache volume more than once per run.
-            .with_mounted_cache("/root/.gradle", self.persistent_cache_volume, sharing=CacheSharingMode.LOCKED)
+            # Mount the persistent cache volume, but not to $GRADLE_HOME, because gradle doesn't expect concurrent modifications.
+            .with_mounted_cache("/root/gradle-cache", self.persistent_cache_volume, sharing=CacheSharingMode.LOCKED)
             # Update the cache in place by executing a gradle task which will update all dependencies and build the CDK.
             .with_exec(
                 sh_dash_c(
                     [
                         # Ensure that the .m2 directory exists.
                         "mkdir -p /root/.m2",
+                        # Load from the cache volume.
+                        "(rsync -a --stats --mkpath /root/gradle-cache/ /root/.gradle || true)",
                         # Resolve all dependencies and write their checksums to './gradle/verification-metadata.dryrun.xml'.
                         self._get_gradle_command("help", "--write-verification-metadata", "sha256", "--dry-run"),
                         # Build the CDK and publish it to the local maven repository.
                         self._get_gradle_command(":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"),
+                        # Store to the cache volume.
+                        "(rsync -a --stats /root/.gradle/ /root/gradle-cache || true)",
+
                     ]
                 )
             )
@@ -157,7 +161,7 @@ class GradleTask(Step, ABC):
             # Mount the sources for the connector and its dependencies in the git repo.
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
             # Mount the cache volume for the persistent gradle dependency cache.
-            .with_mounted_cache("/root/gradle-cache", self.persistent_cache_volume, sharing=CacheSharingMode.PRIVATE)
+            .with_mounted_cache("/root/gradle-cache", self.persistent_cache_volume)
         )
 
         # From this point on, we add layers which are task-dependent.
@@ -177,7 +181,7 @@ class GradleTask(Step, ABC):
                     # Warm the gradle cache.
                     "(rsync -a --stats --mkpath /root/gradle-cache/ /root/.gradle || true)",
                     # Run the gradle task.
-                    self._get_gradle_command(connector_task),
+                    self._get_gradle_command(connector_task, f"-Ds3BuildCachePrefix={self.context.connector.technical_name}"),
                 ]
             )
         )
