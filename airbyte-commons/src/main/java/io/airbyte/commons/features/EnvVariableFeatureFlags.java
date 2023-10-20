@@ -25,7 +25,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean useStreamCapableState() {
-    return getEnvOrDefault(USE_STREAM_CAPABLE_STATE, false, Boolean::parseBoolean);
+    return getEnvOrDefault(USE_STREAM_CAPABLE_STATE, true, Boolean::parseBoolean);
   }
 
   @Override
