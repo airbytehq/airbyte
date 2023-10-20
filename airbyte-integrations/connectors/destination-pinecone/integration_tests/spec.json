@@ -219,10 +219,7 @@
                   "type": "string"
                 }
               },
-              "required": [
-                "from_field",
-                "to_field"
-              ]
+              "required": ["from_field", "to_field"]
             }
           },
           "text_splitter": {
