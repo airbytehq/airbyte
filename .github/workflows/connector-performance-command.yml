@@ -17,6 +17,7 @@ on:
         options:
           - connectors/source-postgres
           - connectors/source-mysql
+          - connectors/source-mongodb-v2
           - connectors/destination-snowflake
         default: "connectors/source-postgres"
       repo:
@@ -117,8 +118,9 @@ jobs:
         if:
           "${{ github.event.inputs.connector != 'connectors/source-postgres' &&
           github.event.inputs.connector != 'connectors/source-mysql' &&
-          github.event.inputs.connector != 'connectors/destination-snowflake' }}"
-        run: echo "Only connectors/source-postgres, source-mysql and destination-snowflake currently supported by harness" && exit 1
+          github.event.inputs.connector != 'connectors/destination-snowflake' &&
+          inputs.connector != 'connectors/source-mongodb-v2' }}"
+        run: echo "Only connectors/source-postgres, source-mysql, source-mongodb-v2 and destination-snowflake currently supported by harness" && exit 1
       - name: Checkout Airbyte
         uses: actions/checkout@v3
         with:
