@@ -18,6 +18,7 @@ class FileReadMode(Enum):
     READ = "r"
     READ_BINARY = "rb"
 
+
 class AbstractFileBasedStreamReader(ABC):
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 

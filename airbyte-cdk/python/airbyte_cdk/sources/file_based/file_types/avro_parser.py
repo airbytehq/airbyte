@@ -134,7 +134,7 @@ class AvroParser(FileTypeParser):
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
-        avro_format = config.format or AvroFormat(filetype="avro")
+        avro_format = config.format or AvroFormat()
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 

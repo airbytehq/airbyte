@@ -4,7 +4,6 @@
 
 from copy import deepcopy
 from typing import Any, Mapping, Optional, Type
-from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 from airbyte_cdk.sources.file_based.availability_strategy.abstract_file_based_availability_strategy import (
     AbstractFileBasedAvailabilityStrategy,

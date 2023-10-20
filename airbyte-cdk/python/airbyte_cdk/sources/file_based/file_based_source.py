@@ -6,7 +6,7 @@ import logging
 import traceback
 from abc import ABC
 from collections import Counter
-from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
@@ -25,6 +25,7 @@ from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor impo
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.utils.analytics_message import create_analytics_message
 from pydantic.error_wrappers import ValidationError
+
 
 class FileBasedSource(AbstractSource, ABC):
     def __init__(
