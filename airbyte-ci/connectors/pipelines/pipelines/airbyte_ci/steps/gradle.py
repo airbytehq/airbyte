@@ -122,52 +122,42 @@ class GradleTask(Step, ABC):
             .with_workdir("/airbyte")
         )
 
-        # Mount the whole git repo to update the persistent gradle cache and build the CDK.
+        # Mount the whole git repo to update the cache volume contents and build the CDK.
         with_whole_git_repo = (
             gradle_container_base
             # Mount the whole repo.
-            .with_mounted_directory("/airbyte", self.context.get_repo_dir(".").with_timestamps(1))
-            # Mount the cache volume for the gradle cache which is persisted throughout all pipeline runs.
-            # We deliberately don't mount any cache volumes before mounting the git repo otherwise these will effectively be always empty.
-            # This volume is LOCKED instead of SHARED and we rsync to it instead of mounting it directly to $GRADLE_HOME.
-            # This is because gradle doesn't cope well with concurrency.
-            .with_mounted_cache("/root/gradle-persistent-cache", self.persistent_cache_volume, sharing=CacheSharingMode.LOCKED)
-            # Update the persistent gradle cache by resolving all dependencies.
-            # Also, build the java CDK and publish it to the local maven repository.
+            .with_directory("/airbyte", self.context.get_repo_dir("."))
+            # Mount the cache volume to $GRADLE_HOME.
+            # We can only do this because we never write to the cache volume more than once per run.
+            .with_mounted_cache("/root/.gradle", self.persistent_cache_volume, sharing=CacheSharingMode.LOCKED)
+            # Update the cache in place by executing a gradle task which will update all dependencies and build the CDK.
             .with_exec(
                 sh_dash_c(
                     [
-                        # Ensure that the local maven repository root directory exists.
+                        # Ensure that the .m2 directory exists.
                         "mkdir -p /root/.m2",
-                        # Load from the persistent cache.
-                        "(rsync -a --stats --mkpath /root/gradle-persistent-cache/ /root/.gradle || true)",
                         # Resolve all dependencies and write their checksums to './gradle/verification-metadata.dryrun.xml'.
                         self._get_gradle_command("help", "--write-verification-metadata", "sha256", "--dry-run"),
                         # Build the CDK and publish it to the local maven repository.
                         self._get_gradle_command(":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"),
-                        # Store to the persistent cache.
-                        "(rsync -a --stats /root/.gradle/ /root/gradle-persistent-cache || true)",
                     ]
                 )
             )
         )
 
         # Mount only the code needed to build the connector.
-        # This reduces the scope of the inputs to help dagger reuse container layers.
-        # The contents of '/root/.gradle' and '/root/.m2' are by design not overly sensitive to changes in the rest of the git repo.
         gradle_container = (
             gradle_container_base
             # TODO: remove this once we finish the project to boost source-postgres CI performance.
             .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger))
+            # Copy the local maven repository and force evaluation of `with_whole_git_repo` container.
+            .with_directory("/root/.m2", await with_whole_git_repo.directory("/root/.m2"))
             # Mount the connector-agnostic whitelisted files in the git repo.
             .with_mounted_directory("/airbyte", self.context.get_repo_dir(".", include=include))
             # Mount the sources for the connector and its dependencies in the git repo.
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
-            # Populate the local maven repository.
-            # Awaiting on this other container's directory ensures that the caches have been warmed.
-            .with_directory("/root/.m2", await with_whole_git_repo.directory("/root/.m2"))
             # Mount the cache volume for the persistent gradle dependency cache.
-            .with_mounted_cache("/root/gradle-persistent-cache", self.persistent_cache_volume, sharing=CacheSharingMode.LOCKED)
+            .with_mounted_cache("/root/gradle-cache", self.persistent_cache_volume, sharing=CacheSharingMode.PRIVATE)
         )
 
         # From this point on, we add layers which are task-dependent.
@@ -185,7 +175,7 @@ class GradleTask(Step, ABC):
             sh_dash_c(
                 [
                     # Warm the gradle cache.
-                    "(rsync -a --stats --mkpath /root/gradle-persistent-cache/ /root/.gradle || true)",
+                    "(rsync -a --stats --mkpath /root/gradle-cache/ /root/.gradle || true)",
                     # Run the gradle task.
                     self._get_gradle_command(connector_task),
                 ]
