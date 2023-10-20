@@ -14,7 +14,7 @@ definitions:
       X-AppSecretToken: "{{config['app_secret_token']}}"
       X-AgreementGrantToken: "{{config['agreement_grant_token']}}"
     request_parameters:
-      pagesize: "1000" 
+      pagesize: "1000"
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -141,4 +141,3 @@ spec:
         type: string
         description: Identifier for the grant issued by an agreement
         airbyte_secret: true
-
