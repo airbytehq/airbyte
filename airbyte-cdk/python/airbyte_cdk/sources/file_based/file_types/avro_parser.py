@@ -45,7 +45,7 @@ class AvroParser(FileTypeParser):
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader,
+        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
         logger: logging.Logger,
     ) -> SchemaType:
         avro_format = config.format
@@ -130,11 +130,11 @@ class AvroParser(FileTypeParser):
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader,
+        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
-        avro_format = config.format or AvroFormat()
+        avro_format = config.format or AvroFormat(filetype="avro")
         if not isinstance(avro_format, AvroFormat):
             raise ValueError(f"Expected ParquetFormat, got {avro_format}")
 

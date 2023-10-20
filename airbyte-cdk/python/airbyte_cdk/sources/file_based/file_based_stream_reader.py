@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from enum import Enum
 from io import IOBase
-from typing import Iterable, List, Optional, Set
+from typing import Generic, Iterable, List, Optional, Set, TypeVar
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -18,8 +18,10 @@ class FileReadMode(Enum):
     READ = "r"
     READ_BINARY = "rb"
 
+T = TypeVar('T', bound=RemoteFile)
 
-class AbstractFileBasedStreamReader(ABC):
+
+class AbstractFileBasedStreamReader(ABC, Generic[T]):
     DATE_TIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
     def __init__(self) -> None:
@@ -44,7 +46,7 @@ class AbstractFileBasedStreamReader(ABC):
         ...
 
     @abstractmethod
-    def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
+    def open_file(self, file: T, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         """
         Return a file handle for reading.
 

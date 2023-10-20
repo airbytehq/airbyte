@@ -67,7 +67,7 @@ class InMemoryFilesSource(FileBasedSource):
         return ConfiguredAirbyteCatalog(streams=self.catalog["streams"]) if self.catalog else None
 
 
-class InMemoryFilesStreamReader(AbstractFileBasedStreamReader):
+class InMemoryFilesStreamReader(AbstractFileBasedStreamReader[RemoteFile]):
     def __init__(self, files: Mapping[str, Mapping[str, Any]], file_type: str, file_write_options: Optional[Mapping[str, Any]] = None):
         self.files = files
         self.file_type = file_type

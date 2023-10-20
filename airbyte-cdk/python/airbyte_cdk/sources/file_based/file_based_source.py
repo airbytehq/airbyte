@@ -7,6 +7,7 @@ import traceback
 from abc import ABC
 from collections import Counter
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification
 from airbyte_cdk.sources import AbstractSource
@@ -30,7 +31,7 @@ from pydantic.error_wrappers import ValidationError
 class FileBasedSource(AbstractSource, ABC):
     def __init__(
         self,
-        stream_reader: AbstractFileBasedStreamReader,
+        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
         spec_class: Type[AbstractFileBasedSpec],
         catalog_path: Optional[str] = None,
         availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None,

@@ -58,7 +58,7 @@ DEFAULT_CONFIG = {
 }
 
 
-class TestStreamReader(AbstractFileBasedStreamReader):
+class TestStreamReader(AbstractFileBasedStreamReader[RemoteFile]):
     @property
     def config(self) -> Optional[AbstractFileBasedSpec]:
         return self._config

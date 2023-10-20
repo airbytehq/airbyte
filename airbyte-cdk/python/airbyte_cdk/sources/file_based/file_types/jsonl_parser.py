@@ -23,7 +23,7 @@ class JsonlParser(FileTypeParser):
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader,
+        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
         logger: logging.Logger,
     ) -> SchemaType:
         """
@@ -42,7 +42,7 @@ class JsonlParser(FileTypeParser):
         self,
         config: FileBasedStreamConfig,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader,
+        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
         logger: logging.Logger,
         discovered_schema: Optional[Mapping[str, SchemaType]],
     ) -> Iterable[Dict[str, Any]]:
@@ -76,7 +76,7 @@ class JsonlParser(FileTypeParser):
     def _parse_jsonl_entries(
         self,
         file: RemoteFile,
-        stream_reader: AbstractFileBasedStreamReader,
+        stream_reader: AbstractFileBasedStreamReader[RemoteFile],
         logger: logging.Logger,
         read_limit: bool = False,
     ) -> Iterable[Dict[str, Any]]:

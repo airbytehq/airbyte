@@ -4,6 +4,7 @@
 
 from copy import deepcopy
 from typing import Any, Mapping, Optional, Type
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
 from airbyte_cdk.sources.file_based.availability_strategy.abstract_file_based_availability_strategy import (
     AbstractFileBasedAvailabilityStrategy,
@@ -70,7 +71,7 @@ class FileBasedSourceBuilder(SourceBuilder[InMemoryFilesSource]):
         self._validation_policies = validation_policies
         return self
 
-    def set_stream_reader(self, stream_reader: AbstractFileBasedStreamReader) -> "FileBasedSourceBuilder":
+    def set_stream_reader(self, stream_reader: AbstractFileBasedStreamReader[RemoteFile]) -> "FileBasedSourceBuilder":
         self._stream_reader = stream_reader
         return self
 

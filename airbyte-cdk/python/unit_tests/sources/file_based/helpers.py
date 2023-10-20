@@ -21,7 +21,7 @@ from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSt
 
 class EmptySchemaParser(CsvParser):
     async def infer_schema(
-        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader, logger: logging.Logger
+        self, config: FileBasedStreamConfig, file: RemoteFile, stream_reader: AbstractFileBasedStreamReader[RemoteFile], logger: logging.Logger
     ) -> Dict[str, Any]:
         return {}
 
