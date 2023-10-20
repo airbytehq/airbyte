@@ -22,8 +22,8 @@ def test_get_value_from_config():
 @pytest.mark.parametrize(
     "valid_types, expected_value",
     [
-        pytest.param((str,), "1234J", id="test_valid_type_str"),
-        pytest.param(None, 1234j, id="test_no_valid_type"),
+        pytest.param((str,), "1234J", id="test_value_is_a_string_if_valid_types_is_str"),
+        pytest.param(None, 1234j, id="test_value_is_interpreted_as_complex_number_by_default"),
     ],
 )
 def test_get_value_with_complex_number(valid_types, expected_value):

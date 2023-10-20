@@ -1388,6 +1388,7 @@ class TestCreateTransformations:
                     AddedFieldDefinition(
                         path=["field1"],
                         value=InterpolatedString(string="static_value", default="static_value", parameters={}),
+                        value_type=None,
                         parameters={},
                     )
                 ],
