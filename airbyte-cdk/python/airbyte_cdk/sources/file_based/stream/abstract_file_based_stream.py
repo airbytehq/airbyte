@@ -3,7 +3,7 @@
 #
 
 from abc import abstractmethod
-from functools import cached_property, lru_cache, cache
+from functools import cache, cached_property, lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
 
 from airbyte_cdk.models import SyncMode
