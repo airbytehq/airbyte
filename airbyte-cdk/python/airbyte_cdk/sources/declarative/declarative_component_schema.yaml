@@ -69,6 +69,8 @@ definitions:
           - "{{ record['updates'] }}"
           - "{{ record['MetaData']['LastUpdatedTime'] }}"
           - "{{ stream_partition['segment_id'] }}"
+      value_type:
+        type: string
       $parameters:
         type: object
         additionalProperties: true

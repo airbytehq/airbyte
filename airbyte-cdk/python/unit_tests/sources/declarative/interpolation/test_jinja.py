@@ -13,10 +13,24 @@ interpolation = JinjaInterpolation()
 
 
 def test_get_value_from_config():
-    s = "{{ config['date'] }}"
+    s = "{{ \"config['date']\" }}"
     config = {"date": "2022-01-01"}
     val = interpolation.eval(s, config)
     assert val == "2022-01-01"
+
+
+@pytest.mark.parametrize(
+    "valid_types, expected_value",
+    [
+        pytest.param((str,), "1234J", id="test_valid_type_str"),
+        pytest.param(None, 1234j, id="test_no_valid_type"),
+    ],
+)
+def test_get_value_with_complex_number(valid_types, expected_value):
+    s = "{{ config['value'] }}"
+    config = {"value": "1234J"}
+    val = interpolation.eval(s, config, valid_types=valid_types)
+    assert val == expected_value
 
 
 def test_get_value_from_stream_slice():

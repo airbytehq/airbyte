@@ -232,11 +232,15 @@ class ModelToComponentFactory:
     @staticmethod
     def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config, **kwargs: Any) -> AddedFieldDefinition:
         interpolated_value = InterpolatedString.create(model.value, parameters=model.parameters or {})
-        return AddedFieldDefinition(path=model.path, value=interpolated_value, parameters=model.parameters or {})
+        return AddedFieldDefinition(
+            path=model.path, value=interpolated_value, value_type=model.value_type, parameters=model.parameters or {}
+        )
 
     def create_add_fields(self, model: AddFieldsModel, config: Config, **kwargs: Any) -> AddFields:
         added_field_definitions = [
-            self._create_component_from_model(model=added_field_definition_model, config=config)
+            self._create_component_from_model(
+                model=added_field_definition_model, value_type=added_field_definition_model.value_type, config=config
+            )
             for added_field_definition_model in model.fields
         ]
         return AddFields(fields=added_field_definitions, parameters=model.parameters or {})

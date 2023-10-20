@@ -17,6 +17,7 @@ class AddedFieldDefinition:
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
+    value_type: Optional[InterpolatedString]
     parameters: InitVar[Mapping[str, Any]]
 
 
@@ -26,6 +27,7 @@ class ParsedAddFieldDefinition:
 
     path: FieldPointer
     value: InterpolatedString
+    value_type: Optional[InterpolatedString]
     parameters: InitVar[Mapping[str, Any]]
 
 
@@ -96,11 +98,16 @@ class AddFields(RecordTransformation):
                 else:
                     self._parsed_fields.append(
                         ParsedAddFieldDefinition(
-                            add_field.path, InterpolatedString.create(add_field.value, parameters=parameters), parameters=parameters
+                            add_field.path,
+                            InterpolatedString.create(add_field.value, parameters=parameters),
+                            value_type=add_field.value_type,
+                            parameters=parameters,
                         )
                     )
             else:
-                self._parsed_fields.append(ParsedAddFieldDefinition(add_field.path, add_field.value, parameters={}))
+                self._parsed_fields.append(
+                    ParsedAddFieldDefinition(add_field.path, add_field.value, value_type=add_field.value_type, parameters={})
+                )
 
     def transform(
         self,
@@ -111,7 +118,11 @@ class AddFields(RecordTransformation):
     ) -> Record:
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
         for parsed_field in self._parsed_fields:
-            value = parsed_field.value.eval(config, **kwargs)
+            if parsed_field.value_type:
+                # FIXMEvalue = parsed_field.value.eval(config, valid_types=(parsed_field.value_type,), **kwargs)
+                value = parsed_field.value.eval(config, valid_types=(str,), **kwargs)
+            else:
+                value = parsed_field.value.eval(config, **kwargs)
             dpath.util.new(record, parsed_field.path, value)
 
         return record
