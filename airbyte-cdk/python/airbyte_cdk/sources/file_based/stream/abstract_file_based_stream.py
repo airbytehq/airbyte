@@ -74,8 +74,6 @@ class AbstractFileBasedStream(Stream):
     def get_files(self) -> Iterable[RemoteFile]:
         """
         List all files that belong to the stream as defined by the stream's globs.
-        The output of this method is cached so we don't need to list the files more than once.
-        This means we won't pick up changes to the files during a sync.
         """
         ...
 
