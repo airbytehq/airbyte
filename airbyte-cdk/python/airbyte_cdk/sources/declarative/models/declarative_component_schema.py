@@ -28,6 +28,7 @@ class AddedFieldDefinition(BaseModel):
         ],
         title='Value',
     )
+    value_type: Optional[str] = None
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
