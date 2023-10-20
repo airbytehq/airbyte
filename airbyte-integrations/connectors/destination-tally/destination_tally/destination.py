@@ -27,6 +27,14 @@ class DestinationTally(Destination):
         logger = AirbyteLogger()
         for airbyte_message in input_messages:
             if airbyte_message.type == Type.RECORD:
+                # check if airbyte stream contains any of supported_streams
+                supported_streams = ["ledger", "item", "payment"]
+                if not any(supported_stream in airbyte_message.record.stream for supported_stream in supported_streams):
+                    logger.warn(
+                        f"Skipping this stream : {airbyte_message.record.stream}, as it does not match any tally streams in [ledger, item, payment voucher]"
+                    )
+                    continue
+
                 if "ledger" in airbyte_message.record.stream:
                     ledger_url = "https://api.excel2tally.in/api/User/LedgerMaster"
                     insert_ledger_master_to_tally(
