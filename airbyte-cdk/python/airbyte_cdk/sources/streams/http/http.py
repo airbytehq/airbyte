@@ -43,6 +43,8 @@ class HttpStream(Stream, ABC):
             self._session = self.request_cache()
         else:
             self._session = requests.Session()
+        adapter = requests.adapters.HTTPAdapter(pool_connections=20, pool_maxsize=20)
+        self._session.mount('https://', adapter)
 
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
