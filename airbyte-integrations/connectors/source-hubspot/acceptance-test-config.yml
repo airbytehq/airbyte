@@ -93,6 +93,14 @@ acceptance_tests:
               bypass_reason: attribute is not stable
             - name: updatedAt
               bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_v2_cumulative_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_v2_latest_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_v2_cumulative_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_v2_latest_time_*
+              bypass_reason: Hubspot time depend on current time
           deals:
             - name: properties_hs_time_*
               bypass_reason: Hubspot time depend on current time
@@ -182,6 +190,14 @@ acceptance_tests:
             - name: properties_hs_time_*
               bypass_reason: Hubspot time depend on current time
             - name: properties/hs_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_v2_cumulative_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties/hs_v2_latest_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_v2_cumulative_time_*
+              bypass_reason: Hubspot time depend on current time
+            - name: properties_hs_v2_latest_time_*
               bypass_reason: Hubspot time depend on current time
           deals:
             - name: properties_hs_time_*

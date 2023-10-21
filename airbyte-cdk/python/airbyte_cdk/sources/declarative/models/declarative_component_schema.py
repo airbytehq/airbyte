@@ -551,6 +551,11 @@ class OffsetIncrement(BaseModel):
         examples=[100, "{{ config['page_size'] }}"],
         title='Limit',
     )
+    inject_on_first_request: Optional[bool] = Field(
+        False,
+        description='Using the `offset` with value `0` during the first request',
+        title='Inject Offset',
+    )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
 
@@ -567,6 +572,11 @@ class PageIncrement(BaseModel):
         description='Index of the first page to request.',
         examples=[0, 1],
         title='Start From Page',
+    )
+    inject_on_first_request: Optional[bool] = Field(
+        False,
+        description='Using the `page number` with value defined by `start_from_page` during the first request',
+        title='Inject Page Number',
     )
     parameters: Optional[Dict[str, Any]] = Field(None, alias='$parameters')
 
