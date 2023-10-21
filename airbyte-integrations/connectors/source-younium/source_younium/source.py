@@ -64,6 +64,24 @@ class YouniumStream(HttpStream, ABC):
         yield from response_results.get("data", [])
 
 
+class Account(YouniumStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "Accounts"
+
+
+class Booking(YouniumStream):
+    primary_key = "id"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "Bookings"
+
+
 class Invoice(YouniumStream):
     primary_key = "id"
 
@@ -110,7 +128,6 @@ class SourceYounium(AbstractSource):
         return auth
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-
         try:
             stream = Invoice(authenticator=self.get_auth(config), **config)
             stream.next_page_token = lambda response: None
@@ -128,4 +145,10 @@ class SourceYounium(AbstractSource):
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
         auth = self.get_auth(config)
-        return [Invoice(authenticator=auth, **config), Product(authenticator=auth, **config), Subscription(authenticator=auth, **config)]
+        return [
+            Account(authenticator=auth, **config),
+            Booking(authenticator=auth, **config),
+            Invoice(authenticator=auth, **config),
+            Product(authenticator=auth, **config),
+            Subscription(authenticator=auth, **config),
+        ]
