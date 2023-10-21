@@ -16,6 +16,9 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from dateutil.relativedelta import relativedelta
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
+from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from requests import codes, exceptions  # type: ignore[import]
 
 from .api import UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS, UNSUPPORTED_FILTERING_STREAMS, Salesforce
@@ -31,6 +34,7 @@ class AirbyteStopSync(AirbyteTracedException):
 class SourceSalesforce(AbstractSource):
     DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     START_DATE_OFFSET_IN_YEARS = 2
+    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -79,9 +83,8 @@ class SourceSalesforce(AbstractSource):
             return "rest"
         return "bulk"
 
-    @classmethod
     def generate_streams(
-        cls,
+        self,
         config: Mapping[str, Any],
         stream_objects: Mapping[str, Any],
         sf_object: Salesforce,
@@ -94,7 +97,7 @@ class SourceSalesforce(AbstractSource):
             streams_kwargs = {"sobject_options": sobject_options}
             selected_properties = stream_properties.get(stream_name, {}).get("properties", {})
 
-            api_type = cls._get_api_type(stream_name, selected_properties, config.get("force_use_bulk_api", False))
+            api_type = self._get_api_type(stream_name, selected_properties, config.get("force_use_bulk_api", False))
             if api_type == "rest":
                 full_refresh, incremental = RestSalesforceStream, IncrementalRestSalesforceStream
             elif api_type == "bulk":
@@ -107,7 +110,7 @@ class SourceSalesforce(AbstractSource):
             streams_kwargs.update(dict(sf_api=sf_object, pk=pk, stream_name=stream_name, schema=json_schema, authenticator=authenticator))
             if replication_key and stream_name not in UNSUPPORTED_FILTERING_STREAMS:
                 start_date = config.get(
-                    "start_date", (datetime.now() - relativedelta(years=cls.START_DATE_OFFSET_IN_YEARS)).strftime(cls.DATETIME_FORMAT)
+                    "start_date", (datetime.now() - relativedelta(years=self.START_DATE_OFFSET_IN_YEARS)).strftime(self.DATETIME_FORMAT)
                 )
                 stream = incremental(**streams_kwargs, replication_key=replication_key, start_date=start_date)
             else:
@@ -120,7 +123,8 @@ class SourceSalesforce(AbstractSource):
                 )
                 continue
             streams.append(stream)
-        return streams
+        concurrency_level= config.get("concurrency_level", 1)
+        return [StreamFacade.create_from_stream(s, self, entrypoint_logger, concurrency_level) for s in streams]
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         sf = self._get_sf_object(config)

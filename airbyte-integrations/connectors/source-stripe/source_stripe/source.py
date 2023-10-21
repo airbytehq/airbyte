@@ -2,15 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
 from typing import Any, List, Mapping, MutableMapping, Tuple
 
 import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from source_stripe.streams import (
@@ -31,6 +33,12 @@ from source_stripe.streams import (
 
 
 class SourceStripe(AbstractSource):
+    def __init__(self, use_concurrent_cdk: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        self._use_concurrent_cdk = use_concurrent_cdk
+
+    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
+
     @staticmethod
     def validate_and_fill_with_defaults(config: MutableMapping) -> MutableMapping:
         start_date, lookback_window_days, slice_range = (
@@ -62,6 +70,7 @@ class SourceStripe(AbstractSource):
         config["start_date"] = start_date
         if slice_range is None:
             config["slice_range"] = 365
+            print(f"Slice range: {slice_range}")
         elif not isinstance(slice_range, int) or slice_range < 1:
             message = f"Invalid slice range value {slice_range}. Please use positive integer values only."
             raise AirbyteTracedException(
@@ -158,7 +167,7 @@ class SourceStripe(AbstractSource):
             ],
             **args,
         )
-        return [
+        streams = [
             CheckoutSessionsLineItems(**incremental_args),
             CustomerBalanceTransactions(**args),
             Events(**incremental_args),
@@ -414,3 +423,9 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
         ]
+        if self._use_concurrent_cdk:
+            concurrency_level = config.get("concurrency_level", 2)
+            streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+            return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level) for stream in streams]
+        else:
+            return streams

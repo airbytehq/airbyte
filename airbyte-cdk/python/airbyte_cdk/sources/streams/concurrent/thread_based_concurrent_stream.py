@@ -91,7 +91,8 @@ class ThreadBasedConcurrentStream(AbstractStream):
 
         # True -> partition is done
         # False -> partition is not done
-        partitions_to_done: Dict[Partition, bool] = {}
+        #partitions_to_done: Dict[Partition, bool] = {}
+        partitions_left = 0
 
         finished_partitions = False
         while record_or_partition_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
@@ -104,26 +105,31 @@ class ThreadBasedConcurrentStream(AbstractStream):
                 finished_partitions = True
             elif isinstance(record_or_partition_or_exception, PartitionCompleteSentinel):
                 # All records for a partition were generated
-                if record_or_partition_or_exception.partition not in partitions_to_done:
-                    raise RuntimeError(
-                        f"Received sentinel for partition {record_or_partition_or_exception.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support.partitions:\n{partitions_to_done}"
-                    )
-                partitions_to_done[record_or_partition_or_exception.partition] = True
+                # if record_or_partition_or_exception.partition not in partitions_to_done:
+                #     raise RuntimeError(
+                #         f"Received sentinel for partition {record_or_partition_or_exception.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support.partitions:\n{partitions_to_done}"
+                #     )
+                #partitions_to_done[record_or_partition_or_exception.partition] = True
+                partitions_left -= 1
             elif isinstance(record_or_partition_or_exception, Record):
                 # Emit records
                 yield record_or_partition_or_exception
             elif isinstance(record_or_partition_or_exception, Partition):
                 # A new partition was generated and must be processed
-                partitions_to_done[record_or_partition_or_exception] = False
+                #partitions_to_done[record_or_partition_or_exception] = False
+                partitions_left += 1
                 if self._slice_logger.should_log_slice_message(self._logger):
                     self._message_repository.emit_message(
                         self._slice_logger.create_slice_log_message(record_or_partition_or_exception.to_slice())
                     )
                 self._submit_task(futures, partition_reader.process_partition, record_or_partition_or_exception)
-            if finished_partitions and all(partitions_to_done.values()):
+            #if finished_partitions and all(partitions_to_done.values()):
+            if finished_partitions and partitions_left == 0:
                 # All partitions were generated and process. We're done here
                 break
         self._check_for_errors(futures)
+        #self._logger.info(f"There were {len(partitions_to_done)} partitions for {self.name}")
+        self._logger.info(f"There were unknown partitions for {self.name}")
 
     def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
