@@ -72,7 +72,7 @@ class CallRatePolicy(AbstractCallRatePolicy):
     def try_acquire(self, request: Any, weight: int = 1) -> None:
         while True:
             try:
-                self._limiter.try_acquire(request, weight=weight)
+                #self._limiter.try_acquire(request, weight=weight)
                 return
             except BucketFullException as exc:
                 item = self._limiter.bucket_factory.wrap_item(request, weight)
@@ -88,7 +88,6 @@ class CallRatePolicy(AbstractCallRatePolicy):
                 #     rate=str(exc.meta_info["rate"]),
                 #     time_to_wait=timedelta(milliseconds=time_to_wait),
                 # )
-
 
 
 class RequestMatcher(abc.ABC):

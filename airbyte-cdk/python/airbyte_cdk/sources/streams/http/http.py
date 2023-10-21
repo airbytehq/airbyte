@@ -15,18 +15,16 @@ import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRatePolicy, HttpRequestMatcher, Rate, SessionProxyWithCallRate
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.types import JsonType
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
 from requests.auth import AuthBase
-from airbyte_cdk.sources.streams.call_rate import APIBudget, SessionProxyWithCallRate, Rate
 
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
-from airbyte_cdk.sources.streams.call_rate import HttpRequestMatcher
-from airbyte_cdk.sources.streams.call_rate import CallRatePolicy
 
 # list of all possible HTTP methods which can be used for sending of request bodies
 BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
@@ -52,7 +50,7 @@ class HttpStream(Stream, ABC):
         api_budget.add_policy(always_match, CallRatePolicy([Rate(limit=100, interval=1000)]))
         self._session = SessionProxyWithCallRate(self._session, api_budget)
         adapter = requests.adapters.HTTPAdapter(pool_connections=20, pool_maxsize=20)
-        self._session.mount('https://', adapter)
+        self._session.mount("https://", adapter)
 
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
