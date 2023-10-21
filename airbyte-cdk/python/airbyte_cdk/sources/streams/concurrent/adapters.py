@@ -274,7 +274,7 @@ class StreamPartitionGenerator(PartitionGenerator):
 
     def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
         for s in self._stream.stream_slices(sync_mode=sync_mode):
-            yield StreamPartition(self._stream, copy.deepcopy(s), self.message_repository)
+            yield StreamPartition(self._stream, s, self.message_repository)
 
 
 @deprecated("This class is experimental. Use at your own risk.")

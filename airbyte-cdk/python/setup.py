@@ -67,6 +67,7 @@ setup(
         "python-dateutil",
         "PyYAML>=6.0.1",
         "requests",
+        "pyrate-limiter",
         "requests_cache",
         "Deprecated~=1.2",
         "Jinja2~=3.1.2",
