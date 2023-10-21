@@ -4,6 +4,9 @@
   "type": ["null", "object"],
   "required": ["base", "rates"],
   "properties": {
+    "base": {
+      "type": ["null", "string"]
+    },
     "disclaimer": {
       "type": ["null", "string"]
     },
@@ -12,9 +15,6 @@
     },
     "timestamp": {
       "type": ["null", "integer"]
-    },
-    "base": {
-      "type": ["null", "string"]
     },
     "rates": {
       "type": ["null", "object"],
