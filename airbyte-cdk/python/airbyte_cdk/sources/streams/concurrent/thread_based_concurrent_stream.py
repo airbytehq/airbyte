@@ -91,7 +91,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
 
         # True -> partition is done
         # False -> partition is not done
-        #partitions_to_done: Dict[Partition, bool] = {}
+        # partitions_to_done: Dict[Partition, bool] = {}
         partitions_left = 0
 
         finished_partitions = False
@@ -109,41 +109,41 @@ class ThreadBasedConcurrentStream(AbstractStream):
                 #     raise RuntimeError(
                 #         f"Received sentinel for partition {record_or_partition_or_exception.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support.partitions:\n{partitions_to_done}"
                 #     )
-                #partitions_to_done[record_or_partition_or_exception.partition] = True
+                # partitions_to_done[record_or_partition_or_exception.partition] = True
                 partitions_left -= 1
             elif isinstance(record_or_partition_or_exception, Record):
                 # Emit records
                 yield record_or_partition_or_exception
             elif isinstance(record_or_partition_or_exception, Partition):
                 # A new partition was generated and must be processed
-                #partitions_to_done[record_or_partition_or_exception] = False
+                # partitions_to_done[record_or_partition_or_exception] = False
                 partitions_left += 1
                 if self._slice_logger.should_log_slice_message(self._logger):
                     self._message_repository.emit_message(
                         self._slice_logger.create_slice_log_message(record_or_partition_or_exception.to_slice())
                     )
                 self._submit_task(futures, partition_reader.process_partition, record_or_partition_or_exception)
-            #if finished_partitions and all(partitions_to_done.values()):
+            # if finished_partitions and all(partitions_to_done.values()):
             if finished_partitions and partitions_left == 0:
                 # All partitions were generated and process. We're done here
                 break
         self._check_for_errors(futures)
-        #self._logger.info(f"There were {len(partitions_to_done)} partitions for {self.name}")
+        # self._logger.info(f"There were {len(partitions_to_done)} partitions for {self.name}")
         self._logger.info(f"There were unknown partitions for {self.name}")
 
     def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
-        self._wait_while_too_many_pending_futures(futures)
+        #self._wait_while_too_many_pending_futures(futures)
         futures.append(self._threadpool.submit(function, *args))
 
-    def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
-        # Wait until the number of pending tasks is < self._max_concurrent_tasks
-        while True:
-            pending_futures = [f for f in futures if not f.done()]
-            if len(pending_futures) < self._max_concurrent_tasks:
-                break
-            self._logger.info("Main thread is sleeping because the task queue is full...")
-            time.sleep(self._sleep_time)
+    # def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
+    #     # Wait until the number of pending tasks is < self._max_concurrent_tasks
+    #     while True:
+    #         pending_futures = [f for f in futures if not f.done()]
+    #         if len(pending_futures) < self._max_concurrent_tasks:
+    #             break
+    #         self._logger.info("Main thread is sleeping because the task queue is full...")
+    #         time.sleep(self._sleep_time)
 
     def _check_for_errors(self, futures: List[Future[Any]]) -> None:
         exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]

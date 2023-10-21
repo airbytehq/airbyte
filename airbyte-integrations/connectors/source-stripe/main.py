@@ -10,6 +10,7 @@ from source_stripe import SourceStripe
 
 if __name__ == "__main__":
     import faulthandler
+
     # logging.basicConfig(level='DEBUG')
 
     faulthandler.enable()
