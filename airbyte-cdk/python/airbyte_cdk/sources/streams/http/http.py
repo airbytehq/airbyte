@@ -46,9 +46,9 @@ class HttpStream(Stream, ABC):
             self._session = self.request_cache()
         else:
             self._session = requests.Session()
-        api_budget = APIBudget()
-        api_budget.add_policy(always_match, CallRatePolicy([Rate(limit=100, interval=1000)]))
-        self._session = SessionProxyWithCallRate(self._session, api_budget)
+        # api_budget = APIBudget()
+        # api_budget.add_policy(always_match, CallRatePolicy([Rate(limit=100, interval=10)]))
+        #self._session = SessionProxyWithCallRate(self._session, api_budget)
         adapter = requests.adapters.HTTPAdapter(pool_connections=20, pool_maxsize=20)
         self._session.mount("https://", adapter)
 
