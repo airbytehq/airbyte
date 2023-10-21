@@ -54,13 +54,20 @@ definitions:
       sort_type: "asc"
       sort: "updated_at"
   default_paginator:
-    type: DefaultPaginator
+    type: "DefaultPaginator"
+    page_size_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "per_page"
     pagination_strategy:
-      type: "CursorPagination"
-      cursor_value: "{{ response['next'] }}"
-      stop_condition: "{{ response['has_more'] == false }}"
+      type: "PageIncrement"
+      page_size: 50
+      start_from_page : 1
+      inject_on_first_request : true
     page_token_option:
-      type: "RequestPath"
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "page"
   retriever:
     type: SimpleRetriever
     record_selector:
