@@ -18,6 +18,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,9 +33,10 @@ public class DefaultTyperDeduperTest {
   private TyperDeduper typerDeduper;
 
   @BeforeEach
-  void setup() {
+  void setup() throws Exception {
     sqlGenerator = spy(new MockSqlGenerator());
     destinationHandler = mock(DestinationHandler.class);
+    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.empty());
     migrator = new NoOpDestinationV1V2Migrator<>();
 
     final ParsedCatalog parsedCatalog = new ParsedCatalog(List.of(
@@ -60,7 +62,7 @@ public class DefaultTyperDeduperTest {
             null,
             null)));
 
-    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator);
+    typerDeduper = new DefaultTyperDeduper<>(sqlGenerator, destinationHandler, parsedCatalog, migrator, 1);
   }
 
   /**
@@ -77,11 +79,11 @@ public class DefaultTyperDeduperTest {
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
-    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream");
+    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false);
     verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream");
-    typerDeduper.typeAndDedupe("append_ns", "append_stream");
+    typerDeduper.typeAndDedupe("append_ns", "append_stream", false);
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream");
-    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream");
+    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
     verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
@@ -107,11 +109,11 @@ public class DefaultTyperDeduperTest {
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
-    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream");
+    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false);
     verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
-    typerDeduper.typeAndDedupe("append_ns", "append_stream");
+    typerDeduper.typeAndDedupe("append_ns", "append_stream", false);
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream");
-    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream");
+    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
     verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
@@ -141,6 +143,7 @@ public class DefaultTyperDeduperTest {
    */
   @Test
   void existingNonemptyTable() throws Exception {
+    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.of(Instant.parse("2023-01-01T12:34:56Z")));
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
 
@@ -153,13 +156,13 @@ public class DefaultTyperDeduperTest {
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
-    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream");
+    typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false);
     // NB: no airbyte_tmp suffix on the non-overwrite streams
-    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp");
-    typerDeduper.typeAndDedupe("append_ns", "append_stream");
-    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream");
-    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream");
-    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream");
+    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WHERE extracted_at > 2023-01-01T12:34:56Z");
+    typerDeduper.typeAndDedupe("append_ns", "append_stream", false);
+    verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WHERE extracted_at > 2023-01-01T12:34:56Z");
+    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
+    verify(destinationHandler).execute("UPDATE TABLE dedup_ns.dedup_stream WHERE extracted_at > 2023-01-01T12:34:56Z");
     verifyNoMoreInteractions(ignoreStubs(destinationHandler));
     clearInvocations(destinationHandler);
 
@@ -174,6 +177,7 @@ public class DefaultTyperDeduperTest {
    */
   @Test
   void existingNonemptyTableMatchingSchema() throws Exception {
+    when(destinationHandler.getMinTimestampForSync(any())).thenReturn(Optional.of(Instant.now()));
     when(destinationHandler.findExistingTable(any())).thenReturn(Optional.of("foo"));
     when(destinationHandler.isFinalTableEmpty(any())).thenReturn(false);
     when(sqlGenerator.existingSchemaMatchesStreamConfig(any(), any())).thenReturn(true);
@@ -188,7 +192,7 @@ public class DefaultTyperDeduperTest {
   @Test
   void nonexistentStream() {
     assertThrows(IllegalArgumentException.class,
-        () -> typerDeduper.typeAndDedupe("nonexistent_ns", "nonexistent_stream"));
+        () -> typerDeduper.typeAndDedupe("nonexistent_ns", "nonexistent_stream", false));
     verifyNoInteractions(ignoreStubs(destinationHandler));
   }
 
@@ -196,10 +200,10 @@ public class DefaultTyperDeduperTest {
   void failedSetup() throws Exception {
     doThrow(new RuntimeException("foo")).when(destinationHandler).execute(any());
 
-    assertThrows(RuntimeException.class, () -> typerDeduper.prepareTables());
+    assertThrows(Exception.class, () -> typerDeduper.prepareTables());
     clearInvocations(destinationHandler);
 
-    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream");
+    typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
     typerDeduper.commitFinalTables();
 
     verifyNoInteractions(ignoreStubs(destinationHandler));

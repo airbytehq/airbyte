@@ -8,6 +8,7 @@ from unittest import mock
 import pendulum
 import pytest
 import requests
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from pydantic import BaseModel
 from source_klaviyo.streams import EmailTemplates, Events, IncrementalKlaviyoStreamV1, KlaviyoStreamV1, ReverseIncrementalKlaviyoStreamV1
 
@@ -77,6 +78,10 @@ class TestKlaviyoStreamV1:
         result = stream.parse_response(response)
 
         assert list(result) == response.json.return_value["data"]
+
+    def test_availability_strategy(self):
+        stream = SomeStream(api_key="some_key")
+        assert isinstance(stream.availability_strategy, HttpAvailabilityStrategy)
 
 
 class TestIncrementalKlaviyoStreamV1:
@@ -300,11 +305,27 @@ class TestEmailTemplatesStream:
         stream = EmailTemplates(api_key="some_key")
         json = {
             "data": [
-               {"object": "email-template", "id": "id", "name": "Newsletter #1", "html": "<!DOCTYPE html></html>", "is_writeable": "true", "created": "2023-02-18T11:18:22+00:00", "updated": "2023-02-18T12:01:12+00:00"},
+                {
+                    "object": "email-template",
+                    "id": "id",
+                    "name": "Newsletter #1",
+                    "html": "<!DOCTYPE html></html>",
+                    "is_writeable": "true",
+                    "created": "2023-02-18T11:18:22+00:00",
+                    "updated": "2023-02-18T12:01:12+00:00",
+                },
             ]
         }
         records = list(stream.parse_response(mocker.Mock(json=mocker.Mock(return_value=json))))
 
         assert records == [
-            {"object": "email-template", "id": "id", "name": "Newsletter #1", "html": "<!DOCTYPE html></html>", "is_writeable": "true", "created": "2023-02-18T11:18:22+00:00", "updated": "2023-02-18T12:01:12+00:00"}
+            {
+                "object": "email-template",
+                "id": "id",
+                "name": "Newsletter #1",
+                "html": "<!DOCTYPE html></html>",
+                "is_writeable": "true",
+                "created": "2023-02-18T11:18:22+00:00",
+                "updated": "2023-02-18T12:01:12+00:00",
+            }
         ]

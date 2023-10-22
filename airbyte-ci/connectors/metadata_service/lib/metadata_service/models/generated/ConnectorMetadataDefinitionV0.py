@@ -15,6 +15,13 @@ from pydantic import AnyUrl, BaseModel, Extra, Field, constr
 from typing_extensions import Literal
 
 
+class ConnectorBuildOptions(BaseModel):
+    class Config:
+        extra = Extra.forbid
+
+    baseImage: Optional[str] = None
+
+
 class ReleaseStage(BaseModel):
     __root__: Literal["alpha", "beta", "generally_available", "custom"] = Field(
         ...,
@@ -103,9 +110,7 @@ class VersionBreakingChange(BaseModel):
         ...,
         description="The deadline by which to upgrade before the breaking change takes effect.",
     )
-    message: str = Field(
-        ..., description="Descriptive message detailing the breaking change."
-    )
+    message: str = Field(..., description="Descriptive message detailing the breaking change.")
     migrationDocumentationUrl: Optional[AnyUrl] = Field(
         None,
         description="URL to documentation on how to migrate to the current version. Defaults to ${documentationUrl}-migrations#${version}",
@@ -189,11 +194,12 @@ class Registry(BaseModel):
 
 class Data(BaseModel):
     class Config:
-        extra = Extra.allow
+        extra = Extra.forbid
 
     name: str
     icon: Optional[str] = None
     definitionId: UUID
+    connectorBuildOptions: Optional[ConnectorBuildOptions] = None
     connectorType: Literal["destination", "source"]
     dockerRepository: str
     dockerImageTag: str
@@ -210,11 +216,16 @@ class Data(BaseModel):
         None,
         description="The date when this connector was first released, in yyyy-mm-dd format.",
     )
-    protocolVersion: Optional[str] = Field(
-        None, description="the Airbyte Protocol version supported by the connector"
-    )
+    protocolVersion: Optional[str] = Field(None, description="the Airbyte Protocol version supported by the connector")
     connectorSubtype: Literal[
-        "api", "database", "file", "custom", "message_queue", "unknown"
+        "api",
+        "database",
+        "datalake",
+        "file",
+        "custom",
+        "message_queue",
+        "unknown",
+        "vectorstore",
     ]
     releaseStage: ReleaseStage
     supportLevel: Optional[SupportLevel] = None

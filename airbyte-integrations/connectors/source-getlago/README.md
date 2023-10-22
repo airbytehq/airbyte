@@ -1,6 +1,6 @@
-# Getlago Source
+# Lago Source
 
-This is the repository for the Getlago configuration based source connector.
+This is the repository for the Lago configuration based source connector.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/getlago).
 
 ## Local development

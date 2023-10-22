@@ -7,6 +7,7 @@ from typing import Any, MutableMapping, Optional
 from unittest.mock import Mock
 
 import pytest
+from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
@@ -144,7 +145,6 @@ def _create_datetime(dt: str) -> datetime:
             },
             id="empty-history-with-cursor",
         ),
-
     ],
 )
 def test_set_initial_state(input_state: MutableMapping[str, Any], expected_state: MutableMapping[str, Any]) -> None:
@@ -416,9 +416,7 @@ def test_list_files_v4_migration(input_state, all_files, expected_files_to_sync,
             False,
             id="legacy_state_with_invalid_last_modified_datetime_format_is_not_legacy",
         ),
-        pytest.param(
-            {"_ab_source_file_last_modified": "2023-08-01T00:00:00Z"}, True, id="legacy_state_without_history_is_legacy_state"
-        ),
+        pytest.param({"_ab_source_file_last_modified": "2023-08-01T00:00:00Z"}, True, id="legacy_state_without_history_is_legacy_state"),
         pytest.param({"history": {"2023-08-01": ["file1.txt"]}}, False, id="legacy_state_without_last_modified_cursor_is_not_legacy_state"),
         pytest.param(
             {
@@ -486,7 +484,7 @@ def test_get_adjusted_date_timestamp(cursor_datetime, file_datetime, expected_ad
 
 
 def _init_cursor_with_state(input_state, max_history_size: Optional[int] = None) -> Cursor:
-    cursor = Cursor(stream_config=FileBasedStreamConfig(file_type="csv", name="test", validation_policy="Emit Record"))
+    cursor = Cursor(stream_config=FileBasedStreamConfig(name="test", validation_policy="Emit Record", format=CsvFormat()))
     cursor.set_initial_state(input_state)
     if max_history_size is not None:
         cursor.DEFAULT_MAX_HISTORY_SIZE = max_history_size

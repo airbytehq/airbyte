@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import java.time.Instant;
+import java.util.Optional;
+
 /**
  * Basic SqlGenerator mock. See {@link DefaultTyperDeduperTest} for example usage.
  */
@@ -15,7 +18,7 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public ColumnId buildColumnId(final String name) {
+  public ColumnId buildColumnId(final String name, final String suffix) {
     return null;
   }
 
@@ -35,8 +38,11 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix) {
-    return "UPDATE TABLE " + stream.id().finalTableId("", finalSuffix);
+  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp) {
+    final String timestampFilter = minRawTimestamp
+        .map(timestamp -> " WHERE extracted_at > " + timestamp)
+        .orElse("");
+    return "UPDATE TABLE " + stream.id().finalTableId("", finalSuffix) + timestampFilter;
   }
 
   @Override

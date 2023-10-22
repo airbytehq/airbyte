@@ -48,6 +48,6 @@ class BaseIntegrationTest(unittest.TestCase):
             type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"str_col": str_value, "int_col": int_value}, emitted_at=0)
         )
 
-    def setUp(self):
+    def setUp(self) -> None:
         with open("secrets/config.json", "r") as f:
             self.config = json.loads(f.read())

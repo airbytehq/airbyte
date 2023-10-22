@@ -6,15 +6,15 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.standardtest.source.TestDataHolder;
+import io.airbyte.cdk.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.cdk.integrations.util.HostPortResolver;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.Database;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -86,7 +86,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   @Override
   protected Database setupDatabase() throws Exception {
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
-    container = new PostgreSQLContainer<>("postgres:14-alpine")
+    container = new PostgreSQLContainer<>("postgres:15-alpine")
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"),
             "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
@@ -211,6 +211,38 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
               .addExpectedValues(
                   "+294247-01-10T04:00:25.200000",
                   "+290309-12-21T19:59:27.600000 BC")
+              .build());
+    }
+  }
+
+  @Override
+  protected void addNumericValuesTest() {
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("numeric")
+            .fullSourceDataType("NUMERIC(28,2)")
+            .airbyteType(JsonSchemaType.NUMBER)
+            .addInsertValues(
+                "'123'", "null", "'14525.22'")
+            // Postgres source does not support these special values yet
+            // https://github.com/airbytehq/airbyte/issues/8902
+            // "'infinity'", "'-infinity'", "'nan'"
+            .addExpectedValues("123", null, "14525.22")
+            .build());
+
+    // Blocked by https://github.com/airbytehq/airbyte/issues/8902
+    for (final String type : Set.of("numeric", "decimal")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType(type)
+              .fullSourceDataType("NUMERIC(20,7)")
+              .airbyteType(JsonSchemaType.NUMBER)
+              .addInsertValues(
+                  "'123'", "null", "'1234567890.1234567'")
+              // Postgres source does not support these special values yet
+              // https://github.com/airbytehq/airbyte/issues/8902
+              // "'infinity'", "'-infinity'", "'nan'"
+              .addExpectedValues("123", null, "1.2345678901234567E9")
               .build());
     }
   }

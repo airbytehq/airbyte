@@ -18,20 +18,21 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.IncrementalUtils;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManager;
+import io.airbyte.cdk.integrations.source.relationaldb.state.StateManagerFactory;
+import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.Database;
-import io.airbyte.db.IncrementalUtils;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.relationaldb.CursorInfo;
-import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.integrations.source.relationaldb.state.StateManagerFactory;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
@@ -47,7 +48,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import io.airbyte.protocol.models.v0.SyncMode;
-import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -62,6 +62,7 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -849,6 +850,48 @@ class PostgresSourceTest {
       final AirbyteMessage actualMessage = actualMessages.stream().findFirst().get();
       assertTrue(actualMessage.getRecord().getData().has("bytes"));
       assertEquals("\\336\\255\\276\\357", actualMessage.getRecord().getData().get("bytes").asText());
+    }
+  }
+
+  @Test
+  @DisplayName("Make sure initial incremental load is reading records in a certain order")
+  void testReadIncrementalRecordOrder() throws Exception {
+    final JsonNode config = getConfig(PSQL_DB, dbName);
+    // We want to test ordering, so we can delete the NaN entry
+    try (final DSLContext dslContext = getDslContext(config)) {
+      final Database database = getDatabase(dslContext);
+      database.query(ctx -> {
+        ctx.fetch("DELETE FROM id_and_name WHERE id = 'NaN';");
+        for (int i = 3; i < 1000; i++) {
+          ctx.fetch("INSERT INTO id_and_name (id, name, power) VALUES (%d, 'gohan%d', 222.1);".formatted(i, i));
+        }
+        return null;
+      });
+
+      final ConfiguredAirbyteCatalog configuredCatalog =
+          CONFIGURED_INCR_CATALOG
+              .withStreams(CONFIGURED_INCR_CATALOG.getStreams().stream().filter(s -> s.getStream().getName().equals(STREAM_NAME)).collect(
+                  Collectors.toList()));
+      final PostgresSource source = new PostgresSource();
+      source.setStateEmissionFrequencyForDebug(1);
+      final List<AirbyteMessage> actualMessages = MoreIterators.toList(source.read(getConfig(PSQL_DB, dbName), configuredCatalog, null));
+      setEmittedAtToNull(actualMessages);
+
+      // final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessage(actualMessages);
+
+      setEmittedAtToNull(actualMessages);
+
+      final Set<AirbyteMessage> expectedOutput = Sets.newHashSet(
+          createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
+          createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)));
+      for (int i = 3; i < 1000; i++) {
+        expectedOutput.add(
+            createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("%d.0".formatted(i)), "name", "gohan%d".formatted(i), "power", 222.1)));
+      }
+      assertThat(actualMessages.contains(expectedOutput));
+      // Assert that the Postgres source is emitting records & state messages in the correct order.
+      assertCorrectRecordOrderForIncrementalSync(actualMessages, "id", JsonSchemaPrimitive.NUMBER, configuredCatalog,
+          new AirbyteStreamNameNamespacePair("id_and_name", "public"));
     }
   }
 

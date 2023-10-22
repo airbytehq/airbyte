@@ -16,6 +16,7 @@ public class Ctid {
 
   final Long page;
   final Long tuple;
+  public static final Ctid ZERO = Ctid.of(0, 0);
 
   public static Ctid of(final long page, final long tuple) {
     return new Ctid(page, tuple);
@@ -69,6 +70,10 @@ public class Ctid {
   @Override
   public int hashCode() {
     return Objects.hash(page, tuple);
+  }
+
+  public static Ctid inc(final Ctid ctid, final long maxTuple) {
+    return (ctid.tuple + 1 > maxTuple) ? Ctid.of(ctid.page + 1, 1) : Ctid.of(ctid.page, ctid.tuple + 1);
   }
 
 }
