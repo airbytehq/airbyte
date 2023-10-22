@@ -1,32 +1,32 @@
 {
-  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "$schema" : "http://json-schema.org/draft-07/schema#",
   "type" : "object",
   "properties" : {
     "key" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__data__txs" : {
       "type" : "array",
       "items" : {
-        "type" : "string"
+        "type" : ["string", "null"]
       }
     },
     "value__header__time" : {
-      "type" : "string",
+      "type" : ["string", "null"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "value__header__height" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     },
     "value__header__app_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__header__chain_id" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__header__data_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__evidence__evidence" : {
       "type" : "array",
@@ -36,19 +36,19 @@
       "type" : "integer"
     },
     "value__last_commit__height" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     },
     "value__header__evidence_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__header__consensus_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__header__version__block" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     },
     "value__header__validators_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__last_commit__signatures" : {
       "type" : "array",
@@ -56,10 +56,10 @@
         "type" : "object",
         "properties" : {
           "signature": {
-            "type" : "string"
+            "type" : ["string", "null"]
           },
           "timestamp": {
-            "type" : "string",
+            "type" : ["string", "null"],
             "format": "date-time",
             "airbyte_type": "timestamp_with_timezone"
           },
@@ -67,34 +67,34 @@
             "type" : "integer"
           },
           "validator_address": {
-            "type" : "string"
+            "type" : ["string", "null"]
           }
         }
       }
     },
     "value__header__last_commit_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__header__proposer_address" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__header__last_results_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__header__last_block_id__hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__last_commit__block_id__hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__header__next_validators_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__header__last_block_id__parts__hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__last_commit__block_id__parts__hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__header__last_block_id__parts__total" : {
       "type" : "integer"

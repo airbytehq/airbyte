@@ -3,7 +3,9 @@
     {
       "stream": {
         "name": "pool_1",
-        "json_schema": {},
+        "json_schema": {
+          
+         },
         "supported_sync_modes": ["full_refresh", "incremental"]
       },
       "sync_mode": "full_refresh",

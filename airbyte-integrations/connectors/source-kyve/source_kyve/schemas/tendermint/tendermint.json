@@ -1,29 +1,29 @@
 {
-  "$schema" : "http://json-schema.org/draft-04/schema#",
+  "$schema" : "http://json-schema.org/draft-07/schema#",
   "type" : "object",
   "properties" : {
     "key" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block_id__hash" : {
-      "type" : "string"
+      "type" :  ["string", "null"]
     },
     "value__block_results__height" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     },
     "value__block__block__data__txs" : {
       "type" : "array",
       "items" : {
-        "type" : "string"
+        "type" : ["string", "null"]
       }
     },
     "value__block__block__header__time" : {
-      "type" : "string",
+      "type" : ["string", "null"],
       "format": "date-time",
       "airbyte_type": "timestamp_with_timezone"
     },
     "value__block_results__txs_results" : {
-      "type" : "array",
+      "type" : ["array", "null"],
       "items" : {
         "type": "object",
         "properties" : {
@@ -34,7 +34,7 @@
             "type" : ["string", "null"]
           },
           "info": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "events": {
             "type" : "array",
@@ -42,7 +42,7 @@
               "type" : "object",
               "properties" : {
                 "type": {
-                  "type" : "string"
+                  "type" : ["string", "null"]
                 },
                 "attributes": {
                   "type" : "array",
@@ -50,10 +50,10 @@
                     "type" : "object",
                     "properties" : {
                       "key": {
-                        "type" : "string"
+                        "type" : ["string", "null"]
                       },
                       "value": {
-                        "type" : "string"
+                        "type" : ["string", "null"]
                       }
                     }
                   }
@@ -62,43 +62,43 @@
             }
           },
           "gas_used": {
-            "type" : "integer"
+            "type" : ["string", "null"]
           },
           "codespace": {
-            "type" : "string"
+            "type" : ["string", "null"]
           },
           "gas_wanted": {
-            "type" : "integer"
+            "type" : ["string", "null"]
           }
         }
       }
     },
     "value__block__block__header__height" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     },
     "value__block__block_id__parts__hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block_id__parts__total" : {
       "type" : "integer"
     },
     "value__block__block__header__app_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__header__chain_id" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__header__data_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block_results__end_block_events" : {
-      "type" : "array",
+      "type" : ["array", "null"],
       "id" : "event",
       "items" : {
         "type": "object",
         "properties" : {
           "type": {
-            "type" : "string"
+            "type" : ["string", "null"]
           },
           "attributes": {
             "type": "array",
@@ -106,10 +106,10 @@
               "type" : "object",
               "properties" : {
                 "key": {
-                  "type" : "string"
+                  "type" : ["string", "null"]
                 },
                 "value": {
-                  "type" : "string"
+                  "type" : ["string", "null"]
                 }
               }
             }
@@ -130,7 +130,7 @@
         "type" : "object",
         "properties" : {
           "power": {
-            "type": "integer"
+            "type": ["string", "null"]
           },
           "pub_key": {
             "type" : "object"
@@ -139,7 +139,7 @@
       }
     },
     "value__block__block__last_commit__height" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     },
     "value__block_results__begin_block_events" : {
       "type" : "array",
@@ -148,7 +148,7 @@
         "type": "object",
         "properties" : {
           "type": {
-            "type" : "string"
+            "type" : ["string", "null"]
           },
           "attributes": {
             "type": "array",
@@ -156,10 +156,10 @@
               "type" : "object",
               "properties" : {
                 "key": {
-                  "type" : "string"
+                  "type" : ["string", "null"]
                 },
                 "value": {
-                  "type" : "string"
+                  "type" : ["string", "null"]
                 }
               }
             }
@@ -168,16 +168,19 @@
       }
     },
     "value__block__block__header__evidence_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__header__consensus_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__header__version__block" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     },
     "value__block__block__header__validators_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
+    },
+    "value__block__block__header__version__app" : {
+      "type" : ["string", "null"]
     },
     "value__block__block__last_commit__signatures" : {
       "type" : "array",
@@ -185,10 +188,10 @@
         "type" : "object",
         "properties" : {
           "signature": {
-            "type" : "string"
+            "type" : ["string", "null"]
           },
           "timestamp": {
-            "type" : "string",
+            "type" : ["string", "null"],
             "format": "date-time",
             "airbyte_type": "timestamp_with_timezone"
           },
@@ -196,34 +199,34 @@
             "type" : "integer"
           },
           "validator_address": {
-            "type" : "string"
+            "type" : ["string", "null"]
           }
         }
       }
     },
     "value__block__block__header__last_commit_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__header__proposer_address" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__header__last_results_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__header__last_block_id__hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__last_commit__block_id__hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__header__next_validators_hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__header__last_block_id__parts__hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__last_commit__block_id__parts__hash" : {
-      "type" : "string"
+      "type" : ["string", "null"]
     },
     "value__block__block__header__last_block_id__parts__total" : {
       "type" : "integer"
@@ -232,23 +235,23 @@
       "type" : "integer"
     },
     "value__block_results__consensus_param_updates__block__max_gas" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     },
     "value__block_results__consensus_param_updates__block__max_bytes" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     },
     "value__block_results__consensus_param_updates__evidence__max_bytes" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     },
     "value__block_results__consensus_param_updates__validator__pub_key_types" : {
       "type" : "array",
       "items" : {}
     },
     "value__block_results__consensus_param_updates__evidence__max_age_duration" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     },
     "value__block_results__consensus_param_updates__evidence__max_age_num_blocks" : {
-      "type" : "integer"
+      "type" : ["string", "null"]
     }
   },
   "required" : [
