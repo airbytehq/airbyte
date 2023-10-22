@@ -168,7 +168,10 @@ class ThreadBasedConcurrentStream(AbstractStream):
 
         keys = self._primary_key
         if keys and len(keys) > 0:
-            stream.source_defined_primary_key = [keys]
+            if isinstance(keys, str):
+                stream.source_defined_primary_key = [[keys]]
+            else:
+                stream.source_defined_primary_key = [keys]
 
         return stream
 
