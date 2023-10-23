@@ -7,7 +7,6 @@ import json
 import logging
 import os
 import re
-import time
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass
@@ -58,6 +57,9 @@ class WeaviateIndexer(Indexer):
             self.client = weaviate.Client(url=self.config.host, auth_client_secret=credentials, additional_headers=headers)
         else:
             self.client = weaviate.Client(url=self.config.host, additional_headers=headers)
+        
+        # disable dynamic batching because it's handled asynchroniously in the client
+        self.client.batch.configure(batch_size=None, dynamic=False)
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
@@ -169,5 +171,5 @@ class WeaviateIndexer(Indexer):
                 all_errors.extend(errors)
 
         if len(all_errors) > 0:
-            error_msg = f"Errors while loading: " + f"{','.join([str(error) for error in all_errors])}"
+            error_msg = "Errors while loading: " + ', '.join([str(error) for error in all_errors])
             raise WeaviatePartialBatchError(error_msg)
