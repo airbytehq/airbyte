@@ -16,6 +16,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partitio
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
+from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 
@@ -108,3 +109,8 @@ class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
 class AlwaysAvailableAvailabilityStrategy(AbstractAvailabilityStrategy):
     def check_availability(self, logger: logging.Logger) -> StreamAvailability:
         return StreamAvailable()
+
+
+class NeverLogSliceLogger(SliceLogger):
+    def should_log_slice_message(self, logger: logging.Logger) -> bool:
+        return False

@@ -7,13 +7,14 @@ import logging
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
-from airbyte_cdk.sources.utils.slice_logger import AlwaysLogSliceLogger, NeverLogSliceLogger
+from airbyte_cdk.sources.utils.slice_logger import AlwaysLogSliceLogger
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_source_builder import (
     AlwaysAvailableAvailabilityStrategy,
     ConcurrentSourceBuilder,
     InMemoryPartition,
     InMemoryPartitionGenerator,
+    NeverLogSliceLogger,
 )
 
 _id_only_stream = ThreadBasedConcurrentStream(
