@@ -3,7 +3,7 @@
 #
 import logging
 from io import BytesIO, IOBase
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import IO, Any, Dict, Iterable, List, Mapping, Optional, Union
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
@@ -75,13 +75,12 @@ class UnstructuredParser(FileTypeParser):
         if filetype not in self._supported_file_types():
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file_name)
         
+        file: Any = file_handle
         if filetype == FileType.PDF:
             # for PDF, read the file into a BytesIO object because some code paths in pdf parsing are doing an instance check on the file object and don't work with file-like objects 
             file_handle.seek(0)
             file = BytesIO(file_handle.read())
             file_handle.seek(0)
-        else:
-            file = file_handle
 
         elements = partition(file=file, metadata_filename=file_name)
         return self._render_markdown(elements)
