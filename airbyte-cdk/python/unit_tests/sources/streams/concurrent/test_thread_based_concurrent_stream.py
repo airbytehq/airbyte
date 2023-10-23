@@ -8,9 +8,9 @@ from unittest.mock import Mock, call
 import pytest
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 
 
@@ -41,7 +41,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             1,
             2,
             0,
-            cursor = self._cursor,
+            cursor=self._cursor,
         )
 
     def test_get_json_schema(self):

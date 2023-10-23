@@ -8,7 +8,6 @@ import sys
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from source_stripe import SourceStripe
 
-
 if __name__ == "__main__":
     args = sys.argv[1:]
     state = SourceStripe.read_state(AirbyteEntrypoint.extract_state(args))

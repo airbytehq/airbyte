@@ -421,8 +421,7 @@ class SourceStripe(AbstractSource):
             ),
             StripeSubStream(
                 name="usage_records",
-                path=lambda self, stream_slice, *args,
-                            **kwargs: f"subscription_items/{stream_slice.get('parent', {}).get('id')}/usage_record_summaries",
+                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice.get('parent', {}).get('id')}/usage_record_summaries",
                 parent=subscription_items,
                 primary_key=None,
                 **args,
@@ -445,9 +444,12 @@ class SourceStripe(AbstractSource):
                         self.message_repository,
                         state_manager,
                         CursorField(stream.cursor_field if type(stream.cursor_field) == list else [stream.cursor_field]),
-                        self._get_slice_boundary_fields(stream, state_manager)
-                    ) if self._is_incremental(stream) else NoopCursor(),
-                ) for stream in streams
+                        self._get_slice_boundary_fields(stream, state_manager),
+                    )
+                    if self._is_incremental(stream)
+                    else NoopCursor(),
+                )
+                for stream in streams
             ]
         else:
             return streams

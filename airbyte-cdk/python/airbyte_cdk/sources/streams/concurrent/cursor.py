@@ -29,7 +29,6 @@ class CursorField:
 
 
 class Cursor(ABC):
-
     @abstractmethod
     def observe(self, record: Record) -> None:
         raise NotImplementedError()
@@ -60,7 +59,7 @@ class ConcurrentCursor(Cursor):
         message_repository: MessageRepository,
         connector_state_manager: ConnectorStateManager,
         cursor_field: CursorField,
-        slice_boundary_fields: Optional[Tuple[str, str]]
+        slice_boundary_fields: Optional[Tuple[str, str]],
     ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
@@ -73,9 +72,9 @@ class ConcurrentCursor(Cursor):
         # TODO to migrate state. The migration should probably be outside of this class. Impact of not having this:
         #  * Given a sync that emits no records, the emitted state message will be empty
         self._state = {
-         "slices": [
-            # empty for now but should look like `{start: 1, end: 10, parent_id: "id1"}`
-         ]
+            "slices": [
+                # empty for now but should look like `{start: 1, end: 10, parent_id: "id1"}`
+            ]
         }
 
     def observe(self, record: Record) -> None:
@@ -101,24 +100,26 @@ class ConcurrentCursor(Cursor):
     def _add_slice_to_state(self, partition: Partition) -> None:
         partition_identifier = partition.identifier() or {}
         if self._slice_boundary_fields:
-            self._state["slices"].append({
-                "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
-                "end": self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
-                **partition_identifier,
-            })
+            self._state["slices"].append(
+                {
+                    "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
+                    "end": self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
+                    **partition_identifier,
+                }
+            )
         elif self._most_recent_record:
-            self._state["slices"].append({
-                "start": 0,  # FIXME this only works with int datetime
-                "end": self._extract_cursor_value(self._most_recent_record),
-                **partition_identifier,
-            })
+            self._state["slices"].append(
+                {
+                    "start": 0,  # FIXME this only works with int datetime
+                    "end": self._extract_cursor_value(self._most_recent_record),
+                    **partition_identifier,
+                }
+            )
 
     def _emit_state_message(self) -> None:
         self._connector_state_manager.update_state_for_stream(self._stream_name, self._stream_namespace, self._state)
         state_message = self._connector_state_manager.create_state_message(
-            self._stream_name,
-            self._stream_namespace,
-            send_per_stream_state=True
+            self._stream_name, self._stream_namespace, send_per_stream_state=True
         )
         self._message_repository.emit_message(state_message)
 

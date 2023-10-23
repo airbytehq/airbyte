@@ -5,9 +5,9 @@ from unittest.mock import Mock
 import pytest
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
+from airbyte_cdk.sources.streams.concurrent.cursor import Comparable, ConcurrentCursor, CursorField
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.cursor import Comparable, ConcurrentCursor, CursorField
 
 _A_STREAM_NAME = "a stream name"
 _A_STREAM_NAMESPACE = "a stream namespace"
@@ -70,10 +70,7 @@ class ConcurrentCursorTest(TestCase):
                     "id_key_1": "id_key_1_value",
                     "id_key_2": "id_key_2_value",
                 },
-                {
-                    _LOWER_SLICE_BOUNDARY_FIELD: 12,
-                    _UPPER_SLICE_BOUNDARY_FIELD: 30
-                }
+                {_LOWER_SLICE_BOUNDARY_FIELD: 12, _UPPER_SLICE_BOUNDARY_FIELD: 30},
             )
         )
 
@@ -90,35 +87,29 @@ class ConcurrentCursorTest(TestCase):
                         "end": 30,
                     },
                 ]
-            }
+            },
         )
 
     def test_given_boundary_fields_and_record_observed_when_close_partition_then_ignore_records(self) -> None:
         cursor = self._cursor_with_slice_boundary_fields()
         cursor.observe(_record(_A_VERY_HIGH_CURSOR_VALUE))
 
-        cursor.close_partition(
-            _partition(
-                _NO_PARTITION_IDENTIFIER,
-                {
-                    _LOWER_SLICE_BOUNDARY_FIELD: 12,
-                    _UPPER_SLICE_BOUNDARY_FIELD: 30
-                }
-            )
-        )
+        cursor.close_partition(_partition(_NO_PARTITION_IDENTIFIER, {_LOWER_SLICE_BOUNDARY_FIELD: 12, _UPPER_SLICE_BOUNDARY_FIELD: 30}))
 
         assert self._state_manager.update_state_for_stream.call_args_list[0].args[2]["slices"][0]["end"] != _A_VERY_HIGH_CURSOR_VALUE
 
     def test_given_no_boundary_fields_when_close_partition_then_emit_state(self) -> None:
         cursor = self._cursor_without_slice_boundary_fields()
         cursor.observe(_record(10))
-        cursor.close_partition(_partition(
-            {
-                "id_key_1": "id_key_1_value",
-                "id_key_2": "id_key_2_value",
-            },
-            _NO_SLICE_BOUNDARIES
-        ))
+        cursor.close_partition(
+            _partition(
+                {
+                    "id_key_1": "id_key_1_value",
+                    "id_key_2": "id_key_2_value",
+                },
+                _NO_SLICE_BOUNDARIES,
+            )
+        )
 
         self._message_repository.emit_message.assert_called_once_with(self._state_manager.create_state_message.return_value)
         self._state_manager.update_state_for_stream.assert_called_once_with(
@@ -133,7 +124,7 @@ class ConcurrentCursorTest(TestCase):
                         "end": 10,
                     },
                 ]
-            }
+            },
         )
 
     def test_given_no_records_observed_when_close_partition_then_do_not_emit_state(self) -> None:

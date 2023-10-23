@@ -11,8 +11,8 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
-from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability, StreamAvailable
+from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
@@ -67,6 +67,7 @@ class ConcurrentCdkSource(AbstractSource):
     @property
     def message_repository(self) -> Union[None, MessageRepository]:
         return self._message_repository
+
 
 class InMemoryPartitionGenerator(PartitionGenerator):
     def __init__(self, partitions: List[Partition]):

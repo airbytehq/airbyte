@@ -23,7 +23,10 @@ class StreamFacadeSource(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        return [StreamFacade.create_from_stream(stream, self, stream.logger, self._max_workers, None, None, NoopCursor()) for stream in self._streams]
+        return [
+            StreamFacade.create_from_stream(stream, self, stream.logger, self._max_workers, None, None, NoopCursor())
+            for stream in self._streams
+        ]
 
     @property
     def message_repository(self) -> Union[None, MessageRepository]:

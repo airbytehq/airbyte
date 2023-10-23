@@ -11,7 +11,9 @@ from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode, Type as MessageType
+from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode
+from airbyte_cdk.models import Type as MessageType
+
 # list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
@@ -153,7 +155,9 @@ class Stream(ABC):
             )
             for record_data_or_message in records:
                 yield record_data_or_message
-                if isinstance(record_data_or_message, Mapping) or (hasattr(record_data_or_message, "type") and record_data_or_message.type == MessageType.RECORD):
+                if isinstance(record_data_or_message, Mapping) or (
+                    hasattr(record_data_or_message, "type") and record_data_or_message.type == MessageType.RECORD
+                ):
                     record_data = record_data_or_message if isinstance(record_data_or_message, Mapping) else record_data_or_message.record
                     stream_state = self.get_updated_state(stream_state, record_data)
                     checkpoint_interval = self.state_checkpoint_interval
@@ -357,16 +361,14 @@ class Stream(ABC):
         self,
         stream_state: Mapping[str, Any],
         state_manager,  # ignoring typing for ConnectorStateManager because of circular dependencies
-        per_stream_state_enabled: bool
+        per_stream_state_enabled: bool,
     ) -> AirbyteMessage:
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
         # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
         # instance's deprecated get_updated_state() method.
         try:
             state_manager.update_state_for_stream(
-                self.name,
-                self.namespace,
-                self.state  # type: ignore # we know the field might not exist...
+                self.name, self.namespace, self.state  # type: ignore # we know the field might not exist...
             )
 
         except AttributeError:
