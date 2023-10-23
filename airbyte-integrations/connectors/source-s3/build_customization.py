@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from dagger import Container
 
+
 async def setup_nltk(connector_container: Container) -> Container:
     """
     Seeds the connector with nltk data at build time. This is because the nltk data
@@ -24,13 +25,13 @@ async def setup_nltk(connector_container: Container) -> Container:
         """
     )
     connector_container = (
-        connector_container
-        .with_new_file("/tmp/nltk_python_script.py", nltk_python_script)
+        connector_container.with_new_file("/tmp/nltk_python_script.py", nltk_python_script)
         .with_exec(["python", "/tmp/nltk_python_script.py"], skip_entrypoint=True)
         .with_exec(["rm", "/tmp/nltk_python_script.py"], skip_entrypoint=True)
     )
 
     return connector_container
+
 
 async def install_tesseract_and_poppler(connector_container: Container) -> Container:
     """
@@ -38,12 +39,12 @@ async def install_tesseract_and_poppler(connector_container: Container) -> Conta
     OCR (Optical Character Recognition) processes and working with PDFs, respectively.
     """
 
-    connector_container = (
-        connector_container
-        .with_exec(["sh", "-c", "apt-get update && apt-get install -y tesseract-ocr poppler-utils"], skip_entrypoint=True)
+    connector_container = connector_container.with_exec(
+        ["sh", "-c", "apt-get update && apt-get install -y tesseract-ocr poppler-utils"], skip_entrypoint=True
     )
 
     return connector_container
+
 
 async def post_connector_install(connector_container: Container) -> Container:
     """
