@@ -11,6 +11,7 @@ from airbyte_cdk.sources.file_based.availability_strategy.default_file_based_ava
 )
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, CustomFileBasedException
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
@@ -74,3 +75,15 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
         assert is_available
         assert not self._parser.parse_records.called
         assert self._stream_reader.open_file.called
+
+    def test_catching_and_raising_custom_file_based_exception(self) -> None:
+        """
+        Test that the DefaultFileBasedAvailabilityStrategy catches CustomFileBasedException and raises CheckAvailabilityError.
+        """
+        # Mock the list_files method to raise CustomFileBasedException
+        self._stream.list_files.side_effect = CustomFileBasedException("Custom exception for testing.")
+
+        # Check if the check_availability_and_parsability method raises CheckAvailabilityError
+        successful_check, error_massage = self._strategy.check_availability_and_parsability(self._stream, Mock(), Mock())
+        assert successful_check == False
+        assert "Custom exception for testing." in error_massage
