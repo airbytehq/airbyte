@@ -445,9 +445,9 @@ def insert_payment_voucher_to_tally(
         return
 
     if response.status_code == 200:
-        logger.info(f'payment voucher with voucher number : {payment_voucher_payload["Voucher Number"]} successfully inserted into Tally')
+        logger.info(f'payment voucher with voucher number : {data["Voucher Number"]} successfully inserted into Tally')
     else:
-        logger.info(f'payment voucher with voucher number : {payment_voucher_payload["Voucher Number"]} cannot be inserted into Tally')
+        logger.info(f'payment voucher with voucher number : {data["Voucher Number"]} cannot be inserted into Tally')
 
 
 # 6. Receipt Voucher Template - Date format problem
