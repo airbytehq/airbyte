@@ -4,8 +4,6 @@
 
 from enum import Enum
 
-from airbyte_cdk.utils import AirbyteTracedException
-
 
 class FileBasedSourceError(Enum):
     EMPTY_STREAM = "No files were identified in the stream. This may be because there are no files in the specified container, or because your glob patterns did not match any files. Please verify that your source contains files last modified after the start_date and that your glob patterns are not overly strict."
@@ -40,11 +38,9 @@ class FileBasedSourceError(Enum):
 
 
 class BaseFileBasedSourceError(Exception):
-    def __init__(self, error: Union[FileBasedSourceError, str], **kwargs):  # type: ignore # noqa
-        if isinstance(error, FileBasedSourceError):
-            error = FileBasedSourceError(error).value
+    def __init__(self, error: FileBasedSourceError, **kwargs):  # type: ignore # noqa
         super().__init__(
-            f"{error} Contact Support if you need assistance.\n{' '.join([f'{k}={v}' for k, v in kwargs.items()])}"
+            f"{FileBasedSourceError(error).value} Contact Support if you need assistance.\n{' '.join([f'{k}={v}' for k, v in kwargs.items()])}"
         )
 
 
@@ -85,13 +81,4 @@ class StopSyncPerValidationPolicy(BaseFileBasedSourceError):
 
 
 class ErrorListingFiles(BaseFileBasedSourceError):
-    pass
-
-
-class CustomFileBasedException(AirbyteTracedException):
-    """
-    A specialized exception for file-based connectors.
-
-    This exception is designed to bypass the default error handling in the file-based CDK, allowing the use of custom error messages.
-    """
     pass
