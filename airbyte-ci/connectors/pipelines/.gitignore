@@ -1,2 +1,3 @@
 pipeline_reports
 .venv
+airbyte_ci.build/

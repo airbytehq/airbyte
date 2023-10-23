@@ -35,6 +35,7 @@ pytest-mock = "^3.10.0"
 freezegun = "^1.2.2"
 pytest-cov = "^4.1.0"
 pex = "^2.1.148"
+nuitka = "^1.8.4"
 
 [tool.poetry.scripts]
 airbyte-ci-internal = "pipelines.cli.airbyte_ci:airbyte_ci"

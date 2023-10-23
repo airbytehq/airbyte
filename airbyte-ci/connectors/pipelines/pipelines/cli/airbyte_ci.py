@@ -243,4 +243,5 @@ def airbyte_ci(
 set_working_directory_to_root()
 
 if __name__ == "__main__":
+    print("Running airbyte-ci.")
     airbyte_ci()
