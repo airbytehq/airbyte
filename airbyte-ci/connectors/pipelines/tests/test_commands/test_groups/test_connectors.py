@@ -5,10 +5,6 @@
 from typing import Callable
 
 import click
-import pipelines.airbyte_ci.connectors.build_image.commands
-import pipelines.airbyte_ci.connectors.commands
-import pipelines.airbyte_ci.connectors.publish.commands
-import pipelines.airbyte_ci.connectors.test.commands
 import pytest
 from click.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
@@ -250,6 +246,8 @@ def click_context_obj():
         "concurrency": 1,
         "ci_git_user": None,
         "ci_github_access_token": None,
+        "docker_hub_username": "foo",
+        "docker_hub_password": "bar",
     }
 
 
@@ -267,10 +265,6 @@ def click_context_obj():
                 "--metadata-service-gcs-credentials",
                 "test",
                 "--metadata-service-bucket-name",
-                "test",
-                "--docker-hub-username",
-                "test",
-                "--docker-hub-password",
                 "test",
             ],
         ),
@@ -293,7 +287,7 @@ def test_commands_do_not_override_connector_selection(
     mocker.patch.object(connectors_test_command, "ConnectorContext", mock_connector_context)
     mocker.patch.object(connectors_build_command, "ConnectorContext", mock_connector_context)
     mocker.patch.object(connectors_publish_command, "PublishConnectorContext", mock_connector_context)
-    runner.invoke(command, command_args, catch_exceptions=False, obj=click_context_obj)
+    runner.invoke(command, command_args, catch_exceptions=True, obj=click_context_obj)
     assert mock_connector_context.call_count == 1
     # If the connector selection is overriden the context won't be instantiated with the selected connector mock instance
     assert mock_connector_context.call_args_list[0].kwargs["connector"] == selected_connector

@@ -191,6 +191,18 @@ class ConnectorContext(PipelineContext):
     def docker_image(self) -> str:
         return f"{self.docker_repository}:{self.docker_image_tag}"
 
+    @property
+    def docker_hub_username_secret(self) -> Optional[Secret]:
+        if self.docker_hub_username is None:
+            return None
+        return self.dagger_client.set_secret("docker_hub_username", self.docker_hub_username)
+
+    @property
+    def docker_hub_password_secret(self) -> Optional[Secret]:
+        if self.docker_hub_password is None:
+            return None
+        return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
+
     async def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
 
