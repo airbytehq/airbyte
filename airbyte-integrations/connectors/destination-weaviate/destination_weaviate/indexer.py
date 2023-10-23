@@ -160,27 +160,14 @@ class WeaviateIndexer(Indexer):
         return result
 
     def _flush(self, retries: int = 3):
-        if len(self.objects_with_error) > 0 and retries == 0:
-            error_msg = f"Objects had errors and retries failed as well. Object IDs: {self.objects_with_error.keys()}"
-            raise WeaviatePartialBatchError(error_msg)
-
         results = self.client.batch.create_objects()
-        self.objects_with_error.clear()
+        all_errors = []
+
         for result in results:
             errors = result.get("result", {}).get("errors", [])
             if errors:
-                obj_id = result.get("id")
-                self.objects_with_error[obj_id] = self.buffered_objects.get(obj_id)
-                logging.info(f"Object {obj_id} had errors: {errors}. Going to retry.")
-
-        for buffered_object in self.objects_with_error.values():
-            self.client.batch.add_data_object(
-                buffered_object.properties, buffered_object.class_name, buffered_object.id, vector=buffered_object.vector
-            )
-
-        if len(self.objects_with_error) > 0 and retries > 0:
-            logging.info("sleeping 2 seconds before retrying batch again")
-            time.sleep(2)
-            self._flush(retries - 1)
-
-        self.buffered_objects.clear()
+                all_errors.extend(errors)
+        
+        if len(all_errors) > 0:
+            error_msg = f"Errors while loading: " + f"{','.join([str(error) for error in all_errors])}"
+            raise WeaviatePartialBatchError(error_msg)

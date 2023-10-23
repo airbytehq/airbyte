@@ -163,7 +163,7 @@ class TestWeaviateIndexer(unittest.TestCase):
 
     @patch("destination_weaviate.indexer.uuid.uuid4")
     @patch("time.sleep", return_value=None)
-    def test_index_flushes_batch_and_retries(self, MockTime, MockUUID):
+    def test_index_flushes_batch_and_propagates_error(self, MockTime, MockUUID):
         mock_client = Mock()
         self.indexer.client = mock_client
         mock_client.batch.create_objects.return_value = [{"result": {"errors": ["some_error"]}, "id": "some_id"}]
@@ -183,11 +183,10 @@ class TestWeaviateIndexer(unittest.TestCase):
         with self.assertRaises(WeaviatePartialBatchError):
             self.indexer.index([mock_chunk1, mock_chunk2], None, "test")
         chunk1_call = call({"someField": "some_value", "text": "some_content"}, "Test", "some_id", vector=[1, 2, 3])
-        chunk2_call = call({"someField": "some_value2", "text": "some_other_content"}, "Test", "some_id2", vector=[4, 5, 6])
-        self.assertEqual(mock_client.batch.create_objects.call_count, 3)  # 1 initial try + 2 retries
+        self.assertEqual(mock_client.batch.create_objects.call_count, 1)
         mock_client.batch.add_data_object.assert_has_calls(
-            [chunk1_call, chunk2_call, chunk1_call, chunk1_call, chunk1_call], any_order=False
-        )  # 1 initial try + 2 retries + adding the data object before raising the exception in the next recursion
+            [chunk1_call], any_order=False
+        )
 
     def test_index_flushes_batch_and_normalizes(self):
         mock_client = Mock()
