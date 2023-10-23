@@ -3,7 +3,7 @@
 The LinkedIn Ads Connector by Airbyte is a Snowflake Native Application that allows you to extract data from your LinkedIn Ads account and load records into a Snowflake database of your choice.
 
 :::info
-The Snowflake Native Apps platform is new and rapidly evolving.  The LinkedIn Ads Connector by Airbyte is in _private preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a full table refresh without dedupe is supported.  
+The Snowflake Native Apps platform is new and rapidly evolving. The LinkedIn Ads Connector by Airbyte is in _private preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a [full table refresh](../understanding-airbyte/connections/full-refresh-overwrite.md) without deduplication is supported.  
 :::
 
 # Getting started
@@ -40,10 +40,10 @@ In order for the LinkedIn Ads Connector by Airbyte to query LinkedIn, you will n
 By default the app will be installed using the name `AIRBYTE_LINKEDIN_ADS`, but if you renamed the app during installation, you will have to use that name as a reference.
 :::
 
-1. Create the database where the app will access the authorization. This database can be different from the database where the sync will output records.
+1. Create the database where the app will access the authorization.
 ```
-CREATE DATABASE <database>;
-USE <database>;
+CREATE DATABASE airbyte_linkedin_ads_db;
+USE airbyte_linkedin_ads_db;
 ```
 
 2. The native app will validate the output database and create it if it does not exist. In order to do that, the app needs access to the database:
@@ -65,7 +65,7 @@ As of 2023-09-13, the [Snowflake documentation](https://docs.snowflake.com/en/sq
 
 4. Once you have external access configured, you need define your authorization/authentication. Provide the credentials to the app as such:
 ```
-CREATE OR REPLACE SECRET integration_linkedin_ads_oauth
+CREATE OR REPLACE SECRET airbyte_app_secret
   TYPE = GENERIC_STRING
   SECRET_STRING = '{
     "auth_method": "oAuth2.0",
@@ -78,22 +78,28 @@ CREATE OR REPLACE SECRET integration_linkedin_ads_oauth
 
 5. Once the network rule and the secret are defined in Snowflake, you need to make them available to the app by using an external access integration.
 ```
-CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION integration_linkedin_ads
+CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION airbyte_app_integration
   ALLOWED_NETWORK_RULES = (linkedin_apis_network_rule)
-  ALLOWED_AUTHENTICATION_SECRETS = (integration_linkedin_ads_oauth)
+  ALLOWED_AUTHENTICATION_SECRETS = (airbyte_app_secret)
   ENABLED = true;
 ```
 
 6. Grant permission for the app to access the integration.
 ```
-GRANT USAGE ON INTEGRATION integration_linkedin_ads TO APPLICATION AIRBYTE_LINKEDIN_ADS;
+GRANT USAGE ON INTEGRATION airbyte_app_integration TO APPLICATION AIRBYTE_LINKEDIN_ADS;
 ```
 
 7. Grant permissions for the app to access the database that houses the secret and read the secret.
 ```
-GRANT USAGE ON DATABASE <your_database> TO APPLICATION AIRBYTE_LINKEDIN_ADS;
-GRANT USAGE ON SCHEMA <your_schema> TO APPLICATION AIRBYTE_LINKEDIN_ADS;
-GRANT READ ON SECRET integration_linkedin_ads_oauth TO APPLICATION AIRBYTE_LINKEDIN_ADS;
+GRANT USAGE ON DATABASE airbyte_linkedin_ads_db TO APPLICATION AIRBYTE_LINKEDIN_ADS;
+GRANT USAGE ON SCHEMA public TO APPLICATION AIRBYTE_LINKEDIN_ADS;
+GRANT READ ON SECRET airbyte_app_secret TO APPLICATION AIRBYTE_LINKEDIN_ADS;
+```
+
+8. Grant permissions for the app to create a warehouse on which to execute sync tasks, and to execute tasks.
+```
+GRANT CREATE WAREHOUSE ON ACCOUNT TO APPLICATION AIRBYTE_LINKEDIN_ADS;
+GRANT EXECUTE TASK ON ACCOUNT TO APPLICATION AIRBYTE_LINKEDIN_ADS;
 ```
 
 
@@ -103,18 +109,6 @@ Once this is all set up, you can now configure a connection. To do so, use the S
 ![](./linkedin-ads-ui.gif)
 
 Once you have access to the app, select `New Connection` and fill the following fields:
-
---- 
-
-`Secret` 
-
-The name of the secret prefixed by which database and schema. Based on the previous steps: `<database>.<your_schema>.integration_linkedin_ads_oauth`.
-
----
-
-`External Access Integration`
-
-Name of the Snowflake integration where the secret and network rules are configured. Based on the previous steps: `integration_linkedin_ads`.
 
 --- 
 
@@ -132,13 +126,13 @@ Leave empty, if you want to pull the data from all associated accounts. To speci
 
 `Output Database`
 
-The database where the records will be saved. Snowflake's database naming restriction applies here.
+The database where the records will be saved. Snowflake's database [naming convention](https://docs.snowflake.com/en/sql-reference/identifiers-syntax) applies here.
 
 ---
 
 `Output Schema`
 
-The table where the schema will be saved. Snowflake's table naming restriction applies here. 
+The table where the schema will be saved. Snowflake's table [naming convention](https://docs.snowflake.com/en/sql-reference/identifiers-syntax) applies here. 
 
 --- 
 
@@ -153,6 +147,9 @@ How the connection will be referred in the Streamlit app.
 How often records are fetched.
 
 ---
+
+## Enabling Logging and Event Sharing for an Application
+Sharing the logging and telemetry data of your installed application helps us improve the application and can allow us to better triage problems that your run into. To configure your application for logging and telemetry data please refer to the documentation for [Enabling Logging and Event Sharing](event-sharing.md).
 
 ## Run a sync
 Once a connection is configured, go in `Connections List` and click on `Sync Now` for the connection you want to sync. Once the sync is complete, you should be able to validate that the records have been stored in `<your_database>.<your_schema>`

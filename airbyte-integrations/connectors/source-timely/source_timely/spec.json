@@ -5,7 +5,7 @@
     "title": "Timely Integration Spec",
     "type": "object",
     "required": ["account_id", "start_date", "bearer_token"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "account_id": {
         "title": "account_id",

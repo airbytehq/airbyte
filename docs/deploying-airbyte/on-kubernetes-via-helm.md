@@ -104,6 +104,8 @@ In order to do so, run the command:
 helm install %release_name% airbyte/airbyte
 ```
 
+**Note**: `release_name` should only contain lowercase letters and optionally dashes (`release_name` must start with a letter).
+
 ### Custom deployment
 
 In order to customize your deployment, you need to create `values.yaml` file in the local folder and populate it with default configuration override values.
@@ -118,7 +120,7 @@ helm install --values path/to/values.yaml %release_name% airbyte/airbyte
 
 ### (Early Access) Airbyte Enterprise deployment
 
-[Airbyte Enterprise](/airbyte-enterprise) is in an early access stage, so this section will likely evolve. That said, if you have an Airbyte Enterprise license key and wish to install Airbyte Enterprise via helm, follow these steps:
+[Airbyte Enterprise](/airbyte-enterprise) is in an early access stage for select priority users. Once you [are qualified for an Airbyte Enterprise license key](https://airbyte.com/company/talk-to-sales), you can install Airbyte Enterprise via helm by following these steps:
 
 1. Checkout the latest revision of the [airbyte-platform repository](https://github.com/airbytehq/airbyte-platform)
 

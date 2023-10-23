@@ -1,17 +1,23 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - linkedin.com
       - api.linkedin.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: 137ece28-5434-455c-8f34-69dc3782f451
-  maxSecondsBetweenMessages: 21600
-  dockerImageTag: 0.6.1
+  dockerImageTag: 0.6.4
   dockerRepository: airbyte/source-linkedin-ads
+  documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
   githubIssueLabel: source-linkedin-ads
   icon: linkedin.svg
   license: MIT
+  maxSecondsBetweenMessages: 86400
   name: LinkedIn Ads
   registries:
     cloud:
@@ -28,11 +34,7 @@ data:
       - campaigns
       - campaign_groups
       - creatives
-  documentationUrl: https://docs.airbyte.com/integrations/sources/linkedin-ads
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 300
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"
