@@ -1,0 +1,292 @@
+# Google Drive
+
+This page contains the setup guide and reference information for the Google Drive source connector.
+
+:::info
+The Google Drive source connector pulls data from a single folder in Google Drive. Subfolders are recursively included in the sync. All files in the specified folder and all root folders will be considered.
+:::
+
+## Prerequisites
+
+- Drive folder link - The link to the Google Drive folder you want to sync
+<!-- env:cloud -->
+- **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet  
+<!-- /env:cloud -->
+<!-- env:oss -->
+-  **For Airbyte Open Source:** 
+  - A GCP project
+  - Enable the Google Drive API in your GCP project
+  - Service Account Key with access to the Spreadsheet you want to replicate
+<!-- /env:oss -->
+
+## Setup guide
+
+The Google Drive source connector supports authentication via either OAuth or Service Account Key Authentication.
+<!-- env:cloud -->
+For **Airbyte Cloud** users, we highly recommend using OAuth, as it significantly simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-google-Drive-source-connector-in-airbyte).
+
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+
+For **Airbyte Open Source** users, we recommend using Service Account Key Authentication. Follow the steps below to create a service account, generate a key, and enable the Google Drive API.
+
+:::note
+If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. Be sure to set the scopes to `https://www.googleapis.com/auth/spreadDrive.readonly`. You will need to obtain your client ID, client secret, and refresh token for the connector setup.
+:::
+
+### Set up the service account key (Airbyte Open Source)
+
+#### Create a service account
+
+1. Open the [Service Accounts page](https://console.cloud.google.com/projectselector2/iam-admin/serviceaccounts) in your Google Cloud console.
+2. Select an existing project, or create a new project.
+3. At the top of the page, click **+ Create service account**.
+4. Enter a name and description for the service account, then click **Create and Continue**.
+5. Under **Service account permissions**, select the roles to grant to the service account, then click **Continue**. We recommend the **Viewer** role.
+
+#### Generate a key
+
+1. Go to the [API Console/Credentials](https://console.cloud.google.com/apis/credentials) page and click on the email address of the service account you just created.
+2. In the **Keys** tab, click **+ Add key**, then click **Create new key**.
+3. Select **JSON** as the Key type. This will generate and download the JSON key file that you'll use for authentication. Click **Continue**.
+
+#### Enable the Google Drive API
+
+1. Go to the [API Console/Library](https://console.cloud.google.com/apis/library) page.
+2. Make sure you have selected the correct project from the top.
+3. Find and select the **Google Drive API**.
+4. Click **ENABLE**.
+
+If your folder is viewable by anyone with its link, no further action is needed. If not, give your Service account access to your folder. Check out [this video](https://youtu.be/GyomEw5a2NQ%22) for how to do this.
+
+<!-- /env:oss -->
+
+### Set up the Google Drive source connector in Airbyte
+
+To set up Google Drive as a source in Airbyte Cloud:
+
+1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or Airbyte Open Source account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. Find and select **Google Drive** from the list of available sources.
+4. For **Source name**, enter a name to help you identify this source.
+5. Select your authentication method:
+
+<!-- env:cloud -->
+
+#### For Airbyte Cloud
+
+- **(Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
+
+<!-- /env:cloud -->
+<!-- env:oss -->
+
+#### For Airbyte Open Source
+
+- **(Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
+
+    ```js
+    { "type": "service_account", "project_id": "YOUR_PROJECT_ID", "private_key_id": "YOUR_PRIVATE_KEY", ... }
+    ```
+
+- To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
+
+<!-- /env:oss -->
+
+6. For **Folder Link**, enter the link to the Google Drive folder. To get the link, go to the folder you want to sync, and copy the current URL.
+7. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Path Pattern** and **Path Prefix**.
+8. Click **Set up source** and wait for the tests to complete.
+
+## Supported sync modes
+
+The Amazon S3 source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+| Feature                                        | Supported? |
+| :--------------------------------------------- | :--------- |
+| Full Refresh Sync                              | Yes        |
+| Incremental Sync                               | Yes        |
+| Replicate Incremental Deletes                  | No         |
+| Replicate Multiple Files \(pattern matching\)  | Yes        |
+| Replicate Multiple Streams \(distinct tables\) | Yes        |
+| Namespaces                                     | No         |
+
+## File Compressions
+
+| Compression | Supported? |
+| :---------- | :--------- |
+| Gzip        | Yes        |
+| Zip         | Yes        |
+| Bzip2       | Yes        |
+| Lzma        | No         |
+| Xz          | No         |
+| Snappy      | No         |
+
+Please let us know any specific compressions you'd like to see support for next!
+
+## Path Patterns
+
+\(tl;dr -&gt; path pattern syntax using [wcmatch.glob](https://facelessuser.github.io/wcmatch/glob/). GLOBSTAR and SPLIT flags are enabled.\)
+
+This connector can sync multiple files by using glob-style patterns, rather than requiring a specific path for every file. This enables:
+
+- Referencing many files with just one pattern, e.g. `**` would indicate every file in the bucket.
+- Referencing future files that don't exist yet \(and therefore don't have a specific path\).
+
+You must provide a path pattern. You can also provide many patterns split with \| for more complex directory layouts.
+
+Each path pattern is a reference from the _root_ of the bucket, so don't include the bucket name in the pattern\(s\).
+
+Some example patterns:
+
+- `**` : match everything.
+- `**/*.csv` : match all files with specific extension.
+- `myFolder/**/*.csv` : match all csv files anywhere under myFolder.
+- `*/**` : match everything at least one folder deep.
+- `*/*/*/**` : match everything at least three folders deep.
+- `**/file.*|**/file` : match every file called "file" with any extension \(or no extension\).
+- `x/*/y/*` : match all files that sit in folder x -&gt; any folder -&gt; folder y.
+- `**/prefix*.csv` : match all csv files with specific prefix.
+- `**/prefix*.parquet` : match all parquet files with specific prefix.
+
+Let's look at a specific example, matching the following bucket layout:
+
+```text
+myBucket
+    -> log_files
+    -> some_table_files
+        -> part1.csv
+        -> part2.csv
+    -> images
+    -> more_table_files
+        -> part3.csv
+    -> extras
+        -> misc
+            -> another_part1.csv
+```
+
+We want to pick up part1.csv, part2.csv and part3.csv \(excluding another_part1.csv for now\). We could do this a few different ways:
+
+- We could pick up every csv file called "partX" with the single pattern `**/part*.csv`.
+- To be a bit more robust, we could use the dual pattern `some_table_files/*.csv|more_table_files/*.csv` to pick up relevant files only from those exact folders.
+- We could achieve the above in a single pattern by using the pattern `*table_files/*.csv`. This could however cause problems in the future if new unexpected folders started being created.
+- We can also recursively wildcard, so adding the pattern `extras/**/*.csv` would pick up any csv files nested in folders below "extras", such as "extras/misc/another_part1.csv".
+
+As you can probably tell, there are many ways to achieve the same goal with path patterns. We recommend using a pattern that ensures clarity and is robust against future additions to the directory structure.
+
+## User Schema
+
+Providing a schema allows for more control over the output of this stream. Without a provided schema, columns and datatypes will be inferred from the first created file in the bucket matching your path pattern and suffix. This will probably be fine in most cases but there may be situations you want to enforce a schema instead, e.g.:
+
+- You only care about a specific known subset of the columns. The other columns would all still be included, but packed into the `_ab_additional_properties` map.
+- Your initial dataset is quite small \(in terms of number of records\), and you think the automatic type inference from this sample might not be representative of the data in the future.
+- You want to purposely define types for every column.
+- You know the names of columns that will be added to future data and want to include these in the core schema as columns rather than have them appear in the `_ab_additional_properties` map.
+
+Or any other reason! The schema must be provided as valid JSON as a map of `{"column": "datatype"}` where each datatype is one of:
+
+- string
+- number
+- integer
+- object
+- array
+- boolean
+- null
+
+For example:
+
+- {"id": "integer", "location": "string", "longitude": "number", "latitude": "number"}
+- {"username": "string", "friends": "array", "information": "object"}
+
+## File Format Settings
+
+### CSV
+
+Since CSV files are effectively plain text, providing specific reader options is often required for correct parsing of the files. These settings are applied when a CSV is created or exported so please ensure that this process happens consistently over time.
+
+- **Header Definition**: How headers will be defined. `User Provided` assumes the CSV does not have a header row and uses the headers provided and `Autogenerated` assumes the CSV does not have a header row and the CDK will generate headers using for `f{i}` where `i` is the index starting from 0. Else, the default behavior is to use the header from the CSV file. If a user wants to autogenerate or provide column names for a CSV having headers, they can set a value for the "Skip rows before header" option to ignore the header row.
+- **Delimiter**: Even though CSV is an acronym for Comma Separated Values, it is used more generally as a term for flat file data that may or may not be comma separated. The delimiter field lets you specify which character acts as the separator. To use [tab-delimiters](https://en.wikipedia.org/wiki/Tab-separated_values), you can set this value to `\t`. By default, this value is set to `,`.
+- **Double Quote**: This option determines whether two quotes in a quoted CSV value denote a single quote in the data. Set to True by default.
+- **Encoding**: Some data may use a different character set \(typically when different alphabets are involved\). See the [list of allowable encodings here](https://docs.python.org/3/library/codecs.html#standard-encodings). By default, this is set to `utf8`.
+- **Escape Character**: An escape character can be used to prefix a reserved character and ensure correct parsing. A commonly used character is the backslash (`\`). For example, given the following data:
+
+```
+Product,Description,Price
+Jeans,"Navy Blue, Bootcut, 34\"",49.99
+```
+
+The backslash (`\`) is used directly before the second double quote (`"`) to indicate that it is _not_ the closing quote for the field, but rather a literal double quote character that should be included in the value (in this example, denoting the size of the jeans in inches: `34"` ). 
+
+Leaving this field blank (default option) will disallow escaping.
+
+- **False Values**: A set of case-sensitive strings that should be interpreted as false values.
+- **Null Values**: A set of case-sensitive strings that should be interpreted as null values. For example, if the value 'NA' should be interpreted as null, enter 'NA' in this field.
+- **Quote Character**: In some cases, data values may contain instances of reserved characters \(like a comma, if that's the delimiter\). CSVs can handle this by wrapping a value in defined quote characters so that on read it can parse it correctly. By default, this is set to `"`.
+- **Skip Rows After Header**: The number of rows to skip after the header row.
+- **Skip Rows Before Header**: The number of rows to skip before the header row.
+- **Strings Can Be Null**: Whether strings can be interpreted as null values. If true, strings that match the null_values set will be interpreted as null. If false, strings that match the null_values set will be interpreted as the string itself.
+- **True Values**: A set of case-sensitive strings that should be interpreted as true values.
+
+
+### Parquet
+
+Apache Parquet is a column-oriented data storage format of the Apache Hadoop ecosystem. It provides efficient data compression and encoding schemes with enhanced performance to handle complex data in bulk. At the moment, partitioned parquet datasets are unsupported. The following settings are available:
+
+- **Convert Decimal Fields to Floats**: Whether to convert decimal fields to floats. There is a loss of precision when converting decimals to floats, so this is not recommended.
+
+### Avro
+
+The Avro parser uses the [Fastavro library](https://fastavro.readthedocs.io/en/latest/). The following settings are available:
+- **Convert Double Fields to Strings**: Whether to convert double fields to strings. This is recommended if you have decimal numbers with a high degree of precision because there can be a loss precision when handling floating point numbers.
+
+### JSONL
+
+There are currently no options for JSONL parsing.
+
+### Markdown/PDF/Docx Format (Experimental)
+
+:::warning
+The Markdown/PDF/Docx format is currently an experimental feature and not subject to SLAs. Use at your own risk.
+:::
+
+The Markdown/PDF/Docx format is a special format that allows you to extract text from Markdown, PDF, and Word documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
+
+One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
+# TODO
+
+### Output schema
+
+Each sheet in the selected spreadsheet is synced as a separate stream. Each selected column in the sheet is synced as a string field.
+
+Airbyte only supports replicating [Grid](https://developers.google.com/Drive/api/reference/rest/v4/spreadDrive/Drive#SheetType) Drive.
+
+## Supported sync modes
+
+The Google Drive source connector supports the following sync modes:
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+
+## Data type map
+
+| Integration Type | Airbyte Type | Notes |
+|:-----------------|:-------------|:------|
+| any type         | `string`     |       |
+
+## Performance consideration
+
+The [Google API rate limits](https://developers.google.com/Drive/api/limits) are:
+
+- 300 read requests per minute per project
+- 60 requests per minute per user per project
+
+Airbyte batches requests to the API in order to efficiently pull data and respect these rate limits. We recommend not using the same user or service account for more than 3 instances of the Google Drive source connector to ensure high transfer speeds.
+
+## Troubleshooting
+- If your sheet is completely empty(no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
+
+## Changelog
+
+| Version | Date       | Pull Request                                             | Subject                                                                           |
+|---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
+| 0.0.1   | 2023-11-30 | [31458](https://github.com/airbytehq/airbyte/pull/31458)   | Initial Google Drive source                                           |
+
