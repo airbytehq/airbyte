@@ -57,7 +57,7 @@ class WeaviateIndexer(Indexer):
             self.client = weaviate.Client(url=self.config.host, auth_client_secret=credentials, additional_headers=headers)
         else:
             self.client = weaviate.Client(url=self.config.host, additional_headers=headers)
-        
+
         # disable dynamic batching because it's handled asynchroniously in the client
         self.client.batch.configure(batch_size=None, dynamic=False)
 
