@@ -4,8 +4,8 @@ connectionSpecification:
   title: Harness Spec
   type: object
   required:
-  - api_key
-  - account_id
+    - api_key
+    - account_id
   additionalProperties: true
   properties:
     api_key:
@@ -22,4 +22,4 @@ connectionSpecification:
       description: The API URL for fetching data from Harness
       default: https://app.harness.io
       examples:
-      - https://my-harness-server.example.com
+        - https://my-harness-server.example.com

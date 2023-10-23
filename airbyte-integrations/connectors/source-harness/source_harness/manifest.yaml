@@ -44,4 +44,3 @@ check:
   type: CheckStream
   stream_names:
     - "organizations"
-
