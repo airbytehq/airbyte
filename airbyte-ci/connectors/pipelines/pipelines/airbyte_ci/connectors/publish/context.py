@@ -41,6 +41,7 @@ class PublishConnectorContext(ConnectorContext):
         pull_request: PullRequest = None,
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
+        use_local_cdk: bool = False,
     ):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
@@ -66,6 +67,7 @@ class PublishConnectorContext(ConnectorContext):
             reporting_slack_channel=reporting_slack_channel,
             ci_gcs_credentials=ci_gcs_credentials,
             should_save_report=True,
+            use_local_cdk=use_local_cdk,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
             s3_build_cache_access_key_id=s3_build_cache_access_key_id,
