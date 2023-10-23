@@ -135,6 +135,8 @@ You have to build a docker image for your connector if you want to run your sour
 
 **Option A: Building the docker image with `airbyte-ci`**
 
+This is the preferred method for building and testing connectors.
+
 If you want to open source your connector we encourage you to use our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector. 
 It will not use a Dockerfile but will build the connector image from our [base image](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/README.md) and use our internal build logic to build an image from your Python connector code.
 
@@ -145,7 +147,7 @@ Once the command is done, you will find your connector image in your local docke
 
 **Option B: Building the docker image with a Dockerfile**
 
-If you don't want to rely on `airbyte-ci` to build your connector, you can build the docker image using your own Dockerfile.
+If you don't want to rely on `airbyte-ci` to build your connector, you can build the docker image using your own Dockerfile. This method is not preferred, and is not supported for certified connectors.
 
 Create a `Dockerfile` in the root of your connector directory. The `Dockerfile` should look something like this:
 ```Dockerfile
