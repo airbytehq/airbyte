@@ -1,5 +1,6 @@
 import { ConnectionConfiguration } from "core/domain/connection";
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { FilterDestinationRequestBody } from "core/request/DaspireClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 
 import {
@@ -18,6 +19,7 @@ import {
   listDestinationsForWorkspace,
   updateDestination,
   DestinationCloneRequestBody,
+  paginatedDestination,
 } from "../../request/AirbyteClient";
 
 export class DestinationService extends AirbyteRequestService {
@@ -68,7 +70,9 @@ export class DestinationService extends AirbyteRequestService {
   public list(workspaceId: string) {
     return listDestinationsForWorkspace({ workspaceId }, this.requestOptions);
   }
-
+  public filteredList(filters: FilterDestinationRequestBody) {
+    return paginatedDestination(filters, this.requestOptions);
+  }
   public create(body: DestinationCreate) {
     return createDestination(body, this.requestOptions);
   }

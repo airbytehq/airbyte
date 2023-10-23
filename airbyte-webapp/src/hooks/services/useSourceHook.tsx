@@ -18,6 +18,7 @@ import {
   SynchronousJobRead,
   WebBackendConnectionRead,
   SourceCloneRequestBody,
+  SourceReadItem,
 } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
@@ -80,7 +81,13 @@ const useGetSource = <T extends string | undefined | null>(
     enabled: isDefined(sourceId),
   });
 };
+const useGetSourceItem = <T extends string | undefined | null>(
+  sourceId: T
+): T extends string ? SourceReadItem : SourceReadItem | undefined => {
+  const service = useSourceService();
 
+  return useSuspenseQuery(sourcesKeys.detail(sourceId ?? ""), () => service.getSingleSource(sourceId ?? ""));
+};
 const useCreateSource = () => {
   const service = useSourceService();
   const queryClient = useQueryClient();
@@ -114,6 +121,38 @@ const useCreateSource = () => {
 };
 
 const useDeleteSource = () => {
+  const service = useSourceService();
+  const queryClient = useQueryClient();
+  const analyticsService = useAnalyticsService();
+  const removeConnectionsFromList = useRemoveConnectionsFromList();
+
+  return useMutation(
+    (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionRead[] }) =>
+      service.delete(payload.source.sourceId),
+    {
+      onSuccess: (_data, ctx) => {
+        analyticsService.track(Namespace.SOURCE, Action.DELETE, {
+          actionDescription: "Source deleted",
+          connector_source: ctx.source.sourceName,
+          connector_source_definition_id: ctx.source.sourceDefinitionId,
+        });
+
+        queryClient.removeQueries(sourcesKeys.detail(ctx.source.sourceId));
+        queryClient.setQueryData(
+          sourcesKeys.lists(),
+          (lst: SourceList | undefined) =>
+            ({
+              sources: lst?.sources.filter((conn) => conn.sourceId !== ctx.source.sourceId) ?? [],
+            } as SourceList)
+        );
+
+        const connectionIds = ctx.connectionsWithSource.map((item) => item.connectionId);
+        removeConnectionsFromList(connectionIds);
+      },
+    }
+  );
+};
+const useDeleteSourceItem = () => {
   const service = useSourceService();
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
@@ -237,4 +276,6 @@ export {
   useUpdateSource,
   useDiscoverSchema,
   usePaginatedSources,
+  useGetSourceItem,
+  useDeleteSourceItem,
 };

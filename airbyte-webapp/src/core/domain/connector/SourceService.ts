@@ -21,6 +21,7 @@ import {
   updateSource,
   SourceCloneRequestBody,
   paginatedSources,
+  getSingleSourceItem,
 } from "../../request/AirbyteClient";
 import { ConnectionConfiguration } from "../connection";
 
@@ -66,7 +67,9 @@ export class SourceService extends AirbyteRequestService {
   public get(sourceId: string) {
     return getSource({ sourceId }, this.requestOptions);
   }
-
+  public getSingleSource(sourceId: string) {
+    return getSingleSourceItem({ sourceId }, this.requestOptions);
+  }
   public list(workspaceId: string) {
     return listSourcesForWorkspace({ workspaceId }, this.requestOptions);
   }

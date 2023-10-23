@@ -26,6 +26,11 @@ export interface FilterSourceRequestBody {
   pageCurrent: number;
 }
 
+export interface FilterDestinationRequestBody {
+  workspaceId: string;
+  pageSize: number;
+  pageCurrent: number;
+}
 export interface WebBackendFilteredConnectionReadList {
   connections: WebBackendConnectionRead[];
   total: number;

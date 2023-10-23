@@ -1,26 +1,31 @@
-import React, { Suspense, useMemo, useState } from "react";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Box, Typography } from "@mui/material";
+import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { Route, Routes, Navigate } from "react-router-dom";
 import styled from "styled-components";
 
-import { DropDownRow } from "components";
+import { Button } from "components";
+// import { Button, DropDownRow } from "components";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 import Breadcrumbs from "components/Breadcrumbs";
 import { CreateStepTypes } from "components/ConnectionStep";
-import { TableItemTitle } from "components/ConnectorBlocks";
-import { ConnectorIcon } from "components/ConnectorIcon";
+// import { TableItemTitle } from "components/ConnectorBlocks";
+// import { ConnectorIcon } from "components/ConnectorIcon";
 import DeleteBlock from "components/DeleteBlock";
 import LoadingPage from "components/LoadingPage";
 import { CategoryItem } from "components/TabMenu";
 
+import { SourceDefinitionRead } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
-import { useGetSource } from "hooks/services/useSourceHook";
+import { useGetSourceItem } from "hooks/services/useSourceHook";
 import { useDeleteSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
+// import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { getIcon } from "utils/imageUtils";
+// import { getIcon } from "utils/imageUtils";
 import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 import TestConnection from "views/Connector/TestConnection";
@@ -28,7 +33,7 @@ import TestConnection from "views/Connector/TestConnection";
 import HeaderSction from "./components/HeaderSection";
 import SourceConnectionTable from "./components/SourceConnectionTable";
 import SourceSettings from "./components/SourceSettings";
-import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
+// import { useDestinationList } from "../../../../hooks/services/useDestinationHook";
 import { RoutePaths } from "../../../routePaths";
 
 interface PageConfig {
@@ -56,7 +61,22 @@ const Container = styled.div`
 const TableContainer = styled.div`
   margin-right: 70px;
 `;
-
+const BtnIcon = styled(FontAwesomeIcon)`
+  font-size: 16px;
+  margin-right: 10px;
+`;
+const BtnInnerContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 4px;
+`;
+const BtnText = styled.div`
+  font-weight: 500;
+  font-size: 16px;
+  color: #ffffff;
+`;
 const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   useTrackPage(PageTrackingCodes.SOURCE_ITEM);
   const { query, push, pathname } = useRouter<{ id: string }, { id: string; "*": string }>();
@@ -69,12 +89,16 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     connectionConfiguration: {},
   });
 
-  const source = useGetSource(query.id);
-  const sourceDefinition = useSourceDefinition(source?.sourceDefinitionId);
+  // const source = useGetSource(query.id);
+  const source = useGetSourceItem(query.id);
+  console.log(source, "Response");
+  console.log(source?.SourceRead?.sourceDefinitionId, "id");
 
-  const { destinations } = useDestinationList();
+  const sourceDefinition = useSourceDefinition(source?.SourceRead?.sourceDefinitionId);
 
-  const { destinationDefinitions } = useDestinationDefinitionList();
+  // const { destinations } = useDestinationList();
+
+  // const { destinationDefinitions } = useDestinationDefinitionList();
 
   const { connections } = useConnectionList();
   const { mutateAsync: deleteSource } = useDeleteSource();
@@ -84,46 +108,50 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
       name: <FormattedMessage id="tables.allSources" />,
       onClick: () => push(".."),
     },
-    { name: source.name },
+    { name: source.SourceRead?.name },
   ];
 
-  const connectionsWithSource = connections?.filter((connectionItem) => connectionItem?.sourceId === source?.sourceId);
-
-  const destinationsDropDownData = useMemo(
-    () =>
-      destinations.map((item) => {
-        const destinationDef = destinationDefinitions.find(
-          (dd) => dd.destinationDefinitionId === item.destinationDefinitionId
-        );
-        return {
-          label: item.name,
-          value: item.destinationId,
-          img: <ConnectorIcon icon={destinationDef?.icon} />,
-        };
-      }),
-    [destinations, destinationDefinitions]
+  const connectionsWithSource = connections?.filter(
+    (connectionItem) => connectionItem?.sourceId === source?.SourceRead?.sourceId
   );
+  console.log(connectionsWithSource, "ss");
+  // const destinationsDropDownData = useMemo(
+  //   () =>
+  //     destinations.map((item) => {
+  //       const destinationDef = destinationDefinitions.find(
+  //         (dd) => dd.destinationDefinitionId === item.destinationDefinitionId
+  //       );
+  //       return {
+  //         label: item.name,
+  //         value: item.destinationId,
+  //         img: <ConnectorIcon icon={destinationDef?.icon} />,
+  //       };
+  //     }),
+  //   [destinations, destinationDefinitions]
+  // );
 
-  const onSelect = (data: DropDownRow.IDataItem) => {
-    if (data.value === "create-new-item") {
-      push(`../${RoutePaths.SelectConnection}`, {
-        state: { sourceId: source.sourceId, currentStep: CreateStepTypes.CREATE_DESTINATION },
-      });
-    } else {
-      push(`../${RoutePaths.ConnectionNew}`, {
-        state: { destinationId: data.value, sourceId: source.sourceId, currentStep: CreateStepTypes.CREATE_CONNECTION },
-      });
-    }
-  };
+  // const onSelect = (data: DropDownRow.IDataItem) => {
+  //   if (data.value === "create-new-item") {
+  //     push(`../${RoutePaths.SelectConnection}`, {
+  //       state: { sourceId: source.sourceId, currentStep: CreateStepTypes.CREATE_DESTINATION },
+  //     });
+  //   } else {
+  //     push(`../${RoutePaths.ConnectionNew}`, {
+  //       state: { destinationId: data.value, sourceId: source.sourceId, currentStep: CreateStepTypes.CREATE_CONNECTION },
+  //     });
+  //   }
+  // };
 
   const goBack = () => {
     push(`/${RoutePaths.Source}`);
   };
 
+  // const onDelete = async () => {
+  //   await deleteSource({ connectionsWithSource, source });
+  // };
   const onDelete = async () => {
-    await deleteSource({ connectionsWithSource, source });
+    await deleteSource({ source: source?.SourceRead, connectionsWithSource: source?.ConnectionReadList?.connections });
   };
-
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
       routes: [
@@ -132,7 +160,38 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
           name: <FormattedMessage id="tables.overview" />,
           component: (
             <TableContainer>
-              <TableItemTitle
+              {source?.ConnectionReadList?.connections?.length === 0 ? (
+                <Typography
+                  textAlign="left"
+                  fontSize={{ lg: 24, md: 24, sm: 20, xs: 18 }}
+                  color="#27272A"
+                  fontWeight={500}
+                >
+                  0 Destinations
+                </Typography>
+              ) : null}
+              <Box textAlign="right">
+                {" "}
+                <Button
+                  size="lg"
+                  onClick={() =>
+                    push(`../${RoutePaths.SelectConnection}`, {
+                      state: {
+                        sourceId: source.SourceRead.sourcesourceId,
+                        currentStep: CreateStepTypes.CREATE_DESTINATION,
+                      },
+                    })
+                  }
+                >
+                  <BtnInnerContainer>
+                    <BtnIcon icon={faPlus} />
+                    <BtnText>
+                      <FormattedMessage id="destinations.newDestinationTitle" />
+                    </BtnText>
+                  </BtnInnerContainer>
+                </Button>
+              </Box>
+              {/* <TableItemTitle
                 dropDownData={destinationsDropDownData}
                 onSelect={onSelect}
                 num={connectionsWithSource.length}
@@ -142,8 +201,12 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                 entityName={source.name}
                 entityIcon={sourceDefinition ? getIcon(sourceDefinition.icon) : null}
                 releaseStage={sourceDefinition.releaseStage}
-              />
-              {connectionsWithSource.length > 0 && <SourceConnectionTable connections={connectionsWithSource} />}
+              /> */}
+              {source?.ConnectionReadList?.connections?.length > 0 && (
+                <Box pt={2}>
+                  <SourceConnectionTable connections={source?.ConnectionReadList?.connections} />
+                </Box>
+              )}
             </TableContainer>
           ),
           show: true,
@@ -165,7 +228,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               )}
               {currentStep === StepsTypes.CREATE_ENTITY && (
                 <SourceSettings
-                  currentSource={source}
+                  currentSource={source?.SourceRead}
                   errorMessage={fetchingConnectorError}
                   onBack={goBack}
                   formValues={sourceFormValues}
@@ -220,7 +283,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
       <Breadcrumbs data={breadcrumbsData} currentStep={0} />
       {currentStep === StepsTypes.TEST_CONNECTION && (
         <HeaderSction
-          sourceDefinition={sourceDefinition}
+          sourceDefinition={sourceDefinition as SourceDefinitionRead}
           data={menuItems}
           onSelect={onSelectMenuItem}
           activeItem={pathname}
@@ -229,7 +292,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
       <ConnectorDocumentationWrapper>
         {currentStep !== StepsTypes.TEST_CONNECTION && (
           <HeaderSction
-            sourceDefinition={sourceDefinition}
+            sourceDefinition={sourceDefinition as SourceDefinitionRead}
             data={menuItems}
             onSelect={onSelectMenuItem}
             activeItem={pathname}

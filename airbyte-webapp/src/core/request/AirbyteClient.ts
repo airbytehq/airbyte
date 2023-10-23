@@ -24,7 +24,7 @@ Change Management:
 
  * OpenAPI spec version: 1.0.0
  */
-import { FilterSourceRequestBody } from "./DaspireClient";
+import { FilterDestinationRequestBody, FilterSourceRequestBody } from "./DaspireClient";
 import { apiOverride } from "./apiOverride";
 /**
  * Input failed validation
@@ -1384,6 +1384,10 @@ export interface SourceRead {
   name: string;
   sourceName: string;
 }
+export interface SourceReadItem {
+  SourceRead: any;
+  ConnectionReadList: any;
+}
 
 export interface SourceUpdate {
   sourceId: SourceId;
@@ -2076,7 +2080,7 @@ export const paginatedSources = (
 ) => {
   return apiOverride<SourceReadList>(
     {
-      url: `/sources/page`,
+      url: `/etl/sources/page`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: filterSourceRequestBody,
@@ -2092,6 +2096,23 @@ export const getSource = (sourceIdRequestBody: SourceIdRequestBody, options?: Se
   return apiOverride<SourceRead>(
     {
       url: `/etl/sources/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceIdRequestBody,
+    },
+    options
+  );
+};
+/**
+ * @summary Get single source
+ */
+export const getSingleSourceItem = (
+  sourceIdRequestBody: SourceIdRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceRead>(
+    {
+      url: `/etl/sources/connection/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceIdRequestBody,
@@ -2508,7 +2529,24 @@ export const listDestinationsForWorkspace = (
     options
   );
 };
-
+/**
+ * List destination for workspace. Does not return deleted sources.
+ * @summary List destination for workspace
+ */
+export const paginatedDestination = (
+  filterDestinationRequestBody: FilterDestinationRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationReadList>(
+    {
+      url: `/etl/destinations/page`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: filterDestinationRequestBody,
+    },
+    options
+  );
+};
 /**
  * @summary Get configured destination
  */
