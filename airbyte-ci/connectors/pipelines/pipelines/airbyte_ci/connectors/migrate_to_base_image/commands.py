@@ -8,6 +8,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.migrate_to_base_image.pipeline import run_connector_migration_to_base_image_pipeline
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
 @click.command(
@@ -15,28 +16,14 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
     short_help="Make the selected connectors use our base image: remove dockerfile, update metadata.yaml and update documentation.",
 )
 @click.argument("pull-request-number", type=str)
-@click.option(
-    "--docker-hub-username",
-    help="Your username to connect to DockerHub to read the registries.",
-    type=click.STRING,
-    required=True,
-    envvar="DOCKER_HUB_USERNAME",
-)
-@click.option(
-    "--docker-hub-password",
-    help="Your password to connect to DockerHub to read the registries.",
-    type=click.STRING,
-    required=True,
-    envvar="DOCKER_HUB_PASSWORD",
-)
 @click.pass_context
 def migrate_to_base_image(
     ctx: click.Context,
     pull_request_number: str,
-    docker_hub_username: str,
-    docker_hub_password: str,
 ) -> bool:
     """Bump a connector version: update metadata.yaml, changelog and delete legacy files."""
+
+    fail_if_missing_docker_hub_creds(ctx)
 
     connectors_contexts = [
         ConnectorContext(
@@ -56,8 +43,8 @@ def migrate_to_base_image(
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
             open_report_in_browser=False,
-            docker_hub_username=docker_hub_username,
-            docker_hub_password=docker_hub_password,
+            docker_hub_username=ctx.obj.get("docker_hub_username"),
+            docker_hub_password=ctx.obj.get("docker_hub_password"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
