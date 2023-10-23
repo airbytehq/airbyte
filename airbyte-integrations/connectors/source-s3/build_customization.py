@@ -28,4 +28,5 @@ async def post_connector_install(connector_container: Container) -> Container:
         connector_container.with_new_file("/tmp/nltk_python_script.py", nltk_python_script)
         .with_exec(["python", "/tmp/nltk_python_script.py"], skip_entrypoint=True)
         .with_exec(["rm", "/tmp/nltk_python_script.py"], skip_entrypoint=True)
+        .with_exec(["sh", "-c", "apt-get update && apt-get install -y tesseract-ocr poppler-utils"], skip_entrypoint=True)
     )
