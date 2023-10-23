@@ -10,26 +10,19 @@ streams:
     name: payouts
     primary_key:
       - payout_date
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: https://api{{ '-'+config.region if config.region != 'eu' }}.{{ 'playground.' if config.playground }}klarna.com/
+        url_base: https://api{{ '-' + config.region if config.region != 'eu' }}.{{ 'playground.' if config.playground }}klarna.com/
         path: /settlements/v1/payouts
         http_method: GET
         request_parameters: {}
         request_headers: {}
         authenticator:
           type: BasicHttpAuthenticator
-          username: '{{ config[''username''] }}'
-          password: '{{ config[''password''] }}'
+          username: "{{ config['username'] }}"
+          password: "{{ config['password'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -52,15 +45,6 @@ streams:
           stop_condition: '{{ not response.get("pagination", {}).get("next", {}) }}'
   - type: DeclarativeStream
     name: transactions
-    primary_key:
-      - capture_id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        $schema: http://json-schema.org/draft-07/schema#
-        additionalProperties: true
-        properties: {}
-        type: object
     retriever:
       type: SimpleRetriever
       requester:
@@ -74,8 +58,8 @@ streams:
         request_headers: {}
         authenticator:
           type: BasicHttpAuthenticator
-          username: '{{ config[''username''] }}'
-          password: '{{ config[''password''] }}'
+          username: "{{ config['username'] }}"
+          password: "{{ config['password'] }}"
         request_body_json: {}
       record_selector:
         type: RecordSelector
@@ -97,8 +81,8 @@ streams:
           cursor_value: '{{ response.get("pagination", {}).get("next", {}) }}'
           stop_condition: '{{ not response.get("pagination", {}).get("next", {}) }}'
 spec:
-  documentationUrl: https://docs.airbyte.com/integrations/sources/klarna
-  connectionSpecification:
+  documentation_url: https://docs.airbyte.com/integrations/sources/klarna
+  connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: Klarna Spec
     type: object
