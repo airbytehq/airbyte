@@ -64,49 +64,63 @@ def build_per_stream_state_message(
 
 @pytest.mark.parametrize("cursor_type", ["date", "string"])
 @pytest.mark.parametrize(
-    "records1, records2, latest_state, expected_error",
+    "records1, records2, latest_state, namespace, expected_error",
     [
-        ([{"date": "2020-01-01"}, {"date": "2020-01-02"}], [], "2020-01-01", does_not_raise()),
+        ([{"date": "2020-01-01"}, {"date": "2020-01-02"}], [], "2020-01-01", None, does_not_raise()),
         (
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
             [],
             "2020-01-02",
+            "public",
+            does_not_raise(),
+        ),
+        (
+            [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
+            [],
+            "2020-01-02",
+            None,
             does_not_raise(),
         ),
         (
             [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
             "2020-01-03",
+            None,
             does_not_raise(),
         ),
         (
             [],
             [{"date": "2020-01-01"}],
             "2020-01-04",
+            None,
             pytest.raises(AssertionError, match="First Read should produce at least one record"),
         ),
         (
             [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
             [{"date": "2020-01-01"}, {"date": "2020-01-02"}],
             "2020-01-05",
+            None,
             pytest.raises(AssertionError, match="Records should change between reads but did not."),
         ),
         (
             [{"date": "2020-01-02"}, {"date": "2020-01-03"}],
             [],
             "2020-01-06",
+            None,
             does_not_raise(),
         ),
         (
             [{"date": "2020-01-01"}],
             [{"date": "2020-01-02"}],
             "2020-01-07",
+            "public",
             does_not_raise(),
         ),
         (
             [{"date": "2020-01-01"}],
             [{"date": "2020-01-02"}],
             "someunparseablenonsensestate",
+            None,
             does_not_raise(),
         ),
     ],
@@ -118,7 +132,9 @@ def build_per_stream_state_message(
         pytest.param(True, id="test_two_sequential_reads_using_a_mock_connector_emitting_per_stream_state"),
     ],
 )
-async def test_incremental_two_sequential_reads(mocker, records1, records2, latest_state, cursor_type, expected_error, run_per_stream_test):
+async def test_incremental_two_sequential_reads(
+    mocker, records1, records2, latest_state, namespace, cursor_type, expected_error, run_per_stream_test
+):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -135,9 +151,10 @@ async def test_incremental_two_sequential_reads(mocker, records1, records2, late
     )
 
     if run_per_stream_test:
+        stream_descriptor = StreamDescriptor(name="test_stream", namespace=namespace)
         call_read_output_messages = [
             *build_messages_from_record_data("test_stream", records1),
-            build_per_stream_state_message(descriptor=StreamDescriptor(name="test_stream"), stream_state={"date": latest_state}),
+            build_per_stream_state_message(descriptor=stream_descriptor, stream_state={"date": latest_state}),
         ]
         call_read_with_state_output_messages = build_messages_from_record_data("test_stream", records2)
     else:

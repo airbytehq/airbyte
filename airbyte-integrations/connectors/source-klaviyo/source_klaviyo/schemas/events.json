@@ -6,7 +6,7 @@
     "uuid": { "type": "string" },
     "event_name": { "type": "string" },
     "timestamp": { "type": "integer" },
-    "datetime": { "type": "string" },
+    "datetime": { "type": "string", "format": "date-time" },
     "statistic_id": { "type": "string" },
     "event_properties": {
       "type": "object",
