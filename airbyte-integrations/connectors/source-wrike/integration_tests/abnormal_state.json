@@ -1,5 +1,35 @@
-{
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "comments"
+      },
+      "stream_state": {
+        "updatedDate": "2099-01-01T00:00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "folders"
+      },
+      "stream_state": {
+        "createdDate": "2099-01-01T00:00:00"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "tasks"
+      },
+      "stream_state": {
+        "createdDate": "2099-01-01T00:00:00"
+      }
+    }
   }
-}
+]
