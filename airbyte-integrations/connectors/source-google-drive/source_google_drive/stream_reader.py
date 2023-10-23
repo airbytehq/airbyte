@@ -50,7 +50,6 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         assert isinstance(value, Config)
         self._config = value
 
-
     @property
     def google_drive_service(self):
         if self.config is None:

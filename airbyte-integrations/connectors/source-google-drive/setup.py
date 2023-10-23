@@ -10,7 +10,7 @@ MAIN_REQUIREMENTS = [
     "google-api-python-client==2.104.0",
     "google-auth-httplib2==0.1.1",
     "google-auth-oauthlib==1.1.0",
-    "google-api-python-client-stubs==1.18.0"
+    "google-api-python-client-stubs==1.18.0",
 ]
 
 setup(

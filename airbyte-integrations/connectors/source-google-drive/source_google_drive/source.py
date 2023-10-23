@@ -2,11 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 from typing import Any
-from airbyte_cdk.models import (
-    AdvancedAuth,
-    ConnectorSpecification,
-    OAuthConfigSpecification,
-)
+
+from airbyte_cdk.models import AdvancedAuth, ConnectorSpecification, OAuthConfigSpecification
 from airbyte_cdk.sources.file_based.file_based_source import FileBasedSource
 from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor import DefaultFileBasedCursor
 from source_google_drive.spec import SourceGoogleDriveSpec
