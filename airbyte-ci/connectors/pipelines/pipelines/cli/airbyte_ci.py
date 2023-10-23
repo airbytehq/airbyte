@@ -9,7 +9,6 @@ import logging
 import os
 from pathlib import Path
 from typing import List
-import anyio
 
 import asyncclick as click
 import git

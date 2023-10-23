@@ -5,7 +5,7 @@
 import sys
 
 import anyio
-import click
+import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -38,7 +38,7 @@ from pipelines.helpers.github import update_global_commit_status_check_for_tests
     is_flag=True,
 )
 @click.pass_context
-def test(
+async def test(
     ctx: click.Context,
     code_tests_only: bool,
     fail_fast: bool,
@@ -86,8 +86,7 @@ def test(
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
     try:
-        anyio.run(
-            run_connectors_pipelines,
+        await run_connectors_pipelines(
             [connector_context for connector_context in connectors_tests_contexts],
             run_connector_test_pipeline,
             "Test Pipeline",

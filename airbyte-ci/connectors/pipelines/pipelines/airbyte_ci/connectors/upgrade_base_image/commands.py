@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import anyio
-import click
+import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.migrate_to_base_image.pipeline import run_connector_base_image_upgrade_pipeline
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -27,7 +26,7 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
     envvar="DOCKER_HUB_PASSWORD",
 )
 @click.pass_context
-def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker_hub_username: str, docker_hub_password: str) -> bool:
+async def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker_hub_username: str, docker_hub_password: str) -> bool:
     """Upgrades the base image version used by the selected connectors."""
 
     connectors_contexts = [
@@ -56,8 +55,7 @@ def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker_hub_u
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
 
-    anyio.run(
-        run_connectors_pipelines,
+    await run_connectors_pipelines(
         connectors_contexts,
         run_connector_base_image_upgrade_pipeline,
         "Upgrade base image pipeline",
