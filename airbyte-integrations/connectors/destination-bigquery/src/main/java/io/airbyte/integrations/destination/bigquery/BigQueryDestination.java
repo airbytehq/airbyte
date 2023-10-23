@@ -370,7 +370,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
               // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
               // 1s1t mode.
               final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
-              bigquery.delete(rawTableId);
+              LOGGER.info("Deleting Raw table {}", rawTableId);
+              if (!bigquery.delete(rawTableId)) {
+                LOGGER.info("Raw table {} not found, continuing with creation", rawTableId);
+              }
+              LOGGER.info("Creating table {}", rawTableId);
               BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
             } else {
               uploader.createRawTable();
