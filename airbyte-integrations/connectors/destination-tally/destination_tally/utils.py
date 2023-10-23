@@ -112,14 +112,12 @@ def insert_ledger_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any
         response = requests.request(
             method="POST", url=ledger_master_template_url, data=ledger_master_payload, headers=ledger_master_headers
         )
+        if response.status_code == 200:
+            logger.info(f'ledger : {data["Ledger Name"]} successfully inserted into Tally')
+        else:
+            logger.warn(f'ledger : {data["Ledger Name"]} cannot be inserted into Tally')
     except Exception as e:
         logger.error(f'request for ledger : {data["Ledger Name"]} not successful , {e}')
-        return
-
-    if response.status_code == 200:
-        logger.info(f'ledger : {data["Ledger Name"]} successfully inserted into Tally')
-    else:
-        logger.info(f'ledger : {data["Ledger Name"]} cannot be inserted into Tally')
 
 
 # 2. Journal Voucher Template - Date format problem
@@ -270,14 +268,13 @@ def insert_item_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
     try:
         logger.info(f"item payload : {item_master_payload}")
         response = requests.request(method="POST", url=item_master_template_url, data=item_master_payload, headers=item_master_headers)
+
+        if response.status_code == 200:
+            logger.info(f'item : {data["Item Name"]} successfully inserted into Tally')
+        else:
+            logger.warn(f'item : {data["Item Name"]} cannot be inserted into Tally')
     except Exception as e:
         logger.error(f'request for item : {data["Item Name"]} not successful, {e}')
-        return
-
-    if response.status_code == 200:
-        logger.info(f'item : {data["Item Name"]} successfully inserted into Tally')
-    else:
-        logger.info(f'item : {data["Item Name"]} cannot be inserted into Tally')
 
 
 # 4. Sales order Template - Date format problem
@@ -440,14 +437,12 @@ def insert_payment_voucher_to_tally(
         response = requests.request(
             method="POST", url=payment_voucher_template_url, data=payment_voucher_payload, headers=payment_voucher_headers
         )
+        if response.status_code == 200:
+            logger.info(f'payment voucher with voucher number : {data["Voucher Number"]} successfully inserted into Tally')
+        else:
+            logger.warn(f'payment voucher with voucher number : {data["Voucher Number"]} cannot be inserted into Tally')
     except Exception as e:
         logger.error(f"request for payment voucher not successful : {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info(f'payment voucher with voucher number : {payment_voucher_payload["Voucher Number"]} successfully inserted into Tally')
-    else:
-        logger.info(f'payment voucher with voucher number : {payment_voucher_payload["Voucher Number"]} cannot be inserted into Tally')
 
 
 # 6. Receipt Voucher Template - Date format problem
