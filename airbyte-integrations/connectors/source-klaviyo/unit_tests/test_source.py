@@ -15,13 +15,13 @@ from source_klaviyo.source import SourceKlaviyo
             400,
             "Bad request",
             False,
-            "HTTPError('400 Client Error: None for url: https://a.klaviyo.com/api/v1/metrics?api_key=***&count=100')",
+            "Unable to connect to Klaviyo API with provided credentials.",
         ),
         (
             403,
             "Forbidden",
             False,
-            "HTTPError('403 Client Error: None for url: https://a.klaviyo.com/api/v1/metrics?api_key=***&count=100')",
+            "Please provide a valid API key and make sure it has permissions to read specified streams.",
         ),
     ),
 )

@@ -4,14 +4,22 @@ This page contains the setup guide and reference information for the Klaviyo sou
 
 ## Prerequisites
 
-To set up the Klaviyo source connector, you'll need the [Klaviyo Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
+- Klaviyo [account](https://www.klaviyo.com)
+- [Klaviyo Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3)
 
-## Set up the Klaviyo connector in Airbyte
+## Setup guide
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) or navigate to the Airbyte Open Source dashboard.
+### Step 1: Set up Klaviyo
+
+1. Create a [Klaviyo account](https://www.klaviyo.com)
+2. Create a [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3). Make sure you selected all [scopes](https://help.klaviyo.com/hc/en-us/articles/7423954176283) corresponding to the streams you would like to replicate.
+
+### Step 2: Set up the Klaviyo connector in Airbyte
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Klaviyo** from the Source type dropdown.
-4. Enter the name for the Klaviyo connector.
+3. On the Set up the source page, select **Klaviyo** from the **Source type** dropdown.
+4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
 6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
 7. Click **Set up source**.
