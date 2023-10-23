@@ -84,11 +84,7 @@ definitions:
       $ref: "#/definitions/requester"
     paginator:
       $ref: "#/definitions/default_paginator"
-  base_stream:
-    primary_key: "id"
-    retriever:
-      $ref: "#/definitions/retriever"
-  base_incremental_stream:
+  incremental_sync:
     type: "DatetimeBasedCursor"
     start_datetime:
       datetime: >-
@@ -101,6 +97,12 @@ definitions:
       field_name: updated_since
       inject_into: request_parameter
     cursor_field: updated_at
+  base_stream:
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/retriever"
+    incremental_sync:
+      $ref: "#/definitions/incremental_sync"
   accounts_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
@@ -271,7 +273,7 @@ definitions:
   unique_coupons_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
-      name: "unique_coupon_codes"
+      name: "unique_coupons"
     retriever:
       $ref: "#/definitions/retriever"
       requester:
