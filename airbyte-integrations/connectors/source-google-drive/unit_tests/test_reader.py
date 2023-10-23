@@ -5,11 +5,12 @@
 import datetime
 from typing import Optional
 from unittest.mock import MagicMock, patch
-from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, Json
+
 import pytest
-from source_google_drive.stream_reader import SourceGoogleDriveStreamReader, GoogleDriveRemoteFile
-from source_google_drive.spec import SourceGoogleDriveSpec, ServiceAccountCredentials
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, Json
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from source_google_drive.spec import ServiceAccountCredentials, SourceGoogleDriveSpec
+from source_google_drive.stream_reader import GoogleDriveRemoteFile, SourceGoogleDriveStreamReader
 
 
 def create_reader(
@@ -21,7 +22,7 @@ def create_reader(
 ):
     reader = SourceGoogleDriveStreamReader()
     reader.config = config
-    
+
     return reader
 
 
@@ -31,7 +32,7 @@ def create_reader(
         pytest.param(
             [{"files": [{"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"}]}],
             [GoogleDriveRemoteFile(uri="/test.csv", id="abc", mimeType="text/csv", name="test.csv", modifiedTime=datetime(2021, 1, 1))],
-            id="Single file"
+            id="Single file",
         )
         # TODO add cases:
         # multiple files
@@ -59,7 +60,7 @@ def test_matching_files(mock_build_service, listing_results, matched_files):
     assert matched_files == reader.get_matching_files(["*"], None, MagicMock())
     assert files_service.list.call_count == 1
     assert files_service.list_next.call_count == len(listing_results) - 1
-    
+
 
 # TODO add tests for open_file
 # get_media with single chunks and multiple chunks
