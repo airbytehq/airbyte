@@ -51,6 +51,9 @@ class PublishConnectorContext(ConnectorContext):
         pipeline_name = f"Publish {connector.technical_name}"
         pipeline_name = pipeline_name + " (pre-release)" if pre_release else pipeline_name
 
+        if use_local_cdk and not self.pre_release:
+            raise ValueError("Publishing with the local CDK is only supported for pre-release publishing.")
+
         super().__init__(
             pipeline_name=pipeline_name,
             connector=connector,
