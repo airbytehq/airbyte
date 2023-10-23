@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -209,6 +210,7 @@ class MongoDbSourceTest {
     when(mongoDatabase.getCollection(any())).thenReturn(mongoCollection);
     when(mongoDatabase.runCommand(any())).thenReturn(authorizedCollectionsResponse);
     when(mongoClient.getDatabase(any())).thenReturn(mongoDatabase);
+    when(aggregateIterable.allowDiskUse(anyBoolean())).thenReturn(aggregateIterable);
 
     final AirbyteCatalog airbyteCatalog = source.discover(airbyteSourceConfig);
 

@@ -111,6 +111,7 @@ class AbstractSource(Source, ABC):
                     )
 
                 try:
+                    self._apply_log_level_to_stream_logger(logger, stream_instance)
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
                     stream_is_available, reason = stream_instance.check_availability(logger, self)
                     if not stream_is_available:
@@ -162,7 +163,6 @@ class AbstractSource(Source, ABC):
         state_manager: ConnectorStateManager,
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
-        self._apply_log_level_to_stream_logger(logger, stream_instance)
         if internal_config.page_size and isinstance(stream_instance, HttpStream):
             logger.info(f"Setting page size for {stream_instance.name} to {internal_config.page_size}")
             stream_instance.page_size = internal_config.page_size

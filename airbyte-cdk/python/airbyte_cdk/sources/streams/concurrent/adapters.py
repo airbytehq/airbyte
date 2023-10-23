@@ -84,6 +84,7 @@ class StreamFacade(Stream):
                 ),
                 max_workers=max_workers,
                 name=stream.name,
+                namespace=stream.namespace,
                 json_schema=stream.get_json_schema(),
                 availability_strategy=StreamAvailabilityStrategy(stream, source),
                 primary_key=pk,
@@ -287,7 +288,6 @@ class StreamPartition(Partition):
                 stream_state=self._state,
             ):
                 if isinstance(record_data, Mapping):
-                    # Transform the data from the partition instead of the AbstractStream.
                     data_to_return = dict(record_data)
                     self._stream.transformer.transform(data_to_return, self._stream.get_json_schema())
                     yield Record(data_to_return)

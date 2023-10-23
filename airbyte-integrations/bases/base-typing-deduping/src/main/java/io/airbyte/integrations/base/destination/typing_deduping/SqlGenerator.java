@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import java.time.Instant;
+import java.util.Optional;
+
 public interface SqlGenerator<DialectTableDefinition> {
 
   String SOFT_RESET_SUFFIX = "_ab_soft_reset";
@@ -68,8 +71,12 @@ public interface SqlGenerator<DialectTableDefinition> {
    * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the
    *        final table directly. Useful for full refresh overwrite syncs, where we write the entire
    *        sync to a temp table and then swap it into the final table at the end.
+   * @param minRawTimestamp The latest _airbyte_extracted_at for which all raw records with that
+   *        timestamp have already been typed+deduped. Implementations MAY use this value in a
+   *        {@code _airbyte_extracted_at > minRawTimestamp} filter on the raw table to improve query
+   *        performance.
    */
-  String updateTable(final StreamConfig stream, String finalSuffix);
+  String updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp);
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.

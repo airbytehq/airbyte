@@ -21,6 +21,7 @@ from airbyte_cdk.sources.streams.concurrent.cursor import Cursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.exceptions import ExceptionWithDisplayMessage
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 
 _ANY_SYNC_MODE = SyncMode.full_refresh
@@ -84,8 +85,21 @@ def test_stream_partition_generator(sync_mode):
     assert slices == stream_slices
 
 
-def test_stream_partition():
+@pytest.mark.parametrize(
+    "transformer, expected_records",
+    [
+        pytest.param(TypeTransformer(TransformConfig.NoTransform), [Record({"data": "1"}), Record({"data": "2"})], id="test_no_transform"),
+        pytest.param(
+            TypeTransformer(TransformConfig.DefaultSchemaNormalization),
+            [Record({"data": 1}), Record({"data": 2})],
+            id="test_default_transform",
+        ),
+    ],
+)
+def test_stream_partition(transformer, expected_records):
     stream = Mock()
+    stream.get_json_schema.return_value = {"type": "object", "properties": {"data": {"type": ["integer"]}}}
+    stream.transformer = transformer
     message_repository = InMemoryMessageRepository()
     _slice = None
     sync_mode = SyncMode.full_refresh
@@ -101,16 +115,11 @@ def test_stream_partition():
         ),
     )
 
-    stream_data = [a_log_message, {"data": 1}, {"data": 2}]
+    stream_data = [a_log_message, {"data": "1"}, {"data": "2"}]
     stream.read_records.return_value = stream_data
 
     records = list(partition.read())
     messages = list(message_repository.consume_queue())
-
-    expected_records = [
-        Record({"data": 1}),
-        Record({"data": 2}),
-    ]
 
     assert records == expected_records
     assert messages == [a_log_message]
@@ -230,7 +239,7 @@ class StreamFacadeTest(unittest.TestCase):
         records = [Record(data) for data in expected_stream_data]
         self._abstract_stream.read.return_value = records
 
-        actual_stream_data = list(self._facade.read_incremental(None, None, None, None, None, None))
+        actual_stream_data = list(self._facade.read_incremental(None, None, None, None, None, None, None))
 
         assert actual_stream_data == expected_stream_data
 
