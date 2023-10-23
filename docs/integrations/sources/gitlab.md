@@ -112,6 +112,9 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| 1.8.4 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 1.8.3   | 2023-10-18 | [31547](https://github.com/airbytehq/airbyte/pull/31547) | Add validation for invalid `groups_list` and/or `projects_list`                            |
+| 1.8.2   | 2023-10-17 | [31492](https://github.com/airbytehq/airbyte/pull/31492) | Expand list of possible error status codes when handling expired `access_token`            |
 | 1.8.1   | 2023-10-12 | [31375](https://github.com/airbytehq/airbyte/pull/31375) | Mark `start_date` as optional, migrate `groups` and `projects` to array                    |
 | 1.8.0   | 2023-10-12 | [31339](https://github.com/airbytehq/airbyte/pull/31339) | Add undeclared fields to streams schemas, validate date/date-time format in stream schemas |
 | 1.7.1   | 2023-10-10 | [31210](https://github.com/airbytehq/airbyte/pull/31210) | Added expired `access_token` handling, while checking the connection                       |

@@ -10,6 +10,7 @@ from airbyte_cdk.destinations.vector_db_based.config import (
     CohereEmbeddingConfigModel,
     FakeEmbeddingConfigModel,
     FromFieldEmbeddingConfigModel,
+    OpenAICompatibleEmbeddingConfigModel,
     OpenAIEmbeddingConfigModel,
     ProcessingConfigModel,
 )
@@ -78,6 +79,7 @@ class ConfigModel(BaseModel):
         FakeEmbeddingConfigModel,
         FromFieldEmbeddingConfigModel,
         AzureOpenAIEmbeddingConfigModel,
+        OpenAICompatibleEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     indexing: MilvusIndexingConfigModel
 

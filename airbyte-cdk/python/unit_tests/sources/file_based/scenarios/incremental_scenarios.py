@@ -3,6 +3,7 @@
 #
 
 from unit_tests.sources.file_based.helpers import LowHistoryLimitCursor
+from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
 from unit_tests.sources.file_based.scenarios.scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 
 single_csv_input_state_is_earlier_scenario = (
@@ -20,19 +21,22 @@ single_csv_input_state_is_earlier_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(
             input_state=[
@@ -118,19 +122,22 @@ single_csv_file_is_skipped_if_same_modified_at_as_in_history = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(
             input_state=[
@@ -198,19 +205,22 @@ single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(
             input_state=[
@@ -296,19 +306,22 @@ single_csv_no_input_state_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -384,27 +397,30 @@ multi_csv_same_timestamp_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -503,19 +519,22 @@ single_csv_input_state_is_later_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11", "val12"),
-                    ("val21", "val22"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11", "val12"),
+                        ("val21", "val22"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                }
             }
-        }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -602,27 +621,30 @@ multi_csv_different_timestamps_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-04T03:54:07.000000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-04T03:54:07.000000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -729,35 +751,38 @@ multi_csv_per_timestamp_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "c.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11c", "val12c", "val13c"),
-                    ("val21c", "val22c", "val23c"),
-                ],
-                "last_modified": "2023-06-06T03:54:07.000000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "c.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11c", "val12c", "val13c"),
+                        ("val21c", "val22c", "val23c"),
+                    ],
+                    "last_modified": "2023-06-06T03:54:07.000000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -886,35 +911,38 @@ multi_csv_skip_file_if_already_in_history = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "c.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11c", "val12c", "val13c"),
-                    ("val21c", "val22c", "val23c"),
-                ],
-                "last_modified": "2023-06-06T03:54:07.000000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "c.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11c", "val12c", "val13c"),
+                        ("val21c", "val22c", "val23c"),
+                    ],
+                    "last_modified": "2023-06-06T03:54:07.000000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1035,35 +1063,38 @@ multi_csv_include_missing_files_within_history_range = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "c.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11c", "val12c", "val13c"),
-                    ("val21c", "val22c", "val23c"),
-                ],
-                "last_modified": "2023-06-06T03:54:07.000000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "c.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11c", "val12c", "val13c"),
+                        ("val21c", "val22c", "val23c"),
+                    ],
+                    "last_modified": "2023-06-06T03:54:07.000000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
     )
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1162,36 +1193,39 @@ multi_csv_remove_old_files_if_history_is_full_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-06T03:54:07.000000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-07T03:54:07.000000Z",
-            },
-            "c.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11c", "val12c", "val13c"),
-                    ("val21c", "val22c", "val23c"),
-                ],
-                "last_modified": "2023-06-10T03:54:07.000000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-06T03:54:07.000000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-07T03:54:07.000000Z",
+                },
+                "c.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11c", "val12c", "val13c"),
+                        ("val21c", "val22c", "val23c"),
+                    ],
+                    "last_modified": "2023-06-10T03:54:07.000000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+        .set_cursor_cls(LowHistoryLimitCursor)
     )
-    .set_file_type("csv")
-    .set_cursor_cls(LowHistoryLimitCursor)
     .set_expected_catalog(
         {
             "streams": [
@@ -1349,44 +1383,47 @@ multi_csv_same_timestamp_more_files_than_history_size_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "c.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11c", "val12c", "val13c"),
-                    ("val21c", "val22c", "val23c"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "d.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11d", "val12d", "val13d"),
-                    ("val21d", "val22d", "val23d"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "c.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11c", "val12c", "val13c"),
+                        ("val21c", "val22c", "val23c"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "d.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11d", "val12d", "val13d"),
+                        ("val21d", "val22d", "val23d"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+        .set_cursor_cls(LowHistoryLimitCursor)
     )
-    .set_file_type("csv")
-    .set_cursor_cls(LowHistoryLimitCursor)
     .set_expected_catalog(
         {
             "streams": [
@@ -1530,44 +1567,47 @@ multi_csv_sync_recent_files_if_history_is_incomplete_scenario = (
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "c.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11c", "val12c", "val13c"),
-                    ("val21c", "val22c", "val23c"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "d.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11d", "val12d", "val13d"),
-                    ("val21d", "val22d", "val23d"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "c.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11c", "val12c", "val13c"),
+                        ("val21c", "val22c", "val23c"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "d.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11d", "val12d", "val13d"),
+                        ("val21d", "val22d", "val23d"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+            }
+        )
+        .set_cursor_cls(LowHistoryLimitCursor)
+        .set_file_type("csv")
     )
-    .set_cursor_cls(LowHistoryLimitCursor)
-    .set_file_type("csv")
     .set_expected_catalog(
         {
             "streams": [
@@ -1647,44 +1687,47 @@ multi_csv_sync_files_within_time_window_if_history_is_incomplete__different_time
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-06T03:54:07.000000Z",
-            },
-            "c.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11c", "val12c", "val13c"),
-                    ("val21c", "val22c", "val23c"),
-                ],
-                "last_modified": "2023-06-07T03:54:07.000000Z",
-            },
-            "d.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11d", "val12d", "val13d"),
-                    ("val21d", "val22d", "val23d"),
-                ],
-                "last_modified": "2023-06-08T03:54:07.000000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-06T03:54:07.000000Z",
+                },
+                "c.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11c", "val12c", "val13c"),
+                        ("val21c", "val22c", "val23c"),
+                    ],
+                    "last_modified": "2023-06-07T03:54:07.000000Z",
+                },
+                "d.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11d", "val12d", "val13d"),
+                        ("val21d", "val22d", "val23d"),
+                    ],
+                    "last_modified": "2023-06-08T03:54:07.000000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+        .set_cursor_cls(LowHistoryLimitCursor)
     )
-    .set_file_type("csv")
-    .set_cursor_cls(LowHistoryLimitCursor)
     .set_expected_catalog(
         {
             "streams": [
@@ -1786,44 +1829,47 @@ multi_csv_sync_files_within_history_time_window_if_history_is_incomplete_differe
             ]
         }
     )
-    .set_files(
-        {
-            "a.csv": {
-                "contents": [
-                    ("col1", "col2"),
-                    ("val11a", "val12a"),
-                    ("val21a", "val22a"),
-                ],
-                "last_modified": "2023-06-05T03:54:07.000000Z",
-            },
-            "b.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11b", "val12b", "val13b"),
-                    ("val21b", "val22b", "val23b"),
-                ],
-                "last_modified": "2023-06-06T03:54:07.000000Z",
-            },
-            "c.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11c", "val12c", "val13c"),
-                    ("val21c", "val22c", "val23c"),
-                ],
-                "last_modified": "2023-06-07T03:54:07.000000Z",
-            },
-            "d.csv": {
-                "contents": [
-                    ("col1", "col2", "col3"),
-                    ("val11d", "val12d", "val13d"),
-                    ("val21d", "val22d", "val23d"),
-                ],
-                "last_modified": "2023-06-08T03:54:07.000000Z",
-            },
-        }
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "a.csv": {
+                    "contents": [
+                        ("col1", "col2"),
+                        ("val11a", "val12a"),
+                        ("val21a", "val22a"),
+                    ],
+                    "last_modified": "2023-06-05T03:54:07.000000Z",
+                },
+                "b.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11b", "val12b", "val13b"),
+                        ("val21b", "val22b", "val23b"),
+                    ],
+                    "last_modified": "2023-06-06T03:54:07.000000Z",
+                },
+                "c.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11c", "val12c", "val13c"),
+                        ("val21c", "val22c", "val23c"),
+                    ],
+                    "last_modified": "2023-06-07T03:54:07.000000Z",
+                },
+                "d.csv": {
+                    "contents": [
+                        ("col1", "col2", "col3"),
+                        ("val11d", "val12d", "val13d"),
+                        ("val21d", "val22d", "val23d"),
+                    ],
+                    "last_modified": "2023-06-08T03:54:07.000000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+        .set_cursor_cls(LowHistoryLimitCursor)
     )
-    .set_file_type("csv")
-    .set_cursor_cls(LowHistoryLimitCursor)
     .set_expected_catalog(
         {
             "streams": [
