@@ -44,19 +44,30 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
         example we've seen was for JSONL parser but the file extension was just `.json`. Note that there we more than one record extracted
         from this stream so it's not just that the file is one JSON object
         """
-        self._stream.list_files.return_value = [_FILE_WITH_UNKNOWN_EXTENSION]
+        self._stream.get_files.return_value = [_FILE_WITH_UNKNOWN_EXTENSION]
         self._parser.parse_records.return_value = [{"a record": 1}]
 
         is_available, reason = self._strategy.check_availability_and_parsability(self._stream, Mock(), Mock())
 
         assert is_available
 
+    def test_not_available_given_no_files(self) -> None:
+        """
+        If no files are returned, then the stream is not available.
+        """
+        self._stream.get_files.return_value = []
+
+        is_available, reason = self._strategy.check_availability_and_parsability(self._stream, Mock(), Mock())
+
+        assert not is_available
+        assert "No files were identified in the stream" in reason
+
     def test_parse_records_is_not_called_with_parser_max_n_files_for_parsability_set(self) -> None:
         """
         If the stream parser sets parser_max_n_files_for_parsability to 0, then we should not call parse_records on it
         """
         self._parser.parser_max_n_files_for_parsability = 0
-        self._stream.list_files.return_value = [_FILE_WITH_UNKNOWN_EXTENSION]
+        self._stream.get_files.return_value = [_FILE_WITH_UNKNOWN_EXTENSION]
 
         is_available, reason = self._strategy.check_availability_and_parsability(self._stream, Mock(), Mock())
 
