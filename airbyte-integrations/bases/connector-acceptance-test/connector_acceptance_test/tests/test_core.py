@@ -1096,13 +1096,13 @@ class TestBasicRead(BaseTest):
                 extra = set(actual) - set(expected)
                 msg = f"Stream {stream_name}: All expected records must be produced"
                 detailed_logger.info(msg)
-                detailed_logger.info('missing expected:')
+                detailed_logger.info("missing expected:")
                 detailed_logger.log_json_list(missing_expected)
-                detailed_logger.info('expected:')
+                detailed_logger.info("expected:")
                 detailed_logger.log_json_list(expected)
-                detailed_logger.info('actual:')
+                detailed_logger.info("actual:")
                 detailed_logger.log_json_list(actual)
-                detailed_logger.info('extra:')
+                detailed_logger.info("extra:")
                 detailed_logger.log_json_list(extra)
                 pytest.fail(msg)
 
