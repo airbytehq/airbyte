@@ -125,6 +125,8 @@ class GradleTask(Step, ABC):
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
             # Set the current working directory.
             .with_workdir("/airbyte")
+            # TODO: remove this once we finish the project to boost source-postgres CI performance.
+            .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger))
         )
 
         # Augment the base container with S3 build cache secrets when available.
@@ -136,6 +138,13 @@ class GradleTask(Step, ABC):
                 gradle_container_base = gradle_container_base.with_secret_variable(
                     "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key_secret
                 )
+
+        # Running a gradle task like "help" with these arguments will trigger updating all dependencies.
+        # When the cache is cold, this downloads many gigabytes of jars and poms from all over the internet.
+        warm_dependency_cache_args = ["--write-verification-metadata", "sha256", "--dry-run"]
+        if self.context.is_local:
+            # When running locally, this dependency update is slower and less useful than within a CI runner. Skip it.
+            warm_dependency_cache_args = ["--dry-run"]
 
         # Mount the whole git repo to update the cache volume contents and build the CDK.
         with_whole_git_repo = (
@@ -151,7 +160,7 @@ class GradleTask(Step, ABC):
                         # Load from the cache volume.
                         f"(rsync -a --stats --mkpath {self.GRADLE_DEP_CACHE_PATH}/ {self.GRADLE_HOME_PATH} || true)",
                         # Resolve all dependencies and write their checksums to './gradle/verification-metadata.dryrun.xml'.
-                        self._get_gradle_command("help", "--write-verification-metadata", "sha256", "--dry-run"),
+                        self._get_gradle_command("help", *warm_dependency_cache_args),
                         # Build the CDK and publish it to the local maven repository.
                         self._get_gradle_command(":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"),
                         # Store to the cache volume.
@@ -164,8 +173,6 @@ class GradleTask(Step, ABC):
         # Mount only the code needed to build the connector.
         gradle_container = (
             gradle_container_base
-            # TODO: remove this once we finish the project to boost source-postgres CI performance.
-            .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger))
             # Copy the local maven repository and force evaluation of `with_whole_git_repo` container.
             .with_directory(self.LOCAL_MAVEN_REPOSITORY_PATH, await with_whole_git_repo.directory(self.LOCAL_MAVEN_REPOSITORY_PATH))
             # Mount the connector-agnostic whitelisted files in the git repo.
