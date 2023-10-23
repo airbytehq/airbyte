@@ -39,7 +39,8 @@ class PublishConnectorContext(ConnectorContext):
         ci_context: Optional[str] = None,
         ci_gcs_credentials: str = None,
         pull_request: PullRequest = None,
-        use_local_cdk: bool = False,
+        s3_build_cache_access_key_id: Optional[str] = None,
+        s3_build_cache_secret_key: Optional[str] = None,
     ):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
@@ -65,18 +66,11 @@ class PublishConnectorContext(ConnectorContext):
             reporting_slack_channel=reporting_slack_channel,
             ci_gcs_credentials=ci_gcs_credentials,
             should_save_report=True,
-            use_local_cdk=use_local_cdk,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
+            s3_build_cache_access_key_id=s3_build_cache_access_key_id,
+            s3_build_cache_secret_key=s3_build_cache_secret_key,
         )
-
-    @property
-    def docker_hub_username_secret(self) -> Secret:
-        return self.dagger_client.set_secret("docker_hub_username", self.docker_hub_username)
-
-    @property
-    def docker_hub_password_secret(self) -> Secret:
-        return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
 
     @property
     def metadata_service_gcs_credentials_secret(self) -> Secret:

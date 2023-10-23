@@ -13,7 +13,7 @@ import pipelines.dagger.actions.system.docker
 from dagger import Container, File
 from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
-from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests
+from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
 from pipelines.consts import LOCAL_BUILD_PLATFORM, PYPROJECT_TOML_FILE_PATH
 from pipelines.dagger.actions import secrets
 from pipelines.helpers.utils import export_container_to_tarball
@@ -228,6 +228,7 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         tasks = [
             task_group.soonify(IntegrationTests(context).run)(connector_container),
             task_group.soonify(AcceptanceTests(context).run)(connector_image_tar_file),
+            task_group.soonify(CheckBaseImageIsUsed(context).run)(),
         ]
 
     return step_results + [task.value for task in tasks]
