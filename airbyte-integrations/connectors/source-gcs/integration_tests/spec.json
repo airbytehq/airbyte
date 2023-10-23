@@ -41,7 +41,7 @@
             },
             "legacy_prefix": {
               "title": "Legacy Prefix",
-              "description": "The path prefix configured in v3 versions of the S3 connector. This option is deprecated in favor of a single glob.",
+              "description": "The path prefix configured in previous versions of the GCS connector. This option is deprecated in favor of a single glob.",
               "airbyte_hidden": true,
               "type": "string"
             },

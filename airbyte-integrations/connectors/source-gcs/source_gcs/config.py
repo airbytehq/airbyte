@@ -24,6 +24,12 @@ class SourceGCSStreamConfig(FileBasedStreamConfig):
         "the standard formatting.",
         order=2,
     )
+    legacy_prefix: Optional[str] = Field(
+        title="Legacy Prefix",
+        description="The path prefix configured in previous versions of the GCS connector. "
+        "This option is deprecated in favor of a single glob.",
+        airbyte_hidden=True,
+    )
 
 
 class Config(AbstractFileBasedSpec):
