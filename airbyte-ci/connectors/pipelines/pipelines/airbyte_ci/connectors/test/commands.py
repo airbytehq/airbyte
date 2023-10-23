@@ -80,6 +80,8 @@ def test(
             fast_tests_only=fast_tests_only,
             code_tests_only=code_tests_only,
             use_local_cdk=ctx.obj.get("use_local_cdk"),
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
