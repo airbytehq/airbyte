@@ -6,6 +6,7 @@ from pathlib import PosixPath
 
 import pytest
 from _pytest.capture import CaptureFixture
+from airbyte_cdk.sources.abstract_source import AbstractSource
 from freezegun import freeze_time
 from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.avro_scenarios import (
@@ -51,6 +52,7 @@ from unit_tests.sources.file_based.scenarios.csv_scenarios import (
     invalid_csv_scenario,
     multi_csv_scenario,
     multi_csv_stream_n_file_exceeds_limit_for_inference,
+    multi_format_analytics_scenario,
     multi_stream_custom_format,
     schemaless_csv_multi_stream_scenario,
     schemaless_csv_scenario,
@@ -200,6 +202,7 @@ read_scenarios = discover_scenarios + [
     emit_record_scenario_single_stream,
     skip_record_scenario_multi_stream,
     skip_record_scenario_single_stream,
+    multi_format_analytics_scenario,
     wait_for_rediscovery_scenario_multi_stream,
     wait_for_rediscovery_scenario_single_stream,
 ]
@@ -227,21 +230,23 @@ check_scenarios = [
 
 
 @pytest.mark.parametrize("scenario", discover_scenarios, ids=[s.name for s in discover_scenarios])
-def test_file_based_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
+def test_file_based_discover(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> None:
     verify_discover(capsys, tmp_path, scenario)
 
 
 @pytest.mark.parametrize("scenario", read_scenarios, ids=[s.name for s in read_scenarios])
 @freeze_time("2023-06-09T00:00:00Z")
-def test_file_based_read(capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario) -> None:
+def test_file_based_read(
+    capsys: CaptureFixture[str], caplog: LogCaptureFixture, tmp_path: PosixPath, scenario: TestScenario[AbstractSource]
+) -> None:
     verify_read(capsys, caplog, tmp_path, scenario)
 
 
 @pytest.mark.parametrize("scenario", spec_scenarios, ids=[c.name for c in spec_scenarios])
-def test_file_based_spec(capsys: CaptureFixture[str], scenario: TestScenario) -> None:
+def test_file_based_spec(capsys: CaptureFixture[str], scenario: TestScenario[AbstractSource]) -> None:
     verify_spec(capsys, scenario)
 
 
 @pytest.mark.parametrize("scenario", check_scenarios, ids=[c.name for c in check_scenarios])
-def test_file_based_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario) -> None:
+def test_file_based_check(capsys: CaptureFixture[str], tmp_path: PosixPath, scenario: TestScenario[AbstractSource]) -> None:
     verify_check(capsys, tmp_path, scenario)

@@ -12,7 +12,7 @@ import segment.analytics as analytics
 
 analytics.write_key = "G6G7whgro81g9xM00kN2buclGKvcOjFd"
 analytics.send = True
-analytics.debug = True
+analytics.debug = False
 
 
 def _is_airbyte_user():

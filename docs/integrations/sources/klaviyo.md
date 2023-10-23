@@ -54,6 +54,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                   |
 |:---------|:-----------| :--------------------------------------------------------- |:------------------------------------------------------------------------------------------|
+| `0.5.0`  | 2023-10-19 | [31611](https://github.com/airbytehq/airbyte/pull/31611)   | Add `date-time` format for `datetime` field in `Events` stream                            |
 | `0.4.0`  | 2023-10-18 | [31562](https://github.com/airbytehq/airbyte/pull/31562)   | Add `archived` field to `Flows` stream                                                    |
 | `0.3.3`  | 2023-10-13 | [31379](https://github.com/airbytehq/airbyte/pull/31379)   | Skip streams that the connector no longer has access to                                   |
 | `0.3.2`  | 2023-06-20 | [27498](https://github.com/airbytehq/airbyte/pull/27498)   | Do not store state in the future                                                          |

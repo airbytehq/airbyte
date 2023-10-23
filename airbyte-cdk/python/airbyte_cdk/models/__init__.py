@@ -11,6 +11,7 @@ from .airbyte_protocol import (
     AirbyteConnectionStatus,
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
+    AirbyteAnalyticsTraceMessage,
     AirbyteErrorTraceMessage,
     AirbyteEstimateTraceMessage,
     AirbyteGlobalState,

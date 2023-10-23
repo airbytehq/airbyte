@@ -60,6 +60,10 @@ class NotionStream(HttpStream, ABC):
     def availability_strategy(self) -> HttpAvailabilityStrategy:
         return NotionAvailabilityStrategy()
 
+    @property
+    def retry_factor(self) -> float:
+        return 8
+
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):
         if response.status_code == 400:
@@ -68,11 +72,19 @@ class NotionStream(HttpStream, ABC):
                 return message
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        retry_after = response.headers.get("retry-after")
-        if retry_after:
+        """
+        Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
+        For a 429 response, we can use the retry-header to determine how long to wait before retrying.
+        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 8.
+        Docs: https://developers.notion.com/reference/errors#rate-limiting
+
+        """
+        retry_after = response.headers.get("retry-after", "5")
+        if response.status_code == 429:
             return float(retry_after)
         if self.check_invalid_start_cursor(response):
             return 10
+        return super().backoff_time(response)
 
     def should_retry(self, response: requests.Response) -> bool:
         return response.status_code == 400 or super().should_retry(response)

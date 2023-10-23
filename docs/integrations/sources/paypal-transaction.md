@@ -87,6 +87,7 @@ Transactions sync is performed with default `stream_slice_period` = 1 day, it me
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------|
+| 2.1.1 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 2.1.0   | 2023-08-14 | [29223](https://github.com/airbytehq/airbyte/pull/29223) | Migrate Python CDK to Low Code schema                                                                                                     |
 | 2.0.0   | 2023-07-05 | [27916](https://github.com/airbytehq/airbyte/pull/27916) | Update `Balances` schema                                                                                                     |
 | 1.0.0   | 2023-07-03 | [27968](https://github.com/airbytehq/airbyte/pull/27968) | mark `Client ID` and `Client Secret` as required fields                                                                      |
