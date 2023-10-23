@@ -149,7 +149,7 @@ def test_parse_records(mock_detect_filetype, mock_optional_decode, mock_partitio
     logger = MagicMock()
     mock_detect_filetype.return_value = filetype
     mock_partition.return_value = parse_result
-    mock_optional_decode.side_effect = lambda x: x.decode('utf-8')
+    mock_optional_decode.side_effect = lambda x: x.decode("utf-8")
     if raises:
         with pytest.raises(RecordParseError):
             list(UnstructuredParser().parse_records(MagicMock(), fake_file, stream_reader, logger, MagicMock()))
