@@ -1,0 +1,12 @@
+# Use the official Python 3.10 image as the base image
+FROM python:3.10
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the binary file from the host machine to the container's working directory
+COPY ./airbyte_ci.bin /app/airbyte_ci.bin
+
+# Run the binary file with the specified command
+CMD ["./airbyte_ci.bin", "--version"]
+

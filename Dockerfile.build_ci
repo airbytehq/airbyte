@@ -1,0 +1,24 @@
+# Use Python 3.10 as the base image
+FROM python:3.10
+
+# Install poetry
+RUN pip install poetry
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Clone the specified branch from the GitHub repository
+RUN git clone --single-branch --branch bnchrch/ci/pex-install https://github.com/airbytehq/airbyte.git
+
+# Change the working directory to the desired location
+WORKDIR /app/airbyte/airbyte-ci/connectors/pipelines
+
+# Install the project dependencies using Poetry
+RUN poetry install --with dev
+
+# Compile the Python code using Nuitka
+RUN poetry run python -m nuitka --follow-imports pipelines/cli/airbyte_ci.py
+
+# Run the airbyte_ci.bin with the --version flag
+CMD ["./airbyte_ci.bin", "--version"]
+
