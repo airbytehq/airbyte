@@ -184,9 +184,7 @@ class TestWeaviateIndexer(unittest.TestCase):
             self.indexer.index([mock_chunk1, mock_chunk2], None, "test")
         chunk1_call = call({"someField": "some_value", "text": "some_content"}, "Test", "some_id", vector=[1, 2, 3])
         self.assertEqual(mock_client.batch.create_objects.call_count, 1)
-        mock_client.batch.add_data_object.assert_has_calls(
-            [chunk1_call], any_order=False
-        )
+        mock_client.batch.add_data_object.assert_has_calls([chunk1_call], any_order=False)
 
     def test_index_flushes_batch_and_normalizes(self):
         mock_client = Mock()

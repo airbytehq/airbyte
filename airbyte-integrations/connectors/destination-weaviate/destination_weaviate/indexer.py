@@ -167,7 +167,7 @@ class WeaviateIndexer(Indexer):
             errors = result.get("result", {}).get("errors", [])
             if errors:
                 all_errors.extend(errors)
-        
+
         if len(all_errors) > 0:
             error_msg = f"Errors while loading: " + f"{','.join([str(error) for error in all_errors])}"
             raise WeaviatePartialBatchError(error_msg)
