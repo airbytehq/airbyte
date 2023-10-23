@@ -60,7 +60,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
                                                                     final AirbyteFileOffsetBackingStore offsetManager,
                                                                     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
     return switch (debeziumConnectorType) {
-      case MONGODB -> new MongoDbDebeziumPropertiesManager(properties, config, catalog, offsetManager, schemaHistoryManager);
+      case MONGODB -> new MongoDbDebeziumPropertiesManager(properties, config, catalog, offsetManager);
       default -> new RelationalDbDebeziumPropertiesManager(properties, config, catalog, offsetManager, schemaHistoryManager);
     };
   }
