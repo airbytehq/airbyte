@@ -115,7 +115,7 @@ def insert_ledger_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any
         if response.status_code == 200:
             logger.info(f'ledger : {data["Ledger Name"]} successfully inserted into Tally')
         else:
-            logger.info(f'ledger : {data["Ledger Name"]} cannot be inserted into Tally')
+            logger.warn(f'ledger : {data["Ledger Name"]} cannot be inserted into Tally')
     except Exception as e:
         logger.error(f'request for ledger : {data["Ledger Name"]} not successful , {e}')
 
@@ -272,7 +272,7 @@ def insert_item_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
         if response.status_code == 200:
             logger.info(f'item : {data["Item Name"]} successfully inserted into Tally')
         else:
-            logger.info(f'item : {data["Item Name"]} cannot be inserted into Tally')
+            logger.warn(f'item : {data["Item Name"]} cannot be inserted into Tally')
     except Exception as e:
         logger.error(f'request for item : {data["Item Name"]} not successful, {e}')
 
@@ -440,7 +440,7 @@ def insert_payment_voucher_to_tally(
         if response.status_code == 200:
             logger.info(f'payment voucher with voucher number : {data["Voucher Number"]} successfully inserted into Tally')
         else:
-            logger.info(f'payment voucher with voucher number : {data["Voucher Number"]} cannot be inserted into Tally')
+            logger.warn(f'payment voucher with voucher number : {data["Voucher Number"]} cannot be inserted into Tally')
     except Exception as e:
         logger.error(f"request for payment voucher not successful : {e}")
 
