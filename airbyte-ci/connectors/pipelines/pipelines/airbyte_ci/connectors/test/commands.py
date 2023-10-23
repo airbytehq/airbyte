@@ -9,7 +9,7 @@ import click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
-from pipelines.airbyte_ci.connectors.test.steps import run_connector_test_pipeline
+from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import ContextState
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
@@ -80,6 +80,8 @@ def test(
             fast_tests_only=fast_tests_only,
             code_tests_only=code_tests_only,
             use_local_cdk=ctx.obj.get("use_local_cdk"),
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
