@@ -26,6 +26,4 @@ data:
     sl: 100
     ql: 100
   supportLevel: community
-  breaking_changes:
-    - 0.3.0
 metadataSpecVersion: "1.0"
