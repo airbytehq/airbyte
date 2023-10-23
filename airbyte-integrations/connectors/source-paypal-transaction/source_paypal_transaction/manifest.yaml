@@ -79,6 +79,7 @@ definitions:
           - path:
               - transaction_id
             value: "{{ record['transaction_info']['transaction_id'] }}"
+            value_type: string
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: transaction_updated_date
