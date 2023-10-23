@@ -12,6 +12,7 @@ from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.auth.token import TokenAuthenticator
 from airbyte_cdk.utils import AirbyteTracedException
 from source_pinterest.reports import CampaignAnalyticsReport
 
@@ -58,7 +59,6 @@ class SourcePinterest(AbstractSource):
 
     @staticmethod
     def get_authenticator(config):
-        config = config.get("credentials") or config
         credentials_base64_encoded = standard_b64encode(
             (config.get("client_id") + ":" + config.get("client_secret")).encode("ascii")
         ).decode("ascii")
@@ -74,18 +74,35 @@ class SourcePinterest(AbstractSource):
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         config = self._validate_and_transform(config)
-        authenticator = self.get_authenticator(config)
+
+        config = config.get("credentials") or config
+
         url = f"{PinterestStream.url_base}user_account"
-        auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
+        auth_headers = {}
         try:
+            authenticator = any
+            if config.get("auth_method") == "access_token":
+                access_token = config.get("access_token")
+                auth = f"Bearer {access_token}"
+                auth_headers = {"Accept": "application/json", "Authorization": auth}
+                authenticator = TokenAuthenticator(
+                    token=access_token
+                )
+            else:
+                authenticator = self.get_authenticator(config)
+                auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
+
             session = requests.get(url, headers=auth_headers)
             session.raise_for_status()
-            return True, None
+            return True, authenticator
         except requests.exceptions.RequestException as e:
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        config["authenticator"] = self.get_authenticator(config)
+        isAuthenticated, authenticator = self.check_connection(None, config)
+        if isAuthenticated == False:
+            raise authenticator
+        config["authenticator"] = authenticator
         report_config = self._validate_and_transform(config, amount_of_days_allowed_for_lookup=913)
         config = self._validate_and_transform(config)
         status = ",".join(config.get("status")) if config.get("status") else None
