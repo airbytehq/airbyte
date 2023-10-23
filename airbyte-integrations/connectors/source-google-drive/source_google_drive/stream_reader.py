@@ -16,7 +16,7 @@ from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
-from .spec import SourceGoogleDriveSpec as Config
+from .spec import SourceGoogleDriveSpec
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
 DOC_MIME_TYPE_PREFIX = "application/vnd.google-apps."
@@ -33,11 +33,11 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         self._drive_service = None
 
     @property
-    def config(self) -> Config:
+    def config(self) -> SourceGoogleDriveSpec:
         return self._config
 
     @config.setter
-    def config(self, value: Config):
+    def config(self, value: SourceGoogleDriveSpec):
         """
         FileBasedSource reads the config from disk and parses it, and once parsed, the source sets the config on its StreamReader.
 
@@ -47,7 +47,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         Therefore, concrete implementations of AbstractFileBasedStreamReader's config setter should assert that `value` is of the correct
         config type for that type of StreamReader.
         """
-        assert isinstance(value, Config)
+        assert isinstance(value, SourceGoogleDriveSpec)
         self._config = value
 
     @property
