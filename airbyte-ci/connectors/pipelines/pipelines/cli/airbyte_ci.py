@@ -144,8 +144,8 @@ def get_modified_files(
     help="Airbyte CI top-level command group.",
     lazy_subcommands={
         "connectors": "pipelines.airbyte_ci.connectors.commands.connectors",
-        # "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
-        # "test": "pipelines.airbyte_ci.test.commands.test",
+        "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
+        "test": "pipelines.airbyte_ci.test.commands.test",
     },
 )
 @click.version_option(__installed_version__)
