@@ -1,24 +1,25 @@
 data:
+  allowedHosts:
+    hosts:
+      - api.persistiq.com
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
   connectorSubtype: api
   connectorType: source
   definitionId: 3052c77e-8b91-47e2-97a0-a29a22794b4b
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-persistiq
   githubIssueLabel: source-persistiq
   icon: persistiq.svg
   license: MIT
   name: PersistIq
-  registries:
-    cloud:
-      enabled: true
-    oss:
-      enabled: true
+  releaseDate: 2023-10-04
   releaseStage: alpha
+  supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/persistiq
   tags:
-    - language:python
-  ab_internal:
-    sl: 100
-    ql: 100
-  supportLevel: community
+    - language:lowcode
 metadataSpecVersion: "1.0"
