@@ -39,6 +39,7 @@ class PublishConnectorContext(ConnectorContext):
         ci_context: Optional[str] = None,
         ci_gcs_credentials: str = None,
         pull_request: PullRequest = None,
+        use_local_cdk: bool = False,
     ):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
@@ -64,6 +65,7 @@ class PublishConnectorContext(ConnectorContext):
             reporting_slack_channel=reporting_slack_channel,
             ci_gcs_credentials=ci_gcs_credentials,
             should_save_report=True,
+            use_local_cdk=use_local_cdk,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
         )

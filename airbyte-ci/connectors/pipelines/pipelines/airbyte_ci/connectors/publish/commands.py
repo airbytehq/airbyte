@@ -116,6 +116,7 @@ def publish(
                 ci_context=ctx.obj.get("ci_context"),
                 ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
                 pull_request=ctx.obj.get("pull_request"),
+                use_local_cdk=ctx.obj["use_local_cdk"],
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
