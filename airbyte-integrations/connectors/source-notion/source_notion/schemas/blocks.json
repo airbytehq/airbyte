@@ -215,6 +215,35 @@
     "paragraph": { "$ref": "text_element.json" },
     "pdf": { "$ref": "file.json" },
     "quote": { "$ref": "text_element.json" },
+    "synced_block": {
+      "type": "object",
+      "properties": {
+        "synced_from": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["block_id"]
+                },
+                "block_id": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
     "table": {
       "type": "object",
       "properties": {
