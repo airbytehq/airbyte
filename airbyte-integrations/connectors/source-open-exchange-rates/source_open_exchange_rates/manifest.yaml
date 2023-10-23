@@ -35,22 +35,16 @@ definitions:
     type: DatetimeBasedCursor
     cursor_field: "{{ parameters.incremental_cursor }}"
     datetime_format: "%s"
-    cursor_granularity: "PT0.000001S"
-    lookback_window: "P31D"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
-    end_datetime:
-      datetime: "{{ today_utc() }}"
-      datetime_format: "%Y-%m-%d"
-    step: "P1M"
 
   open_exchange_rates_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "open_exchange_rates"
       incremental_cursor: "timestamp"
-      path: "historical/{{ config['start_date'] }}.json"
+      path: "historical/{{ format_datetime( config['start_date'] if not stream_state else stream_state['timestamp'], '%Y-%m-%d' ) }}.json"
     incremental_sync:
       $ref: "#/definitions/incremental_sync_base"
 
