@@ -6,7 +6,7 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: ["{{ parameters.extractorPath }}"]
-      
+
   requester:
     type: HttpRequester
     url_base: "https://api.pagerduty.com"
@@ -108,4 +108,3 @@ check:
     - "services"
     - "users"
     - "priorities"
-

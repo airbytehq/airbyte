@@ -4,7 +4,7 @@ connectionSpecification:
   title: PagerDuty Spec
   type: object
   required:
-  - token
+    - token
   additionalProperties: true
   properties:
     token:
@@ -27,7 +27,8 @@ connectionSpecification:
     incident_log_entries_overview:
       type: boolean
       title: Incident Log Entries Overview
-      description: If true, will return a subset of log entries that show only the
+      description:
+        If true, will return a subset of log entries that show only the
         most important changes to the incident.
       default: true
     default_severity:
@@ -35,12 +36,12 @@ connectionSpecification:
       title: Severity category
       description: A default severity category if not present
       examples:
-      - Sev1
-      - Sev2
-      - Sev3
-      - Sev4
-      - Sev5
-      - Custom
+        - Sev1
+        - Sev2
+        - Sev3
+        - Sev4
+        - Sev5
+        - Custom
       pattern: "^(Sev[0-5])?(Custom)?$"
     exclude_services:
       type: array
@@ -48,19 +49,20 @@ connectionSpecification:
         type: string
       title: Exclude Services
       examples:
-      - service-1
-      - service-2
-      description: List of PagerDuty service names to ignore incidents from. If not
+        - service-1
+        - service-2
+      description:
+        List of PagerDuty service names to ignore incidents from. If not
         set, all incidents will be pulled.
     service_details:
       type: array
       items:
         type: string
         enum:
-        - escalation_policies
-        - teams
-        - integrations
-        - auto_pause_notifications_parameters
+          - escalation_policies
+          - teams
+          - integrations
+          - auto_pause_notifications_parameters
       title: Service Details
       description: List of PagerDuty service additional details to include.
     max_retries:
@@ -69,6 +71,7 @@ connectionSpecification:
       maximum: 8
       default: 5
       title: Max Retries
-      description: Maximum number of PagerDuty API request retries to perform upon
+      description:
+        Maximum number of PagerDuty API request retries to perform upon
         connection errors. The source will pause for an exponentially increasing number
         of seconds before retrying.

@@ -25,8 +25,8 @@
     "teams": {
       "type": ["null", "array"],
       "items": {
-      "type": ["null", "string"]
-    }
+        "type": ["null", "string"]
+      }
     },
     "alert_creation": {
       "type": ["null", "string"]
@@ -34,14 +34,14 @@
     "addons": {
       "type": ["null", "array"],
       "items": {
-      "type": ["null", "string"]
-    }
+        "type": ["null", "string"]
+      }
     },
     "scheduled_actions": {
       "type": ["null", "array"],
       "items": {
-      "type": ["null", "string"]
-    }
+        "type": ["null", "string"]
+      }
     },
     "support_hours": {
       "type": ["null", "string"]
@@ -135,8 +135,8 @@
       }
     },
     "response_play": {
-        "type": ["null", "string"]
-      },
+      "type": ["null", "string"]
+    },
     "type": {
       "type": ["null", "string"]
     },
