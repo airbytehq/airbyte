@@ -129,7 +129,8 @@ public class NoOpTyperDeduperWithV1V2Migrations<DialectTableDefinition> implemen
 
   @Override
   public void cleanup() {
-    log.info("Skipping cleanup");
+    log.info("Cleaning Up type-and-dedupe thread pool");
+    this.executorService.shutdown();
   }
 
 }
