@@ -12,6 +12,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
+
 """
 TODO: Most comments in this class are instructive and should be deleted after the source is implemented.
 
@@ -121,6 +123,14 @@ class IncrementalPendoPythonStream(PendoPythonStream, ABC):
         return {}
 
 
+class PendoAuthenticator(HttpAuthenticator):
+    def __init__(self, token: str):
+        self._token = token
+
+    def get_auth_header(self) -> Mapping[str, Any]:
+        return {"X-Pendo-Integration-Key": self._token}
+
+
 class Visitors(PendoPythonStream):
     primary_key = "visitorId"
 
@@ -128,6 +138,50 @@ class Visitors(PendoPythonStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "aggregation"
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+    def get_valid_type(self, field_type) -> str:
+        if field_type == 'time':
+            return 'integer'
+        if field_type == 'list':
+            return 'array'
+        return field_type
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        print("Got called")
+        base_schema = super().get_json_schema()
+        url = f"{PendoPythonStream.url_base}metadata/schema/visitor"
+        auth_headers = self.authenticator.get_auth_header()
+        try:
+            session = requests.get(url, headers=auth_headers)
+            body = session.json()
+
+            full_schema = base_schema
+
+            auto_fields = {}
+            for key in body['auto']:
+                auto_fields[key] = {
+                    "type": ["null", self.get_valid_type(body['auto'][key]['Type'])]
+                }
+            full_schema['properties']['metadata']['properties']['auto']['properties'] = auto_fields
+
+            agent_fields = {}
+            for key in body['agent']:
+                agent_fields[key] = {
+                    "type": ["null", self.get_valid_type(body['agent'][key]['Type'])]
+                }
+            full_schema['properties']['metadata']['properties']['agent']['properties'] = agent_fields
+            return full_schema
+        except requests.exceptions.RequestException:
+            return base_schema
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"Content-Type": "application/json"}
 
     def request_body_json(
         self,
@@ -156,6 +210,14 @@ class Visitors(PendoPythonStream):
             }
         }
 
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
+    ) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        yield from response.json().get("results", [])
+
 
 class Accounts(PendoPythonStream):
     primary_key = "accountId"
@@ -164,6 +226,10 @@ class Accounts(PendoPythonStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "aggregation"
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
 
     def request_body_json(
         self,
@@ -234,11 +300,16 @@ class Employees(IncrementalPendoPythonStream):
 
 # Source
 class SourcePendoPython(AbstractSource):
+    @staticmethod
+    def _get_authenticator(config: Mapping[str, Any]) -> HttpAuthenticator:
+        token = config.get("api_key")
+        return PendoAuthenticator(token)
+
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         url = f"{PendoPythonStream.url_base}page"
-        auth_headers = {"Accept": "application/json", "X-Pendo-Integration-Key": config["api_key"]}
+        auth = SourcePendoPython._get_authenticator(config)
         try:
-            session = requests.get(url, headers=auth_headers)
+            session = requests.get(url, headers=auth.get_auth_header())
             session.raise_for_status()
             return True, None
         except requests.exceptions.RequestException as e:
@@ -246,5 +317,5 @@ class SourcePendoPython(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         # TODO remove the authenticator if not required.
-        auth = TokenAuthenticator(token="api_key")  # Oauth2Authenticator is also available if you need oauth support
+        auth = self._get_authenticator(config)  # Oauth2Authenticator is also available if you need oauth support
         return [Visitors(authenticator=auth), Accounts(authenticator=auth), Employees(authenticator=auth)]
