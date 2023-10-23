@@ -218,19 +218,18 @@
     "synced_block": {
       "type": "object",
       "properties": {
-        "synced_from": 
-          {
-            "type": ["null", "object"],
-            "properties": {
-              "type": {
-                "type": "string",
-                "enum": ["block_id"]
-              },
-              "block_id": {
-                "type": "string"
-                }
+        "synced_from": {
+          "type": ["null", "object"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["block_id"]
+            },
+            "block_id": {
+              "type": "string"
             }
-          },
+          }
+        },
         "children": {
           "type": ["null", "array"],
           "items": {
