@@ -9,6 +9,12 @@ airbyteJavaConnector {
     useLocalCdk = false
 }
 
+configurations.all {
+    resolutionStrategy {
+        force libs.jooq
+    }
+}
+
 airbyteJavaConnector.addCdkDependencies()
 
 application {
@@ -22,4 +28,5 @@ dependencies {
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.testcontainers.mssqlserver
+    testImplementation 'org.hamcrest:hamcrest-all:1.3'
 }

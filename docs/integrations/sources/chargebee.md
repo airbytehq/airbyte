@@ -4,7 +4,11 @@ This page contains the setup guide and reference information for the Chargebee s
 
 ## Prerequisites
 
-To set up the Chargebee source connector, you'll need the [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication) and the [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2).
+To set up the Chargebee source connector, you will need a valid [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication) and the [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html) of the Chargebee site you are syncing data from.
+
+:::info
+All Chargebee sites created from May 5, 2021 onward will have [Product Catalog 2.0](https://www.chargebee.com/docs/2.0/product-catalog.html) enabled by default. Sites created prior to this date will use [Product Catalog 1.0](https://www.chargebee.com/docs/1.0/product-catalog.html).
+:::
 
 ## Set up the Chargebee connector in Airbyte
 
@@ -26,45 +30,38 @@ The Chargebee source connector supports the following [sync modes](https://docs.
 * [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 * [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 
-## Supported Streams
+## Supported streams
 
-* [Subscriptions](https://apidocs.chargebee.com/docs/api/subscriptions?prod_cat_ver=2#list_subscriptions)
-* [Customers](https://apidocs.chargebee.com/docs/api/customers?prod_cat_ver=2#list_customers)
-* [Invoices](https://apidocs.chargebee.com/docs/api/invoices?prod_cat_ver=2#list_invoices)
-* [Orders](https://apidocs.chargebee.com/docs/api/orders?prod_cat_ver=2#list_orders)
-* [Plans](https://apidocs.chargebee.com/docs/api/plans?prod_cat_ver=1&lang=curl#list_plans)
-* [Addons](https://apidocs.chargebee.com/docs/api/addons?prod_cat_ver=1&lang=curl#list_addons)
-* [Items](https://apidocs.chargebee.com/docs/api/items?prod_cat_ver=2#list_items)
-* [Item Prices](https://apidocs.chargebee.com/docs/api/item_prices?prod_cat_ver=2#list_item_prices)
-* [Attached Items](https://apidocs.chargebee.com/docs/api/attached_items?prod_cat_ver=2#list_attached_items)
+Most streams are supported regardless of your Chargebee site's [Product Catalog version](https://www.chargebee.com/docs/1.0/upgrade-product-catalog.html), with a few version-specific exceptions.
 
-Some streams are available only for specific on Product Catalog versions:
+| Stream                 | Product Catalog 1.0 | Product Catalog 2.0 |
+|------------------------|---------------------|---------------------|
+| [Addons](https://apidocs.chargebee.com/docs/api/addons?prod_cat_ver=1) | ✔ |   |
+| [Attached Items](https://apidocs.chargebee.com/docs/api/attached_items?prod_cat_ver=2) |   | ✔ |
+| [Contacts](https://apidocs.chargebee.com/docs/api/customers?lang=curl#list_of_contacts_for_a_customer) | ✔ | ✔ |
+| [Coupons](https://apidocs.chargebee.com/docs/api/coupons) | ✔ | ✔ |
+| [Credit Notes](https://apidocs.chargebee.com/docs/api/credit_notes) | ✔ | ✔ |
+| [Customers](https://apidocs.chargebee.com/docs/api/customers) | ✔ | ✔ |
+| [Events](https://apidocs.chargebee.com/docs/api/events) | ✔ | ✔ |
+| [Gifts](https://apidocs.chargebee.com/docs/api/gifts) | ✔ | ✔ |
+| [Hosted Pages](https://apidocs.chargebee.com/docs/api/hosted_pages) | ✔ | ✔ |
+| [Invoices](https://apidocs.chargebee.com/docs/api/invoices) | ✔ | ✔ |
+| [Items](https://apidocs.chargebee.com/docs/api/items?prod_cat_ver=2) |   | ✔ |
+| [Item Prices](https://apidocs.chargebee.com/docs/api/item_prices?prod_cat_ver=2) |   | ✔ |
+| [Orders](https://apidocs.chargebee.com/docs/api/orders) | ✔ | ✔ |
+| [Payment Sources](https://apidocs.chargebee.com/docs/api/payment_sources) | ✔ | ✔ |
+| [Plans](https://apidocs.chargebee.com/docs/api/plans?prod_cat_ver=1) | ✔ |   |
+| [Promotional Credits](https://apidocs.chargebee.com/docs/api/promotional_credits) | ✔ | ✔ |
+| [Quotes](https://apidocs.chargebee.com/docs/api/quotes) | ✔ | ✔ |
+| [Quote Line Groups](https://apidocs.chargebee.com/docs/api/quote_line_groups) | ✔ | ✔ |
+| [Subscriptions](https://apidocs.chargebee.com/docs/api/subscriptions) | ✔ | ✔ |
+| [Transactions](https://apidocs.chargebee.com/docs/api/transactions) | ✔ | ✔ |
+| [Unbilled Charges](https://apidocs.chargebee.com/docs/api/unbilled_charges) | ✔ | ✔ |
+| [Virtual Bank Accounts](https://apidocs.chargebee.com/docs/api/virtual_bank_accounts) | ✔ | ✔ |
 
-1. Available in `Product Catalog 1.0` and `Product Catalog 2.0`:
-   * Customers
-   * Events
-   * Invoices
-   * Credit Notes
-   * Orders
-   * Coupons
-   * Subscriptions
-   * Transactions
-2. Available only in `Product Catalog 1.0`:
-   * Plans
-   * Addons
-3. Available only in `Product Catalog 2.0`:
-   * Items
-   * Item Prices
-   * Attached Items
-
-Note that except the `Attached Items` stream, all the streams listed above are incremental streams, which means they:
-
-* Read only new records
-* Output only new records
-
-The `Attached Items` stream is also incremental but it reads _all_ records and outputs only new records, which is why syncing the `Attached Items` stream, even in incremental mode, is expensive in terms of your Chargebee API quota. 
-
-Generally speaking, it incurs a number of API calls equal to the total number of attached items in your chargebee instance divided by 100, regardless of how many `AttachedItems` were actually changed or synced in a particular sync job.
+:::note
+When using incremental sync mode, the `Attached Items` stream behaves differently than the other streams. Whereas other incremental streams read and output _only new_ records, the `Attached Items` stream reads _all_ records but only outputs _new_ records, making it more demanding on your Chargebee API quota. Each sync incurs API calls equal to the total number of attached items in your Chargebee instance divided by 100, regardless of the actual number of `Attached Items` changed or synced.
+:::
 
 ## Performance considerations
 
@@ -74,6 +71,7 @@ The Chargebee connector should not run into [Chargebee API](https://apidocs.char
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
+| 0.2.5 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 0.2.4   | 2023-08-01 | [28905](https://github.com/airbytehq/airbyte/pull/28905) | Updated the connector to use latest CDK version                                                               |
 | 0.2.3   | 2023-03-22 | [24370](https://github.com/airbytehq/airbyte/pull/24370) | Ignore 404 errors for `Contact` stream                                                              |
 | 0.2.2   | 2023-02-17 | [21688](https://github.com/airbytehq/airbyte/pull/21688) | Migrate to CDK beta 0.29; fix schemas                                                               |

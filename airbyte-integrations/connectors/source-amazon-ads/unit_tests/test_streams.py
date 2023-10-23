@@ -22,6 +22,7 @@ def setup_responses(
     targeting_response=None,
     product_ads_response=None,
     generic_response=None,
+    creatives_response=None,
 ):
     responses.add(
         responses.POST,
@@ -63,6 +64,12 @@ def setup_responses(
             responses.GET,
             "https://advertising-api.amazon.com/sd/productAds",
             body=product_ads_response,
+        )
+    if creatives_response:
+        responses.add(
+            responses.GET,
+            "https://advertising-api.amazon.com/sd/creatives",
+            body=creatives_response,
         )
     if generic_response:
         responses.add(
@@ -217,23 +224,19 @@ def test_streams_campaigns_pagination_403_error_expected(mocker, config, profile
         ("sponsored_display_ad_groups", "sd/adGroups"),
         ("sponsored_display_product_ads", "sd/productAds"),
         ("sponsored_display_targetings", "sd/targets"),
+        ("sponsored_display_creatives", "sd/creatives"),
     ],
 )
 @responses.activate
 def test_streams_displays(
-    config,
-    stream_name,
-    endpoint,
-    profiles_response,
-    adgroups_response,
-    targeting_response,
-    product_ads_response,
+    config, stream_name, endpoint, profiles_response, adgroups_response, targeting_response, product_ads_response, creatives_response
 ):
     setup_responses(
         profiles_response=profiles_response,
         adgroups_response=adgroups_response,
         targeting_response=targeting_response,
         product_ads_response=product_ads_response,
+        creatives_response=creatives_response,
     )
 
     source = SourceAmazonAds()

@@ -16,4 +16,5 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'io.airbyte:airbyte-commons-worker:0.42.0'
     implementation 'io.airbyte.airbyte-config:config-models:0.42.0'
+    implementation 'com.datadoghq:datadog-api-client:2.16.0'
 }

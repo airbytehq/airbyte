@@ -119,5 +119,27 @@
         "modify_time": "2099-01-01 01:00:0"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "creative_assets_images"
+      },
+      "stream_state": {
+        "modify_time": "2099-01-01 01:00:0"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "creative_assets_videos"
+      },
+      "stream_state": {
+        "modify_time": "2099-01-01 01:00:0"
+      }
+    }
   }
 ]
