@@ -27,8 +27,8 @@ data:
     breakingChanges:
       2.0.0:
         message:
-          In this release, pipeline.created_at and pipeline.updated_at fields for stream Deployments 
-          and expires_at field for Group Members and Project Members were changed to date-time format as Gitlab API declares.  
+          In this release, pipeline.created_at and pipeline.updated_at fields for stream Deployments
+          and expires_at field for Group Members and Project Members were changed to date-time format as Gitlab API declares.
           Users will need to refresh the source schema and reset affected streams after upgrading.
         upgradeDeadline: "2023-11-07"
   suggestedStreams:
