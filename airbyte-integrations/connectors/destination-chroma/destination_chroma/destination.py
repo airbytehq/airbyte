@@ -7,14 +7,7 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.embedder import (
-    AzureOpenAIEmbedder,
-    CohereEmbedder,
-    Embedder,
-    FakeEmbedder,
-    FromFieldEmbedder,
-    OpenAIEmbedder,
-)
+from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import (
@@ -31,15 +24,6 @@ from destination_chroma.no_embedder import NoEmbedder
 
 BATCH_SIZE = 128
 
-embedder_map = {
-    "openai": OpenAIEmbedder,
-    "azure_openai": AzureOpenAIEmbedder,
-    "cohere": CohereEmbedder,
-    "fake": FakeEmbedder,
-    "from_field": FromFieldEmbedder,
-    "no_embedding": NoEmbedder,
-}
-
 
 class DestinationChroma(Destination):
 
@@ -47,10 +31,11 @@ class DestinationChroma(Destination):
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
-        if config.embedding.mode == "azure_openai" or config.embedding.mode == "openai":
-            self.embedder = embedder_map[config.embedding.mode](config.embedding, config.processing.chunk_size)
-        else:
-            self.embedder = embedder_map[config.embedding.mode](config.embedding)
+        self.embedder = (
+            create_from_config(config.embedding, config.processing)
+            if config.embedding.mode != "no_embedding"
+            else NoEmbedder(config.embedding)
+        )
         self.indexer = ChromaIndexer(config.indexing)
 
     def write(
