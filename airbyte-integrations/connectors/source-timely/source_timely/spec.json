@@ -17,7 +17,8 @@
         "type": "string",
         "description": "start date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
-        "example": "2022-05-06"
+        "example": "2022-05-06",
+        "format": "date"
       },
       "bearer_token": {
         "title": "Bearer token",
