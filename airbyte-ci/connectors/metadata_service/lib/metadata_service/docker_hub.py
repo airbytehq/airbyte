@@ -3,7 +3,7 @@
 #
 
 import os
-from typing import List
+from typing import Optional
 
 import requests
 
@@ -26,13 +26,13 @@ def get_docker_hub_auth_token() -> str:
     return token
 
 
-def is_image_on_docker_hub(image_name: str, version: str) -> bool:
+def is_image_on_docker_hub(image_name: str, version: str, digest: Optional[str] = None) -> bool:
     """Check if a given image and version exists on Docker Hub.
 
     Args:
         image_name (str): The name of the image to check.
         version (str): The version of the image to check.
-
+        digest (str, optional): The digest of the image to check. Defaults to None.
     Returns:
         bool: True if the image and version exists on Docker Hub, False otherwise.
     """
@@ -41,5 +41,9 @@ def is_image_on_docker_hub(image_name: str, version: str) -> bool:
     headers = {"Authorization": f"JWT {token}"}
     tag_url = f"https://registry.hub.docker.com/v2/repositories/{image_name}/tags/{version}"
     response = requests.get(tag_url, headers=headers)
-
-    return response.ok
+    if not response.ok:
+        return False
+    # If a digest is provided, check that it matches the digest of the image on Docker Hub.
+    if digest is not None:
+        return f"sha256:{digest}" == response.json()["digest"]
+    return True

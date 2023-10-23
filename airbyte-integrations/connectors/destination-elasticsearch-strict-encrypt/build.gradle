@@ -40,14 +40,3 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 }
-
-repositories {
-    maven {
-        name = "ESSnapshots"
-        url = "https://snapshots.elastic.co/maven/"
-    }
-    maven {
-        name = "ESJavaGithubPackages"
-        url = "https://maven.pkg.github.com/elastic/elasticsearch-java"
-    }
-}

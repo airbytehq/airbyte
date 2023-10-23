@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.51.42
+File CDK: Avoid listing all files for check command
+
+## 0.51.41
+Vector DB CDK: Expose stream identifier logic, add field remapping to processing | File CDK: Emit analytics message for used streams
+
+## 0.51.40
+Add filters for base64 encode and decode in Jinja Interpolation 
+
 ## 0.51.39
 Few bug fixes for concurrent cdk
 
