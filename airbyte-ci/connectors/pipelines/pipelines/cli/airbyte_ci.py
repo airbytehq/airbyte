@@ -145,8 +145,8 @@ def get_modified_files(
     help="Airbyte CI top-level command group.",
     lazy_subcommands={
         "connectors": "pipelines.airbyte_ci.connectors.commands.connectors",
-        "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
-        "test": "pipelines.airbyte_ci.test.commands.test",
+        # "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
+        # "test": "pipelines.airbyte_ci.test.commands.test",
     },
 )
 @click.version_option(__installed_version__)
@@ -241,10 +241,7 @@ async def airbyte_ci(
         main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
 
 
-def main():
-    anyio.run(airbyte_ci())
-
 set_working_directory_to_root()
 
 if __name__ == "__main__":
-    main
+    airbyte_ci()
