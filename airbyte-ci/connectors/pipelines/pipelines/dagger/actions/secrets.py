@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Optional
 
 from dagger import Container, Secret
 from pipelines.helpers.utils import get_file_contents, get_secret_host_variable
@@ -136,34 +136,21 @@ async def mounted_connector_secrets(context: PipelineContext, secret_directory_p
         # Special case for local development.
         # Query dagger for the contents of the secrets and mount these strings as files in the container.
         contents = {}
-        if secret_directory_path:
-            for secret_file_name, secret in context.connector_secrets.items():
-                contents[secret_file_name] = await secret.plaintext()
+        for secret_file_name, secret in context.connector_secrets.items():
+            contents[secret_file_name] = await secret.plaintext()
 
         def with_secrets_mounted_as_regular_files(container: Container) -> Container:
-            if context.s3_build_cache_access_key_id:
-                container = container.with_env_variable("S3_BUILD_CACHE_ACCESS_KEY_ID", context.s3_build_cache_access_key_id)
-                if context.s3_build_cache_secret_key:
-                    container = container.with_env_variable("S3_BUILD_CACHE_SECRET_KEY", context.s3_build_cache_secret_key)
-            if secret_directory_path:
-                container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
-                for secret_file_name, secret_content_str in contents.items():
-                    container = container.with_new_file(
-                        f"{secret_directory_path}/{secret_file_name}", secret_content_str, permissions=0o600
-                    )
+            container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
+            for secret_file_name, secret_content_str in contents.items():
+                container = container.with_new_file(f"{secret_directory_path}/{secret_file_name}", secret_content_str, permissions=0o600)
             return container
 
         return with_secrets_mounted_as_regular_files
 
     def with_secrets_mounted_as_dagger_secrets(container: Container) -> Container:
-        if context.s3_build_cache_access_key_id:
-            container = container.with_secret_variable("S3_BUILD_CACHE_ACCESS_KEY_ID", context.s3_build_cache_access_key_id_secret)
-            if context.s3_build_cache_secret_key:
-                container = container.with_secret_variable("S3_BUILD_CACHE_SECRET_KEY", context.s3_build_cache_secret_key_secret)
-        if secret_directory_path:
-            container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
-            for secret_file_name, secret in context.connector_secrets.items():
-                container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
+        container = container.with_exec(["mkdir", "-p", secret_directory_path], skip_entrypoint=True)
+        for secret_file_name, secret in context.connector_secrets.items():
+            container = container.with_mounted_secret(f"{secret_directory_path}/{secret_file_name}", secret)
         return container
 
     return with_secrets_mounted_as_dagger_secrets
