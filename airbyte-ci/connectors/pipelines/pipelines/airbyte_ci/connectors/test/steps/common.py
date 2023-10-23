@@ -296,7 +296,7 @@ class CheckBaseImageIsUsed(Step):
             return self.skip("Connector is not certified, it does not require the use of our base image.")
 
         is_using_base_image = self.context.connector.metadata.get("connectorBuildOptions", {}).get("baseImage") is not None
-        migration_hint = f"Please run 'airbyte-ci connectors --name={self.context.connector.technical_name} migrate_to_base_image {self.context.pull_request.number}' and commit the changes."
+        migration_hint = f"Please run 'airbyte-ci connectors --name={self.context.connector.technical_name} migrate_to_base_image <PR NUMBER>' and commit the changes."
         if not is_using_base_image:
             return StepResult(
                 self,

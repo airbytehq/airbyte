@@ -173,6 +173,8 @@ def get_modified_files(
     envvar="GCP_GSM_CREDENTIALS",
 )
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
+@click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str)
+@click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click.pass_context
 @track_command
@@ -191,6 +193,8 @@ def airbyte_ci(
     ci_report_bucket_name: str,
     ci_gcs_credentials: str,
     ci_job_key: str,
+    s3_build_cache_access_key_id: str,
+    s3_build_cache_secret_key: str,
     show_dagger_logs: bool,
 ):  # noqa D103
     ctx.ensure_object(dict)
@@ -209,6 +213,8 @@ def airbyte_ci(
     ctx.obj["ci_git_user"] = ci_git_user
     ctx.obj["ci_github_access_token"] = ci_github_access_token
     ctx.obj["ci_job_key"] = ci_job_key
+    ctx.obj["s3_build_cache_access_key_id"] = s3_build_cache_access_key_id
+    ctx.obj["s3_build_cache_secret_key"] = s3_build_cache_secret_key
     ctx.obj["pipeline_start_timestamp"] = pipeline_start_timestamp
     ctx.obj["show_dagger_logs"] = show_dagger_logs
 

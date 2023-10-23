@@ -116,6 +116,8 @@ def publish(
                 ci_context=ctx.obj.get("ci_context"),
                 ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
                 pull_request=ctx.obj.get("pull_request"),
+                s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+                s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
