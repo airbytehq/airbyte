@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.harness.io
+  registries:
+    oss:
+      enabled: false
+    cloud:
+      enabled: false
+  connectorSubtype: api
+  connectorType: source
+  definitionId: b0e46f61-e143-47cc-a595-4bb73bfa8a15
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-harness
+  githubIssueLabel: source-harness
+  icon: harness.svg
+  license: MIT
+  name: Harness
+  releaseDate: 2023-10-10
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/harness
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"

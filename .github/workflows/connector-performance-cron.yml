@@ -1,34 +1,42 @@
 name: Connector Performance Harness Cron
-on: workflow_dispatch
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    -  # 5:30 and 17:30
+    - cron: "30 5,17 * * *"
+  workflow_dispatch: # for manual triggers
 
 jobs:
   postgres-1m-run:
     uses: ./.github/workflows/connector-performance-command.yml
     with:
-      connector: connectors/source-postgres
+      connector: "connectors/source-postgres"
       dataset: 1m
-  postgres-10m-run:
-    uses: ./.github/workflows/connector-performance-command.yml
-    with:
-      connector: connectors/source-postgres
-      dataset: 10m
-  postgres-20m-run:
-    uses: ./.github/workflows/connector-performance-command.yml
-    with:
-      connector: connectors/source-postgres
-      dataset: 20m
+    secrets: inherit
   mysql-1m-run:
     uses: ./.github/workflows/connector-performance-command.yml
     with:
-      connector: connectors/source-mysql
+      connector: "connectors/source-mysql"
       dataset: 1m
-  mysql-10m-run:
+    secrets: inherit
+  postgres-1m-run-incremental:
     uses: ./.github/workflows/connector-performance-command.yml
     with:
-      connector: connectors/source-mysql
-      dataset: 10m
-  mysql-20m-run:
+      connector: "connectors/source-postgres"
+      dataset: 1m
+      sync-mode: "incremental"
+    secrets: inherit
+  mysql-1m-run-incremental:
     uses: ./.github/workflows/connector-performance-command.yml
     with:
-      connector: connectors/source-mysql
-      dataset: 20m
+      connector: "connectors/source-mysql"
+      dataset: 1m
+      sync-mode: "incremental"
+    secrets: inherit
+  mongodb-1m-run-incremental:
+    uses: ./.github/workflows/connector-performance-command.yml
+    with:
+      connector: "connectors/source-mongodb-v2"
+      dataset: 1m
+      sync-mode: "incremental"
+    secrets: inherit

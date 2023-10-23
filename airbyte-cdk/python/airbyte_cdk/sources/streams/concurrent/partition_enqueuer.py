@@ -27,11 +27,16 @@ class PartitionEnqueuer:
         Generate partitions from a partition generator and put them in a queue.
         When all the partitions are added to the queue, a sentinel is added to the queue to indicate that all the partitions have been generated.
 
+        If an exception is encountered, the exception will be caught and put in the queue.
+
         This method is meant to be called in a separate thread.
         :param partition_generator: The partition Generator
         :param sync_mode: The sync mode used
         :return:
         """
-        for partition in partition_generator.generate(sync_mode=sync_mode):
-            self._queue.put(partition)
-        self._queue.put(self._sentinel)
+        try:
+            for partition in partition_generator.generate(sync_mode=sync_mode):
+                self._queue.put(partition)
+            self._queue.put(self._sentinel)
+        except Exception as e:
+            self._queue.put(e)

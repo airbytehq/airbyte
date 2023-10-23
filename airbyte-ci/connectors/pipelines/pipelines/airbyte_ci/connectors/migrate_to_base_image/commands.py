@@ -58,6 +58,8 @@ def migrate_to_base_image(
             open_report_in_browser=False,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]

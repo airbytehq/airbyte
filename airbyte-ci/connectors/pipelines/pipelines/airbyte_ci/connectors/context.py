@@ -11,7 +11,7 @@ from typing import Optional
 import yaml
 from anyio import Path
 from asyncer import asyncify
-from dagger import Directory
+from dagger import Directory, Secret
 from github import PullRequest
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.dagger.actions import secrets
@@ -57,6 +57,8 @@ class ConnectorContext(PipelineContext):
         open_report_in_browser: bool = True,
         docker_hub_username: Optional[str] = None,
         docker_hub_password: Optional[str] = None,
+        s3_build_cache_access_key_id: Optional[str] = None,
+        s3_build_cache_secret_key: Optional[str] = None,
     ):
         """Initialize a connector context.
 
@@ -82,6 +84,8 @@ class ConnectorContext(PipelineContext):
             open_report_in_browser (bool, optional): Open HTML report in browser window. Defaults to True.
             docker_hub_username (Optional[str], optional): Docker Hub username to use to read registries. Defaults to None.
             docker_hub_password (Optional[str], optional): Docker Hub password to use to read registries. Defaults to None.
+            s3_build_cache_access_key_id (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
+            s3_build_cache_secret_key (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
         """
 
         self.pipeline_name = pipeline_name
@@ -101,6 +105,8 @@ class ConnectorContext(PipelineContext):
         self.open_report_in_browser = open_report_in_browser
         self.docker_hub_username = docker_hub_username
         self.docker_hub_password = docker_hub_password
+        self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
+        self.s3_build_cache_secret_key = s3_build_cache_secret_key
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -120,6 +126,18 @@ class ConnectorContext(PipelineContext):
             ci_github_access_token=ci_github_access_token,
             open_report_in_browser=open_report_in_browser,
         )
+
+    @property
+    def s3_build_cache_access_key_id_secret(self) -> Optional[Secret]:
+        if self.s3_build_cache_access_key_id:
+            return self.dagger_client.set_secret("s3_build_cache_access_key_id", self.s3_build_cache_access_key_id)
+        return None
+
+    @property
+    def s3_build_cache_secret_key_secret(self) -> Optional[Secret]:
+        if self.s3_build_cache_access_key_id and self.s3_build_cache_secret_key:
+            return self.dagger_client.set_secret("s3_build_cache_secret_key", self.s3_build_cache_secret_key)
+        return None
 
     @property
     def modified_files(self):
