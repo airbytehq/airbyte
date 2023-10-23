@@ -90,7 +90,10 @@ async def run_connectors_pipelines(
         # HACK: This is to get a long running dockerd service to be shared across all the connectors pipelines
         # Using the "normal" service binding leads to restart of dockerd during pipeline run that can cause corrupted docker state
         # See https://github.com/airbytehq/airbyte/issues/27233
-        dockerd_service = docker.with_global_dockerd_service(dagger_client)
+        docker_hub_username_secret = dagger_client.set_secret("DOCKER_HUB_USERNAME", contexts[0].docker_hub_username)
+        docker_hub_password_secret = dagger_client.set_secret("DOCKER_HUB_PASSWORD", contexts[0].docker_hub_password)
+
+        dockerd_service = docker.with_global_dockerd_service(dagger_client, docker_hub_username_secret, docker_hub_password_secret)
         async with anyio.create_task_group() as tg_main:
             tg_main.start_soon(dockerd_service.sync)
             await (  # Wait for the docker service to be ready

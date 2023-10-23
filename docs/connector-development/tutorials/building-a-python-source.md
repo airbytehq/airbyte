@@ -128,22 +128,57 @@ python main.py read --config secrets/config.json --catalog sample_files/configur
 
 The nice thing about this approach is that you can iterate completely within in python. The downside is that you are not quite running your source as it will actually be run by Airbyte. Specifically you're not running it from within the docker container that will house it.
 
-**Run the source using docker**
 
-If you want to run your source exactly as it will be run by Airbyte \(i.e. within a docker container\), you can use the following commands from the connector module directory \(`airbyte-integrations/connectors/source-example-python`\):
+** Build the source docker image**
 
-```text
-# First build the container
+You have to build a docker image for your connector if you want to run your source exactly as it will be run by Airbyte.
+
+**Option A: Building the docker image with `airbyte-ci`**
+
+This is the preferred method for building and testing connectors.
+
+If you want to open source your connector we encourage you to use our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector. 
+It will not use a Dockerfile but will build the connector image from our [base image](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/base_images/README.md) and use our internal build logic to build an image from your Python connector code.
+
+Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
+Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
+
+
+
+**Option B: Building the docker image with a Dockerfile**
+
+If you don't want to rely on `airbyte-ci` to build your connector, you can build the docker image using your own Dockerfile. This method is not preferred, and is not supported for certified connectors.
+
+Create a `Dockerfile` in the root of your connector directory. The `Dockerfile` should look something like this:
+```Dockerfile
+
+FROM airbyte/python-connector-base:1.1.0
+
+COPY . ./airbyte/integration_code
+RUN pip install ./airbyte/integration_code
+
+# The entrypoint and default env vars are already set in the base image
+# ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
+# ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
+```
+
+Please use this as an example. This is not optimized.
+
+Build your image:
+```bash
 docker build . -t airbyte/source-example-python:dev
+```
 
-# Then use the following commands to run it
+**Run the source docker image**
+
+```
 docker run --rm airbyte/source-example-python:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-example-python:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-example-python:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files airbyte/source-example-python:dev read --config /secrets/config.json --catalog /sample_files/configured_catalog.json
 ```
 
-Note: Each time you make a change to your implementation you need to re-build the connector image. `docker build . -t airbyte/source-example-python:dev`. This ensures the new python code is added into the docker container.
+Note: Each time you make a change to your implementation you need to re-build the connector image. This ensures the new python code is added into the docker container.
 
 The nice thing about this approach is that you are running your source exactly as it will be run by Airbyte. The tradeoff is that iteration is slightly slower, because you need to re-build the connector between each change.
 
