@@ -40,10 +40,10 @@ In order for the Facebook Marketing Connector by Airbyte to query Facebook's API
 By default the app will be installed using the name `AIRBYTE_FACEBOOK_MARKETING`, but if you renamed the app during installation, you will have to use that name as a reference.
 :::
 
-1. Create the database where the app will access the authorization. This database can be different from the database where the sync will output records.
+1. Create the database where the app will access the authorization.
 ```
-CREATE DATABASE <database>;
-USE <database>;
+CREATE DATABASE airbyte_facebook_marketing_db;
+USE airbyte_facebook_marketing_db;
 ```
 
 2. The native app will validate the output database and create it if it does not exist. In order to do that, the app needs access to the database:
@@ -65,7 +65,7 @@ As of 2023-09-13, the [Snowflake documentation](https://docs.snowflake.com/en/sq
 
 4. Once you have external access configured, you need define your authorization/authentication. Provide the credentials to the app as such:
 ```
-CREATE OR REPLACE SECRET integration_facebook_marketing_oauth
+CREATE OR REPLACE SECRET airbyte_app_secret
   TYPE = GENERIC_STRING
   SECRET_STRING = '{
     "access_token": "<access_token>"
@@ -75,22 +75,22 @@ CREATE OR REPLACE SECRET integration_facebook_marketing_oauth
 
 5. Once the network rule and the secret are defined in Snowflake, you need to make them available to the app by using an external access integration.
 ```
-CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION integration_facebook_marketing
+CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION airbyte_app_integration
   ALLOWED_NETWORK_RULES = (facebook_marketing_apis_network_rule)
-  ALLOWED_AUTHENTICATION_SECRETS = (integration_facebook_marketing_oauth)
+  ALLOWED_AUTHENTICATION_SECRETS = (airbyte_app_secret)
   ENABLED = true;
 ```
 
 6. Grant permission for the app to access the integration.
 ```
-GRANT USAGE ON INTEGRATION integration_facebook_marketing TO APPLICATION AIRBYTE_FACEBOOK_MARKETING;
+GRANT USAGE ON INTEGRATION airbyte_app_integration TO APPLICATION AIRBYTE_FACEBOOK_MARKETING;
 ```
 
 7. Grant permissions for the app to access the database that houses the secret and read the secret.
 ```
-GRANT USAGE ON DATABASE <your_database> TO APPLICATION AIRBYTE_FACEBOOK_MARKETING;
-GRANT USAGE ON SCHEMA <your_schema> TO APPLICATION AIRBYTE_FACEBOOK_MARKETING;
-GRANT READ ON SECRET integration_facebook_marketing_oauth TO APPLICATION AIRBYTE_FACEBOOK_MARKETING;
+GRANT USAGE ON DATABASE airbyte_facebook_marketing_db TO APPLICATION AIRBYTE_FACEBOOK_MARKETING;
+GRANT USAGE ON SCHEMA public TO APPLICATION AIRBYTE_FACEBOOK_MARKETING;
+GRANT READ ON SECRET airbyte_app_secret TO APPLICATION AIRBYTE_FACEBOOK_MARKETING;
 ```
 
 
@@ -100,18 +100,6 @@ Once this is all set up, you can now configure a connection. To do so, use the S
 Once you have access to the app, select `New Connection` and fill the following fields:
 
 --- 
-
-`Secret` 
-
-The name of the secret prefixed by which database and schema. Based on the previous steps: `<database>.<your_schema>.integration_facebook_marketing_oauth`.
-
----
-
-`External Access Integration`
-
-Name of the Snowflake integration where the secret and network rules are configured. Based on the previous steps: `integration_facebook_marketing`.
-
----
 
 `account_id`
 

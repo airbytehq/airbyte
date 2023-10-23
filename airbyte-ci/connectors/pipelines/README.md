@@ -89,9 +89,9 @@ At this point you can run `airbyte-ci` commands from the root of the repository.
 - [`connectors publish` command](#connectors-publish-command)
 - [Examples](#examples)
 - [Options](#options-2)
-- [`connectors bump-version` command](#connectors-bump-version)
-- [`connectors upgrade-base-image` command](#connectors-upgrade-base-image)
-- [`connectors migrate-to-base-image` command](#connectors-migrate-to-base-image)
+- [`connectors bump_version` command](#connectors-bump_version)
+- [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
+- [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
 - [`metadata` command subgroup](#metadata-command-subgroup)
 - [`metadata validate` command](#metadata-validate-command)
   * [Example](#example)
@@ -318,11 +318,11 @@ flowchart TD
 ```
 
 
-### <a id="connectors-bump-version"></a>`connectors bump-version` command
+### <a id="connectors-bump_version"></a>`connectors bump_version` command
 Bump the version of the selected connectors.
 
 ### Examples
-Bump source-openweather: `airbyte-ci connectors --name=source-openweather bump-version patch <pr-number> "<changelog-entry>"`
+Bump source-openweather: `airbyte-ci connectors --name=source-openweather bump_version patch <pr-number> "<changelog-entry>"`
 
 #### Arguments
 | Argument              | Description                                                            |
@@ -331,11 +331,11 @@ Bump source-openweather: `airbyte-ci connectors --name=source-openweather bump-v
 | `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry            |
 | `CHANGELOG_ENTRY`     | The changelog entry that will get added to the connector documentation |
 
-### <a id="connectors-upgrade-base-image"></a>`connectors upgrade-base-image` command
+### <a id="connectors-upgrade_base_image"></a>`connectors upgrade_base_image` command
 Modify the selected connector metadata to use the latest base image version.
 
 ### Examples
-Upgrade the base image for source-openweather: `airbyte-ci connectors --name=source-openweather upgrade-base-image`
+Upgrade the base image for source-openweather: `airbyte-ci connectors --name=source-openweather upgrade_base_image`
 
 ### Options
 | Option                  | Required | Default | Mapped environment variable | Description                                                                                                     |
@@ -344,7 +344,7 @@ Upgrade the base image for source-openweather: `airbyte-ci connectors --name=sou
 | `--docker-hub-password` | True     |         | `DOCKER_HUB_PASSWORD`       | Your password to connect to DockerHub. It's used to read the base image registry.                               |
 | `--set-if-not-exists`   | False    | True    |                             | Whether to set or not the baseImage metadata if no connectorBuildOptions is declared in the connector metadata. |
 
-### <a id="connectors-migrate-to-base-image"></a>`connectors migrate-to-base-image` command
+### <a id="connectors-migrate_to_base_image"></a>`connectors migrate_to_base_image` command
 Make a connector using a Dockerfile migrate to the base image by:
 * Removing its Dockerfile
 * Updating its metadata to use the latest base image version
@@ -352,7 +352,7 @@ Make a connector using a Dockerfile migrate to the base image by:
 * Bumping by a patch version
 
 ### Examples
-Migrate source-openweather to use the base image: `airbyte-ci connectors --name=source-openweather migrate-to-base-image`
+Migrate source-openweather to use the base image: `airbyte-ci connectors --name=source-openweather migrate_to_base_image`
 
 ### Arguments
 | Argument              | Description                                                 |
@@ -398,8 +398,9 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 2.2.3   | [#31535](https://github.com/airbytehq/airbyte/pull/31535)  | Improve gradle caching when building java connectors.                                                     |
-| 2.2.2   | [#31659](https://github.com/airbytehq/airbyte/pull/31659)  | Support builds on x86_64 platform                                                                                 |
+| 2.2.4   | [#31535](https://github.com/airbytehq/airbyte/pull/31535)  | Improve gradle caching when building java connectors.                                                     |
+| 2.2.3   | [#31688](https://github.com/airbytehq/airbyte/pull/31688)  | Fix failing `CheckBaseImageUse` step when not running on PR.                                              |
+| 2.2.2   | [#31659](https://github.com/airbytehq/airbyte/pull/31659)  | Support builds on x86_64 platform                                                                         |
 | 2.2.1   | [#31653](https://github.com/airbytehq/airbyte/pull/31653)  | Fix CheckBaseImageIsUsed failing on non certified connectors.                                             |
 | 2.2.0   | [#30527](https://github.com/airbytehq/airbyte/pull/30527)  | Add a new check for python connectors to make sure certified connectors use our base image.               |
 | 2.1.1   | [#31488](https://github.com/airbytehq/airbyte/pull/31488)  | Improve `airbyte-ci` start time with Click Lazy load                                                      |
@@ -407,14 +408,14 @@ This command runs the Python tests for a airbyte-ci poetry package.
 | 2.0.4   | [#31487](https://github.com/airbytehq/airbyte/pull/31487)  | Allow for third party connector selections                                                                |
 | 2.0.3   | [#31525](https://github.com/airbytehq/airbyte/pull/31525)  | Refactor folder structure                                                                                 |
 | 2.0.2   | [#31533](https://github.com/airbytehq/airbyte/pull/31533)  | Pip cache volume by python version.                                                                       |
-| 2.0.1   | [#31545](https://github.com/airbytehq/airbyte/pull/31545)  | Reword the changelog entry when using `migrate-to-base-image`.                                            |
+| 2.0.1   | [#31545](https://github.com/airbytehq/airbyte/pull/31545)  | Reword the changelog entry when using `migrate_to_base_image`.                                            |
 | 2.0.0   | [#31424](https://github.com/airbytehq/airbyte/pull/31424)  | Remove `airbyte-ci connectors format` command.                                                            |
 | 1.9.4   | [#31478](https://github.com/airbytehq/airbyte/pull/31478)  | Fix running tests for connector-ops package.                                                              |
 | 1.9.3   | [#31457](https://github.com/airbytehq/airbyte/pull/31457)  | Improve the connector documentation for connectors migrated to our base image.                            |
 | 1.9.2   | [#31426](https://github.com/airbytehq/airbyte/pull/31426)  | Concurrent execution of java connectors tests.                                                            |
 | 1.9.1   | [#31455](https://github.com/airbytehq/airbyte/pull/31455)  | Fix `None` docker credentials on publish.                                                                 |
-| 1.9.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade-base-image`, `migrate-to-base-image`.                              |
-| 1.8.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump-version`, `upgrade-base-image`, `migrate-to-base-image`.                              |
+| 1.9.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump_version`, `upgrade_base_image`, `migrate_to_base_image`.                              |
+| 1.8.0   | [#30520](https://github.com/airbytehq/airbyte/pull/30520)  | New commands: `bump_version`, `upgrade_base_image`, `migrate_to_base_image`.                              |
 | 1.7.2   | [#31343](https://github.com/airbytehq/airbyte/pull/31343)  | Bind Pytest integration tests to a dockerhost.                                                            |
 | 1.7.1   | [#31332](https://github.com/airbytehq/airbyte/pull/31332)  | Disable Gradle step caching on source-postgres.                                                           |
 | 1.7.0   | [#30526](https://github.com/airbytehq/airbyte/pull/30526)  | Implement pre/post install hooks support.                                                                 |
