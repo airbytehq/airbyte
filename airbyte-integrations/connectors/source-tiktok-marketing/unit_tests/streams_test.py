@@ -205,9 +205,9 @@ def test_basic_reports_cursor_field(granularity, cursor_field_expected):
 @pytest.mark.parametrize(
     "granularity, cursor_field_expected",
     [
-        (Daily, ['dimensions', 'stat_time_day']),
-        (Hourly, ['dimensions', 'stat_time_hour']),
-        (Lifetime, ['dimensions', 'stat_time_day']),
+        (Daily, ["dimensions", "stat_time_day"]),
+        (Hourly, ["dimensions", "stat_time_hour"]),
+        (Lifetime, ["dimensions", "stat_time_day"]),
     ],
 )
 def test_basic_reports_deprecated_cursor_field(granularity, cursor_field_expected):
@@ -254,19 +254,19 @@ def test_get_updated_state():
         state2_modify_time = state2["modify_time"]
         assert state2_modify_time.dict() == "2020-01-08 00:00:00"
 
-  
+
 @pytest.mark.parametrize(
     "value, expected",
     [
         (["str1", "str2", "str3"], '["str1", "str2", "str3"]'),
-        ([1,2,3], "[1, 2, 3]"),
+        ([1, 2, 3], "[1, 2, 3]"),
     ],
 )
 def test_convert_array_param(value, expected):
     stream = Advertisers("2021-01-01", "2021-01-02")
     test = stream.convert_array_param(value)
     assert test == expected
-    
+
 
 def test_no_next_page_token(requests_mock):
     stream = Advertisers("2021-01-01", "2021-01-02")
@@ -274,4 +274,3 @@ def test_no_next_page_token(requests_mock):
     requests_mock.get(url, json={"data": {"page_info": {}}})
     test_response = requests.get(url)
     assert stream.next_page_token(test_response) is None
- 
