@@ -18,7 +18,17 @@ definitions:
     record_selector:
       $ref: "#/definitions/selector"
     paginator:
-      type: NoPagination
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ response.meta.links.next_page }}"
+        stop_condition: "{{ 'next_page' not in response['meta']['links'] }}"
+        page_size: 100
+      page_size_option:
+        field_name: "page[size]"
+        inject_into: "request_parameter"
+      page_token_option:
+        type: RequestPath
     requester:
       $ref: "#/definitions/requester"
   base_stream:
