@@ -109,7 +109,7 @@ Gitlab has the [rate limits](https://docs.gitlab.com/ee/user/gitlab_com/index.ht
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------|
-| 1.9.0   | 2023-10-23 |                                                          | Epics stream: changed pk from `iid` to `id`, add correct date-time format for deployments, projects and groups members stream |
+| 1.9.0   | 2023-10-23 | [31700](https://github.com/airbytehq/airbyte/pull/31700) | Epics stream: changed pk from `iid` to `id`, add correct date-time format for deployments, projects and groups members stream |
 | 1.8.4   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                                               |
 | 1.8.3   | 2023-10-18 | [31547](https://github.com/airbytehq/airbyte/pull/31547) | Add validation for invalid `groups_list` and/or `projects_list`                                                               |
 | 1.8.2   | 2023-10-17 | [31492](https://github.com/airbytehq/airbyte/pull/31492) | Expand list of possible error status codes when handling expired `access_token`                                               |
