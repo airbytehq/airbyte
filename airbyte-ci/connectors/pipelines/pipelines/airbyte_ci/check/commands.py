@@ -61,7 +61,7 @@ async def run_check(fix: bool) -> bool:
                     dagger_client.host().directory(
                         ".", 
                         include=["**/*.py", "pyproject.toml", "poetry.lock"], 
-                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**/build"]
+                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**/build", ".git"]
                     )
                 )
                 .with_workdir(f"/src")
