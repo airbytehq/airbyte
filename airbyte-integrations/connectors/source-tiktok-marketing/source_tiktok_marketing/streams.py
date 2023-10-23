@@ -289,7 +289,7 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
 
     @transformer.registerCustomTransform
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-        """Custom traun"""
+        """Custom transformation"""
         if original_value == "-":
             return None
         elif isinstance(original_value, float):
@@ -863,25 +863,21 @@ class AudienceReport(BasicReports, ABC):
 
 
 class CampaignsAudienceReports(AudienceReport):
-
     ref_pk = "campaign_id"
     report_level = ReportLevel.CAMPAIGN
 
 
 class AdGroupAudienceReports(AudienceReport):
-
     ref_pk = "adgroup_id"
     report_level = ReportLevel.ADGROUP
 
 
 class AdsAudienceReports(AudienceReport):
-
     ref_pk = "ad_id"
     report_level = ReportLevel.AD
 
 
 class AdvertisersAudienceReports(AudienceReport):
-
     ref_pk = "advertiser_id"
     report_level = ReportLevel.ADVERTISER
 
