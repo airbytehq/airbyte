@@ -15,7 +15,6 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from bingads.service_client import ServiceClient
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
-from source_bing_ads.cache import VcrCache
 from source_bing_ads.client import Client
 from source_bing_ads.reports import (
     ALL_CONVERSION_FIELDS,
@@ -31,13 +30,9 @@ from source_bing_ads.reports import (
 )
 from suds import sudsobject
 
-CACHE: VcrCache = VcrCache()
-
 
 class BingAdsStream(Stream, ABC):
     primary_key: Optional[Union[str, List[str], List[List[str]]]] = None
-    # indicates whether stream should cache incoming responses via VcrCache
-    use_cache: bool = False
 
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
         super().__init__()
@@ -120,11 +115,7 @@ class BingAdsStream(Stream, ABC):
             "params": params,
         }
         request = self.client.request(**request_kwargs)
-        if self.use_cache:
-            with CACHE.use_cassette():
-                return request
-        else:
-            return request
+        return request
 
     def read_records(
         self,
