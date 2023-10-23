@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import anyio
 import asyncclick as click
 from pipelines.airbyte_ci.metadata.pipeline import run_metadata_orchestrator_deploy_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand

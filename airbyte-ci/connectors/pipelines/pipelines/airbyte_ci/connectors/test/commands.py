@@ -4,7 +4,6 @@
 
 import sys
 
-import anyio
 import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
