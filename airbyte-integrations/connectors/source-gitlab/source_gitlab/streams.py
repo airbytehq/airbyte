@@ -403,7 +403,7 @@ class Users(GitlabChildStream):
 
 
 class Epics(GitlabChildStream):
-    primary_key = "iid"
+    primary_key = "id"
     flatten_id_keys = ["author"]
 
 
