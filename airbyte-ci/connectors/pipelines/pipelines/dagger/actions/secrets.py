@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Optional
 
 from dagger import Container, Secret
 from pipelines.helpers.utils import get_file_contents, get_secret_host_variable

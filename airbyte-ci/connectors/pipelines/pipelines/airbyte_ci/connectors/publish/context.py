@@ -39,6 +39,8 @@ class PublishConnectorContext(ConnectorContext):
         ci_context: Optional[str] = None,
         ci_gcs_credentials: str = None,
         pull_request: PullRequest = None,
+        s3_build_cache_access_key_id: Optional[str] = None,
+        s3_build_cache_secret_key: Optional[str] = None,
     ):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
@@ -66,6 +68,8 @@ class PublishConnectorContext(ConnectorContext):
             should_save_report=True,
             docker_hub_username=docker_hub_username,
             docker_hub_password=docker_hub_password,
+            s3_build_cache_access_key_id=s3_build_cache_access_key_id,
+            s3_build_cache_secret_key=s3_build_cache_secret_key,
         )
 
     @property
