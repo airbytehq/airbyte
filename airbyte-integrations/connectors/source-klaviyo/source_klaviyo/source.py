@@ -5,11 +5,11 @@
 import re
 from http import HTTPStatus
 from typing import Any, List, Mapping, Tuple
-from requests.exceptions import HTTPError
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from requests.exceptions import HTTPError
 from source_klaviyo.streams import Campaigns, EmailTemplates, Events, Flows, GlobalExclusions, Lists, Metrics, Profiles
 
 
