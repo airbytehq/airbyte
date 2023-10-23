@@ -20,7 +20,7 @@ from pipelines.helpers.utils import slugify
 
 
 class DaggerPipelineCommand(click.Command):
-    # @sentry_utils.with_command_context
+    @sentry_utils.with_command_context
     async def invoke(self, ctx: click.Context) -> Any:
         """Wrap parent invoke in a try catch suited to handle pipeline failures.
         Args:
