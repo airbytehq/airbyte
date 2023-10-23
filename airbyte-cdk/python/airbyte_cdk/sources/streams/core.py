@@ -124,13 +124,13 @@ class Stream(ABC):
                 cursor_field=cursor_field,
             )
 
-    def read_incremental(
+    def read_incremental(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,
         cursor_field: Optional[List[str]],
         logger: logging.Logger,
         slice_logger: SliceLogger,
         stream_state: MutableMapping[str, Any],
-        state_manager,  # ignoring typing for ConnectorStateManager because of circular dependencies
+        state_manager,
         per_stream_state_enabled: bool,
         internal_config: InternalConfig,
     ) -> Iterable[StreamData]:
@@ -357,10 +357,10 @@ class Stream(ABC):
         else:
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
 
-    def _checkpoint_state(
+    def _checkpoint_state(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,
         stream_state: Mapping[str, Any],
-        state_manager,  # ignoring typing for ConnectorStateManager because of circular dependencies
+        state_manager,
         per_stream_state_enabled: bool,
     ) -> AirbyteMessage:
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state

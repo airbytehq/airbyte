@@ -98,10 +98,14 @@ class StreamFacade(Stream):
             cursor,
         )
 
-    def state(self, value: Mapping[str, Any]):
-        self._legacy_stream.state = value
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        raise NotImplementedError("This should not be called as part of the Concurrent CDK code. Please report the problem to Airbyte")
 
-    state = property(None, state)
+    @state.setter
+    def state(self, value: Mapping[str, Any]) -> None:
+        if "state" in dir(self._legacy_stream):
+            self._legacy_stream.state = value  # type: ignore  # validating `state` is attribute of stream using `if` above
 
     @classmethod
     def _get_primary_key_from_stream(cls, stream_primary_key: Optional[Union[str, List[str], List[List[str]]]]) -> List[str]:
@@ -152,13 +156,13 @@ class StreamFacade(Stream):
         """
         yield from self._read_records()
 
-    def read_incremental(
+    def read_incremental(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
         self,
         cursor_field: Optional[List[str]],
         logger: logging.Logger,
         slice_logger: SliceLogger,
         stream_state: MutableMapping[str, Any],
-        state_manager,  # ignoring typing for ConnectorStateManager because of circular dependencies
+        state_manager,
         per_stream_state_enabled: bool,
         internal_config: InternalConfig,
     ) -> Iterable[StreamData]:
@@ -173,7 +177,7 @@ class StreamFacade(Stream):
     ) -> Iterable[StreamData]:
         yield from self._read_records()
 
-    def _read_records(self):
+    def _read_records(self) -> Iterable[StreamData]:
         for record in self._abstract_stream.read():
             yield record.data
 
