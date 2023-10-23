@@ -4,13 +4,8 @@
 
 from typing import Callable
 
-import click
-import pipelines.airbyte_ci.connectors.build_image.commands
-import pipelines.airbyte_ci.connectors.commands
-import pipelines.airbyte_ci.connectors.publish.commands
-import pipelines.airbyte_ci.connectors.test.commands
 import pytest
-from click.testing import CliRunner
+from asyncclick.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 from pipelines.airbyte_ci.connectors import commands as connectors_commands
 from pipelines.airbyte_ci.connectors.build_image import commands as connectors_build_command
