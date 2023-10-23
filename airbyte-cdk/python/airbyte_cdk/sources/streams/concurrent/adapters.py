@@ -356,8 +356,6 @@ class AvailabilityStrategyFacade(AvailabilityStrategy):
     def __init__(self, abstract_availability_strategy: AbstractAvailabilityStrategy):
         self._abstract_availability_strategy = abstract_availability_strategy
 
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform)
-
     def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, Optional[str]]:
         """
         Checks stream availability.

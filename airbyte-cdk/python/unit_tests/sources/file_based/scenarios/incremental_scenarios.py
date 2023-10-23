@@ -48,7 +48,7 @@ single_csv_input_state_is_earlier_scenario = (
                         },
                         "stream_descriptor": {"name": "stream1"},
                     },
-                },
+                }
             ],
         )
     )
@@ -149,7 +149,7 @@ single_csv_file_is_skipped_if_same_modified_at_as_in_history = (
                         },
                         "stream_descriptor": {"name": "stream1"},
                     },
-                },
+                }
             ],
         )
     )
@@ -232,7 +232,7 @@ single_csv_file_is_synced_if_modified_at_is_more_recent_than_in_history = (
                         },
                         "stream_descriptor": {"name": "stream1"},
                     },
-                },
+                }
             ],
         )
     )

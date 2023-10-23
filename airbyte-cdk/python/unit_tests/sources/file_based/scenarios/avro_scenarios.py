@@ -4,7 +4,6 @@
 
 import datetime
 import decimal
-import uuid
 
 from unit_tests.sources.file_based.in_memory_files_source import TemporaryAvroFilesStreamReader
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
@@ -125,7 +124,7 @@ _avro_all_types_file = {
                 {"lead_singer": "Matty Healy", "lead_guitar": "Adam Hann", "bass_guitar": "Ross MacDonald", "drummer": "George Daniel"},
                 b"\x12\x34\x56\x78",
                 decimal.Decimal("1234.56789"),
-                uuid.UUID("123e4567-e89b-12d3-a456-426655440000").bytes,
+                "123e4567-e89b-12d3-a456-426655440000",
                 datetime.date(2022, 5, 29),
                 datetime.time(6, 0, 0, 456000),
                 datetime.time(12, 0, 0, 456789),
