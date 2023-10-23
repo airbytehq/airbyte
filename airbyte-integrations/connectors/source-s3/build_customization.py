@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from dagger import Container
 
 
-async def setup_nltk(connector_container: Container) -> Container:
+def setup_nltk(connector_container: Container) -> Container:
     """
     Seeds the connector with nltk data at build time. This is because the nltk data
     is large and takes a long time to download. It runs a python script that downloads
@@ -33,7 +33,7 @@ async def setup_nltk(connector_container: Container) -> Container:
     return connector_container
 
 
-async def install_tesseract_and_poppler(connector_container: Container) -> Container:
+def install_tesseract_and_poppler(connector_container: Container) -> Container:
     """
     Installs Tesseract-OCR and Poppler-utils in the container. These tools are necessary for
     OCR (Optical Character Recognition) processes and working with PDFs, respectively.
@@ -53,9 +53,9 @@ async def post_connector_install(connector_container: Container) -> Container:
     """
 
     # Setup nltk in the container
-    connector_container = await setup_nltk(connector_container)
+    connector_container = setup_nltk(connector_container)
 
     # Install Tesseract and Poppler
-    connector_container = await install_tesseract_and_poppler(connector_container)
+    connector_container = install_tesseract_and_poppler(connector_container)
 
     return connector_container
