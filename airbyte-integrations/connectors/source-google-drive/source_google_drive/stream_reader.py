@@ -15,7 +15,6 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
-from googleapiclient._apis.drive.v3.resources import DriveResource
 
 from .spec import SourceGoogleDriveSpec as Config
 
@@ -53,7 +52,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
 
     @property
-    def google_drive_service(self) -> DriveResource:
+    def google_drive_service(self):
         if self.config is None:
             # We shouldn't hit this; config should always get set before attempting to
             # list or read files.

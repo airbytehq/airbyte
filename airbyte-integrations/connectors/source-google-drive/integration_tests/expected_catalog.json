@@ -2,18 +2,15 @@
   "streams": [
     {
       "stream": {
-        "name": "test",
+        "name": "my_file_stream",
         "json_schema": {
           "type": "object",
           "properties": {
-            "id": {
+            "y": {
               "type": ["null", "integer"]
             },
-            "name": {
-              "type": ["null", "string"]
-            },
-            "valid": {
-              "type": ["null", "boolean"]
+            "x": {
+              "type": ["null", "integer"]
             },
             "_ab_source_file_last_modified": {
               "type": "string",

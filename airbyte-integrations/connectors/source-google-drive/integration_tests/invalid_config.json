@@ -1,13 +1,21 @@
 {
-  "dataset": "test",
-  "provider": {
-    "storage": "S3",
-    "bucket": "THIS BUCKET DOESN'T EXIST",
-    "aws_access_key_id": "KEY ID",
-    "aws_secret_access_key": "KEY",
-    "path_prefix": ""
+  "folder_url": "https://drive.google.com/drive/folders/yyy",
+  "credentials": {
+    "auth_type": "Service",
+    "service_account_info": "abc"
   },
-  "format": { "filetype": "csv" },
-  "path_pattern": "**",
-  "schema": "{}"
+  "streams": [
+    {
+      "name": "my_file_stream",
+      "globs": [
+        "/**/*.jsonl"
+      ],
+      "format": {
+        "filetype": "jsonl"
+      },
+      "schemaless": false,
+      "validation_policy": "Emit Record",
+      "days_to_sync_if_history_is_full": 3
+    }
+  ]
 }

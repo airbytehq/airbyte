@@ -5,7 +5,7 @@
       "stream_state": {
         "_ab_source_file_last_modified": "2999-01-01T00:00:00Z"
       },
-      "stream_descriptor": { "name": "test" }
+      "stream_descriptor": { "name": "my_file_stream" }
     }
   }
 ]

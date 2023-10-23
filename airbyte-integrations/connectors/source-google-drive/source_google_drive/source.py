@@ -12,7 +12,7 @@ from airbyte_cdk.sources.file_based.stream.cursor.default_file_based_cursor impo
 from source_google_drive.spec import SourceGoogleDriveSpec
 from source_google_drive.stream_reader import SourceGoogleDriveStreamReader
 
-class GoogleDriveSource(FileBasedSource):
+class SourceGoogleDrive(FileBasedSource):
     def __init__(self):
         super().__init__(stream_reader=SourceGoogleDriveStreamReader(), spec_class=SourceGoogleDriveSpec, cursor_cls=DefaultFileBasedCursor)
 
