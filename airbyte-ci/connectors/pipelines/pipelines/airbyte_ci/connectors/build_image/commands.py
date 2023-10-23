@@ -40,6 +40,8 @@ def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
             use_local_cdk=ctx.obj.get("use_local_cdk"),
             open_report_in_browser=ctx.obj.get("open_report_in_browser"),
             use_host_gradle_dist_tar=use_host_gradle_dist_tar,
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
