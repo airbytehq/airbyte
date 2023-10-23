@@ -62,7 +62,9 @@ def default_backoff_handler(
     )
 
 
-def user_defined_backoff_handler(max_tries: Optional[int], max_time: Optional[int], **kwargs: Any) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
+def user_defined_backoff_handler(
+    max_tries: Optional[int], max_time: Optional[int], **kwargs: Any
+) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
     def sleep_on_ratelimit(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
         if isinstance(exc, UserDefinedBackoffException):
