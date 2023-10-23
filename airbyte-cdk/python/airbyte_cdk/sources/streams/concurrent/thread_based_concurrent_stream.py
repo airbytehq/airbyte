@@ -14,7 +14,7 @@ from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Cursor, NoopCursor
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
 from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionReader
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -46,8 +46,8 @@ class ThreadBasedConcurrentStream(AbstractStream):
         timeout_seconds: int = DEFAULT_TIMEOUT_SECONDS,
         max_concurrent_tasks: int = DEFAULT_MAX_QUEUE_SIZE,
         sleep_time: float = DEFAULT_SLEEP_TIME,
-        type_transformer: TransformConfig = TypeTransformer(TransformConfig.NoTransform),
-        cursor: Optional[ConcurrentCursor] = None,
+        type_transformer: TypeTransformer = TypeTransformer(TransformConfig.NoTransform),
+        cursor: Cursor = NoopCursor(),
     ):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
@@ -89,9 +89,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         partition_generator = PartitionEnqueuer(queue, PARTITIONS_GENERATED_SENTINEL)
         partition_reader = PartitionReader(queue)
 
-        # FIXME is syncmode needed here? It feels like this information shouldn't change how we generate partitions given that the cursor
-        #  has the state information
-        self._submit_task(futures, partition_generator.generate_partitions, self._stream_partition_generator, SyncMode.full_refresh)
+        self._submit_task(futures, partition_generator.generate_partitions, self._stream_partition_generator)
 
         # True -> partition is done
         # False -> partition is not done

@@ -78,7 +78,7 @@ class Source(
         and we can then emit state in the list format.
         """
         # vars(self.__class__) checks if the current class directly overrides the read() function
-        if "read" in vars(cls.__class__):
+        if "read" in vars(cls):
             return defaultdict(dict, state_obj)
         else:
             if state_obj:

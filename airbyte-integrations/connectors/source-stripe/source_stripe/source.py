@@ -9,7 +9,7 @@ import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import FailureType
-from airbyte_cdk.models.airbyte_protocol import SyncMode
+from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
@@ -36,7 +36,7 @@ from source_stripe.streams import (
 
 
 class SourceStripe(AbstractSource):
-    def __init__(self, state, catalog, use_concurrent_cdk: bool = False, **kwargs):
+    def __init__(self, state, catalog: ConfiguredAirbyteCatalog, use_concurrent_cdk: bool = False, **kwargs):
         super().__init__(**kwargs)
         self._state = state
         self._catalog = catalog
@@ -437,6 +437,7 @@ class SourceStripe(AbstractSource):
                     entrypoint_logger,
                     4,
                     state_manager.get_stream_state(stream.name, stream.namespace),
+                    self._get_configured_stream(stream).cursor_field,
                     ConcurrentCursor(
                         stream.name,
                         stream.namespace,
@@ -456,11 +457,14 @@ class SourceStripe(AbstractSource):
             return None  # TODO validate on incremental with state
         return None if state_manager.get_stream_state(stream.name, stream.namespace) else ("created[gte]", "created[lte]")
 
-    def _is_incremental(self, stream: Stream):
+    def _get_configured_stream(self, stream: Stream) -> ConfiguredAirbyteStream:
         catalog_stream = [catalog_stream for catalog_stream in self._catalog.streams if catalog_stream.stream.name == stream.name]
         if len(catalog_stream) == 0:
             return False  # it does not matter if it's incremental or not as it's not configured
         if len(catalog_stream) != 1:
             raise ValueError(f"Stream {stream.name} is in catalog {len(catalog_stream)} times")
+        return catalog_stream[0]
+
+    def _is_incremental(self, stream: Stream) -> bool:
         # FIXME This seems to create duplication with AbstractSource which I'm not a big fan of
-        return catalog_stream[0].sync_mode == SyncMode.incremental and stream.supports_incremental
+        return self._get_configured_stream(stream).sync_mode == SyncMode.incremental and stream.supports_incremental

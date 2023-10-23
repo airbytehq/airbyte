@@ -2,10 +2,10 @@ import functools
 from abc import ABC, abstractmethod
 from typing import Any, List, Mapping, Optional, Protocol, Tuple
 
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 
 
 def _extract_value(mapping: Mapping[str, Any], path: List[str]) -> Any:
@@ -52,27 +52,37 @@ class ConcurrentCursor(Cursor):
     _START_BOUNDARY = 0
     _END_BOUNDARY = 1
 
-    def __init__(self, stream_name: str, stream_namespace: str, stream_state: Any, message_repository: MessageRepository, connector_state_manager: ConnectorStateManager, cursor_field: CursorField, slice_boundary_fields: Optional[Tuple[str]]) -> None:
+    def __init__(
+        self,
+        stream_name: str,
+        stream_namespace: str,
+        stream_state: Any,
+        message_repository: MessageRepository,
+        connector_state_manager: ConnectorStateManager,
+        cursor_field: CursorField,
+        slice_boundary_fields: Optional[Tuple[str, str]]
+    ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
         self._message_repository = message_repository
         self._connector_state_manager = connector_state_manager
         self._cursor_field = cursor_field
         self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
-        self._most_recent_record = None
+        self._most_recent_record: Optional[Record] = None
 
         # TODO to migrate state. The migration should probably be outside of this class. Impact of not having this:
         #  * Given a sync that emits no records, the emitted state message will be empty
         self._state = {
-          "slices": [
-            #{start: 1, end: 10, parent_id: "id1", finished_processing: true},
-          ]
+         "slices": [
+            # empty for now but should look like `{start: 1, end: 10, parent_id: "id1"}`
+         ]
         }
 
     def observe(self, record: Record) -> None:
         if self._slice_boundary_fields:
-            # Given that slicing is done using the cursor field, we don't need to observe the record as slices will describe what has been
-            # emitted. Assuming there is a chance that records might not be yet populated for the most recent slice, use lookback window
+            # Given that slicing is done using the cursor field, we don't need to observe the record as we assume slices will describe what
+            # has been emitted. Assuming there is a chance that records might not be yet populated for the most recent slice, use a lookback
+            # window
             return
 
         if not self._most_recent_record or self._extract_cursor_value(self._most_recent_record) < self._extract_cursor_value(record):
@@ -88,7 +98,7 @@ class ConcurrentCursor(Cursor):
             self._merge_partitions()
             self._emit_state_message()
 
-    def _add_slice_to_state(self, partition) -> None:
+    def _add_slice_to_state(self, partition: Partition) -> None:
         partition_identifier = partition.identifier() or {}
         if self._slice_boundary_fields:
             self._state["slices"].append({
@@ -97,7 +107,6 @@ class ConcurrentCursor(Cursor):
                 **partition_identifier,
             })
         elif self._most_recent_record:
-            # State is observed by records and not by slices
             self._state["slices"].append({
                 "start": 0,  # FIXME this only works with int datetime
                 "end": self._extract_cursor_value(self._most_recent_record),
@@ -113,8 +122,14 @@ class ConcurrentCursor(Cursor):
         )
         self._message_repository.emit_message(state_message)
 
-    def _merge_partitions(self):
+    def _merge_partitions(self) -> None:
         pass  # TODO eventually
 
-    def _extract_from_slice(self, partition: Partition, key: str):
-        return partition.to_slice()[key]
+    def _extract_from_slice(self, partition: Partition, key: str) -> Comparable:
+        try:
+            _slice = partition.to_slice()
+            if not _slice:
+                raise KeyError(f"Could not find key `{key}` in empty slice")
+            return _slice[key]  # type: ignore  # we expect the devs to specify a key that would return a Comparable
+        except KeyError as exception:
+            raise KeyError(f"Partition is expected to have key `{key}` but could not be found") from exception

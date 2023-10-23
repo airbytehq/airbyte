@@ -27,6 +27,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator impor
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
@@ -52,7 +53,8 @@ class StreamFacade(Stream):
         source: AbstractSource,
         logger: logging.Logger,
         max_workers: int,
-        state: MutableMapping[str, Any],
+        state: Optional[MutableMapping[str, Any]],
+        catalog_cursor_field: Optional[List[str]],
         cursor: Cursor,
     ) -> Stream:
         """
@@ -73,7 +75,13 @@ class StreamFacade(Stream):
         message_repository = source.message_repository
         return StreamFacade(
             ThreadBasedConcurrentStream(
-                partition_generator=StreamPartitionGenerator(stream, message_repository, state),
+                partition_generator=StreamPartitionGenerator(
+                    stream,
+                    message_repository,
+                    SyncMode.full_refresh if isinstance(cursor, NoopCursor) else SyncMode.incremental,
+                    catalog_cursor_field,
+                    state,
+                ),
                 max_workers=max_workers,
                 name=stream.name,
                 json_schema=stream.get_json_schema(),
@@ -151,6 +159,7 @@ class StreamFacade(Stream):
         stream_state: MutableMapping[str, Any],
         state_manager,  # ignoring typing for ConnectorStateManager because of circular dependencies
         per_stream_state_enabled: bool,
+        internal_config: InternalConfig,
     ) -> Iterable[StreamData]:
         yield from self._read_records()
 
@@ -194,7 +203,7 @@ class StreamFacade(Stream):
 
     @property
     def supports_incremental(self) -> bool:
-        return not isinstance(self._cursor, NoopCursor)
+        return self._legacy_stream.supports_incremental
 
     def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         """
@@ -243,7 +252,9 @@ class StreamPartition(Partition):
         stream: Stream,
         _slice: Optional[Mapping[str, Any]],
         message_repository: MessageRepository,
-        state: MutableMapping[str, Any],
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]],
+        state: Optional[MutableMapping[str, Any]],
     ):
         """
         :param stream: The stream to delegate to
@@ -253,9 +264,9 @@ class StreamPartition(Partition):
         self._stream = stream
         self._slice = _slice
         self._message_repository = message_repository
+        self._sync_mode = sync_mode
+        self._cursor_field = cursor_field
         self._state = state
-        # TODO no impact for Stripe but other sources might use this
-        #  self._sync_mode = sync_mode
 
     def read(self) -> Iterable[Record]:
         """
@@ -317,19 +328,27 @@ class StreamPartitionGenerator(PartitionGenerator):
     In the long-run, it would be preferable to update the connectors, but we don't have the tooling or need to justify the effort at this time.
     """
 
-    def __init__(self, stream: Stream, message_repository: MessageRepository, state: MutableMapping[str, Any]):
+    def __init__(
+        self,
+        stream: Stream,
+        message_repository: MessageRepository,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]],
+        state: Optional[MutableMapping[str, Any]],
+    ):
         """
         :param stream: The stream to delegate to
         :param message_repository: The message repository to use to emit non-record messages
         """
         self.message_repository = message_repository
         self._stream = stream
+        self._sync_mode = sync_mode
+        self._cursor_field = cursor_field
         self._state = state
 
-    def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
-        # TODO `cursor_field` not needed as Stripe uses an attribute of the class to define that but others might need it
-        for s in self._stream.stream_slices(sync_mode=sync_mode, stream_state=self._state):
-            yield StreamPartition(self._stream, copy.deepcopy(s), self.message_repository, self._state)
+    def generate(self) -> Iterable[Partition]:
+        for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
+            yield StreamPartition(self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state)
 
 
 @deprecated("This class is experimental. Use at your own risk.")

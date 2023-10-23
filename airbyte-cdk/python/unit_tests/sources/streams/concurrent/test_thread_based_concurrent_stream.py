@@ -9,6 +9,7 @@ from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 
 
@@ -24,6 +25,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._slice_logger = Mock()
         self._logger = Mock()
         self._message_repository = Mock()
+        self._cursor = Mock(spec=Cursor)
         self._stream = ThreadBasedConcurrentStream(
             self._partition_generator,
             self._max_workers,
@@ -38,6 +40,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             1,
             2,
             0,
+            cursor = self._cursor,
         )
 
     def test_get_json_schema(self):
@@ -74,6 +77,21 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
 
         with self.assertRaises(Exception):
             self._stream._check_for_errors(futures)
+
+    def test_read_observe_records_and_close_partition(self):
+        partition = Mock(spec=Partition)
+        expected_records = [Record({"id": 1}), Record({"id": "2"})]
+        partition.read.return_value = expected_records
+        partition.to_slice.return_value = {"slice": "slice"}
+        self._slice_logger.should_log_slice_message.return_value = False
+
+        self._partition_generator.generate.return_value = [partition]
+        actual_records = list(self._stream.read())
+
+        assert expected_records == actual_records
+
+        self._cursor.observe.has_calls([call(record) for record in expected_records])
+        self._cursor.close_partition.assert_called_once_with(partition)
 
     def test_read_no_slice_message(self):
         partition = Mock(spec=Partition)

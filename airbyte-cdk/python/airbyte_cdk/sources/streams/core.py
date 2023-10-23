@@ -12,9 +12,8 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteMessage, AirbyteStream, SyncMode, Type as MessageType
-
 # list of all possible HTTP methods which can be used for sending of request bodies
-from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, ResourceSchemaLoader
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
@@ -131,6 +130,7 @@ class Stream(ABC):
         stream_state: MutableMapping[str, Any],
         state_manager,  # ignoring typing for ConnectorStateManager because of circular dependencies
         per_stream_state_enabled: bool,
+        internal_config: InternalConfig,
     ) -> Iterable[StreamData]:
         slices = self.stream_slices(
             cursor_field=cursor_field,
@@ -153,13 +153,16 @@ class Stream(ABC):
             )
             for record_data_or_message in records:
                 yield record_data_or_message
-                if isinstance(record_data_or_message, Mapping) or record_data_or_message.type == MessageType.RECORD:
+                if isinstance(record_data_or_message, Mapping) or (hasattr(record_data_or_message, "type") and record_data_or_message.type == MessageType.RECORD):
                     record_data = record_data_or_message if isinstance(record_data_or_message, Mapping) else record_data_or_message.record
                     stream_state = self.get_updated_state(stream_state, record_data)
                     checkpoint_interval = self.state_checkpoint_interval
                     record_counter += 1
                     if checkpoint_interval and record_counter % checkpoint_interval == 0:
                         yield self._checkpoint_state(stream_state, state_manager, per_stream_state_enabled)
+
+                    if internal_config.is_limit_reached(record_counter):
+                        break
 
             yield self._checkpoint_state(stream_state, state_manager, per_stream_state_enabled)
 
@@ -351,10 +354,10 @@ class Stream(ABC):
             raise ValueError(f"Element must be either list or str. Got: {type(keys)}")
 
     def _checkpoint_state(
-            self,
-            stream_state: Mapping[str, Any],
-            state_manager,  # ignoring typing for ConnectorStateManager because of circular dependencies
-            per_stream_state_enabled: bool
+        self,
+        stream_state: Mapping[str, Any],
+        state_manager,  # ignoring typing for ConnectorStateManager because of circular dependencies
+        per_stream_state_enabled: bool
     ) -> AirbyteMessage:
         # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
         # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream

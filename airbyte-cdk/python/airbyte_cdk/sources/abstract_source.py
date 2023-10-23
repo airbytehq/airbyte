@@ -227,7 +227,6 @@ class AbstractSource(Source, ABC):
             stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
             logger.info(f"Setting state of {self.name} stream to {stream_state}")
 
-        total_records_counter = 0
         for record_data_or_message in stream_instance.read_incremental(
             configured_stream.cursor_field,
             logger,
@@ -235,13 +234,9 @@ class AbstractSource(Source, ABC):
             stream_state,
             state_manager,
             self.per_stream_state_enabled,
+            internal_config,
         ):
-            message = self._get_message(record_data_or_message, stream_instance)
-            yield message
-            if message.type == MessageType.RECORD:
-                total_records_counter += 1
-                if internal_config.is_limit_reached(total_records_counter):
-                    return
+            yield self._get_message(record_data_or_message, stream_instance)
 
     def _emit_queued_messages(self) -> Iterable[AirbyteMessage]:
         if self.message_repository:
