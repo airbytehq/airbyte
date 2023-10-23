@@ -10,6 +10,7 @@ from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorCont
 from pipelines.airbyte_ci.connectors.publish.pipeline import reorder_contexts, run_connector_publish_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import ContextState
+from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
 @click.command(cls=DaggerPipelineCommand, help="Publish all images for the selected connectors.")
@@ -43,20 +44,6 @@ from pipelines.consts import ContextState
     envvar="METADATA_SERVICE_BUCKET_NAME",
 )
 @click.option(
-    "--docker-hub-username",
-    help="Your username to connect to DockerHub.",
-    type=click.STRING,
-    required=True,
-    envvar="DOCKER_HUB_USERNAME",
-)
-@click.option(
-    "--docker-hub-password",
-    help="Your password to connect to DockerHub.",
-    type=click.STRING,
-    required=True,
-    envvar="DOCKER_HUB_PASSWORD",
-)
-@click.option(
     "--slack-webhook",
     help="The Slack webhook URL to send notifications to.",
     type=click.STRING,
@@ -77,8 +64,6 @@ def publish(
     spec_cache_bucket_name: str,
     metadata_service_bucket_name: str,
     metadata_service_gcs_credentials: str,
-    docker_hub_username: str,
-    docker_hub_password: str,
     slack_webhook: str,
     slack_channel: str,
 ):
@@ -92,6 +77,8 @@ def publish(
             abort=True,
         )
 
+    fail_if_missing_docker_hub_creds(ctx)
+
     publish_connector_contexts = reorder_contexts(
         [
             PublishConnectorContext(
@@ -101,8 +88,8 @@ def publish(
                 spec_cache_bucket_name=spec_cache_bucket_name,
                 metadata_service_gcs_credentials=metadata_service_gcs_credentials,
                 metadata_bucket_name=metadata_service_bucket_name,
-                docker_hub_username=docker_hub_username,
-                docker_hub_password=docker_hub_password,
+                docker_hub_username=ctx.obj["docker_hub_username"],
+                docker_hub_password=ctx.obj["docker_hub_password"],
                 slack_webhook=slack_webhook,
                 reporting_slack_channel=slack_channel,
                 ci_report_bucket=ctx.obj["ci_report_bucket_name"],
