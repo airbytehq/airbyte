@@ -27,7 +27,7 @@ class SourceKlaviyo(AbstractSource):
             if e.response.status_code in (HTTPStatus.FORBIDDEN, HTTPStatus.UNAUTHORIZED):
                 message = "Please provide a valid API key and make sure it has permissions to read specified streams."
             else:
-                message = f"Unable to connect to Klaviyo API with provided credentials."
+                message = "Unable to connect to Klaviyo API with provided credentials."
             return False, message
         except Exception as e:
             original_error_message = repr(e)
