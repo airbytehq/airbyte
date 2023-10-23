@@ -252,6 +252,8 @@ class Projects(WorkspaceRequestParamsRelatedStream):
 
 
 class SectionsCompact(ProjectRelatedStream):
+    use_cache = True
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         project_gid = stream_slice["project_gid"]
         return f"projects/{project_gid}/sections"
@@ -275,6 +277,8 @@ class Sections(AsanaStream):
 
 
 class StoriesCompact(AsanaStream):
+    use_cache = True
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         task_gid = stream_slice["task_gid"]
         return f"tasks/{task_gid}/stories"
