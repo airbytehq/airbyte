@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import List, Set, Tuple
 
-import click
+import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.cli.lazy_group import LazyGroup
@@ -113,13 +113,13 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     cls=LazyGroup,
     help="Commands related to connectors and connector acceptance tests.",
     lazy_subcommands={
-        "build": "pipelines.airbyte_ci.connectors.build_image.commands.build",
-        "test": "pipelines.airbyte_ci.connectors.test.commands.test",
+        # "build": "pipelines.airbyte_ci.connectors.build_image.commands.build",
+        # "test": "pipelines.airbyte_ci.connectors.test.commands.test",
         "list": "pipelines.airbyte_ci.connectors.list.commands.list",
-        "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
-        "bump_version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
-        "migrate_to_base_image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
-        "upgrade_base_image": "pipelines.airbyte_ci.connectors.upgrade_base_image.commands.upgrade_base_image",
+        # "publish": "pipelines.airbyte_ci.connectors.publish.commands.publish",
+        # "bump_version": "pipelines.airbyte_ci.connectors.bump_version.commands.bump_version",
+        # "migrate_to_base_image": "pipelines.airbyte_ci.connectors.migrate_to_base_image.commands.migrate_to_base_image",
+        # "upgrade_base_image": "pipelines.airbyte_ci.connectors.upgrade_base_image.commands.upgrade_base_image",
     },
 )
 @click.option("--use-remote-secrets", default=True)  # specific to connectors
@@ -178,7 +178,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     type=bool,
 )
 @click.pass_context
-def connectors(
+async def connectors(
     ctx: click.Context,
     use_remote_secrets: bool,
     names: Tuple[str],

@@ -9,8 +9,9 @@ import logging
 import os
 from pathlib import Path
 from typing import List
+import anyio
 
-import click
+import asyncclick as click
 import git
 from github import PullRequest
 from pipelines import main_logger
@@ -178,7 +179,7 @@ def get_modified_files(
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click.pass_context
 @track_command
-def airbyte_ci(
+async def airbyte_ci(
     ctx: click.Context,
     is_local: bool,
     git_branch: str,
@@ -240,7 +241,10 @@ def airbyte_ci(
         main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
 
 
+def main():
+    anyio.run(airbyte_ci())
+
 set_working_directory_to_root()
 
 if __name__ == "__main__":
-    airbyte_ci()
+    main
