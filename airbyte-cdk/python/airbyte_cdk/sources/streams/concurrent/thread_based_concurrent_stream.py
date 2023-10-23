@@ -7,7 +7,7 @@ import time
 from concurrent.futures import Future
 from functools import lru_cache
 from logging import Logger
-from queue import Queue
+from queue import Queue, Empty
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
@@ -95,7 +95,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         partitions_left = 0
 
         finished_partitions = False
-        while record_or_partition_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
+        while record_or_partition_or_exception := self._get_next(queue, futures):
             if isinstance(record_or_partition_or_exception, Exception):
                 # An exception was raised while processing the stream
                 # Stop the threadpool and raise it
@@ -130,6 +130,14 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._check_for_errors(futures)
         # self._logger.info(f"There were {len(partitions_to_done)} partitions for {self.name}")
         self._logger.info(f"There were unknown partitions for {self.name}")
+
+    def _get_next(self, queue, futures):
+        try:
+            return queue.get(block=True, timeout=self._timeout_seconds)
+        except Empty as e:
+            futures_not_done = [f for f in futures if not f.done()]
+            print(f"Queue is empty, returning None. There are currently {len(futures_not_done)} futures not done")
+            raise e
 
     def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
