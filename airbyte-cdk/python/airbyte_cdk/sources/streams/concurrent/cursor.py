@@ -72,7 +72,7 @@ class ConcurrentCursor(Cursor):
         # TODO to migrate state. The migration should probably be outside of this class. Impact of not having this:
         #  * Given a sync that emits no records, the emitted state message will be empty
         self._state = {  # type: ignore  # waiting for when we implement the state migration
-           "slices": []  # empty for now but should look like `{start: 1, end: 10, parent_id: "id1"}`
+            "slices": []  # empty for now but should look like `{start: 1, end: 10, parent_id: "id1"}`
         }
 
     def observe(self, record: Record) -> None:
