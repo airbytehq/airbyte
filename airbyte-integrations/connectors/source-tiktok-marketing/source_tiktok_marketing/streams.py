@@ -15,7 +15,6 @@ import pendulum
 import pydantic
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
@@ -23,6 +22,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 # TikTok Initial release date is September 2016
 DEFAULT_START_DATE = "2016-09-01"
+MINIMUM_START_DATE = "2012-01-01"
 DEFAULT_END_DATE = str(datetime.now().date())
 NOT_AUDIENCE_METRICS = [
     "reach",
@@ -170,10 +170,6 @@ class TiktokStream(HttpStream, ABC):
 
         self._advertiser_id = kwargs.get("advertiser_id")
         self.is_sandbox = kwargs.get("is_sandbox")
-
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """All responses have the similar structure:
@@ -327,23 +323,6 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
     def is_finished(self):
         return len(self._advertiser_ids) == 0
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = {"page_size": self.page_size}
-        if self.fields:
-            params["fields"] = self.convert_array_param(self.fields)
-        if stream_slice:
-            params.update(stream_slice)
-        return params
-
-
-class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
-    cursor_field = "modify_time"
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """All responses have the following pagination data:
         {
@@ -359,16 +338,31 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
         }
         """
 
-        page_info = response.json()["data"]["page_info"]
+        page_info = response.json().get("data", {}).get("page_info", {})
+        if not page_info:
+            return None
         if page_info["page"] < page_info["total_page"]:
             return {"page": page_info["page"] + 1}
         return None
 
-    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(next_page_token=next_page_token, **kwargs)
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+        params = {"page_size": self.page_size}
+        if self.fields:
+            params["fields"] = self.convert_array_param(self.fields)
+        if stream_slice:
+            params.update(stream_slice)
         if next_page_token:
             params.update(next_page_token)
         return params
+
+
+class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
+    cursor_field = "modify_time"
 
     def select_cursor_field_value(self, data: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None) -> str:
         if not data or not self.cursor_field:
@@ -461,6 +455,37 @@ class Advertisers(FullRefreshTiktokStream):
             yield {"advertiser_ids": ids[i : min(end, i + step)]}
 
 
+class Audiences(FullRefreshTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1739940506015746"""
+
+    page_size = 100
+    primary_key = "audience_id"
+
+    def path(self, *args, **kwargs) -> str:
+        return "dmp/custom_audience/list/"
+
+
+class CreativeAssetsMusic(FullRefreshTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1740053909509122"""
+
+    primary_key = "music_id"
+    response_list_field = "musics"
+
+    def path(self, *args, **kwargs) -> str:
+        return "file/music/get/"
+
+
+class CreativeAssetsPortfolios(FullRefreshTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1766324010279938"""
+
+    page_size = 100
+    primary_key = "creative_portfolio_id"
+    response_list_field = "creative_portfolios"
+
+    def path(self, *args, **kwargs) -> str:
+        return "creative/portfolio/list/"
+
+
 class Campaigns(IncrementalTiktokStream):
     """Docs: https://ads.tiktok.com/marketing_api/docs?id=1739315828649986"""
 
@@ -486,6 +511,26 @@ class Ads(IncrementalTiktokStream):
 
     def path(self, *args, **kwargs) -> str:
         return "ad/get/"
+
+
+class CreativeAssetsImages(IncrementalTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1740052016789506"""
+
+    page_size = 100
+    primary_key = "image_id"
+
+    def path(self, *args, **kwargs) -> str:
+        return "file/image/ad/search/"
+
+
+class CreativeAssetsVideos(IncrementalTiktokStream):
+    """Docs: https://business-api.tiktok.com/portal/docs?id=1740050472224769"""
+
+    page_size = 100
+    primary_key = "video_id"
+
+    def path(self, *args, **kwargs) -> str:
+        return "file/video/ad/search/"
 
 
 class BasicReports(IncrementalTiktokStream, ABC):

@@ -8,7 +8,7 @@ from unittest.mock import MagicMock, Mock, patch
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import ConnectorSpecification, Status
 from destination_qdrant.config import ConfigModel
-from destination_qdrant.destination import DestinationQdrant, embedder_map
+from destination_qdrant.destination import DestinationQdrant
 
 
 class TestDestinationQdrant(unittest.TestCase):
@@ -31,11 +31,11 @@ class TestDestinationQdrant(unittest.TestCase):
         self.logger = AirbyteLogger()
 
     @patch("destination_qdrant.destination.QdrantIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_check(self, MockedQdrantIndexer):
+    @patch("destination_qdrant.destination.create_from_config")
+    def test_check(self, MockedEmbedder, MockedQdrantIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
-        embedder_map["openai"].return_value = mock_embedder
+        MockedEmbedder.return_value = mock_embedder
         MockedQdrantIndexer.return_value = mock_indexer
 
         mock_embedder.check.return_value = None
@@ -49,11 +49,11 @@ class TestDestinationQdrant(unittest.TestCase):
         mock_indexer.check.assert_called_once()
 
     @patch("destination_qdrant.destination.QdrantIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_check_with_errors(self, MockedQdrantIndexer):
+    @patch("destination_qdrant.destination.create_from_config")
+    def test_check_with_errors(self, MockedEmbedder, MockedQdrantIndexer):
         mock_embedder = Mock()
         mock_indexer = Mock()
-        embedder_map["openai"].return_value = mock_embedder
+        MockedEmbedder.return_value = mock_embedder
         MockedQdrantIndexer.return_value = mock_indexer
 
         embedder_error_message = "Embedder Error"
@@ -73,13 +73,13 @@ class TestDestinationQdrant(unittest.TestCase):
 
     @patch("destination_qdrant.destination.Writer")
     @patch("destination_qdrant.destination.QdrantIndexer")
-    @patch.dict(embedder_map, openai=MagicMock())
-    def test_write(self, MockedQdrantIndexer, MockedWriter):
+    @patch("destination_qdrant.destination.create_from_config")
+    def test_write(self, MockedEmbedder, MockedQdrantIndexer, MockedWriter):
         mock_embedder = Mock()
         mock_indexer = Mock()
         mock_writer = Mock()
 
-        embedder_map["openai"].return_value = mock_embedder
+        MockedEmbedder.return_value = mock_embedder
         MockedQdrantIndexer.return_value = mock_indexer
         MockedWriter.return_value = mock_writer
 

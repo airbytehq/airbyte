@@ -187,22 +187,31 @@ class IncrementalGitlabChildStream(GitlabChildStream):
         stream_state = stream_state or {}
         super_slices = super().stream_slices(sync_mode, cursor_field, stream_state)
         for super_slice in super_slices:
-            start_point = self._start_date
             state_project_value = stream_state.get(str(super_slice["id"]))
-            if state_project_value:
-                state_value = state_project_value.get(self.cursor_field)
-                if state_value:
-                    start_point = max(start_point, state_value)
-            for start_dt, end_dt in self._chunk_date_range(pendulum.parse(start_point)):
+            if self._start_date or state_project_value:
+                start_point = self._start_date
+                if state_project_value:
+                    state_value = state_project_value.get(self.cursor_field)
+                    if state_value and start_point:
+                        start_point = max(start_point, state_value)
+                    else:
+                        start_point = state_value or start_point
+                for start_dt, end_dt in self._chunk_date_range(pendulum.parse(start_point)):
+                    stream_slice = {key: value for key, value in super_slice.items()}
+                    stream_slice[self.lower_bound_filter] = start_dt
+                    stream_slice[self.upper_bound_filter] = end_dt
+                    yield stream_slice
+            else:
                 stream_slice = {key: value for key, value in super_slice.items()}
-                stream_slice[self.lower_bound_filter] = start_dt
-                stream_slice[self.upper_bound_filter] = end_dt
                 yield stream_slice
 
     def request_params(self, stream_state=None, stream_slice: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state, stream_slice, **kwargs)
-        params[self.lower_bound_filter] = stream_slice[self.lower_bound_filter]
-        params[self.upper_bound_filter] = stream_slice[self.upper_bound_filter]
+        lower_bound_filter = stream_slice.get(self.lower_bound_filter)
+        upper_bound_filter = stream_slice.get(self.upper_bound_filter)
+        if lower_bound_filter and upper_bound_filter:
+            params[self.lower_bound_filter] = lower_bound_filter
+            params[self.upper_bound_filter] = upper_bound_filter
         return params
 
 
@@ -404,3 +413,17 @@ class EpicIssues(GitlabChildStream):
     flatten_id_keys = ["milestone", "assignee", "author"]
     flatten_list_keys = ["assignees"]
     path_template = "groups/{group_id}/epics/{iid}/issues"
+
+
+class Deployments(GitlabChildStream):
+    primary_key = "id"
+    flatten_id_keys = ["user", "environment"]
+    path_template = "projects/{id}/deployments"
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        super().transform(record, stream_slice, **kwargs)
+        record["user_username"] = record["user"]["username"]
+        record["user_full_name"] = record["user"]["name"]
+        record["environment_name"] = record["environment"]["name"]
+        record["project_id"] = stream_slice["id"]
+        return record

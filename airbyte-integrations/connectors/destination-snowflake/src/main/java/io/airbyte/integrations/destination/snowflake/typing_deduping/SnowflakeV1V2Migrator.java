@@ -74,8 +74,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
             tableName)
             .stream()
             .collect(LinkedHashMap::new,
-                (map, row) -> map.put(
-                    row.get("COLUMN_NAME").asText(),
+                (map, row) -> map.put(row.get("COLUMN_NAME").asText(),
                     new SnowflakeColumnDefinition(row.get("DATA_TYPE").asText(), fromSnowflakeBoolean(row.get("IS_NULLABLE").asText()))),
                 LinkedHashMap::putAll);
     if (columns.isEmpty()) {
