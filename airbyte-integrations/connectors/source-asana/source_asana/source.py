@@ -74,5 +74,5 @@ class SourceAsana(AbstractSource):
             Workspaces(**args),
         ]
         if "organization_export_ids" in config:
-            streams.append(OrganizationExports(organization_export_ids=config.get("organization_export_ids"),**args))
+            streams.append(OrganizationExports(organization_export_ids=config.get("organization_export_ids"), **args))
         return streams
