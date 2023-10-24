@@ -192,6 +192,7 @@ The Stripe connector should not run into Stripe API limitations under normal usa
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                              |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.0   | 2023-10-24 | [31764](https://github.com/airbytehq/airbyte/pull/31764) | Fix schemas for the streams: `Invoices`, `Subscriptions`, `SubscriptionSchedule`                                                                     |
 | 4.4.2   | 2023-10-24 | [31764](https://github.com/airbytehq/airbyte/pull/31764) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                      |
 | 4.4.1   | 2023-10-18 | [31553](https://github.com/airbytehq/airbyte/pull/31553) | Adjusted `Setup Attempts` and extended `Checkout Sessions` stream schemas                                                                            |
 | 4.4.0   | 2023-10-04 | [31046](https://github.com/airbytehq/airbyte/pull/31046) | Added margins field to invoice_line_items stream.                                                                                                    |

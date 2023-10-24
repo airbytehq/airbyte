@@ -323,10 +323,7 @@
       }
     },
     "default_tax_rates": {
-      "type": ["null", "array"],
-      "items": {
-        "$ref": "tax_rates.json"
-      }
+      "$ref": "tax_rates.json"
     },
     "pause_collection": {
       "type": ["null", "object"],
