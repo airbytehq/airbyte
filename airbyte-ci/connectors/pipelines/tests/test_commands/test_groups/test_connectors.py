@@ -292,3 +292,27 @@ async def test_commands_do_not_override_connector_selection(
     assert mock_connector_context.call_count == 1
     # If the connector selection is overriden the context won't be instantiated with the selected connector mock instance
     assert mock_connector_context.call_args_list[0].kwargs["connector"] == selected_connector
+
+
+@pytest.mark.parametrize(
+    "use_remote_secrets_user_input, gsm_env_var_set, expected_use_remote_secrets, expect_click_usage_error",
+    [
+        (None, True, True, False),
+        (None, False, False, False),
+        (True, False, None, True),
+        (True, True, True, False),
+        (False, True, False, False),
+        (False, False, False, False),
+    ],
+)
+def test_should_use_remote_secrets(
+    mocker, use_remote_secrets_user_input, gsm_env_var_set, expected_use_remote_secrets, expect_click_usage_error
+):
+    if gsm_env_var_set:
+        mocker.patch.object(connectors_commands.os, "getenv", return_value=gsm_env_var_set)
+    if expect_click_usage_error:
+        with pytest.raises(click.UsageError):
+            connectors_commands.should_use_remote_secrets(use_remote_secrets_user_input)
+    else:
+        final_use_remote_secrets = connectors_commands.should_use_remote_secrets(use_remote_secrets_user_input)
+        assert final_use_remote_secrets == expected_use_remote_secrets
