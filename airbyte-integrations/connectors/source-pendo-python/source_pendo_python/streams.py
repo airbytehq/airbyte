@@ -18,7 +18,7 @@ class PendoPythonStream(HttpStream, ABC):
         return {}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield {}
+        yield from response.json()
 
     def get_valid_type(self, field_type) -> str:
         if field_type == 'time':
@@ -29,37 +29,57 @@ class PendoPythonStream(HttpStream, ABC):
 
 
 class Feature(PendoPythonStream):
+    name = "Feature"
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "feature"
 
 
 class Guide(PendoPythonStream):
+    name = "Guide"
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "guide"
 
 
 class Page(PendoPythonStream):
+    name = "Page"
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "page"
 
 
 class Report(PendoPythonStream):
+    name = "Report"
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "report"
 
 
 class VisitorMetadata(PendoPythonStream):
+    name = "Visitor Metadata"
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "metadata/schema/visitor"
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from [response.json()]
+
 
 class AccountMetadata(PendoPythonStream):
+    name = "Account Metadata"
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "metadata/schema/account"
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        yield from [response.json()]
 
 
 class Visitors(PendoPythonStream):
     primary_key = "visitorId"
+
+    name = "Visitors"
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -142,6 +162,8 @@ class Visitors(PendoPythonStream):
 class Accounts(PendoPythonStream):
     primary_key = "accountId"
 
+    name = "Accounts"
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -150,13 +172,6 @@ class Accounts(PendoPythonStream):
     @property
     def http_method(self) -> str:
         return "POST"
-
-    def get_valid_type(self, field_type) -> str:
-        if field_type == 'time':
-            return 'integer'
-        if field_type == 'list':
-            return 'array'
-        return field_type
 
     def get_json_schema(self) -> Mapping[str, Any]:
         print("Got called")
