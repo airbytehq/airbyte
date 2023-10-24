@@ -11,10 +11,9 @@ from urllib.error import URLError
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from bingads.service_client import ServiceClient
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
-
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from source_bing_ads.client import Client
 from source_bing_ads.reports import (
     ALL_CONVERSION_FIELDS,
@@ -842,15 +841,7 @@ class AgeGenderAudienceReport(PerformanceReportsMixin, BingAdsStream, ABC):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "age_gender_audience_report"
-    primary_key = [
-        "AgeGroup",
-        "Gender",
-        "TimePeriod",
-        "AccountId",
-        "CampaignId",
-        "Language",
-        "AdDistribution"
-    ]
+    primary_key = ["AgeGroup", "Gender", "TimePeriod", "AccountId", "CampaignId", "Language", "AdDistribution"]
 
     @property
     def report_columns(self):
