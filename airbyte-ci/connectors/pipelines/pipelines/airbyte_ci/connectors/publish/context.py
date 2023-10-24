@@ -73,14 +73,6 @@ class PublishConnectorContext(ConnectorContext):
         )
 
     @property
-    def docker_hub_username_secret(self) -> Secret:
-        return self.dagger_client.set_secret("docker_hub_username", self.docker_hub_username)
-
-    @property
-    def docker_hub_password_secret(self) -> Secret:
-        return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
-
-    @property
     def metadata_service_gcs_credentials_secret(self) -> Secret:
         return self.dagger_client.set_secret("metadata_service_gcs_credentials", self.metadata_service_gcs_credentials)
 
