@@ -1,4 +1,4 @@
-# DuckDB Destination - Migration Guide
+# DuckDB Migration Guide
 
 ## Upgrading to 0.3.0
 
