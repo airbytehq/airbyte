@@ -78,12 +78,14 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
 
     def test_catching_and_raising_custom_file_based_exception(self) -> None:
         """
-        Test that the DefaultFileBasedAvailabilityStrategy catches CustomFileBasedException and raises CheckAvailabilityError.
+        Test if the DefaultFileBasedAvailabilityStrategy correctly handles the CustomFileBasedException
+        by raising a CheckAvailabilityError when the get_files method is called.
         """
-        # Mock the list_files method to raise CustomFileBasedException
-        self._stream.list_files.side_effect = CustomFileBasedException("Custom exception for testing.")
+        # Mock the get_files method to raise CustomFileBasedException when called
+        self._stream.get_files.side_effect = CustomFileBasedException("Custom exception for testing.")
 
-        # Check if the check_availability_and_parsability method raises CheckAvailabilityError
-        successful_check, error_massage = self._strategy.check_availability_and_parsability(self._stream, Mock(), Mock())
-        assert successful_check == False
-        assert "Custom exception for testing." in error_massage
+        # Invoke the check_availability_and_parsability method and check if it correctly handles the exception
+        is_available, error_message = self._strategy.check_availability_and_parsability(self._stream, Mock(), Mock())
+        assert is_available == False
+        assert "Custom exception for testing." in error_message
+

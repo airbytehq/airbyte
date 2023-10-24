@@ -44,9 +44,7 @@ class BaseFileBasedSourceError(Exception):
     def __init__(self, error: Union[FileBasedSourceError, str], **kwargs):  # type: ignore # noqa
         if isinstance(error, FileBasedSourceError):
             error = FileBasedSourceError(error).value
-        super().__init__(
-            f"{error} Contact Support if you need assistance.\n{' '.join([f'{k}={v}' for k, v in kwargs.items()])}"
-        )
+        super().__init__(f"{error} Contact Support if you need assistance.\n{' '.join([f'{k}={v}' for k, v in kwargs.items()])}")
 
 
 class ConfigValidationError(BaseFileBasedSourceError):
@@ -95,4 +93,5 @@ class CustomFileBasedException(AirbyteTracedException):
 
     This exception is designed to bypass the default error handling in the file-based CDK, allowing the use of custom error messages.
     """
+
     pass
