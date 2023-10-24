@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import stripe
@@ -35,7 +35,7 @@ _MAX_CONCURRENCY = 3
 
 
 class SourceStripe(AbstractSource):
-    def __init__(self, catalog_path: str, **kwargs):
+    def __init__(self, catalog_path: Optional[str] = None, **kwargs):
         super().__init__(**kwargs)
         if catalog_path:
             catalog = self.read_catalog(catalog_path)
