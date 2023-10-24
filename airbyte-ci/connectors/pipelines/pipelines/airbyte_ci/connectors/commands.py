@@ -105,7 +105,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
                 raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
     if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
         raise click.UsageError(
-            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
+            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. See README for instructions ('Setting up connector secrets access'). Set the --use-remote-secrets option to false otherwise."
         )
 
 
