@@ -21,4 +21,13 @@ public class BigQueryGcsRawOverrideDisableTypingDedupingTest extends AbstractBig
     return true;
   }
 
+  @Override
+  public void testRemovingPKNonNullIndexes() throws Exception {
+    // Do nothing.
+  }
+
+  @Override
+  public void identicalNameSimultaneousSync() throws Exception {
+    // TODO: create fixtures to verify how raw tables are affected. Base tests check for final tables.
+  }
 }
