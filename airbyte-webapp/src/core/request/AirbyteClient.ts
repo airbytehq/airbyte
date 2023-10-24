@@ -1167,6 +1167,10 @@ export interface DestinationRead {
   name: string;
   destinationName: string;
 }
+export interface DestinationReadItem {
+  DestinationRead: DestinationRead;
+  WebBackendConnectionReadList: any;
+}
 
 export interface DestinationReadList {
   destinations: DestinationRead[];
@@ -2557,6 +2561,23 @@ export const getDestination = (
   return apiOverride<DestinationRead>(
     {
       url: `/etl/destinations/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationIdRequestBody,
+    },
+    options
+  );
+};
+/**
+ * @summary Get configured destination
+ */
+export const getSingleDestinationItem = (
+  destinationIdRequestBody: DestinationIdRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationRead>(
+    {
+      url: `/etl/destinations/connection/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationIdRequestBody,

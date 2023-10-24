@@ -17,8 +17,8 @@ import DeleteBlock from "components/DeleteBlock";
 import { CategoryItem } from "components/TabMenu";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import { useConnectionList } from "hooks/services/useConnectionHook";
-import { useDeleteDestination } from "hooks/services/useDestinationHook";
+// import { useConnectionList } from "hooks/services/useConnectionHook";
+import { useDeleteDestination, useGetDestinationItem } from "hooks/services/useDestinationHook";
 // import { useSourceList } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
@@ -32,7 +32,7 @@ import TestConnection from "views/Connector/TestConnection";
 import DestinationConnectionTable from "./components/DestinationConnectionTable";
 import DestinationSettings from "./components/DestinationSettings";
 import HeaderSction from "./components/HeaderSection";
-import { useGetDestination } from "../../../../hooks/services/useDestinationHook";
+// import { useGetDestination } from "../../../../hooks/services/useDestinationHook";
 
 interface PageConfig {
   menuConfig: CategoryItem[];
@@ -90,10 +90,12 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
 
   // const { sources } = useSourceList();
   // const { sourceDefinitions } = useSourceDefinitionList();
-  const destination = useGetDestination(params.id);
-  const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
+  // const destination = useGetDestination(params.id);
+  const destination = useGetDestinationItem(params.id);
 
-  const { connections } = useConnectionList();
+  const destinationDefinition = useDestinationDefinition(destination?.DestinationRead?.destinationDefinitionId);
+
+  // const { connections } = useConnectionList();
   const { mutateAsync: deleteDestination } = useDeleteDestination();
 
   const breadcrumbsData = [
@@ -101,12 +103,12 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
       name: <FormattedMessage id="tables.allDestinations" />,
       onClick: () => push(".."),
     },
-    { name: destination.name },
+    { name: destination?.DestinationRead?.name },
   ];
 
-  const connectionsWithDestination = connections.filter(
-    (connectionItem) => connectionItem.destinationId === destination.destinationId
-  );
+  // const connectionsWithDestination = connections.filter(
+  //   (connectionItem) => connectionItem.destinationId === destination.destinationId
+  // );
 
   // const sourcesDropDownData = useMemo(
   //   () =>
@@ -142,7 +144,10 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   };
 
   const onDelete = async () => {
-    await deleteDestination({ connectionsWithDestination, destination });
+    await deleteDestination({
+      destination: destination?.DestinationRead,
+      connectionsWithDestination: destination?.WebBackendConnectionReadList?.connections,
+    });
   };
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
@@ -153,7 +158,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
           name: <FormattedMessage id="tables.overview" />,
           component: (
             <TableContainer>
-              {connectionsWithDestination.length === 0 ? (
+              {destination?.WebBackendConnectionReadList?.connections?.length === 0 ? (
                 <Typography
                   textAlign="left"
                   fontSize={{ lg: 24, md: 24, sm: 20, xs: 18 }}
@@ -169,7 +174,10 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                   size="lg"
                   onClick={() =>
                     push(`../${RoutePaths.SelectConnection}`, {
-                      state: { destinationId: destination.destinationId, currentStep: CreateStepTypes.CREATE_SOURCE },
+                      state: {
+                        destinationId: destination?.DestinationRead?.destinationId,
+                        currentStep: CreateStepTypes.CREATE_SOURCE,
+                      },
                     })
                   }
                 >
@@ -194,9 +202,9 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                 btnText={<FormattedMessage id="sources.newSourceTitle" />}
               /> */}
 
-              {connectionsWithDestination.length > 0 && (
+              {destination?.WebBackendConnectionReadList?.connections?.length > 0 && (
                 <Box pt={2}>
-                  <DestinationConnectionTable connections={connectionsWithDestination} />
+                  <DestinationConnectionTable connections={destination?.WebBackendConnectionReadList?.connections} />
                 </Box>
               )}
             </TableContainer>
@@ -222,7 +230,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               )}
               {currentStep === StepsTypes.CREATE_ENTITY && (
                 <DestinationSettings
-                  currentDestination={destination}
+                  currentDestination={destination?.DestinationRead}
                   errorMessage={fetchingConnectorError}
                   onBack={goBack}
                   formValues={destinationFormValues}

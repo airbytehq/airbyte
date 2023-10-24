@@ -68,8 +68,7 @@ const AllSourcesPage: React.FC = () => {
 
   const [filters, setFilters] = useState<FilterSourceRequestBody>(initialFiltersState);
   const { sources, total, pageSize } = usePaginatedSources(filters);
-  console.log(total, "total");
-  console.log(pageSize, "pageSize");
+
   // const { statusOptions, sourceOptions, destinationOptions } = useConnectionFilterOptions();
 
   // const initialFiltersState = {

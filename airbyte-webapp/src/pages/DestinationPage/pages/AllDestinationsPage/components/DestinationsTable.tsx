@@ -20,7 +20,7 @@ const DestinationsTable: React.FC<DestinationsTableProps> = ({ destinations }) =
   const { push } = useRouter();
   // const { connections } = useConnectionList();
   // const { destinationDefinitions } = useDestinationDefinitionList();
-  console.log(destinations, "Destinations");
+
   // const data = getEntityTableData(destinations, connections, destinationDefinitions, "destination");
 
   const clickRow = (destination: DestinationRead) => push(`${destination.destinationId}`);

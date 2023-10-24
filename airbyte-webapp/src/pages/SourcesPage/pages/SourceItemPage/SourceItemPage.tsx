@@ -19,7 +19,7 @@ import { CategoryItem } from "components/TabMenu";
 
 import { SourceDefinitionRead } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
-import { useConnectionList } from "hooks/services/useConnectionHook";
+// import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useGetSourceItem } from "hooks/services/useSourceHook";
 import { useDeleteSource } from "hooks/services/useSourceHook";
 import useRouter from "hooks/useRouter";
@@ -91,8 +91,8 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
 
   // const source = useGetSource(query.id);
   const source = useGetSourceItem(query.id);
-  console.log(source, "Response");
-  console.log(source?.SourceRead?.sourceDefinitionId, "id");
+  // console.log(source, "Response");
+  // console.log(source?.SourceRead?.sourceDefinitionId, "id");
 
   const sourceDefinition = useSourceDefinition(source?.SourceRead?.sourceDefinitionId);
 
@@ -100,7 +100,7 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
 
   // const { destinationDefinitions } = useDestinationDefinitionList();
 
-  const { connections } = useConnectionList();
+  // const { connections } = useConnectionList();
   const { mutateAsync: deleteSource } = useDeleteSource();
 
   const breadcrumbsData = [
@@ -111,10 +111,10 @@ const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
     { name: source.SourceRead?.name },
   ];
 
-  const connectionsWithSource = connections?.filter(
-    (connectionItem) => connectionItem?.sourceId === source?.SourceRead?.sourceId
-  );
-  console.log(connectionsWithSource, "ss");
+  // const connectionsWithSource = connections?.filter(
+  //   (connectionItem) => connectionItem?.sourceId === source?.SourceRead?.sourceId
+  // );
+  // console.log(connectionsWithSource, "ss");
   // const destinationsDropDownData = useMemo(
   //   () =>
   //     destinations.map((item) => {

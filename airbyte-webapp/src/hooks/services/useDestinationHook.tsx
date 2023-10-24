@@ -14,6 +14,7 @@ import {
   DestinationRead,
   WebBackendConnectionRead,
   DestinationCloneRequestBody,
+  DestinationReadItem,
 } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
@@ -76,6 +77,15 @@ const useGetDestination = <T extends string | undefined | null>(
   });
 };
 
+const useGetDestinationItem = <T extends string | undefined | null>(
+  destinationId: T
+): T extends string ? DestinationReadItem : DestinationReadItem | undefined => {
+  const service = useDestinationService();
+
+  return useSuspenseQuery(destinationsKeys.detail(destinationId ?? ""), () =>
+    service.getSingleDestination(destinationId ?? "")
+  );
+};
 const useCreateDestination = () => {
   const service = useDestinationService();
   const queryClient = useQueryClient();
@@ -188,4 +198,5 @@ export {
   useCloneDestination,
   useUpdateDestination,
   usePaginatedDestination,
+  useGetDestinationItem,
 };
