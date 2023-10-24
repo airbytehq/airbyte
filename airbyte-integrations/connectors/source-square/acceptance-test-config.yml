@@ -28,6 +28,8 @@ acceptance_tests:
         empty_streams:
           - name: cash_drawers
             bypass_reason: "Not able to fill stream"
+          - name: bank_accounts
+            bypass_reason: "Not able to fill stream"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
         ignored_fields:

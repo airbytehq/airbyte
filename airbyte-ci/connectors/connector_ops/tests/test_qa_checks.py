@@ -185,8 +185,8 @@ def test_is_comment(tmp_path, file_name, line, expect_is_comment):
 
 def test_check_missing_migration_guide(mocker, tmp_path, capsys):
     connector = qa_checks.Connector("source-foobar")
-    mock_documentation_directory_path = Path(tmp_path)
-    mocker.patch.object(qa_checks.Connector, "documentation_directory", mock_documentation_directory_path)
+    local_connector_documentation_directory = Path(tmp_path)
+    mocker.patch.object(qa_checks.Connector, "local_connector_documentation_directory", local_connector_documentation_directory)
 
     mock_metadata_dict = {
         "documentationUrl": tmp_path,
@@ -203,7 +203,12 @@ def test_check_missing_migration_guide(mocker, tmp_path, capsys):
 
     assert qa_checks.check_migration_guide(connector) is False
     stdout, _ = capsys.readouterr()
-    assert "Migration guide file is missing for foobar. Please create a foobar-migrations.md file in the docs folder" in stdout
+    # f"Migration guide file is missing for {connector.name}. Please create a migration guide at {connector.migration_guide_file_path}"
+
+    assert (
+        f"Migration guide file is missing for foobar. Please create a migration guide at {local_connector_documentation_directory}/foobar-migrations.md"
+        in stdout
+    )
 
 
 @pytest.mark.parametrize(
@@ -218,9 +223,9 @@ def test_check_missing_migration_guide(mocker, tmp_path, capsys):
 )
 def test_check_invalid_migration_guides(mocker, tmp_path, capsys, test_file, expected_stdout):
     connector = qa_checks.Connector("source-foobar")
-    mock_documentation_directory_path = Path(tmp_path)
-    mocker.patch.object(qa_checks.Connector, "documentation_directory", mock_documentation_directory_path)
-    mock_migration_file = mock_documentation_directory_path / f"{connector.name}-migrations.md"
+    local_connector_documentation_directory = Path(tmp_path)
+    mocker.patch.object(qa_checks.Connector, "local_connector_documentation_directory", local_connector_documentation_directory)
+    mock_migration_file = local_connector_documentation_directory / f"{connector.name}-migrations.md"
 
     mock_breaking_change_value = {
         "upgradeDeadline": "2021-01-01",

@@ -1,12 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+
 import pytest
 from connector_ops.utils import Connector
-from pipelines.bases import StepResult
-from pipelines.builds.python_connectors import BuildConnectorImages
-from pipelines.contexts import ConnectorContext
-from pipelines.tests.python_connectors import UnitTests
+from pipelines.airbyte_ci.connectors.build_image.steps.python_connectors import BuildConnectorImages
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.airbyte_ci.connectors.test.steps.python_connectors import UnitTests
+from pipelines.models.steps import StepResult
 
 pytestmark = [
     pytest.mark.anyio,
