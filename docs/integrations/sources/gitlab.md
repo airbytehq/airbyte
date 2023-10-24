@@ -94,7 +94,7 @@ This connector outputs the following streams:
 - [Deployments](https://docs.gitlab.com/ee/api/deployments/index.html)
 - [Group Labels](https://docs.gitlab.com/ee/api/group_labels.html)
 - [Project Labels](https://docs.gitlab.com/ee/api/labels.html)
-- [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts. Using iid field as primary key - The internal ID of the epic.\)
+- [Epics](https://docs.gitlab.com/ee/api/epics.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts. Using iid field as primary key, the internal ID of the epic, the number of Epic on UI, for more convenient search and matching with UI.\)
 - [Epic Issues](https://docs.gitlab.com/ee/api/epic_issues.html) \(only available for GitLab Ultimate and GitLab.com Gold accounts\)
 
 ## Additional information
