@@ -16,7 +16,7 @@ class SourceFaker(AbstractSource):
         if type(config["count"]) == int or type(config["count"]) == float:
             return True, None
         else:
-            return False, "Count option is missing"
+            return False, "Count option is missing!"
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         count: int = config["count"] if "count" in config else 0

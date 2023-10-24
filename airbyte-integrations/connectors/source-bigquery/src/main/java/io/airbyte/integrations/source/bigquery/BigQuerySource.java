@@ -91,7 +91,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
             getFullyQualifiedTableNameWithQuoting(getConfigDatasetId(database), "INFORMATION_SCHEMA.TABLES", getQuoteString())));
         LOGGER.info("The source passed the Dataset query test!");
       } else {
-        LOGGER.info("The Dataset query test is skipped due to not configured datasetId!");
+        LOGGER.info("The Dataset query test is skipped due to not configured datasetId!!");
       }
     });
 
