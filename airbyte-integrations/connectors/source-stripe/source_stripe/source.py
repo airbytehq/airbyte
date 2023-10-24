@@ -31,6 +31,8 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeStream,
 )
 
+_MAX_CONCURRENCY = 3
+
 
 class SourceStripe(AbstractSource):
     def __init__(self, use_concurrent_cdk: bool = False, **kwargs):
@@ -423,7 +425,9 @@ class SourceStripe(AbstractSource):
             ),
         ]
         if self._use_concurrent_cdk:
-            concurrency_level = config.get("concurrency_level", 2)
+            # We cap the number of workers to avoid hitting the Stripe rate limit
+            # The limit can be removed or increased once we have proper rate limiting
+            concurrency_level = max(config.get("num_workers", 2), _MAX_CONCURRENCY)
             streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
             return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level) for stream in streams]
         else:
