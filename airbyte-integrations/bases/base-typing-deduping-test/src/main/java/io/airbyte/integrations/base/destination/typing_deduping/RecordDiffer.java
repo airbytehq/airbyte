@@ -102,7 +102,6 @@ public class RecordDiffer {
         () -> diffRawTableRecords(expectedRawRecords, actualRawRecords));
   }
 
-
   public void diffRawTableRecords(final List<JsonNode> expectedRecords, final List<JsonNode> actualRecords) {
     final String diff = diffRecords(
         expectedRecords.stream().map(this::copyWithLiftedData).collect(toList()),

@@ -20,4 +20,5 @@ public class BigQueryGcsRawOverrideDisableTypingDedupingTest extends AbstractBig
   protected boolean disableFinalTableComparison() {
     return true;
   }
+
 }

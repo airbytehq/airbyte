@@ -20,4 +20,5 @@ public class BigQueryStandardInsertsRawOverrideDisableTypingDedupingTest extends
   protected boolean disableFinalTableComparison() {
     return true;
   }
+
 }

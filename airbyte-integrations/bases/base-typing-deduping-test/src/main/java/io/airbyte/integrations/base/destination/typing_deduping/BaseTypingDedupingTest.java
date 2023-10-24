@@ -111,6 +111,7 @@ public abstract class BaseTypingDedupingTest {
 
   /**
    * Utility method for tests to check if table exists
+   *
    * @param streamNamespace
    * @param streamName
    * @return
@@ -120,6 +121,7 @@ public abstract class BaseTypingDedupingTest {
     // Implementation is specific to destination's tests.
     return true;
   }
+
   /**
    * For a given stream, return the records that exist in the destination's final table. Each record
    * must be in the format {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...", "_airbyte_meta":
@@ -192,8 +194,9 @@ public abstract class BaseTypingDedupingTest {
   }
 
   /**
-   * Override this method only when skipping T&D and only compare raw tables and skip final table comparison.
-   * For every other case it should always return false.
+   * Override this method only when skipping T&D and only compare raw tables and skip final table
+   * comparison. For every other case it should always return false.
+   *
    * @return
    */
   protected boolean disableFinalTableComparison() {
@@ -699,14 +702,18 @@ public abstract class BaseTypingDedupingTest {
     // this test probably needs some configuration per destination to specify what values are supported?
   }
 
-  protected void verifySyncResult(final List<JsonNode> expectedRawRecords, final List<JsonNode> expectedFinalRecords, boolean disableFinalTableComparison) throws Exception {
+  protected void verifySyncResult(final List<JsonNode> expectedRawRecords,
+                                  final List<JsonNode> expectedFinalRecords,
+                                  boolean disableFinalTableComparison)
+      throws Exception {
     verifySyncResult(expectedRawRecords, expectedFinalRecords, streamNamespace, streamName, disableFinalTableComparison);
   }
 
   private void verifySyncResult(final List<JsonNode> expectedRawRecords,
                                 final List<JsonNode> expectedFinalRecords,
                                 final String streamNamespace,
-                                final String streamName, boolean disableFinalTableComparison)
+                                final String streamName,
+                                boolean disableFinalTableComparison)
       throws Exception {
     final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamNamespace, streamName);
     if (disableFinalTableComparison) {
