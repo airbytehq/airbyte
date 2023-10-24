@@ -264,7 +264,6 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.4   | 2023-10-11 | [31674](https://github.com/airbytehq/airbyte/pull/31674)   | Fail sync when Debezium fails to shut down properly                                                                                             |
 | 3.1.3   | 2023-10-11 | [31322](https://github.com/airbytehq/airbyte/pull/31322)   | Correct pevious release                                                                                                                         |
 | 3.1.2   | 2023-09-29 | [30806](https://github.com/airbytehq/airbyte/pull/30806)   | Cap log line length to 32KB to prevent loss of records                                                                                          |
 | 3.1.1   | 2023-09-26 | [30744](https://github.com/airbytehq/airbyte/pull/30744)   | Update MySQL JDBC connection configs to keep default auto-commit behavior                                                                       |
