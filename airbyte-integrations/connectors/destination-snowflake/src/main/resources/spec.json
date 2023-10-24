@@ -163,9 +163,8 @@
       },
       "raw_data_schema": {
         "type": "string",
-        "description": "The schema to write raw tables into",
+        "description": "The schema to write raw tables into (default: airbyte_internal)",
         "title": "Raw Table Schema Name",
-        "default": "airbyte_internal",
         "order": 10
       }
     }
