@@ -1,5 +1,10 @@
 # Changelog
 
+## 2.1.0
+Make the container under test a sessions scoped fixture. 
+Support loading it from its Dagger container id for better performance. 
+Install pytest-xdist to support running tests in parallel.
+
 ## 2.0.2
 Make `test_two_sequential_reads` handle namespace property in stream descriptor.
 

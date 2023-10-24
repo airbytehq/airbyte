@@ -38,12 +38,20 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     type=bool,
     is_flag=True,
 )
+@click.option(
+    "--concurrent-cat",
+    help="When enabled, the CAT tests will run concurrently. Be careful about rate limits",
+    default=False,
+    type=bool,
+    is_flag=True,
+)
 @click.pass_context
 def test(
     ctx: click.Context,
     code_tests_only: bool,
     fail_fast: bool,
     fast_tests_only: bool,
+    concurrent_cat: bool,
 ) -> bool:
     """Runs a test pipeline for the selected connectors.
 
@@ -87,6 +95,7 @@ def test(
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
             docker_hub_username=ctx.obj.get("docker_hub_username"),
             docker_hub_password=ctx.obj.get("docker_hub_password"),
+            concurrent_cat=concurrent_cat,
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
