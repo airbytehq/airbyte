@@ -24,6 +24,7 @@ Change Management:
 
  * OpenAPI spec version: 1.0.0
  */
+import { FilterDestinationRequestBody, FilterSourceRequestBody } from "./DaspireClient";
 import { apiOverride } from "./apiOverride";
 /**
  * Input failed validation
@@ -1166,6 +1167,10 @@ export interface DestinationRead {
   name: string;
   destinationName: string;
 }
+export interface DestinationReadItem {
+  DestinationRead: DestinationRead;
+  WebBackendConnectionReadList: any;
+}
 
 export interface DestinationReadList {
   destinations: DestinationRead[];
@@ -1382,6 +1387,10 @@ export interface SourceRead {
   connectionConfiguration: SourceConfiguration;
   name: string;
   sourceName: string;
+}
+export interface SourceReadItem {
+  SourceRead: any;
+  ConnectionReadList: any;
 }
 
 export interface SourceUpdate {
@@ -2066,12 +2075,48 @@ export const listSourcesForWorkspace = (
 };
 
 /**
+ * List sources for workspace. Does not return deleted sources.
+ * @summary List sources for workspace
+ */
+export const paginatedSources = (
+  filterSourceRequestBody: FilterSourceRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceReadList>(
+    {
+      url: `/etl/sources/page`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: filterSourceRequestBody,
+    },
+    options
+  );
+};
+
+/**
  * @summary Get source
  */
 export const getSource = (sourceIdRequestBody: SourceIdRequestBody, options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<SourceRead>(
     {
       url: `/etl/sources/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceIdRequestBody,
+    },
+    options
+  );
+};
+/**
+ * @summary Get single source
+ */
+export const getSingleSourceItem = (
+  sourceIdRequestBody: SourceIdRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceRead>(
+    {
+      url: `/etl/sources/connection/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: sourceIdRequestBody,
@@ -2488,7 +2533,24 @@ export const listDestinationsForWorkspace = (
     options
   );
 };
-
+/**
+ * List destination for workspace. Does not return deleted sources.
+ * @summary List destination for workspace
+ */
+export const paginatedDestination = (
+  filterDestinationRequestBody: FilterDestinationRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationReadList>(
+    {
+      url: `/etl/destinations/page`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: filterDestinationRequestBody,
+    },
+    options
+  );
+};
 /**
  * @summary Get configured destination
  */
@@ -2499,6 +2561,23 @@ export const getDestination = (
   return apiOverride<DestinationRead>(
     {
       url: `/etl/destinations/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationIdRequestBody,
+    },
+    options
+  );
+};
+/**
+ * @summary Get configured destination
+ */
+export const getSingleDestinationItem = (
+  destinationIdRequestBody: DestinationIdRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationRead>(
+    {
+      url: `/etl/destinations/connection/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationIdRequestBody,

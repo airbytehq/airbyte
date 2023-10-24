@@ -52,6 +52,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -612,13 +613,35 @@ public class ConfigRepository {
   }
 
   public List<StandardSync> listWorkspaceStandardSyncs(final UUID workspaceId) throws IOException {
-    LOGGER.info("inside listWorkspaceStandardSyncs() Start time -> {}", OffsetDateTime.now());
     final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
         .from(CONNECTION)
         .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
         .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).fetch();
-    LOGGER.info("inside listWorkspaceStandardSyncs() END time -> {}", OffsetDateTime.now());
     return getStandardSyncsFromResult(result);
+  }
+
+  public List<StandardSync> listSourceStandardSyncsWithoutOperations(final UUID workspaceId, final UUID sourceId) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+        .from(CONNECTION)
+        .join(ACTOR).on(CONNECTION.SOURCE_ID.eq(ACTOR.ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).and(ACTOR.ID.eq(sourceId)).fetch();
+    final List<StandardSync> standardSyncs = new ArrayList<>();
+    for (final Record record : result) {
+      standardSyncs.add(DbConverter.buildStandardSync(record, Collections.emptyList()));
+    }
+    return standardSyncs;
+  }
+
+  public List<StandardSync> listDestinationStandardSyncsWithoutOperations(final UUID workspaceId, final UUID destination) throws IOException {
+    final Result<Record> result = database.query(ctx -> ctx.select(CONNECTION.asterisk())
+        .from(CONNECTION)
+        .join(ACTOR).on(CONNECTION.DESTINATION_ID.eq(ACTOR.ID))
+        .where(ACTOR.WORKSPACE_ID.eq(workspaceId))).and(ACTOR.ID.eq(destination)).fetch();
+    final List<StandardSync> standardSyncs = new ArrayList<>();
+    for (final Record record : result) {
+      standardSyncs.add(DbConverter.buildStandardSync(record, Collections.emptyList()));
+    }
+    return standardSyncs;
   }
 
   public List<StandardSync> pageWorkspaceStandardSyncs(final UUID workspaceId,
@@ -656,6 +679,44 @@ public class ConfigRepository {
     return getStandardSyncsFromResult(result);
   }
 
+  public List<SourceConnection> pageWorkspaceSourceConnection(final UUID workspaceId, final Integer pageSize, final Integer pageCurrent)
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
+          .and(ACTOR.ACTOR_TYPE.eq(ActorType.source));
+      if (workspaceId != null) {
+        where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
+      }
+      return where.limit(pageSize)
+          .offset(pageSize * (pageCurrent - 1));
+    }).fetch();
+
+    final List<SourceConnection> sourceConnections = new ArrayList<>();
+    for (final Record record : result) {
+      sourceConnections.add(DbConverter.buildSourceConnection(record));
+    }
+    return sourceConnections;
+  }
+
+  public List<DestinationConnection> pageWorkspaceDestinationConnection(final UUID workspaceId, final Integer pageSize, final Integer pageCurrent)
+      throws IOException {
+    final Result<Record> result = database.query(ctx -> {
+      SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
+          .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination));
+      if (workspaceId != null) {
+        where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
+      }
+      return where.limit(pageSize)
+          .offset(pageSize * (pageCurrent - 1));
+    }).fetch();
+
+    final List<DestinationConnection> destinationConnections = new ArrayList<>();
+    for (final Record record : result) {
+      destinationConnections.add(DbConverter.buildDestinationConnection(record));
+    }
+    return destinationConnections;
+  }
+
   public Long pageWorkspaceStandardSyncsCount(final UUID workspaceId, final UUID sourceId, final UUID destinationId, final String status)
       throws IOException {
     return database.query(ctx -> {
@@ -684,29 +745,10 @@ public class ConfigRepository {
     }).fetchOne().into(Long.class);
   }
 
-  public List<SourceConnection> pageWorkspaceSourceConnection(final UUID workspaceId, final Integer pageSize, final Integer pageCurrent)
-          throws IOException {
-    final Result<Record> result = database.query(ctx -> {
-      SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
-              .and(ACTOR.ACTOR_TYPE.eq(ActorType.source));
-      if (workspaceId != null) {
-        where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
-      }
-      return where.limit(pageSize)
-              .offset(pageSize * (pageCurrent - 1));
-    }).fetch();
-
-    final List<SourceConnection> sourceConnections = new ArrayList<>();
-    for (final Record record : result) {
-      sourceConnections.add(DbConverter.buildSourceConnection(record));
-    }
-    return sourceConnections;
-  }
-
   public Long pageWorkspaceSourceCount(final UUID workspaceId) throws IOException {
     return database.query(ctx -> {
       SelectConditionStep<Record1<Integer>> where = ctx.selectCount().from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
-              .and(ACTOR.ACTOR_TYPE.eq(ActorType.source));
+          .and(ACTOR.ACTOR_TYPE.eq(ActorType.source));
       if (workspaceId != null) {
         where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
       }
@@ -714,29 +756,10 @@ public class ConfigRepository {
     }).fetchOne().into(Long.class);
   }
 
-  public List<DestinationConnection> pageWorkspaceDestinationConnection(final UUID workspaceId, final Integer pageSize, final Integer pageCurrent)
-          throws IOException {
-    final Result<Record> result = database.query(ctx -> {
-      SelectConditionStep<Record> where = ctx.select(asterisk()).from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
-              .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination));
-      if (workspaceId != null) {
-        where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
-      }
-      return where.limit(pageSize)
-              .offset(pageSize * (pageCurrent - 1));
-    }).fetch();
-
-    final List<DestinationConnection> destinationConnections = new ArrayList<>();
-    for (final Record record : result) {
-      destinationConnections.add(DbConverter.buildDestinationConnection(record));
-    }
-    return destinationConnections;
-  }
-
   public Long pageWorkspaceDestinationCount(final UUID workspaceId) throws IOException {
     return database.query(ctx -> {
       SelectConditionStep<Record1<Integer>> where = ctx.selectCount().from(ACTOR).where(ACTOR.TOMBSTONE.eq(Boolean.FALSE))
-              .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination));
+          .and(ACTOR.ACTOR_TYPE.eq(ActorType.destination));
       if (workspaceId != null) {
         where.and(ACTOR.WORKSPACE_ID.eq(workspaceId));
       }
@@ -745,7 +768,6 @@ public class ConfigRepository {
   }
 
   private List<StandardSync> getStandardSyncsFromResult(final Result<Record> result) throws IOException {
-    LOGGER.info("inside getStandardSyncsFromResult() Start time -> {}", OffsetDateTime.now());
     final List<StandardSync> standardSyncs = new ArrayList<>();
     for (final Record record : result) {
       final UUID connectionId = record.get(CONNECTION.ID);
@@ -753,12 +775,10 @@ public class ConfigRepository {
           .from(CONNECTION_OPERATION)
           .where(CONNECTION_OPERATION.CONNECTION_ID.eq(connectionId))
           .fetch());
-
       final List<UUID> connectionOperationIds =
           connectionOperationRecords.stream().map(r -> r.get(CONNECTION_OPERATION.OPERATION_ID)).collect(Collectors.toList());
       standardSyncs.add(DbConverter.buildStandardSync(record, connectionOperationIds));
     }
-    LOGGER.info("inside getStandardSyncsFromResult() End time -> {}", OffsetDateTime.now());
     return standardSyncs;
   }
 
@@ -1138,7 +1158,7 @@ public class ConfigRepository {
   }
 
   public Map<String, String> mapStatus() {
-      return Map.of("Active", StatusType.active.name(), "Inactive", StatusType.inactive.name());
+    return Map.of("Active", StatusType.active.name(), "Inactive", StatusType.inactive.name());
   }
 
   public List<Map<String, String>> listFilterParam(ActorType actorType) throws IOException {
