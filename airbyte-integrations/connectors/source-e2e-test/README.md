@@ -24,6 +24,7 @@ No credential is needed for this connector.
 
 #### Build
 Build the connector image via Gradle:
+You need a local install of [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) to run this command.
 ```
 ./gradlew :airbyte-integrations:connectors:source-e2e-test:buildConnectorImage
 ```
