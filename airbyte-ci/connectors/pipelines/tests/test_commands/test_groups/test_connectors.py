@@ -4,9 +4,9 @@
 
 from typing import Callable
 
-import click
+import asyncclick as click
 import pytest
-from click.testing import CliRunner
+from asyncclick.testing import CliRunner
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 from pipelines.airbyte_ci.connectors import commands as connectors_commands
 from pipelines.airbyte_ci.connectors.build_image import commands as connectors_build_command
@@ -271,7 +271,8 @@ def click_context_obj():
         (connectors_build_command.build, []),
     ],
 )
-def test_commands_do_not_override_connector_selection(
+@pytest.mark.asyncio
+async def test_commands_do_not_override_connector_selection(
     mocker, runner: CliRunner, click_context_obj: dict, command: Callable, command_args: list
 ):
     """
@@ -287,7 +288,7 @@ def test_commands_do_not_override_connector_selection(
     mocker.patch.object(connectors_test_command, "ConnectorContext", mock_connector_context)
     mocker.patch.object(connectors_build_command, "ConnectorContext", mock_connector_context)
     mocker.patch.object(connectors_publish_command, "PublishConnectorContext", mock_connector_context)
-    runner.invoke(command, command_args, catch_exceptions=True, obj=click_context_obj)
+    await runner.invoke(command, command_args, catch_exceptions=True, obj=click_context_obj)
     assert mock_connector_context.call_count == 1
     # If the connector selection is overriden the context won't be instantiated with the selected connector mock instance
     assert mock_connector_context.call_args_list[0].kwargs["connector"] == selected_connector

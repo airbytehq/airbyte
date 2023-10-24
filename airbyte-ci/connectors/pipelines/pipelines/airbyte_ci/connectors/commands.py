@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import List, Set, Tuple
 
-import click
+import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.cli.lazy_group import LazyGroup
@@ -105,7 +105,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
                 raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
     if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
         raise click.UsageError(
-            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
+            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. See README for instructions ('Setting up connector secrets access'). Set the --use-remote-secrets option to false otherwise."
         )
 
 
@@ -192,7 +192,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     envvar="DOCKER_HUB_PASSWORD",
 )
 @click.pass_context
-def connectors(
+async def connectors(
     ctx: click.Context,
     use_remote_secrets: bool,
     names: Tuple[str],
