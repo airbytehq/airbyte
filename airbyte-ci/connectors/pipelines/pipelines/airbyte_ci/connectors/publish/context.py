@@ -41,7 +41,7 @@ class PublishConnectorContext(ConnectorContext):
         pull_request: PullRequest = None,
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
-        use_local_cdk: bool = False,
+        use_local_cdk: Optional[bool] = False,
     ):
         self.pre_release = pre_release
         self.spec_cache_bucket_name = spec_cache_bucket_name
