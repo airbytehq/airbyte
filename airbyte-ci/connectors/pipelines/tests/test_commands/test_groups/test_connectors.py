@@ -309,7 +309,7 @@ def test_should_use_remote_secrets(
     mocker, use_remote_secrets_user_input, gsm_env_var_set, expected_use_remote_secrets, expect_click_usage_error
 ):
     if gsm_env_var_set:
-        mocker.patch.object(connectors_commands.os, "getenv", return_value=gsm_env_var_set)
+        mocker.patch.object(connectors_commands.os, "getenv", return_value=None if not gsm_env_var_set else "test")
     if expect_click_usage_error:
         with pytest.raises(click.UsageError):
             connectors_commands.should_use_remote_secrets(use_remote_secrets_user_input)

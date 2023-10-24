@@ -117,7 +117,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
         click.UsageError: If the --use-remote-secrets flag was provided but no GCP_GSM_CREDENTIALS environment variable was found.
 
     Returns:
-        bool: Whether to use remote connector secrets or local connector secrets.
+        bool: Whether to use remote connector secrets (True) or local connector secrets (False).
     """
     gcp_gsm_credentials_is_set = bool(os.getenv("GCP_GSM_CREDENTIALS"))
     if use_remote_secrets is None:
@@ -125,7 +125,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
             main_logger.info("GCP_GSM_CREDENTIALS environment variable found, using remote connector secrets.")
             return True
         else:
-            main_logger.warning("No GCP_GSM_CREDENTIALS environment variable found, using local connector secrets.")
+            main_logger.info("No GCP_GSM_CREDENTIALS environment variable found, using local connector secrets.")
             return False
     if use_remote_secrets:
         if gcp_gsm_credentials_is_set:
