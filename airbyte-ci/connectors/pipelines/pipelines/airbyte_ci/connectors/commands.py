@@ -177,6 +177,20 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     default=True,
     type=bool,
 )
+@click.option(
+    "--docker-hub-username",
+    help="Your username to connect to DockerHub.",
+    type=click.STRING,
+    required=False,
+    envvar="DOCKER_HUB_USERNAME",
+)
+@click.option(
+    "--docker-hub-password",
+    help="Your password to connect to DockerHub.",
+    type=click.STRING,
+    required=False,
+    envvar="DOCKER_HUB_PASSWORD",
+)
 @click.pass_context
 def connectors(
     ctx: click.Context,
@@ -192,6 +206,8 @@ def connectors(
     enable_dependency_scanning: bool,
     use_local_cdk: bool,
     enable_report_auto_open: bool,
+    docker_hub_username: str,
+    docker_hub_password: str,
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
@@ -202,6 +218,8 @@ def connectors(
     ctx.obj["execute_timeout"] = execute_timeout
     ctx.obj["use_local_cdk"] = use_local_cdk
     ctx.obj["open_report_in_browser"] = enable_report_auto_open
+    ctx.obj["docker_hub_username"] = docker_hub_username
+    ctx.obj["docker_hub_password"] = docker_hub_password
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
         names,
         support_levels,
