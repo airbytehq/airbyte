@@ -16,16 +16,13 @@ streams:
         url_base: https://www.strava.com/api/v3/
         path: athletes/{{ config.athlete_id }}/stats
         http_method: GET
-        request_parameters: {}
-        request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
-          refresh_request_body: {}
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           token_refresh_endpoint: https://www.strava.com/oauth/token
-          grant_type: refresh_token
+          grant_type: authorization_code
           scopes:
             - read_all
             - activity:read_all
@@ -52,12 +49,11 @@ streams:
         request_headers: {}
         authenticator:
           type: OAuthAuthenticator
-          client_id: '{{ config[''client_id''] }}'
-          client_secret: '{{ config[''client_secret''] }}'
-          refresh_token: '{{ config[''client_refresh_token''] }}'
-          refresh_request_body: {}
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           token_refresh_endpoint: https://www.strava.com/oauth/token
-          grant_type: refresh_token
+          grant_type: authorization_code
           scopes:
             - read_all
             - activity:read_all
@@ -85,12 +81,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: start_date
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%S%z'
-      datetime_format: '%s'
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_time_option:
         inject_into: request_parameter
         field_name: after
@@ -121,7 +117,7 @@ spec:
         title: Client ID
         pattern: "^[0-9_\\-]+$"
         examples:
-          - '12345'
+          - "12345"
         order: 0
       client_secret:
         type: string
@@ -134,7 +130,7 @@ spec:
         order: 1
       refresh_token:
         type: string
-        description: 'The Refresh Token with the activity: read_all permissions.'
+        description: "The Refresh Token with the activity: read_all permissions."
         title: Refresh Token
         pattern: "^[0-9a-fA-F]+$"
         examples:
@@ -147,14 +143,14 @@ spec:
         title: Athlete ID
         pattern: "^[0-9_\\-]+$"
         examples:
-          - '17831421'
+          - "17831421"
         order: 3
       start_date:
         type: string
         description: UTC date and time. Any data before this date will not be replicated.
         title: Start Date
         examples:
-          - '2021-03-01T00:00:00Z'
+          - "2021-03-01T00:00:00Z"
         format: date-time
         order: 4
   advanced_auth:
