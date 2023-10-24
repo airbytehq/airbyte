@@ -13,6 +13,7 @@ from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pip
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import ContextState
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
+from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
 @click.command(cls=DaggerPipelineCommand, help="Test all the selected connectors.")
@@ -49,6 +50,8 @@ def test(
     Args:
         ctx (click.Context): The click context.
     """
+    if ctx.obj["is_ci"]:
+        fail_if_missing_docker_hub_creds(ctx)
     if ctx.obj["is_ci"] and ctx.obj["pull_request"] and ctx.obj["pull_request"].draft:
         main_logger.info("Skipping connectors tests for draft pull request.")
         sys.exit(0)
@@ -82,6 +85,8 @@ def test(
             use_local_cdk=ctx.obj.get("use_local_cdk"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
+            docker_hub_username=ctx.obj.get("docker_hub_username"),
+            docker_hub_password=ctx.obj.get("docker_hub_password"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
