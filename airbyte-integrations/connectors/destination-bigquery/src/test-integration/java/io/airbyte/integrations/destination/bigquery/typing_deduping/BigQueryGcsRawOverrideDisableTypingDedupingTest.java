@@ -30,4 +30,5 @@ public class BigQueryGcsRawOverrideDisableTypingDedupingTest extends AbstractBig
   public void identicalNameSimultaneousSync() throws Exception {
     // TODO: create fixtures to verify how raw tables are affected. Base tests check for final tables.
   }
+
 }
