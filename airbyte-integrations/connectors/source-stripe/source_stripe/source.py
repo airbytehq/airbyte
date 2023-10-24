@@ -14,7 +14,7 @@ from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
@@ -38,10 +38,13 @@ class SourceStripe(AbstractSource):
     def __init__(self, catalog_path: Optional[str] = None, **kwargs):
         super().__init__(**kwargs)
         if catalog_path:
-            catalog = self.read_catalog(catalog_path)
-            # Only use concurrent cdk if all streams are running in full_refresh
-            all_sync_mode_are_full_refresh = all(stream.sync_mode == SyncMode.full_refresh for stream in catalog.streams)
-            self._use_concurrent_cdk = all_sync_mode_are_full_refresh
+            try:
+                catalog = self.read_catalog(catalog_path)
+                # Only use concurrent cdk if all streams are running in full_refresh
+                all_sync_mode_are_full_refresh = all(stream.sync_mode == SyncMode.full_refresh for stream in catalog.streams)
+                self._use_concurrent_cdk = all_sync_mode_are_full_refresh
+            except Exception as e:
+                raise AirbyteTracedException.from_exception(e) from e
         else:
             self._use_concurrent_cdk = False
 
