@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import List, Set, Tuple
 
-import click
+import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.cli.lazy_group import LazyGroup
@@ -105,7 +105,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
                 raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
     if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
         raise click.UsageError(
-            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. Set the --use-remote-secrets option to false otherwise."
+            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. See README for instructions ('Setting up connector secrets access'). Set the --use-remote-secrets option to false otherwise."
         )
 
 
@@ -177,8 +177,22 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     default=True,
     type=bool,
 )
+@click.option(
+    "--docker-hub-username",
+    help="Your username to connect to DockerHub.",
+    type=click.STRING,
+    required=False,
+    envvar="DOCKER_HUB_USERNAME",
+)
+@click.option(
+    "--docker-hub-password",
+    help="Your password to connect to DockerHub.",
+    type=click.STRING,
+    required=False,
+    envvar="DOCKER_HUB_PASSWORD",
+)
 @click.pass_context
-def connectors(
+async def connectors(
     ctx: click.Context,
     use_remote_secrets: bool,
     names: Tuple[str],
@@ -192,6 +206,8 @@ def connectors(
     enable_dependency_scanning: bool,
     use_local_cdk: bool,
     enable_report_auto_open: bool,
+    docker_hub_username: str,
+    docker_hub_password: str,
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"], use_remote_secrets)
@@ -202,6 +218,8 @@ def connectors(
     ctx.obj["execute_timeout"] = execute_timeout
     ctx.obj["use_local_cdk"] = use_local_cdk
     ctx.obj["open_report_in_browser"] = enable_report_auto_open
+    ctx.obj["docker_hub_username"] = docker_hub_username
+    ctx.obj["docker_hub_password"] = docker_hub_password
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
         names,
         support_levels,

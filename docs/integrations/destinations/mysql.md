@@ -11,7 +11,7 @@ There are two flavors of connectors for this destination:
 | :----------------------------- | :------------------- | :---- |
 | Full Refresh Sync              | Yes                  |       |
 | Incremental - Append Sync      | Yes                  |       |
-| Incremental - Append + Deduped | Yes                  |       |
+| Incremental - Append + Deduped | No                   |       |
 | Namespaces                     | Yes                  |       |
 | SSH Tunnel Connection          | Yes                  |       |
 
