@@ -20,7 +20,7 @@ acceptance_tests:
         status: "failed"
   discovery:
     tests:
-        # for auth with API token
+      # for auth with API token
       - config_path: "secrets/config.json"
         # for auth with oauth2 token
       - config_path: "secrets/config_oauth.json"
