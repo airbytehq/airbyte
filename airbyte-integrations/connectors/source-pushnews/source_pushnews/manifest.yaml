@@ -1,0 +1,1004 @@
+version: 0.51.16
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - sites
+streams:
+  - type: DeclarativeStream
+    name: sites
+    primary_key:
+      - data
+      - "*"
+      - app_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          app_id:
+            type: string
+          id:
+            type: number
+          name:
+            type: string
+          native_optin:
+            type: boolean
+          total_email:
+            type: number
+          total_push:
+            type: number
+          total_pushonsite:
+            type: number
+          total_sms:
+            type: number
+          url:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.pushnews.eu/v2
+        path: /sites
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: site_configuration
+    primary_key:
+      - data
+      - "*"
+      - app_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          app_id:
+            type: string
+          configuration:
+            properties:
+              button_text:
+                properties:
+                  value:
+                    type: string
+                type: object
+              confirmation_popup:
+                properties:
+                  body:
+                    type: string
+                  caption:
+                    type: string
+                  message:
+                    type: string
+                  title:
+                    type: string
+                type: object
+              extra:
+                properties:
+                  constants:
+                    properties:
+                      INFLUENCED_WINDOW_HOURS:
+                        type: number
+                      WHITELABEL:
+                        type: boolean
+                    type: object
+                  events:
+                    properties:
+                      dismissedOptinWidget:
+                        type: string
+                      load:
+                        type: string
+                      newSubscription:
+                        type: string
+                    type: object
+                  googleAnalytics:
+                    properties:
+                      events:
+                        type: array
+                      status:
+                        type: boolean
+                    type: object
+                  interests:
+                    properties:
+                      INTERESTS:
+                        type: array
+                      status:
+                        type: boolean
+                    type: object
+                type: object
+              onsitepush:
+                properties:
+                  activation_eventName:
+                    type: string
+                  activation_type:
+                    type: string
+                type: object
+              optin:
+                properties:
+                  disableBranding:
+                    type: string
+                  mailinglistOsp:
+                    properties:
+                      activation:
+                        properties:
+                          type:
+                            type: string
+                        type: object
+                      buttonSignUp:
+                        type: string
+                      status:
+                        type: boolean
+                      subtitle:
+                        type: string
+                      thankYou:
+                        type: string
+                      title:
+                        type: string
+                    type: object
+                  native:
+                    type: boolean
+                  status:
+                    type: boolean
+                type: object
+              osp:
+                properties:
+                  status:
+                    type: boolean
+                type: object
+              popup:
+                properties:
+                  emailActionMessage:
+                    type: string
+                  emailButtonSubmit:
+                    type: string
+                  emailCapture:
+                    type: boolean
+                  emailNoThanks:
+                    type: string
+                  emailSubtitleMessage:
+                    type: string
+                  emailSuccessMessage:
+                    type: string
+                type: object
+              subscription_request:
+                properties:
+                  activation_type:
+                    type: string
+                  body:
+                    type: string
+                  btn_no:
+                    type: string
+                  btn_yes:
+                    type: string
+                  nativePrePrompt:
+                    type: string
+                  theme:
+                    type: string
+                  themeHorizontalAlignment:
+                    type: string
+                  themeVerticalAlignment:
+                    type: string
+                  title:
+                    type: string
+                type: object
+            type: object
+          created_at:
+            type: string
+          default_icon:
+            type: string
+          fb_page_url:
+            type: string
+          id:
+            type: number
+          is_active:
+            type: number
+          name:
+            type: string
+          native_optin:
+            type: number
+          optin_url:
+            type: string
+          total_emails:
+            type: number
+          total_pushonsite:
+            type: number
+          total_sms:
+            type: number
+          total_subscribers:
+            type: number
+          url:
+            type: string
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.pushnews.eu/v2
+        path: /sites/{{ stream_partition.site_id }}
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: NoPagination
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: app_id
+              partition_field: site_id
+              stream:
+                type: DeclarativeStream
+                name: sites
+                primary_key:
+                  - data
+                  - "*"
+                  - app_id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      app_id:
+                        type: string
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      native_optin:
+                        type: boolean
+                      total_email:
+                        type: number
+                      total_push:
+                        type: number
+                      total_pushonsite:
+                        type: number
+                      total_sms:
+                        type: number
+                      url:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.pushnews.eu/v2
+                    path: /sites
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-Auth-Token
+                        inject_into: header
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: NoPagination
+  - type: DeclarativeStream
+    name: notifications
+    primary_key:
+      - data
+      - "*"
+      - notification_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          app_id:
+            type: string
+          big_image:
+            type: string
+          body:
+            type: string
+          canceled:
+            type: boolean
+          clicks:
+            type: number
+          converted:
+            type: number
+          created_at:
+            properties:
+              date:
+                type: string
+              timezone:
+                type: string
+              timezone_type:
+                type: number
+            type: object
+          delivered:
+            type: number
+          failed:
+            type: number
+          filters:
+            type: array
+          finished_at:
+            properties:
+              date:
+                type: string
+              timezone:
+                type: string
+              timezone_type:
+                type: number
+            type:
+              - object
+              - "null"
+          future:
+            type: boolean
+          icon:
+            type: string
+          id:
+            type: number
+          influenced:
+            type: number
+          kind:
+            type: string
+          notification_id:
+            type: string
+          opened:
+            type: number
+          osp:
+            type: string
+          parameters:
+            properties:
+              converted:
+                type: number
+              influenced:
+                type: number
+              pushnotification.buttonText:
+                type: string
+              pushnotification.tag:
+                type: string
+            type: object
+          queued_at:
+            properties:
+              date:
+                type: string
+              timezone:
+                type: string
+              timezone_type:
+                type: number
+            type: object
+          remaining:
+            type: number
+          scheduled:
+            type: boolean
+          sent_at:
+            properties:
+              date:
+                type: string
+              timezone:
+                type: string
+              timezone_type:
+                type: number
+            type: object
+          site_id:
+            type: number
+          title:
+            type: string
+          updated_at:
+            properties:
+              date:
+                type: string
+              timezone:
+                type: string
+              timezone_type:
+                type: number
+            type: object
+          url:
+            type: string
+          user_credentials:
+            type: string
+          user_credentials_id:
+            type: number
+          user_credentials_name:
+            type: string
+          user_id:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.pushnews.eu/v2
+        path: /sites/{{ stream_partition.site_id }}/notifications_stats
+        http_method: GET
+        request_parameters:
+          date_end: "{{ today_utc() }}"
+          date_start: "{{ config['start_date'] }}"
+          force_update_stats: true{{ config['force_update_stats'] }}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - notification_stats
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: app_id
+              partition_field: site_id
+              stream:
+                type: DeclarativeStream
+                name: sites
+                primary_key:
+                  - data
+                  - "*"
+                  - app_id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      app_id:
+                        type: string
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      native_optin:
+                        type: boolean
+                      total_email:
+                        type: number
+                      total_push:
+                        type: number
+                      total_pushonsite:
+                        type: number
+                      total_sms:
+                        type: number
+                      url:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.pushnews.eu/v2
+                    path: /sites
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-Auth-Token
+                        inject_into: header
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: NoPagination
+  - type: DeclarativeStream
+    name: pushonsite_events
+    primary_key:
+      - notification_id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          app_id:
+            type: string
+          big_image:
+            type:
+              - "null"
+              - string
+          body:
+            type: string
+          canceled:
+            type: boolean
+          clicks:
+            type: number
+          converted:
+            type: number
+          created_at:
+            properties:
+              date:
+                type: string
+              timezone:
+                type: string
+              timezone_type:
+                type: number
+            type: object
+          delivered:
+            type: number
+          failed:
+            type: number
+          filters:
+            type: array
+          future:
+            type: boolean
+          icon:
+            type: string
+          id:
+            type: number
+          influenced:
+            type: number
+          kind:
+            type: string
+          notification_id:
+            type: string
+          opened:
+            type: number
+          osp:
+            type: string
+          parameters:
+            properties:
+              converted:
+                type: number
+              pushonsite.activation:
+                properties:
+                  type:
+                    type: string
+                type: object
+              pushonsite.activationPages:
+                type: string
+              pushonsite.configuration:
+                properties:
+                  campaignId:
+                    type: string
+                  closeBtn:
+                    type: boolean
+                  description:
+                    type: string
+                  effectFadeIn:
+                    type: boolean
+                  fixedWidth:
+                    type: boolean
+                  horizontalAlignment:
+                    type: string
+                  iconUrl:
+                    type: string
+                  isClickable:
+                    type: boolean
+                  lightbox:
+                    type: boolean
+                  margin:
+                    type: boolean
+                  openLinkInSamePage:
+                    type: boolean
+                  showIcon:
+                    type: boolean
+                  style:
+                    properties:
+                      mainTheme:
+                        type: string
+                    type: object
+                  text:
+                    type: string
+                  url:
+                    type: string
+                  verticalAlignment:
+                    type: string
+                type: object
+              pushonsite.openLinkInSamePage:
+                type: boolean
+              pushonsite.positionHorizontal:
+                type: string
+              pushonsite.positionVertical:
+                type: string
+              pushonsite.segmentation.countryCode:
+                items:
+                  type: string
+                type: array
+              pushonsite.segmentation.stateCode:
+                items:
+                  type: string
+                type: array
+              pushonsite.type:
+                type: string
+            type: object
+          queued_at:
+            properties:
+              date:
+                type: string
+              timezone:
+                type: string
+              timezone_type:
+                type: number
+            type: object
+          remaining:
+            type: number
+          scheduled:
+            type: boolean
+          sent_at:
+            properties:
+              date:
+                type: string
+              timezone:
+                type: string
+              timezone_type:
+                type: number
+            type: object
+          site_id:
+            type: number
+          title:
+            type: string
+          updated_at:
+            properties:
+              date:
+                type: string
+              timezone:
+                type: string
+              timezone_type:
+                type: number
+            type: object
+          url:
+            type: string
+          user_credentials:
+            type: string
+          user_credentials_id:
+            type: number
+          user_credentials_name:
+            type: string
+          user_id:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.pushnews.eu/v2
+        path: /sites/{{ stream_partition.site_id }}/pushonsite_stats
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - pushonsites_stats
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          type: RequestOption
+          field_name: per_page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: app_id
+              partition_field: site_id
+              stream:
+                type: DeclarativeStream
+                name: sites
+                primary_key:
+                  - data
+                  - "*"
+                  - app_id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      app_id:
+                        type: string
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      native_optin:
+                        type: boolean
+                      total_email:
+                        type: number
+                      total_push:
+                        type: number
+                      total_pushonsite:
+                        type: number
+                      total_sms:
+                        type: number
+                      url:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.pushnews.eu/v2
+                    path: /sites
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-Auth-Token
+                        inject_into: header
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: NoPagination
+        - type: ListPartitionRouter
+          values: >-
+            {{ ['active','inactive'] if config['status'] == 'all' else
+            [config['status']] }}
+          cursor_field: status{{ config['status'] }}
+          request_option:
+            type: RequestOption
+            field_name: status
+            inject_into: request_parameter
+  - type: DeclarativeStream
+    name: pushonsite
+    primary_key:
+      - date_start
+      - date_end
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: http://json-schema.org/schema#
+        properties:
+          date_end:
+            type: string
+          date_start:
+            type: string
+          period_total_clicks:
+            type: number
+          period_total_views:
+            type: number
+          pushonsite_count:
+            type: number
+        type: object
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.pushnews.eu/v2
+        path: /sites/{{ stream_partition.site_id }}/pushonsite_stats
+        http_method: GET
+        request_parameters:
+          status: active
+        request_headers: {}
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Auth-Token
+            inject_into: header
+        request_body_json: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+      paginator:
+        type: NoPagination
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: app_id
+              partition_field: site_id
+              stream:
+                type: DeclarativeStream
+                name: sites
+                primary_key:
+                  - data
+                  - "*"
+                  - app_id
+                schema_loader:
+                  type: InlineSchemaLoader
+                  schema:
+                    $schema: http://json-schema.org/schema#
+                    properties:
+                      app_id:
+                        type: string
+                      id:
+                        type: number
+                      name:
+                        type: string
+                      native_optin:
+                        type: boolean
+                      total_email:
+                        type: number
+                      total_push:
+                        type: number
+                      total_pushonsite:
+                        type: number
+                      total_sms:
+                        type: number
+                      url:
+                        type: string
+                    type: object
+                retriever:
+                  type: SimpleRetriever
+                  requester:
+                    type: HttpRequester
+                    url_base: https://api.pushnews.eu/v2
+                    path: /sites
+                    http_method: GET
+                    request_parameters: {}
+                    request_headers: {}
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      api_token: "{{ config['api_key'] }}"
+                      inject_into:
+                        type: RequestOption
+                        field_name: X-Auth-Token
+                        inject_into: header
+                    request_body_json: {}
+                  record_selector:
+                    type: RecordSelector
+                    extractor:
+                      type: DpathExtractor
+                      field_path:
+                        - data
+                  paginator:
+                    type: NoPagination
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - - pushonsites_stats
+      - type: RemoveFields
+        field_pointers:
+          - - page
+      - type: RemoveFields
+        field_pointers:
+          - - total_pages
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: date_start
+      lookback_window: P1D
+      cursor_datetime_formats:
+        - "%Y-%m-%d"
+      datetime_format: "%Y-%m-%d"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      start_time_option:
+        type: RequestOption
+        field_name: date_start
+        inject_into: request_parameter
+      end_time_option:
+        type: RequestOption
+        field_name: date_end
+        inject_into: request_parameter
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      step: P1D
+      cursor_granularity: P1D
+spec:
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        airbyte_secret: true
+        order: 0
+      start_date:
+        type: string
+        order: 1
+        title: Start Date
+        format: date
+        default: "2017-11-01"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        description: UTC date in the format 2017-01-25
+      status:
+        enum:
+          - all
+          - active
+          - inactive
+        type: string
+        order: 2
+        title: Status
+        default: all
+        description: Filter events by status
+      force_update_stats:
+        type: boolean
+        order: 3
+        title: Force Update Stats
+        description: Enable to force statistics update, reduce performance when activated.
+    additionalProperties: true
+  type: Spec
+metadata:
+  autoImportSchema:
+    sites: true
+    site_configuration: true
+    notifications: true
+    pushonsite_events: true
+    pushonsite: true

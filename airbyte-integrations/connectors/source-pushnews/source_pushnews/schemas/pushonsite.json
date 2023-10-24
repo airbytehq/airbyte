@@ -1,0 +1,21 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "properties": {
+        "date_end": {
+            "type": "string"
+        },
+        "date_start": {
+            "type": "string"
+        },
+        "period_total_clicks": {
+            "type": "number"
+        },
+        "period_total_views": {
+            "type": "number"
+        },
+        "pushonsite_count": {
+            "type": "number"
+        }
+    },
+    "type": "object"
+}
