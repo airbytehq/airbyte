@@ -8,27 +8,16 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.migrate_to_base_image.pipeline import run_connector_base_image_upgrade_pipeline
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
+from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
 @click.command(cls=DaggerPipelineCommand, short_help="Upgrades the base image version used by the selected connectors.")
 @click.option("--set-if-not-exists", default=True)
-@click.option(
-    "--docker-hub-username",
-    help="Your username to connect to DockerHub to read the registries.",
-    type=click.STRING,
-    required=True,
-    envvar="DOCKER_HUB_USERNAME",
-)
-@click.option(
-    "--docker-hub-password",
-    help="Your password to connect to DockerHub to read the registries.",
-    type=click.STRING,
-    required=True,
-    envvar="DOCKER_HUB_PASSWORD",
-)
 @click.pass_context
 def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker_hub_username: str, docker_hub_password: str) -> bool:
     """Upgrades the base image version used by the selected connectors."""
+
+    fail_if_missing_docker_hub_creds(ctx)
 
     connectors_contexts = [
         ConnectorContext(
@@ -48,8 +37,8 @@ def upgrade_base_image(ctx: click.Context, set_if_not_exists: bool, docker_hub_u
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
             open_report_in_browser=False,
-            docker_hub_username=docker_hub_username,
-            docker_hub_password=docker_hub_password,
+            docker_hub_username=ctx.obj.get("docker_hub_username"),
+            docker_hub_password=ctx.obj.get("docker_hub_password"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
