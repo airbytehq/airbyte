@@ -104,6 +104,8 @@ In order to do so, run the command:
 helm install %release_name% airbyte/airbyte
 ```
 
+**Note**: `release_name` should only contain lowercase letters and optionally dashes (`release_name` must start with a letter).
+
 ### Custom deployment
 
 In order to customize your deployment, you need to create `values.yaml` file in the local folder and populate it with default configuration override values.

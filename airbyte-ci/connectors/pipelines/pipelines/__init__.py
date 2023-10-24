@@ -8,7 +8,7 @@ import os
 
 from rich.logging import RichHandler
 
-from . import sentry_utils
+from .helpers import sentry_utils
 
 sentry_utils.initialize()
 
