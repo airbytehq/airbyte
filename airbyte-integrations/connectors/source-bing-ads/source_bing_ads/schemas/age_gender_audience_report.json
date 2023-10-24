@@ -87,10 +87,10 @@
       "type": ["null", "string"]
     },
     "AbsoluteTopImpressionRatePercent": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "TopImpressionRatePercent": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "ConversionsQualified": {
       "type": ["null", "number"]
