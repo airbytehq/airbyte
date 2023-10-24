@@ -4,7 +4,7 @@ data:
     sl: 300
   allowedHosts:
     hosts:
-    - api.stripe.com
+      - api.stripe.com
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
@@ -26,20 +26,21 @@ data:
   releases:
     breakingChanges:
       4.0.0:
-        message: Version 4.0.0 changes the cursors in most of the Stripe streams that
+        message:
+          Version 4.0.0 changes the cursors in most of the Stripe streams that
           support incremental sync mode. This is done to not only sync the data that
           was created since previous sync, but also the data that was modified. A
           schema refresh of all effected streams is required to use the new cursor
           format.
-        upgradeDeadline: '2023-09-14'
+        upgradeDeadline: "2023-09-14"
   suggestedStreams:
     streams:
-    - customers
-    - invoices
-    - charges
-    - subscriptions
-    - refunds
+      - customers
+      - invoices
+      - charges
+      - subscriptions
+      - refunds
   supportLevel: certified
   tags:
-  - language:python
-metadataSpecVersion: '1.0'
+    - language:python
+metadataSpecVersion: "1.0"
