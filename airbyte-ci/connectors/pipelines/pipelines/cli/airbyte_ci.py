@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 from typing import List
 
-import click
+import asyncclick as click
 import git
 from github import PullRequest
 from pipelines import main_logger
@@ -112,7 +112,7 @@ def set_working_directory_to_root() -> None:
     os.chdir(working_dir)
 
 
-def get_modified_files(
+async def get_modified_files(
     git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, pull_request: PullRequest
 ) -> List[str]:
     """Get the list of modified files in the current git branch.
@@ -125,15 +125,15 @@ def get_modified_files(
     This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
     """
     if ci_context is CIContext.MASTER or ci_context is CIContext.NIGHTLY_BUILDS:
-        return get_modified_files_in_commit(git_branch, git_revision, is_local)
+        return await get_modified_files_in_commit(git_branch, git_revision, is_local)
     if ci_context is CIContext.PULL_REQUEST and pull_request is not None:
         return get_modified_files_in_pull_request(pull_request)
     if ci_context is CIContext.MANUAL:
         if git_branch == "master":
-            return get_modified_files_in_commit(git_branch, git_revision, is_local)
+            return await get_modified_files_in_commit(git_branch, git_revision, is_local)
         else:
-            return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
-    return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
+            return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
+    return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
 
 
 # COMMANDS
@@ -178,7 +178,7 @@ def get_modified_files(
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click.pass_context
 @track_command
-def airbyte_ci(
+async def airbyte_ci(
     ctx: click.Context,
     is_local: bool,
     git_branch: str,
@@ -224,7 +224,7 @@ def airbyte_ci(
         ctx.obj["pull_request"] = None
 
     ctx.obj["modified_files"] = transform_strs_to_paths(
-        get_modified_files(git_branch, git_revision, diffed_branch, is_local, ci_context, ctx.obj["pull_request"])
+        await get_modified_files(git_branch, git_revision, diffed_branch, is_local, ci_context, ctx.obj["pull_request"])
     )
 
     if not is_local:
