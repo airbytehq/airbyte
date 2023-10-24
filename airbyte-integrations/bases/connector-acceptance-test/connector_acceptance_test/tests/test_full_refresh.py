@@ -100,8 +100,8 @@ class TestFullRefresh(BaseTest):
         )
         records_1 = [message.record for message in output_1 if message.type == Type.RECORD]
 
-        # sleep for 1 second to ensure that the emitted_at timestamp is different
-        time.sleep(1)
+        # sleep to ensure that the emitted_at timestamp is different
+        time.sleep(0.1)
 
         output_2 = await docker_runner.call_read(connector_config, configured_catalog, enable_caching=False)
         records_2 = [message.record for message in output_2 if message.type == Type.RECORD]
