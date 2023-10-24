@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - TODO
+      - api.getbase.com
   registries:
     oss:
       enabled: false
@@ -20,7 +20,7 @@ data:
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sell
   tags:
     - language:lowcode
-   ab_internal:
+  ab_internal:
     sl: 100
     ql: 100
   supportLevel: community

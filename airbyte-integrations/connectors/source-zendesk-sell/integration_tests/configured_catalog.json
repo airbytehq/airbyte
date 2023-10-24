@@ -4,14 +4,8 @@
       "stream": {
         "name": "pipelines",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -20,14 +14,8 @@
       "stream": {
         "name": "stages",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -36,19 +24,10 @@
       "stream": {
         "name": "deals",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
@@ -57,19 +36,10 @@
       "stream": {
         "name": "contacts",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
@@ -78,19 +48,10 @@
       "stream": {
         "name": "leads",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
+        "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": [
-          "updated_at"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "append"
@@ -99,14 +60,8 @@
       "stream": {
         "name": "call_outcomes",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -115,14 +70,8 @@
       "stream": {
         "name": "deal_sources",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -131,14 +80,8 @@
       "stream": {
         "name": "deal_unqualified_reasons",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -147,14 +90,8 @@
       "stream": {
         "name": "lead_conversions",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -163,14 +100,8 @@
       "stream": {
         "name": "lead_sources",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -179,14 +110,8 @@
       "stream": {
         "name": "lead_unqualified_reasons",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -195,14 +120,8 @@
       "stream": {
         "name": "loss_reasons",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -211,14 +130,8 @@
       "stream": {
         "name": "notes",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -227,14 +140,8 @@
       "stream": {
         "name": "orders",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -243,14 +150,8 @@
       "stream": {
         "name": "products",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -259,14 +160,8 @@
       "stream": {
         "name": "tags",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -275,14 +170,8 @@
       "stream": {
         "name": "tasks",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -291,14 +180,8 @@
       "stream": {
         "name": "text_messages",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -307,14 +190,8 @@
       "stream": {
         "name": "users",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -323,14 +200,8 @@
       "stream": {
         "name": "visit_outcomes",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
@@ -339,14 +210,8 @@
       "stream": {
         "name": "visits",
         "json_schema": {},
-        "supported_sync_modes": [
-          "full_refresh"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite"
