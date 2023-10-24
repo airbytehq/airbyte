@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.52.0
+File CDK: Add CustomFileBasedException for custom errors
+
 ## 0.51.44
 low-code: Allow connector developers to specify the type of an added field
 

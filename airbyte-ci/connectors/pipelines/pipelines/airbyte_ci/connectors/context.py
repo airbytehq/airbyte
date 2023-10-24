@@ -59,6 +59,7 @@ class ConnectorContext(PipelineContext):
         docker_hub_password: Optional[str] = None,
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
+        concurrent_cat: Optional[bool] = False,
     ):
         """Initialize a connector context.
 
@@ -86,6 +87,7 @@ class ConnectorContext(PipelineContext):
             docker_hub_password (Optional[str], optional): Docker Hub password to use to read registries. Defaults to None.
             s3_build_cache_access_key_id (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
             s3_build_cache_secret_key (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
+            concurrent_cat (bool, optional): Whether to run the CAT tests in parallel. Defaults to False.
         """
 
         self.pipeline_name = pipeline_name
@@ -107,6 +109,7 @@ class ConnectorContext(PipelineContext):
         self.docker_hub_password = docker_hub_password
         self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
         self.s3_build_cache_secret_key = s3_build_cache_secret_key
+        self.concurrent_cat = concurrent_cat
 
         super().__init__(
             pipeline_name=pipeline_name,
