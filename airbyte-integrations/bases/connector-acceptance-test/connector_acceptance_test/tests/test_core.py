@@ -1093,9 +1093,17 @@ class TestBasicRead(BaseTest):
             missing_expected = set(expected) - set(actual)
 
             if missing_expected:
+                extra = set(actual) - set(expected)
                 msg = f"Stream {stream_name}: All expected records must be produced"
                 detailed_logger.info(msg)
-                detailed_logger.log_json_list(missing_expected)
+                detailed_logger.info("missing expected:")
+                detailed_logger.log_json_list(sorted(missing_expected, key=lambda record: record["ID"]))
+                detailed_logger.info("expected:")
+                detailed_logger.log_json_list(sorted(expected, key=lambda record: record["ID"]))
+                detailed_logger.info("actual:")
+                detailed_logger.log_json_list(sorted(actual, key=lambda record: record["ID"]))
+                detailed_logger.info("extra:")
+                detailed_logger.log_json_list(sorted(extra, key=lambda record: record["ID"]))
                 pytest.fail(msg)
 
             if not extra_records:
