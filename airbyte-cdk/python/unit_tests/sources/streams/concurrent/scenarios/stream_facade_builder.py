@@ -14,14 +14,18 @@ from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, Curs
 from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 
-
 _NO_STATE = None
 _NO_CATALOG_CURSOR_FIELD = None
 
 
 class StreamFacadeSource(AbstractSource):
-
-    def __init__(self, streams: List[Stream], max_workers: int, cursor_field: Optional[CursorField] = None, cursor_boundaries: Optional[Tuple[str, str]]=  None):
+    def __init__(
+        self,
+        streams: List[Stream],
+        max_workers: int,
+        cursor_field: Optional[CursorField] = None,
+        cursor_boundaries: Optional[Tuple[str, str]] = None,
+    ):
         self._streams = streams
         self._max_workers = max_workers
         self._message_repository = InMemoryMessageRepository()
@@ -49,7 +53,9 @@ class StreamFacadeSource(AbstractSource):
                     state_manager,
                     self._cursor_field,
                     self._cursor_boundaries,
-                ) if self._cursor_field else NoopCursor()
+                )
+                if self._cursor_field
+                else NoopCursor(),
             )
             for stream in self._streams
         ]
