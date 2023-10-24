@@ -8,7 +8,8 @@ from unittest.mock import patch
 import pytest
 import source_bing_ads
 from airbyte_cdk.models import SyncMode
-from source_bing_ads.source import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, Campaigns, SourceBingAds
+from source_bing_ads.source import SourceBingAds
+from source_bing_ads.streams import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, Campaigns
 
 
 @pytest.fixture(name="config")
@@ -27,7 +28,7 @@ def logger_mock_fixture():
 @patch.object(source_bing_ads.source, "Client")
 def test_streams_config_based(mocked_client, config):
     streams = SourceBingAds().streams(config)
-    assert len(streams) == 29
+    assert len(streams) == 33
 
 
 @patch.object(source_bing_ads.source, "Client")
