@@ -94,6 +94,7 @@ public class InitialSnapshotHandler {
               .filter(filter)
               .projection(fields)
               .sort(Sorts.ascending(MongoConstants.ID_FIELD))
+              .allowDiskUse(true)
               .cursor();
 
           final var stateIterator =
