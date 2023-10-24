@@ -38,6 +38,18 @@ def test_check_connection(requests_mock, status_code, response, is_connection_su
     assert error == error_msg
 
 
+def test_check_connection_unexpected_error(requests_mock):
+    requests_mock.register_uri(
+        "GET",
+        "https://a.klaviyo.com/api/v1/metrics?api_key=api_key&count=100",
+        exc=Exception("Something went wrong, api_key=some_api_key"),
+    )
+    source = SourceKlaviyo()
+    success, error = source.check_connection(logger=None, config={"api_key": "api_key"})
+    assert success is False
+    assert error == "Exception('Something went wrong, api_key=***')"
+
+
 def test_streams():
     source = SourceKlaviyo()
     config = {"api_key": "some_key", "start_date": pendulum.datetime(2020, 10, 10).isoformat()}
