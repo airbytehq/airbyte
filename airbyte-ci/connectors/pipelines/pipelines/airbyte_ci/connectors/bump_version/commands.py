@@ -41,6 +41,8 @@ def bump_version(
             ci_git_user=ctx.obj["ci_git_user"],
             ci_github_access_token=ctx.obj["ci_github_access_token"],
             open_report_in_browser=False,
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
