@@ -870,7 +870,18 @@ class SearchQueryPerformanceReport(PerformanceReportsMixin, BingAdsStream, ABC):
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "search_query_performance_report"
-    primary_key = ["SearchQuery", "TimePeriod", "AccountId", "CampaignId", "Language", "DeliveredMatchType"]
+    primary_key = [
+        "SearchQuery",
+        "Keyword",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "Language",
+        "DeliveredMatchType",
+        "DeviceType",
+        "DeviceOS",
+        "TopVsOther",
+    ]
 
     @property
     def report_columns(self) -> List[str]:
