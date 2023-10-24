@@ -4,11 +4,14 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Type
+from itertools import islice
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Type, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from requests.auth import AuthBase
 
 ASANA_ERRORS_MAPPING = {
     402: "This stream is available to premium organizations and workspaces only",
@@ -24,10 +27,15 @@ class AsanaStream(HttpStream, ABC):
     # Asana pagination could be from 1 to 100.
     page_size = 100
     raise_on_http_errors = True
+    test_mode = False
 
     @property
     def AsanaStreamType(self) -> Type:
         return self.__class__
+
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, test_mode: bool = False):
+        super().__init__(authenticator=authenticator)
+        self.test_mode = test_mode
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code in ASANA_ERRORS_MAPPING.keys():
@@ -101,6 +109,7 @@ class AsanaStream(HttpStream, ABC):
         """
         stream = stream_class(authenticator=self.authenticator)
         stream_slices = stream.stream_slices(sync_mode=SyncMode.full_refresh)
+
         for stream_slice in stream_slices:
             for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 yield {slice_field: record["gid"]}
@@ -284,7 +293,11 @@ class StoriesCompact(AsanaStream):
         return f"tasks/{task_gid}/stories"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from self.read_slices_from_records(stream_class=Tasks, slice_field="task_gid")
+        # This streams causes tests to timeout (> 2hrs), so we limit stream slices to 100 to make tests less noisy
+        if self.test_mode:
+            yield from islice(self.read_slices_from_records(stream_class=Tasks, slice_field="task_gid"), 100)
+        else:
+            yield from self.read_slices_from_records(stream_class=Tasks, slice_field="task_gid")
 
 
 class Stories(AsanaStream):
@@ -293,7 +306,11 @@ class Stories(AsanaStream):
         return f"stories/{story_gid}"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from self.read_slices_from_records(stream_class=StoriesCompact, slice_field="story_gid")
+        # This streams causes tests to timeout (> 2hrs), so we limit stream slices to 100 to make tests less noisy
+        if self.test_mode:
+            yield from islice(self.read_slices_from_records(stream_class=StoriesCompact, slice_field="story_gid"), 100)
+        else:
+            yield from self.read_slices_from_records(stream_class=StoriesCompact, slice_field="story_gid")
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
