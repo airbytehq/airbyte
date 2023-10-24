@@ -34,6 +34,8 @@ acceptance_tests:
             bypass_reason: "Hourly reports are disabled, because sync is too long"
           - name: age_gender_audience_report_hourly
             bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
+          - name: search_query_performance_report_hourly
+            bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
         timeout_seconds: 900
   full_refresh:
     tests:
