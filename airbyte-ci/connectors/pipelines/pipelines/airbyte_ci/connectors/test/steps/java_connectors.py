@@ -8,7 +8,7 @@ from typing import List, Optional
 
 import anyio
 import asyncer
-from dagger import Directory, File, QueryError
+from dagger import File, QueryError
 from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     BuildConnectorDistributionTar,
     BuildConnectorImages,
@@ -82,15 +82,15 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     context.connector_secrets = await secrets.get_connector_secrets(context)
     step_results = []
 
-    build_distribution_tar_result = await BuildConnectorDistributionTar(context).run()
-    step_results.append(build_distribution_tar_result)
-    if build_distribution_tar_result.status is StepStatus.FAILURE:
-        return step_results
-
-    dist_tar_dir = build_distribution_tar_result.output_artifact.directory(dist_tar_directory_path(context))
-
-    async def run_docker_build_dependent_steps(dist_tar_dir: Directory) -> List[StepResult]:
+    async def run_docker_dist_tar_dependent_steps() -> List[StepResult]:
         step_results = []
+        build_distribution_tar_result = await BuildConnectorDistributionTar(context).run()
+        step_results.append(build_distribution_tar_result)
+        if build_distribution_tar_result.status is StepStatus.FAILURE:
+            return step_results
+
+        dist_tar_dir = build_distribution_tar_result.output_artifact.directory(dist_tar_directory_path(context))
+
         build_connector_image_results = await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run(dist_tar_dir)
         step_results.append(build_connector_image_results)
         if build_connector_image_results.status is StepStatus.FAILURE:
@@ -122,6 +122,6 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
     async with asyncer.create_task_group() as test_task_group:
         soon_unit_tests_result = test_task_group.soonify(UnitTests(context).run)()
-        soon_docker_build_dependent_steps_results = test_task_group.soonify(run_docker_build_dependent_steps)(dist_tar_dir)
+        soon_dist_tar_dependent_steps_results = test_task_group.soonify(run_docker_dist_tar_dependent_steps)()
 
-    return step_results + [soon_unit_tests_result.value] + soon_docker_build_dependent_steps_results.value
+    return step_results + [soon_unit_tests_result.value] + soon_dist_tar_dependent_steps_results.value
