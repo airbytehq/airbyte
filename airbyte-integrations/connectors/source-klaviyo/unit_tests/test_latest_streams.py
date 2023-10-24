@@ -113,18 +113,18 @@ class TestKlaviyoStreamLatest:
 
 class TestIncrementalKlaviyoStreamLatest:
     api_key = "some_key"
-    start_date = START_DATE.isoformat()
 
     def test_cursor_field_is_required(self):
         with pytest.raises(
             TypeError, match="Can't instantiate abstract class IncrementalKlaviyoStreamLatest with abstract methods cursor_field, path"
         ):
-            IncrementalKlaviyoStreamLatest(api_key=self.api_key, start_date=self.start_date)
+            IncrementalKlaviyoStreamLatest(api_key=self.api_key, start_date=START_DATE.isoformat())
 
     @pytest.mark.parametrize(
-        ("stream_state_date", "next_page_token", "expected_params"),
+        ("config_start_date", "stream_state_date", "next_page_token", "expected_params"),
         (
             (
+                START_DATE.isoformat(),
                 {"updated": "2023-01-01T00:00:00+00:00"},
                 {"page[cursor]": "aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa"},
                 {
@@ -134,6 +134,7 @@ class TestIncrementalKlaviyoStreamLatest:
                 },
             ),
             (
+                START_DATE.isoformat(),
                 None,
                 {"page[cursor]": "aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa"},
                 {
@@ -143,28 +144,52 @@ class TestIncrementalKlaviyoStreamLatest:
                 },
             ),
             (
+                START_DATE.isoformat(),
                 None,
                 {"filter": "some_filter"},
                 {"filter": "some_filter"},
             ),
+            (
+                None,
+                None,
+                {"page[cursor]": "aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa"},
+                {
+                    "page[cursor]": "aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa",
+                    "sort": "updated",
+                },
+            ),
+            (
+                None,
+                {"updated": "2023-01-01T00:00:00+00:00"},
+                {"page[cursor]": "aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa"},
+                {
+                    "filter": "greater-than(updated,2023-01-01T00:00:00+00:00)",
+                    "page[cursor]": "aaA0aAo0aAA0AaAaAaa0AaaAAAaaA00AAAa0AA00A0AAAaAa",
+                    "sort": "updated",
+                },
+            ),
         ),
     )
-    def test_request_params(self, stream_state_date, next_page_token, expected_params):
-        stream = SomeIncrementalStream(api_key=self.api_key, start_date=self.start_date)
+    def test_request_params(self, config_start_date, stream_state_date, next_page_token, expected_params):
+        stream = SomeIncrementalStream(api_key=self.api_key, start_date=config_start_date)
         inputs = {"stream_state": stream_state_date, "next_page_token": next_page_token}
         assert stream.request_params(**inputs) == expected_params
 
     @pytest.mark.parametrize(
-        ("current_cursor", "latest_cursor", "expected_cursor"),
+        ("config_start_date", "current_cursor", "latest_cursor", "expected_cursor"),
         (
-            ("2023-01-01T00:00:00+00:00", "2023-01-02T00:00:00+00:00", "2023-01-02T00:00:00+00:00"),
-            ("2023-01-02T00:00:00+00:00", "2023-01-01T00:00:00+00:00", "2023-01-02T00:00:00+00:00"),
+            (START_DATE.isoformat(), "2023-01-01T00:00:00+00:00", "2023-01-02T00:00:00+00:00", "2023-01-02T00:00:00+00:00"),
+            (START_DATE.isoformat(), "2023-01-02T00:00:00+00:00", "2023-01-01T00:00:00+00:00", "2023-01-02T00:00:00+00:00"),
+            (START_DATE.isoformat(), None, "2019-01-01T00:00:00+00:00", "2020-10-10T00:00:00+00:00"),
+            (None, "2020-10-10T00:00:00+00:00", "2019-01-01T00:00:00+00:00", "2020-10-10T00:00:00+00:00"),
+            (None, None, "2019-01-01T00:00:00+00:00", "2019-01-01T00:00:00+00:00"),
         ),
     )
-    def test_get_updated_state(self, current_cursor, latest_cursor, expected_cursor):
-        stream = SomeIncrementalStream(api_key=self.api_key, start_date=self.start_date)
+    def test_get_updated_state(self, config_start_date, current_cursor, latest_cursor, expected_cursor):
+        stream = SomeIncrementalStream(api_key=self.api_key, start_date=config_start_date)
         inputs = {
-            "current_stream_state": {stream.cursor_field: current_cursor},
+            # {"key": "value"} is needed to mimic the case when current_stream_state doesn't have cursor key
+            "current_stream_state": {stream.cursor_field: current_cursor} if current_cursor else {"key": "value"},
             "latest_record": {stream.cursor_field: latest_cursor},
         }
         assert stream.get_updated_state(**inputs) == {stream.cursor_field: expected_cursor}
