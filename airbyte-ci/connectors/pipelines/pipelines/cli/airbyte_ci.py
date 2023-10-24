@@ -10,7 +10,7 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-import click
+import asyncclick as click
 import git
 from github import PullRequest
 from pipelines import main_logger
@@ -126,7 +126,7 @@ def set_working_directory_to_root() -> None:
     os.chdir(working_dir)
 
 
-def get_modified_files(
+async def get_modified_files(
     git_branch: str, git_revision: str, diffed_branch: str, is_local: bool, ci_context: CIContext, pull_request: PullRequest
 ) -> List[str]:
     """Get the list of modified files in the current git branch.
@@ -139,15 +139,15 @@ def get_modified_files(
     This latest case is the one we encounter when running the pipeline locally, on a local branch, or manually on GHA with a workflow dispatch event.
     """
     if ci_context is CIContext.MASTER or ci_context is CIContext.NIGHTLY_BUILDS:
-        return get_modified_files_in_commit(git_branch, git_revision, is_local)
+        return await get_modified_files_in_commit(git_branch, git_revision, is_local)
     if ci_context is CIContext.PULL_REQUEST and pull_request is not None:
         return get_modified_files_in_pull_request(pull_request)
     if ci_context is CIContext.MANUAL:
         if git_branch == "master":
-            return get_modified_files_in_commit(git_branch, git_revision, is_local)
+            return await get_modified_files_in_commit(git_branch, git_revision, is_local)
         else:
-            return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
-    return get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
+            return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
+    return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
 
 
 def log_git_info(ctx: click.Context):
@@ -231,6 +231,8 @@ def _get_modified_files(ctx: click.Context) -> List[Path]:
     envvar="GCP_GSM_CREDENTIALS",
 )
 @click.option("--ci-job-key", envvar="CI_JOB_KEY", type=str)
+@click.option("--s3-build-cache-access-key-id", envvar="S3_BUILD_CACHE_ACCESS_KEY_ID", type=str)
+@click.option("--s3-build-cache-secret-key", envvar="S3_BUILD_CACHE_SECRET_KEY", type=str)
 @click.option("--show-dagger-logs/--hide-dagger-logs", default=False, type=bool)
 @click_track_command
 @click_merge_args_into_context_obj
@@ -239,7 +241,7 @@ def _get_modified_files(ctx: click.Context) -> List[Path]:
 @click_append_to_context_object("pull_request", _get_pull_request)
 @click_append_to_context_object("modified_files", _get_modified_files)
 @click_ignore_unused_kwargs
-def airbyte_ci(
+async def airbyte_ci(
     ctx: click.Context,
     is_local: bool,
 ):  # noqa D103
@@ -248,7 +250,6 @@ def airbyte_ci(
 
     if not is_local:
         log_git_info(ctx)
-
 
 set_working_directory_to_root()
 

@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import click
+import asyncclick as click
 from connector_ops.utils import console
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from rich.table import Table
@@ -11,7 +11,7 @@ from rich.text import Text
 
 @click.command(cls=DaggerPipelineCommand, help="List all selected connectors.")
 @click.pass_context
-def list(
+async def list(
     ctx: click.Context,
 ):
     selected_connectors = sorted(ctx.obj["selected_connectors_with_modified_files"], key=lambda x: x.technical_name)

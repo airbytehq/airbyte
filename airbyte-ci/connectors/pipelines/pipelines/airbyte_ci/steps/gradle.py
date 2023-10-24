@@ -26,7 +26,10 @@ class GradleTask(Step, ABC):
         mount_connector_secrets (bool): Whether to mount connector secrets.
     """
 
-    DEFAULT_GRADLE_TASK_OPTIONS = ("--no-daemon", "--scan", "--build-cache", "--console=plain")
+    DEFAULT_GRADLE_TASK_OPTIONS = ("--no-daemon", "--no-watch-fs", "--scan", "--build-cache", "--console=plain")
+    LOCAL_MAVEN_REPOSITORY_PATH = "/root/.m2"
+    GRADLE_DEP_CACHE_PATH = "/root/gradle-cache"
+    GRADLE_HOME_PATH = "/root/.gradle"
 
     gradle_task_name: ClassVar[str]
     bind_to_docker_host: ClassVar[bool] = False
@@ -36,11 +39,9 @@ class GradleTask(Step, ABC):
         super().__init__(context)
 
     @property
-    def connector_java_build_cache(self) -> CacheVolume:
-        # TODO: remove this once we finish the project to boost source-postgres CI performance.
-        # We should use a static gradle-cache volume name.
-        cache_volume_name = hacks.get_gradle_cache_volume_name(self.context, self.logger)
-        return self.context.dagger_client.cache_volume(cache_volume_name)
+    def dependency_cache_volume(self) -> CacheVolume:
+        """This cache volume is for sharing gradle dependencies (jars and poms) across all pipeline runs."""
+        return self.context.dagger_client.cache_volume("gradle-dependency-cache")
 
     @property
     def build_include(self) -> List[str]:
@@ -56,15 +57,8 @@ class GradleTask(Step, ABC):
             for dependency_directory in self.context.connector.get_local_dependency_paths(with_test_dependencies=True)
         ]
 
-    def _get_gradle_command(self, task: str) -> List[str]:
-        return sh_dash_c(
-            [
-                # The gradle command is chained in between a couple of rsyncs which load from- and store to the cache volume.
-                "(rsync -a --stats /root/gradle-cache/ /root/.gradle || true)",
-                f"./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS)} {task}",
-                "(rsync -a --stats /root/.gradle/ /root/gradle-cache || true)",
-            ]
-        )
+    def _get_gradle_command(self, task: str, *args) -> str:
+        return f"./gradlew {' '.join(self.DEFAULT_GRADLE_TASK_OPTIONS + args)} {task}"
 
     async def _run(self) -> StepResult:
         include = [
@@ -85,7 +79,6 @@ class GradleTask(Step, ABC):
             "tools/lib/lib.sh",
             "tools/gradle/codestyle",
             "pyproject.toml",
-            "airbyte-cdk/java/airbyte-cdk/**",
         ] + self.build_include
 
         yum_packages_to_install = [
@@ -97,12 +90,17 @@ class GradleTask(Step, ABC):
             "rsync",  # required for gradle cache synchronization.
         ]
 
-        # Define a gradle container which will be cached and re-used for all tasks.
-        # We should do our best to cram any generic & expensive layers in here.
-        gradle_container = (
+        # Common base container.
+        gradle_container_base = (
             self.dagger_client.container()
             # Use a linux+jdk base image with long-term support, such as amazoncorretto.
             .from_(AMAZONCORRETTO_IMAGE)
+            # Mount the dependency cache volume, but not to $GRADLE_HOME, because gradle doesn't expect concurrent modifications.
+            .with_mounted_cache(self.GRADLE_DEP_CACHE_PATH, self.dependency_cache_volume, sharing=CacheSharingMode.LOCKED)
+            # Set GRADLE_HOME to the directory which will be rsync-ed with the gradle cache volume.
+            .with_env_variable("GRADLE_HOME", self.GRADLE_HOME_PATH)
+            # Same for GRADLE_USER_HOME.
+            .with_env_variable("GRADLE_USER_HOME", self.GRADLE_HOME_PATH)
             # Install a bunch of packages as early as possible.
             .with_exec(
                 sh_dash_c(
@@ -120,36 +118,73 @@ class GradleTask(Step, ABC):
                     ]
                 )
             )
-            # Set GRADLE_HOME and GRADLE_USER_HOME to the directory which will be rsync-ed with the gradle cache volume.
-            .with_env_variable("GRADLE_HOME", "/root/.gradle")
-            .with_env_variable("GRADLE_USER_HOME", "/root/.gradle")
             # Set RUN_IN_AIRBYTE_CI to tell gradle how to configure its build cache.
             # This is consumed by settings.gradle in the repo root.
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
+            # Disable the Ryuk container because it needs privileged docker access which it can't have.
+            .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
+            # Set the current working directory.
+            .with_workdir("/airbyte")
             # TODO: remove this once we finish the project to boost source-postgres CI performance.
             .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger))
-            # Mount the gradle cache volume.
-            # We deliberately don't mount it at $GRADLE_HOME, instead we load it there and store it from there using rsync.
-            # This is because the volume is accessed concurrently by all GradleTask instances.
-            # Hence, why we synchronize the writes by setting the `sharing` parameter to LOCKED.
-            .with_mounted_cache("/root/gradle-cache", self.connector_java_build_cache, sharing=CacheSharingMode.LOCKED)
-            # Mount the parts of the repo which interest us in /airbyte.
-            .with_workdir("/airbyte")
+        )
+
+        # Augment the base container with S3 build cache secrets when available.
+        if self.context.s3_build_cache_access_key_id:
+            gradle_container_base = gradle_container_base.with_secret_variable(
+                "S3_BUILD_CACHE_ACCESS_KEY_ID", self.context.s3_build_cache_access_key_id_secret
+            )
+            if self.context.s3_build_cache_secret_key:
+                gradle_container_base = gradle_container_base.with_secret_variable(
+                    "S3_BUILD_CACHE_SECRET_KEY", self.context.s3_build_cache_secret_key_secret
+                )
+
+        # Running a gradle task like "help" with these arguments will trigger updating all dependencies.
+        # When the cache is cold, this downloads many gigabytes of jars and poms from all over the internet.
+        warm_dependency_cache_args = ["--write-verification-metadata", "sha256", "--dry-run"]
+        if self.context.is_local:
+            # When running locally, this dependency update is slower and less useful than within a CI runner. Skip it.
+            warm_dependency_cache_args = ["--dry-run"]
+
+        # Mount the whole git repo to update the cache volume contents and build the CDK.
+        with_whole_git_repo = (
+            gradle_container_base
+            # Mount the whole repo.
+            .with_directory("/airbyte", self.context.get_repo_dir("."))
+            # Update the cache in place by executing a gradle task which will update all dependencies and build the CDK.
+            .with_exec(
+                sh_dash_c(
+                    [
+                        # Ensure that the .m2 directory exists.
+                        f"mkdir -p {self.LOCAL_MAVEN_REPOSITORY_PATH}",
+                        # Load from the cache volume.
+                        f"(rsync -a --stats --mkpath {self.GRADLE_DEP_CACHE_PATH}/ {self.GRADLE_HOME_PATH} || true)",
+                        # Resolve all dependencies and write their checksums to './gradle/verification-metadata.dryrun.xml'.
+                        self._get_gradle_command("help", *warm_dependency_cache_args),
+                        # Build the CDK and publish it to the local maven repository.
+                        self._get_gradle_command(":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"),
+                        # Store to the cache volume.
+                        f"(rsync -a --stats {self.GRADLE_HOME_PATH}/ {self.GRADLE_DEP_CACHE_PATH} || true)",
+                    ]
+                )
+            )
+        )
+
+        # Mount only the code needed to build the connector.
+        gradle_container = (
+            gradle_container_base
+            # Copy the local maven repository and force evaluation of `with_whole_git_repo` container.
+            .with_directory(self.LOCAL_MAVEN_REPOSITORY_PATH, await with_whole_git_repo.directory(self.LOCAL_MAVEN_REPOSITORY_PATH))
+            # Mount the connector-agnostic whitelisted files in the git repo.
             .with_mounted_directory("/airbyte", self.context.get_repo_dir(".", include=include))
+            # Mount the sources for the connector and its dependencies in the git repo.
             .with_mounted_directory(str(self.context.connector.code_directory), await self.context.get_connector_dir())
-            # Disable the Ryuk container because it needs privileged docker access that does not work:
-            .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
-            # Run gradle once to populate the container's local maven repository.
-            # This step is useful also to serve as a basic sanity check and to warm the gradle cache.
-            # This will download gradle itself, a bunch of poms and jars, compile the gradle plugins, configure tasks, etc.
-            .with_exec(self._get_gradle_command(":airbyte-cdk:java:airbyte-cdk:publishSnapshotIfNeeded"))
         )
 
         # From this point on, we add layers which are task-dependent.
         if self.mount_connector_secrets:
-            gradle_container = gradle_container.with_(
-                await secrets.mounted_connector_secrets(self.context, f"{self.context.connector.code_directory}/secrets")
-            )
+            secrets_dir = f"{self.context.connector.code_directory}/secrets"
+            gradle_container = gradle_container.with_(await secrets.mounted_connector_secrets(self.context, secrets_dir))
         if self.bind_to_docker_host:
             # If this GradleTask subclass needs docker, then install it and bind it to the existing global docker host container.
             gradle_container = pipelines.dagger.actions.system.docker.with_bound_docker_host(self.context, gradle_container)
@@ -158,5 +193,14 @@ class GradleTask(Step, ABC):
 
         # Run the gradle task that we actually care about.
         connector_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
-        gradle_container = gradle_container.with_exec(self._get_gradle_command(connector_task))
+        gradle_container = gradle_container.with_exec(
+            sh_dash_c(
+                [
+                    # Warm the gradle cache.
+                    f"(rsync -a --stats --mkpath {self.GRADLE_DEP_CACHE_PATH}/ {self.GRADLE_HOME_PATH} || true)",
+                    # Run the gradle task.
+                    self._get_gradle_command(connector_task, f"-Ds3BuildCachePrefix={self.context.connector.technical_name}"),
+                ]
+            )
+        )
         return await self.get_step_result(gradle_container)

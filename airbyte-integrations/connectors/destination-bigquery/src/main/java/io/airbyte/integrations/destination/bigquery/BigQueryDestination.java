@@ -373,23 +373,20 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return new BigQueryRecordStandardConsumer(
         outputRecordCollector,
         () -> {
-          final boolean use1s1t = TypingAndDedupingFlag.isDestinationV2();
-          if (use1s1t) {
-            // Set up our raw tables
-            writeConfigs.get().forEach((streamId, uploader) -> {
-              final StreamConfig stream = parsedCatalog.getStream(streamId);
-              if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
-                // For streams in overwrite mode, truncate the raw table.
-                // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
-                // 1s1t mode.
-                final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
-                bigquery.delete(rawTableId);
-                BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
-              } else {
-                uploader.createRawTable();
-              }
-            });
-          }
+          // Set up our raw tables
+          writeConfigs.get().forEach((streamId, uploader) -> {
+            final StreamConfig stream = parsedCatalog.getStream(streamId);
+            if (stream.destinationSyncMode() == DestinationSyncMode.OVERWRITE) {
+              // For streams in overwrite mode, truncate the raw table.
+              // non-1s1t syncs actually overwrite the raw table at the end of the sync, so we only do this in
+              // 1s1t mode.
+              final TableId rawTableId = TableId.of(stream.id().rawNamespace(), stream.id().rawName());
+              bigquery.delete(rawTableId);
+              BigQueryUtils.createPartitionedTableIfNotExists(bigquery, rawTableId, DefaultBigQueryRecordFormatter.SCHEMA_V2);
+            } else {
+              uploader.createRawTable();
+            }
+          });
         },
         (hasFailed) -> {
           try {

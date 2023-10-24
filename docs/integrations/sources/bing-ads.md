@@ -93,6 +93,10 @@ The Bing Ads source connector supports the following streams. For more informati
 - [ad_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
 - [ad_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
 - [ad_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/adperformancereportrequest?view=bingads-13)
+- [age_gender_audience_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
+- [age_gender_audience_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
+- [age_gender_audience_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
+- [age_gender_audience_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
 - [geographic_performance_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
 - [geographic_performance_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
 - [geographic_performance_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
@@ -123,7 +127,8 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.2 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 1.1.0   | 2023-10-24 | [31712](https://github.com/airbytehq/airbyte/pull/31712)                                                                         | Add new stream: AgeGenderAudienceReport (daily, hourly, weekly, monthly)                                                                     |
+| 1.0.2   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599)                                                                         | Base image migration: remove Dockerfile and use the python-connector-base image                                                              |
 | 1.0.1   | 2023-10-16 | [31432](https://github.com/airbytehq/airbyte/pull/31432)                                                                         | Remove primary keys from the geographic performance reports - complete what was missed in version 1.0.0                                      |
 | 1.0.0   | 2023-10-11 | [31277](https://github.com/airbytehq/airbyte/pull/31277)                                                                         | Remove primary keys from the geographic performance reports.                                                                                 |
 | 0.2.3   | 2023-09-28 | [30834](https://github.com/airbytehq/airbyte/pull/30834)                                                                         | Wrap auth error with the config error.                                                                                                       |
