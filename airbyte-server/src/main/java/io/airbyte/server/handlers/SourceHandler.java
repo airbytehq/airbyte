@@ -124,12 +124,9 @@ public class SourceHandler {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
-  public SourceReadWithConnection getSourceWithConnection(final SourceIdRequestBody sourceIdRequestBody)
-          throws JsonValidationException, IOException, ConfigNotFoundException {
-    SourceRead sourceRead = buildSourceRead(sourceIdRequestBody.getSourceId());
-    ConnectionReadList connectionReadList =
-            connectionsHandler.listConnectionsForWorkspaceWithoutOperation(new WorkspaceIdRequestBody().workspaceId(sourceRead.getWorkspaceId()), false);
-    return new SourceReadWithConnection().sourceRead(sourceRead).connectionReadList(connectionReadList);
+  public SourceRead getSourceRead(final SourceIdRequestBody sourceIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
   public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody)
@@ -153,7 +150,8 @@ public class SourceHandler {
       }
 
       if (sourceCloneConfiguration.getConnectionConfiguration() != null) {
-        sourceCreate.connectionConfiguration(configurationUpdate.source(sourceCloneRequestBody.getSourceCloneId(),sourceName, sourceCloneConfiguration.getConnectionConfiguration()).getConfiguration());
+        sourceCreate.connectionConfiguration(configurationUpdate
+            .source(sourceCloneRequestBody.getSourceCloneId(), sourceName, sourceCloneConfiguration.getConnectionConfiguration()).getConfiguration());
       }
     }
 
@@ -177,7 +175,7 @@ public class SourceHandler {
   }
 
   public SourcePageReadList pageSourcesForWorkspace(final PageRequestBody pageRequestBody)
-          throws IOException {
+      throws IOException {
     if (pageRequestBody.getPageSize() == null || pageRequestBody.getPageSize() == 0) {
       pageRequestBody.setPageSize(10);
     }
@@ -185,13 +183,13 @@ public class SourceHandler {
       pageRequestBody.setPageCurrent(1);
     }
     List<SourceConnection> sourceConnections = configRepository.pageWorkspaceSourceConnection(pageRequestBody.getWorkspaceId(),
-            pageRequestBody.getPageSize(), pageRequestBody.getPageCurrent());
+        pageRequestBody.getPageSize(), pageRequestBody.getPageCurrent());
     final List<SourceRead> sourceReads = Lists.newArrayList();
     for (final SourceConnection sourceConnection : sourceConnections) {
       try {
         StandardSourceDefinition standardSourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
         final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(),
-                standardSourceDefinition.getSpec().getConnectionSpecification());
+            standardSourceDefinition.getSpec().getConnectionSpecification());
         sourceConnection.setConfiguration(sanitizedConfig);
         sourceReads.add(toSourceRead(sourceConnection, standardSourceDefinition));
       } catch (final Exception e) {
@@ -199,7 +197,7 @@ public class SourceHandler {
       }
     }
     return new SourcePageReadList().sources(sourceReads).total(configRepository.pageWorkspaceSourceCount(pageRequestBody.getWorkspaceId()))
-            .pageCurrent(pageRequestBody.getPageCurrent()).pageSize(pageRequestBody.getPageSize());
+        .pageCurrent(pageRequestBody.getPageCurrent()).pageSize(pageRequestBody.getPageSize());
   }
 
   public SourceReadList listSourcesForSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
@@ -272,12 +270,12 @@ public class SourceHandler {
   }
 
   private SourceRead buildSourceRead(final UUID sourceId)
-          throws ConfigNotFoundException, IOException, JsonValidationException {
+      throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
     final StandardSourceDefinition standardSourceDefinition = configRepository
-            .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+        .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
     final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(),
-            standardSourceDefinition.getSpec().getConnectionSpecification());
+        standardSourceDefinition.getSpec().getConnectionSpecification());
     sourceConnection.setConfiguration(sanitizedConfig);
     return toSourceRead(sourceConnection, standardSourceDefinition);
   }
@@ -361,4 +359,5 @@ public class SourceHandler {
     });
     return result;
   }
+
 }

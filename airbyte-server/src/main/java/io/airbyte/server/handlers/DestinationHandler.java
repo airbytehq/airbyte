@@ -158,15 +158,11 @@ public class DestinationHandler {
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
-  public DestionationReadWithConnection getDestinationWithConnection(final DestinationIdRequestBody destinationIdRequestBody)
-          throws JsonValidationException, IOException, ConfigNotFoundException {
-    DestinationRead destinationRead = buildDestinationRead(destinationIdRequestBody.getDestinationId());
-    ConnectionReadList connectionReadList =
-            connectionsHandler.listConnectionsForWorkspaceWithoutOperation(new WorkspaceIdRequestBody().workspaceId(destinationRead.getWorkspaceId()),
-                    false);
-    return new DestionationReadWithConnection().destinationRead(destinationRead).connectionReadList(connectionReadList);
+  public DestinationRead getDestinationRead(final DestinationIdRequestBody destinationIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
-  
+
   public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // read destination configuration from db
@@ -188,7 +184,8 @@ public class DestinationHandler {
       }
 
       if (destinationCloneConfiguration.getConnectionConfiguration() != null) {
-        destinationCreate.connectionConfiguration(configurationUpdate.destination(destinationCloneRequestBody.getDestinationCloneId(),destinationName, destinationCloneConfiguration.getConnectionConfiguration()).getConfiguration());
+        destinationCreate.connectionConfiguration(configurationUpdate.destination(destinationCloneRequestBody.getDestinationCloneId(),
+            destinationName, destinationCloneConfiguration.getConnectionConfiguration()).getConfiguration());
       }
     }
 
@@ -215,7 +212,7 @@ public class DestinationHandler {
   }
 
   public DestinationPageReadList pageDestinationsForWorkspace(final PageRequestBody pageRequestBody)
-          throws IOException {
+      throws IOException {
     if (pageRequestBody.getPageSize() == null || pageRequestBody.getPageSize() == 0) {
       pageRequestBody.setPageSize(10);
     }
@@ -223,22 +220,23 @@ public class DestinationHandler {
       pageRequestBody.setPageCurrent(1);
     }
     List<DestinationConnection> destinationConnections = configRepository.pageWorkspaceDestinationConnection(pageRequestBody.getWorkspaceId(),
-            pageRequestBody.getPageSize(), pageRequestBody.getPageCurrent());
+        pageRequestBody.getPageSize(), pageRequestBody.getPageCurrent());
     final List<DestinationRead> destinationReads = Lists.newArrayList();
     for (final DestinationConnection destinationConnection : destinationConnections) {
       try {
         StandardDestinationDefinition standardDestinationDefinition =
-                configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+            configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
         final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
-                standardDestinationDefinition.getSpec().getConnectionSpecification());
+            standardDestinationDefinition.getSpec().getConnectionSpecification());
         destinationConnection.setConfiguration(sanitizedConfig);
         destinationReads.add(toDestinationRead(destinationConnection, standardDestinationDefinition));
       } catch (final Exception e) {
         throw new RuntimeException(e);
       }
     }
-    return new DestinationPageReadList().destinations(destinationReads).total(configRepository.pageWorkspaceDestinationCount(pageRequestBody.getWorkspaceId()))
-            .pageCurrent(pageRequestBody.getPageCurrent()).pageSize(pageRequestBody.getPageSize());
+    return new DestinationPageReadList().destinations(destinationReads)
+        .total(configRepository.pageWorkspaceDestinationCount(pageRequestBody.getWorkspaceId()))
+        .pageCurrent(pageRequestBody.getPageCurrent()).pageSize(pageRequestBody.getPageSize());
   }
 
   public DestinationReadList listDestinationsForDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
@@ -304,9 +302,9 @@ public class DestinationHandler {
   private DestinationRead buildDestinationRead(final UUID destinationId) throws JsonValidationException, IOException, ConfigNotFoundException {
     DestinationConnection destinationConnection = configRepository.getDestinationConnection(destinationId);
     final StandardDestinationDefinition standardDestinationDefinition =
-            configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
+        configRepository.getStandardDestinationDefinition(destinationConnection.getDestinationDefinitionId());
     destinationConnection.setConfiguration(secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
-            standardDestinationDefinition.getSpec().getConnectionSpecification()));
+        standardDestinationDefinition.getSpec().getConnectionSpecification()));
     return toDestinationRead(destinationConnection, standardDestinationDefinition);
   }
 
@@ -355,4 +353,5 @@ public class DestinationHandler {
     });
     return result;
   }
+
 }

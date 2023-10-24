@@ -381,7 +381,12 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
 
   @Override
   public SourceReadWithConnection getSourceWithConnection(final SourceIdRequestBody sourceIdRequestBody) {
-    return execute(() -> sourceHandler.getSourceWithConnection(sourceIdRequestBody));
+    return execute(() -> {
+      SourceRead sourceRead = sourceHandler.getSourceRead(sourceIdRequestBody);
+      WebBackendConnectionReadList webBackendConnectionReadList = webBackendConnectionsHandler.listConnectionsWithoutOperation(
+          sourceRead.getWorkspaceId(), sourceIdRequestBody.getSourceId(), null, false);
+      return new SourceReadWithConnection().sourceRead(sourceRead).connectionReadList(webBackendConnectionReadList);
+    });
   }
 
   @Override
@@ -568,8 +573,14 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public DestionationReadWithConnection getDestinationWithConnection(final DestinationIdRequestBody destinationIdRequestBody) {
-    return execute(() -> destinationHandler.getDestinationWithConnection(destinationIdRequestBody));
+  public DestinationReadWithConnection getDestinationWithConnection(final DestinationIdRequestBody destinationIdRequestBody) {
+    return execute(() -> {
+      DestinationRead destinationRead = destinationHandler.getDestinationRead(destinationIdRequestBody);
+      WebBackendConnectionReadList webBackendConnectionReadList =
+          webBackendConnectionsHandler.listConnectionsWithoutOperation(destinationRead.getWorkspaceId(), null,
+              destinationIdRequestBody.getDestinationId(), false);
+      return new DestinationReadWithConnection().destinationRead(destinationRead).webBackendConnectionReadList(webBackendConnectionReadList);
+    });
   }
 
   @Override
