@@ -16,14 +16,4 @@ public class BigQueryGcsRawOverrideTypingDedupingTest extends AbstractBigQueryTy
     return "overridden_raw_dataset";
   }
 
-  @Override
-  public void testRemovingPKNonNullIndexes() throws Exception {
-    // Do nothing.
-  }
-
-  @Override
-  public void identicalNameSimultaneousSync() throws Exception {
-    // TODO: create fixtures to verify how raw tables are affected. Base tests check for final tables.
-  }
-
 }
