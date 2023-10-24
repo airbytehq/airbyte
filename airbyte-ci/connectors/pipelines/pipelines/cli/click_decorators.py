@@ -3,7 +3,7 @@ import inspect
 from functools import wraps
 from typing import Any, Callable, Type
 
-import click
+import asyncclick as click
 
 
 def _contains_var_kwarg(f):

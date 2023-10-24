@@ -1,29 +1,17 @@
 import sys
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Optional
 
 import dagger
-from click import Context, get_current_context
+from asyncclick import Context, get_current_context
 from dagger.api.gen import Client, Container
 from pydantic import BaseModel, Field, PrivateAttr
 
 from ..singleton import Singleton
 
-# TODO ben set up for async
-# from asyncclick import Context, get_current_context
-
-
-# this is a bit of a hack to get around how prefect resolves parameters
-# basically without this, prefect will attempt to access the context
-# before we create it in main.py in order to resolve it as a parameter
-# wrapping it in a function like this prevents that from happening
-def get_context() -> Context:
-    return get_current_context()
-
-
 class ClickPipelineContext(BaseModel, Singleton):
     dockerd_service: Optional[Container] = Field(default=None)
     _dagger_client: Optional[Client] = PrivateAttr(default=None)
-    _click_context: Callable[[], Context] = PrivateAttr(default_factory=lambda: get_context)
+    _click_context: Callable[[], Context] = PrivateAttr(default_factory=lambda: get_current_context)
 
     @property
     def params(self):

@@ -52,8 +52,8 @@ If you face any installation problems feel free to reach out the Airbyte Connect
 ### Setting up connector secrets access
 
 If you plan to use Airbyte CI to run CAT (Connector Acceptance Tests), we recommend setting up GSM
-access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the 
-CI Credentials package (which Airbyte CI uses under the hood) README's 
+access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the
+CI Credentials package (which Airbyte CI uses under the hood) README's
 [Get GSM Access](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md#get-gsm-access)
 instructions.
 
@@ -155,7 +155,7 @@ Available commands:
 | `--enable-dependency-scanning / --disable-dependency-scanning` | False    | ` --disable-dependency-scanning` |                             | When enabled the dependency scanning will be performed to detect the connectors to select according to a dependency change.                                                                                                                                                                           |
 | `--docker-hub-username`                                        |          |                                  | DOCKER_HUB_USERNAME         | Your username to connect to DockerHub. Required for the publish subcommand.                                                                                                                                                                                                                           |
 | `--docker-hub-password`                                        |          |                                  | DOCKER_HUB_PASSWORD         | Your password to connect to DockerHub. Required for the publish subcommand.                                                                                                                                                                                                                           |
-                                                                                                                                           
+
 
 ### <a id="connectors-list-command"></a>`connectors list` command
 Retrieve the list of connectors satisfying the provided filters.
@@ -408,7 +408,8 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 2.4.0   | [#31716](https://github.com/airbytehq/airbyte/pull/31716)  | Enable pre-release publish with local CDK.
+| 2.4.1   | [#31628](https://github.com/airbytehq/airbyte/pull/31628)  | Add ClickPipelineContext class                                                                            |
+| 2.4.0   | [#31716](https://github.com/airbytehq/airbyte/pull/31716)  | Enable pre-release publish with local CDK.                                                                |
 | 2.3.1   | [#31748](https://github.com/airbytehq/airbyte/pull/31748)  | Use AsyncClick library instead of base Click.                                                             |
 | 2.3.0   | [#31699](https://github.com/airbytehq/airbyte/pull/31699)  | Support optional concurrent CAT execution.                                                                |
 | 2.2.6   | [#31752](https://github.com/airbytehq/airbyte/pull/31752)  | Only authenticate when secrets are available.
