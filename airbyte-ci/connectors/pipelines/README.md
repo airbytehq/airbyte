@@ -47,7 +47,15 @@ _Note: `--force` is required to ensure updates are applied on subsequent install
 _Note: `--python=python3.10` is required to ensure the correct python version is used._
 _Note: `--editable` is required to ensure the correct python version is used._
 
-If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
+If you face any installation problems feel free to reach out the Airbyte Connectors Operations team.
+
+### Setting up connector secrets access
+
+If you plan to use Airbyte CI to run CAT (Connector Acceptance Tests), we recommend setting up GSM
+access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the 
+CI Credentials package (which Airbyte CI uses under the hood) README's 
+[Get GSM Access](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md#get-gsm-access)
+instructions.
 
 ### Updating the airbyte-ci tool
 To reinstall airbyte-ci:
@@ -73,7 +81,7 @@ poetry shell
 cd ../../
 ```
 
-At this point you can run `airbyte-ci` commands from the root of the repository.
+At this point you can run `airbyte-ci` commands.
 
 ## Commands reference
 - [`airbyte-ci` command group](#airbyte-ci)
@@ -231,6 +239,7 @@ flowchart TD
 | `--fail-fast`       | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
 | `--fast-tests-only` | True     | False         | Run unit tests only, skipping integration tests or any tests explicitly tagged as slow. Use this for more frequent checks, when it is not feasible to run the entire test suite.                         |
 | `--code-tests-only` | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
+| `--concurrent-cat`  | False     | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits. |
 
 Note:
 
@@ -399,7 +408,10 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| 2.3.0   | [#31716](https://github.com/airbytehq/airbyte/pull/31716)  | Enable pre-release publish with local CDK.
+| 2.4.0   | [#31716](https://github.com/airbytehq/airbyte/pull/31716)  | Enable pre-release publish with local CDK.
+| 2.3.1   | [#31748](https://github.com/airbytehq/airbyte/pull/31748)  | Use AsyncClick library instead of base Click.                                                             |
+| 2.3.0   | [#31699](https://github.com/airbytehq/airbyte/pull/31699)  | Support optional concurrent CAT execution.                                                                |
+| 2.2.6   | [#31752](https://github.com/airbytehq/airbyte/pull/31752)  | Only authenticate when secrets are available.
 | 2.2.5   | [#31718](https://github.com/airbytehq/airbyte/pull/31718)  | Authenticate the sidecar docker daemon to DockerHub.                                                      |
 | 2.2.4   | [#31535](https://github.com/airbytehq/airbyte/pull/31535)  | Improve gradle caching when building java connectors.                                                     |
 | 2.2.3   | [#31688](https://github.com/airbytehq/airbyte/pull/31688)  | Fix failing `CheckBaseImageUse` step when not running on PR.                                              |
