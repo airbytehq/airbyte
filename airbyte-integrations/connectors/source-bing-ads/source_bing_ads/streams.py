@@ -11,7 +11,6 @@ from urllib.error import URLError
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from bingads.service_client import ServiceClient
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from source_bing_ads.client import Client
@@ -833,7 +832,6 @@ class AccountPerformanceReportMonthly(AccountPerformanceReport):
 
 
 class AgeGenderAudienceReport(PerformanceReportsMixin, BingAdsStream, ABC):
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AgeGenderAudienceReport"
@@ -846,13 +844,6 @@ class AgeGenderAudienceReport(PerformanceReportsMixin, BingAdsStream, ABC):
     @property
     def report_columns(self):
         return list(self.get_json_schema().get("properties", {}).keys())
-
-    def parse_response(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Iterable[Mapping]:
-        if response is not None:
-            for row in response.report_records:
-                yield {column: row.value(column) if row.value(column) else None for column in self.report_columns}
-
-        yield from []
 
 
 class AgeGenderAudienceReportHourly(AgeGenderAudienceReport):
