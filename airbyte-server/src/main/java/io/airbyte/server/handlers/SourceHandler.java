@@ -124,6 +124,11 @@ public class SourceHandler {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
+  public SourceRead getSourceRead(final SourceIdRequestBody sourceIdRequestBody)
+      throws JsonValidationException, IOException, ConfigNotFoundException {
+    return buildSourceRead(sourceIdRequestBody.getSourceId());
+  }
+
   public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // read source configuration from db
@@ -145,7 +150,8 @@ public class SourceHandler {
       }
 
       if (sourceCloneConfiguration.getConnectionConfiguration() != null) {
-        sourceCreate.connectionConfiguration(configurationUpdate.source(sourceCloneRequestBody.getSourceCloneId(),sourceName, sourceCloneConfiguration.getConnectionConfiguration()).getConfiguration());
+        sourceCreate.connectionConfiguration(configurationUpdate
+            .source(sourceCloneRequestBody.getSourceCloneId(), sourceName, sourceCloneConfiguration.getConnectionConfiguration()).getConfiguration());
       }
     }
 
@@ -166,6 +172,32 @@ public class SourceHandler {
     }
 
     return new SourceReadList().sources(reads);
+  }
+
+  public SourcePageReadList pageSourcesForWorkspace(final PageRequestBody pageRequestBody)
+      throws IOException {
+    if (pageRequestBody.getPageSize() == null || pageRequestBody.getPageSize() == 0) {
+      pageRequestBody.setPageSize(10);
+    }
+    if (pageRequestBody.getPageCurrent() == null || pageRequestBody.getPageCurrent() == 0) {
+      pageRequestBody.setPageCurrent(1);
+    }
+    List<SourceConnection> sourceConnections = configRepository.pageWorkspaceSourceConnection(pageRequestBody.getWorkspaceId(),
+        pageRequestBody.getPageSize(), pageRequestBody.getPageCurrent());
+    final List<SourceRead> sourceReads = Lists.newArrayList();
+    for (final SourceConnection sourceConnection : sourceConnections) {
+      try {
+        StandardSourceDefinition standardSourceDefinition = configRepository.getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+        final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(),
+            standardSourceDefinition.getSpec().getConnectionSpecification());
+        sourceConnection.setConfiguration(sanitizedConfig);
+        sourceReads.add(toSourceRead(sourceConnection, standardSourceDefinition));
+      } catch (final Exception e) {
+        throw new RuntimeException(e);
+      }
+    }
+    return new SourcePageReadList().sources(sourceReads).total(configRepository.pageWorkspaceSourceCount(pageRequestBody.getWorkspaceId()))
+        .pageCurrent(pageRequestBody.getPageCurrent()).pageSize(pageRequestBody.getPageSize());
   }
 
   public SourceReadList listSourcesForSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
@@ -239,10 +271,13 @@ public class SourceHandler {
 
   private SourceRead buildSourceRead(final UUID sourceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    // read configuration from db
-    final StandardSourceDefinition sourceDef = configRepository.getSourceDefinitionFromSource(sourceId);
-    final ConnectorSpecification spec = sourceDef.getSpec();
-    return buildSourceRead(sourceId, spec);
+    final SourceConnection sourceConnection = configRepository.getSourceConnection(sourceId);
+    final StandardSourceDefinition standardSourceDefinition = configRepository
+        .getStandardSourceDefinition(sourceConnection.getSourceDefinitionId());
+    final JsonNode sanitizedConfig = secretsProcessor.prepareSecretsForOutput(sourceConnection.getConfiguration(),
+        standardSourceDefinition.getSpec().getConnectionSpecification());
+    sourceConnection.setConfiguration(sanitizedConfig);
+    return toSourceRead(sourceConnection, standardSourceDefinition);
   }
 
   private SourceRead buildSourceRead(final UUID sourceId, final ConnectorSpecification spec)
@@ -324,4 +359,5 @@ public class SourceHandler {
     });
     return result;
   }
+
 }

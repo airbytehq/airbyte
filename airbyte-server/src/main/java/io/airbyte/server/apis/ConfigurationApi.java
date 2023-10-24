@@ -365,6 +365,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
+  public SourcePageReadList pageSourcesForWorkspace(PageRequestBody pageRequestBody) {
+    return execute(() -> sourceHandler.pageSourcesForWorkspace(pageRequestBody));
+  }
+
+  @Override
   public SourceReadList searchSources(final SourceSearch sourceSearch) {
     return execute(() -> sourceHandler.searchSources(sourceSearch));
   }
@@ -372,6 +377,16 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody) {
     return execute(() -> sourceHandler.getSource(sourceIdRequestBody));
+  }
+
+  @Override
+  public SourceReadWithConnection getSourceWithConnection(final SourceIdRequestBody sourceIdRequestBody) {
+    return execute(() -> {
+      SourceRead sourceRead = sourceHandler.getSourceRead(sourceIdRequestBody);
+      WebBackendConnectionReadList webBackendConnectionReadList = webBackendConnectionsHandler.listConnectionsWithoutOperation(
+          sourceRead.getWorkspaceId(), sourceIdRequestBody.getSourceId(), null, false);
+      return new SourceReadWithConnection().sourceRead(sourceRead).connectionReadList(webBackendConnectionReadList);
+    });
   }
 
   @Override
@@ -543,6 +558,11 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
+  public DestinationPageReadList pageDestinationsForWorkspace(final PageRequestBody pageRequestBody) {
+    return execute(() -> destinationHandler.pageDestinationsForWorkspace(pageRequestBody));
+  }
+
+  @Override
   public DestinationReadList searchDestinations(final DestinationSearch destinationSearch) {
     return execute(() -> destinationHandler.searchDestinations(destinationSearch));
   }
@@ -550,6 +570,17 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody) {
     return execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
+  }
+
+  @Override
+  public DestinationReadWithConnection getDestinationWithConnection(final DestinationIdRequestBody destinationIdRequestBody) {
+    return execute(() -> {
+      DestinationRead destinationRead = destinationHandler.getDestinationRead(destinationIdRequestBody);
+      WebBackendConnectionReadList webBackendConnectionReadList =
+          webBackendConnectionsHandler.listConnectionsWithoutOperation(destinationRead.getWorkspaceId(), null,
+              destinationIdRequestBody.getDestinationId(), false);
+      return new DestinationReadWithConnection().destinationRead(destinationRead).webBackendConnectionReadList(webBackendConnectionReadList);
+    });
   }
 
   @Override

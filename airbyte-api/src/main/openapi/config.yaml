@@ -616,6 +616,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/sources/page:
+    post:
+      tags:
+        - source
+      summary: Returns all non-deleted sources for a workspace.
+      operationId: pageSourcesForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PageRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourcePageReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/get:
     post:
       tags:
@@ -635,6 +658,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/sources/connection/get:
+    post:
+      tags:
+        - source
+      summary: Get source with connection
+      operationId: getSourceWithConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SourceReadWithConnection"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -1136,6 +1182,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destinations/page:
+    post:
+      tags:
+        - destination
+      summary: Returns all non-deleted destination for a workspace.
+      operationId: pageDestinationsForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PageRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationPageReadList"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destinations/get:
     post:
       tags:
@@ -1155,6 +1224,29 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/destinations/connection/get:
+    post:
+      tags:
+        - destination
+      summary: Get destination with connection
+      operationId: getDestinationWithConnection
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DestinationIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DestinationReadWithConnection"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2448,6 +2540,17 @@ components:
           type: integer
         pageCurrent:
           type: integer
+    PageRequestBody:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        pageSize:
+          type: integer
+        pageCurrent:
+          type: integer
     WorkspaceIdRequestBody:
       type: object
       required:
@@ -2899,6 +3002,15 @@ components:
           type: string
         sourceName:
           type: string
+    SourceReadWithConnection:
+      type: object
+      required:
+        - SourceRead
+      properties:
+        SourceRead:
+          $ref: "#/components/schemas/SourceRead"
+        ConnectionReadList:
+          $ref: "#/components/schemas/WebBackendConnectionReadList"
     SourceReadList:
       type: object
       required:
@@ -3196,6 +3308,15 @@ components:
           type: string
         destinationName:
           type: string
+    DestinationReadWithConnection:
+      type: object
+      required:
+        - DestinationRead
+      properties:
+        DestinationRead:
+          $ref: "#/components/schemas/DestinationRead"
+        WebBackendConnectionReadList:
+          $ref: "#/components/schemas/WebBackendConnectionReadList"
     DestinationReadList:
       type: object
       required:
@@ -3205,6 +3326,22 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/DestinationRead"
+    DestinationPageReadList:
+      type: object
+      required:
+        - destinations
+      properties:
+        destinations:
+          type: array
+          items:
+            $ref: "#/components/schemas/DestinationRead"
+        total:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+        pageCurrent:
+          type: integer
     DestinationSearch:
       type: object
       properties:
@@ -4799,6 +4936,22 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WebBackendConnectionRead"
+        total:
+          type: integer
+          format: int64
+        pageSize:
+          type: integer
+        pageCurrent:
+          type: integer
+    SourcePageReadList:
+      type: object
+      required:
+        - sources
+      properties:
+        sources:
+          type: array
+          items:
+            $ref: "#/components/schemas/SourceRead"
         total:
           type: integer
           format: int64

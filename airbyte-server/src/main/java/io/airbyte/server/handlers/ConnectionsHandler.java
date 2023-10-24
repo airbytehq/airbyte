@@ -254,22 +254,24 @@ public class ConnectionsHandler {
 
     return new ConnectionReadList().connections(connectionReads);
   }
+
   public ConnectionReadList pageConnectionsForWorkspace(final WorkspaceIdPageRequestBody workspaceIdRequestBody)
-      throws IOException{
+      throws IOException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
     for (final StandardSync standardSync : configRepository.pageWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(),
-            workspaceIdRequestBody.getSourceDefinitionId(),workspaceIdRequestBody.getDestinationDefinitionId(),workspaceIdRequestBody.getStatus(),
-            workspaceIdRequestBody.getPageSize(),workspaceIdRequestBody.getPageCurrent())) {
+        workspaceIdRequestBody.getSourceDefinitionId(), workspaceIdRequestBody.getDestinationDefinitionId(), workspaceIdRequestBody.getStatus(),
+        workspaceIdRequestBody.getPageSize(), workspaceIdRequestBody.getPageCurrent())) {
       connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
     }
 
     return new ConnectionReadList().connections(connectionReads);
   }
+
   public Long pageConnectionsForWorkspaceCount(final WorkspaceIdPageRequestBody workspaceIdRequestBody)
-      throws IOException{
+      throws IOException {
     return configRepository.pageWorkspaceStandardSyncsCount(workspaceIdRequestBody.getWorkspaceId(),
-            workspaceIdRequestBody.getSourceDefinitionId(),workspaceIdRequestBody.getDestinationDefinitionId(),workspaceIdRequestBody.getStatus());
+        workspaceIdRequestBody.getSourceDefinitionId(), workspaceIdRequestBody.getDestinationDefinitionId(), workspaceIdRequestBody.getStatus());
   }
 
   public ConnectionReadList listConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
@@ -439,4 +441,5 @@ public class ConnectionsHandler {
     });
     return list;
   }
+
 }
