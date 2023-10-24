@@ -7,17 +7,18 @@ import { DestinationService } from "core/domain/connector/DestinationService";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
+import { useAnalyticsService } from "./Analytics";
+import { useRemoveConnectionsFromList } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
 import {
   DestinationRead,
   WebBackendConnectionRead,
   DestinationCloneRequestBody,
+  DestinationReadItem,
 } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useAnalyticsService } from "./Analytics";
-import { useRemoveConnectionsFromList } from "./useConnectionHook";
-import { useCurrentWorkspace } from "./useWorkspace";
 
 export const destinationsKeys = {
   all: [SCOPE_WORKSPACE, "destinations"] as const,
@@ -49,6 +50,11 @@ function useDestinationService() {
 interface DestinationList {
   destinations: DestinationRead[];
 }
+interface PaginatedDestinationList {
+  destinations: DestinationRead[];
+  total: number;
+  pageSize: number;
+}
 
 const useDestinationList = (): DestinationList => {
   const workspace = useCurrentWorkspace();
@@ -56,7 +62,11 @@ const useDestinationList = (): DestinationList => {
 
   return useSuspenseQuery(destinationsKeys.lists(), () => service.list(workspace.workspaceId));
 };
+const usePaginatedDestination = (filters: any): PaginatedDestinationList => {
+  const service = useDestinationService();
 
+  return useSuspenseQuery(destinationsKeys.list(filters), () => service.filteredList(filters));
+};
 const useGetDestination = <T extends string | undefined | null>(
   destinationId: T
 ): T extends string ? DestinationRead : DestinationRead | undefined => {
@@ -67,6 +77,15 @@ const useGetDestination = <T extends string | undefined | null>(
   });
 };
 
+const useGetDestinationItem = <T extends string | undefined | null>(
+  destinationId: T
+): T extends string ? DestinationReadItem : DestinationReadItem | undefined => {
+  const service = useDestinationService();
+
+  return useSuspenseQuery(destinationsKeys.detail(destinationId ?? ""), () =>
+    service.getSingleDestination(destinationId ?? "")
+  );
+};
 const useCreateDestination = () => {
   const service = useDestinationService();
   const queryClient = useQueryClient();
@@ -178,4 +197,6 @@ export {
   useDeleteDestination,
   useCloneDestination,
   useUpdateDestination,
+  usePaginatedDestination,
+  useGetDestinationItem,
 };

@@ -1,5 +1,6 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 import { CommonRequestError } from "core/request/CommonRequestError";
+import { FilterSourceRequestBody } from "core/request/DaspireClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 
 import {
@@ -19,6 +20,8 @@ import {
   SourceUpdate,
   updateSource,
   SourceCloneRequestBody,
+  paginatedSources,
+  getSingleSourceItem,
 } from "../../request/AirbyteClient";
 import { ConnectionConfiguration } from "../connection";
 
@@ -64,9 +67,14 @@ export class SourceService extends AirbyteRequestService {
   public get(sourceId: string) {
     return getSource({ sourceId }, this.requestOptions);
   }
-
+  public getSingleSource(sourceId: string) {
+    return getSingleSourceItem({ sourceId }, this.requestOptions);
+  }
   public list(workspaceId: string) {
     return listSourcesForWorkspace({ workspaceId }, this.requestOptions);
+  }
+  public filteredList(filters: FilterSourceRequestBody) {
+    return paginatedSources(filters, this.requestOptions);
   }
 
   public create(body: SourceCreate) {
