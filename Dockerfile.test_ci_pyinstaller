@@ -8,8 +8,8 @@ WORKDIR /app
 RUN git clone --single-branch --branch master https://github.com/airbytehq/airbyte.git
 
 # Copy the binary file from the host machine to the container's working directory
-COPY ./airbyte_ci.bin /app/airbyte_ci.bin
+COPY ./airbyte-ci/connectors/pipelines/dist/airbyte_ci /app/airbyte_ci
 
 # Run the binary file with the specified command
-CMD ["./airbyte_ci.bin", "--version"]
+CMD ["./airbyte_ci", "--version"]
 
