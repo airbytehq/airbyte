@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import stripe
@@ -436,7 +436,7 @@ class SourceStripe(AbstractSource):
                     entrypoint_logger,
                     4,
                     state_manager.get_stream_state(stream.name, stream.namespace),
-                    self._get_configured_stream(stream).cursor_field,
+                    self._get_cursor_field(stream),
                     ConcurrentCursor(
                         stream.name,
                         stream.namespace,
@@ -459,14 +459,19 @@ class SourceStripe(AbstractSource):
             return None  # TODO validate on incremental with state
         return None if state_manager.get_stream_state(stream.name, stream.namespace) else ("created[gte]", "created[lte]")
 
-    def _get_configured_stream(self, stream: Stream) -> ConfiguredAirbyteStream:
+    def _get_configured_stream(self, stream: Stream) -> Optional[ConfiguredAirbyteStream]:
         catalog_stream = [catalog_stream for catalog_stream in self._catalog.streams if catalog_stream.stream.name == stream.name]
         if len(catalog_stream) == 0:
-            return False  # it does not matter if it's incremental or not as it's not configured
+            return None
         if len(catalog_stream) != 1:
             raise ValueError(f"Stream {stream.name} is in catalog {len(catalog_stream)} times")
         return catalog_stream[0]
 
+    def _get_cursor_field(self, stream: Stream) -> Optional[List[str]]:
+        configured_stream = self._get_configured_stream(stream)
+        return configured_stream.cursor_field if configured_stream else None
+
     def _is_incremental(self, stream: Stream) -> bool:
+        configured_stream = self._get_configured_stream(stream)
         # FIXME This seems to create duplication with AbstractSource which I'm not a big fan of
-        return self._get_configured_stream(stream).sync_mode == SyncMode.incremental and stream.supports_incremental
+        return bool(configured_stream.sync_mode == SyncMode.incremental and stream.supports_incremental) if configured_stream else False
