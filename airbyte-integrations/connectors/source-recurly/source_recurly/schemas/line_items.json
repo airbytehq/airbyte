@@ -2,6 +2,7 @@
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "title": "Line item",
+  "additionalProperties": true,
   "properties": {
     "id": {
       "type": "string",
