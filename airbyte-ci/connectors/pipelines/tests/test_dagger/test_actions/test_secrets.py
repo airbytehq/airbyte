@@ -19,7 +19,6 @@ async def test_load_from_local_directory_not_exists(mocker, tmp_path):
     context.logger.warning.assert_called_with(f"Local secrets directory {tmp_path / 'secrets'} does not exist, no secrets will be loaded.")
 
 
-@pytest.mark.asyncio
 async def test_load_from_local_empty_directory(mocker, tmp_path):
     secrets_dir = tmp_path / "secrets"
     secrets_dir.mkdir()
@@ -32,7 +31,6 @@ async def test_load_from_local_empty_directory(mocker, tmp_path):
     context.logger.warning.assert_called_with(f"Local secrets directory {secrets_dir} is empty, no secrets will be loaded.")
 
 
-@pytest.mark.asyncio
 async def test_load_from_local_with_secrets(mocker, tmp_path, dagger_client):
     secrets_dir = tmp_path / "secrets"
     secrets_dir.mkdir()
