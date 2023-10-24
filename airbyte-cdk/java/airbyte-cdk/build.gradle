@@ -31,7 +31,7 @@ subprojects { subproject ->
         repositories {
             maven {
                 name 'airbyte-public-jars'
-                url 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/'
+                url 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars/'
                 credentials {
                     username System.getenv('CLOUDREPO_USER')
                     password System.getenv('CLOUDREPO_PASSWORD')
