@@ -31,10 +31,23 @@ class CursorField:
 class Cursor(ABC):
     @abstractmethod
     def observe(self, record: Record) -> None:
+        """
+        Indicate to the cursor that the record has been emitted
+        """
         raise NotImplementedError()
 
     @abstractmethod
     def close_partition(self, partition: Partition) -> None:
+        """
+        Indicate to the cursor that the partition has been successfully processed
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def end_sync(self) -> None:
+        """
+        Indicate to the cursor that the sync has been successfully processed
+        """
         raise NotImplementedError()
 
 
@@ -45,16 +58,18 @@ class NoopCursor(Cursor):
     def close_partition(self, partition: Partition) -> None:
         pass
 
+    def end_sync(self) -> None:
+        pass
+
 
 class ConcurrentCursor(Cursor):
-    # FIXME add unit tests
     _START_BOUNDARY = 0
     _END_BOUNDARY = 1
 
     def __init__(
         self,
         stream_name: str,
-        stream_namespace: str,
+        stream_namespace: Optional[str],
         stream_state: Any,
         message_repository: MessageRepository,
         connector_state_manager: ConnectorStateManager,
@@ -95,6 +110,16 @@ class ConcurrentCursor(Cursor):
             self._merge_partitions()
             self._emit_state_message()
 
+    def end_sync(self) -> None:
+        if not self._slice_boundary_fields and self._most_recent_record:
+            self._state["slices"].append(
+                {
+                    "start": 0,  # FIXME this only works with int datetime
+                    "end": self._extract_cursor_value(self._most_recent_record),
+                }
+            )
+            self._emit_state_message()
+
     def _add_slice_to_state(self, partition: Partition) -> None:
         partition_identifier = partition.identifier() or {}
         if self._slice_boundary_fields:
@@ -105,14 +130,8 @@ class ConcurrentCursor(Cursor):
                     **partition_identifier,
                 }
             )
-        elif self._most_recent_record:
-            self._state["slices"].append(
-                {
-                    "start": 0,  # FIXME this only works with int datetime
-                    "end": self._extract_cursor_value(self._most_recent_record),
-                    **partition_identifier,
-                }
-            )
+        elif partition_identifier:
+            raise ValueError("Per partition state is not supported for ConcurrentCursor yet")
 
     def _emit_state_message(self) -> None:
         self._connector_state_manager.update_state_for_stream(self._stream_name, self._stream_namespace, self._state)

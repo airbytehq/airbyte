@@ -85,13 +85,15 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._partition_generator.generate.return_value = [partition]
         with pytest.raises(RuntimeError):
             list(self._stream.read())
+        assert self._cursor.end_sync.call_count == 0
 
     def test_read_raises_an_exception_if_partition_generator_raises_an_exception(self):
         self._partition_generator.generate.side_effect = RuntimeError("error")
         with pytest.raises(RuntimeError):
             list(self._stream.read())
+        assert self._cursor.end_sync.call_count == 0
 
-    def test_read_observe_records_and_close_partition(self):
+    def test_read_observe_records_and_close_partition_and_end_sync(self):
         partition = Mock(spec=Partition)
         expected_records = [Record({"id": 1}), Record({"id": "2"})]
         partition.read.return_value = expected_records
@@ -105,6 +107,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
 
         self._cursor.observe.has_calls([call(record) for record in expected_records])
         self._cursor.close_partition.assert_called_once_with(partition)
+        self._cursor.end_sync.assert_called_once_with()
 
     def test_read_no_slice_message(self):
         partition = Mock(spec=Partition)

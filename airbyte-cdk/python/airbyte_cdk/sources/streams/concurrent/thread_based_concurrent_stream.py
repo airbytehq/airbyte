@@ -115,7 +115,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
             elif isinstance(record_or_partition_or_exception, Record):
                 # Emit records
                 yield record_or_partition_or_exception
-
                 self._cursor.observe(record_or_partition_or_exception)
             elif isinstance(record_or_partition_or_exception, Partition):
                 # A new partition was generated and must be processed
@@ -129,6 +128,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
                 # All partitions were generated and process. We're done here
                 break
         self._check_for_errors(futures)
+        self._cursor.end_sync()
 
     def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks

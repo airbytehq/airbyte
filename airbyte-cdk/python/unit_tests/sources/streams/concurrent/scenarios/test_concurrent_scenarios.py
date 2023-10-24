@@ -18,6 +18,8 @@ from unit_tests.sources.streams.concurrent.scenarios.stream_facade_scenarios imp
     test_stream_facade_single_stream_with_multiple_slices_with_concurrency_level_two,
     test_stream_facade_single_stream_with_primary_key,
     test_stream_facade_single_stream_with_single_slice,
+    test_incremental_stream_with_slice_boundaries,
+    test_incremental_stream_without_slice_boundaries,
 )
 from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_stream_scenarios import (
     test_concurrent_cdk_multiple_streams,
@@ -43,6 +45,8 @@ scenarios = [
     test_stream_facade_single_stream_with_multiple_slices,
     test_stream_facade_single_stream_with_multiple_slices_with_concurrency_level_two,
     test_stream_facade_raises_exception,
+    test_incremental_stream_with_slice_boundaries,
+    test_incremental_stream_without_slice_boundaries,
 ]
 
 

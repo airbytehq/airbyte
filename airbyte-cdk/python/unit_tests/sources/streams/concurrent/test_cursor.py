@@ -98,28 +98,43 @@ class ConcurrentCursorTest(TestCase):
 
         assert self._state_manager.update_state_for_stream.call_args_list[0].args[2]["slices"][0]["end"] != _A_VERY_HIGH_CURSOR_VALUE
 
-    def test_given_no_boundary_fields_when_close_partition_then_emit_state(self) -> None:
+    def test_given_no_boundary_fields_and_partition_id_when_close_partition_then_raise_error(self) -> None:
+        cursor = self._cursor_without_slice_boundary_fields()
+
+        with pytest.raises(ValueError):
+            cursor.close_partition(
+                _partition(
+                    {
+                        "id_key_1": "id_key_1_value",
+                    },
+                    _NO_SLICE,
+                )
+            )
+
+    def test_given_no_boundary_fields_when_close_partition_then_do_not_emit_state(self) -> None:
         cursor = self._cursor_without_slice_boundary_fields()
         cursor.observe(_record(10))
         cursor.close_partition(
             _partition(
-                {
-                    "id_key_1": "id_key_1_value",
-                    "id_key_2": "id_key_2_value",
-                },
-                _NO_SLICE_BOUNDARIES,
+                _NO_PARTITION_IDENTIFIER,
+                _NO_SLICE,
             )
         )
 
-        self._message_repository.emit_message.assert_called_once_with(self._state_manager.create_state_message.return_value)
+        assert self._state_manager.update_state_for_stream.call_count == 0
+
+    def test_given_no_boundary_fields_when_end_sync_then_emit_state(self) -> None:
+        cursor = self._cursor_without_slice_boundary_fields()
+        cursor.observe(_record(10))
+
+        cursor.end_sync()
+
         self._state_manager.update_state_for_stream.assert_called_once_with(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
             {
                 "slices": [
                     {
-                        "id_key_1": "id_key_1_value",
-                        "id_key_2": "id_key_2_value",
                         "start": 0,
                         "end": 10,
                     },
