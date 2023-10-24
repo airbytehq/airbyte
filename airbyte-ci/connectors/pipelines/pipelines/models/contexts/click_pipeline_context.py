@@ -55,6 +55,14 @@ class ClickPipelineContext(BaseModel, Singleton):
             async with self._dagger_client_lock:
                 if not self._dagger_client:
                     connection = dagger.Connection(dagger.Config(log_output=sys.stdout))
+
+                    """
+                    Sets up the '_dagger_client' attribute, intended for single-threaded use within connectors.
+
+                    Caution:
+                        Avoid using this client across multiple thread pools, as it can lead to errors.
+                        Cross-thread pool calls are generally considered an anti-pattern.
+                    """
                     self._dagger_client = await self._click_context().with_async_resource(connection)  # type: ignore
         client = self._dagger_client
         assert client, "Error initializing Dagger client"
