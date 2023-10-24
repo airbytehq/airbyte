@@ -3,7 +3,7 @@
 #
 
 from abc import abstractmethod
-from functools import cached_property, lru_cache
+from functools import cache, cached_property, lru_cache
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Type
 
 from airbyte_cdk.models import SyncMode
@@ -49,7 +49,7 @@ class AbstractFileBasedStream(Stream):
         self.config = config
         self.catalog_schema = catalog_schema
         self.validation_policy = validation_policy
-        self._stream_reader = stream_reader
+        self.stream_reader = stream_reader
         self._discovery_policy = discovery_policy
         self._availability_strategy = availability_strategy
         self._parsers = parsers
@@ -59,10 +59,21 @@ class AbstractFileBasedStream(Stream):
     def primary_key(self) -> PrimaryKeyType:
         ...
 
-    @abstractmethod
+    @cache
     def list_files(self) -> List[RemoteFile]:
         """
         List all files that belong to the stream.
+
+        The output of this method is cached so we don't need to list the files more than once.
+        This means we won't pick up changes to the files during a sync. This meethod uses the
+        get_files method which is implemented by the concrete stream class.
+        """
+        return list(self.get_files())
+
+    @abstractmethod
+    def get_files(self) -> Iterable[RemoteFile]:
+        """
+        List all files that belong to the stream as defined by the stream's globs.
         """
         ...
 

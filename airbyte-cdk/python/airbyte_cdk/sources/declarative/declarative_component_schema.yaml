@@ -69,6 +69,10 @@ definitions:
           - "{{ record['updates'] }}"
           - "{{ record['MetaData']['LastUpdatedTime'] }}"
           - "{{ stream_partition['segment_id'] }}"
+      value_type:
+        title: Value Type
+        description: Type of the value. If not specified, the type will be inferred from the value.
+        "$ref": "#/definitions/ValueType"
       $parameters:
         type: object
         additionalProperties: true
@@ -1626,6 +1630,11 @@ definitions:
         examples:
           - 100
           - "{{ config['page_size'] }}"
+      inject_on_first_request:
+        title: Inject Offset
+        description: Using the `offset` with value `0` during the first request
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -1654,6 +1663,11 @@ definitions:
         examples:
           - 0
           - 1
+      inject_on_first_request:
+        title: Inject Page Number
+        description: Using the `page number` with value defined by `start_from_page` during the first request
+        type: boolean
+        default: false
       $parameters:
         type: object
         additionalProperties: true
@@ -1977,6 +1991,15 @@ definitions:
       $parameters:
         type: object
         additionalProperties: true
+  ValueType:
+    title: Value Type
+    description: A schema type.
+    type: string
+    enum:
+      - string
+      - number
+      - integer
+      - boolean
   WaitTimeFromHeader:
     title: Wait Time Extracted From Response Header
     description: Extract wait time from a HTTP header in the response.
@@ -2190,3 +2213,26 @@ interpolation:
       examples:
         - "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
         - "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+  filters:
+    - title: Hash
+      description: Convert the specified value to a hashed string.
+      arguments:
+        hash_type: Valid hash type for converts ('md5' as default value).
+        salt: An additional value to further protect sensitive data.
+      return_type: str
+      examples:
+        - "{{ 'Test client_secret' | hash() }} -> '3032d57a12f76b61a820e47b9a5a0cbb'"
+        - "{{ 'Test client_secret' | hash('md5') }} -> '3032d57a12f76b61a820e47b9a5a0cbb'"
+        - "{{ 'Test client_secret' | hash('md5', salt='salt') }} -> '5011a0168579c2d94cbbe1c6ad14327c'"
+    - title: Base64 encoder
+      description: Convert the specified value to a string in the base64 format.
+      arguments: {}
+      return_type: str
+      examples:
+        - "{{ 'Test client_secret' | base64encode }} -> 'VGVzdCBjbGllbnRfc2VjcmV0'"
+    - title: Base64 decoder
+      description: Decodes the specified base64 format value into a common string.
+      arguments: {}
+      return_type: str
+      examples:
+        - "{{ 'ZmFrZSByZWZyZXNoX3Rva2VuIHZhbHVl' | base64decode }} -> 'fake refresh_token value'"
