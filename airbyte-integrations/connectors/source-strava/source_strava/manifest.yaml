@@ -22,7 +22,7 @@ streams:
           client_secret: "{{ config['client_secret'] }}"
           refresh_token: "{{ config['refresh_token'] }}"
           token_refresh_endpoint: https://www.strava.com/oauth/token
-          grant_type: authorization_code
+          expires_in_name: expires_at
           scopes:
             - read_all
             - activity:read_all
@@ -53,7 +53,7 @@ streams:
           client_secret: "{{ config['client_secret'] }}"
           refresh_token: "{{ config['refresh_token'] }}"
           token_refresh_endpoint: https://www.strava.com/oauth/token
-          grant_type: authorization_code
+          expires_in_name: expires_at
           scopes:
             - read_all
             - activity:read_all
@@ -81,12 +81,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: start_date
       cursor_datetime_formats:
-        - "%Y-%m-%dT%H:%M:%S%z"
+        - "%Y-%m-%dT%H:%M:%SZ"
       datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
-        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%S"
       start_time_option:
         inject_into: request_parameter
         field_name: after
