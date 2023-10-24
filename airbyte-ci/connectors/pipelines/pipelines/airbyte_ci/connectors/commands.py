@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from typing import List, Set, Tuple
 
-import click
+import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
 from pipelines.cli.lazy_group import LazyGroup
@@ -192,7 +192,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
     envvar="DOCKER_HUB_PASSWORD",
 )
 @click.pass_context
-def connectors(
+async def connectors(
     ctx: click.Context,
     use_remote_secrets: bool,
     names: Tuple[str],

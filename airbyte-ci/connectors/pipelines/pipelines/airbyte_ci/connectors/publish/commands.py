@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import anyio
-import click
+import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
@@ -57,7 +56,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     default="#connector-publish-updates",
 )
 @click.pass_context
-def publish(
+async def publish(
     ctx: click.Context,
     pre_release: bool,
     spec_cache_gcs_credentials: str,
@@ -113,8 +112,7 @@ def publish(
     main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")
     ctx.obj["concurrency"] = 1
 
-    publish_connector_contexts = anyio.run(
-        run_connectors_pipelines,
+    publish_connector_contexts = await run_connectors_pipelines(
         publish_connector_contexts,
         run_connector_publish_pipeline,
         "Publishing connectors",
