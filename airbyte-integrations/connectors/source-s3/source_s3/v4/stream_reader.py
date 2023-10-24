@@ -70,7 +70,7 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         total_n_keys = 0
 
         try:
-            for current_prefix in (prefixes if prefixes else [None]):
+            for current_prefix in prefixes if prefixes else [None]:
                 for remote_file in self._page(s3, globs, self.config.bucket, current_prefix, seen, logger):
                     total_n_keys += 1
                     yield remote_file
