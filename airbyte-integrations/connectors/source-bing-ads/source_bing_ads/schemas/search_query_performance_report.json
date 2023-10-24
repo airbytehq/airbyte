@@ -18,16 +18,16 @@
       "type": ["null", "string"]
     },
     "CampaignId": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "AdGroupName": {
       "type": ["null", "string"]
     },
     "AdGroupId": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "AdId": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "AdType": {
       "type": ["null", "string"]
@@ -54,16 +54,16 @@
       "type": ["null", "integer"]
     },
     "Ctr": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "AverageCpc": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "Spend": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "AveragePosition": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "SearchQuery": {
       "type": ["null", "string"]
@@ -87,7 +87,7 @@
       "type": ["null", "string"]
     },
     "KeywordId": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "Network": {
       "type": ["null", "string"]
@@ -105,7 +105,7 @@
       "type": ["null", "integer"]
     },
     "Revenue": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "ReturnOnAdSpend": {
       "type": ["null", "number"]
@@ -132,18 +132,16 @@
       "type": ["null", "string"]
     },
     "CustomerId": {
-      "type": ["null", "string"],
-      "format": "integer"
+      "type": ["null", "integer"]
     },
     "CustomerName": {
       "type": ["null", "string"]
     },
     "AllConversions": {
-      "type": ["null", "string"],
-      "format": "integer"
+      "type": ["null", "integer"]
     },
     "AllRevenue": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "AllConversionRate": {
       "type": ["null", "number"]
