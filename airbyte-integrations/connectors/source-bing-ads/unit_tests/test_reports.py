@@ -50,7 +50,7 @@ def test_get_column_value():
     test_report = TestReport()
     assert test_report.get_column_value(record, "AccountId") == "33"
     assert test_report.get_column_value(record, "AverageCpc") == "11.5"
-    assert test_report.get_column_value(record, "AdGroupId") == None
+    assert test_report.get_column_value(record, "AdGroupId") is None
     assert test_report.get_column_value(record, "AccountName") == "123456789"
     assert test_report.get_column_value(record, "Spend") == "120.3"
 
