@@ -10,8 +10,6 @@ from source_stripe import SourceStripe
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    # Use the presence of a state file as a proxy for whether we're running in full refresh
-    state = AirbyteEntrypoint.extract_state(args)
-    use_concurrent_cdk = state is None
-    source = SourceStripe(use_concurrent_cdk=use_concurrent_cdk)
+    catalog = AirbyteEntrypoint.extract_catalog(args)
+    source = SourceStripe(catalog)
     launch(source, args)
