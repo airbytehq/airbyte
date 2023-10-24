@@ -108,7 +108,7 @@ class HttpStream(Stream, ABC):
         """
         Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
         """
-        return None
+        return 60 * 10
 
     @property
     def retry_factor(self) -> float:
