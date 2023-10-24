@@ -9,12 +9,12 @@ import pendulum
 import pytest
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
 from source_bing_ads.reports import PerformanceReportsMixin, ReportsMixin
-from source_bing_ads.source import (
+from source_bing_ads.source import SourceBingAds
+from source_bing_ads.streams import (
     GeographicPerformanceReportDaily,
     GeographicPerformanceReportHourly,
     GeographicPerformanceReportMonthly,
     GeographicPerformanceReportWeekly,
-    SourceBingAds,
 )
 
 
@@ -48,11 +48,11 @@ def test_get_column_value():
     record = _RowReportRecord(row_values)
 
     test_report = TestReport()
-    assert test_report.get_column_value(record, "AccountId") == 33
-    assert test_report.get_column_value(record, "AverageCpc") == 11.5
-    assert test_report.get_column_value(record, "AdGroupId") == 0
+    assert test_report.get_column_value(record, "AccountId") == "33"
+    assert test_report.get_column_value(record, "AverageCpc") == "11.5"
+    assert test_report.get_column_value(record, "AdGroupId") is None
     assert test_report.get_column_value(record, "AccountName") == "123456789"
-    assert test_report.get_column_value(record, "Spend") == 1.203
+    assert test_report.get_column_value(record, "Spend") == "120.3"
 
 
 def test_get_updated_state_init_state():
