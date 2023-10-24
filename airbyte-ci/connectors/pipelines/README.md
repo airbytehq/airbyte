@@ -47,7 +47,15 @@ _Note: `--force` is required to ensure updates are applied on subsequent install
 _Note: `--python=python3.10` is required to ensure the correct python version is used._
 _Note: `--editable` is required to ensure the correct python version is used._
 
-If you face any installation problem feel free to reach out the Airbyte Connectors Operations team.
+If you face any installation problems feel free to reach out the Airbyte Connectors Operations team.
+
+### Setting up connector secrets access
+
+If you plan to use Airbyte CI to run CAT (Connector Acceptance Tests), we recommend setting up GSM
+access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the 
+CI Credentials package (which Airbyte CI uses under the hood) README's 
+[Get GSM Access](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md#get-gsm-access)
+instructions.
 
 ### Updating the airbyte-ci tool
 To reinstall airbyte-ci:
@@ -73,7 +81,7 @@ poetry shell
 cd ../../
 ```
 
-At this point you can run `airbyte-ci` commands from the root of the repository.
+At this point you can run `airbyte-ci` commands.
 
 ## Commands reference
 - [`airbyte-ci` command group](#airbyte-ci)
