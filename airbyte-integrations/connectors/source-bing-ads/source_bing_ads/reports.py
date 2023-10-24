@@ -348,7 +348,7 @@ class PerformanceReportsMixin(ReportsMixin):
 
         if self.config.get("lookback_window"):
             # Datetime subtract won't work with days = 0
-            # it'll output an AirbuteError
+            # it'll output an AirbyteError
             return start_date.subtract(days=self.config["lookback_window"])
         else:
             return start_date

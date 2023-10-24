@@ -507,7 +507,7 @@ class AdPerformanceReportMonthly(AdPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class AdGroupPerformanceReport(PerformanceReportsMixin, BingAdsStream):
+class AdGroupPerformanceReport(PerformanceReportsMixin, BingAdsStream, ABC):
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AdGroupPerformanceReport"
@@ -828,4 +828,70 @@ class AccountPerformanceReportWeekly(AccountPerformanceReport):
 
 
 class AccountPerformanceReportMonthly(AccountPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class AgeGenderAudienceReport(PerformanceReportsMixin, BingAdsStream, ABC):
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "AgeGenderAudienceReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "age_gender_audience_report"
+    primary_key = [
+        "AgeGroup",
+        "Gender",
+        "TimePeriod",
+        "AccountId",
+    ]
+
+    report_columns = [
+        *primary_key,
+        "AllConversions",
+        "AccountName",
+        "AccountNumber",
+        "CampaignName",
+        "CampaignId",
+        "AdGroupName",
+        "AdGroupId",
+        "AdDistribution",
+        "Impressions",
+        "Clicks",
+        "Conversions",
+        "Spend",
+        "Revenue",
+        "ExtendedCost",
+        "Assists",
+        "Language",
+        "AccountStatus",
+        "CampaignStatus",
+        "AdGroupStatus",
+        "BaseCampaignId",
+        "AllRevenue",
+        "ViewThroughConversions",
+        "Goal",
+        "GoalType",
+        "AbsoluteTopImpressionRatePercent",
+        "TopImpressionRatePercent",
+        "ConversionsQualified",
+        "AllConversionsQualified",
+        "ViewThroughConversionsQualified",
+        "ViewThroughRevenue",
+    ]
+
+
+class AgeGenderAudienceReportHourly(AgeGenderAudienceReport):
+    report_aggregation = "Hourly"
+
+
+class AgeGenderAudienceReportDaily(AgeGenderAudienceReport):
+    report_aggregation = "Daily"
+
+
+class AgeGenderAudienceReportWeekly(AgeGenderAudienceReport):
+    report_aggregation = "Weekly"
+
+
+class AgeGenderAudienceReportMonthly(AgeGenderAudienceReport):
     report_aggregation = "Monthly"

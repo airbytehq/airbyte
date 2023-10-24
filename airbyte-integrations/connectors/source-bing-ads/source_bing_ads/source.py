@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+from itertools import product
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
@@ -10,7 +9,41 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_bing_ads.client import Client
-from source_bing_ads.streams import Accounts, AdGroups, Ads, BudgetSummaryReport, Campaigns
+from source_bing_ads.streams import (
+    AccountPerformanceReportDaily,
+    AccountPerformanceReportHourly,
+    AccountPerformanceReportMonthly,
+    AccountPerformanceReportWeekly,
+    Accounts,
+    AdGroupPerformanceReportDaily,
+    AdGroupPerformanceReportHourly,
+    AdGroupPerformanceReportMonthly,
+    AdGroupPerformanceReportWeekly,
+    AdGroups,
+    AdPerformanceReportDaily,
+    AdPerformanceReportHourly,
+    AdPerformanceReportMonthly,
+    AdPerformanceReportWeekly,
+    Ads,
+    AgeGenderAudienceReportDaily,
+    AgeGenderAudienceReportHourly,
+    AgeGenderAudienceReportMonthly,
+    AgeGenderAudienceReportWeekly,
+    BudgetSummaryReport,
+    CampaignPerformanceReportDaily,
+    CampaignPerformanceReportHourly,
+    CampaignPerformanceReportMonthly,
+    CampaignPerformanceReportWeekly,
+    Campaigns,
+    GeographicPerformanceReportDaily,
+    GeographicPerformanceReportHourly,
+    GeographicPerformanceReportMonthly,
+    GeographicPerformanceReportWeekly,
+    KeywordPerformanceReportDaily,
+    KeywordPerformanceReportHourly,
+    KeywordPerformanceReportMonthly,
+    KeywordPerformanceReportWeekly,
+)
 
 
 class SourceBingAds(AbstractSource):
@@ -29,16 +62,6 @@ class SourceBingAds(AbstractSource):
         except Exception as error:
             return False, error
 
-    def get_report_streams(self, aggregation_type: str) -> List[Stream]:
-        return [
-            globals()[f"AccountPerformanceReport{aggregation_type}"],
-            globals()[f"KeywordPerformanceReport{aggregation_type}"],
-            globals()[f"AdGroupPerformanceReport{aggregation_type}"],
-            globals()[f"AdPerformanceReport{aggregation_type}"],
-            globals()[f"CampaignPerformanceReport{aggregation_type}"],
-            globals()[f"GeographicPerformanceReport{aggregation_type}"],
-        ]
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         client = Client(**config)
         streams = [
@@ -46,13 +69,18 @@ class SourceBingAds(AbstractSource):
             AdGroups(client, config),
             Ads(client, config),
             Campaigns(client, config),
+            BudgetSummaryReport(client, config),
         ]
 
-        streams.append(BudgetSummaryReport(client, config))
-
-        streams.extend([c(client, config) for c in self.get_report_streams("Hourly")])
-        streams.extend([c(client, config) for c in self.get_report_streams("Daily")])
-        streams.extend([c(client, config) for c in self.get_report_streams("Weekly")])
-        streams.extend([c(client, config) for c in self.get_report_streams("Monthly")])
-
+        reports = (
+            "AgeGenderAudienceReport",
+            "AccountPerformanceReport",
+            "KeywordPerformanceReport",
+            "AdGroupPerformanceReport",
+            "AdPerformanceReport",
+            "CampaignPerformanceReport",
+            "GeographicPerformanceReport",
+        )
+        report_aggregation = ("Hourly", "Daily", "Weekly", "Monthly")
+        streams.extend([eval(f"{report}{aggregation}")(client, config) for (report, aggregation) in product(reports, report_aggregation)])
         return streams
