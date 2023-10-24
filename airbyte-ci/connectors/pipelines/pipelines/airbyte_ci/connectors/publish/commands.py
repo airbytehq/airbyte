@@ -104,6 +104,7 @@ async def publish(
                 pull_request=ctx.obj.get("pull_request"),
                 s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
                 s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
+                use_local_cdk=ctx.obj.get("use_local_cdk"),
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
