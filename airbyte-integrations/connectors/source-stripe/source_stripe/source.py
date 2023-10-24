@@ -38,13 +38,10 @@ class SourceStripe(AbstractSource):
     def __init__(self, catalog_path: Optional[str] = None, **kwargs):
         super().__init__(**kwargs)
         if catalog_path:
-            try:
-                catalog = self.read_catalog(catalog_path)
-                # Only use concurrent cdk if all streams are running in full_refresh
-                all_sync_mode_are_full_refresh = all(stream.sync_mode == SyncMode.full_refresh for stream in catalog.streams)
-                self._use_concurrent_cdk = all_sync_mode_are_full_refresh
-            except Exception as e:
-                raise AirbyteTracedException.from_exception(e) from e
+            catalog = self.read_catalog(catalog_path)
+            # Only use concurrent cdk if all streams are running in full_refresh
+            all_sync_mode_are_full_refresh = all(stream.sync_mode == SyncMode.full_refresh for stream in catalog.streams)
+            self._use_concurrent_cdk = all_sync_mode_are_full_refresh
         else:
             self._use_concurrent_cdk = False
 
