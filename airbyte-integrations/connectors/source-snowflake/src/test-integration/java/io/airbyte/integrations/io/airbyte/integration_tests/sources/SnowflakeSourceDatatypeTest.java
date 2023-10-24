@@ -306,7 +306,6 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'2018-03-24 12:00:00.123 +05:00'", "'2018-03-24 12:00:00.123456 +05:00'")
             .addExpectedValues(null, "2018-03-24T12:00:00.123", "2018-03-24T12:00:00.123456")
-            // Snowflake default timestamp precision is TIME(3), so we lose anything past ms
             .build()); // This is very brittle. A change of parameters on the customer's account could change the values
                        // returned by snowflake
     addDataTypeTestData(
@@ -315,7 +314,7 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
             .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
             .addInsertValues("null", "'2018-03-23 12:00:00.123 +05:00'", "'2018-03-23 12:00:00.123456 +05:00'")
             .addExpectedValues(null, "2018-03-23T12:00:00.123000+05:00", "2018-03-23T12:00:00.123000+05:00")
-            // Snowflake default timestamp precision is TIME(3), so we lose anything past ms
+            // Snowflake default timestamp-to-string conversion is TIME(3), so we lose anything past ms
             .build());// This is very brittle. A change of parameters on the customer's account could change the values
                       // returned by snowflake
 
