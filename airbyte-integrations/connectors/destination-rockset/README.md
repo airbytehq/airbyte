@@ -21,7 +21,7 @@ Note that the `secrets` directory is git-ignored by default, so there is no dang
 
 #### Build
 Build the connector image via Gradle:
-You need a local install of [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) to run this command.
+
 ```
 ./gradlew :airbyte-integrations:connectors:destination-rockset:buildConnectorImage
 ```

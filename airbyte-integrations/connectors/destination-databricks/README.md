@@ -35,7 +35,7 @@ From the Airbyte repository root, run:
 
 #### Build
 Build the connector image via Gradle:
-You need a local install of [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) to run this command.
+
 ```
 ./gradlew :airbyte-integrations:connectors:destination-databricks:buildConnectorImage
 ```
