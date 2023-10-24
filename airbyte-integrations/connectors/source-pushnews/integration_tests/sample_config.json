@@ -1,3 +1,6 @@
 {
-  "api_key": "<api_key>"
+  "api_key": "<api_key>",
+  "start_date": "2023-01-01",
+  "status": "all",
+  "force_update_stats": true
 }
