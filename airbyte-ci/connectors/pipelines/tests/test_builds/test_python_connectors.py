@@ -5,9 +5,9 @@
 from pathlib import Path
 
 import pytest
-from pipelines.bases import StepStatus
-from pipelines.builds import build_customization, python_connectors
-from pipelines.contexts import ConnectorContext
+from pipelines.airbyte_ci.connectors.build_image.steps import build_customization, python_connectors
+from pipelines.airbyte_ci.connectors.context import ConnectorContext
+from pipelines.models.steps import StepStatus
 
 pytestmark = [
     pytest.mark.anyio,
