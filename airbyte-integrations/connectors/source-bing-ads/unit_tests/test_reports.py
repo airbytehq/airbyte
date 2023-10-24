@@ -9,12 +9,12 @@ import pendulum
 import pytest
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
 from source_bing_ads.reports import PerformanceReportsMixin, ReportsMixin
-from source_bing_ads.source import (
+from source_bing_ads.source import SourceBingAds
+from source_bing_ads.streams import (
     GeographicPerformanceReportDaily,
     GeographicPerformanceReportHourly,
     GeographicPerformanceReportMonthly,
     GeographicPerformanceReportWeekly,
-    SourceBingAds,
 )
 
 
