@@ -54,7 +54,7 @@
       "type": ["null", "number"]
     },
     "ExtendedCost": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "Assists": {
       "type": ["null", "integer"]
@@ -96,13 +96,13 @@
       "type": ["null", "number"]
     },
     "AllConversionsQualified": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     },
     "ViewThroughConversionsQualified": {
       "type": ["null", "number"]
     },
     "ViewThroughRevenue": {
-      "type": ["null", "string"]
+      "type": ["null", "number"]
     }
   }
 }
