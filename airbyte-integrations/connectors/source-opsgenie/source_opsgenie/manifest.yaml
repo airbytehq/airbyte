@@ -9,7 +9,7 @@ definitions:
         - data
   auth:
     type: ApiKeyAuthenticator
-    api_token: 'GenieKey {{ config[''api_token''] }}'
+    api_token: "GenieKey {{ config['api_token'] }}"
     inject_into:
       type: RequestOption
       field_name: Authorization
@@ -45,7 +45,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: 'https://{{ config[''endpoint''] }}'
+        url_base: "https://{{ config['endpoint'] }}"
         path: v2/users
         http_method: GET
         request_parameters: {}
@@ -71,7 +71,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: 'https://{{ config[''endpoint''] }}'
+        url_base: "https://{{ config['endpoint'] }}"
         path: v2/teams
         http_method: GET
         request_parameters: {}
@@ -97,7 +97,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: 'https://{{ config[''endpoint''] }}'
+        url_base: "https://{{ config['endpoint'] }}"
         path: v1/services
         http_method: GET
         request_parameters: {}
@@ -123,7 +123,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: 'https://{{ config[''endpoint''] }}'
+        url_base: "https://{{ config['endpoint'] }}"
         path: v2/integrations
         http_method: GET
         request_parameters: {}
@@ -149,7 +149,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: 'https://{{ config[''endpoint''] }}'
+        url_base: "https://{{ config['endpoint'] }}"
         path: v2/alerts
         http_method: GET
         request_parameters:
@@ -170,12 +170,12 @@ streams:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
       cursor_datetime_formats:
-        - '%Y-%m-%dT%H:%M:%S.%fZ'
-      datetime_format: '%s'
+        - "%Y-%m-%dT%H:%M:%S.%fZ"
+      datetime_format: "%s"
       start_datetime:
         type: MinMaxDatetime
-        datetime: '{{ config[''start_date''] }}'
-        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   - type: DeclarativeStream
     name: user_teams
     primary_key:
@@ -187,7 +187,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: 'https://{{ config[''endpoint''] }}'
+        url_base: "https://{{ config['endpoint'] }}"
         path: v2/users/{{ stream_partition.user_id }}/teams
         http_method: GET
         request_parameters: {}
@@ -224,7 +224,7 @@ streams:
                   type: SimpleRetriever
                   requester:
                     type: HttpRequester
-                    url_base: 'https://{{ config[''endpoint''] }}'
+                    url_base: "https://{{ config['endpoint'] }}"
                     path: v2/users
                     http_method: GET
                     request_parameters: {}
@@ -254,7 +254,7 @@ streams:
         fields:
           - path:
               - user_id
-            value: '{{ stream_partition.user_id }}'
+            value: "{{ stream_partition.user_id }}"
   - type: DeclarativeStream
     name: incidents
     primary_key:
@@ -266,7 +266,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: 'https://{{ config[''endpoint''] }}'
+        url_base: "https://{{ config['endpoint'] }}"
         path: v1/incidents
         http_method: GET
         request_parameters: {}
@@ -292,7 +292,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: 'https://{{ config[''endpoint''] }}'
+        url_base: "https://{{ config['endpoint'] }}"
         path: v2/alerts/{{ stream_partition.alert_id }}/recipients
         http_method: GET
         request_parameters: {}
@@ -329,7 +329,7 @@ streams:
                   type: SimpleRetriever
                   requester:
                     type: HttpRequester
-                    url_base: 'https://{{ config[''endpoint''] }}'
+                    url_base: "https://{{ config['endpoint'] }}"
                     path: v2/alerts
                     http_method: GET
                     request_parameters:
@@ -360,28 +360,28 @@ streams:
                   type: DatetimeBasedCursor
                   cursor_field: updatedAt
                   cursor_datetime_formats:
-                    - '%Y-%m-%dT%H:%M:%S.%fZ'
-                  datetime_format: '%s'
+                    - "%Y-%m-%dT%H:%M:%S.%fZ"
+                  datetime_format: "%s"
                   start_datetime:
                     type: MinMaxDatetime
-                    datetime: '{{ config[''start_date''] }}'
-                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                    datetime: "{{ config['start_date'] }}"
+                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     transformations:
       - type: AddFields
         fields:
           - path:
               - alert_id
-            value: '{{ stream_partition.alert_id }}'
+            value: "{{ stream_partition.alert_id }}"
       - type: AddFields
         fields:
           - path:
               - user_id
-            value: '{{ record[''user''][''id''] }}'
+            value: "{{ record['user']['id'] }}"
       - type: AddFields
         fields:
           - path:
               - user_username
-            value: '{{ record[''user''][''username''] }}'
+            value: "{{ record['user']['username'] }}"
       - type: RemoveFields
         field_pointers:
           - - user
@@ -396,7 +396,7 @@ streams:
       type: SimpleRetriever
       requester:
         type: HttpRequester
-        url_base: 'https://{{ config[''endpoint''] }}'
+        url_base: "https://{{ config['endpoint'] }}"
         path: v2/alerts/{{ stream_partition.alert_id }}/logs
         http_method: GET
         request_parameters:
@@ -434,7 +434,7 @@ streams:
                   type: SimpleRetriever
                   requester:
                     type: HttpRequester
-                    url_base: 'https://{{ config[''endpoint''] }}'
+                    url_base: "https://{{ config['endpoint'] }}"
                     path: v2/alerts
                     http_method: GET
                     request_parameters:
@@ -465,15 +465,15 @@ streams:
                   type: DatetimeBasedCursor
                   cursor_field: updatedAt
                   cursor_datetime_formats:
-                    - '%Y-%m-%dT%H:%M:%S.%fZ'
-                  datetime_format: '%s'
+                    - "%Y-%m-%dT%H:%M:%S.%fZ"
+                  datetime_format: "%s"
                   start_datetime:
                     type: MinMaxDatetime
-                    datetime: '{{ config[''start_date''] }}'
-                    datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+                    datetime: "{{ config['start_date'] }}"
+                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     transformations:
       - type: AddFields
         fields:
           - path:
               - alert_id
-            value: '{{ stream_partition.alert_id }}'
+            value: "{{ stream_partition.alert_id }}"
