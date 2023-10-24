@@ -7,7 +7,6 @@ from unittest.mock import MagicMock, PropertyMock, patch
 import pendulum
 import pytest
 import requests
-import requests_mock
 from source_tiktok_marketing.source import get_report_stream
 from source_tiktok_marketing.streams import (
     AdGroupsReports,
