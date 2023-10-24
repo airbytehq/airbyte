@@ -37,10 +37,13 @@ _MAX_CONCURRENCY = 3
 class SourceStripe(AbstractSource):
     def __init__(self, catalog_path: str, **kwargs):
         super().__init__(**kwargs)
-        catalog = self.read_catalog(catalog_path)
-        # Only use concurrent cdk if all streams are running in full_refresh
-        all_sync_mode_are_full_refresh = all(stream.sync_mode == SyncMode.full_refresh for stream in catalog.streams)
-        self._use_concurrent_cdk = all_sync_mode_are_full_refresh
+        if catalog_path:
+            catalog = self.read_catalog(catalog_path)
+            # Only use concurrent cdk if all streams are running in full_refresh
+            all_sync_mode_are_full_refresh = all(stream.sync_mode == SyncMode.full_refresh for stream in catalog.streams)
+            self._use_concurrent_cdk = all_sync_mode_are_full_refresh
+        else:
+            self._use_concurrent_cdk = False
 
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
