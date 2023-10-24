@@ -88,4 +88,3 @@ class DefaultFileBasedAvailabilityStrategyTest(unittest.TestCase):
         is_available, error_message = self._strategy.check_availability_and_parsability(self._stream, Mock(), Mock())
         assert is_available == False
         assert "Custom exception for testing." in error_message
-
