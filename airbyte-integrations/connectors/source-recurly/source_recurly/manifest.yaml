@@ -92,10 +92,6 @@ definitions:
         format='%Y-%m-%dT%H:%M:%SZ') }}
       datetime_format: '%Y-%m-%dt%H:%M:%SZ'
     datetime_format: '%Y-%m-%dT%H:%M:%SZ'
-    start_time_option:
-      type: RequestOption
-      field_name: updated_since
-      inject_into: request_parameter
     cursor_field: updated_at
   base_stream:
     primary_key: "id"
