@@ -166,9 +166,23 @@
         "description": "The schema to write raw tables into (default: airbyte_internal)",
         "title": "Raw Table Schema Name",
         "order": 10
+      },
+      "disable_type_dedupe": {
+        "type": "boolean",
+        "default": false,
+        "description": "Disable Writing Final Tables. Warning! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions",
+        "title": "Disable Final Tables. (Warning! Unstable option; Columns in raw table schema might change between versions)",
+        "order": 11,
+        "group": "advanced"
       }
     }
   },
+  "groups": [
+    {
+      "id": "advanced",
+      "title": "Advanced"
+    }
+  ],
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
     "predicate_key": ["credentials", "auth_type"],
