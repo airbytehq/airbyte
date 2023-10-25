@@ -156,7 +156,7 @@ public class MssqlCdcHelper {
 
     props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
     props.setProperty("snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
-    
+
     // https://debezium.io/documentation/reference/2.2/connectors/sqlserver.html#sqlserver-always-on-replica
     if (config.has("is_always_on") && config.get("is_always_on").asBoolean()) {
       props.setProperty("database.applicationIntent", "ReadOnly");
