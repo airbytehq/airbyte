@@ -158,7 +158,7 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
 
     credit_payload = {"Debit / Credit": "Cr"}
     for key, value in data:
-        if key in journal_voucher_fields:
+        if (key in journal_voucher_fields) and (str(value) != ""):
             if key == "Debit / Credit" and (value == "Dr" or value == "Cr"):
                 continue
             else:
@@ -166,7 +166,7 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
 
     debit_payload = {"Debit / Credit": "Dr"}
     for key, value in data:
-        if key in journal_voucher_fields:
+        if (key in journal_voucher_fields) and (str(value) != ""):
             if key == "Debit / Credit" and (value == "Dr" or value == "Cr"):
                 continue
             else:
@@ -277,7 +277,7 @@ def insert_item_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
         logger.error(f'request for item : {data["Item Name"]} not successful, {e}')
 
 
-# 4. Sales order Template - Date format problem
+# 4. Sales order Template
 def prepare_sales_order_payload(data: Dict[str, Any], logger: AirbyteLogger):
     """
     These fields are needed in tally before inserting sales order
@@ -499,7 +499,7 @@ def prepare_receipt_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
 
     receipt_voucher_payload = {}
     for key, value in data.items():
-        if key in receipt_voucher_fields:
+        if (key in receipt_voucher_fields) and (str(value) != ""):
             receipt_voucher_payload[key] = value
 
     return json.dumps({"body": [receipt_voucher_payload]})
@@ -516,16 +516,12 @@ def insert_receipt_voucher_to_tally(
         response = requests.request(
             method="POST", url=receipt_voucher_template_url, data=receipt_voucher_payload, headers=receipt_voucher_headers
         )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'receipt voucher with [Voucher number = {data["Voucher Number"]}] successfully inserted into Tally')
+        else:
+            logger.info(f'receipt voucher with [Voucher number = {data["Voucher Number"]}] cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
         logger.error(f"request for receipt voucher not successful, {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("receipt voucher successfully inserted into Tally")
-    else:
-        logger.info("receipt voucher cannot be inserted into Tally")
-
-    logger.info(f"result : {response.content}")
 
 
 # 7. Debit note without inventory Template - Date format problem

@@ -9,7 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
-from .utils import insert_item_master_to_tally, insert_ledger_master_to_tally, insert_payment_voucher_to_tally, insert_sales_order_to_tally, insert_purchase_without_inventory_to_tally
+from .utils import insert_item_master_to_tally, insert_ledger_master_to_tally, insert_payment_voucher_to_tally, insert_sales_order_to_tally, insert_purchase_without_inventory_to_tally, insert_receipt_voucher_to_tally
 
 
 class DestinationTally(Destination):
@@ -59,6 +59,11 @@ class DestinationTally(Destination):
                     purchase_without_inventory_url = "https://api.excel2tally.in/api/User/PurchaseWithoutInventory"
                     insert_purchase_without_inventory_to_tally(
                         config=config, data=airbyte_message.record.data, purchase_without_inventory_template_url=purchase_without_inventory_url, logger=logger
+                    )
+                elif "receipt" in airbyte_message.record.stream:
+                    receipt_voucher_url = "https://api.excel2tally.in/api/User/ReceiptVoucher"
+                    insert_receipt_voucher_to_tally(
+                        config=config, data=airbyte_message.record.data, receipt_voucher_template_url=receipt_voucher_url, logger=logger
                     )
             elif airbyte_message.type == Type.STATE:
                 yield airbyte_message
