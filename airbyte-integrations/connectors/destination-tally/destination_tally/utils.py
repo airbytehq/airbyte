@@ -129,7 +129,7 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
     4. Unit [UOM]
     5. Voucher Type
     """
-    required_fields = ["Date", "Voucher Number", "Voucher Type", "Ledger Name", "Debit / Credit", "Amount"]
+    required_fields = ["Date", "Voucher Number", "Voucher Type", "Ledger Name", "Debit / Credit", "Other Ledger Name", "Amount"]
 
     for field in required_fields:
         if (field not in data) or (data[field] == ""):
@@ -142,6 +142,7 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
         "Voucher Type",
         "Ledger Name",
         "Debit / Credit",
+        "Other Ledger Name", 
         "Amount",
         "Voucher Ref Date",
         "Bill Ref No",
@@ -156,23 +157,28 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
         "Narration",
     ]
 
-    credit_payload = {"Debit / Credit": "Cr"}
+    ledger1_payload = {"Debit / Credit": data["Debit / Credit"]}
     for key, value in data:
         if (key in journal_voucher_fields) and (str(value) != ""):
-            if key == "Debit / Credit" and (value == "Dr" or value == "Cr"):
+            if key == "Other Ledger Name":
                 continue
             else:
-                credit_payload[key] = value
+                ledger1_payload[key] = value
 
-    debit_payload = {"Debit / Credit": "Dr"}
+    if data["Debit / Credit"] == "Dr":
+        ledger2_payload = {"Debit / Credit": "Cr"}
+    else:
+        ledger2_payload = {"Debit / Credit": "Dr"}
+    ledger2_payload["Ledger Name"] = data["Other Ledger Name"]
+
     for key, value in data:
         if (key in journal_voucher_fields) and (str(value) != ""):
-            if key == "Debit / Credit" and (value == "Dr" or value == "Cr"):
+            if (key == "Debit / Credit") or (key == "Ledger Name") or (key == "Other Ledger Name"):
                 continue
             else:
-                debit_payload[key] = value
+                ledger2_payload[key] = value
 
-    return json.dumps({"body": [credit_payload, debit_payload]})
+    return json.dumps({"body": [ledger1_payload, ledger2_payload]})
 
 
 def insert_journal_voucher_to_tally(
@@ -182,23 +188,16 @@ def insert_journal_voucher_to_tally(
     journal_voucher_headers = prepare_headers(config=config, template_key=journal_voucher_template_key)
     journal_voucher_payload = prepare_journal_voucher_payload(data=data, logger=logger)
 
-    logger.info(f"headers : {journal_voucher_headers}")
-    logger.info(f"payload : {journal_voucher_payload}")
-
     try:
         response = requests.request(
             method="POST", url=journal_voucher_template_url, data=journal_voucher_payload, headers=journal_voucher_headers
         )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'journal entry with [Voucher Number = {data["Voucher Number"]}] successfully inserted into Tally')
+        else:
+            logger.info(f'journal entry with [Voucher Number = {data["Voucher Number"]}] cannot be inserted into Tally')
     except Exception as e:
         logger.error(f"request for inserting journal was not successful , {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("journal entry successfully inserted into Tally")
-    else:
-        logger.info("journal entry cannot be inserted into Tally")
-
-    logger.info(f"result : {response.content}")
 
 
 # 3. Item Master Template : (Date format : mm-dd-yyyy)
@@ -938,7 +937,7 @@ def prepare_creditnote_without_inventory_payload(data: Dict[str, Any], logger: A
 
     debitnote_without_inventory_payload = {}
     for key, value in data.items():
-        if key in debitnote_without_inventory_fields:
+        if (key in debitnote_without_inventory_fields) and (str(value) != ""):
             debitnote_without_inventory_payload[key] = value
 
     return json.dumps({"body": [debitnote_without_inventory_payload]})
