@@ -79,6 +79,7 @@ definitions:
           - path:
               - transaction_id
             value: "{{ record['transaction_info']['transaction_id'] }}"
+            value_type: string
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: transaction_updated_date
@@ -102,7 +103,7 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: P15D
+      step: P7D
       cursor_granularity: PT1S
     $parameters:
       path: "transactions"
