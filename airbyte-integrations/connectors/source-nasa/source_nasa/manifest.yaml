@@ -15,7 +15,7 @@ definitions:
       type: NoAuth
     request_parameters:
       api_key: "{{ config['api_key'] }}"
-      start_date: "{{ config['start_date'] }}"
+      start_date: "{{ stream_interval.start_time if stream_interval else config['start_date'] }}"
 
   retriever:
     type: SimpleRetriever
