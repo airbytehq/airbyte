@@ -95,10 +95,6 @@ runs:
         curl -o airbyte_ci.dist.zip "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte_ci.dist.zip"
         unzip -qj airbyte_ci.dist.zip -d /tmp/airbyte_ci.dist
         chmod +x /tmp/airbyte_ci.dist/airbyte_ci.bin
-    - name: LS
-      shell: bash
-      run: |
-        ls /tmp/airbyte_ci.dist/airbyte_ci.dist
     - name: Run airbyte-ci
       shell: bash
       run: |
