@@ -146,13 +146,11 @@ if (isCiServer || isAirbyteCI) {
             enabled = isAirbyteCI
         }
         remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
-            region = 'us-east-2'
-            bucket = 'airbyte-buildcache'
-            prefix = 'cache/'
-            push = isCiServer
-            enabled = isCiServer && !isAirbyteCI
-            // Credentials will be taken from  S3_BUILD_CACHE_... environment variables
-            // anonymous access will be used if environment variables are missing
+            region = 'us-west-2' // close to dagger runners
+            bucket = 'ab-ci-cache'
+            prefix = "${System.getProperty('s3BuildCachePrefix', 'connectors')}-ci-cache/"
+            push = isAirbyteCI
+            enabled = System.getenv().containsKey("S3_BUILD_CACHE_ACCESS_KEY_ID")
         }
     }
 }
