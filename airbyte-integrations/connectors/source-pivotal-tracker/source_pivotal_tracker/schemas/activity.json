@@ -8,6 +8,17 @@
     "kind": {
       "type": ["null", "string"]
     },
+    "project": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {}
+    },
+    "secondary_resources": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
     "project_id": {
       "type": ["null", "integer"]
     },
