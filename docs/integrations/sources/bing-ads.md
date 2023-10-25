@@ -110,6 +110,10 @@ The Bing Ads source connector supports the following streams. For more informati
 - [keyword_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
 - [keyword_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
 - [keyword_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
+- [search_query_performance_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
+- [search_query_performance_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
+- [search_query_performance_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
+- [search_query_performance_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/searchqueryperformancereportrequest?view=bingads-13)
 
 ### Report aggregation
 
