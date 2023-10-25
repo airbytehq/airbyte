@@ -205,6 +205,19 @@ class Events(AsanaStream):
         yield from self.read_slices_from_records(stream_class=Tasks, slice_field="resource_gid")
 
 
+class OrganizationExports(AsanaStream):
+    def __init__(self, organization_export_ids: str, **kwargs):
+        super().__init__(**kwargs)
+        self._organization_export_ids = organization_export_ids
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        organization_export_gid = stream_slice["organization_export_gid"]
+        return f"organization_exports/{organization_export_gid}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from [{"organization_export_gid": organization_export_id for organization_export_id in self._organization_export_ids}]
+
+
 class Projects(WorkspaceRequestParamsRelatedStream):
     use_cache = True
 
