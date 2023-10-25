@@ -4,7 +4,7 @@ connector_image: airbyte/source-orbit:dev
 test_strictness_level: low
 tests:
   spec:
-    - spec_path: "source_orbit/spec.yaml"
+    - spec_path: "source_orbit/manifest.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
