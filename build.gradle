@@ -301,44 +301,6 @@ allprojects {
         licensePythonFormat.configure {
             dependsOn tasks.matching { it.name == 'generate' }
         }
-
-        def registerPythonFormatTask = {
-            String taskName, String moduleName, String settingsFileFlagName, String... extraArgs ->
-            def task = tasks.register(taskName, Exec) {
-                workingDir projectDir
-                commandLine rootProject.file('.venv/bin/python')
-                args "-m", moduleName, settingsFileFlagName, rootProject.file('pyproject.toml').absolutePath
-                args extraArgs
-                pythonTarget.getFiles().forEach {
-                    args projectDir.relativePath(it)
-                }
-            }
-            task.configure {
-                dependsOn rootProject.tasks.named('pipInstall')
-                dependsOn tasks.matching { it.name == 'generate' }
-            }
-            return task
-        }
-
-        def isortPythonCheck = registerPythonFormatTask('isortPythonCheck', 'isort', '--settings-file', '--check-only')
-        isortPythonCheck.configure {
-            dependsOn licensePythonCheck
-        }
-        def isortPythonFormat = registerPythonFormatTask('isortPythonFormat', 'isort', '--settings-file')
-        isortPythonFormat.configure {
-            dependsOn licensePythonFormat
-        }
-
-        def blackPythonCheck = registerPythonFormatTask('blackPythonCheck', 'black', '--config', '--check')
-        blackPythonCheck.configure {
-            dependsOn licensePythonCheck
-            dependsOn isortPythonCheck
-        }
-        def blackPythonFormat = registerPythonFormatTask('blackPythonFormat', 'black', '--config')
-        blackPythonFormat.configure {
-            dependsOn licensePythonFormat
-            dependsOn isortPythonFormat
-        }
     }
 
     tasks.register('format') {
@@ -348,8 +310,6 @@ allprojects {
     }
     tasks.named('check').configure {
         dependsOn tasks.matching { it.name == 'licensePythonCheck' }
-        dependsOn tasks.matching { it.name == 'isortPythonCheck' }
-        dependsOn tasks.matching { it.name == 'blackPythonCheck' }
     }
 }
 
