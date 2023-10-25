@@ -16,7 +16,7 @@ definitions:
     http_method: "GET"
     authenticator:
       type: ApiKeyAuthenticator
-      api_token: "{{ config['api_key'] }}"
+      api_token: "{{ config.get('api_key') }}"
       inject_into:
         type: RequestOption
         inject_into: header
@@ -68,7 +68,7 @@ definitions:
 streams:
   - "#/definitions/labels_stream"
   - "#/definitions/memberships_stream"
-  - '#/definitions/transactions_stream'
+  - "#/definitions/transactions_stream"
 
 check:
   type: CheckStream
@@ -84,7 +84,6 @@ spec:
     title: Qonto Spec
     type: object
     required:
-      - api_key
       - endpoint
       - iban
     additionalProperties: true
@@ -92,11 +91,11 @@ spec:
       api_key:
         title: API key
         type: string
-        description: 'Fill it in this format: `<organization_slug>:<secret_key>`'
+        description: "Fill it in this format: `<organization_slug>:<secret_key>`"
         pattern: ^[\w-]+:[\w]+$
         pattern_descriptor: organization_slug:secret_key
         examples:
-          - 'my-organization:3564f'
+          - "my-organization:3564f"
         order: 1
       endpoint:
         title: Endpoint
