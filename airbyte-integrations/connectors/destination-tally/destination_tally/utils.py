@@ -1122,7 +1122,7 @@ def prepare_sales_without_inventory_payload(data: Dict[str, Any], logger: Airbyt
 
     sales_without_inventory_payload = {}
     for key, value in data.items():
-        if key in sales_without_inventory_fields:
+        if (key in sales_without_inventory_fields) and (str(value) != ""):
             sales_without_inventory_payload[key] = value
 
     return json.dumps({"body": [sales_without_inventory_payload]})
@@ -1135,6 +1135,9 @@ def insert_sales_without_inventory_to_tally(
     sales_without_inventory_headers = prepare_headers(config=config, template_key=sales_without_inventory_template_key)
     sales_without_inventory_payload = prepare_sales_without_inventory_payload(data=data, logger=logger)
 
+    sales_without_inventory_headers["AddAutoMaster"] = 1
+    sales_without_inventory_headers["Automasterids"] = 1
+
     try:
         response = requests.request(
             method="POST",
@@ -1142,11 +1145,9 @@ def insert_sales_without_inventory_to_tally(
             data=sales_without_inventory_payload,
             headers=sales_without_inventory_headers,
         )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'sales without inventory with [Voucher number = {data["Voucher No"]}]  successfully inserted into Tally')
+        else:
+            logger.info(f'sales without inventory with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
         logger.error(f"request for sales without inventory not successful, {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("sales without inventory successfully inserted into Tally")
-    else:
-        logger.info("sales without inventory cannot be inserted into Tally")
