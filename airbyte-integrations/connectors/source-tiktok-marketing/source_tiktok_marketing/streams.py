@@ -165,7 +165,7 @@ class TiktokStream(HttpStream, ABC):
     # max value of page
     page_size = 1000
 
-    retried_40002_counter = 10
+    # retried_40002_counter = 10
 
     def __init__(self, **kwargs):
         super().__init__(authenticator=kwargs.get("authenticator"))
@@ -235,10 +235,10 @@ class TiktokStream(HttpStream, ABC):
             raise
         if data["code"] in (40100, 50002):
             return True
-        if data["code"] in (40002) and self.retried_40002_counter < 10:
-            self.logger.warning(f"Caught 40002{data}, {response.url}, {self.retried_40002_counter}")
-            self.retried_40002_counter += 1
-            return True
+        # if data["code"] in (40002) and self.retried_40002_counter < 10:
+        #     self.logger.warning(f"Caught 40002{data}, {response.url}, {self.retried_40002_counter}")
+        #     self.retried_40002_counter += 1
+        #     return True
         return super().should_retry(response)
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
