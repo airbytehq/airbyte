@@ -633,7 +633,7 @@ def prepare_debitnote_without_inventory_payload(data: Dict[str, Any], logger: Ai
 
     debitnote_without_inventory_payload = {}
     for key, value in data.items():
-        if key in debitnote_without_inventory_fields:
+        if (key in debitnote_without_inventory_fields) and (str(value) != ""):
             debitnote_without_inventory_payload[key] = value
 
     return json.dumps({"body": [debitnote_without_inventory_payload]})
@@ -653,14 +653,12 @@ def insert_debitnote_without_inventory_to_tally(
             data=debitnote_without_inventory_payload,
             headers=debitnote_without_inventory_headers,
         )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'debit note with [Voucher number = {data["Voucher No"]}] successfully inserted into Tally')
+        else:
+            logger.info(f'debit note with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally')
     except Exception as e:
         logger.error(f"request for debit note not successful, {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("debit note successfully inserted into Tally")
-    else:
-        logger.info("debit note cannot be inserted into Tally")
 
 
 # 8. Purchase without inventory Template - Date format problem

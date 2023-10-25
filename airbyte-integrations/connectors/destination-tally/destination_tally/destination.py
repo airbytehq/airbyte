@@ -9,7 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
-from .utils import insert_item_master_to_tally, insert_ledger_master_to_tally, insert_payment_voucher_to_tally, insert_sales_order_to_tally, insert_purchase_without_inventory_to_tally, insert_receipt_voucher_to_tally, insert_sales_without_inventory_to_tally
+from .utils import insert_item_master_to_tally, insert_ledger_master_to_tally, insert_payment_voucher_to_tally, insert_sales_order_to_tally, insert_purchase_without_inventory_to_tally, insert_receipt_voucher_to_tally, insert_sales_without_inventory_to_tally, insert_debitnote_without_inventory_to_tally
 
 
 class DestinationTally(Destination):
@@ -69,6 +69,11 @@ class DestinationTally(Destination):
                     sales_without_inventory_url = "https://api.excel2tally.in/api/User/SalesWithoutInventory"
                     insert_sales_without_inventory_to_tally(
                         config=config, data=airbyte_message.record.data, sales_without_inventory_template_url=sales_without_inventory_url, logger=logger
+                    )
+                elif "debitnote" in airbyte_message.record.stream:
+                    debitnote_url = "https://api.excel2tally.in/api/User/DebitNoteWithoutInventory"
+                    insert_debitnote_without_inventory_to_tally(
+                        config=config, data=airbyte_message.record.data, debitnote_without_inventory_template_url=debitnote_url, logger=logger
                     )
             elif airbyte_message.type == Type.STATE:
                 yield airbyte_message
