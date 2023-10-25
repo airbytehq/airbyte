@@ -83,7 +83,7 @@ class KlaviyoStreamLatest(HttpStream, ABC):
 class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
     """Base class for all incremental streams, requires cursor_field to be declared"""
 
-    def __init__(self, start_date: Optional[str], **kwargs):
+    def __init__(self, start_date: Optional[str] = None, **kwargs):
         super().__init__(**kwargs)
         self._start_ts = start_date
 
@@ -153,6 +153,12 @@ class KlaviyoStreamV1(HttpStream, ABC):
         self._api_key = api_key
         transform_function = self.get_custom_transform()
         self.transformer.registerCustomTransform(transform_function)
+        self._reversed = False
+
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        """How often to checkpoint state (i.e: emit a STATE message). By default, return the same value as page_size"""
+        return None if self._reversed else self.page_size
 
     @staticmethod
     def get_custom_transform():
@@ -196,7 +202,7 @@ class KlaviyoStreamV1(HttpStream, ABC):
 class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
     """Base class for all incremental streams, requires cursor_field to be declared"""
 
-    def __init__(self, start_date: Optional[str], **kwargs):
+    def __init__(self, start_date: Optional[str] = None, **kwargs):
         super().__init__(**kwargs)
         self._start_ts = int(pendulum.parse(start_date).timestamp()) if start_date else 0
         self._start_sync = int(pendulum.now().timestamp())
@@ -257,17 +263,11 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
 class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
     """Base class for all streams that natively incremental but supports desc & asc order"""
 
-    def __init__(self, start_date: Optional[str], **kwargs):
+    def __init__(self, start_date: Optional[str] = None, **kwargs):
         super().__init__(**kwargs)
         self._start_datetime = pendulum.parse(start_date) if start_date else None
-        self._reversed = False
         self._reached_old_records = False
         self._low_boundary = None
-
-    @property
-    def state_checkpoint_interval(self) -> Optional[int]:
-        """How often to checkpoint state (i.e: emit a STATE message). By default, return the same value as page_size"""
-        return None if self._reversed else self.page_size
 
     @property
     @abstractmethod
@@ -330,17 +330,20 @@ class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
             yield record
 
 
-class Campaigns(KlaviyoStreamV1):
+class Campaigns(ReverseIncrementalKlaviyoStreamV1):
     """Docs: https://developers.klaviyo.com/en/reference/get-campaigns"""
+
+    cursor_field = "updated"
 
     def path(self, **kwargs) -> str:
         return "campaigns"
 
 
-class Lists(KlaviyoStreamV1):
+class Lists(ReverseIncrementalKlaviyoStreamV1):
     """Docs: https://developers.klaviyo.com/en/reference/get-lists"""
 
     max_retries = 10
+    cursor_field = "updated"
 
     def path(self, **kwargs) -> str:
         return "lists"
@@ -357,8 +360,10 @@ class GlobalExclusions(ReverseIncrementalKlaviyoStreamV1):
         return "people/exclusions"
 
 
-class Metrics(KlaviyoStreamV1):
+class Metrics(ReverseIncrementalKlaviyoStreamV1):
     """Docs: https://developers.klaviyo.com/en/reference/get-metrics"""
+
+    cursor_field = "updated"
 
     def path(self, **kwargs) -> str:
         return "metrics"
@@ -388,16 +393,18 @@ class Events(IncrementalKlaviyoStreamV1):
 
 
 class Flows(ReverseIncrementalKlaviyoStreamV1):
-    cursor_field = "created"
+    cursor_field = "updated"
 
     def path(self, **kwargs) -> str:
         return "flows"
 
 
-class EmailTemplates(KlaviyoStreamV1):
+class EmailTemplates(ReverseIncrementalKlaviyoStreamV1):
     """
     Docs: https://developers.klaviyo.com/en/v1-2/reference/get-templates
     """
+
+    cursor_field = "updated"
 
     def path(self, **kwargs) -> str:
         return "email-templates"
