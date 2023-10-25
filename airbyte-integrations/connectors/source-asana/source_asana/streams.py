@@ -172,9 +172,26 @@ class Tags(WorkspaceRequestParamsRelatedStream):
     def path(self, **kwargs) -> str:
         return "tags"
 
-class PortfolioMemberships(AsanaStream):
+class Portfolio(WorkspaceRequestParamsRelatedStream):
+    def path(self, **kwargs) -> str:
+        return "portfolios"
+
+class PortfolioRelatedStream(AsanaStream, ABC):
+    """
+    Stream Portfolio memberships depends on `portfolio`: argument in request.
+    """
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.read_slices_from_records(stream_class=Portfolio, slice_field="gid")
+
+class PortfolioMemberships(PortfolioRelatedStream):
     def path(self, **kwargs) -> str:
         return "portfolio_memberships"
+    
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+        params["portfolio"] = stream_slice["gid"]
+        return params
 
 class Tasks(ProjectRelatedStream):
     def path(self, **kwargs) -> str:
