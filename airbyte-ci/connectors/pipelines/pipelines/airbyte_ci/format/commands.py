@@ -15,10 +15,17 @@ from pipelines.consts import DOCKER_VERSION
 from pipelines.helpers.utils import sh_dash_c
 
 
-@click.command()
+
+@click.group(help="Commands related to formatting.")
 @click.option("--fix/--check", type=bool, default=None, help="Whether to automatically fix any formatting issues detected.  [required]")
-async def format(fix: bool):
-    """Checks whether the repository is formatted correctly."""
+@click.pass_context
+def format(ctx: click.Context, fix: bool):
+    pass
+
+
+@format.command()
+async def python(fix: bool):
+    """Formats python code via black and isort."""
     if fix is None:
         raise click.UsageError("You must specify either --fix or --check")
 
