@@ -1,4 +1,4 @@
-version: 0.51.16
+version: 0.51.41
 type: DeclarativeSource
 check:
   type: CheckStream
@@ -446,7 +446,7 @@ streams:
         request_parameters:
           date_end: "{{ today_utc() }}"
           date_start: "{{ config['start_date'] }}"
-          force_update_stats: true{{ config['force_update_stats'] }}
+          force_update_stats: "{{ config['force_update_stats'] }}"
         request_headers: {}
         authenticator:
           type: ApiKeyAuthenticator
@@ -817,16 +817,14 @@ streams:
   - type: DeclarativeStream
     name: pushonsite
     primary_key:
-      - date_start
-      - date_end
+      - site_id
+      - date
     schema_loader:
       type: InlineSchemaLoader
       schema:
         $schema: http://json-schema.org/schema#
         properties:
-          date_end:
-            type: string
-          date_start:
+          date:
             type: string
           period_total_clicks:
             type: number
@@ -834,6 +832,8 @@ streams:
             type: number
           pushonsite_count:
             type: number
+          site_id:
+            type: string
         type: object
     retriever:
       type: SimpleRetriever
@@ -924,6 +924,16 @@ streams:
                   paginator:
                     type: NoPagination
     transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - date
+            value: "{{ record['date_start'] }}"
+      - type: AddFields
+        fields:
+          - path:
+              - site_id
+            value: "{{ stream_partition['site_id'] }}"
       - type: RemoveFields
         field_pointers:
           - - pushonsites_stats
@@ -933,10 +943,16 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - total_pages
+      - type: RemoveFields
+        field_pointers:
+          - - date_start
+      - type: RemoveFields
+        field_pointers:
+          - - date_end
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: date_start
-      lookback_window: P1D
+      lookback_window: P3D
       cursor_datetime_formats:
         - "%Y-%m-%d"
       datetime_format: "%Y-%m-%d"

@@ -1,10 +1,7 @@
 {
     "$schema": "http://json-schema.org/schema#",
     "properties": {
-        "date_end": {
-            "type": "string"
-        },
-        "date_start": {
+        "date": {
             "type": "string"
         },
         "period_total_clicks": {
@@ -15,6 +12,9 @@
         },
         "pushonsite_count": {
             "type": "number"
+        },
+        "site_id": {
+            "type": "string"
         }
     },
     "type": "object"
