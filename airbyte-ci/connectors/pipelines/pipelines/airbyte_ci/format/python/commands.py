@@ -93,7 +93,7 @@ async def format_license(fix: bool = False) -> bool:
 
 
     if fix:
-        addlicense_command = ["addlicense", "-c", "Airbyte, Inc.", "-l", "apache", "-v", "-f", license_text, "." "*.java", "*.py"]
+        addlicense_command = ["bash", "-c", f"addlicense -c 'Airbyte, Inc.' -l apache -v -f {license_text} ."]
     else:
         addlicense_command = ["bash", "-c", f"addlicense -c 'Airbyte, Inc.' -l apache -v -f {license_text} -check ."]
 
