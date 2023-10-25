@@ -18,6 +18,7 @@ from unstructured.file_utils.filetype import detect_filetype
 unstructured_partition = None
 unstructured_optional_decode = None
 
+
 def _import_unstructured() -> None:
     """Dynamically imported as needed, due to slow import speed."""
     global unstructured_partition
