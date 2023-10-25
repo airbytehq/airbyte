@@ -148,6 +148,13 @@
                 "min": 120,
                 "max": 1200,
                 "order": 3
+              },
+              "is_always_on": {
+                "title": "Always On Read-Only Replica",
+                "type": "boolean",
+                "description": "The database is an always on read-only replica",
+                "default": false,
+                "order": 4
               }
             }
           },
