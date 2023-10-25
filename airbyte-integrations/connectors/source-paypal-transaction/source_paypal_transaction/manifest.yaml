@@ -206,5 +206,7 @@ spec:
       time_window:
         type: "integer"
         title: "Number of days per request"
-        description: "The number of days per request."
+        description: "The number of days per request. Must be a number between 1 and 31."
         default: 7
+        minimum: 1
+        maximum: 31
