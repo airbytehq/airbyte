@@ -13,6 +13,18 @@
         },
         "custom": {
           "type": ["null", "object"]
+        },
+        "segmentio": {
+          "type": ["null", "object"]
+        },
+        "salesforce": {
+          "type": ["null", "object"]
+        },
+        "hubspot": {
+          "type": ["null", "object"]
+        },
+        "pendo": {
+          "type": ["null", "object"]
         }
       }
     },
