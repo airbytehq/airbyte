@@ -78,6 +78,8 @@ def test_http_method(patch_base_class):
         (HTTPStatus.BAD_REQUEST, True),
         (HTTPStatus.TOO_MANY_REQUESTS, True),
         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+        (HTTPStatus.BAD_GATEWAY, True),
+        (HTTPStatus.FORBIDDEN, False),
     ],
 )
 def test_should_retry(patch_base_class, http_status, should_retry):
@@ -124,10 +126,22 @@ def test_empty_blocks_results(requests_mock):
     assert list(stream.read_records(sync_mode=SyncMode.incremental, stream_slice=[])) == []
 
 
-def test_backoff_time(patch_base_class):
-    response_mock = MagicMock(headers={"retry-after": "10"})
+@pytest.mark.parametrize(
+    "status_code,retry_after_header,expected_backoff",
+    [
+        (429, "10", 10.0),  # Case for 429 error with retry-after header
+        (429, None, 5.0),  # Case for 429 error without retry-after header, should default to 5.0
+        (504, None, None),  # Case for 500-level error, should default to None and use CDK exponential backoff
+        (400, None, 10.0),  # Case for specific 400-level error handled by check_invalid_start_cursor
+    ],
+)
+def test_backoff_time(status_code, retry_after_header, expected_backoff, patch_base_class):
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = status_code
+    response_mock.headers = {"retry-after": retry_after_header} if retry_after_header else {}
     stream = NotionStream(config=MagicMock())
-    assert stream.backoff_time(response_mock) == 10.0
+
+    assert stream.backoff_time(response_mock) == expected_backoff
 
 
 def test_users_request_params(patch_base_class):
