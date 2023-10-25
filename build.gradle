@@ -69,15 +69,8 @@ allprojects {
     def createFormatTarget = { pattern ->
         // Ignore new build files as well as the ones ignored when running this through airbyte-ci
         ArrayList<String> excludes = ['**/build']
-        // Remove whatever's covered by the project's subprojects, so that each file is targeted by at most one task.
-        def currentProject = project
-        project.subprojects {
-          if (it.parent.projectDir == currentProject.projectDir) {
-                excludes.add "${it.projectDir}/**"
-          }
-        }
         // Build the FileTree.
-        return fileTree(dir: projectDir, include: pattern, exclude: excludes)
+        return fileTree(dir: projectDir, include: pattern, exclude: ['**/build'])
     }
 
     // Apply spotless formatting.
