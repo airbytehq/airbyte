@@ -280,6 +280,7 @@ def insert_item_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
 # 4. Sales order Template - Date format problem
 def prepare_sales_order_payload(data: Dict[str, Any], logger: AirbyteLogger):
     """
+    These fields are needed in tally before inserting sales order
     1. Unit [UOM]
     2. Sales Ledger
     3. Other Charges_1 Ledger
@@ -357,7 +358,7 @@ def prepare_sales_order_payload(data: Dict[str, Any], logger: AirbyteLogger):
 
     sales_order_payload = {}
     for key, value in data.items():
-        if key in sales_order_fields:
+        if (key in sales_order_fields) and (str(value)) != "":
             sales_order_payload[key] = value
 
     return json.dumps({"body": [sales_order_payload]})
@@ -369,15 +370,15 @@ def insert_sales_order_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
     sales_order_payload = prepare_sales_order_payload(data=data, logger=logger)
 
     try:
-        response = requests.request(method="POST", url=sales_order_template_url, data=sales_order_payload, headers=sales_order_headers)
+        response = requests.request(
+            method="POST", url=sales_order_template_url, data=sales_order_payload, headers=sales_order_headers
+        )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'sales order [Customer name = {data["Customer Name"]} , Voucher number = {data["Voucher Number"]}] successfully inserted into Tally')
+        else:
+            logger.error(f'sales order [Customer name = {data["Customer Name"]} , Voucher number = {data["Voucher Number"]}] cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
         logger.error(f"request for sales order not successful, {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("sales order successfully inserted into Tally")
-    else:
-        logger.info("sales order cannot be inserted into Tally")
 
 
 # 5. Payment Voucher Template - *** Working *** (Bill Date format : dd-mm-yyyy)

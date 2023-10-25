@@ -9,7 +9,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
-from .utils import insert_item_master_to_tally, insert_ledger_master_to_tally, insert_payment_voucher_to_tally
+from .utils import insert_item_master_to_tally, insert_ledger_master_to_tally, insert_payment_voucher_to_tally, insert_sales_order_to_tally
 
 
 class DestinationTally(Destination):
@@ -49,6 +49,11 @@ class DestinationTally(Destination):
                     payment_voucher_url = "https://api.excel2tally.in/api/User/PaymentVoucher"
                     insert_payment_voucher_to_tally(
                         config=config, data=airbyte_message.record.data, payment_voucher_template_url=payment_voucher_url, logger=logger
+                    )
+                elif "sales_order" in airbyte_message.record.stream:
+                    sales_order_url = "https://api.excel2tally.in/api/User/SalesOrder"
+                    insert_sales_order_to_tally(
+                        config=config, data=airbyte_message.record.data, sales_order_template_url=sales_order_url, logger=logger
                     )
             elif airbyte_message.type == Type.STATE:
                 yield airbyte_message
