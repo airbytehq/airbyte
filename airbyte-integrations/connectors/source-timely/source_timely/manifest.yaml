@@ -14,18 +14,17 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://api.timelyapp.com/1.1/
-        path: '{{ config.account_id }}/events'
+        path: "{{ config.account_id }}/events"
         http_method: GET
         request_parameters:
-          account_id: '{{ config.account_id }}'
-          since: '{{ config.start_date }}'
-          upto: '{{ now_utc().strftime(''%Y-%m-%d'') }}'
+          account_id: "{{ config.account_id }}"
+          since: "{{ config.start_date }}"
+          upto: "{{ now_utc().strftime('%Y-%m-%d') }}"
         request_headers:
           Content-Type: application/json
         authenticator:
           type: BearerAuthenticator
-          api_token: '{{ config[''bearer_token''] }}'
-        request_body_json: {}
+          api_token: "{{ config['bearer_token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -45,29 +44,3 @@ streams:
           type: PageIncrement
           start_from_page: 1
           page_size: 1000
-spec:
-  documentation_url: https://docsurl.com
-  connection_specification:
-    "$schema": http://json-schema.org/draft-07/schema#
-    title: Timely Integration Spec
-    type: object
-    required:
-      - account_id
-      - start_date
-      - bearer_token
-    additionalProperties: false
-    properties:
-      account_id:
-        title: account_id
-        type: string
-        description: Timely account id
-      start_date:
-        title: startDate
-        type: string
-        description: start date
-        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
-        example: '2022-05-06'
-      bearer_token:
-        title: Bearer token
-        type: string
-        description: Timely bearer token

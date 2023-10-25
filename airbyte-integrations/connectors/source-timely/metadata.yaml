@@ -10,13 +10,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: bc617b5f-1b9e-4a2d-bebe-782fd454a771
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   dockerRepository: airbyte/source-timely
   githubIssueLabel: source-timely
   icon: timely.svg
   license: MIT
   name: Timely
-  releaseDate: 2022-06-22	
+  releaseDate: 2022-06-22
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/timely
