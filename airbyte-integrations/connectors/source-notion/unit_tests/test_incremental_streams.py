@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import itertools
 import time
 import re
 from unittest.mock import MagicMock, patch
@@ -209,20 +208,20 @@ def test_recursive_read(blocks, requests_mock):
     assert list(stream.read_records(**inputs)) == [record3, record2, record1, record4]
 
 
-# def test_invalid_start_cursor(parent, requests_mock, caplog):
-#     stream = parent
-#     error_message = "The start_cursor provided is invalid: wrong_start_cursor"
-#     search_endpoint = requests_mock.post(
-#         "https://api.notion.com/v1/search",
-#         status_code=400,
-#         json={"object": "error", "status": 400, "code": "validation_error", "message": error_message},
-#     )
+def test_invalid_start_cursor(parent, requests_mock, caplog):
+    stream = parent
+    error_message = "The start_cursor provided is invalid: wrong_start_cursor"
+    search_endpoint = requests_mock.post(
+        "https://api.notion.com/v1/search",
+        status_code=400,
+        json={"object": "error", "status": 400, "code": "validation_error", "message": error_message},
+    )
 
-#     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
-#     with patch.object(stream, "backoff_time", return_value=0.1):
-#         list(stream.read_records(**inputs))
-#         assert search_endpoint.call_count == 6
-#         assert f"Skipping stream pages, error message: {error_message}" in caplog.messages
+    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
+    with patch.object(stream, "backoff_time", return_value=0.1):
+        list(stream.read_records(**inputs))
+        assert search_endpoint.call_count == 11
+        assert f"Skipping stream pages, error message: {error_message}" in caplog.messages
 
 
 @mark.parametrize(
@@ -232,27 +231,26 @@ def test_recursive_read(blocks, requests_mock):
             400, 
             "validation_error", 
             "The start_cursor provided is invalid: wrong_start_cursor", 
-            [10, 10, 10, 10, 10]
+            [10, 10, 10, 10, 10, 10, 10]
         ),
         (
             429, 
             "rate_limited", 
             "Rate Limited", 
-            [5, 5, 5, 5, 5] # Retry-header is set to 5 seconds for test
-        ),  
+            [5, 5, 5, 5, 5, 5, 5] # Retry-header is set to 5 seconds for test
+        ),
         (
             500,
             "internal_server_error",
             "Internal server error",
-            [8, 16, 32, 64, 128], # Using retry_factor of 8, the final backoff time should be 128 seconds
+            [5, 10, 20, 40, 80, 5, 10]
         ),  
     ],
 )
 def test_retry_logic(status_code, error_code, error_message, expected_backoff_time, parent, requests_mock, caplog):
-    
     stream = parent
 
-    # Set up a generator that alternates between error and success responses
+    # Set up a generator that alternates between error and success responses, to check the reset of backoff time between failures
     mock_responses = [
         {"status_code": status_code, "response": {"object": "error", "status": status_code, "code": error_code, "message": error_message}} for _ in range(5)
     ] + [
@@ -269,6 +267,7 @@ def test_retry_logic(status_code, error_code, error_message, expected_backoff_ti
         context.status_code = response["status_code"]
         return response["response"]
 
+    # Mock the time.sleep function to avoid waiting during tests
     with patch.object(time, "sleep", return_value=None):
         search_endpoint = requests_mock.post(
             "https://api.notion.com/v1/search",
@@ -277,26 +276,22 @@ def test_retry_logic(status_code, error_code, error_message, expected_backoff_ti
         )
 
         inputs = {"sync_mode": SyncMode.full_refresh, "cursor_field": [], "stream_state": {}}
-
         try:
             list(stream.read_records(**inputs))
         except (UserDefinedBackoffException, DefaultBackoffException) as e:
             return e
 
+        # Check that the endpoint was called the expected number of times
         assert search_endpoint.call_count == 9
 
         # Additional assertions to check reset of backoff time
-        log_messages = [record.message for record in caplog.records]
-        print(f"Log messages: {log_messages}")
-
         # Find the backoff times from the message logs to compare against expected backoff times
+        log_messages = [record.message for record in caplog.records]
         backoff_times = [
-            float(re.search(r'(\d+(\.\d+)?) seconds', msg).group(1)) 
+            round(float(re.search(r'(\d+(\.\d+)?) seconds', msg).group(1)))
             for msg in log_messages if any(word in msg for word in ['Sleeping', 'Waiting'])
         ]
 
-        print(f"Backoff times: {backoff_times}")
-        
         assert backoff_times == expected_backoff_time, f"Unexpected backoff times: {backoff_times}"
 
 

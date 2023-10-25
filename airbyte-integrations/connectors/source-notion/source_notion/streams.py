@@ -3,7 +3,7 @@
 #
 
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar, Union
 
 import pendulum
 import pydantic
@@ -61,8 +61,16 @@ class NotionStream(HttpStream, ABC):
         return NotionAvailabilityStrategy()
 
     @property
-    def retry_factor(self) -> float:
-        return 8
+    def retry_factor(self) -> int:
+        return 5
+    
+    @property
+    def max_retries(self) -> int:
+        return 10
+    
+    @property
+    def max_time(self) -> int:
+        return 80
 
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):
