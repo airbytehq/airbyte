@@ -162,12 +162,9 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), minRawTimestamp);
     String dedupFinalTable = "";
     String cdcDeletes = "";
-    String dedupRawTable = "";
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
-      // If we're in dedup mode, then we must have a cursor
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
-      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns());
+      cdcDeletes = cdcDeletes(stream, finalSuffix);
     }
     final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
 
@@ -175,13 +172,11 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
         "insert_new_records", insertNewRecords,
         "dedup_final_table", dedupFinalTable,
         "cdc_deletes", cdcDeletes,
-        "dedupe_raw_table", dedupRawTable,
         "commit_raw_table", commitRawTable)).replace(
             """
             BEGIN TRANSACTION;
             ${insert_new_records}
             ${dedup_final_table}
-            ${dedupe_raw_table}
             ${cdc_deletes}
             ${commit_raw_table}
             COMMIT;
@@ -302,10 +297,29 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                           final String finalSuffix,
                           final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
                           final Optional<Instant> minRawTimestamp) {
-    final String columnCasts = streamColumns.entrySet().stream().map(
+    final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
+    final String extractNewRawRecords = extractNewRawRecords(stream, minRawTimestamp);
+
+    return new StringSubstitutor(Map.of(
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()),
+        "column_list", columnList,
+        "extractNewRawRecords", extractNewRawRecords)).replace(
+            """
+            INSERT INTO ${final_table_id}
+            (
+            ${column_list}
+              "_AIRBYTE_META",
+              "_AIRBYTE_RAW_ID",
+              "_AIRBYTE_EXTRACTED_AT"
+            )
+            ${extractNewRawRecords};""");
+  }
+
+  private String extractNewRawRecords(final StreamConfig stream, final Optional<Instant> minRawTimestamp) {
+    final String columnCasts = stream.columns().entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue()) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
-    final String columnErrors = streamColumns.entrySet().stream().map(
+    final String columnErrors = stream.columns().entrySet().stream().map(
         col -> new StringSubstitutor(Map.of(
             "raw_col_name", escapeJsonIdentifier(col.getKey().originalName()),
             "printable_col_name", escapeSingleQuotedString(col.getKey().originalName()),
@@ -320,54 +334,88 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                   ELSE NULL
                 END"""))
         .collect(joining(",\n"));
-    final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
-
-    String cdcConditionalOrIncludeStatement = "";
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
-      cdcConditionalOrIncludeStatement = """
-                                         OR (
-                                           "_airbyte_loaded_at" IS NOT NULL
-                                           AND TYPEOF("_airbyte_data":"_ab_cdc_deleted_at") NOT IN ('NULL', 'NULL_VALUE')
-                                         )
-                                         """;
-    }
-
+    final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
     final String extractedAtCondition = buildExtractedAtCondition(minRawTimestamp);
 
-    return new StringSubstitutor(Map.of(
-        "raw_table_id", stream.id().rawTableId(QUOTE),
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()),
-        "column_casts", columnCasts,
-        "column_errors", columnErrors,
-        "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
-        "extractedAtCondition", extractedAtCondition,
-        "column_list", columnList)).replace(
-            """
-            INSERT INTO ${final_table_id}
-            (
-            ${column_list}
-              "_AIRBYTE_META",
-              "_AIRBYTE_RAW_ID",
-              "_AIRBYTE_EXTRACTED_AT"
-            )
-            WITH intermediate_data AS (
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      String cdcConditionalOrIncludeStatement = "";
+      if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+        cdcConditionalOrIncludeStatement = """
+                                           OR (
+                                             "_airbyte_loaded_at" IS NOT NULL
+                                             AND TYPEOF("_airbyte_data":"_ab_cdc_deleted_at") NOT IN ('NULL', 'NULL_VALUE')
+                                           )
+                                           """;
+      }
+
+      final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+      final String cursorOrderClause = stream.cursor()
+          .map(cursorId -> cursorId.name(QUOTE) + " DESC NULLS LAST,")
+          .orElse("");
+
+      return new StringSubstitutor(Map.of(
+          "raw_table_id", stream.id().rawTableId(QUOTE),
+          "column_casts", columnCasts,
+          "column_errors", columnErrors,
+          "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
+          "extractedAtCondition", extractedAtCondition,
+          "column_list", columnList,
+          "pk_list", pkList,
+          "cursor_order_clause", cursorOrderClause)).replace(
+              """
+              WITH intermediate_data AS (
+                SELECT
+              ${column_casts}
+              ARRAY_CONSTRUCT_COMPACT(${column_errors}) as "_airbyte_cast_errors",
+                "_airbyte_raw_id",
+                "_airbyte_extracted_at"
+                FROM ${raw_table_id}
+                WHERE (
+                    "_airbyte_loaded_at" IS NULL
+                    ${cdcConditionalOrIncludeStatement}
+                  ) ${extractedAtCondition}
+              ), new_records AS (
+                SELECT
+                ${column_list}
+                  OBJECT_CONSTRUCT('errors', "_airbyte_cast_errors") AS "_AIRBYTE_META",
+                  "_airbyte_raw_id" AS "_AIRBYTE_RAW_ID",
+                  "_airbyte_extracted_at" AS "_AIRBYTE_EXTRACTED_AT"
+                FROM intermediate_data
+              ), numbered_rows AS (
+                SELECT *, row_number() OVER (
+                  PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} "_AIRBYTE_EXTRACTED_AT" DESC
+                ) AS row_number
+                FROM new_records
+              )
+              SELECT ${column_list} "_AIRBYTE_META", "_AIRBYTE_RAW_ID", "_AIRBYTE_EXTRACTED_AT"
+              FROM numbered_rows
+              WHERE row_number = 1""");
+    } else {
+      return new StringSubstitutor(Map.of(
+          "raw_table_id", stream.id().rawTableId(QUOTE),
+          "column_casts", columnCasts,
+          "column_errors", columnErrors,
+          "extractedAtCondition", extractedAtCondition,
+          "column_list", columnList)).replace(
+              """
+              WITH intermediate_data AS (
+                SELECT
+              ${column_casts}
+              ARRAY_CONSTRUCT_COMPACT(${column_errors}) as "_airbyte_cast_errors",
+                "_airbyte_raw_id",
+                "_airbyte_extracted_at"
+                FROM ${raw_table_id}
+                WHERE
+                  "_airbyte_loaded_at" IS NULL
+                  ${extractedAtCondition}
+              )
               SELECT
-            ${column_casts}
-            ARRAY_CONSTRUCT_COMPACT(${column_errors}) as "_airbyte_cast_errors",
-              "_airbyte_raw_id",
-              "_airbyte_extracted_at"
-              FROM ${raw_table_id}
-              WHERE
-                "_airbyte_loaded_at" IS NULL
-                ${cdcConditionalOrIncludeStatement}
-                ${extractedAtCondition}
-            )
-            SELECT
-            ${column_list}
-              OBJECT_CONSTRUCT('errors', "_airbyte_cast_errors") AS "_AIRBYTE_META",
-              "_airbyte_raw_id" AS "_AIRBYTE_RAW_ID",
-              "_airbyte_extracted_at" AS "_AIRBYTE_EXTRACTED_AT"
-            FROM intermediate_data;""");
+              ${column_list}
+                OBJECT_CONSTRUCT('errors', "_airbyte_cast_errors") AS "_AIRBYTE_META",
+                "_airbyte_raw_id" AS "_AIRBYTE_RAW_ID",
+                "_airbyte_extracted_at" AS "_AIRBYTE_EXTRACTED_AT"
+              FROM intermediate_data""");
+    }
   }
 
   private static String buildExtractedAtCondition(final Optional<Instant> minRawTimestamp) {
@@ -403,55 +451,21 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             """);
   }
 
-  @VisibleForTesting
-  String cdcDeletes(final StreamConfig stream,
-                    final String finalSuffix,
-                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns) {
-
+  private String cdcDeletes(final StreamConfig stream, final String finalSuffix) {
     if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
     }
-
-    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
+    if (!stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
       return "";
     }
-
-    final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    final String pkCasts = stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk))).collect(joining(",\n"));
 
     // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
     // out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()),
-        "raw_table_id", stream.id().rawTableId(QUOTE),
-        "pk_list", pkList,
-        "pk_extracts", pkCasts,
-        "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)).replace(
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()))).replace(
             """
             DELETE FROM ${final_table_id}
-            WHERE ARRAY_CONSTRUCT(${pk_list}) IN (
-              SELECT ARRAY_CONSTRUCT(
-                  ${pk_extracts}
-                )
-              FROM  ${raw_table_id}
-              WHERE "_airbyte_data":"_ab_cdc_deleted_at" != 'null'
-            );
-            """);
-  }
-
-  @VisibleForTesting
-  String dedupRawTable(final StreamId id, final String finalSuffix) {
-    return new StringSubstitutor(Map.of(
-        "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix.toUpperCase()))).replace(
-            // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
-            // would be painful,
-            // and it only matters in a few edge cases.
-            """
-            DELETE FROM ${raw_table_id}
-            WHERE "_airbyte_raw_id" NOT IN (
-              SELECT "_AIRBYTE_RAW_ID" FROM ${final_table_id}
-            );
+            WHERE _AB_CDC_DELETED_AT IS NOT NULL;
             """);
   }
 

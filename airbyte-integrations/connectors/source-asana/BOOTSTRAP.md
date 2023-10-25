@@ -8,7 +8,8 @@ Some streams depend on:
 
 - workspaces (Teams, Users, CustomFields, Projects, Tags, Users streams);
 - projects (Events, SectionsCompact, Sections, Tasks streams);
-- tasks (Events, Stories stream);
+- tasks (Events, StoriesCompact stream);
+- storiescompact (Stories stream)
 - teams (TeamMemberships stream).
 
 Each record can be uniquely identified by a `gid` key.

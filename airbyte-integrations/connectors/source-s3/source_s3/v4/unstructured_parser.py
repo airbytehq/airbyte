@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from io import IOBase
+from io import BytesIO, IOBase
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
@@ -74,7 +74,16 @@ class UnstructuredParser(FileTypeParser):
             return optional_decode(file_handle.read())
         if filetype not in self._supported_file_types():
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file_name)
-        elements = partition(file=file_handle, metadata_filename=file_name)
+
+        if filetype is FileType.PDF:
+            # for PDF, read the file into a BytesIO object because some code paths in pdf parsing are doing an instance check on the file object and don't work with file-like objects
+            file_handle.seek(0)
+            file = BytesIO(file_handle.read())
+            file_handle.seek(0)
+        else:
+            file = file_handle
+
+        elements = partition(file=file, metadata_filename=file_name)
         return self._render_markdown(elements)
 
     def _get_filetype(self, file: IOBase):

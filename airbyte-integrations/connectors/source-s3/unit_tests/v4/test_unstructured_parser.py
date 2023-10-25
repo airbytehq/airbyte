@@ -136,13 +136,13 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
 @patch("unstructured.file_utils.filetype.detect_filetype")
 def test_parse_records(mock_detect_filetype, mock_optional_decode, mock_partition, filetype, parse_result, raises, expected_records):
     stream_reader = MagicMock()
-    mock_open(stream_reader.open_file, read_data=str(parse_result))
+    mock_open(stream_reader.open_file, read_data=bytes(str(parse_result), "utf-8"))
     fake_file = MagicMock()
     fake_file.uri = FILE_URI
     logger = MagicMock()
     mock_detect_filetype.return_value = filetype
     mock_partition.return_value = parse_result
-    mock_optional_decode.side_effect = lambda x: x
+    mock_optional_decode.side_effect = lambda x: x.decode("utf-8")
     if raises:
         with pytest.raises(RecordParseError):
             list(UnstructuredParser().parse_records(MagicMock(), fake_file, stream_reader, logger, MagicMock()))
