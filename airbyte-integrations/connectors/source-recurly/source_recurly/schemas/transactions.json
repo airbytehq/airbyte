@@ -273,8 +273,8 @@
       "format": "date-time"
     },
     "action_result": {
-        "type": ["null", "object"],
-        "additionalProperties": true
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
     "vat_number": {
       "type": ["null", "string"]

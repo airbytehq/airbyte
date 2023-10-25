@@ -4,7 +4,7 @@ connector_image: airbyte/source-recurly:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_recurly/spec.yaml"
+      - spec_path: "source_recurly/manifest.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -13,33 +13,32 @@ acceptance_tests:
         status: "failed"
   discovery:
     tests:
-      - config_path: 
-          "secrets/config.json"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: 600
-      fail_on_extra_columns: false
-      empty_streams:
-        - name: account_coupon_redemptions
-          bypass_reason: "no_records"
-        - name: account_notes
-          bypass_reason: "no_records"
-        - name: add_ons
-          bypass_reason: "no_records"
-        - name: billing_infos
-          bypass_reason: "no_records"
-        - name: credit_payments
-          bypass_reason: "no_records"
-        - name: line_items
-          bypass_reason: "no_records"
-        - name: shipping_methods
-          bypass_reason: "no_records"
-        - name: unique_coupons
-          bypass_reason: "no_records"
-        - name: export_dates
-          bypass_reason: "no_records"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 600
+        fail_on_extra_columns: false
+        empty_streams:
+          - name: account_coupon_redemptions
+            bypass_reason: "no_records"
+          - name: account_notes
+            bypass_reason: "no_records"
+          - name: add_ons
+            bypass_reason: "no_records"
+          - name: billing_infos
+            bypass_reason: "no_records"
+          - name: credit_payments
+            bypass_reason: "no_records"
+          - name: line_items
+            bypass_reason: "no_records"
+          - name: shipping_methods
+            bypass_reason: "no_records"
+          - name: unique_coupons
+            bypass_reason: "no_records"
+          - name: export_dates
+            bypass_reason: "no_records"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
@@ -48,5 +47,5 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        future_state: 
+        future_state:
           future_state_path: "integration_tests/future_state.json"
