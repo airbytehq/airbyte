@@ -8,6 +8,13 @@
     "kind": {
       "type": ["null", "string"]
     },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "deadline": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
     "created_at": {
       "type": ["null", "string"],
       "format": "date-time"
