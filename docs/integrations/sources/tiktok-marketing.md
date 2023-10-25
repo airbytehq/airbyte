@@ -586,6 +586,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                          |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 3.9.0   | 2023-10-23 | [31623](https://github.com/airbytehq/airbyte/pull/31623) | Add AdsAudienceReportsByProvince stream and expand base report metrics                           |
 | 3.8.0   | 2023-10-19 | [31610](https://github.com/airbytehq/airbyte/pull/31610) | Add Creative Assets and Audiences streams                                                        |
 | 3.7.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                  |
 | 3.7.0   | 2023-10-19 | [31493](https://github.com/airbytehq/airbyte/pull/31493) | Add fields to Ads stream                                                                         |

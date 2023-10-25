@@ -69,7 +69,8 @@ The connector is restricted by normal Asana [requests limitation](https://develo
 
 | Version | Date       | Pull Request                                             | Subject                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------- |
-| 0.2.1   | 2023-10-10 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Add new stream Portfolio Memberships with Parent Portfolio           |
+| 0.3.1   | 2023-10-29 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Add new stream Portfolio Memberships with Parent Portfolio           |
+| 0.3.0   | 2023-10-24 | [31634](https://github.com/airbytehq/airbyte/pull/31634) | Add OrganizationExports stream                                       |
 | 0.2.0   | 2023-10-17 | [31090](https://github.com/airbytehq/airbyte/pull/31090) | Add Attachments stream                                               |
 | 0.1.9   | 2023-10-16 | [31089](https://github.com/airbytehq/airbyte/pull/31089) | Add Events stream                                                    |
 | 0.1.8   | 2023-10-16 | [31009](https://github.com/airbytehq/airbyte/pull/31009) | Add SectionsCompact stream                                           |

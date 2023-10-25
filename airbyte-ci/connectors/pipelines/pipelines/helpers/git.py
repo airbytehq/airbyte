@@ -4,7 +4,6 @@
 
 from typing import List, Set
 
-import anyio
 import git
 from dagger import Connection
 from github import PullRequest
@@ -64,12 +63,14 @@ def get_modified_files_in_branch_local(current_git_revision: str, diffed_branch:
     return set(modified_files)
 
 
-def get_modified_files_in_branch(current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True) -> Set[str]:
+async def get_modified_files_in_branch(
+    current_git_branch: str, current_git_revision: str, diffed_branch: str, is_local: bool = True
+) -> Set[str]:
     """Retrieve the list of modified files on the branch."""
     if is_local:
         return get_modified_files_in_branch_local(current_git_revision, diffed_branch)
     else:
-        return anyio.run(get_modified_files_in_branch_remote, current_git_branch, current_git_revision, diffed_branch)
+        return await get_modified_files_in_branch_remote(current_git_branch, current_git_revision, diffed_branch)
 
 
 async def get_modified_files_in_commit_remote(current_git_branch: str, current_git_revision: str) -> Set[str]:
@@ -104,11 +105,11 @@ def get_modified_files_in_commit_local(current_git_revision: str) -> Set[str]:
     return set(modified_files)
 
 
-def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> Set[str]:
+async def get_modified_files_in_commit(current_git_branch: str, current_git_revision: str, is_local: bool = True) -> Set[str]:
     if is_local:
         return get_modified_files_in_commit_local(current_git_revision)
     else:
-        return anyio.run(get_modified_files_in_commit_remote, current_git_branch, current_git_revision)
+        return await get_modified_files_in_commit_remote(current_git_branch, current_git_revision)
 
 
 def get_modified_files_in_pull_request(pull_request: PullRequest) -> List[str]:
