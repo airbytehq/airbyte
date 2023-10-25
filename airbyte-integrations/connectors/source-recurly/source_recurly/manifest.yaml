@@ -121,21 +121,6 @@ definitions:
           - stream: "#/definitions/accounts_stream"
             parent_key: "id"
             partition_field: "parent_id"
-  accounts_created_at_stream:
-    $ref: "#/definitions/base_stream"
-    $parameters:
-      name: "accounts_created_at"
-      path: "accounts"
-    retriever:
-      $ref: "#/definitions/retriever"
-      requester:
-        $ref: "#/definitions/requester"
-        request_parameters:
-          $ref: "#/definitions/requester/request_parameters"
-          sort: "created_at"
-    incremental_sync:
-      $ref: "#/definitions/incremental_sync"
-      cursor_field: "created_at"
   account_notes_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
