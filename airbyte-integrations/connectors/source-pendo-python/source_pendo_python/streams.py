@@ -27,14 +27,12 @@ class PendoPythonStream(HttpStream, ABC):
             return 'array'
         return field_type
 
-    def test(self, full_schema, body):
-        for key in body:
-            # print("key: ", key)
+    def build_schema(self, full_schema, metadata):
+        for key in metadata:
             if not key.startswith("auto"):
                 fields = {}
-                for field in body[key]:
-                    # print("field: ", field)
-                    field_type = body[key][field]['Type']
+                for field in metadata[key]:
+                    field_type = metadata[key][field]['Type']
                     if field_type != '':
                         fields[field] = {
                             "type": ["null", self.get_valid_type(field_type)]
@@ -49,7 +47,6 @@ class PendoPythonStream(HttpStream, ABC):
                     "properties": fields
                 }
         return full_schema
-
 
 
 class Feature(PendoPythonStream):
@@ -105,6 +102,8 @@ class Visitors(PendoPythonStream):
 
     name = "Visitors"
 
+    json_schema = None
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -115,51 +114,45 @@ class Visitors(PendoPythonStream):
         return "POST"
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        print("Got called for Visitors")
-        base_schema = super().get_json_schema()
-        url = f"{PendoPythonStream.url_base}metadata/schema/visitor"
-        auth_headers = self.authenticator.get_auth_header()
-        try:
-            session = requests.get(url, headers=auth_headers)
-            body = session.json()
+        if self.json_schema is None:
+            base_schema = super().get_json_schema()
+            url = f"{PendoPythonStream.url_base}metadata/schema/visitor"
+            auth_headers = self.authenticator.get_auth_header()
+            try:
+                session = requests.get(url, headers=auth_headers)
+                body = session.json()
 
-            full_schema = base_schema
-            full_schema['properties']['metadata']['properties']['auto__323232'] = {
-                "type": ["null", "object"]
-            }
-
-            auto_fields = {
-                "lastupdated": {
-                    "type": ["null", "integer"]
-                },
-                "idhash": {
-                    "type": ["null", "integer"]
-                },
-                "lastuseragent": {
-                    "type": ["null", "string"]
-                },
-                "lastmetadataupdate_agent": {
-                    "type": ["null", "integer"]
+                full_schema = base_schema
+                full_schema['properties']['metadata']['properties']['auto__323232'] = {
+                    "type": ["null", "object"]
                 }
-            }
-            for key in body['auto']:
-                auto_fields[key] = {
-                    "type": ["null", self.get_valid_type(body['auto'][key]['Type'])]
+
+                auto_fields = {
+                    "lastupdated": {
+                        "type": ["null", "integer"]
+                    },
+                    "idhash": {
+                        "type": ["null", "integer"]
+                    },
+                    "lastuseragent": {
+                        "type": ["null", "string"]
+                    },
+                    "lastmetadataupdate_agent": {
+                        "type": ["null", "integer"]
+                    }
                 }
-            full_schema['properties']['metadata']['properties']['auto']['properties'] = auto_fields
-            full_schema['properties']['metadata']['properties']['auto__323232']['properties'] = auto_fields
+                for key in body['auto']:
+                    auto_fields[key] = {
+                        "type": ["null", self.get_valid_type(body['auto'][key]['Type'])]
+                    }
+                full_schema['properties']['metadata']['properties']['auto']['properties'] = auto_fields
+                full_schema['properties']['metadata']['properties']['auto__323232']['properties'] = auto_fields
 
-            # agent_fields = {}
-            # for key in body['agent']:
-            #     agent_fields[key] = {
-            #         "type": ["null", self.get_valid_type(body['agent'][key]['Type'])]
-            #     }
-            # full_schema['properties']['metadata']['properties']['agent']['properties'] = agent_fields
-
-            full_schema = self.test(full_schema, body)
-            return full_schema
-        except requests.exceptions.RequestException:
-            return base_schema
+                full_schema = self.build_schema(full_schema, body)
+                self.json_schema = full_schema
+            except requests.exceptions.RequestException:
+                self.json_schema = base_schema
+        return self.json_schema
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -207,6 +200,8 @@ class Accounts(PendoPythonStream):
 
     name = "Accounts"
 
+    json_schema = None
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -217,46 +212,39 @@ class Accounts(PendoPythonStream):
         return "POST"
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        print("Got called for Account")
-        base_schema = super().get_json_schema()
-        url = f"{PendoPythonStream.url_base}metadata/schema/account"
-        auth_headers = self.authenticator.get_auth_header()
-        try:
-            session = requests.get(url, headers=auth_headers)
-            body = session.json()
+        if self.json_schema is None:
+            base_schema = super().get_json_schema()
+            url = f"{PendoPythonStream.url_base}metadata/schema/account"
+            auth_headers = self.authenticator.get_auth_header()
+            try:
+                session = requests.get(url, headers=auth_headers)
+                body = session.json()
 
-            full_schema = base_schema
-            full_schema['properties']['metadata']['properties']['auto__323232'] = {
-                "type": ["null", "object"]
-            }
-
-            auto_fields = {
-                "lastupdated": {
-                    "type": ["null", "integer"]
-                },
-                "idhash": {
-                    "type": ["null", "integer"]
+                full_schema = base_schema
+                full_schema['properties']['metadata']['properties']['auto__323232'] = {
+                    "type": ["null", "object"]
                 }
-            }
-            for key in body['auto']:
-                auto_fields[key] = {
-                    "type": ["null", self.get_valid_type(body['auto'][key]['Type'])]
-                }
-            full_schema['properties']['metadata']['properties']['auto']['properties'] = auto_fields
-            full_schema['properties']['metadata']['properties']['auto__323232']['properties'] = auto_fields
 
-            # agent_fields = {}
-            # for key in body['agent']:
-            #     agent_fields[key] = {
-            #         "type": ["null", self.get_valid_type(body['agent'][key]['Type'])]
-            #     }
-            
-      
-            # full_schema['properties']['metadata']['properties']['agent']['properties'] = agent_fields
-            full_schema = self.test(full_schema, body)
-            return full_schema
-        except requests.exceptions.RequestException:
-            return base_schema
+                auto_fields = {
+                    "lastupdated": {
+                        "type": ["null", "integer"]
+                    },
+                    "idhash": {
+                        "type": ["null", "integer"]
+                    }
+                }
+                for key in body['auto']:
+                    auto_fields[key] = {
+                        "type": ["null", self.get_valid_type(body['auto'][key]['Type'])]
+                    }
+                full_schema['properties']['metadata']['properties']['auto']['properties'] = auto_fields
+                full_schema['properties']['metadata']['properties']['auto__323232']['properties'] = auto_fields
+
+                full_schema = self.build_schema(full_schema, body)
+                self.json_schema = full_schema
+            except requests.exceptions.RequestException:
+                self.json_schema = base_schema
+        return self.json_schema
 
     def request_headers(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
