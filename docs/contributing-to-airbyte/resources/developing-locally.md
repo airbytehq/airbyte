@@ -107,9 +107,11 @@ In your local `airbyte` repository, run the following command:
 ```
 
 - Then, build the connector image:
-```
-docker build ./airbyte-integrations/connectors/<connector-name> -t airbyte/<connector-name>:dev
-```
+  - Install our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector. 
+  - Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
+  - Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
+
+
 
 :::info
 

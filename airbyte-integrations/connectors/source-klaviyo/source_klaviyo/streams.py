@@ -83,7 +83,7 @@ class KlaviyoStreamLatest(HttpStream, ABC):
 class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
     """Base class for all incremental streams, requires cursor_field to be declared"""
 
-    def __init__(self, start_date: str, **kwargs):
+    def __init__(self, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
         self._start_ts = start_date
 
@@ -103,11 +103,13 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
 
         if not params.get("filter"):
-            latest_cursor = pendulum.parse(self._start_ts)
             stream_state_cursor_value = stream_state.get(self.cursor_field)
-            if stream_state_cursor_value:
-                latest_cursor = max(latest_cursor, pendulum.parse(stream_state[self.cursor_field]))
-            params["filter"] = "greater-than(" + self.cursor_field + "," + latest_cursor.isoformat() + ")"
+            latest_cursor = self._start_ts or stream_state_cursor_value
+            if latest_cursor:
+                latest_cursor = pendulum.parse(latest_cursor)
+                if stream_state_cursor_value:
+                    latest_cursor = max(latest_cursor, pendulum.parse(stream_state_cursor_value))
+                params["filter"] = f"greater-than({self.cursor_field},{latest_cursor.isoformat()})"
             params["sort"] = self.cursor_field
         return params
 
@@ -118,8 +120,9 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
         Required for incremental.
         """
         current_stream_cursor_value = current_stream_state.get(self.cursor_field, self._start_ts)
-        latest_record_cursor_value = latest_record[self.cursor_field]
-        latest_cursor = max(pendulum.parse(latest_record_cursor_value), pendulum.parse(current_stream_cursor_value))
+        latest_cursor = pendulum.parse(latest_record[self.cursor_field])
+        if current_stream_cursor_value:
+            latest_cursor = max(latest_cursor, pendulum.parse(current_stream_cursor_value))
         return {self.cursor_field: latest_cursor.isoformat()}
 
 
@@ -193,9 +196,9 @@ class KlaviyoStreamV1(HttpStream, ABC):
 class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
     """Base class for all incremental streams, requires cursor_field to be declared"""
 
-    def __init__(self, start_date: str, **kwargs):
+    def __init__(self, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
-        self._start_ts = int(pendulum.parse(start_date).timestamp())
+        self._start_ts = int(pendulum.parse(start_date).timestamp()) if start_date else 0
         self._start_sync = int(pendulum.now().timestamp())
 
     @property
@@ -254,9 +257,9 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
 class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
     """Base class for all streams that natively incremental but supports desc & asc order"""
 
-    def __init__(self, start_date: str, **kwargs):
+    def __init__(self, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
-        self._start_datetime = pendulum.parse(start_date)
+        self._start_datetime = pendulum.parse(start_date) if start_date else None
         self._reversed = False
         self._reached_old_records = False
         self._low_boundary = None
@@ -280,7 +283,9 @@ class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
         stream_state = stream_state or {}
         if stream_state:
             self._reversed = True
-            self._low_boundary = max(pendulum.parse(stream_state[self.cursor_field]), self._start_datetime)
+            self._low_boundary = pendulum.parse(stream_state[self.cursor_field])
+            if self._start_datetime:
+                self._low_boundary = max(pendulum.parse(stream_state[self.cursor_field]), self._start_datetime)
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["sort"] = "desc" if self._reversed else "asc"
 
@@ -317,13 +322,11 @@ class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
         """:return an iterable containing each record in the response"""
 
         for record in super().parse_response(response=response, **kwargs):
-            if self._reversed:
-                if pendulum.parse(record[self.cursor_field]) < self._low_boundary:
-                    self._reached_old_records = True
-                    continue
-            else:
-                if pendulum.parse(record[self.cursor_field]) < self._start_datetime:
-                    continue
+            if self._reversed and pendulum.parse(record[self.cursor_field]) < self._low_boundary:
+                self._reached_old_records = True
+                continue
+            elif self._start_datetime and pendulum.parse(record[self.cursor_field]) < self._start_datetime:
+                continue
             yield record
 
 
