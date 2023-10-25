@@ -8,9 +8,15 @@ description: Web scraping and automation platform.
 
 [Apify](https://apify.com/) is a web scraping and web automation platform providing both ready-made and custom solutions, an open-source [JavaScript SDK](https://docs.apify.com/sdk/js/) and [Python SDK](https://docs.apify.com/sdk/python/) for web scraping, proxies, and many other tools to help you build and run web automation jobs at scale.
 
+<FieldAnchor field="dataset_id">
 The results of a scraping job are usually stored in the [Apify Dataset](https://docs.apify.com/storage/dataset). This Airbyte connector provides streams to work with the datasets, including syncing their content to your chosen destination using Airbyte.
+</FieldAnchor>
 
-To sync data from a dataset, all you need to know is your API token and dataset ID. You can find your personal API token in the Apify Console in the [Settings -> Integrations](https://console.apify.com/account/integrations) and the dataset ID in the [Storage -> Datasets](https://console.apify.com/storage/datasets).
+To sync data from a dataset, all you need to know is your API token and dataset ID.
+
+<FieldAnchor field="token">
+You can find your personal API token in the Apify Console in the [Settings -> Integrations](https://console.apify.com/account/integrations) and the dataset ID in the [Storage -> Datasets](https://console.apify.com/storage/datasets).
+</FieldAnchor>
 
 ### Running Airbyte sync from Apify webhook
 
