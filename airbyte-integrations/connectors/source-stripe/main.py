@@ -6,16 +6,17 @@
 import sys
 import traceback
 from datetime import datetime
+from typing import List
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
 from source_stripe import SourceStripe
 
-if __name__ == "__main__":
-    args = sys.argv[1:]
+
+def _get_source(args: List[str]):
     catalog = AirbyteEntrypoint.extract_catalog(args)
     try:
-        source = SourceStripe(catalog)
+        return SourceStripe(catalog)
     except Exception as error:
         print(
             AirbyteMessage(
@@ -30,4 +31,11 @@ if __name__ == "__main__":
                 ),
             ).json()
         )
-    launch(source, args)
+        return None
+
+
+if __name__ == "__main__":
+    _args = sys.argv[1:]
+    source = _get_source(_args)
+    if source:
+        launch(source, _args)
