@@ -10,7 +10,6 @@ from airbyte_cdk.sources.declarative.extractors import RecordSelector
 from airbyte_cdk.sources.declarative.requesters import Requester
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
@@ -22,7 +21,6 @@ class PaginatedRequester:
     def __init__(self, requester: Requester, record_selector: RecordSelector, paginator: DefaultPaginator):
         self._requester = requester
         self._record_selector = record_selector
-        self._page_token_option = paginator.page_token_option
         self._paginator = paginator
 
     def send_requests(
@@ -37,17 +35,18 @@ class PaginatedRequester:
         next_page_token = None
         pagination_complete = False
         while not pagination_complete:
+            additional_parameters = {self._paginator.page_size_option.field_name: self._paginator.pagination_strategy.get_page_size()}
             if next_page_token:
-                next_page_parameter = {self._page_token_option.field_name: next_page_token["next_page_token"]}
+                additional_parameters[self._paginator.page_token_option.field_name] = next_page_token["next_page_token"]
 
-                if self._page_token_option.inject_into == RequestOptionType.request_parameter:
-                    request_params = request_params | next_page_parameter
-                elif self._page_token_option.inject_into == RequestOptionType.header:
-                    request_headers = request_headers | next_page_parameter
-                elif self._page_token_option.inject_into == RequestOptionType.body_data:
-                    request_body_data = request_body_data | next_page_parameter
-                elif self._page_token_option.inject_into == RequestOptionType.body_json:
-                    request_body_json = request_body_json | next_page_parameter
+            if self._paginator.page_token_option.inject_into == RequestOptionType.request_parameter:
+                request_params = request_params | additional_parameters
+            elif self._paginator.page_token_option.inject_into == RequestOptionType.header:
+                request_headers = request_headers | additional_parameters
+            elif self._paginator.page_token_option.inject_into == RequestOptionType.body_data:
+                request_body_data = request_body_data | additional_parameters
+            elif self._paginator.page_token_option.inject_into == RequestOptionType.body_json:
+                request_body_json = request_body_json | additional_parameters
 
             response = self._requester.send_request(
                 path=path,
@@ -69,62 +68,69 @@ class PaginatedRequester:
                     pagination_complete = True
 
 
-class StripePartitionGenerator(PartitionGenerator):
-    def __init__(self, stream: Stream, message_repository: MessageRepository, requester: PaginatedRequester):
+class SourcePartitionGenerator(PartitionGenerator):
+    def __init__(
+        self,
+        stream: Stream,
+        requester: PaginatedRequester,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+    ):
         self._stream = stream
-        self._message_repository = message_repository
         self._requester = requester
+        self._request_headers = request_headers
+        self._request_params = request_params
+        self._request_body_data = request_body_data
+        self._request_body_json = request_body_json
 
     def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
         for s in self._stream.stream_slices(sync_mode=sync_mode):
-            yield StripePartition(copy.deepcopy(s), self._message_repository, self._requester)
+            yield SourcePartition(
+                copy.deepcopy(s),
+                self._requester,
+                request_headers=self._request_headers,
+                request_params=self._request_params,
+                request_body_data=self._request_body_data,
+                request_body_json=self._request_body_json,
+            )
 
 
 class SourcePartition(Partition):
-    def __init__(self, _slice: Mapping[str, Any], message_repository: MessageRepository, requester: PaginatedRequester):
+    def __init__(
+        self,
+        _slice: Mapping[str, Any],
+        requester: PaginatedRequester,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+    ):
         self._slice = _slice
-        self._message_repository = message_repository
         self._requester = requester
-
-    @property
-    def request_parameters(self) -> Optional[Mapping[str, Any]]:
-        return None
-
-    @property
-    def request_headers(self) -> Optional[Mapping[str, Any]]:
-        return None
-
-    @property
-    def request_body_data(self) -> Optional[Union[Mapping[str, Any], str]]:
-        return None
-
-    @property
-    def request_body_json(self) -> Optional[Mapping[str, Any]]:
-        return None
+        self._request_headers = request_headers
+        self._request_params = request_params
+        self._request_body_data = request_body_data
+        self._request_body_json = request_body_json
 
     def read(self) -> Iterable[Record]:
         for r in self._requester.send_requests(
-            request_params=self.request_parameters,
-            request_headers=self.request_headers,
-            request_body_data=self.request_body_data,
-            request_body_json=self.request_body_json,
+            request_params=self._parse_request_arguments(self._request_params),
+            request_headers=self._parse_request_arguments(self._request_headers),
+            request_body_data=self._parse_request_arguments(self._request_body_data),
+            request_body_json=self._parse_request_arguments(self._request_body_json),
         ):
             yield Record(r)
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         return self._slice
 
+    def _parse_request_arguments(self, request_arguments: Optional[Mapping[str, Any]]) -> Optional[Mapping[str, Any]]:
+        if request_arguments is None:
+            return request_arguments
+
+        return {key: value(self._slice) for key, value in request_arguments.items() if value(self._slice)}
+
     def __hash__(self) -> int:
         return hash(str(self._slice))
-
-
-class StripePartition(SourcePartition):
-    @property
-    def request_parameters(self) -> Mapping[str, Any]:
-        params = {
-            "limit": 100,
-            "created[gte]": self._slice.get("created[gte]") if self._slice else None,
-            "created[lte]": self._slice.get("created[lte]") if self._slice else None,
-        }
-
-        return {k: v for k, v in params.items() if v}
