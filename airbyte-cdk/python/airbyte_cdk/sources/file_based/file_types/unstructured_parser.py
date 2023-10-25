@@ -18,7 +18,7 @@ from unstructured.file_utils.filetype import detect_filetype
 unstructured_partition = None
 unstructured_optional_decode = None
 
-def _import_unstructured():
+def _import_unstructured() -> None:
     """Dynamically imported as needed, due to slow import speed."""
     global unstructured_partition
     global unstructured_optional_decode
@@ -78,6 +78,10 @@ class UnstructuredParser(FileTypeParser):
 
     def _read_file(self, file_handle: IOBase, file_name: str) -> str:
         _import_unstructured()
+        if (not unstructured_partition) or (not unstructured_optional_decode):
+            # check whether unstructured library is actually available for better error message and to ensure proper typing (can't be None after this point)
+            raise Exception("unstructured library is not available")
+
         filetype = self._get_filetype(file_handle, file_name)
 
         if filetype == FileType.MD:

@@ -39,7 +39,7 @@ FILE_URI = "path/to/file.xyz"
         ),
     ],
 )
-@patch("unstructured.file_utils.filetype.detect_filetype")
+@patch("airbyte_cdk.sources.file_based.file_types.unstructured_parser.detect_filetype")
 def test_infer_schema(mock_detect_filetype, filetype, raises):
     # use a fresh event loop to avoid leaking into other tests
     main_loop = asyncio.get_event_loop()
@@ -140,7 +140,7 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
 )
 @patch("unstructured.partition.auto.partition")
 @patch("unstructured.partition.md.optional_decode")
-@patch("unstructured.file_utils.filetype.detect_filetype")
+@patch("airbyte_cdk.sources.file_based.file_types.unstructured_parser.detect_filetype")
 def test_parse_records(mock_detect_filetype, mock_optional_decode, mock_partition, filetype, parse_result, raises, expected_records):
     stream_reader = MagicMock()
     mock_open(stream_reader.open_file, read_data=bytes(str(parse_result), "utf-8"))
