@@ -67,7 +67,7 @@ class NotionStream(HttpStream, ABC):
     @property
     def max_retries(self) -> int:
         return 7
-    
+
     @property
     def max_time(self) -> int:
         return 60 * 11
