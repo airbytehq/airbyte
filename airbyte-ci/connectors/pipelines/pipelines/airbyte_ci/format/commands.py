@@ -20,12 +20,14 @@ from pipelines.helpers.utils import sh_dash_c
 @click.option("--fix/--check", type=bool, default=None, help="Whether to automatically fix any formatting issues detected.  [required]")
 @click.pass_context
 def format(ctx: click.Context, fix: bool):
-    pass
+    ctx.obj["fix_formatting"] = fix
 
 
 @format.command()
-async def python(fix: bool):
+@click.pass_context
+async def python(ctx: click.Context):
     """Formats python code via black and isort."""
+    fix = ctx.obj.get("fix_formatting")
     if fix is None:
         raise click.UsageError("You must specify either --fix or --check")
 
