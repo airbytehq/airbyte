@@ -33,6 +33,7 @@ const config = {
     {
       src: "https://cdn.unifygtm.com/tag/v1/unify-tag-script.js",
       async: true,
+      type: "module",
       id: "unifytag",
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
     }
