@@ -124,7 +124,9 @@ class AdsInsights(FBMarketingIncrementalStream):
         job = stream_slice["insight_job"]
         try:
             for obj in job.get_result():
-                yield obj.export_all_data()
+                data = obj.export_all_data()
+                if self._response_data_is_valid(data):
+                    yield data
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
                 message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
@@ -220,6 +222,12 @@ class AdsInsights(FBMarketingIncrementalStream):
             "fields": ["account_id"],
         }
         self._api.account.get_insights(params=params, is_async=False)
+
+    def _response_data_is_valid(self, data: Iterable[Mapping[str, Any]]) -> bool:
+        """
+        Ensure data contains all the fields specified in self.breakdowns
+        """
+        return all([breakdown in data for breakdown in self.breakdowns])
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
