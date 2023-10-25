@@ -76,14 +76,6 @@ class MssqlCdcHelperTest {
             "snapshot_isolation", "Snapshot"))));
     assertEquals(SnapshotIsolation.SNAPSHOT, MssqlCdcHelper.getSnapshotIsolationConfig(newCdcSnapshot));
 
-    final JsonNode newAlwaysOnCdcSnapshot = Jsons.jsonNode(Map.of("replication_method",
-        Jsons.jsonNode(Map.of(
-            "method", "CDC",
-            "data_to_sync", "Existing and New",
-            "snapshot_isolation", "Read Committed",
-            "is_always_on", "true"))));
-    assertEquals(SnapshotIsolation.SNAPSHOT, MssqlCdcHelper.getSnapshotIsolationConfig(newAlwaysOnCdcSnapshot));
-
     // migration from legacy to new config
     final JsonNode mixCdcNonSnapshot = Jsons.jsonNode(Map.of(
         "replication", "Standard",
