@@ -9,6 +9,7 @@ DEFAULT_FORMAT_IGNORE_LIST = [
     "**/venv",
     "**/.gradle",
     "**/node_modules",
+    "**/.tox",
     "**/.eggs",
     "**/.mypy_cache",
     "**/.venv",

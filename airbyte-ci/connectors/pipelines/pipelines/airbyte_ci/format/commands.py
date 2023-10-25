@@ -17,6 +17,7 @@ from pipelines.cli.lazy_group import LazyGroup
         "python": "pipelines.airbyte_ci.format.python.commands.python",
         "java": "pipelines.airbyte_ci.format.java.commands.java",
         "js": "pipelines.airbyte_ci.format.js.commands.js",
+        "license": "pipelines.airbyte_ci.format.python.commands.license",
     },
 )
 @click.option("--fix/--check", type=bool, default=None, help="Whether to automatically fix any formatting issues detected.  [required]")
