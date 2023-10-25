@@ -226,3 +226,68 @@ class Reports(IncrementalMailChimpStream):
 
     def path(self, **kwargs) -> str:
         return "reports"
+
+
+class Unsubscribes(IncrementalMailChimpStream):
+    """
+    List of members who have unsubscribed from a specific campaign.
+    Docs link: https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/
+    """
+
+    cursor_field = "timestamp"
+    data_field = "unsubscribes"
+    # There is no unique identifier for unsubscribes, so we use a composite key
+    # consisting of the campaign_id, email_id, and timestamp.
+    primary_key = ["campaign_id", "email_id", "timestamp"]
+
+    def __init__(self, campaign_id: Optional[str] = None, **kwargs):
+        super().__init__(**kwargs)
+        self.campaign_id = campaign_id
+
+    def stream_slices(
+        self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+
+        if self.campaign_id:
+            # Similar to EmailActivity stream, this is a workaround to speed up SATs
+            # and enable incremental tests by reading from a single campaign
+            campaigns = [{"id": self.campaign_id}]
+        else:
+            campaigns = Campaigns(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
+        for campaign in campaigns:
+            yield {"campaign_id": campaign["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        campaign_id = stream_slice.get("campaign_id")
+        return f"reports/{campaign_id}/unsubscribed"
+
+    def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
+        # Exclude the _links field, as it is not user-relevant data
+        params["exclude_fields"] = "unsubscribes._links"
+        return params
+
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+
+        response = super().parse_response(response, **kwargs)
+
+        # Unsubscribes endpoint does not support sorting, so we need to filter out records that are older than the current state
+        for record in response:
+            current_cursor_value = stream_state.get(record.get("campaign_id"), {}).get(self.cursor_field)
+            record_cursor_value = record.get(self.cursor_field)
+            if current_cursor_value is None or record_cursor_value >= current_cursor_value:
+                yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = current_stream_state or {}
+        campaign_id = latest_record.get("campaign_id")
+        latest_cursor_value = latest_record.get(self.cursor_field)
+
+        # Get the current state value for this campaign, if it exists
+        campaign_state = current_stream_state.get(campaign_id, {})
+        current_cursor_value = campaign_state.get(self.cursor_field, latest_cursor_value)
+
+        # Update the cursor value and set it in state
+        updated_cursor_value = max(current_cursor_value, latest_cursor_value)
+        current_stream_state[campaign_id] = {self.cursor_field: updated_cursor_value}
+        return current_stream_state
