@@ -110,7 +110,8 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     final List<AirbyteMessage> messages1 = readMessages("dat/sync1_messages.jsonl");
 
     runSync(catalog, messages1, "airbyte/destination-bigquery:1.9.0", config -> {
-      // Defensive to avoid weird behaviors or test failures if the original config is being altered by another thread, thanks jackson for a mutable JsonNode
+      // Defensive to avoid weird behaviors or test failures if the original config is being altered by
+      // another thread, thanks jackson for a mutable JsonNode
       JsonNode copiedConfig = Jsons.clone(config);
       if (config instanceof ObjectNode) {
         // Add opt-in T+D flag for older version. this is removed in newer version of the spec.

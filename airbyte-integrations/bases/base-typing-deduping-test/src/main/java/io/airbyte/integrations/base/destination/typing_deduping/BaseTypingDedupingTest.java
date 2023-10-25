@@ -759,7 +759,12 @@ public abstract class BaseTypingDedupingTest {
   protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages, final String imageName) throws Exception {
     runSync(catalog, messages, imageName, Function.identity());
   }
-  protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages, final String imageName, Function<JsonNode, JsonNode> configTransformer) throws Exception {
+
+  protected void runSync(final ConfiguredAirbyteCatalog catalog,
+                         final List<AirbyteMessage> messages,
+                         final String imageName,
+                         Function<JsonNode, JsonNode> configTransformer)
+      throws Exception {
     final AirbyteDestination destination = startSync(catalog, imageName, configTransformer);
     pushMessages(messages, destination);
     endSync(destination);
@@ -777,11 +782,15 @@ public abstract class BaseTypingDedupingTest {
    *
    * @param catalog
    * @param imageName
-   * @param configTransformer - test specific config overrides or additions can be performed with this function
+   * @param configTransformer - test specific config overrides or additions can be performed with this
+   *        function
    * @return
    * @throws Exception
    */
-  protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog, final String imageName, Function<JsonNode, JsonNode> configTransformer) throws Exception {
+  protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog,
+                                         final String imageName,
+                                         Function<JsonNode, JsonNode> configTransformer)
+      throws Exception {
     synchronized (this) {
       catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
     }
