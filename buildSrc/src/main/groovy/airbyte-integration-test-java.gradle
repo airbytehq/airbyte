@@ -47,8 +47,18 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
 
             systemProperties = [
                 // Allow tests to set @Execution(ExecutionMode.CONCURRENT)
-                'junit.jupiter.execution.parallel.enabled': 'true'
+                'junit.jupiter.execution.parallel.enabled': 'true',
             ]
+
+            // Limit the number of concurrent tests within a single test class.
+            // See also usages of numberThreads.
+            if (project.hasProperty('parallelExecutionsPerThread')) {
+                int parallelExecutionsPerThread = project.property('parallelExecutionsPerThread').toString() as int
+                systemProperties = systemProperties + [
+                    'junit.jupiter.execution.parallel.config.strategy': 'fixed',
+                    'junit.jupiter.execution.parallel.config.fixed.parallelism': parallelExecutionsPerThread,
+                ]
+            }
         }
         integrationTestJava.configure {
             mustRunAfter project.tasks.named('check')

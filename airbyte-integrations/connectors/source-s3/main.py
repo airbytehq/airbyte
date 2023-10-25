@@ -10,13 +10,18 @@ from typing import List
 
 from airbyte_cdk.entrypoint import AirbyteEntrypoint, launch
 from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, TraceType, Type
+from airbyte_cdk.sources.file_based.file_types import default_parsers
 from source_s3.v4 import Config, Cursor, SourceS3, SourceS3StreamReader
+from source_s3.v4.config import UnstructuredFormat
+from source_s3.v4.unstructured_parser import UnstructuredParser
+
+parsers = {**default_parsers, UnstructuredFormat: UnstructuredParser()}
 
 
 def get_source(args: List[str]):
     catalog_path = AirbyteEntrypoint.extract_catalog(args)
     try:
-        return SourceS3(SourceS3StreamReader(), Config, catalog_path, cursor_cls=Cursor)
+        return SourceS3(SourceS3StreamReader(), Config, catalog_path, cursor_cls=Cursor, parsers=parsers)
     except Exception:
         print(
             AirbyteMessage(

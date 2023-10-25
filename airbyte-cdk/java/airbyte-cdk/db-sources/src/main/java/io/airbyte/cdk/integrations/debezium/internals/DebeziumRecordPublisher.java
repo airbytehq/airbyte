@@ -60,7 +60,7 @@ public class DebeziumRecordPublisher implements AutoCloseable {
                                                                     final AirbyteFileOffsetBackingStore offsetManager,
                                                                     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager) {
     return switch (debeziumConnectorType) {
-      case MONGODB -> new MongoDbDebeziumPropertiesManager(properties, config, catalog, offsetManager, schemaHistoryManager);
+      case MONGODB -> new MongoDbDebeziumPropertiesManager(properties, config, catalog, offsetManager);
       default -> new RelationalDbDebeziumPropertiesManager(properties, config, catalog, offsetManager, schemaHistoryManager);
     };
   }
@@ -77,16 +77,22 @@ public class DebeziumRecordPublisher implements AutoCloseable {
           if (e.value() != null) {
             try {
               queue.put(e);
-            } catch (InterruptedException ex) {
+            } catch (final InterruptedException ex) {
               Thread.currentThread().interrupt();
               throw new RuntimeException(ex);
             }
           }
         })
         .using((success, message, error) -> {
-          LOGGER.info("Debezium engine shutdown.");
+          LOGGER.info("Debezium engine shutdown. Engine terminated successfully : {}", success);
           LOGGER.info(message);
           thrownError.set(error);
+          // If debezium has not shutdown correctly, it can indicate an error with the connector configuration
+          // or a partial sync success.
+          // In situations like these, the preference is to fail loud and clear.
+          if (thrownError.get() != null && !success) {
+            thrownError.set(new RuntimeException(message));
+          }
           engineLatch.countDown();
         })
         .build();
