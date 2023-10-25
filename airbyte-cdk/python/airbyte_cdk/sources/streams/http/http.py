@@ -15,7 +15,13 @@ import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.call_rate import APIBudget, SessionProxyWithCallRate
+from airbyte_cdk.sources.streams.call_rate import (
+    APIBudget,
+    CallRatePolicy,
+    HttpRequestMatcher,
+    Rate,
+    SessionProxyWithCallRate,
+)
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.types import JsonType
@@ -40,6 +46,7 @@ class HttpStream(Stream, ABC):
 
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: APIBudget = APIBudget()):
+        api_budget.add_policy(HttpRequestMatcher(), CallRatePolicy([Rate(1, 1000)]))
         if self.use_cache:
             self._session = SessionProxyWithCallRate(self.request_cache(), api_budget)
         else:
