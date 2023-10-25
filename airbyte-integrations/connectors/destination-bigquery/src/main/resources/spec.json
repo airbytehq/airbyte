@@ -219,8 +219,8 @@
       },
       "raw_data_dataset": {
         "type": "string",
-        "description": "The dataset to write raw tables into",
-        "title": "Destinations V2 Raw Table Dataset",
+        "description": "The dataset to write raw tables into (default: airbyte_internal)",
+        "title": "Raw Table Dataset Name",
         "order": 7,
         "group": "advanced"
       }
