@@ -93,7 +93,8 @@ runs:
       shell: bash
       run: |
         curl -o airbyte_ci.dist.zip "https://storage.googleapis.com/dev-airbyte-cloud-connector-metadata-service/airbyte_ci.dist.zip"
-        unzip -q airbyte_ci.dist.zip -d /tmp/airbyte_ci.dist
+        unzip -qj airbyte_ci.dist.zip -d /tmp/airbyte_ci.dist
+        chmod +x /tmp/airbyte_ci.dist/airbyte_ci.bin
     - name: LS
       shell: bash
       run: |
@@ -102,7 +103,7 @@ runs:
       shell: bash
       run: |
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-        /tmp/airbyte_ci.dist/airbyte_ci.dist/airbyte_ci.bin --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+        /tmp/airbyte_ci.dist/airbyte_ci.bin --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
         _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
         CI_CONTEXT: "${{ inputs.context }}"
