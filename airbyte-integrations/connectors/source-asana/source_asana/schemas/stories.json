@@ -22,15 +22,18 @@
     "is_edited": { "type": ["null", "boolean"] },
     "liked": { "type": ["null", "boolean"] },
     "likes": {
-      "type": ["null", "object"],
-      "properties": {
-        "gid": { "type": ["null", "string"] },
-        "user": {
-          "type": ["null", "object"],
-          "properties": {
-            "gid": { "type": ["null", "string"] },
-            "resource_type": { "type": ["null", "string"] },
-            "name": { "type": ["null", "string"] }
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "gid": { "type": ["null", "string"] },
+          "user": {
+            "type": ["null", "object"],
+            "properties": {
+              "gid": { "type": ["null", "string"] },
+              "resource_type": { "type": ["null", "string"] },
+              "name": { "type": ["null", "string"] }
+            }
           }
         }
       }
