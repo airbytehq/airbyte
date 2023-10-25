@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.52.1
+Add max time for backoff handler
+
 ## 0.52.0
 File CDK: Add CustomFileBasedException for custom errors
 
