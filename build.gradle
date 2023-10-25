@@ -539,6 +539,9 @@ def poetryCleanVirtualenv = tasks.register('cleanVirtualenv', Exec) {
         rootProject.file('.venv/bin/python').exists()
     }
 }
+clean.configure {
+    dependsOn poetryCleanVirtualenv
+}
 
 subprojects {
     if (!isConnectorProject(project)) {
