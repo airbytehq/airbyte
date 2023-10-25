@@ -8,7 +8,7 @@ import pytest
 import requests
 import responses
 from airbyte_cdk.models import SyncMode
-from source_mailchimp.streams import Campaigns, EmailActivity, Lists
+from source_mailchimp.streams import Campaigns, EmailActivity, Lists, Segments
 from utils import read_full_refresh, read_incremental
 
 
@@ -17,6 +17,7 @@ from utils import read_full_refresh, read_incremental
     [
         (Lists, "lists"),
         (Campaigns, "campaigns"),
+        (Segments, "lists/123/segments"),
     ],
 )
 def test_stream_read(requests_mock, auth, stream, endpoint):
