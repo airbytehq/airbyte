@@ -17,6 +17,6 @@ tasks.register('generate').configure {
     dependsOn generateApiClient
 }
 
-tasks.named('installReqs').configure {
-    dependsOn generateApiClient
-}
+//tasks.named('installReqs').configure {
+//    dependsOn generateApiClient
+//}

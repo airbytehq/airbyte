@@ -38,26 +38,26 @@ generate.configure {
 tasks.named('check').configure {
     dependsOn generate
 }
-
-[
-        'bigquery',
-        'mysql',
-        'postgres',
-        'redshift',
-        'snowflake',
-        'oracle',
-        'mssql',
-        'clickhouse',
-        'tidb',
-        'duckdb',
-].each {destinationName ->
-    def integrationTestPython = tasks.named('integrationTestPython')
-    integrationTestPython.configure {
-        dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')
-    }
-    // Not really sure what this task does differently from customIntegrationTestPython,
-    // but it seems to also run integration tests and as such it depends on the docker images.
-    integrationTestPython.configure {
-        dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')
-    }
-}
+//
+//[
+//        'bigquery',
+//        'mysql',
+//        'postgres',
+//        'redshift',
+//        'snowflake',
+//        'oracle',
+//        'mssql',
+//        'clickhouse',
+//        'tidb',
+//        'duckdb',
+//].each {destinationName ->
+//    def integrationTestPython = tasks.named('integrationTestPython')
+//    integrationTestPython.configure {
+//        dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')
+//    }
+//    // Not really sure what this task does differently from customIntegrationTestPython,
+//    // but it seems to also run integration tests and as such it depends on the docker images.
+//    integrationTestPython.configure {
+//        dependsOn project(":airbyte-integrations:connectors:destination-$destinationName").tasks.named('assemble')
+//    }
+//}

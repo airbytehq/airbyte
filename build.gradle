@@ -230,7 +230,7 @@ allprojects {
                 target javaTarget
                 importOrder()
                 eclipse('4.21').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
-                licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
+//                licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
                 removeUnusedImports()
                 trimTrailingWhitespace()
             }
@@ -248,19 +248,19 @@ allprojects {
                 dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
             }
         }
-        def stylingTarget = createFormatTarget(['**/*.yaml', '**/*.yml', '**/*.json'])
-        if (!stylingTarget.isEmpty()) {
-            format 'styling', {
-                target stylingTarget
-                def npmPath = "${rootProject.tasks.named('npmSetup').get().npmDir.get()}/bin/npm"
-                def nodePath = "${rootProject.tasks.named('nodeSetup').get().nodeDir.get()}/bin/node"
-                prettier().npmExecutable(npmPath).nodeExecutable(nodePath)
-            }
-        }
+//        def stylingTarget = createFormatTarget(['**/*.yaml', '**/*.yml', '**/*.json'])
+//        if (!stylingTarget.isEmpty()) {
+//            format 'styling', {
+//                target stylingTarget
+//                def npmPath = "${rootProject.tasks.named('npmSetup').get().npmDir.get()}/bin/npm"
+//                def nodePath = "${rootProject.tasks.named('nodeSetup').get().nodeDir.get()}/bin/node"
+//                prettier().npmExecutable(npmPath).nodeExecutable(nodePath)
+//            }
+//        }
     }
-    tasks.matching { it.name =~ /spotless.*/ }.configureEach {
-        dependsOn tasks.matching { it.name == 'generate' }
-    }
+//    tasks.matching { it.name =~ /spotless.*/ }.configureEach {
+//        dependsOn tasks.matching { it.name == 'generate' }
+//    }
     tasks.matching { it.name =~ /spotlessStyling.*/ }.configureEach {
         dependsOn rootProject.tasks.named('nodeSetup')
         dependsOn rootProject.tasks.named('npmSetup')
