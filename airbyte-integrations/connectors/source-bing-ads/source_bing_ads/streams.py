@@ -916,7 +916,6 @@ class GoalsAndFunnelsReport(PerformanceReportsMixin, BingAdsStream, ABC):
         "AccountId",
         "Goal",
         "TimePeriod",
-
     ]
 
     @property
@@ -948,8 +947,9 @@ class GoalsAndFunnelsReport(PerformanceReportsMixin, BingAdsStream, ABC):
             "ViewThroughConversions",
             "AllConversionsQualified",
             "ViewThroughConversionsQualified",
-            "ViewThroughRevenue"
+            "ViewThroughRevenue",
         ]
+
 
 class GoalsAndFunnelsReportHourly(GoalsAndFunnelsReport):
     report_aggregation = "Hourly"
