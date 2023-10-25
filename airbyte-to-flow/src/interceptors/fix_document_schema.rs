@@ -1,4 +1,5 @@
 use doc::ptr::Token;
+use json::schema::formats::Format;
 use serde_json::json;
 
 use crate::errors::Error;
@@ -187,7 +188,7 @@ pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
                 if f == "int32" || f == "int64" {
                     // Insert updates values
                     map.insert("format".to_string(), json!("integer"));
-                } else if f == "base64" {
+                } else if let Err(_) = serde_json::from_str::<Format>(f) {
                     // a non-standard format output by salesforce connector
                     map.remove("format");
                 }
@@ -533,13 +534,15 @@ mod test {
                             "type": "array",
                             "items": {
                                 "group": "x",
-                                "type": "string"
+                                "type": "string",
+                                "format": "random"
                             }
                         },
                         "airbyte_type": {
                             "type": "string",
                             "airbyte_type": "string",
-                            "xml": {}
+                            "xml": {},
+                            "format": "double"
                         },
                         "id": {
                             "type": ["string", "null"],
