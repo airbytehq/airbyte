@@ -71,7 +71,7 @@ public class MongoDbCdcEventUtils {
     if (StringUtils.contains(idField, OBJECT_ID_FIELD)) {
       return idField.replaceAll(OBJECT_ID_FIELD_PATTERN, DOCUMENT_OBJECT_ID_FIELD);
     } else {
-      return debeziumEventKey.asText();
+      return Jsons.serialize(debeziumEventKey).replaceAll(ID_FIELD, DOCUMENT_OBJECT_ID_FIELD);
     }
   }
 
