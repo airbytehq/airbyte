@@ -804,18 +804,21 @@ def prepare_purchase_without_inventory_payload(data: Dict[str, Any], logger: Air
 
     purchase_without_inventory_payload = {}
     for key, value in data.items():
-        if key in purchase_without_inventory_fields:
+        if (key in purchase_without_inventory_fields) and (str(value) != ""):
             purchase_without_inventory_payload[key] = value
 
     return json.dumps({"body": [purchase_without_inventory_payload]})
 
-
+# Auto master
 def insert_purchase_without_inventory_to_tally(
     config: Mapping[str, Any], data: Dict[str, Any], purchase_without_inventory_template_url: str, logger: AirbyteLogger
 ):
     purchase_without_inventory_template_key = "8"
     purchase_without_inventory_headers = prepare_headers(config=config, template_key=purchase_without_inventory_template_key)
     purchase_without_inventory_payload = prepare_purchase_without_inventory_payload(data=data, logger=logger)
+
+    purchase_without_inventory_headers["AddAutoMaster"] = 1
+    purchase_without_inventory_headers["Automasterids"] = 1
 
     try:
         response = requests.request(
@@ -824,14 +827,12 @@ def insert_purchase_without_inventory_to_tally(
             data=purchase_without_inventory_payload,
             headers=purchase_without_inventory_headers,
         )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'purchase without inventory for [Voucher Number = {data["Voucher No"]}] successfully inserted into Tally')
+        else:
+            logger.error(f'purchase without inventory for [Voucher Number = {data["Voucher No"]}] cannot be inserted , Error : {response.content}')
     except Exception as e:
         logger.error(f"request for purchase without inventory not successful, {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("purchase without inventory successfully inserted into Tally")
-    else:
-        logger.info("purchase without inventory cannot be inserted into Tally")
 
 
 # 9. Credit Note without inventory Template - Date format problem
