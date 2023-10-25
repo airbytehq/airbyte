@@ -113,7 +113,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
     // 1.9.0 is known-good, but we might as well check that we're in good shape before continuing.
     // If this starts erroring out because we added more test records and 1.9.0 had a latent bug,
     // just delete these three lines :P
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
     verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
 
@@ -122,7 +122,7 @@ public abstract class AbstractBigQueryTypingDedupingTest extends BaseTypingDedup
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
     verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
   }

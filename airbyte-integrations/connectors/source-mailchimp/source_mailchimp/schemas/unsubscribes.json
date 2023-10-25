@@ -3,31 +3,32 @@
   "type": "object",
   "additionalProperties": true,
   "properties": {
-    "id": {
-      "type": "string"
-    },
-    "first_name": {
+    "email_id": {
       "type": ["null", "string"]
     },
-    "last_name": {
+    "email_address": {
       "type": ["null", "string"]
     },
-    "birth_country": {
+    "merge_fields": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "vip": {
+      "type": ["null", "boolean"]
+    },
+    "timestamp": {
       "type": ["null", "string"]
     },
-    "birthdate": {
+    "reason": {
       "type": ["null", "string"]
     },
-    "nationality": {
+    "campaign_id": {
       "type": ["null", "string"]
     },
-    "residence_country": {
+    "list_id": {
       "type": ["null", "string"]
     },
-    "role": {
-      "type": ["null", "string"]
-    },
-    "ubo": {
+    "list_is_active": {
       "type": ["null", "boolean"]
     }
   }
