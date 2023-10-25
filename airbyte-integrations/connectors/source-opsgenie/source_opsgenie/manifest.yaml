@@ -142,9 +142,6 @@ streams:
     name: alerts
     primary_key:
       - id
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_opsgenie/schemas/alerts.json"
     retriever:
       type: SimpleRetriever
       requester:
@@ -154,7 +151,7 @@ streams:
         http_method: GET
         request_parameters:
           order: '["asc"]'
-          query: '{"updatedAt>={{ stream_interval.start_time }}"}'
+          query: '{"updatedAt>={{ stream_interval.start_time if stream_interval else config['start_date']  }}"}'
         request_headers:
           Accept: application/json
         authenticator:
@@ -173,7 +170,6 @@ streams:
         - "%Y-%m-%dT%H:%M:%S.%fZ"
       datetime_format: "%s"
       start_datetime:
-        type: MinMaxDatetime
         datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   - type: DeclarativeStream
