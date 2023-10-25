@@ -104,6 +104,8 @@ class Visitors(PendoPythonStream):
 
     json_schema = None
 
+    page_size = 20
+
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
@@ -165,6 +167,29 @@ class Visitors(PendoPythonStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ):
+        if next_page_token is None:
+            return {
+                "response": {
+                    "mimeType": "application/json"
+                },
+                "request": {
+                    "requestId": "visitor-list",
+                    "pipeline": [
+                        {
+                            "source": {
+                                "visitors": {
+                                    "identified": True
+                                }
+                            }
+                        },
+                        {
+                            "sort": ["visitorId"]
+                        },
+                        {"limit": self.page_size}
+                    ]
+                }
+            }
+
         return {
             "response": {
                 "mimeType": "application/json"
@@ -181,7 +206,11 @@ class Visitors(PendoPythonStream):
                     },
                     {
                         "sort": ["visitorId"]
-                    }
+                    },
+                    {
+                        "filter": f"visitorId > \"{next_page_token}\""
+                    },
+                    {"limit": self.page_size}
                 ]
             }
         }
@@ -193,6 +222,12 @@ class Visitors(PendoPythonStream):
         :return an iterable containing each record in the response
         """
         yield from response.json().get("results", [])
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        visitors = response.json().get("results", [])
+        if len(visitors) < self.page_size:
+            return None
+        return visitors[-1][self.primary_key]
 
 
 class Accounts(PendoPythonStream):
