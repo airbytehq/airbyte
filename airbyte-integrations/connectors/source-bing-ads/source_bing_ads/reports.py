@@ -166,6 +166,7 @@ class ReportsMixin(ABC):
     def report_columns(self) -> Iterable[str]:
         """
         Specifies bing ads report naming
+        TODO: refactor to use list(self.get_json_schema().get("properties", {}).keys()), see AgeGenderAudienceReport
         """
         pass
 
