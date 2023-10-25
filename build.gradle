@@ -104,19 +104,6 @@ def createJavaLicenseWith = { license ->
     return createLicenseWith(license, '/*', ' */', ' * ', false)
 }
 
-// node is required by the root project to apply the prettier formatter repo-wide.
-node {
-    download = true
-    version = '18.18.0'
-    npmVersion = '10.1.0'
-    // When setting both these directories, npm and node will be in separate directories.
-    workDir = file("${buildDir}/nodejs")
-    npmWorkDir = file("${buildDir}/npm")
-    // Do not declare the repository.
-    distBaseUrl = null
-
-}
-
 // python is required by the root project to apply python formatters like isort or black.
 python {
     envPath = '.venv'
@@ -248,15 +235,7 @@ allprojects {
                 dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
             }
         }
-//        def stylingTarget = createFormatTarget(['**/*.yaml', '**/*.yml', '**/*.json'])
-//        if (!stylingTarget.isEmpty()) {
-//            format 'styling', {
-//                target stylingTarget
-//                def npmPath = "${rootProject.tasks.named('npmSetup').get().npmDir.get()}/bin/npm"
-//                def nodePath = "${rootProject.tasks.named('nodeSetup').get().nodeDir.get()}/bin/node"
-//                prettier().npmExecutable(npmPath).nodeExecutable(nodePath)
-//            }
-//        }
+        // TODO: figure out why prettier has so many problems with files now that it didn't before
     }
 //    tasks.matching { it.name =~ /spotless.*/ }.configureEach {
 //        dependsOn tasks.matching { it.name == 'generate' }
