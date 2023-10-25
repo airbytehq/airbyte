@@ -7,8 +7,8 @@ Module exposing the tests command to test airbyte-ci projects.
 """
 
 import asyncclick as click
-
 from pipelines.cli.lazy_group import LazyGroup
+
 
 @click.group(
     cls=LazyGroup,

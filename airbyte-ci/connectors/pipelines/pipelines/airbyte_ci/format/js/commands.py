@@ -1,10 +1,10 @@
 import logging
 import sys
+
 import asyncclick as click
 import dagger
-
-from pipelines.helpers.utils import sh_dash_c
 from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
+from pipelines.helpers.utils import sh_dash_c
 
 
 @click.command()
@@ -18,6 +18,7 @@ async def js(ctx: click.Context):
     success = await format_js(fix)
     if not success:
         click.Abort()
+
 
 async def format_js(fix: bool) -> bool:
     """Checks whether the repository is formatted correctly.
@@ -51,7 +52,7 @@ async def format_js(fix: bool) -> bool:
                     dagger_client.host().directory(
                         ".",
                         include=["**/*.yaml", "**/*.yml", "**.*/json", "package.json", "package-lock.json"],
-                        exclude=DEFAULT_FORMAT_IGNORE_LIST
+                        exclude=DEFAULT_FORMAT_IGNORE_LIST,
                     ),
                 )
                 .with_workdir(f"/src")

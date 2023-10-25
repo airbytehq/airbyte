@@ -1,9 +1,9 @@
 import logging
 import sys
+
 import asyncclick as click
 import dagger
 from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
-
 from pipelines.helpers.utils import sh_dash_c
 
 
@@ -18,6 +18,7 @@ async def python(ctx: click.Context):
     success = await format_python(fix)
     if not success:
         click.Abort()
+
 
 async def format_python(fix: bool) -> bool:
     """Checks whether the repository is formatted correctly.
@@ -53,9 +54,7 @@ async def format_python(fix: bool) -> bool:
                 .with_mounted_directory(
                     "/src",
                     dagger_client.host().directory(
-                        ".",
-                        include=["**/*.py", "pyproject.toml", "poetry.lock"],
-                        exclude=DEFAULT_FORMAT_IGNORE_LIST
+                        ".", include=["**/*.py", "pyproject.toml", "poetry.lock"], exclude=DEFAULT_FORMAT_IGNORE_LIST
                     ),
                 )
                 .with_workdir(f"/src")
