@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import anyio
-import click
+import asyncclick as click
 from pipelines.airbyte_ci.connectors.build_image.steps import run_connector_build_pipeline
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -19,7 +18,7 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
     type=bool,
 )
 @click.pass_context
-def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
+async def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
     """Runs a build pipeline for the selected connectors."""
 
     connectors_contexts = [
@@ -40,13 +39,14 @@ def build(ctx: click.Context, use_host_gradle_dist_tar: bool) -> bool:
             use_local_cdk=ctx.obj.get("use_local_cdk"),
             open_report_in_browser=ctx.obj.get("open_report_in_browser"),
             use_host_gradle_dist_tar=use_host_gradle_dist_tar,
+            s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
+            s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
     if use_host_gradle_dist_tar and not ctx.obj["is_local"]:
         raise Exception("flag --use-host-gradle-dist-tar requires --is-local")
-    anyio.run(
-        run_connectors_pipelines,
+    await run_connectors_pipelines(
         connectors_contexts,
         run_connector_build_pipeline,
         "Build Pipeline",
