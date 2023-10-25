@@ -12,8 +12,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
 from unstructured.documents.elements import Formula, ListItem, Title
-from unstructured.file_utils.filetype import FileType
-from unstructured.file_utils.filetype import detect_filetype
+from unstructured.file_utils.filetype import FileType, detect_filetype
 
 unstructured_partition = None
 unstructured_optional_decode = None
@@ -25,6 +24,7 @@ def _import_unstructured() -> None:
     global unstructured_optional_decode
     from unstructured.partition.auto import partition
     from unstructured.partition.md import optional_decode
+
     unstructured_partition = partition
     unstructured_optional_decode = optional_decode
 
