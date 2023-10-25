@@ -2,8 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import base64
-import time
 from dataclasses import dataclass
 from http import HTTPStatus
 from typing import Any, Mapping, Union
@@ -33,26 +31,19 @@ class CustomYouniumAuthenticator(NoAuth):
     _token_type = None
 
     def __post_init__(self, parameters: Mapping[str, Any]):
-        self._username = InterpolatedString.create(
-            self.        username, parameters=parameters).eval(self.config)
-        self._password = InterpolatedString.create(
-            self.        password, parameters=parameters).eval(self.config)
-        self._legal_entity = InterpolatedString.create(
-            self.        legal_entity, parameters=parameters).eval(self.config)
-        self._grant_type = InterpolatedString.create(
-            self.        grant_type, parameters=parameters).eval(self.config)
-        self._client_id = InterpolatedString.create(
-            self.        client_id, parameters=parameters).eval(self.config)
-        self._scope = InterpolatedString.create(
-            self.        scope, parameters=parameters).eval(self.config)
+        self._username = InterpolatedString.create(self.username, parameters=parameters).eval(self.config)
+        self._password = InterpolatedString.create(self.password, parameters=parameters).eval(self.config)
+        self._legal_entity = InterpolatedString.create(self.legal_entity, parameters=parameters).eval(self.config)
+        self._grant_type = InterpolatedString.create(self.grant_type, parameters=parameters).eval(self.config)
+        self._client_id = InterpolatedString.create(self.client_id, parameters=parameters).eval(self.config)
+        self._scope = InterpolatedString.create(self.scope, parameters=parameters).eval(self.config)
 
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         """Attach the page access token to params to authenticate on the HTTP request"""
         if self._access_token is None or self._token_type is None:
             self._access_token, self._token_type = self.generate_access_token()
 
-        headers = {self.auth_header: f"{self._token_type} {self._access_token}",
-                   "Content-type": "application/json"}
+        headers = {self.auth_header: f"{self._token_type} {self._access_token}", "Content-type": "application/json"}
 
         request.headers.update(headers)
 
@@ -69,9 +60,7 @@ class CustomYouniumAuthenticator(NoAuth):
     def generate_access_token(self) -> (str, str):
         # return (str("token123"), str("Bearer"))
         try:
-            headers = {
-                "Content-Type": "application/x-www-form-urlencoded"
-            }
+            headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
             data = {
                 "username": self._username,
@@ -79,7 +68,7 @@ class CustomYouniumAuthenticator(NoAuth):
                 "legal_entity": self._legal_entity,
                 "grant_type": self._grant_type,
                 "client_id": self._client_id,
-                "scope": self._scope
+                "scope": self._scope,
             }
 
             if self.config.get("playground"):
@@ -89,9 +78,7 @@ class CustomYouniumAuthenticator(NoAuth):
                 url = "https://younium-identity-server.azurewebsites.net/connect/token"
                 # url = "http://localhost:3000/auth/token"
 
-            rest = requests.post(
-                url, headers=headers, data=data
-            )
+            rest = requests.post(url, headers=headers, data=data)
             if rest.status_code != HTTPStatus.OK:
                 raise HTTPError(rest.text)
             return (rest.json().get("access_token"), rest.json().get("token_type"))

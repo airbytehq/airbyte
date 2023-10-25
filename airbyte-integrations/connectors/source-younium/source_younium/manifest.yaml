@@ -52,46 +52,45 @@ definitions:
     $parameters:
       path: Accounts
 
-  bookings_stream:
+  booking_stream:
     $ref: "#/definitions/base_stream"
-    name: bookings
+    name: booking
     $parameters:
       path: Bookings
-  
-  invoices_stream:
+
+  invoice_stream:
     $ref: "#/definitions/base_stream"
-    name: invoices
+    name: invoice
     $parameters:
       path: Invoices
 
-  products_stream:
+  product_stream:
     $ref: "#/definitions/base_stream"
-    name: products
+    name: product
     $parameters:
       path: Products
 
-  subscriptions_stream:
+  subscription_stream:
     $ref: "#/definitions/base_stream"
-    name: subscriptions
+    name: subscription
     $parameters:
       path: Subscriptions
-  
-      
+
 streams:
   - "#/definitions/account_stream"
-  - "#/definitions/bookings_stream"
-  - "#/definitions/invoices_stream"
-  - "#/definitions/products_stream"
-  - "#/definitions/subscriptions_stream"
+  - "#/definitions/booking_stream"
+  - "#/definitions/invoice_stream"
+  - "#/definitions/product_stream"
+  - "#/definitions/subscription_stream"
 
 check:
   type: CheckStream
   stream_names:
     - account
-    - bookings
-    - invoices
-    - products
-    - subscriptions
+    - booking
+    - invoice
+    - product
+    - subscription
 spec:
   type: Spec
   documentation_url: https://docs.airbyte.com/integrations/sources/younium
@@ -99,6 +98,7 @@ spec:
     $schema: http://json-schema.org/draft-07/schema#
     title: Younium Spec
     type: object
+    additionalProperties: true
     required:
       - username
       - password
