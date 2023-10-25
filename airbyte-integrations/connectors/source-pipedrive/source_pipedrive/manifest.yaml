@@ -190,9 +190,9 @@ definitions:
     $parameters:
       path: "/currencies"
 
-  mails_stream:
+  mail_stream:
     $ref: "#/definitions/base_stream"
-    name: mails
+    name: mail
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
@@ -365,7 +365,7 @@ streams:
   - "#/definitions/activity_types_stream"
   - "#/definitions/activity_fields_stream"
   - "#/definitions/currencies_stream"
-  - "#/definitions/mails_stream"
+  - "#/definitions/mail_stream"
   - "#/definitions/organization_stream"
   - "#/definitions/organization_fields_stream"
   - "#/definitions/permission_sets_stream"
