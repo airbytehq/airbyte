@@ -12,21 +12,17 @@ connectionSpecification:
       order: 0
       title: API Key
       airbyte_secret: true
-    domain:
-      type: string
-      order: 1
-      title: Domain
     begin_time:
       type: string
-      order: 2
+      order: 1
       title: begin_time
-      pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
       examples:
-        - "2021-12-01T00:00:00Z"
+        - "2021-12-01T00:00:00"
     end_time:
       type: string
-      order: 3
+      order: 2
       title: end_time
-      pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+      pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}$
       examples:
-        - "2021-12-01T00:00:00Z"
+        - "2021-12-01T00:00:00"
