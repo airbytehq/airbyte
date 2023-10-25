@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import anyio
-import click
+import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
 from pipelines.airbyte_ci.connectors.publish.context import PublishConnectorContext
@@ -57,7 +56,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     default="#connector-publish-updates",
 )
 @click.pass_context
-def publish(
+async def publish(
     ctx: click.Context,
     pre_release: bool,
     spec_cache_gcs_credentials: str,
@@ -105,6 +104,7 @@ def publish(
                 pull_request=ctx.obj.get("pull_request"),
                 s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
                 s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
+                use_local_cdk=ctx.obj.get("use_local_cdk"),
             )
             for connector in ctx.obj["selected_connectors_with_modified_files"]
         ]
@@ -113,8 +113,7 @@ def publish(
     main_logger.warn("Concurrency is forced to 1. For stability reasons we disable parallel publish pipelines.")
     ctx.obj["concurrency"] = 1
 
-    publish_connector_contexts = anyio.run(
-        run_connectors_pipelines,
+    publish_connector_contexts = await run_connectors_pipelines(
         publish_connector_contexts,
         run_connector_publish_pipeline,
         "Publishing connectors",
