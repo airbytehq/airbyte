@@ -124,6 +124,7 @@ More information about Strava rate limits and adjustments to those limits can be
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
+| 0.2.0   | 2023-10-24 | [31007](https://github.com/airbytehq/airbyte/pull/31007) | Migrate to low-code framework                              |
 | 0.1.4   | 2023-03-23 | [24368](https://github.com/airbytehq/airbyte/pull/24368) | Add date-time format for input                             |
 | 0.1.3   | 2023-03-15 | [24101](https://github.com/airbytehq/airbyte/pull/24101) | certified to beta, fixed spec, fixed SAT, added unit tests |
 | 0.1.2   | 2021-12-15 | [8799](https://github.com/airbytehq/airbyte/pull/8799)   | Implement OAuth 2.0 support                                |
