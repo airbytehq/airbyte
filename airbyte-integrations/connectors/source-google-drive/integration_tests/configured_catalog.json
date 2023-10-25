@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "my_file_stream",
+        "name": "test",
         "json_schema": {
           "type": "object",
           "properties": {

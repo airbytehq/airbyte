@@ -1,0 +1,17 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "history": {
+          "test.jsonl": "2023-10-16T15:16:07.574000Z",
+          "subfolder/test2.jsonl": "2023-10-19T10:43:57.000000Z"
+        },
+        "_ab_source_file_last_modified": "2023-10-19T10:43:57.000000Z_subfolder/test2.jsonl"
+      },
+      "stream_descriptor": {
+        "name": "test"
+      }
+    }
+  }
+]

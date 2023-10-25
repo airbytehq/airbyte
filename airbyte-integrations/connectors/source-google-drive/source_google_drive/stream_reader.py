@@ -12,6 +12,7 @@ from typing import Iterable, List, Optional, Set
 
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
@@ -58,12 +59,21 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             # We shouldn't hit this; config should always get set before attempting to
             # list or read files.
             raise ValueError("Source config is missing; cannot create the Google Drive client.")
-        if self._drive_service is None:
-            if self.config.credentials.auth_type == "Client":
-                creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
-            else:
-                creds = service_account.Credentials.from_service_account_info(json.loads(self.config.credentials.service_account_info))
-            self._drive_service = build("drive", "v3", credentials=creds)
+        try:
+            if self._drive_service is None:
+                if self.config.credentials.auth_type == "Client":
+                    creds = credentials.Credentials.from_authorized_user_info(self.config.credentials.dict())
+                else:
+                    creds = service_account.Credentials.from_service_account_info(json.loads(self.config.credentials.service_account_info))
+                self._drive_service = build("drive", "v3", credentials=creds)
+        except Exception as e:
+            raise AirbyteTracedException(
+                internal_message=str(e),
+                message="Could not authenticate with Google Drive. Please check your credentials.",
+                failure_type=FailureType.config_error,
+                exception=e,
+            )
+
         return self._drive_service
 
     def get_matching_files(self, globs: List[str], prefix: Optional[str], logger: logging.Logger) -> Iterable[RemoteFile]:

@@ -11,8 +11,13 @@ from source_google_drive.stream_reader import SourceGoogleDriveStreamReader
 
 
 class SourceGoogleDrive(FileBasedSource):
-    def __init__(self):
-        super().__init__(stream_reader=SourceGoogleDriveStreamReader(), spec_class=SourceGoogleDriveSpec, cursor_cls=DefaultFileBasedCursor)
+    def __init__(self, catalog_path: str):
+        super().__init__(
+            stream_reader=SourceGoogleDriveStreamReader(),
+            spec_class=SourceGoogleDriveSpec,
+            catalog_path=catalog_path,
+            cursor_cls=DefaultFileBasedCursor,
+        )
 
     def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """

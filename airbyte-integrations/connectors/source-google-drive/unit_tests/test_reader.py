@@ -3,8 +3,6 @@
 #
 
 import datetime
-from typing import Optional
-from unittest import mock
 from unittest.mock import MagicMock, call, patch
 
 import pytest

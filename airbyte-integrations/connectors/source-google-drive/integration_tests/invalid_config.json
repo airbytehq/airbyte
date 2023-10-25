@@ -6,8 +6,8 @@
   },
   "streams": [
     {
-      "name": "my_file_stream",
-      "globs": ["/**/*.jsonl"],
+      "name": "test",
+      "globs": ["**/*.jsonl"],
       "format": {
         "filetype": "jsonl"
       },
