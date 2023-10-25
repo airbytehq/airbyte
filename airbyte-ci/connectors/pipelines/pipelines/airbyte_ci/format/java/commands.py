@@ -61,7 +61,6 @@ async def format_java(fix: bool) -> bool:
                     ),
                 )
                 .with_workdir(f"/src")
-                .with_exec(["ls", "-la"])
                 .with_exec(gradle_command)
             )
 

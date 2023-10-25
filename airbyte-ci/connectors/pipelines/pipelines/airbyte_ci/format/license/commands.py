@@ -27,9 +27,9 @@ async def format_license(fix: bool = False) -> bool:
 
 
     if fix:
-        addlicense_command = ["bash", "-c", f"addlicense -c 'Airbyte, Inc.' -l apache -v -f {license_text} ."]
+        addlicense_command = ["addlicense", "-c", "Airbyte, Inc.", "-l", "apache", "-v", "-f", license_text, "."]
     else:
-        addlicense_command = ["bash", "-c", f"addlicense -c 'Airbyte, Inc.' -l apache -v -f {license_text} -check ."]
+        addlicense_command = ["addlicense", "-c", "Airbyte, Inc.", "-l", "apache", "-v", "-f", license_text, "-check", "."]
 
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
         try:
@@ -54,8 +54,6 @@ async def format_license(fix: bool = False) -> bool:
                     ),
                 )
                 .with_workdir(f"/src")
-                .with_exec(["ls", "-la"])
-                .with_exec(["tree", "."])
                 .with_exec(addlicense_command)
             )
 
