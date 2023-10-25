@@ -902,3 +902,66 @@ class SearchQueryPerformanceReportWeekly(SearchQueryPerformanceReport):
 
 class SearchQueryPerformanceReportMonthly(SearchQueryPerformanceReport):
     report_aggregation = "Monthly"
+
+
+class GoalsAndFunnelsReport(PerformanceReportsMixin, BingAdsStream, ABC):
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "GoalsAndFunnelsReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "goals_and_funnels_report"
+    primary_key = [
+        "AccountId",
+        "Goal",
+        "TimePeriod",
+
+    ]
+
+    @property
+    def report_columns(self) -> List[str]:
+        # return list(self.get_json_schema().get("properties", {}).keys())
+        return [
+            "AccountName",
+            "AccountNumber",
+            "AccountId",
+            "TimePeriod",
+            "CampaignName",
+            "CampaignId",
+            "AdGroupName",
+            "AdGroupId",
+            "Keyword",
+            "KeywordId",
+            "Goal",
+            "AllConversions",
+            "Assists",
+            "AllRevenue",
+            "GoalId",
+            "DeviceType",
+            "DeviceOS",
+            "AccountStatus",
+            "CampaignStatus",
+            "AdGroupStatus",
+            "KeywordStatus",
+            "GoalType",
+            "ViewThroughConversions",
+            "AllConversionsQualified",
+            "ViewThroughConversionsQualified",
+            "ViewThroughRevenue"
+        ]
+
+class GoalsAndFunnelsReportHourly(GoalsAndFunnelsReport):
+    report_aggregation = "Hourly"
+
+
+class GoalsAndFunnelsReportDaily(GoalsAndFunnelsReport):
+    report_aggregation = "Daily"
+
+
+class GoalsAndFunnelsReportWeekly(GoalsAndFunnelsReport):
+    report_aggregation = "Weekly"
+
+
+class GoalsAndFunnelsReportMonthly(GoalsAndFunnelsReport):
+    report_aggregation = "Monthly"

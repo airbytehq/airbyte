@@ -39,6 +39,10 @@ from source_bing_ads.streams import (  # noqa: F401
     GeographicPerformanceReportHourly,
     GeographicPerformanceReportMonthly,
     GeographicPerformanceReportWeekly,
+    GoalsAndFunnelsReportDaily,
+    GoalsAndFunnelsReportHourly,
+    GoalsAndFunnelsReportMonthly,
+    GoalsAndFunnelsReportWeekly,
     KeywordPerformanceReportDaily,
     KeywordPerformanceReportHourly,
     KeywordPerformanceReportMonthly,
@@ -84,6 +88,7 @@ class SourceBingAds(AbstractSource):
             "AdPerformanceReport",
             "CampaignPerformanceReport",
             "GeographicPerformanceReport",
+            "GoalsAndFunnelsReport",
             "SearchQueryPerformanceReport",
         )
         report_aggregation = ("Hourly", "Daily", "Weekly", "Monthly")

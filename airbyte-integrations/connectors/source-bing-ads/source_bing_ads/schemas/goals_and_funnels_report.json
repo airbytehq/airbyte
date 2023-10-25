@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AccountId": {
+      "type": ["null", "integer"]
+    },
+    "CampaignId": {
+      "type": ["null", "integer"]
+    },
+    "AdGroupId": {
+      "type": ["null", "integer"]
+    },
+    "TimePeriod": {
+      "type": ["null", "string"]
+    },
+    "Goal": {
+      "type": ["null", "string"]
+    }
+  }
+}
