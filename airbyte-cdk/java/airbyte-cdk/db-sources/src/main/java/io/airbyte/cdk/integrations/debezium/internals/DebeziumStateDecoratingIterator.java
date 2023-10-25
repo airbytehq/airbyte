@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import org.apache.kafka.connect.errors.ConnectException;
+import org.bson.BsonInvalidOperationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,7 +148,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
       return stateMessage;
     }
 
-    if (changeEventIterator.hasNext()) {
+    while (changeEventIterator.hasNext()) {
       final ChangeEventWithMetadata event = changeEventIterator.next();
 
       if (cdcStateHandler.isCdcCheckpointEnabled()) {
@@ -174,7 +175,15 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
         }
       }
       recordsLastSync++;
-      return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, debeziumConnectorType);
+      try {
+        return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, debeziumConnectorType);
+      } catch (final BsonInvalidOperationException ex) {
+        // https://github.com/airbytehq/oncall/issues/3203
+        LOGGER.warn("Invalid bson operation. continuing to next record ({}:{})",
+            event.event() != null ? event.event().key() : "null",
+            event.event() != null ? event.event().value() : "null",
+            ex);
+      }
     }
 
     isSyncFinished = true;
