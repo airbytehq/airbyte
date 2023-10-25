@@ -70,7 +70,7 @@ class NotionStream(HttpStream, ABC):
     
     @property
     def max_time(self) -> int:
-        return 650
+        return 60 * 11
 
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):
