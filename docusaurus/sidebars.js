@@ -1,6 +1,9 @@
 const fs = require("fs");
 const path = require("path");
-const { parseMarkdownContentTitle, parseFrontMatter } = require('@docusaurus/utils');
+const {
+  parseMarkdownContentTitle,
+  parseFrontMatter,
+} = require("@docusaurus/utils");
 
 const connectorsDocsRoot = "../docs/integrations";
 const sourcesDocs = `${connectorsDocsRoot}/sources`;
@@ -11,18 +14,30 @@ function getFilenamesInDir(prefix, dir, excludes) {
     .readdirSync(dir)
     .filter(
       (fileName) =>
-        !(fileName.endsWith(".inapp.md") || fileName.endsWith("-migrations.md") || fileName.endsWith(".js"))
+        !(
+          fileName.endsWith(".inapp.md") ||
+          fileName.endsWith("-migrations.md") ||
+          fileName.endsWith(".js")
+        )
     )
     .map((fileName) => fileName.replace(".md", ""))
     .filter((fileName) => excludes.indexOf(fileName.toLowerCase()) === -1)
     .map((filename) => {
       // If there is a migration doc for this connector nest this under the original doc as "Migration Guide"
       const migrationDocPath = path.join(dir, `${filename}-migrations.md`);
-      if(fs.existsSync(migrationDocPath)) {
+      if (fs.existsSync(migrationDocPath)) {
         // Get the first header of the markdown document
-        const { contentTitle } = parseMarkdownContentTitle(parseFrontMatter(fs.readFileSync(path.join(dir, `${filename}.md`))).content);
+        const { contentTitle } = parseMarkdownContentTitle(
+          parseFrontMatter(fs.readFileSync(path.join(dir, `${filename}.md`)))
+            .content
+        );
         if (!contentTitle) {
-          throw new Error(`Could not parse title from ${path.join(prefix, filename)}. Make sure there's no content above the first heading!`);
+          throw new Error(
+            `Could not parse title from ${path.join(
+              prefix,
+              filename
+            )}. Make sure there's no content above the first heading!`
+          );
         }
 
         return {
@@ -30,8 +45,12 @@ function getFilenamesInDir(prefix, dir, excludes) {
           label: contentTitle,
           link: { type: "doc", id: path.join(prefix, filename) },
           items: [
-            { type: "doc", id: path.join(prefix, `${filename}-migrations`), label: "Migration Guide" }
-          ]
+            {
+              type: "doc",
+              id: path.join(prefix, `${filename}-migrations`),
+              label: "Migration Guide",
+            },
+          ],
         };
       }
 
@@ -40,7 +59,10 @@ function getFilenamesInDir(prefix, dir, excludes) {
 }
 
 function getSourceConnectors() {
-  return getFilenamesInDir("integrations/sources/", sourcesDocs, ["readme", "postgres"]);
+  return getFilenamesInDir("integrations/sources/", sourcesDocs, [
+    "readme",
+    "postgres",
+  ]);
 }
 
 function getDestinationConnectors() {
@@ -210,7 +232,6 @@ const buildAConnector = {
           ],
         },
         "connector-development/tutorials/building-a-python-source",
-        "connector-development/tutorials/building-a-python-destination",
         "connector-development/tutorials/building-a-java-destination",
         "connector-development/tutorials/profile-java-connector-memory",
       ],
@@ -485,8 +506,8 @@ module.exports = {
       id: "airbyte-enterprise",
     },
     sectionHeader("Developer Guides"),
-     {
-      type: 'doc',
+    {
+      type: "doc",
       id: "api-documentation",
     },
     {

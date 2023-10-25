@@ -292,7 +292,9 @@ class SemiIncrementalMixin:
             state_path = [stream_slice[k] for k in self.slice_keys] + [self.cursor_field]
             stream_state_value = getter(stream_state, state_path, strict=False)
             if stream_state_value:
-                return max(self._start_date, stream_state_value)
+                if self._start_date:
+                    return max(self._start_date, stream_state_value)
+                return stream_state_value
         return self._start_date
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
@@ -313,7 +315,7 @@ class SemiIncrementalMixin:
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             cursor_value = self.convert_cursor_value(record[self.cursor_field])
-            if cursor_value > start_point:
+            if not start_point or cursor_value > start_point:
                 yield record
             elif self.is_sorted == "desc" and cursor_value < start_point:
                 break
@@ -350,13 +352,13 @@ class RepositoryStats(GithubStream):
 
 class Assignees(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-assignees
+    API docs: https://docs.github.com/en/rest/issues/assignees?apiVersion=2022-11-28#list-assignees
     """
 
 
 class Branches(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-branches
+    API docs: https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#list-branches
     """
 
     primary_key = ["repository", "name"]
@@ -367,13 +369,13 @@ class Branches(GithubStream):
 
 class Collaborators(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-repository-collaborators
+    API docs: https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators
     """
 
 
 class IssueLabels(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/issues/labels#list-labels-for-a-repository
+    API docs: https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#list-labels-for-a-repository
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -382,7 +384,7 @@ class IssueLabels(GithubStream):
 
 class Organizations(GithubStreamABC):
     """
-    API docs: https://docs.github.com/en/rest/reference/orgs#get-an-organization
+    API docs: https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations
     """
 
     # GitHub pagination could be from 1 to 100.
@@ -410,7 +412,7 @@ class Organizations(GithubStreamABC):
 
 class Repositories(SemiIncrementalMixin, Organizations):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-organization-repositories
+    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories
     """
 
     is_sorted = "desc"
@@ -429,7 +431,7 @@ class Repositories(SemiIncrementalMixin, Organizations):
 
 class Tags(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-repository-tags
+    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
     """
 
     primary_key = ["repository", "name"]
@@ -440,7 +442,7 @@ class Tags(GithubStream):
 
 class Teams(Organizations):
     """
-    API docs: https://docs.github.com/en/rest/reference/teams#list-teams
+    API docs: https://docs.github.com/en/rest/teams/teams?apiVersion=2022-11-28#list-teams
     """
 
     use_cache = True
@@ -455,7 +457,7 @@ class Teams(Organizations):
 
 class Users(Organizations):
     """
-    API docs: https://docs.github.com/en/rest/reference/orgs#list-organization-members
+    API docs: https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#list-organization-members
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -471,7 +473,7 @@ class Users(Organizations):
 
 class Releases(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-releases
+    API docs: https://docs.github.com/en/rest/releases/releases?apiVersion=2022-11-28#list-releases
     """
 
     cursor_field = "created_at"
@@ -489,7 +491,7 @@ class Releases(SemiIncrementalMixin, GithubStream):
 
 class Events(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/activity#list-repository-events
+    API docs: https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events
     """
 
     cursor_field = "created_at"
@@ -497,7 +499,7 @@ class Events(SemiIncrementalMixin, GithubStream):
 
 class PullRequests(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/pulls/pulls#list-pull-requests
+    API docs: https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
     """
 
     use_cache = True
@@ -546,7 +548,7 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
 
 class CommitComments(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-commit-comments-for-a-repository
+    API docs: https://docs.github.com/en/rest/commits/comments?apiVersion=2022-11-28#list-commit-comments-for-a-repository
     """
 
     use_cache = True
@@ -557,7 +559,7 @@ class CommitComments(SemiIncrementalMixin, GithubStream):
 
 class IssueMilestones(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-milestones
+    API docs: https://docs.github.com/en/rest/issues/milestones?apiVersion=2022-11-28#list-milestones
     """
 
     is_sorted = "desc"
@@ -573,7 +575,7 @@ class IssueMilestones(SemiIncrementalMixin, GithubStream):
 
 class Stargazers(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/activity#list-stargazers
+    API docs: https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers
     """
 
     primary_key = "user_id"
@@ -599,7 +601,7 @@ class Stargazers(SemiIncrementalMixin, GithubStream):
 
 class Projects(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/projects#list-repository-projects
+    API docs: https://docs.github.com/en/rest/projects/projects?apiVersion=2022-11-28#list-repository-projects
     """
 
     use_cache = True
@@ -618,7 +620,7 @@ class Projects(SemiIncrementalMixin, GithubStream):
 
 class IssueEvents(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-issue-events-for-a-repository
+    API docs: https://docs.github.com/en/rest/issues/events?apiVersion=2022-11-28#list-issue-events-for-a-repository
     """
 
     cursor_field = "created_at"
@@ -632,7 +634,7 @@ class IssueEvents(SemiIncrementalMixin, GithubStream):
 
 class Comments(IncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/issues#list-issue-comments-for-a-repository
+    API docs: https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#list-issue-comments-for-a-repository
     """
 
     use_cache = True
@@ -645,7 +647,7 @@ class Comments(IncrementalMixin, GithubStream):
 
 class Commits(IncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/repos#list-commits
+    API docs: https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#list-commits
 
     Pull commits from each branch of each repository, tracking state for each branch
     """
@@ -661,7 +663,9 @@ class Commits(IncrementalMixin, GithubStream):
 
     def request_params(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super(IncrementalMixin, self).request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
-        params["since"] = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        since = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        if since:
+            params["since"] = since
         params["sha"] = stream_slice["branch"]
         return params
 
@@ -697,7 +701,7 @@ class Commits(IncrementalMixin, GithubStream):
 
 class Issues(IncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/issues/issues#list-repository-issues
+    API docs: https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
     """
 
     use_cache = True
@@ -713,7 +717,7 @@ class Issues(IncrementalMixin, GithubStream):
 
 class ReviewComments(IncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-review-comments-in-a-repository
+    API docs: https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository
     """
 
     use_cache = True
@@ -795,7 +799,7 @@ class PullRequestStats(SemiIncrementalMixin, GitHubGraphQLStream):
 
 class Reviews(SemiIncrementalMixin, GitHubGraphQLStream):
     """
-    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequestreview
+    API docs: https://docs.github.com/en/rest/pulls/reviews?apiVersion=2022-11-28#list-reviews-for-a-pull-request
     """
 
     is_sorted = False
@@ -869,7 +873,7 @@ class Reviews(SemiIncrementalMixin, GitHubGraphQLStream):
 
 class PullRequestCommits(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/pulls#list-commits-on-a-pull-request
+    API docs: https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-commits-on-a-pull-request
     """
 
     primary_key = "sha"
@@ -902,7 +906,7 @@ class PullRequestCommits(GithubStream):
 
 class ProjectsV2(SemiIncrementalMixin, GitHubGraphQLStream):
     """
-    API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
+    API docs: https://docs.github.com/en/graphql/reference/objects#projectv2
     """
 
     is_sorted = "asc"
@@ -985,7 +989,9 @@ class ReactionStream(GithubStream, ABC):
             parent_id = str(stream_slice[self.copy_parent_key])
             stream_state_value = stream_state.get(repository, {}).get(parent_id, {}).get(self.cursor_field)
             if stream_state_value:
-                return max(self._start_date, stream_state_value)
+                if self._start_date:
+                    return max(self._start_date, stream_state_value)
+                return stream_state_value
         return self._start_date
 
     def read_records(
@@ -999,7 +1005,7 @@ class ReactionStream(GithubStream, ABC):
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
-            if record[self.cursor_field] > starting_point:
+            if not starting_point or record[self.cursor_field] > starting_point:
                 yield record
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -1010,7 +1016,7 @@ class ReactionStream(GithubStream, ABC):
 
 class CommitCommentReactions(ReactionStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-a-commit-comment
+    API docs: https://docs.github.com/en/rest/reference/reactions?apiVersion=2022-11-28#list-reactions-for-a-commit-comment
     """
 
     parent_entity = CommitComments
@@ -1018,7 +1024,7 @@ class CommitCommentReactions(ReactionStream):
 
 class IssueCommentReactions(ReactionStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/reactions#list-reactions-for-an-issue-comment
+    API docs: https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-an-issue-comment
     """
 
     parent_entity = Comments
@@ -1207,7 +1213,7 @@ class PullRequestCommentReactions(SemiIncrementalMixin, GitHubGraphQLStream):
 
 class Deployments(SemiIncrementalMixin, GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/deployments/deployments#list-deployments
+    API docs: https://docs.github.com/en/rest/deployments/deployments?apiVersion=2022-11-28#list-deployments
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -1216,7 +1222,7 @@ class Deployments(SemiIncrementalMixin, GithubStream):
 
 class ProjectColumns(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/projects#list-project-columns
+    API docs: https://docs.github.com/en/rest/projects/columns?apiVersion=2022-11-28#list-project-columns
     """
 
     use_cache = True
@@ -1254,7 +1260,7 @@ class ProjectColumns(GithubStream):
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
-            if record[self.cursor_field] > starting_point:
+            if not starting_point or record[self.cursor_field] > starting_point:
                 yield record
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
@@ -1263,7 +1269,9 @@ class ProjectColumns(GithubStream):
             project_id = str(stream_slice["project_id"])
             stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(self.cursor_field)
             if stream_state_value:
-                return max(self._start_date, stream_state_value)
+                if self._start_date:
+                    return max(self._start_date, stream_state_value)
+                return stream_state_value
         return self._start_date
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
@@ -1284,10 +1292,11 @@ class ProjectColumns(GithubStream):
 
 class ProjectCards(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/projects#list-project-cards
+    API docs: https://docs.github.com/en/rest/projects/cards?apiVersion=2022-11-28#list-project-cards
     """
 
     cursor_field = "updated_at"
+    stream_base_params = {"archived_state": "all"}
 
     def __init__(self, parent: HttpStream, start_date: str, **kwargs):
         super().__init__(**kwargs)
@@ -1321,7 +1330,7 @@ class ProjectCards(GithubStream):
         for record in super().read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
-            if record[self.cursor_field] > starting_point:
+            if not starting_point or record[self.cursor_field] > starting_point:
                 yield record
 
     def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
@@ -1331,7 +1340,9 @@ class ProjectCards(GithubStream):
             column_id = str(stream_slice["column_id"])
             stream_state_value = stream_state.get(repository, {}).get(project_id, {}).get(column_id, {}).get(self.cursor_field)
             if stream_state_value:
-                return max(self._start_date, stream_state_value)
+                if self._start_date:
+                    return max(self._start_date, stream_state_value)
+                return stream_state_value
         return self._start_date
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
@@ -1357,7 +1368,7 @@ class ProjectCards(GithubStream):
 class Workflows(SemiIncrementalMixin, GithubStream):
     """
     Get all workflows of a GitHub repository
-    API documentation: https://docs.github.com/en/rest/actions/workflows#list-repository-workflows
+    API documentation: https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows
     """
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -1375,7 +1386,7 @@ class Workflows(SemiIncrementalMixin, GithubStream):
 class WorkflowRuns(SemiIncrementalMixin, GithubStream):
     """
     Get all workflow runs for a GitHub repository
-    API documentation: https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-repository
+    API documentation: https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
     """
 
     # key for accessing slice value from record
@@ -1406,22 +1417,24 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         # workflows_runs records cannot be updated. It means if we initially fully synced stream on subsequent incremental sync we need
         # only to look behind on 30 days to find all records which were updated.
         start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
-        break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
+        break_point = None
+        if start_point:
+            break_point = (pendulum.parse(start_point) - pendulum.duration(days=self.re_run_period)).to_iso8601_string()
         for record in super(SemiIncrementalMixin, self).read_records(
             sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
         ):
             cursor_value = record[self.cursor_field]
             created_at = record["created_at"]
-            if cursor_value > start_point:
+            if not start_point or cursor_value > start_point:
                 yield record
-            if created_at < break_point:
+            if break_point and created_at < break_point:
                 break
 
 
 class WorkflowJobs(SemiIncrementalMixin, GithubStream):
     """
     Get all workflow jobs for a workflow run
-    API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run
+    API documentation: https://docs.github.com/pt/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run
     """
 
     cursor_field = "completed_at"
@@ -1475,7 +1488,7 @@ class WorkflowJobs(SemiIncrementalMixin, GithubStream):
 
 class TeamMembers(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/teams#list-team-members
+    API docs: https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#list-team-members
     """
 
     use_cache = True
@@ -1509,7 +1522,7 @@ class TeamMembers(GithubStream):
 
 class TeamMemberships(GithubStream):
     """
-    API docs: https://docs.github.com/en/rest/reference/teams#get-team-membership-for-a-user
+    API docs: https://docs.github.com/en/rest/teams/members?apiVersion=2022-11-28#get-team-membership-for-a-user
     """
 
     primary_key = ["url"]
@@ -1571,7 +1584,7 @@ class ContributorActivity(GithubStream):
             return True
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
-        return 20 if response.status_code == requests.codes.ACCEPTED else super().backoff_time(response)
+        return 90 if response.status_code == requests.codes.ACCEPTED else super().backoff_time(response)
 
     def parse_response(
         self,
@@ -1587,10 +1600,21 @@ class ContributorActivity(GithubStream):
                 response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
             )
 
+    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        repository = stream_slice.get("repository", "")
+        try:
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
+        except HTTPError as e:
+            if e.response.status_code == requests.codes.ACCEPTED:
+                self.logger.info(f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{repository}`.")
+                yield
+            else:
+                raise e
+
 
 class IssueTimelineEvents(GithubStream):
     """
-    API docs https://docs.github.com/en/rest/issues/timeline?apiVersion=2022-11-28
+    API docs https://docs.github.com/en/rest/issues/timeline?apiVersion=2022-11-28#list-timeline-events-for-an-issue
     """
 
     primary_key = ["repository", "issue_number"]
