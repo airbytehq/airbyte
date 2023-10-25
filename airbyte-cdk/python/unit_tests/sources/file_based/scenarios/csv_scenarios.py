@@ -2,15 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage
 from airbyte_cdk.sources.file_based.config.csv_format import CsvFormat
 from airbyte_cdk.sources.file_based.exceptions import ConfigValidationError, FileBasedSourceError
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from unit_tests.sources.file_based.helpers import EmptySchemaParser, LowInferenceLimitDiscoveryPolicy
+from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
 from unit_tests.sources.file_based.scenarios.file_based_source_builder import FileBasedSourceBuilder
-from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenarioBuilder
+from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario, TestScenarioBuilder
 
-single_csv_scenario = (
-    TestScenarioBuilder()
+single_csv_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("single_csv_scenario")
     .set_config(
         {
@@ -344,8 +346,100 @@ single_csv_scenario = (
     )
 ).build()
 
-multi_csv_scenario = (
-    TestScenarioBuilder()
+multi_format_analytics_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
+    .set_name("multi_format_analytics")
+    .set_config(
+        {
+            "streams": [
+                {
+                    "name": "stream1",
+                    "format": {"filetype": "csv"},
+                    "globs": ["file1.csv"],
+                    "validation_policy": "Emit Record",
+                },
+                {
+                    "name": "stream2",
+                    "format": {"filetype": "csv"},
+                    "globs": ["file2.csv"],
+                    "validation_policy": "Emit Record",
+                },
+                {
+                    "name": "stream3",
+                    "format": {"filetype": "jsonl"},
+                    "globs": ["file3.jsonl"],
+                    "validation_policy": "Emit Record",
+                },
+            ]
+        }
+    )
+    .set_source_builder(
+        FileBasedSourceBuilder()
+        .set_files(
+            {
+                "file1.csv": {
+                    "contents": [],
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                },
+                "file2.csv": {
+                    "contents": [],
+                    "last_modified": "2023-06-06T03:54:07.000Z",
+                },
+                "file3.jsonl": {
+                    "contents": [],
+                    "last_modified": "2023-06-07T03:54:07.000Z",
+                },
+            }
+        )
+        .set_file_type("csv")
+    )
+    .set_expected_catalog(
+        {
+            "streams": [
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {},
+                    },
+                    "name": "stream1",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {},
+                    },
+                    "name": "stream2",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+                {
+                    "default_cursor_field": ["_ab_source_file_last_modified"],
+                    "json_schema": {
+                        "type": "object",
+                        "properties": {},
+                    },
+                    "name": "stream3",
+                    "source_defined_cursor": True,
+                    "supported_sync_modes": ["full_refresh", "incremental"],
+                },
+            ]
+        }
+    )
+    .set_expected_records([])
+    .set_expected_analytics(
+        [
+            AirbyteAnalyticsTraceMessage(type="file-cdk-csv-stream-count", value="2"),
+            AirbyteAnalyticsTraceMessage(type="file-cdk-jsonl-stream-count", value="1"),
+        ]
+    )
+).build()
+
+multi_csv_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("multi_csv_stream")
     .set_config(
         {
@@ -450,7 +544,7 @@ multi_csv_scenario = (
 ).build()
 
 multi_csv_stream_n_file_exceeds_limit_for_inference = (
-    TestScenarioBuilder()
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("multi_csv_stream_n_file_exceeds_limit_for_inference")
     .set_config(
         {
@@ -552,8 +646,8 @@ multi_csv_stream_n_file_exceeds_limit_for_inference = (
     )
 ).build()
 
-invalid_csv_scenario = (
-    TestScenarioBuilder()
+invalid_csv_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("invalid_csv_scenario")  # too many values for the number of headers
     .set_config(
         {
@@ -618,8 +712,8 @@ invalid_csv_scenario = (
     )
 ).build()
 
-csv_single_stream_scenario = (
-    TestScenarioBuilder()
+csv_single_stream_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_single_stream_scenario")
     .set_config(
         {
@@ -701,8 +795,8 @@ csv_single_stream_scenario = (
     )
 ).build()
 
-csv_multi_stream_scenario = (
-    TestScenarioBuilder()
+csv_multi_stream_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_multi_stream")
     .set_config(
         {
@@ -822,8 +916,8 @@ csv_multi_stream_scenario = (
     )
 ).build()
 
-csv_custom_format_scenario = (
-    TestScenarioBuilder()
+csv_custom_format_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_custom_format")
     .set_config(
         {
@@ -931,7 +1025,7 @@ csv_custom_format_scenario = (
 ).build()
 
 multi_stream_custom_format = (
-    TestScenarioBuilder()
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("multi_stream_custom_format_scenario")
     .set_config(
         {
@@ -1078,8 +1172,8 @@ multi_stream_custom_format = (
     )
 ).build()
 
-empty_schema_inference_scenario = (
-    TestScenarioBuilder()
+empty_schema_inference_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("empty_schema_inference_scenario")
     .set_config(
         {
@@ -1156,8 +1250,8 @@ empty_schema_inference_scenario = (
     )
 ).build()
 
-schemaless_csv_scenario = (
-    TestScenarioBuilder()
+schemaless_csv_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("schemaless_csv_scenario")
     .set_config(
         {
@@ -1254,8 +1348,8 @@ schemaless_csv_scenario = (
     )
 ).build()
 
-schemaless_csv_multi_stream_scenario = (
-    TestScenarioBuilder()
+schemaless_csv_multi_stream_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("schemaless_csv_multi_stream_scenario")
     .set_config(
         {
@@ -1364,8 +1458,8 @@ schemaless_csv_multi_stream_scenario = (
     )
 ).build()
 
-schemaless_with_user_input_schema_fails_connection_check_scenario = (
-    TestScenarioBuilder()
+schemaless_with_user_input_schema_fails_connection_check_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("schemaless_with_user_input_schema_fails_connection_check_scenario")
     .set_config(
         {
@@ -1431,8 +1525,8 @@ schemaless_with_user_input_schema_fails_connection_check_scenario = (
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
 
-schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario = (
-    TestScenarioBuilder()
+schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario")
     .set_config(
         {
@@ -1518,8 +1612,8 @@ schemaless_with_user_input_schema_fails_connection_check_multi_stream_scenario =
     .set_expected_read_error(ConfigValidationError, FileBasedSourceError.CONFIG_VALIDATION_ERROR.value)
 ).build()
 
-csv_string_can_be_null_with_input_schemas_scenario = (
-    TestScenarioBuilder()
+csv_string_can_be_null_with_input_schemas_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_string_can_be_null_with_input_schema")
     .set_config(
         {
@@ -1589,8 +1683,8 @@ csv_string_can_be_null_with_input_schemas_scenario = (
     )
 ).build()
 
-csv_string_are_not_null_if_strings_can_be_null_is_false_scenario = (
-    TestScenarioBuilder()
+csv_string_are_not_null_if_strings_can_be_null_is_false_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_string_are_not_null_if_strings_can_be_null_is_false")
     .set_config(
         {
@@ -1661,8 +1755,8 @@ csv_string_are_not_null_if_strings_can_be_null_is_false_scenario = (
     )
 ).build()
 
-csv_string_not_null_if_no_null_values_scenario = (
-    TestScenarioBuilder()
+csv_string_not_null_if_no_null_values_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_string_not_null_if_no_null_values")
     .set_config(
         {
@@ -1730,8 +1824,8 @@ csv_string_not_null_if_no_null_values_scenario = (
     )
 ).build()
 
-csv_strings_can_be_null_not_quoted_scenario = (
-    TestScenarioBuilder()
+csv_strings_can_be_null_not_quoted_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_strings_can_be_null_no_input_schema")
     .set_config(
         {
@@ -1797,8 +1891,8 @@ csv_strings_can_be_null_not_quoted_scenario = (
     )
 ).build()
 
-csv_newline_in_values_quoted_value_scenario = (
-    TestScenarioBuilder()
+csv_newline_in_values_quoted_value_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_newline_in_values_quoted_value")
     .set_config(
         {
@@ -1866,8 +1960,8 @@ csv_newline_in_values_quoted_value_scenario = (
     )
 ).build()
 
-csv_newline_in_values_not_quoted_scenario = (
-    TestScenarioBuilder()
+csv_newline_in_values_not_quoted_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_newline_in_values_not_quoted")
     .set_config(
         {
@@ -1947,8 +2041,8 @@ csv_newline_in_values_not_quoted_scenario = (
     .set_expected_discover_error(AirbyteTracedException, FileBasedSourceError.SCHEMA_INFERENCE_ERROR.value)
 ).build()
 
-csv_escape_char_is_set_scenario = (
-    TestScenarioBuilder()
+csv_escape_char_is_set_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_escape_char_is_set")
     .set_config(
         {
@@ -2020,8 +2114,8 @@ csv_escape_char_is_set_scenario = (
     )
 ).build()
 
-csv_double_quote_is_set_scenario = (
-    TestScenarioBuilder()
+csv_double_quote_is_set_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_doublequote_is_set")
     # This scenario tests that quotes are properly escaped when double_quotes is True
     .set_config(
@@ -2093,8 +2187,8 @@ csv_double_quote_is_set_scenario = (
     )
 ).build()
 
-csv_custom_delimiter_with_escape_char_scenario = (
-    TestScenarioBuilder()
+csv_custom_delimiter_with_escape_char_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_custom_delimiter_with_escape_char")
     # This scenario tests that a value can contain the delimiter if it is wrapped in the quote_char
     .set_config(
@@ -2161,8 +2255,8 @@ csv_custom_delimiter_with_escape_char_scenario = (
     )
 ).build()
 
-csv_custom_delimiter_in_double_quotes_scenario = (
-    TestScenarioBuilder()
+csv_custom_delimiter_in_double_quotes_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_custom_delimiter_in_double_quotes")
     # This scenario tests that a value can contain the delimiter if it is wrapped in the quote_char
     .set_config(
@@ -2234,8 +2328,8 @@ csv_custom_delimiter_in_double_quotes_scenario = (
     )
 ).build()
 
-csv_skip_before_header_scenario = (
-    TestScenarioBuilder()
+csv_skip_before_header_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_skip_before_header")
     .set_config(
         {
@@ -2303,8 +2397,8 @@ csv_skip_before_header_scenario = (
     )
 ).build()
 
-csv_skip_after_header_scenario = (
-    TestScenarioBuilder()
+csv_skip_after_header_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_skip_after_header")
     .set_config(
         {
@@ -2372,8 +2466,8 @@ csv_skip_after_header_scenario = (
     )
 ).build()
 
-csv_skip_before_and_after_header_scenario = (
-    TestScenarioBuilder()
+csv_skip_before_and_after_header_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_skip_before_after_header")
     .set_config(
         {
@@ -2445,8 +2539,8 @@ csv_skip_before_and_after_header_scenario = (
     )
 ).build()
 
-csv_autogenerate_column_names_scenario = (
-    TestScenarioBuilder()
+csv_autogenerate_column_names_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_autogenerate_column_names")
     .set_config(
         {
@@ -2514,8 +2608,8 @@ csv_autogenerate_column_names_scenario = (
     )
 ).build()
 
-csv_custom_bool_values_scenario = (
-    TestScenarioBuilder()
+csv_custom_bool_values_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_custom_bool_values")
     .set_config(
         {
@@ -2586,8 +2680,8 @@ csv_custom_bool_values_scenario = (
     )
 ).build()
 
-csv_custom_null_values_scenario = (
-    TestScenarioBuilder()
+csv_custom_null_values_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("csv_custom_null_values")
     .set_config(
         {
@@ -2657,8 +2751,8 @@ csv_custom_null_values_scenario = (
     )
 ).build()
 
-earlier_csv_scenario = (
-    TestScenarioBuilder()
+earlier_csv_scenario: TestScenario[InMemoryFilesSource] = (
+    TestScenarioBuilder[InMemoryFilesSource]()
     .set_name("earlier_csv_stream")
     .set_config(
         {

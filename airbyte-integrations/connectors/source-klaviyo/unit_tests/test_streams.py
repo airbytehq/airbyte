@@ -92,40 +92,56 @@ class TestIncrementalKlaviyoStreamV1:
             IncrementalKlaviyoStreamV1(api_key="some_key", start_date=START_DATE.isoformat())
 
     @pytest.mark.parametrize(
-        ["next_page_token", "stream_state", "expected_params"],
+        ["config_start_date", "next_page_token", "stream_state", "expected_params"],
         [
             # start with start_date
-            (None, {}, {"api_key": "some_key", "count": 100, "sort": "asc", "since": START_DATE.int_timestamp}),
+            (START_DATE.isoformat(), None, {}, {"api_key": "some_key", "count": 100, "sort": "asc", "since": START_DATE.int_timestamp}),
             # pagination overrule
-            ({"since": 123}, {}, {"api_key": "some_key", "count": 100, "sort": "asc", "since": 123}),
+            (START_DATE.isoformat(), {"since": 123}, {}, {"api_key": "some_key", "count": 100, "sort": "asc", "since": 123}),
             # start_date overrule state if state < start_date
             (
+                START_DATE.isoformat(),
                 None,
                 {"updated_at": START_DATE.int_timestamp - 1},
                 {"api_key": "some_key", "count": 100, "sort": "asc", "since": START_DATE.int_timestamp},
             ),
             # but pagination still overrule
             (
+                START_DATE.isoformat(),
                 {"since": 123},
                 {"updated_at": START_DATE.int_timestamp - 1},
                 {"api_key": "some_key", "count": 100, "sort": "asc", "since": 123},
             ),
             # and again
             (
+                START_DATE.isoformat(),
                 {"since": 123},
                 {"updated_at": START_DATE.int_timestamp + 1},
                 {"api_key": "some_key", "count": 100, "sort": "asc", "since": 123},
             ),
             # finally state > start_date and can be used
             (
+                START_DATE.isoformat(),
                 None,
                 {"updated_at": START_DATE.int_timestamp + 1},
                 {"api_key": "some_key", "count": 100, "sort": "asc", "since": START_DATE.int_timestamp + 1},
             ),
+            (
+                None,
+                None,
+                {"updated_at": START_DATE.int_timestamp + 1},
+                {"api_key": "some_key", "count": 100, "sort": "asc", "since": START_DATE.int_timestamp + 1},
+            ),
+            (
+                None,
+                None,
+                None,
+                {"api_key": "some_key", "count": 100, "sort": "asc", "since": 0},
+            ),
         ],
     )
-    def test_request_params(self, next_page_token, stream_state, expected_params):
-        stream = SomeIncrementalStream(api_key="some_key", start_date=START_DATE.isoformat())
+    def test_request_params(self, config_start_date, next_page_token, stream_state, expected_params):
+        stream = SomeIncrementalStream(api_key="some_key", start_date=config_start_date)
         result = stream.request_params(stream_state=stream_state, next_page_token=next_page_token)
 
         assert result == expected_params
