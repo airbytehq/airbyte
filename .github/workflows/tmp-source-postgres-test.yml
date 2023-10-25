@@ -30,16 +30,6 @@ jobs:
         shell: bash
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
         id: extract_branch
-      - name: Test source-postgres
-        uses: ./.github/actions/run-dagger-pipeline
-        with:
-          context: "master"
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          git_branch: ${{ steps.extract_branch.outputs.branch }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Check if PR is from a fork
         if: github.event_name == 'pull_request'
         shell: bash
