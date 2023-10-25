@@ -1,6 +1,6 @@
 use crate::interceptors::fix_document_schema::traverse_jsonschema;
-use dateparser::parse_with_timezone;
-use chrono::{SecondsFormat, LocalResult, TimeZone};
+use dateparser::parse_with;
+use chrono::{SecondsFormat, LocalResult, TimeZone, NaiveTime};
 use doc::ptr::Token;
 use json::schema::formats::Format;
 use json::validator::ValidationResult;
@@ -82,7 +82,9 @@ fn normalize_to_rfc3339(doc: &mut serde_json::Value, ptr: &doc::Pointer) {
                 match Format::DateTime.validate(&val) {
                     ValidationResult::Valid => (), // Already a valid date
                     _ => {
-                        let parsed = parse_with_timezone(&val, &chrono::offset::Utc).or_else(|_|
+                        let midnight_naive = NaiveTime::from_hms_opt(0, 0, 0).unwrap();
+
+                        let parsed = parse_with(&val, &chrono::offset::Utc, midnight_naive).or_else(|_|
                             chrono::DateTime::parse_from_str(&val, "%Y-%m-%dT%H:%M:%S%.3f%z").map(|d| d.with_timezone(&chrono::Utc))
                         ).or_else(|_|
                             chrono::DateTime::parse_from_str(&val, "%Y-%m-%dT%H:%M:%S%z").map(|d| d.with_timezone(&chrono::Utc))
@@ -348,7 +350,39 @@ mod tests {
                         "fractional_milliseconds": "2023-05-26T10:49:48.123Z"
                     }],
                 }),
-            )
+            ),
+            (
+                serde_json::json!({
+                    "type": "object",
+                    "properties": {
+                        "created": {
+                            "type": "string",
+                            "format": "date-time"
+                        },
+                        "nested": {
+                            "type": "object",
+                            "properties": {
+                                "x": {
+                                    "type": ["string", "null"],
+                                    "format": "date-time"
+                                }
+                            }
+                        }
+                    }
+                }),
+                serde_json::json!({
+                    "created": "2023-01-30",
+                    "nested": {
+                        "x": "2021-03-02"
+                    }
+                }),
+                serde_json::json!({
+                    "created": "2023-01-30T00:00:00Z",
+                    "nested": {
+                        "x": "2021-03-02T00:00:00Z"
+                    }
+                }),
+            ),
         ];
 
         for (mut schema, mut input, expected) in cases {
