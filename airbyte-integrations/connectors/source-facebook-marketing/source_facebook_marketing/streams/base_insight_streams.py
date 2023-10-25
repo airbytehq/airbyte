@@ -121,12 +121,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
-        time_start: datetime = datetime.datetime.now()
+        # time_start: datetime = datetime.datetime.now()
         job = stream_slice["insight_job"]
-        docs = []
+        # docs = []
         try:
             for obj in job.get_result():
-                docs.append(obj.export_all_data())
+                # docs.append(obj.export_all_data())
                 yield obj.export_all_data()
         except FacebookBadObjectError as e:
             raise AirbyteTracedException(
@@ -137,14 +137,14 @@ class AdsInsights(FBMarketingIncrementalStream):
 
         # job = InsightAsyncJob(api=job._api, interval=job.interval, edge_object=job.edge_object, params=job._params)
         # job = ParentAsyncJob(jobs=[], api=job._api, interval=job.interval)
-        time_end: datetime = datetime.datetime.now()
-        time = time_end - time_start
-        with open("test_results_dev_version.txt", "a") as file:
-            file.write("{} documents were exported for account id {} and date {}. The sync took {} \n".format(
-                len(docs),
-                job._edge_object.get("account_id"),
-                job.interval.start,
-                time))
+        # time_end: datetime = datetime.datetime.now()
+        # time = time_end - time_start
+        # with open("test_results_dev_version.txt", "a") as file:
+        #     file.write("{} documents were exported for account id {} and date {}. The sync took {} \n".format(
+        #         len(docs),
+        #         job._edge_object.get("account_id"),
+        #         job.interval.start,
+        #         time))
         if type(job) != ParentAsyncJob:
             account_id = job._edge_object.get("account_id")
 
@@ -203,6 +203,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         # then the previous state object is invalid and we should start replicating data from scratch
         # to achieve this, we skip setting the state
 
+        logger.info("Stream state : {}".format(value))
+
         for k, v in value.items():
             if v.get("time_increment", 1) != self.time_increment:
                 logger.info(f"Ignoring bookmark for {self.name} account[{k}] because of different `time_increment` option.")
@@ -250,7 +252,6 @@ class AdsInsights(FBMarketingIncrementalStream):
         :return:
         """
         for account in self._api.accounts:
-            self._next_cursor_value = self._get_start_date()
             for ts_start in self._date_intervals(account_id=account.get("account_id")):
                 if ts_start in self._completed_slices.get(account.get("account_id"), set()):
                     continue
@@ -339,7 +340,7 @@ class AdsInsights(FBMarketingIncrementalStream):
             "action_attribution_windows": self.action_attribution_windows,
         }
 
-    def _state_filter(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+    def _state_filter(self, stream_slice: dict, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         """Works differently for insights, so remove it"""
         return {}
 
