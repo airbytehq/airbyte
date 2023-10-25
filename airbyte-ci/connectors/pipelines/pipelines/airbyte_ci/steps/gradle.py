@@ -90,6 +90,12 @@ class GradleTask(Step, ABC):
             "rsync",  # required for gradle cache synchronization.
         ]
 
+        # Disable cache cleanup.
+        # https://github.com/gradle/gradle/issues/7018#issuecomment-473817849
+        # If we ever upgrade to Gradle 8 a different approach must be taken
+        # https://docs.gradle.org/current/userguide/directory_layout.html#dir:gradle_user_home:cache_cleanup
+        user_gradle_properties = "org.gradle.cache.cleanup=false"
+
         # Common base container.
         gradle_container_base = (
             self.dagger_client.container()
@@ -123,10 +129,10 @@ class GradleTask(Step, ABC):
             .with_env_variable("RUN_IN_AIRBYTE_CI", "1")
             # Disable the Ryuk container because it needs privileged docker access which it can't have.
             .with_env_variable("TESTCONTAINERS_RYUK_DISABLED", "true")
+            # Write the user gradle properties file.
+            .with_new_file(f"{self.GRADLE_HOME_PATH}/gradle.properties", user_gradle_properties)
             # Set the current working directory.
             .with_workdir("/airbyte")
-            # TODO: remove this once we finish the project to boost source-postgres CI performance.
-            .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger))
         )
 
         # Augment the base container with S3 build cache secrets when available.
@@ -193,14 +199,18 @@ class GradleTask(Step, ABC):
 
         # Run the gradle task that we actually care about.
         connector_task = f":airbyte-integrations:connectors:{self.context.connector.technical_name}:{self.gradle_task_name}"
-        gradle_container = gradle_container.with_exec(
-            sh_dash_c(
-                [
-                    # Warm the gradle cache.
-                    f"(rsync -a --stats --mkpath {self.GRADLE_DEP_CACHE_PATH}/ {self.GRADLE_HOME_PATH} || true)",
-                    # Run the gradle task.
-                    self._get_gradle_command(connector_task, f"-Ds3BuildCachePrefix={self.context.connector.technical_name}"),
-                ]
+        gradle_container = (
+            gradle_container
+            # TODO: remove this once we finish the project to boost source-postgres CI performance.
+            .with_env_variable("CACHEBUSTER", hacks.get_cachebuster(self.context, self.logger)).with_exec(
+                sh_dash_c(
+                    [
+                        # Warm the gradle cache.
+                        f"(rsync -a --stats --mkpath {self.GRADLE_DEP_CACHE_PATH}/ {self.GRADLE_HOME_PATH} || true)",
+                        # Run the gradle task.
+                        self._get_gradle_command(connector_task, f"-Ds3BuildCachePrefix={self.context.connector.technical_name}"),
+                    ]
+                )
             )
         )
         return await self.get_step_result(gradle_container)
