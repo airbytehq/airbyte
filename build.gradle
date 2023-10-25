@@ -1,7 +1,4 @@
 import com.github.spotbugs.snom.SpotBugsTask
-import ru.vyarus.gradle.plugin.python.task.PythonTask
-import com.hierynomus.gradle.license.tasks.LicenseCheck
-import com.hierynomus.gradle.license.tasks.LicenseFormat
 
 // The buildscript block defines dependencies in order for .gradle file evaluation.
 // This is separate from application dependencies.
@@ -9,7 +6,6 @@ import com.hierynomus.gradle.license.tasks.LicenseFormat
 buildscript {
     dependencies {
         classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.20.0'
-        classpath 'gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.16.1'
     }
 }
 
@@ -65,43 +61,6 @@ allprojects {
     project.base.archivesName = "${project.group}-${project.name}"
 
     version = rootProject.ext.version
-}
-
-// License generation logic.
-def createLicenseWith = { File license, String startComment, String endComment, String lineComment, boolean isPython ->
-    /*
-    In java, we don't have a second linter/styling tool other than spotless so it doesn't really
-    matter if we write a newline or not for startComment/endComment.
-
-    However, in python, we are using black that double-checks and reformats the code.
-    Thus, writing an extra empty newline (not removed by trimTrailingWhitespace() is actually a
-    big deal and would be reformatted (removed) because of black's specs.
-    */
-    def tmp = File.createTempFile('tmp', '.tmp')
-    tmp.withWriter {
-        def w = it
-        if (startComment.length() > 0 || !isPython) {
-            w.writeLine(startComment)
-        }
-        license.eachLine {
-            w << lineComment
-            w.writeLine(it)
-        }
-        if (endComment.length() > 0 || !isPython) {
-            w.writeLine(endComment)
-        }
-        w.writeLine("")
-        if (isPython) {
-            w.writeLine("")
-        }
-    }
-    return tmp
-}
-def createPythonLicenseWith = { license ->
-    return createLicenseWith(license, '', '', '', true)
-}
-def createJavaLicenseWith = { license ->
-    return createLicenseWith(license, '/*', ' */', ' * ', false)
 }
 
 // format tasks per project
@@ -171,7 +130,6 @@ allprojects {
                 target javaTarget
                 importOrder()
                 eclipse('4.21').configFile(rootProject.file('tools/gradle/codestyle/java-google-style.xml'))
-//                licenseHeaderFile createJavaLicenseWith(rootProject.file('LICENSE_SHORT'))
                 removeUnusedImports()
                 trimTrailingWhitespace()
             }
@@ -202,46 +160,10 @@ allprojects {
         enabled = false
     }
 
-    // python license header generation is part of 'format'
-    def pythonTarget = createFormatTarget('**/*.py')
-    if (!project.name.endsWith('source-stock-ticker-api-tutorial') && !pythonTarget.isEmpty()) {
-
-        apply plugin: 'com.github.hierynomus.license'
-
-        license {
-            header rootProject.file("LICENSE_SHORT")
-        }
-
-        // Disable auto-generated java tasks, we rely on spotless there.
-        tasks.matching { it.name =~ /license.*/ }.configureEach {
-            enabled = false
-        }
-
-        def licensePythonCheck = tasks.register('licensePythonCheck', LicenseCheck) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
-            source = pythonTarget
-            strictCheck = true
-        }
-        licensePythonCheck.configure {
-            dependsOn tasks.matching { it.name == 'generate' }
-        }
-        def licensePythonFormat = tasks.register('licensePythonFormat', LicenseFormat) {
-            header = createPythonLicenseWith(rootProject.file('LICENSE_SHORT'))
-            source = pythonTarget
-            strictCheck = true
-        }
-        licensePythonFormat.configure {
-            dependsOn tasks.matching { it.name == 'generate' }
-        }
-    }
-
     tasks.register('format') {
         dependsOn tasks.matching { it.name == 'generate' }
         dependsOn tasks.matching { it.name =~ /spotless.*Apply/ }
         dependsOn tasks.matching { it.name =~ /.*PythonFormat/ }
-    }
-    tasks.named('check').configure {
-        dependsOn tasks.matching { it.name == 'licensePythonCheck' }
     }
 }
 
