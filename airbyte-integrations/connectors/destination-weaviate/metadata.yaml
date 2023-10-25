@@ -10,7 +10,7 @@ data:
       - ${embedding.api_base}
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
-  connectorSubtype: database
+  connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 7b7d7a0d-954c-45a0-bcfc-39a634b97736
   dockerImageTag: 0.2.3

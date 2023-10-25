@@ -19,7 +19,7 @@ data:
           memory_request: 2Gi
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
-  connectorSubtype: database
+  connectorSubtype: vectorstore
   connectorType: destination
   definitionId: 65de8962-48c9-11ee-be56-0242ac120002
   dockerImageTag: 0.0.6
