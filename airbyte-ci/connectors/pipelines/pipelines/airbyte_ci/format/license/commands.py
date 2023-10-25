@@ -2,10 +2,10 @@
 
 import logging
 import sys
+
 import asyncclick as click
 import dagger
 from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
-
 from pipelines.helpers.utils import sh_dash_c
 
 
@@ -21,10 +21,10 @@ async def license(ctx: click.Context):
     if not success:
         click.Abort()
 
+
 async def format_license(fix: bool = False) -> bool:
     license_text = "LICENSE_SHORT"
     logger = logging.getLogger(f"format")
-
 
     if fix:
         addlicense_command = ["addlicense", "-c", "Airbyte, Inc.", "-l", "apache", "-v", "-f", license_text, "."]
@@ -36,15 +36,7 @@ async def format_license(fix: bool = False) -> bool:
             license_container = await (
                 dagger_client.container()
                 .from_("golang:1.17")
-                .with_exec(
-                    sh_dash_c(
-                        [
-                            "apt-get update",
-                            "apt-get install -y bash tree",
-                            "go get -u github.com/google/addlicense"
-                        ]
-                    )
-                )
+                .with_exec(sh_dash_c(["apt-get update", "apt-get install -y bash tree", "go get -u github.com/google/addlicense"]))
                 .with_mounted_directory(
                     "/src",
                     dagger_client.host().directory(
