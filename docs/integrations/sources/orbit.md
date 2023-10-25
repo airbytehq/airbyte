@@ -45,5 +45,6 @@ The Orbit API Key should be available to you immediately as an Orbit user.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.2.0 | 2023-10-23 | [14208](https://github.com/airbytehq/airbyte/pull/14208) | Update schema |
 | 0.1.1 | 2022-06-28 | [14208](https://github.com/airbytehq/airbyte/pull/14208) | Remove unused schema |
 | 0.1.0 | 2022-06-27 | [13390](https://github.com/airbytehq/airbyte/pull/13390) | Initial Release |

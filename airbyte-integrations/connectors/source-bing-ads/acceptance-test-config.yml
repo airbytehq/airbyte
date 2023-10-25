@@ -9,8 +9,6 @@ acceptance_tests:
       - config_path: secrets/config.json
   connection:
     tests:
-      - config_path: secrets/config_old.json
-        status: succeed
       - config_path: secrets/config.json
         status: succeed
       - config_path: integration_tests/invalid_config.json
@@ -19,7 +17,7 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          path: "integration_tests/expected_records.jsonl"
           extra_records: yes
         empty_streams:
           - name: account_performance_report_hourly
@@ -34,6 +32,8 @@ acceptance_tests:
             bypass_reason: "Hourly reports are disabled, because sync is too long"
           - name: geographic_performance_report_hourly
             bypass_reason: "Hourly reports are disabled, because sync is too long"
+          - name: age_gender_audience_report_hourly
+            bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
         timeout_seconds: 900
   full_refresh:
     tests:

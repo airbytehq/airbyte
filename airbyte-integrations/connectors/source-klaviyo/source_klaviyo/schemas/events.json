@@ -21,11 +21,23 @@
               "name": { "type": "string" },
               "sku": { "type": "string" },
               "price": { "type": "number" },
-              "quantity": { "type": "integer" }
+              "quantity": { "type": "number" }
             }
           }
         }
-      }
+      },
+      "$event_id": { "type": ["null", "string"] },
+      "$flow ": { "type": ["null", "string"] },
+      "$message": { "type": ["null", "string"] },
+      "Campaign Name": { "type": ["null", "string"] },
+      "Client Canonical": { "type": ["null", "string"] },
+      "Client Name": { "type": ["null", "string"] },
+      "Client OS": { "type": ["null", "string"] },
+      "Client OS Family": { "type": ["null", "string"] },
+      "Client Type": { "type": ["null", "string"] },
+      "Email Domain": { "type": ["null", "string"] },
+      "Subject": { "type": ["null", "string"] },
+      "URL": { "type": ["null", "string"] }
     },
     "person": {
       "type": "object",
