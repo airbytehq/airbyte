@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "ads_insights",
+        "name": "activities",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",
@@ -14,7 +14,7 @@
     },
     {
       "stream": {
-        "name": "activities",
+        "name": "ads_insights",
         "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",
