@@ -115,7 +115,7 @@ def insert_ledger_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any
         if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
             logger.info(f'ledger : {data["Ledger Name"]} successfully inserted into Tally')
         else:
-            logger.warn(f'ledger : {data["Ledger Name"]} cannot be inserted into Tally')
+            logger.warn(f'ledger : {data["Ledger Name"]} cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
         logger.error(f'request for ledger : {data["Ledger Name"]} not successful , {e}')
 
@@ -196,7 +196,7 @@ def insert_journal_voucher_to_tally(
         if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
             logger.info(f'journal entry with [Voucher Number = {data["Voucher Number"]}] successfully inserted into Tally')
         else:
-            logger.warn(f'journal entry with [Voucher Number = {data["Voucher Number"]}] cannot be inserted into Tally')
+            logger.warn(f'journal entry with [Voucher Number = {data["Voucher Number"]}] cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
         logger.error(f"request for inserting journal was not successful , {e}")
 
@@ -272,7 +272,7 @@ def insert_item_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
         if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
             logger.info(f'item : {data["Item Name"]} successfully inserted into Tally')
         else:
-            logger.warn(f'item : {data["Item Name"]} cannot be inserted into Tally')
+            logger.warn(f'item : {data["Item Name"]} cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
         logger.error(f'request for item : {data["Item Name"]} not successful, {e}')
 
@@ -444,7 +444,7 @@ def insert_payment_voucher_to_tally(
         if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
             logger.info(f'payment voucher with voucher number : {data["Voucher Number"]} successfully inserted into Tally')
         else:
-            logger.warn(f'payment voucher with voucher number : {data["Voucher Number"]} cannot be inserted into Tally')
+            logger.warn(f'payment voucher with voucher number : {data["Voucher Number"]} cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
         logger.error(f"request for payment voucher not successful : {e}")
 
@@ -663,7 +663,7 @@ def insert_debitnote_without_inventory_to_tally(
         if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
             logger.info(f'debit note with [Voucher number = {data["Voucher No"]}] successfully inserted into Tally')
         else:
-            logger.warn(f'debit note with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally')
+            logger.warn(f'debit note with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
         logger.error(f"request for debit note not successful, {e}")
 
@@ -972,7 +972,7 @@ def insert_creditnote_without_inventory_to_tally(
         if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
             logger.info(f'credit note with [Voucher number = {data["Voucher No"]}] successfully inserted into Tally')
         else:
-            logger.warn(f'credit note with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally')
+            logger.warn(f'credit note with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
         logger.error(f"request for credit note not successful, {e}")
 
