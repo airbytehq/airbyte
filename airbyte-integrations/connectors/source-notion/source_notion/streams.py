@@ -3,7 +3,7 @@
 #
 
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, TypeVar
 
 import pendulum
 import pydantic
