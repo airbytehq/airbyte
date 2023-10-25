@@ -54,6 +54,7 @@ from connector_acceptance_test.utils.json_schema_helper import (
     get_object_structure,
     get_paths_in_connector_config,
 )
+from connector_acceptance_test.utils.timeouts import FIVE_MINUTES, ONE_MINUTE, TEN_MINUTES
 
 pytestmark = [
     pytest.mark.anyio,
@@ -92,8 +93,9 @@ DATE_PATTERN = "^[0-9]{2}-[0-9]{2}-[0-9]{4}$"
 DATETIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$"
 
 
-# The connector fixture can be long to load, we have to increase the default timeout...
-@pytest.mark.default_timeout(5 * 60)
+# Running tests in parallel can sometime delay the execution of the tests if downstream services are not able to handle the load.
+# This is why we set a timeout on tests that call command that should return quickly, like spec
+@pytest.mark.default_timeout(ONE_MINUTE)
 class TestSpec(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
     async def skip_backward_compatibility_tests_fixture(
@@ -517,7 +519,7 @@ class TestSpec(BaseTest):
         diff = paths_to_validate - set(get_expected_schema_structure(spec_schema))
         assert diff == set(), f"Specified oauth fields are missed from spec schema: {diff}"
 
-    @pytest.mark.default_timeout(60)
+    @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility
     def test_backward_compatibility(
         self,
@@ -567,7 +569,7 @@ class TestSpec(BaseTest):
         assert await docker_runner.get_container_env_variable_value("AIRBYTE_ENTRYPOINT") == await docker_runner.get_container_entrypoint()
 
 
-@pytest.mark.default_timeout(30)
+@pytest.mark.default_timeout(ONE_MINUTE)
 class TestConnection(BaseTest):
     async def test_check(self, connector_config, inputs: ConnectionTestConfig, docker_runner: ConnectorRunner):
         if inputs.status == ConnectionTestConfig.Status.Succeed:
@@ -592,7 +594,9 @@ class TestConnection(BaseTest):
             assert trace.error.message is not None
 
 
-@pytest.mark.default_timeout(30)
+# Running tests in parallel can sometime delay the execution of the tests if downstream services are not able to handle the load.
+# This is why we set a timeout on tests that call command that should return quickly, like discover
+@pytest.mark.default_timeout(FIVE_MINUTES)
 class TestDiscovery(BaseTest):
     VALID_TYPES = {"null", "string", "number", "integer", "boolean", "object", "array"}
     VALID_AIRBYTE_TYPES = {"timestamp_with_timezone", "timestamp_without_timezone", "integer"}
@@ -712,7 +716,7 @@ class TestDiscovery(BaseTest):
                     [additional_properties_value is True for additional_properties_value in additional_properties_values]
                 ), "When set, additionalProperties field value must be true for backward compatibility."
 
-    @pytest.mark.default_timeout(60)
+    @pytest.mark.default_timeout(ONE_MINUTE)
     @pytest.mark.backward_compatibility
     def test_backward_compatibility(
         self,
@@ -785,7 +789,7 @@ def primary_keys_for_records(streams, records):
             yield pk_values, stream_record
 
 
-@pytest.mark.default_timeout(10 * 60)
+@pytest.mark.default_timeout(TEN_MINUTES)
 class TestBasicRead(BaseTest):
     @staticmethod
     def _validate_records_structure(records: List[AirbyteRecordMessage], configured_catalog: ConfiguredAirbyteCatalog):
