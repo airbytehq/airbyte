@@ -2,8 +2,8 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import time
 import re
+import time
 from unittest.mock import MagicMock, patch
 
 from airbyte_cdk.models import SyncMode
@@ -227,42 +227,36 @@ def test_invalid_start_cursor(parent, requests_mock, caplog):
 @mark.parametrize(
     "status_code,error_code,error_message, expected_backoff_time",
     [
-        (
-            400, 
-            "validation_error", 
-            "The start_cursor provided is invalid: wrong_start_cursor", 
-            [10, 10, 10, 10, 10, 10, 10]
-        ),
-        (
-            429, 
-            "rate_limited", 
-            "Rate Limited", 
-            [5, 5, 5, 5, 5, 5, 5] # Retry-header is set to 5 seconds for test
-        ),
-        (
-            500,
-            "internal_server_error",
-            "Internal server error",
-            [5, 10, 20, 40, 80, 5, 10]
-        ),  
+        (400, "validation_error", "The start_cursor provided is invalid: wrong_start_cursor", [10, 10, 10, 10, 10, 10, 10]),
+        (429, "rate_limited", "Rate Limited", [5, 5, 5, 5, 5, 5, 5]),  # Retry-header is set to 5 seconds for test
+        (500, "internal_server_error", "Internal server error", [5, 10, 20, 40, 80, 5, 10]),
     ],
 )
 def test_retry_logic(status_code, error_code, error_message, expected_backoff_time, parent, requests_mock, caplog):
     stream = parent
 
     # Set up a generator that alternates between error and success responses, to check the reset of backoff time between failures
-    mock_responses = [
-        {"status_code": status_code, "response": {"object": "error", "status": status_code, "code": error_code, "message": error_message}} for _ in range(5)
-    ] + [
-        {"status_code": 200, "response": {"object": "list", "results": [], "has_more": True, "next_cursor": "dummy_cursor"}}
-    ] + [
-        {"status_code": status_code, "response": {"object": "error", "status": status_code, "code": error_code, "message": error_message}} for _ in range(2)
-    ] + [
-        {"status_code": 200, "response": {"object": "list", "results": [], "has_more": False, "next_cursor": None}}
-    ]
+    mock_responses = (
+        [
+            {
+                "status_code": status_code,
+                "response": {"object": "error", "status": status_code, "code": error_code, "message": error_message},
+            }
+            for _ in range(5)
+        ]
+        + [{"status_code": 200, "response": {"object": "list", "results": [], "has_more": True, "next_cursor": "dummy_cursor"}}]
+        + [
+            {
+                "status_code": status_code,
+                "response": {"object": "error", "status": status_code, "code": error_code, "message": error_message},
+            }
+            for _ in range(2)
+        ]
+        + [{"status_code": 200, "response": {"object": "list", "results": [], "has_more": False, "next_cursor": None}}]
+    )
 
     def response_callback(request, context):
-    # Get the next response from the mock_responses list
+        # Get the next response from the mock_responses list
         response = mock_responses.pop(0)
         context.status_code = response["status_code"]
         return response["response"]
@@ -288,8 +282,9 @@ def test_retry_logic(status_code, error_code, error_message, expected_backoff_ti
         # Find the backoff times from the message logs to compare against expected backoff times
         log_messages = [record.message for record in caplog.records]
         backoff_times = [
-            round(float(re.search(r'(\d+(\.\d+)?) seconds', msg).group(1)))
-            for msg in log_messages if any(word in msg for word in ['Sleeping', 'Waiting'])
+            round(float(re.search(r"(\d+(\.\d+)?) seconds", msg).group(1)))
+            for msg in log_messages
+            if any(word in msg for word in ["Sleeping", "Waiting"])
         ]
 
         assert backoff_times == expected_backoff_time, f"Unexpected backoff times: {backoff_times}"
