@@ -19,7 +19,8 @@ from googleapiclient.http import MediaIoBaseDownload
 from .spec import SourceGoogleDriveSpec
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
-DOC_MIME_TYPE_PREFIX = "application/vnd.google-apps."
+EXPORTABLE_DOCUMENTS_MIME_TYPE_PREFIX = "application/vnd.google-apps."
+GOOGLE_DOC_MIME_TYPE = "application/vnd.google-apps.document"
 
 
 class GoogleDriveRemoteFile(RemoteFile):
@@ -94,7 +95,6 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                     remote_file = GoogleDriveRemoteFile(
                         uri=file_name, last_modified=last_modified, id=new_file["id"], mimeType=new_file["mimeType"]
                     )
-                    print(remote_file)
                     if self.file_matches_globs(remote_file, globs):
                         yield remote_file
                 request = service.files().list_next(request, results)
@@ -117,10 +117,10 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             raise ValueError(f"Could not extract folder ID from {url}")
 
     def open_file(self, file: GoogleDriveRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        if file.mimeType.startswith(DOC_MIME_TYPE_PREFIX):
+        if file.mimeType.startswith(EXPORTABLE_DOCUMENTS_MIME_TYPE_PREFIX):
             if mode == FileReadMode.READ:
                 raise ValueError("Cannot read Google Docs/Sheets/Presentations and so on as text. Please set the format to PDF")
-            request = self.google_drive_service.files().export_media(fileId=file.id, mimeType="application/pdf")
+            request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=self._get_export_mime_type(file))
         else:
             request = self.google_drive_service.files().get_media(fileId=file.id)
         handle = io.BytesIO()
@@ -138,3 +138,14 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             text_handle = io.StringIO(handle.read().decode(encoding))
             handle.close()
             return text_handle
+    
+    def _get_export_mime_type(self, file: GoogleDriveRemoteFile):
+        """
+        Returns the mime type to export Google App documents as.
+
+        Google Docs are exported as Docx to preserve as much formatting as possible, everything else goes through PDF.
+        """
+        if file.mimeType.startswith(GOOGLE_DOC_MIME_TYPE):
+            return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        else:
+            return "application/pdf"
