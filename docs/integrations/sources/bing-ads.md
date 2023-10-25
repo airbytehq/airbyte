@@ -97,15 +97,19 @@ The Bing Ads source connector supports the following streams. For more informati
 - [age_gender_audience_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
 - [age_gender_audience_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
 - [age_gender_audience_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/agegenderaudiencereportrequest?view=bingads-13)
-- [geographic_performance_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
-- [geographic_performance_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
-- [geographic_performance_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
-- [geographic_performance_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
 - [budget_summary_report](https://docs.microsoft.com/en-us/advertising/reporting-service/budgetsummaryreportrequest?view=bingads-13)
 - [campaign_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [campaign_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [campaign_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [campaign_performance_report_monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [geographic_performance_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [geographic_performance_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [geographic_performance_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [geographic_performance_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/geographicperformancereportrequest?view=bingads-13)
+- [goals_and_funnels_report_hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/goalsandfunnelsreportrequest?view=bingads-13)
+- [goals_and_funnels_report_daily](https://learn.microsoft.com/en-us/advertising/reporting-service/goalsandfunnelsreportrequest?view=bingads-13)
+- [goals_and_funnels_report_weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/goalsandfunnelsreportrequest?view=bingads-13)
+- [goals_and_funnels_report_monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/goalsandfunnelsreportrequest?view=bingads-13)
 - [keyword_performance_report_hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
 - [keyword_performance_report_daily](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
 - [keyword_performance_report_weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
@@ -131,6 +135,7 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.3.0   | 2023-10-25 | [31814](https://github.com/airbytehq/airbyte/pull/31814)                                                                         | Add new stream: `GoalsAndFunnelsReport` (daily, hourly, weekly, monthly)                                                                     |
 | 1.2.0   | 2023-10-24 | [31783](https://github.com/airbytehq/airbyte/pull/31783)                                                                         | Add new stream: `SearchQueryPerformanceReport` (daily, hourly, weekly, monthly)                                                              |
 | 1.1.0   | 2023-10-24 | [31712](https://github.com/airbytehq/airbyte/pull/31712)                                                                         | Add new stream: `AgeGenderAudienceReport` (daily, hourly, weekly, monthly)                                                                   |
 | 1.0.2   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599)                                                                         | Base image migration: remove Dockerfile and use the python-connector-base image                                                              |
