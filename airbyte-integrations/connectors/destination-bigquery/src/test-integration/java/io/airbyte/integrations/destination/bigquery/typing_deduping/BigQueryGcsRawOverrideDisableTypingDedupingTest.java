@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery.typing_deduping;
 
+import org.junit.jupiter.api.Disabled;
+
 public class BigQueryGcsRawOverrideDisableTypingDedupingTest extends AbstractBigQueryTypingDedupingTest {
 
   @Override
@@ -22,11 +24,13 @@ public class BigQueryGcsRawOverrideDisableTypingDedupingTest extends AbstractBig
   }
 
   @Override
+  @Disabled
   public void testRemovingPKNonNullIndexes() throws Exception {
     // Do nothing.
   }
 
   @Override
+  @Disabled
   public void identicalNameSimultaneousSync() throws Exception {
     // TODO: create fixtures to verify how raw tables are affected. Base tests check for final tables.
   }
