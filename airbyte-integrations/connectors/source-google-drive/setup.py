@@ -13,6 +13,11 @@ MAIN_REQUIREMENTS = [
     "google-api-python-client-stubs==1.18.0",
 ]
 
+TEST_REQUIREMENTS = [
+    "pytest-mock~=3.6.1",
+    "pytest~=6.1",
+]
+
 setup(
     name="source_google_drive",
     description="Source implementation for Google Drive.",
@@ -21,4 +26,7 @@ setup(
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    extras_require={
+        "tests": TEST_REQUIREMENTS,
+    },
 )

@@ -6,12 +6,13 @@ import datetime
 from typing import Optional
 from unittest import mock
 from unittest.mock import MagicMock, call, patch
-from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
-from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
+
 import pytest
-from source_google_drive.stream_reader import SourceGoogleDriveStreamReader, GoogleDriveRemoteFile
-from source_google_drive.spec import SourceGoogleDriveSpec, ServiceAccountCredentials
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
+from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
+from source_google_drive.spec import ServiceAccountCredentials, SourceGoogleDriveSpec
+from source_google_drive.stream_reader import GoogleDriveRemoteFile, SourceGoogleDriveStreamReader
 
 
 def create_reader(
@@ -29,6 +30,7 @@ def create_reader(
 
 def flatten_list(list_of_lists):
     return [item for sublist in list_of_lists for item in sublist]
+
 
 @pytest.mark.parametrize(
     "glob, listing_results, matched_files",
@@ -139,7 +141,12 @@ def flatten_list(list_of_lists):
                     # third request is for requesting the subsubfolder
                     {
                         "files": [
-                            {"id": "ghi", "mimeType": "text/csv", "name": "yet_another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "ghi",
+                                "mimeType": "text/csv",
+                                "name": "yet_another_file.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
                         ]
                     },
                 ],
@@ -238,7 +245,12 @@ def flatten_list(list_of_lists):
                     {
                         "files": [
                             {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
-                            {"id": "ghi", "mimeType": "text/jsonl", "name": "non_matching.jsonl", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "ghi",
+                                "mimeType": "text/jsonl",
+                                "name": "non_matching.jsonl",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
                         ]
                     },
                 ],
@@ -267,7 +279,9 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
     files_service = MagicMock()
     files_service.list.return_value = mock_request
     # list next returns a new fake "request" for each page and None at the end of each page (simulating the end of the listing like the Google Drive API behaves in practice)
-    files_service.list_next.side_effect = flatten_list([[*[mock_request for _ in range(len(listing) - 1)], None] for listing in listing_results])
+    files_service.list_next.side_effect = flatten_list(
+        [[*[mock_request for _ in range(len(listing) - 1)], None] for listing in listing_results]
+    )
     drive_service = MagicMock()
     drive_service.files.return_value = files_service
     mock_build_service.return_value = drive_service
@@ -284,7 +298,9 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
     "file, file_content, mode, expect_export, expected_mime_type, expected_read, expect_raise",
     [
         pytest.param(
-            GoogleDriveRemoteFile(uri="avro_file", id="abc", mimeType="text/csv", name="avro_file", last_modified=datetime.datetime(2021, 1, 1)),
+            GoogleDriveRemoteFile(
+                uri="avro_file", id="abc", mimeType="text/csv", name="avro_file", last_modified=datetime.datetime(2021, 1, 1)
+            ),
             b"test",
             FileReadMode.READ_BINARY,
             False,
@@ -294,7 +310,9 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
             id="Read binary file",
         ),
         pytest.param(
-            GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)),
+            GoogleDriveRemoteFile(
+                uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
+            ),
             b"test",
             FileReadMode.READ,
             False,
@@ -304,7 +322,13 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
             id="Read text file",
         ),
         pytest.param(
-            GoogleDriveRemoteFile(uri="abc", id="abc", mimeType="application/vnd.google-apps.document", name="My Googledoc", last_modified=datetime.datetime(2021, 1, 1)),
+            GoogleDriveRemoteFile(
+                uri="abc",
+                id="abc",
+                mimeType="application/vnd.google-apps.document",
+                name="My Googledoc",
+                last_modified=datetime.datetime(2021, 1, 1),
+            ),
             b"test",
             FileReadMode.READ_BINARY,
             True,
@@ -314,7 +338,13 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
             id="Read google doc as binary file with export",
         ),
         pytest.param(
-            GoogleDriveRemoteFile(uri="abc", id="abc", mimeType="application/vnd.google-apps.spreadsheet", name="My Sheet", last_modified=datetime.datetime(2021, 1, 1)),
+            GoogleDriveRemoteFile(
+                uri="abc",
+                id="abc",
+                mimeType="application/vnd.google-apps.spreadsheet",
+                name="My Sheet",
+                last_modified=datetime.datetime(2021, 1, 1),
+            ),
             b"test",
             FileReadMode.READ_BINARY,
             True,
@@ -324,7 +354,13 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
             id="Read google sheet as binary file with export",
         ),
         pytest.param(
-            GoogleDriveRemoteFile(uri="abc", id="abc", mimeType="application/vnd.google-apps.spreadsheet", name="My Sheet", last_modified=datetime.datetime(2021, 1, 1)),
+            GoogleDriveRemoteFile(
+                uri="abc",
+                id="abc",
+                mimeType="application/vnd.google-apps.spreadsheet",
+                name="My Sheet",
+                last_modified=datetime.datetime(2021, 1, 1),
+            ),
             b"test",
             FileReadMode.READ,
             True,
@@ -338,9 +374,21 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
 @patch("source_google_drive.stream_reader.MediaIoBaseDownload")
 @patch("source_google_drive.stream_reader.service_account")
 @patch("source_google_drive.stream_reader.build")
-def test_open_file(mock_build_service, mock_service_account, mock_basedownload, file, file_content, mode, expect_export, expected_mime_type, expected_read, expect_raise):
+def test_open_file(
+    mock_build_service,
+    mock_service_account,
+    mock_basedownload,
+    file,
+    file_content,
+    mode,
+    expect_export,
+    expected_mime_type,
+    expected_read,
+    expect_raise,
+):
     mock_request = MagicMock()
     mock_downloader = MagicMock()
+
     def mock_next_chunk():
         handle = mock_basedownload.call_args[0][0]
         if handle.tell() > 0:
@@ -348,7 +396,7 @@ def test_open_file(mock_build_service, mock_service_account, mock_basedownload, 
         else:
             handle.write(file_content)
             return (None, False)
-            
+
     mock_downloader.next_chunk.side_effect = mock_next_chunk
 
     mock_basedownload.return_value = mock_downloader

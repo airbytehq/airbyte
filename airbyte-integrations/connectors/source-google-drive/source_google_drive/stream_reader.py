@@ -139,7 +139,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             text_handle = io.StringIO(handle.read().decode(encoding or "utf-8"))
             handle.close()
             return text_handle
-    
+
     def _get_export_mime_type(self, file: GoogleDriveRemoteFile):
         """
         Returns the mime type to export Google App documents as.
