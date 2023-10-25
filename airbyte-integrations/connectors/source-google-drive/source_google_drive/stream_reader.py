@@ -21,6 +21,7 @@ from .spec import SourceGoogleDriveSpec
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
 EXPORTABLE_DOCUMENTS_MIME_TYPE_PREFIX = "application/vnd.google-apps."
 GOOGLE_DOC_MIME_TYPE = "application/vnd.google-apps.document"
+GOOGLE_SHEET_MIME_TYPE = "application/vnd.google-apps.spreadsheet"
 
 
 class GoogleDriveRemoteFile(RemoteFile):
@@ -70,9 +71,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         Get all files matching the specified glob patterns.
         """
         service = self.google_drive_service
-        root_folder_id = self.get_folder_id(self.config.folder_url)
+        root_folder_id = self._get_folder_id(self.config.folder_url)
 
-        folder_id_queue = [("/", root_folder_id)]
+        folder_id_queue = [("", root_folder_id)]
         seen: Set[str] = set()
         while len(folder_id_queue) > 0:
             (path, folder_id) = folder_id_queue.pop()
@@ -101,7 +102,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                 if request is None:
                     break
 
-    def get_folder_id(self, url):
+    def _get_folder_id(self, url):
         # Regular expression pattern to check the URL structure and extract the ID
         pattern = r"^https://drive\.google\.com/drive/folders/([a-zA-Z0-9_-]+)$"
 
@@ -135,7 +136,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             return handle
         else:
             # repack the bytes into a string with the right encoding
-            text_handle = io.StringIO(handle.read().decode(encoding))
+            text_handle = io.StringIO(handle.read().decode(encoding or "utf-8"))
             handle.close()
             return text_handle
     

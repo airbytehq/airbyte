@@ -4,9 +4,11 @@
 
 import datetime
 from typing import Optional
-from unittest.mock import MagicMock, patch
+from unittest import mock
+from unittest.mock import MagicMock, call, patch
 from airbyte_cdk.sources.file_based.config.jsonl_format import JsonlFormat
-from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig, Json
+from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 import pytest
 from source_google_drive.stream_reader import SourceGoogleDriveStreamReader, GoogleDriveRemoteFile
 from source_google_drive.spec import SourceGoogleDriveSpec, ServiceAccountCredentials
@@ -21,48 +23,352 @@ def create_reader(
 ):
     reader = SourceGoogleDriveStreamReader()
     reader.config = config
-    
+
     return reader
 
 
+def flatten_list(list_of_lists):
+    return [item for sublist in list_of_lists for item in sublist]
+
 @pytest.mark.parametrize(
-    "results, expected_files",
+    "glob, listing_results, matched_files",
     [
         pytest.param(
-            [{"files": [{"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"}]}],
-            [GoogleDriveRemoteFile(uri="/test.csv", id="abc", mimeType="text/csv", name="test.csv", modifiedTime=datetime(2021, 1, 1))],
-            id="Single file"
-        )
-        # TODO add cases:
-        # multiple files
-        # multiple pages
-        # duplicates
-        # subdirectories
-        # duplicates in subdirectories
-        # duplicate subdirectories
-        # not matching the globs (just a basic case is enough)
+            "*",
+            [[{"files": [{"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"}]}]],
+            [
+                GoogleDriveRemoteFile(
+                    uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
+                )
+            ],
+            id="Single file",
+        ),
+        pytest.param(
+            "*",
+            [
+                [
+                    {
+                        "files": [
+                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                        ]
+                    },
+                ]
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
+                ),
+                GoogleDriveRemoteFile(
+                    uri="another_file.csv",
+                    id="def",
+                    mimeType="text/csv",
+                    name="another_file.csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
+            ],
+            id="Multiple files",
+        ),
+        pytest.param(
+            "*",
+            [
+                [
+                    {"files": [{"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"}]},
+                    {
+                        "files": [
+                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"}
+                        ]
+                    },
+                ]
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
+                ),
+                GoogleDriveRemoteFile(
+                    uri="another_file.csv",
+                    id="def",
+                    mimeType="text/csv",
+                    name="another_file.csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
+            ],
+            id="Multiple pages",
+        ),
+        pytest.param(
+            "*",
+            [
+                [
+                    {"files": []},
+                ]
+            ],
+            [],
+            id="No files",
+        ),
+        pytest.param(
+            "**/*",
+            [
+                [
+                    {
+                        "files": [
+                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "sub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # second request is for requesting the subfolder
+                    {
+                        "files": [
+                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "subsub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subsubfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # third request is for requesting the subsubfolder
+                    {
+                        "files": [
+                            {"id": "ghi", "mimeType": "text/csv", "name": "yet_another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                        ]
+                    },
+                ],
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
+                ),
+                GoogleDriveRemoteFile(
+                    uri="subfolder/another_file.csv",
+                    id="def",
+                    mimeType="text/csv",
+                    name="another_file.csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
+                GoogleDriveRemoteFile(
+                    uri="subfolder/subsubfolder/yet_another_file.csv",
+                    id="ghi",
+                    mimeType="text/csv",
+                    name="yet_another_file.csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
+            ],
+            id="Nested directories",
+        ),
+        pytest.param(
+            "**/*",
+            [
+                [
+                    {
+                        "files": [
+                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "sub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # second request is for requesting the subfolder
+                    {
+                        "files": [
+                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "subsub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subsubfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # third request is for requesting the subsubfolder
+                    {
+                        "files": [
+                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "sub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "link_to_subfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
+                ),
+            ],
+            id="Duplicates",
+        ),
+        pytest.param(
+            "subfolder/*.csv",
+            [
+                [
+                    {
+                        "files": [
+                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "sub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # second request is for requesting the subfolder
+                    {
+                        "files": [
+                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {"id": "ghi", "mimeType": "text/jsonl", "name": "non_matching.jsonl", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                        ]
+                    },
+                ],
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="subfolder/another_file.csv",
+                    id="def",
+                    mimeType="text/csv",
+                    name="another_file.csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
+            ],
+            id="Glob matching and subdirectories",
+        ),
     ],
 )
+@patch("source_google_drive.stream_reader.service_account")
 @patch("source_google_drive.stream_reader.build")
-def test_matching_files(mock_build_service, listing_results, matched_files):
+def test_matching_files(mock_build_service, mock_service_account, glob, listing_results, matched_files):
     mock_request = MagicMock()
-    mock_request.execute.side_effect = [*listing_results, None]
+    # execute returns all results from all pages for all listings
+    flattened_results = flatten_list(listing_results)
+
+    mock_request.execute.side_effect = flattened_results
     files_service = MagicMock()
     files_service.list.return_value = mock_request
-    files_service.list_next.return_value = mock_request
+    # list next returns a new fake "request" for each page and None at the end of each page (simulating the end of the listing like the Google Drive API behaves in practice)
+    files_service.list_next.side_effect = flatten_list([[*[mock_request for _ in range(len(listing) - 1)], None] for listing in listing_results])
     drive_service = MagicMock()
     drive_service.files.return_value = files_service
     mock_build_service.return_value = drive_service
 
     reader = create_reader()
 
-    assert matched_files == reader.get_matching_files(["*"], None, MagicMock())
-    assert files_service.list.call_count == 1
-    assert files_service.list_next.call_count == len(listing_results) - 1
-    
+    found_files = list(reader.get_matching_files([glob], None, MagicMock()))
+    assert files_service.list.call_count == len(listing_results)
+    assert matched_files == found_files
+    assert files_service.list_next.call_count == len(flattened_results)
 
-# TODO add tests for open_file
-# get_media with single chunks and multiple chunks
-# export_media with sungle chunks and multiple chunks
-# binary read
-# textual read
+
+@pytest.mark.parametrize(
+    "file, file_content, mode, expect_export, expected_mime_type, expected_read, expect_raise",
+    [
+        pytest.param(
+            GoogleDriveRemoteFile(uri="avro_file", id="abc", mimeType="text/csv", name="avro_file", last_modified=datetime.datetime(2021, 1, 1)),
+            b"test",
+            FileReadMode.READ_BINARY,
+            False,
+            None,
+            b"test",
+            False,
+            id="Read binary file",
+        ),
+        pytest.param(
+            GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)),
+            b"test",
+            FileReadMode.READ,
+            False,
+            None,
+            "test",
+            False,
+            id="Read text file",
+        ),
+        pytest.param(
+            GoogleDriveRemoteFile(uri="abc", id="abc", mimeType="application/vnd.google-apps.document", name="My Googledoc", last_modified=datetime.datetime(2021, 1, 1)),
+            b"test",
+            FileReadMode.READ_BINARY,
+            True,
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            b"test",
+            False,
+            id="Read google doc as binary file with export",
+        ),
+        pytest.param(
+            GoogleDriveRemoteFile(uri="abc", id="abc", mimeType="application/vnd.google-apps.spreadsheet", name="My Sheet", last_modified=datetime.datetime(2021, 1, 1)),
+            b"test",
+            FileReadMode.READ_BINARY,
+            True,
+            "application/pdf",
+            b"test",
+            False,
+            id="Read google sheet as binary file with export",
+        ),
+        pytest.param(
+            GoogleDriveRemoteFile(uri="abc", id="abc", mimeType="application/vnd.google-apps.spreadsheet", name="My Sheet", last_modified=datetime.datetime(2021, 1, 1)),
+            b"test",
+            FileReadMode.READ,
+            True,
+            None,
+            None,
+            True,
+            id="Read google sheet as text (fails)",
+        ),
+    ],
+)
+@patch("source_google_drive.stream_reader.MediaIoBaseDownload")
+@patch("source_google_drive.stream_reader.service_account")
+@patch("source_google_drive.stream_reader.build")
+def test_open_file(mock_build_service, mock_service_account, mock_basedownload, file, file_content, mode, expect_export, expected_mime_type, expected_read, expect_raise):
+    mock_request = MagicMock()
+    mock_downloader = MagicMock()
+    def mock_next_chunk():
+        handle = mock_basedownload.call_args[0][0]
+        if handle.tell() > 0:
+            return (None, True)
+        else:
+            handle.write(file_content)
+            return (None, False)
+            
+    mock_downloader.next_chunk.side_effect = mock_next_chunk
+
+    mock_basedownload.return_value = mock_downloader
+
+    files_service = MagicMock()
+    if expect_export:
+        files_service.export_media.return_value = mock_request
+    else:
+        files_service.get_media.return_value = mock_request
+    drive_service = MagicMock()
+    drive_service.files.return_value = files_service
+    mock_build_service.return_value = drive_service
+
+    if expect_raise:
+        with pytest.raises(ValueError):
+            create_reader().open_file(file, mode, None, MagicMock()).read()
+    else:
+        assert expected_read == create_reader().open_file(file, mode, None, MagicMock()).read()
+        assert mock_downloader.next_chunk.call_count == 2
+        if expect_export:
+            files_service.export_media.assert_has_calls([call(fileId=file.id, mimeType=expected_mime_type)])
+        else:
+            files_service.get_media.assert_has_calls([call(fileId=file.id)])
