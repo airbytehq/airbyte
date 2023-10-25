@@ -19,6 +19,20 @@ def test_get_value_from_config():
     assert val == "2022-01-01"
 
 
+@pytest.mark.parametrize(
+    "valid_types, expected_value",
+    [
+        pytest.param((str,), "1234J", id="test_value_is_a_string_if_valid_types_is_str"),
+        pytest.param(None, 1234j, id="test_value_is_interpreted_as_complex_number_by_default"),
+    ],
+)
+def test_get_value_with_complex_number(valid_types, expected_value):
+    s = "{{ config['value'] }}"
+    config = {"value": "1234J"}
+    val = interpolation.eval(s, config, valid_types=valid_types)
+    assert val == expected_value
+
+
 def test_get_value_from_stream_slice():
     s = "{{ stream_slice['date'] }}"
     config = {"date": "2022-01-01"}
