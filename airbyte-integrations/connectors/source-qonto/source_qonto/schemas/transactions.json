@@ -1,18 +1,9 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "additionalProperties": true,
   "properties": {
     "transaction_id": {
       "type": ["null", "string"]
-    },
-    "subject_type": {
-      "type": ["null", "string"]
-    },
-    "transfer": {
-      "type": ["null", "object"],
-      "additionalProperties": true,
-      "properties": {}
     },
     "amount": {
       "type": ["null", "number"]
@@ -27,9 +18,9 @@
       "type": ["null", "integer"]
     },
     "attachment_ids": {
-      "type": ["null", "array"],
+      "type": ["array"],
       "items": {
-        "type": ["null", "string"]
+        "type": ["string"]
       }
     },
     "local_amount": {
@@ -84,9 +75,9 @@
       "type": ["null", "string"]
     },
     "label_ids": {
-      "type": ["null", "array"],
+      "type": ["array"],
       "items": {
-        "type": ["null", "string"]
+        "type": ["string"]
       }
     },
     "attachment_lost": {

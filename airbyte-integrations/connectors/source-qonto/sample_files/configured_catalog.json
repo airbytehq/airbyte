@@ -1,0 +1,157 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "memberships",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "first_name": {
+              "type": "string"
+            },
+            "last_name": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "labels",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "parent_id": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "transactions",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "transaction_id": {
+              "type": "string"
+            },
+            "amount": {
+              "type": "number"
+            },
+            "amount_cents": {
+              "type": "integer"
+            },
+            "settled_balance": {
+              "type": "number"
+            },
+            "settled_balance_cents": {
+              "type": "integer"
+            },
+            "attachment_ids": {
+              "type": ["array"],
+              "items": {
+                "type": ["string"]
+              }
+            },
+            "local_amount": {
+              "type": "number"
+            },
+            "local_amount_cents": {
+              "type": "integer"
+            },
+            "side": {
+              "type": "string"
+            },
+            "operation_type": {
+              "type": "string"
+            },
+            "currency": {
+              "type": "string"
+            },
+            "local_currency": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            },
+            "settled_at": {
+              "type": "string"
+            },
+            "emitted_at": {
+              "type": "string"
+            },
+            "updated_at": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "note": {
+              "type": "string"
+            },
+            "reference": {
+              "type": "string"
+            },
+            "vat_amount": {
+              "type": "number"
+            },
+            "vat_amount_cents": {
+              "type": "number"
+            },
+            "vat_rate": {
+              "type": "number"
+            },
+            "initiator_id": {
+              "type": "string"
+            },
+            "label_ids": {
+              "type": ["array"],
+              "items": {
+                "type": ["string"]
+              }
+            },
+            "attachment_lost": {
+              "type": "boolean"
+            },
+            "attachment_required": {
+              "type": "boolean"
+            },
+            "card_last_digits": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

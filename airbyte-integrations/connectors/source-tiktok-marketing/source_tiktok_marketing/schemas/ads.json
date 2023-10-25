@@ -22,6 +22,9 @@
     "ad_name": {
       "type": "string"
     },
+    "tracking_pixel_id": {
+      "type": ["null", "number"]
+    },
     "tracking_app_id": {
       "type": ["null", "string"]
     },
