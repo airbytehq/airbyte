@@ -220,7 +220,7 @@ def test_invalid_start_cursor(parent, requests_mock, caplog):
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": [], "stream_state": {}}
     with patch.object(stream, "backoff_time", return_value=0.1):
         list(stream.read_records(**inputs))
-        assert search_endpoint.call_count == 11
+        assert search_endpoint.call_count == 8
         assert f"Skipping stream pages, error message: {error_message}" in caplog.messages
 
 

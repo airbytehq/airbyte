@@ -66,11 +66,11 @@ class NotionStream(HttpStream, ABC):
 
     @property
     def max_retries(self) -> int:
-        return 10
-
+        return 7
+    
     @property
     def max_time(self) -> int:
-        return 80
+        return 650
 
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):
