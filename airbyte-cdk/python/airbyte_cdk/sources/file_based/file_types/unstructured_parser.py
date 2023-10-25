@@ -11,6 +11,21 @@ from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFile
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
+from unstructured.documents.elements import Formula, ListItem, Title
+from unstructured.file_utils.filetype import FileType
+from unstructured.file_utils.filetype import detect_filetype
+
+unstructured_partition = None
+unstructured_optional_decode = None
+
+def _import_unstructured():
+    """Dynamically imported as needed, due to slow import speed."""
+    global unstructured_partition
+    global unstructured_optional_decode
+    from unstructured.partition.auto import partition
+    from unstructured.partition.md import optional_decode
+    unstructured_partition = partition
+    unstructured_optional_decode = optional_decode
 
 
 class UnstructuredParser(FileTypeParser):
@@ -62,15 +77,12 @@ class UnstructuredParser(FileTypeParser):
             }
 
     def _read_file(self, file_handle: IOBase, file_name: str) -> str:
-        from unstructured.file_utils.filetype import FileType
-        from unstructured.partition.auto import partition
-        from unstructured.partition.md import optional_decode
-
+        _import_unstructured()
         filetype = self._get_filetype(file_handle, file_name)
 
         if filetype == FileType.MD:
             file_content: bytes = file_handle.read()
-            decoded_content: str = optional_decode(file_content)
+            decoded_content: str = unstructured_optional_decode(file_content)
             return decoded_content
         if filetype not in self._supported_file_types():
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file_name)
@@ -82,11 +94,10 @@ class UnstructuredParser(FileTypeParser):
             file = BytesIO(file_handle.read())
             file_handle.seek(0)
 
-        elements = partition(file=file, metadata_filename=file_name)
+        elements = unstructured_partition(file=file, metadata_filename=file_name)
         return self._render_markdown(elements)
 
     def _get_filetype(self, file: IOBase, file_name: str) -> Any:
-        from unstructured.file_utils.filetype import detect_filetype
 
         # set name to none, otherwise unstructured will try to get the modified date from the local file system
         if hasattr(file, "name"):
@@ -98,22 +109,18 @@ class UnstructuredParser(FileTypeParser):
         )
 
     def _supported_file_types(self) -> List[Any]:
-        from unstructured.file_utils.filetype import FileType
-
         return [FileType.MD, FileType.PDF, FileType.DOCX]
 
     def _render_markdown(self, elements: List[Any]) -> str:
         return "\n\n".join((self._convert_to_markdown(el) for el in elements))
 
     def _convert_to_markdown(self, el: Any) -> str:
-        from unstructured.documents.elements import Formula, ListItem, Title
-
-        if type(el) == Title:
+        if isinstance(el, Title):
             heading_str = "#" * (el.metadata.category_depth or 1)
             return f"{heading_str} {el.text}"
-        elif type(el) == ListItem:
+        elif isinstance(el, ListItem):
             return f"- {el.text}"
-        elif type(el) == Formula:
+        elif isinstance(el, Formula):
             return f"```\n{el.text}\n```"
         else:
             return str(el.text) if hasattr(el, "text") else ""
