@@ -29,6 +29,7 @@ import sys
 from airbyte_cdk.models import AirbyteMessage, Type
 from genson import SchemaBuilder
 from genson.schema.strategies.object import Object
+import genson.schema.strategies as strategies
 
 
 class NoRequiredObj(Object):
@@ -63,6 +64,7 @@ def infer_schemas():
 
     builders = {}
     for line in sys.stdin:
+        print(line)
         message = AirbyteMessage.parse_raw(line)
         if message.type == Type.RECORD:
             stream_name = message.record.stream

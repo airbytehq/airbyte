@@ -1,36 +1,43 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
+  "additionalProperties": true,
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "productNumber": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
+    },
+    "created": {
+      "type": ["null", "string"]
+    },
+    "modified": {
+      "type": ["null", "string"]
     },
     "productType": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "category": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "activationDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "endOfNewSalesDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "endOfRenewalDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "endOfLifeDate": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "isFrameworkProduct": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "chargePlans": {
       "type": "array",
@@ -38,22 +45,22 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "chargePlanNumber": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "name": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "effectiveStartDate": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "endOfNewSalesDate": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "effectiveEndDate": {
-            "type": "string"
+            "type": ["null", "string"]
           },
           "charges": {
             "type": "array",
@@ -61,70 +68,70 @@
               "type": "object",
               "properties": {
                 "id": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "chargeNumber": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "name": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "model": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "chargeType": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "unitCode": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "defaultQuantity": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "pricePeriod": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "usageRating": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "createInvoiceLinesPerTier": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "billingDay": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "specificBillingDay": {
-                  "type": "number"
+                  "type": ["null", "number"]
                 },
                 "billingPeriod": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "periodAlignment": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "billingTiming": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "taxTemplate": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "taxIncluded": {
-                  "type": "boolean"
+                  "type": ["null", "boolean"]
                 },
                 "externalERPId": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "externalCRMId": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "deferredRevenueAccount": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "recognizedRevenueAccount": {
-                  "type": "string"
+                  "type": ["null", "string"]
                 },
                 "customFields": {
-                  "type": "object"
+                  "type": ["null", "object"]
                 },
                 "priceDetails": {
                   "type": "array",
@@ -132,25 +139,25 @@
                     "type": "object",
                     "properties": {
                       "currency": {
-                        "type": "string"
+                        "type": ["null", "string"]
                       },
                       "price": {
-                        "type": "number"
+                        "type": ["null", "number"]
                       },
                       "tier": {
-                        "type": "number"
+                        "type": ["null", "number"]
                       },
                       "description": {
-                        "type": "string"
+                        "type": ["null", "string"]
                       },
                       "fromQuantity": {
-                        "type": "number"
+                        "type": ["null", "number"]
                       },
                       "toQuantity": {
-                        "type": "number"
+                        "type": ["null", "number"]
                       },
                       "priceBase": {
-                        "type": "string"
+                        "type": ["null", "string"]
                       }
                     }
                   }
@@ -162,13 +169,13 @@
       }
     },
     "externalERPId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "externalCRMId": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "customFields": {
-      "type": "object"
+      "type": ["null", "object"]
     }
   }
 }
