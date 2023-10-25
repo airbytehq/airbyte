@@ -35,11 +35,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.OffsetTime;
+import java.time.*;
 import java.time.format.DateTimeParseException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -392,8 +388,58 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
+  protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    String strValue = resultSet.getString(index);
+    if ("+infinity".equals(strValue) || "-infinity".equals(strValue)) {
+      node.put(columnName, strValue);
+    } else {
+      //even though the super just does a toString, I find it a lot cleaner to call it anyways, in case that implementation changes
+      super.putDate(node, columnName, resultSet, index);
+    }
+  }
+
+  @Override
+  protected void putTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+    String strValue = resultSet.getString(index);
+    if ("+infinity".equals(strValue) || "-infinity".equals(strValue)) {
+      node.put(columnName, strValue);
+    } else {
+      super.putTime(node, columnName, resultSet, index);
+    }
+  }
+
+  @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
+    String strValue = resultSet.getString(index);
+    if ("+infinity".equals(strValue) || "-infinity".equals(strValue)) {
+      node.put(columnName, strValue);
+    } else {
+      node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
+    }
+  }
+
+  @Override
+  protected void putTimeWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    String strValue = resultSet.getString(index);
+    if ("+infinity".equals(strValue) || "-infinity".equals(strValue)) {
+      node.put(columnName, strValue);
+    } else {
+      final OffsetTime timetz = getObject(resultSet, index, OffsetTime.class);
+      node.put(columnName, DateTimeConverter.convertToTimeWithTimezone(timetz));
+    }
+  }
+
+  @Override
+  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+          throws SQLException {
+    String strValue = resultSet.getString(index);
+    if ("+infinity".equals(strValue) || "-infinity".equals(strValue)) {
+      node.put(columnName, strValue);
+    } else {
+      final OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class);
+      final LocalDate localDate = timestamptz.toLocalDate();
+      node.put(columnName, resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));
+    }
   }
 
   @Override
