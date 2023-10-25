@@ -32,12 +32,11 @@ async def run_check(fix: bool) -> bool:
         bool: True if the check/format succeeded, false otherwise
     """
     logger = logging.getLogger(f"format")
-    isort_command = ["poetry", "run", 'isort', '--settings-file', "pyproject.toml", '--check-only', "."]
+    isort_command = ["poetry", "run", "isort", "--settings-file", "pyproject.toml", "--check-only", "."]
     black_command = ["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."]
     if fix:
         isort_command.remove("--check-only")
         black_command.remove("--check")
-        
 
     async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as dagger_client:
         try:
@@ -59,10 +58,10 @@ async def run_check(fix: bool) -> bool:
                 .with_mounted_directory(
                     "/src",
                     dagger_client.host().directory(
-                        ".", 
-                        include=["**/*.py", "pyproject.toml", "poetry.lock"], 
-                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**/build", ".git"]
-                    )
+                        ".",
+                        include=["**/*.py", "pyproject.toml", "poetry.lock"],
+                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**/build", ".git"],
+                    ),
                 )
                 .with_workdir(f"/src")
                 .with_exec(["poetry", "install"])
