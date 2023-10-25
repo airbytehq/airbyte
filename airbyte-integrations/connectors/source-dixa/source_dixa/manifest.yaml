@@ -17,7 +17,7 @@ streams:
       requester:
         type: HttpRequester
         url_base: https://exports.dixa.io/v1/
-        path: conversation_export?updated_after=2021-09-01&updated_before=2021-09-20
+        path: conversation_export
         http_method: GET
         authenticator:
           type: BearerAuthenticator
@@ -43,7 +43,7 @@ streams:
       cursor_datetime_formats:
         - "%ms"
       datetime_format: "%ms"
-      step: P31D
+      step: P{{ config.batch_size }}D
       cursor_granularity: P1D
       start_datetime:
         datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
