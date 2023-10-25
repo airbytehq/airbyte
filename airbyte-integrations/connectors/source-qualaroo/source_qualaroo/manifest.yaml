@@ -19,6 +19,10 @@ definitions:
     request_parameters:
       limit: "500"
       start_date: "{{config['start_date']}}"
+    error_handler:
+      response_filters:
+        - http_codes: [500]
+          action: FAIL
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -71,7 +75,7 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - "surveys"
+    - "responses"
 
 spec:
   type: Spec
@@ -110,7 +114,7 @@ spec:
           UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
           this date will not be replicated.
         examples:
-          - '2021-03-01T00:00:00.000Z'
+          - "2021-03-01T00:00:00.000Z"
       survey_ids:
         type: array
         items:
