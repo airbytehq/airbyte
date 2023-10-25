@@ -226,7 +226,7 @@ async def get_modified_files_str(ctx: click.Context):
     help="Airbyte CI top-level command group.",
     lazy_subcommands={
         "connectors": "pipelines.airbyte_ci.connectors.commands.connectors",
-        "check": "pipelines.airbyte_ci.check.commands.check",
+        "format": "pipelines.airbyte_ci.format.commands.format",
         "metadata": "pipelines.airbyte_ci.metadata.commands.metadata",
         "test": "pipelines.airbyte_ci.test.commands.test",
     },

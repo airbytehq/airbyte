@@ -16,15 +16,18 @@ from pipelines.helpers.utils import sh_dash_c
 
 
 @click.command()
-@click.option("--fix", is_flag=True, default=False, help="Fix any formatting issues detected.")
-async def check(fix: bool):
+@click.option("--fix/--check", type=bool, default=None, help="Whether to automatically fix any formatting issues detected.  [required]")
+async def format(fix: bool):
     """Checks whether the repository is formatted correctly."""
-    success = await run_check(fix)
+    if fix is None:
+        raise click.UsageError("You must specify either --fix or --check")
+
+    success = await run_format(fix)
     if not success:
         click.Abort()
 
 
-async def run_check(fix: bool) -> bool:
+async def run_format(fix: bool) -> bool:
     """Checks whether the repository is formatted correctly.
     Args:
         fix (bool): Whether to automatically fix any formatting issues detected.
