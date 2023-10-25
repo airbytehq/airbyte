@@ -264,7 +264,8 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.2   | 2023-09-29 | [30806](https://github.com/airbytehq/airbyte/pull/30806)   | Cap log line length to 32KB to prevent loss of records                                                                       |
+| 3.1.3   | 2023-10-11 | [31322](https://github.com/airbytehq/airbyte/pull/31322)   | Correct pevious release                                                                                                                         |
+| 3.1.2   | 2023-09-29 | [30806](https://github.com/airbytehq/airbyte/pull/30806)   | Cap log line length to 32KB to prevent loss of records                                                                                          |
 | 3.1.1   | 2023-09-26 | [30744](https://github.com/airbytehq/airbyte/pull/30744)   | Update MySQL JDBC connection configs to keep default auto-commit behavior                                                                       |
 | 3.1.0   | 2023-09-21 | [30270](https://github.com/airbytehq/airbyte/pull/30270)   | Enhanced Standard Sync with initial load via Primary Key with a switch to cursor for incremental syncs                                          |
 | 3.0.9   | 2023-09-20 | [30620](https://github.com/airbytehq/airbyte/pull/30620)   | Airbyte Certified MySQL Source connector                                                                                                        |

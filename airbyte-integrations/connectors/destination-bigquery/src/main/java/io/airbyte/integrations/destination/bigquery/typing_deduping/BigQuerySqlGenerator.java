@@ -31,6 +31,7 @@ import io.airbyte.integrations.base.destination.typing_deduping.Union;
 import io.airbyte.integrations.base.destination.typing_deduping.UnsupportedOneOf;
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -121,7 +122,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       // This is guaranteed to not be a Union, so we won't recurse infinitely
       final AirbyteType chosenType = u.chooseType();
       return extractAndCast(column, chosenType, forceSafeCast);
-    } else if (airbyteType instanceof Struct) {
+    }
+
+    if (airbyteType instanceof Struct) {
       // We need to validate that the struct is actually a struct.
       // Note that struct columns are actually nullable in two ways. For a column `foo`:
       // {foo: null} and {} are both valid, and are both written to the final table as a SQL NULL (_not_ a
@@ -137,7 +140,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
           END, wide_number_mode=>'round')
           """);
-    } else if (airbyteType instanceof Array) {
+    }
+
+    if (airbyteType instanceof Array) {
       // Much like the Struct case above, arrays need special handling.
       return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
           """
@@ -148,7 +153,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ELSE JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
           END, wide_number_mode=>'round')
           """);
-    } else if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
+    }
+
+    if (airbyteType instanceof UnsupportedOneOf || airbyteType == AirbyteProtocolType.UNKNOWN) {
       // JSON_QUERY returns a SQL null if the field contains a JSON null, so we actually parse the
       // airbyte_data to json
       // and json_query it directly (which preserves nulls correctly).
@@ -156,16 +163,32 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
           """
           JSON_QUERY(PARSE_JSON(`_airbyte_data`, wide_number_mode=>'round'), '$."${column_name}"')
           """);
+    }
+
+    if (airbyteType == AirbyteProtocolType.STRING) {
+      // Special case String to only use json value for type string and parse the json for others
+      // Naive json_value returns NULL for object/array values and json_query adds escaped quotes to the
+      // string.
+      return new StringSubstitutor(Map.of("column_name", escapeColumnNameForJsonPath(column.originalName()))).replace(
+          """
+          (CASE
+                WHEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"') IS NULL
+                  OR JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$."${column_name}"'), wide_number_mode=>'round')) != 'string'
+                  THEN JSON_QUERY(`_airbyte_data`, '$."${column_name}"')
+              ELSE
+              JSON_VALUE(`_airbyte_data`, '$."${column_name}"')
+            END)
+          """);
+    }
+
+    final StandardSQLTypeName dialectType = toDialectType(airbyteType);
+    final var baseTyping = "JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"')";
+    if (dialectType == StandardSQLTypeName.STRING) {
+      // json_value implicitly returns a string, so we don't need to cast it.
+      return baseTyping;
     } else {
-      final StandardSQLTypeName dialectType = toDialectType(airbyteType);
-      final var baseTyping = "JSON_VALUE(`_airbyte_data`, '$.\"" + escapeColumnNameForJsonPath(column.originalName()) + "\"')";
-      if (dialectType == StandardSQLTypeName.STRING) {
-        // json_value implicitly returns a string, so we don't need to cast it.
-        return baseTyping;
-      } else {
-        // SAFE_CAST is actually a massive performance hit, so we should skip it if we can.
-        return cast(baseTyping, dialectType.name(), forceSafeCast);
-      }
+      // SAFE_CAST is actually a massive performance hit, so we should skip it if we can.
+      return cast(baseTyping, dialectType.name(), forceSafeCast);
     }
   }
 
@@ -350,7 +373,9 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     final String dropTempTable = dropTableIfExists(stream, SOFT_RESET_SUFFIX);
     final String createTempTable = createTable(stream, SOFT_RESET_SUFFIX, true);
     final String clearLoadedAt = clearLoadedAt(stream.id());
-    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, false);
+    // We just unset loaded_at on all raw records, so we need to process all of them (i.e. should not
+    // filter on extracted_at)
+    final String rebuildInTempTable = updateTable(stream, SOFT_RESET_SUFFIX, Optional.empty());
     final String overwriteFinalTable = overwriteFinalTable(stream.id(), SOFT_RESET_SUFFIX);
     return String.join("\n", dropTempTable, createTempTable, clearLoadedAt, rebuildInTempTable, overwriteFinalTable);
   }
@@ -374,15 +399,30 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix) {
-    return updateTable(stream, finalSuffix, true);
+  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp) {
+    final var unsafeUpdate = updateTableQueryBuilder(stream, finalSuffix, false, minRawTimestamp);
+    final var safeUpdate = updateTableQueryBuilder(stream, finalSuffix, true, minRawTimestamp);
+    return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate)).replace(
+        """
+        BEGIN
+
+        ${unsafe_update}
+
+        EXCEPTION WHEN ERROR THEN
+        ROLLBACK TRANSACTION;
+
+        ${safe_update}
+
+        END;
+
+        """);
   }
 
   private String updateTableQueryBuilder(final StreamConfig stream,
                                          final String finalSuffix,
-                                         final boolean verifyPrimaryKeys,
-                                         final boolean forceSafeCasting) {
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), forceSafeCasting);
+                                         final boolean forceSafeCasting,
+                                         final Optional<Instant> minRawTimestamp) {
+    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), forceSafeCasting, minRawTimestamp);
     String dedupFinalTable = "";
     String cdcDeletes = "";
     String dedupRawTable = "";
@@ -392,7 +432,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
       cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns(), forceSafeCasting);
     }
-    final String commitRawTable = commitRawTable(stream.id());
+    final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
 
     return new StringSubstitutor(Map.of(
         "insert_new_records", insertNewRecords,
@@ -411,33 +451,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             """);
   }
 
-  private String updateTable(final StreamConfig stream, final String finalSuffix, final boolean verifyPrimaryKeys) {
-    final var unsafeUpdate = updateTableQueryBuilder(stream, finalSuffix, verifyPrimaryKeys, false);
-    final var safeUpdate = updateTableQueryBuilder(stream, finalSuffix, verifyPrimaryKeys, true);
-    final String pkVarDeclaration = verifyPrimaryKeys ? "DECLARE missing_pk_count INT64;" : "";
-    return new StringSubstitutor(Map.of("unsafe_update", unsafeUpdate, "safe_update", safeUpdate, "pk_var_declaration", pkVarDeclaration)).replace(
-        """
-        ${pk_var_declaration}
-
-        BEGIN
-
-        ${unsafe_update}
-
-        EXCEPTION WHEN ERROR THEN
-        ROLLBACK TRANSACTION;
-
-        ${safe_update}
-
-        END;
-
-        """);
-  }
-
   @VisibleForTesting
   String insertNewRecords(final StreamConfig stream,
                           final String finalSuffix,
                           final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
-                          final boolean forceSafeCasting) {
+                          final boolean forceSafeCasting,
+                          final Optional<Instant> minRawTimestamp) {
     final String columnCasts = streamColumns.entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue(), forceSafeCasting) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
@@ -476,6 +495,8 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                                          """;
     }
 
+    final String extractedAtCondition = buildExtractedAtCondition(minRawTimestamp);
+
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
         "raw_table_id", stream.id().rawTableId(QUOTE),
@@ -483,6 +504,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         "column_casts", columnCasts,
         "column_errors", columnErrors,
         "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
+        "extractedAtCondition", extractedAtCondition,
         "column_list", columnList)).replace(
             """
             INSERT INTO ${project_id}.${final_table_id}
@@ -502,6 +524,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               WHERE
                 _airbyte_loaded_at IS NULL
                 ${cdcConditionalOrIncludeStatement}
+                ${extractedAtCondition}
             )
             SELECT
             ${column_list}
@@ -509,6 +532,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
               _airbyte_raw_id,
               _airbyte_extracted_at
             FROM intermediate_data;""");
+  }
+
+  private static String buildExtractedAtCondition(final Optional<Instant> minRawTimestamp) {
+    return minRawTimestamp
+        .map(ts -> " AND _airbyte_extracted_at > '" + ts + "'")
+        .orElse("");
   }
 
   @VisibleForTesting
@@ -600,14 +629,16 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String commitRawTable(final StreamId id) {
+  String commitRawTable(final StreamId id, final Optional<Instant> minRawTimestamp) {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
-        "raw_table_id", id.rawTableId(QUOTE))).replace(
+        "raw_table_id", id.rawTableId(QUOTE),
+        "extractedAtCondition", buildExtractedAtCondition(minRawTimestamp))).replace(
             """
             UPDATE ${project_id}.${raw_table_id}
             SET `_airbyte_loaded_at` = CURRENT_TIMESTAMP()
             WHERE `_airbyte_loaded_at` IS NULL
+              ${extractedAtCondition}
             ;""");
   }
 
@@ -688,7 +719,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
         .replace("'", "\\'");
   }
 
-  private static String cast(final String content, final String asType, boolean useSafeCast) {
+  private static String cast(final String content, final String asType, final boolean useSafeCast) {
     final var open = useSafeCast ? "SAFE_CAST(" : "CAST(";
     return wrap(open, content + " as " + asType, ")");
   }

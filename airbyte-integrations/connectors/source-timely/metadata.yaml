@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: bc617b5f-1b9e-4a2d-bebe-782fd454a771
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-timely
   githubIssueLabel: source-timely
   icon: timely.svg

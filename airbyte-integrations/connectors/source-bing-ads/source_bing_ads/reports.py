@@ -11,6 +11,7 @@ import source_bing_ads.source
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from bingads.service_client import ServiceClient
 from bingads.v13.internal.reporting.row_report import _RowReport
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
@@ -149,6 +150,7 @@ class ReportsMixin(ABC):
     timeout: int = 300000
     report_file_format: str = "Csv"
 
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key: List[str] = ["TimePeriod", "Network", "DeviceType"]
 
     @property
@@ -296,25 +298,18 @@ class ReportsMixin(ABC):
 
         yield from []
 
-    def get_column_value(self, row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
+    @staticmethod
+    def get_column_value(row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
         """
-        Reads field value from row and transforms string type field to numeric if possible
+        Reads field value from row and transforms:
+        1. empty values to logical None
+        2. Percent values to numeric string e.g. "12.25%" -> "12.25"
         """
         value = row.value(column)
-        if value == "":
+        if not value or value == "--":
             return None
-
-        if value is not None and column in REPORT_FIELD_TYPES:
-            if REPORT_FIELD_TYPES[column] == "integer":
-                value = 0 if value == "--" else int(value.replace(",", ""))
-            elif REPORT_FIELD_TYPES[column] == "number":
-                if value == "--":
-                    value = 0.0
-                else:
-                    if "%" in value:
-                        value = float(value.replace("%", "").replace(",", "")) / 100
-                    else:
-                        value = float(value.replace(",", ""))
+        if "%" in value:
+            value = value.replace("%", "")
 
         return value
 
@@ -348,7 +343,7 @@ class PerformanceReportsMixin(ReportsMixin):
 
         if self.config.get("lookback_window"):
             # Datetime subtract won't work with days = 0
-            # it'll output an AirbuteError
+            # it'll output an AirbyteError
             return start_date.subtract(days=self.config["lookback_window"])
         else:
             return start_date
