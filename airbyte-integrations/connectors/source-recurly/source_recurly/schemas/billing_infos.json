@@ -1,67 +1,71 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 13,
       "readOnly": true
     },
+    "object": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
     "account_id": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 13,
       "readOnly": true
     },
     "first_name": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 50
     },
     "last_name": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 50
     },
     "company": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 100
     },
     "address": {
       "type": "object",
       "properties": {
         "phone": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Phone number",
           "maxLength": 256
         },
         "street1": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Street 1",
           "maxLength": 256
         },
         "street2": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Street 2",
           "maxLength": 256
         },
         "city": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "City",
           "maxLength": 256
         },
         "region": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "State/Province",
           "description": "State or province.",
           "maxLength": 256
         },
         "postal_code": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Zip/Postal code",
           "description": "Zip or postal code.",
           "maxLength": 256
         },
         "country": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Country",
           "description": "Country, 2-letter ISO 3166-1 alpha-2 code.",
           "maxLength": 2
@@ -69,7 +73,7 @@
       }
     },
     "vat_number": {
-      "type": "string",
+      "type": ["null", "string"],
       "description": "Customer's VAT number (to avoid having the VAT applied). This is only used for automatically collected invoices.",
       "maxLength": 20
     },
@@ -82,21 +86,21 @@
       "properties": {
         "card_type": {
           "description": "Visa, MasterCard, American Express, Discover, JCB, etc.",
-          "type": "string",
+          "type": ["null", "string"],
           "maxLength": 256
         },
         "first_six": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "Credit card number's first six digits.",
           "maxLength": 6
         },
         "last_four": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "Credit card number's last four digits. Will refer to bank account if payment method is ACH.",
           "maxLength": 4
         },
         "last_two": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "The IBAN bank account's last two digits.",
           "maxLength": 2
         },
@@ -111,42 +115,42 @@
           "maxLength": 4
         },
         "gateway_token": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "A token used in place of a credit card in order to perform transactions.",
           "maxLength": 50
         },
         "cc_bin_country": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "The 2-letter ISO 3166-1 alpha-2 country code associated with the credit card BIN, if known by Recurly. Available on the BillingInfo object only. Available when the BIN country lookup feature is enabled.",
           "maxLength": 256
         },
         "gateway_code": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "An identifier for a specific payment gateway.",
           "maxLength": 13
         },
         "billing_agreement_id": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "Billing Agreement identifier. Only present for Amazon or Paypal payment methods.",
           "maxLength": 256
         },
         "name_on_account": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "The name associated with the bank account.",
           "maxLength": 256
         },
         "account_type": {
           "description": "The bank account type. Only present for ACH payment methods.",
-          "type": "string",
+          "type": ["null", "string"],
           "maxLength": 256
         },
         "routing_number": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "The bank account's routing number. Only present for ACH payment methods.",
           "maxLength": 256
         },
         "routing_number_bank": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "The bank name of this routing number.",
           "maxLength": 256
         }
@@ -182,13 +186,13 @@
       "description": "The `backup_payment_method` field is used to indicate a billing info as a backup on the account that will be tried if the initial billing info used for an invoice is declined."
     },
     "created_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time",
       "description": "When the billing information was created.",
       "readOnly": true
     },
     "updated_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time",
       "description": "When the billing information was last changed.",
       "readOnly": true

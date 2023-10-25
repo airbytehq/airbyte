@@ -7,6 +7,10 @@
       "type": ["null", "string"],
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
     "uuid": {
       "type": ["null", "string"],
       "maxLength": 32
@@ -267,6 +271,13 @@
     "collected_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "action_result": {
+        "type": ["null", "object"],
+        "additionalProperties": true
+    },
+    "vat_number": {
+      "type": ["null", "string"]
     }
   }
 }

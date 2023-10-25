@@ -1,22 +1,26 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Add-on ID",
       "maxLength": 13,
       "readOnly": true
     },
+    "object": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
     "plan_id": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Plan ID",
       "maxLength": 13,
       "readOnly": true
     },
     "code": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Add-on code",
       "description": "The unique identifier for the add-on within its plan.",
       "maxLength": 50
@@ -25,11 +29,11 @@
       "title": "State",
       "description": "Add-ons can be either active or inactive.",
       "readOnly": true,
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 256
     },
     "name": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Name",
       "description": "Describes your add-on and will appear in subscribers' invoices.",
       "maxLength": 255
@@ -41,7 +45,7 @@
       "maxLength": 256
     },
     "usage_type": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Usage Type",
       "description": "Type of usage, returns usage type if `add_on_type` is `usage`.",
       "maxLength": 256
@@ -67,7 +71,7 @@
     "revenue_schedule_type": {
       "title": "Revenue schedule type",
       "description": "When this add-on is invoiced, the line item will use this revenue schedule. If `item_code`/`item_id` is part of the request then `revenue_schedule_type` must be absent in the request as the value will be set from the item.",
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 256
     },
     "avalara_transaction_type": {
@@ -110,7 +114,7 @@
         "type": ["null", "object"],
         "properties": {
           "currency": {
-            "type": "string",
+            "type": ["null", "string"],
             "title": "Currency",
             "description": "3-letter ISO 4217 currency code.",
             "maxLength": 3
@@ -131,19 +135,19 @@
       "maxLength": 256
     },
     "created_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time",
       "title": "Created at",
       "readOnly": true
     },
     "updated_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time",
       "title": "Last updated at",
       "readOnly": true
     },
     "deleted_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "format": "date-time",
       "title": "Deleted at",
       "readOnly": true

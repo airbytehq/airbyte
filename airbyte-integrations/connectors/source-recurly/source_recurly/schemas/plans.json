@@ -7,6 +7,10 @@
       "type": ["null", "string"],
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
     "code": {
       "type": ["null", "string"],
       "maxLength": 256
@@ -142,6 +146,16 @@
     "deleted_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "custom_fields": {
+      "type": ["null", "array"]
+    },
+    "pricing_model": {
+      "type": ["null", "string"],
+      "maxLength": 10
+    },
+    "ramp_intervals": {
+      "type": ["null", "array"]
     }
   }
 }

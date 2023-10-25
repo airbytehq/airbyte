@@ -1,10 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-<<<<<<< HEAD
   "additionalProperties": true,
-=======
->>>>>>> f98f9ddf6831b38bf8dc68522de7ff48bb3a4361
   "properties": {
     "activate_at": {
       "type": ["null", "string"]
@@ -21,12 +18,12 @@
         "description": "This links an Add-on to a specific Subscription.",
         "properties": {
           "id": {
-            "type": "string",
+            "type": ["null", "string"],
             "title": "Subscription Add-on ID",
             "maxLength": 13
           },
           "code": {
-            "type": "string",
+            "type": ["null", "string"],
             "title": "Add-on code",
             "description": "The unique identifier for the add-on within its plan.",
             "maxLength": 50

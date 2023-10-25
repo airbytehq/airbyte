@@ -1,83 +1,87 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Shipping Address ID",
       "maxLength": 13,
       "readOnly": true
     },
+    "object": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
     "account_id": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Account ID",
       "maxLength": 13,
       "readOnly": true
     },
     "nickname": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 255
     },
     "first_name": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 255
     },
     "last_name": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 255
     },
     "company": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 255
     },
     "email": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 255
     },
     "vat_number": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 20
     },
     "phone": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 30
     },
     "street1": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 255
     },
     "street2": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 255
     },
     "city": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 255
     },
     "region": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 255,
       "description": "State or province."
     },
     "postal_code": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 20,
       "description": "Zip or postal code."
     },
     "country": {
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 50,
       "description": "Country, 2-letter ISO 3166-1 alpha-2 code."
     },
     "created_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Created at",
       "format": "date-time",
       "readOnly": true
     },
     "updated_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Updated at",
       "format": "date-time",
       "readOnly": true

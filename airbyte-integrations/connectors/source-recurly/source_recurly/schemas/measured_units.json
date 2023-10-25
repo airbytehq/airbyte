@@ -7,6 +7,10 @@
       "type": ["null", "string"],
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
     "name": {
       "type": ["null", "string"],
       "maxLength": 256

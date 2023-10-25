@@ -1,15 +1,19 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Credit Payment ID",
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
     "uuid": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Recurly UUID",
       "description": "The UUID is useful for matching data with the CSV exports and building URLs into Recurly's UI.",
       "maxLength": 32
@@ -17,7 +21,7 @@
     "action": {
       "title": "Action",
       "description": "The action for which the credit was created.",
-      "type": "string",
+      "type": ["null", "string"],
       "maxLength": 256
     },
     "account": {
@@ -25,12 +29,12 @@
       "title": "Account mini details",
       "properties": {
         "id": {
-          "type": "string",
+          "type": ["null", "string"],
           "maxLength": 13,
           "readOnly": true
         },
         "code": {
-          "type": "string",
+          "type": ["null", "string"],
           "description": "The unique identifier of the account.",
           "maxLength": 50
         }
@@ -41,12 +45,12 @@
       "title": "Invoice mini details",
       "properties": {
         "id": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Invoice ID",
           "maxLength": 13
         },
         "number": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Invoice number",
           "maxLength": 256
         }
@@ -57,19 +61,19 @@
       "title": "Invoice mini details",
       "properties": {
         "id": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Invoice ID",
           "maxLength": 13
         },
         "number": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Invoice number",
           "maxLength": 256
         }
       }
     },
     "currency": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Currency",
       "description": "3-letter ISO 4217 currency code.",
       "maxLength": 3
@@ -90,12 +94,12 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Transaction ID",
           "maxLength": 13
         },
         "uuid": {
-          "type": "string",
+          "type": ["null", "string"],
           "title": "Recurly UUID",
           "description": "The UUID is useful for matching data with the CSV exports and building URLs into Recurly's UI.",
           "maxLength": 32
@@ -103,13 +107,13 @@
       }
     },
     "created_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Created at",
       "format": "date-time",
       "readOnly": true
     },
     "updated_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Last updated at",
       "format": "date-time",
       "readOnly": true

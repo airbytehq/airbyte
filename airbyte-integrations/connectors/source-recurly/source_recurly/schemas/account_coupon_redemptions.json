@@ -7,8 +7,12 @@
       "type": ["null", "string"],
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
     "account": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
           "type": ["null", "string"],

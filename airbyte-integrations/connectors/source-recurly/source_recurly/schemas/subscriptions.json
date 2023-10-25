@@ -7,6 +7,10 @@
       "type": ["null", "string"],
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
     "uuid": {
       "type": ["null", "string"],
       "maxLength": 32
@@ -320,6 +324,34 @@
     "billing_info_id": {
       "type": ["null", "string"],
       "maxLength": 13
+    },
+    "action_result": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "active_invoice_id": {
+      "type": ["null", "string"],
+      "maxLength": 13
+    },
+    "converted_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "coupon_redemptions": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "custom_fields": {
+      "type": ["null", "array"]
+    },
+    "ramp_intervals": {
+      "type": ["null", "array"]
+    },
+    "started_with_gift": {
+      "type": ["null", "boolean"]
+    },
+    "tax_inclusive": {
+      "type": ["null", "boolean"]
     }
   }
 }

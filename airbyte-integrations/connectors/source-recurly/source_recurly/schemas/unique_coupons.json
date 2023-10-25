@@ -1,23 +1,27 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "description": "A unique coupon code for a bulk coupon.",
   "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Unique Coupon Code ID",
       "readOnly": true,
       "maxLength": 13
     },
+    "object": {
+      "type": ["null", "string"],
+      "maxLength": 256
+    },
     "code": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Coupon code",
       "description": "The code the customer enters to redeem the coupon.",
       "maxLength": 256
     },
     "state": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "State",
       "description": "Indicates if the unique coupon code is redeemable or why not.",
       "maxLength": 256
@@ -36,13 +40,13 @@
       "maxLength": 256
     },
     "created_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Created at",
       "format": "date-time",
       "readOnly": true
     },
     "updated_at": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Updated at",
       "format": "date-time",
       "readOnly": true

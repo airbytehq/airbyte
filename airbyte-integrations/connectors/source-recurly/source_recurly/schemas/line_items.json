@@ -1,13 +1,16 @@
 {
-  "$schema": "http://json-schema.org/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "Line item",
-  "additionalProperties": true,
   "properties": {
     "id": {
       "type": "string",
       "title": "Line item ID",
       "maxLength": 13
+    },
+    "object": {
+      "type": ["null", "string"],
+      "maxLength": 256
     },
     "uuid": {
       "type": "string",
@@ -122,7 +125,7 @@
       "maxLength": 256
     },
     "accounting_code": {
-      "type": "string",
+      "type": ["null", "string"],
       "title": "Accounting code",
       "description": "Internal accounting code to help you reconcile your revenue to the correct ledger. Line items created as part of a subscription invoice will use the plan or add-on's accounting code, otherwise the value will only be present if you define an accounting code when creating the line item.",
       "maxLength": 20
@@ -266,6 +269,82 @@
       "format": "date-time",
       "title": "Last updated at",
       "description": "When the line item was last changed."
+    },
+    "tax_info": {
+      "type": ["null", "object"],
+      "title": "Tax info",
+      "properties": {
+        "type": {
+          "type": "string",
+          "title": "Type",
+          "description": "Provides the tax type as \"vat\" for EU VAT, \"usst\" for U.S. Sales Tax, or the 2 letter country code for country level tax types like Canada, Australia, New Zealand, Israel, and all non-EU European countries.",
+          "maxLength": 256
+        },
+        "region": {
+          "type": "string",
+          "title": "Region",
+          "description": "Provides the tax region applied on an invoice. For U.S. Sales Tax, this will be the 2 letter state code. For EU VAT this will be the 2 letter country code. For all country level tax types, this will display the regional tax, like VAT, GST, or PST.",
+          "maxLength": 256
+        },
+        "rate": {
+          "type": "number",
+          "format": "float",
+          "title": "Rate"
+        },
+        "tax_details": {
+          "type": ["null", "array"],
+          "description": "Provides additional tax details for Canadian Sales Tax when there is tax applied at both the country and province levels. This will only be populated for the Invoice response when fetching a single invoice and not for the InvoiceList or LineItem.",
+          "items": {
+            "type": "object",
+            "title": "Tax detail",
+            "properties": {
+              "type": {
+                "type": "string",
+                "title": "Type",
+                "description": "Provides the tax type for the region. For Canadian Sales Tax, this will be GST, HST, QST or PST.",
+                "maxLength": 256
+              },
+              "region": {
+                "type": "string",
+                "title": "Region",
+                "description": "Provides the tax region applied on an invoice. For Canadian Sales Tax, this will be either the 2 letter province code or country code.",
+                "maxLength": 256
+              },
+              "rate": {
+                "type": "number",
+                "format": "float",
+                "title": "Rate",
+                "description": "Provides the tax rate for the region."
+              },
+              "tax": {
+                "type": "number",
+                "format": "float",
+                "title": "Tax",
+                "description": "The total tax applied for this tax type."
+              }
+            }
+          }
+        }
+      }
+    },
+    "account": {
+      "type": ["null", "object"],
+      "title": "Account mini details",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 13,
+          "readOnly": true
+        },
+        "code": {
+          "type": "string",
+          "description": "The unique identifier of the account.",
+          "maxLength": 50
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"]
     }
   }
 }
