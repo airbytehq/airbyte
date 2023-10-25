@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -756,7 +757,10 @@ public abstract class BaseTypingDedupingTest {
   }
 
   protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages, final String imageName) throws Exception {
-    final AirbyteDestination destination = startSync(catalog, imageName);
+    runSync(catalog, messages, imageName, Function.identity());
+  }
+  protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages, final String imageName, Function<JsonNode, JsonNode> configTransformer) throws Exception {
+    final AirbyteDestination destination = startSync(catalog, imageName, configTransformer);
     pushMessages(messages, destination);
     endSync(destination);
   }
@@ -766,6 +770,18 @@ public abstract class BaseTypingDedupingTest {
   }
 
   protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog, final String imageName) throws Exception {
+    return startSync(catalog, imageName, Function.identity());
+  }
+
+  /**
+   *
+   * @param catalog
+   * @param imageName
+   * @param configTransformer - test specific config overrides or additions can be performed with this function
+   * @return
+   * @throws Exception
+   */
+  protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog, final String imageName, Function<JsonNode, JsonNode> configTransformer) throws Exception {
     synchronized (this) {
       catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
     }
@@ -781,11 +797,11 @@ public abstract class BaseTypingDedupingTest {
         localRoot.toString(),
         "host",
         Collections.emptyMap());
-
+    final JsonNode transformedConfig = configTransformer.apply(config);
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
         .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class))
-        .withDestinationConnectionConfiguration(config);
+        .withDestinationConnectionConfiguration(transformedConfig);
 
     final AirbyteDestination destination = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(
         "0",
