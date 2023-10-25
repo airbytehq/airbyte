@@ -97,12 +97,12 @@ runs:
     - name: LS
       shell: bash
       run: |
-        ls /tmp/airbyte_ci.dist
+        ls /tmp/airbyte_ci.dist/airbyte_ci.dist
     - name: Run airbyte-ci
       shell: bash
       run: |
         export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
-        /tmp/airbyte_ci.dist/airbyte_ci.bin --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
+        /tmp/airbyte_ci.dist/airbyte_ci.dist/airbyte_ci.bin --is-ci --gha-workflow-run-id=${{ github.run_id }} ${{ inputs.subcommand }} ${{ inputs.options }}
       env:
         _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
         CI_CONTEXT: "${{ inputs.context }}"
