@@ -4,6 +4,7 @@ import asyncclick as click
 import dagger
 
 from pipelines.helpers.utils import sh_dash_c
+from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
 
 
 @click.command()
@@ -50,7 +51,7 @@ async def format_js(fix: bool) -> bool:
                     dagger_client.host().directory(
                         ".",
                         include=["**/*.yaml", "**/*.yml", "**.*/json", "package.json", "package-lock.json"],
-                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**/build", ".git", "node_modules"]
+                        exclude=DEFAULT_FORMAT_IGNORE_LIST
                     ),
                 )
                 .with_workdir(f"/src")

@@ -3,6 +3,7 @@ import logging
 import sys
 import asyncclick as click
 import dagger
+from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
 
 from pipelines.helpers.utils import sh_dash_c
 
@@ -47,7 +48,7 @@ async def format_java(fix: bool) -> bool:
                     dagger_client.host().directory(
                         ".", 
                         include=["**/*.java", "**/*.sql", "**/*.gradle", "gradlew", "gradlew.bat", "gradle", "**/deps.toml", "**/gradle.properties", "**/version.properties", "tools/gradle/codestyle/java-google-style.xml", "tools/gradle/codestyle/sql-dbeaver.properties"],
-                        exclude=["**/__pycache__", "**/.pytest_cache", "**/.venv", "**/build", ".git"]
+                        exclude=DEFAULT_FORMAT_IGNORE_LIST
                     )
                 )
                 .with_workdir(f"/src")

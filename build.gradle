@@ -235,7 +235,6 @@ allprojects {
                 dbeaver().configFile(rootProject.file('tools/gradle/codestyle/sql-dbeaver.properties'))
             }
         }
-        // TODO: figure out why prettier has so many problems with files now that it didn't before
     }
 //    tasks.matching { it.name =~ /spotless.*/ }.configureEach {
 //        dependsOn tasks.matching { it.name == 'generate' }
