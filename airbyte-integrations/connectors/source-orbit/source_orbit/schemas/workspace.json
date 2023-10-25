@@ -47,7 +47,7 @@
       "type": "object",
       "properties": {
         "last_member": {
-          "type": ["null","object"],
+          "type": ["null", "object"],
           "properties": {
             "data": {
               "type": ["null", "object"]
@@ -55,7 +55,7 @@
           }
         },
         "last_activity": {
-          "type": ["null","object"],
+          "type": ["null", "object"],
           "properties": {
             "data": {
               "type": ["null", "object"]
@@ -63,7 +63,7 @@
           }
         },
         "repositories": {
-          "type": ["null","object"],
+          "type": ["null", "object"],
           "properties": {
             "data": {
               "type": ["null", "array"]

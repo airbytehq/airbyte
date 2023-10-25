@@ -14,7 +14,7 @@ definitions:
       type: BearerAuthenticator
       api_token: "{{ config['api_token'] }}"
     request_parameters:
-      start_date: "{{config['start_date']}}"
+      start_date: "{{ config.get('start_date') }}"
   retriever:
     type: SimpleRetriever
     record_selector:
