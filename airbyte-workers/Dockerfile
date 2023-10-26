@@ -3,7 +3,7 @@ ARG JDK_IMAGE=openjdk:${JDK_VERSION}
 FROM ${JDK_IMAGE} AS worker
 
 ARG DOCKER_BUILD_ARCH=amd64
-
+ARG KUBECTL_VERSION="v1.25.3"
 # Install Docker to launch worker images. Eventually should be replaced with Docker-java.
 # See https://gitter.im/docker-java/docker-java?at=5f3eb87ba8c1780176603f4e for more information on why we are not currently using Docker-java
 # See https://docs.docker.com/engine/install/debian/ to understand what the following commands are
@@ -11,6 +11,7 @@ ARG DOCKER_BUILD_ARCH=amd64
 RUN apt-get update && apt-get install -y \
                           ca-certificates \
                           wget \
+                          curl \
                           gnupg \
                           lsb-release
 RUN mkdir -p /etc/apt/keyrings && \
@@ -23,9 +24,17 @@ RUN apt-get update && apt-get install -y docker-ce-cli jq
 # Install kubectl for copying files to kube pods. Eventually should be replaced with a kube java client.
 # See https://github.com/airbytehq/airbyte/issues/8643 for more information on why we are using kubectl for copying.
 # The following commands were taken from https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/#install-using-native-package-management
-RUN wget -O /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg && \
-        echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
-RUN apt-get update && apt-get install -y kubectl
+#RUN wget -O /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg && \
+#        echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | tee /etc/apt/sources.list.d/kubernetes.list
+#RUN apt-get update && apt-get install -y kubectl
+
+# 下载kubectl二进制文件并安装
+RUN curl -LO "https://storage.googleapis.com/kubernetes-release/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" \
+  && chmod +x kubectl \
+  && mv kubectl /usr/local/bin/
+
+# 验证kubectl安装是否成功
+RUN kubectl version --client
 
 # Don't change this manually.  Bump version expects to make moves based on this string
 ARG VERSION=0.40.6
