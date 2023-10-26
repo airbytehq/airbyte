@@ -7,7 +7,6 @@ import logging
 import os
 import urllib
 from abc import ABC, abstractmethod
-from pathlib import Path
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import urljoin
 
@@ -65,9 +64,13 @@ class HttpStream(Stream, ABC):
         return False
 
     def request_cache(self) -> requests.Session:
-        # Defaults to current directory to ensure this doesn't fail when running from unit tests or environment that do not use the entrypoint
-        cache_dir = Path(os.getenv(ENV_REQUEST_CACHE_PATH, "."))
-        return requests_cache.CachedSession(str(cache_dir / self.cache_filename), backend="sqlite")
+        cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
+        # Use in-memory cache if cache_dir is not set
+        # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
+        if cache_dir:
+            return requests_cache.CachedSession(str(cache_dir / self.cache_filename), backend="sqlite")
+        else:
+            return requests_cache.CachedSession(backend=requests_cache.SQLiteCache(use_memory=True))
 
     def clear_cache(self) -> None:
         """
