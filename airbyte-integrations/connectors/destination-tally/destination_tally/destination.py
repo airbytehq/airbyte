@@ -10,6 +10,7 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
 from .utils import (
+    insert_creditnote_without_inventory_to_tally,
     insert_debitnote_without_inventory_to_tally,
     insert_item_master_to_tally,
     insert_journal_voucher_to_tally,
@@ -19,7 +20,6 @@ from .utils import (
     insert_receipt_voucher_to_tally,
     insert_sales_order_to_tally,
     insert_sales_without_inventory_to_tally,
-    insert_creditnote_without_inventory_to_tally,
 )
 
 
@@ -103,7 +103,10 @@ class DestinationTally(Destination):
                 elif "creditnote" in airbyte_message.record.stream:
                     credinote_without_inventory_url = "https://api.excel2tally.in/api/User/CreditNoteWithoutInventory"
                     insert_creditnote_without_inventory_to_tally(
-                        config=config, data=airbyte_message.record.data, creditnote_without_inventory_template_url=credinote_without_inventory_url, logger=logger
+                        config=config,
+                        data=airbyte_message.record.data,
+                        creditnote_without_inventory_template_url=credinote_without_inventory_url,
+                        logger=logger,
                     )
             elif airbyte_message.type == Type.STATE:
                 yield airbyte_message
