@@ -117,7 +117,7 @@ def insert_ledger_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any
         else:
             logger.warn(f'ledger : {data["Ledger Name"]} cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
-        logger.error(f'request for ledger : {data["Ledger Name"]} not successful , {e}')
+        logger.exception(f'request for ledger : {data["Ledger Name"]} not successful , {e}')
 
 
 # 2. Journal Voucher Template - Date format problem
@@ -200,7 +200,7 @@ def insert_journal_voucher_to_tally(
                 f'journal entry with [Voucher Number = {data["Voucher Number"]}] cannot be inserted into Tally, Error : {response.content}'
             )
     except Exception as e:
-        logger.error(f"request for inserting journal was not successful , {e}")
+        logger.exception(f"request for inserting journal was not successful , {e}")
 
 
 # 3. Item Master Template : (Date format : mm-dd-yyyy)
@@ -276,7 +276,7 @@ def insert_item_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
         else:
             logger.warn(f'item : {data["Item Name"]} cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
-        logger.error(f'request for item : {data["Item Name"]} not successful, {e}')
+        logger.exception(f'request for item : {data["Item Name"]} not successful, {e}')
 
 
 # 4. Sales order Template
@@ -383,7 +383,7 @@ def insert_sales_order_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
                 f'sales order [Customer name = {data["Customer Name"]} , Voucher number = {data["Voucher Number"]}] cannot be inserted into Tally, Error : {response.content}'
             )
     except Exception as e:
-        logger.error(f"request for sales order not successful, {e}")
+        logger.exception(f"request for sales order not successful, {e}")
 
 
 # 5. Payment Voucher Template - *** Working *** (Bill Date format : dd-mm-yyyy)
@@ -450,7 +450,7 @@ def insert_payment_voucher_to_tally(
                 f'payment voucher with voucher number : {data["Voucher Number"]} cannot be inserted into Tally, Error : {response.content}'
             )
     except Exception as e:
-        logger.error(f"request for payment voucher not successful : {e}")
+        logger.exception(f"request for payment voucher not successful : {e}")
 
 
 # 6. Receipt Voucher Template - Date format problem
@@ -531,7 +531,7 @@ def insert_receipt_voucher_to_tally(
                 f'receipt voucher with [Voucher number = {data["Voucher Number"]}] cannot be inserted into Tally, Error : {response.content}'
             )
     except Exception as e:
-        logger.error(f"request for receipt voucher not successful, {e}")
+        logger.exception(f"request for receipt voucher not successful, {e}")
 
 
 # 7. Debit note without inventory Template - Date format problem
@@ -671,7 +671,7 @@ def insert_debitnote_without_inventory_to_tally(
                 f'debit note with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally, Error : {response.content}'
             )
     except Exception as e:
-        logger.error(f"request for debit note not successful, {e}")
+        logger.exception(f"request for debit note not successful, {e}")
 
 
 # 8. Purchase without inventory Template - Date format problem
@@ -842,7 +842,7 @@ def insert_purchase_without_inventory_to_tally(
                 f'purchase without inventory for [Voucher Number = {data["Voucher No"]}] cannot be inserted , Error : {response.content}'
             )
     except Exception as e:
-        logger.error(f"request for purchase without inventory not successful, {e}")
+        logger.exception(f"request for purchase without inventory not successful, {e}")
 
 
 # 9. Credit Note without inventory Template - Date format problem
@@ -982,7 +982,7 @@ def insert_creditnote_without_inventory_to_tally(
                 f'credit note with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally, Error : {response.content}'
             )
     except Exception as e:
-        logger.error(f"request for credit note not successful, {e}")
+        logger.exception(f"request for credit note not successful, {e}")
 
 
 # 10. Sales without inventory Template - Date format problem
@@ -1168,4 +1168,4 @@ def insert_sales_without_inventory_to_tally(
                 f'sales without inventory with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally, Error : {response.content}'
             )
     except Exception as e:
-        logger.error(f"request for sales without inventory not successful, {e}")
+        logger.exception(f"request for sales without inventory not successful, {e}")

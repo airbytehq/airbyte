@@ -39,75 +39,31 @@ class DestinationTally(Destination):
         for airbyte_message in input_messages:
             if airbyte_message.type == Type.RECORD:
                 # check if airbyte stream contains any of supported_streams
-                supported_streams = ["ledger", "item", "payment"]
+                supported_streams = ["ledger", "item", "payment", "sales_order", "purchase_without_inventory", "receipt", "sales_without_inventory", "debit_note", "journal", "credit_note"]
                 if not any(supported_stream in airbyte_message.record.stream for supported_stream in supported_streams):
                     logger.warn(
                         f"Skipping this stream : {airbyte_message.record.stream}, as it does not match any tally streams in [ledger, item, payment voucher]"
                     )
                     continue
 
-                if "ledger" in airbyte_message.record.stream:
-                    ledger_url = "https://api.excel2tally.in/api/User/LedgerMaster"
-                    insert_ledger_master_to_tally(
-                        config=config, data=airbyte_message.record.data, ledger_master_template_url=ledger_url, logger=logger
-                    )
-                elif "item" in airbyte_message.record.stream:
-                    item_url = "https://api.excel2tally.in/api/User/ItemMaster"
-                    insert_item_master_to_tally(
-                        config=config, data=airbyte_message.record.data, item_master_template_url=item_url, logger=logger
-                    )
-                elif "payment" in airbyte_message.record.stream:
-                    payment_voucher_url = "https://api.excel2tally.in/api/User/PaymentVoucher"
-                    insert_payment_voucher_to_tally(
-                        config=config, data=airbyte_message.record.data, payment_voucher_template_url=payment_voucher_url, logger=logger
-                    )
-                elif "sales_order" in airbyte_message.record.stream:
-                    sales_order_url = "https://api.excel2tally.in/api/User/SalesOrder"
-                    insert_sales_order_to_tally(
-                        config=config, data=airbyte_message.record.data, sales_order_template_url=sales_order_url, logger=logger
-                    )
-                elif "purchase_without_inventory" in airbyte_message.record.stream:
-                    purchase_without_inventory_url = "https://api.excel2tally.in/api/User/PurchaseWithoutInventory"
-                    insert_purchase_without_inventory_to_tally(
-                        config=config,
-                        data=airbyte_message.record.data,
-                        purchase_without_inventory_template_url=purchase_without_inventory_url,
-                        logger=logger,
-                    )
-                elif "receipt" in airbyte_message.record.stream:
-                    receipt_voucher_url = "https://api.excel2tally.in/api/User/ReceiptVoucher"
-                    insert_receipt_voucher_to_tally(
-                        config=config, data=airbyte_message.record.data, receipt_voucher_template_url=receipt_voucher_url, logger=logger
-                    )
-                elif "sales_without_inventory" in airbyte_message.record.stream:
-                    sales_without_inventory_url = "https://api.excel2tally.in/api/User/SalesWithoutInventory"
-                    insert_sales_without_inventory_to_tally(
-                        config=config,
-                        data=airbyte_message.record.data,
-                        sales_without_inventory_template_url=sales_without_inventory_url,
-                        logger=logger,
-                    )
-                elif "debitnote" in airbyte_message.record.stream:
-                    debitnote_url = "https://api.excel2tally.in/api/User/DebitNoteWithoutInventory"
-                    insert_debitnote_without_inventory_to_tally(
-                        config=config,
-                        data=airbyte_message.record.data,
-                        debitnote_without_inventory_template_url=debitnote_url,
-                        logger=logger,
-                    )
-                elif "journal" in airbyte_message.record.stream:
-                    journal_voucher_url = "https://api.excel2tally.in/api/User/JournalTemplate"
-                    insert_journal_voucher_to_tally(
-                        config=config, data=airbyte_message.record.data, journal_voucher_template_url=journal_voucher_url, logger=logger
-                    )
-                elif "creditnote" in airbyte_message.record.stream:
-                    credinote_without_inventory_url = "https://api.excel2tally.in/api/User/CreditNoteWithoutInventory"
-                    insert_creditnote_without_inventory_to_tally(
-                        config=config,
-                        data=airbyte_message.record.data,
-                        creditnote_without_inventory_template_url=credinote_without_inventory_url,
-                        logger=logger,
-                    )
+                supported_tally_streams = {
+                    "ledger": ("https://api.excel2tally.in/api/User/LedgerMaster", insert_ledger_master_to_tally),
+                    "item": ("https://api.excel2tally.in/api/User/ItemMaster", insert_item_master_to_tally),
+                    "payment": ("https://api.excel2tally.in/api/User/PaymentVoucher", insert_payment_voucher_to_tally),
+                    "sales_order": ("https://api.excel2tally.in/api/User/SalesOrder", insert_sales_order_to_tally),
+                    "purchase_without_inventory": ("https://api.excel2tally.in/api/User/PurchaseWithoutInventory", insert_purchase_without_inventory_to_tally),
+                    "receipt": ("https://api.excel2tally.in/api/User/ReceiptVoucher", insert_receipt_voucher_to_tally),
+                    "sales_without_inventory": ("https://api.excel2tally.in/api/User/SalesWithoutInventory", insert_sales_without_inventory_to_tally),
+                    "debit_note": ("https://api.excel2tally.in/api/User/DebitNoteWithoutInventory", insert_debitnote_without_inventory_to_tally),
+                    "journal": ("https://api.excel2tally.in/api/User/JournalTemplate", insert_journal_voucher_to_tally),
+                    "credit_note": ("https://api.excel2tally.in/api/User/CreditNoteWithoutInventory", insert_creditnote_without_inventory_to_tally)
+                }
+
+                for key in supported_tally_streams:
+                    if key in airbyte_message.record.stream:
+                        url, insert_function = supported_tally_streams.get(key)
+                        insert_function(config, airbyte_message.record.data, url, logger)
+
             elif airbyte_message.type == Type.STATE:
                 yield airbyte_message
 
