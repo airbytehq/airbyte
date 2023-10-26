@@ -93,7 +93,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push (dev and commit tag)
         uses: docker/build-push-action@v3
         if: needs.paths-filter.outputs.atf_modified == 'true' && github.ref == 'refs/heads/master'
         with:
@@ -102,7 +102,7 @@ jobs:
           push: true
           tags: ghcr.io/estuary/airbyte-to-flow:dev,ghcr.io/estuary/airbyte-to-flow:${{ steps.prep.outputs.tag }}
 
-      - name: Build and push
+      - name: Build and push (commit tag)
         uses: docker/build-push-action@v3
         if: needs.paths-filter.outputs.atf_modified == 'true' && github.ref != 'refs/heads/master'
         with:
@@ -211,6 +211,8 @@ jobs:
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" && '${{ needs.paths-filter.outputs.atf_modified }}' == 'true' ]]; then
             AIRBYTE_TO_FLOW_TAG=${{ steps.prep.outputs.tag }}
           fi
+          echo "$GITHUB_EVENT_NAME"
+          echo $AIRBYTE_TO_FLOW_TAG
 
           if [ -f "airbyte-integrations/connectors/${{ matrix.connector.name }}/requirements.txt" ]; then
             ./gradlew :airbyte-integrations:connectors:${{ matrix.connector.name }}:build

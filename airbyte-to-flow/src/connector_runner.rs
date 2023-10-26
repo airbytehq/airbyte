@@ -148,7 +148,7 @@ pub async fn run_airbyte_source_connector(
     let exit_status_task = async move {
         let c = Arc::clone(child_arc);
 
-        let exit_status_result = check_exit_status("atf:", c.lock().await.wait().await);
+        let exit_status_result = check_exit_status(c.lock().await.wait().await);
 
         // There are some Airbyte connectors that write records, and exit successfully, without ever writing
         // a state (checkpoint). In those cases, we want to provide a default empty checkpoint. It's important that

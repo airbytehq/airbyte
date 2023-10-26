@@ -7,19 +7,16 @@ pub const READY: &[u8] = "READY\n".as_bytes();
 
 // Check the connector execution exit status.
 // TODO: replace this function after `exit_status_error` is stable. https://github.com/rust-lang/rust/issues/84908
-pub fn check_exit_status(message: &str, result: std::io::Result<ExitStatus>) -> Result<(), Error> {
+pub fn check_exit_status(result: std::io::Result<ExitStatus>) -> Result<(), Error> {
     match result {
         Ok(status) => {
             if status.success() {
-                tracing::info!("{} exited without error", message);
+                tracing::info!("atf: exited without error");
                 Ok(())
             } else {
                 match status.code() {
                     Some(code) => Err(Error::ExitCode(code)),
-                    None => Err(Error::CommandExecutionError(format!(
-                        "{} process terminated by signal",
-                        message
-                    ))),
+                    None => Err(Error::CommandExecutionError("atf: process terminated by signal".to_string())),
                 }
             }
         }
