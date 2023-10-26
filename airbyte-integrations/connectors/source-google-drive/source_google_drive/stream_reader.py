@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import smart_open
 import json
 import logging
 import re
@@ -10,12 +9,13 @@ from datetime import datetime
 from io import IOBase
 from typing import Iterable, List, Optional, Set
 
+import smart_open
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from google.oauth2 import credentials, service_account
-from googleapiclient.discovery import build
 from googleapiclient import _auth
+from googleapiclient.discovery import build
 
 from .spec import SourceGoogleDriveSpec
 
@@ -140,7 +140,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         uri = request.uri
         headers = {**request.headers, "Authorization": f"Bearer {_auth.get_credentials_from_http(self.google_drive_service._http).token}"}
 
-        return smart_open.open(uri=uri, transport_params={"headers":headers}, mode=mode.value, encoding=encoding)
+        return smart_open.open(uri=uri, transport_params={"headers": headers}, mode=mode.value, encoding=encoding)
 
     def _get_export_mime_type(self, file: GoogleDriveRemoteFile):
         """
