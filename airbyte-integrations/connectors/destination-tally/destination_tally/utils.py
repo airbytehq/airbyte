@@ -25,7 +25,7 @@ def clear_post_data(config: Mapping[str, Any], template_key: str, logger: Airbyt
     if response.status_code == 200:
         logger.info("previous post data for ledger cleared")
     else:
-        logger.info("couldn't clear the post data")
+        logger.warn("couldn't clear the post data")
 
 
 def prepare_headers(config: Mapping[str, Any], template_key: str):
@@ -112,12 +112,12 @@ def insert_ledger_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any
         response = requests.request(
             method="POST", url=ledger_master_template_url, data=ledger_master_payload, headers=ledger_master_headers
         )
-        if response.status_code == 200:
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
             logger.info(f'ledger : {data["Ledger Name"]} successfully inserted into Tally')
         else:
-            logger.warn(f'ledger : {data["Ledger Name"]} cannot be inserted into Tally')
+            logger.warn(f'ledger : {data["Ledger Name"]} cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
-        logger.error(f'request for ledger : {data["Ledger Name"]} not successful , {e}')
+        logger.exception(f'request for ledger : {data["Ledger Name"]} not successful , {e}')
 
 
 # 2. Journal Voucher Template - Date format problem
@@ -129,7 +129,7 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
     4. Unit [UOM]
     5. Voucher Type
     """
-    required_fields = ["Date", "Voucher Number", "Voucher Type", "Ledger Name", "Debit / Credit", "Amount"]
+    required_fields = ["Date", "Voucher Number", "Voucher Type", "Ledger Name", "Debit / Credit", "Other Ledger Name", "Amount"]
 
     for field in required_fields:
         if (field not in data) or (data[field] == ""):
@@ -142,6 +142,7 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
         "Voucher Type",
         "Ledger Name",
         "Debit / Credit",
+        "Other Ledger Name",
         "Amount",
         "Voucher Ref Date",
         "Bill Ref No",
@@ -156,23 +157,23 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
         "Narration",
     ]
 
-    credit_payload = {"Debit / Credit": "Cr"}
+    ledger1_payload = {"Debit / Credit": data["Debit / Credit"]}
     for key, value in data:
-        if key in journal_voucher_fields:
-            if key == "Debit / Credit" and (value == "Dr" or value == "Cr"):
-                continue
-            else:
-                credit_payload[key] = value
+        if (key in journal_voucher_fields) and (str(value) != "") and (key != "Other Ledger Name"):
+            ledger1_payload[key] = value
 
-    debit_payload = {"Debit / Credit": "Dr"}
+    if data["Debit / Credit"] == "Dr":
+        ledger2_payload = {"Debit / Credit": "Cr"}
+    else:
+        ledger2_payload = {"Debit / Credit": "Dr"}
+    ledger2_payload["Ledger Name"] = data["Other Ledger Name"]
+
     for key, value in data:
-        if key in journal_voucher_fields:
-            if key == "Debit / Credit" and (value == "Dr" or value == "Cr"):
-                continue
-            else:
-                debit_payload[key] = value
+        fields = ["Debit / Credit", "Ledger Name", "Other Ledger Name"]
+        if (key in journal_voucher_fields) and (str(value) != "") and (not any(field == key for field in fields)):
+            ledger2_payload[key] = value
 
-    return json.dumps({"body": [credit_payload, debit_payload]})
+    return json.dumps({"body": [ledger1_payload, ledger2_payload]})
 
 
 def insert_journal_voucher_to_tally(
@@ -182,23 +183,19 @@ def insert_journal_voucher_to_tally(
     journal_voucher_headers = prepare_headers(config=config, template_key=journal_voucher_template_key)
     journal_voucher_payload = prepare_journal_voucher_payload(data=data, logger=logger)
 
-    logger.info(f"headers : {journal_voucher_headers}")
-    logger.info(f"payload : {journal_voucher_payload}")
-
     try:
+        logger.info(f"journal voucher payload : {journal_voucher_payload}")
         response = requests.request(
             method="POST", url=journal_voucher_template_url, data=journal_voucher_payload, headers=journal_voucher_headers
         )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'journal entry with [Voucher Number = {data["Voucher Number"]}] successfully inserted into Tally')
+        else:
+            logger.warn(
+                f'journal entry with [Voucher Number = {data["Voucher Number"]}] cannot be inserted into Tally, Error : {response.content}'
+            )
     except Exception as e:
-        logger.error(f"request for inserting journal was not successful , {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("journal entry successfully inserted into Tally")
-    else:
-        logger.info("journal entry cannot be inserted into Tally")
-
-    logger.info(f"result : {response.content}")
+        logger.exception(f"request for inserting journal was not successful , {e}")
 
 
 # 3. Item Master Template : (Date format : mm-dd-yyyy)
@@ -266,20 +263,28 @@ def insert_item_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
     item_master_payload = prepare_item_master_payload(data=data, logger=logger)
 
     try:
-        logger.info(f"item payload : {item_master_payload}")
+        logger.info(f"item master payload : {item_master_payload}")
         response = requests.request(method="POST", url=item_master_template_url, data=item_master_payload, headers=item_master_headers)
-
-        if response.status_code == 200:
+        """
+        Response format:
+        [
+            {
+                "Result": "Records 2 Processed Successfully"
+            }
+        ]
+        """
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
             logger.info(f'item : {data["Item Name"]} successfully inserted into Tally')
         else:
-            logger.warn(f'item : {data["Item Name"]} cannot be inserted into Tally')
+            logger.warn(f'item : {data["Item Name"]} cannot be inserted into Tally, Error : {response.content}')
     except Exception as e:
-        logger.error(f'request for item : {data["Item Name"]} not successful, {e}')
+        logger.exception(f'request for item : {data["Item Name"]} not successful, {e}')
 
 
-# 4. Sales order Template - Date format problem
+# 4. Sales order Template
 def prepare_sales_order_payload(data: Dict[str, Any], logger: AirbyteLogger):
     """
+    These fields are needed in tally before inserting sales order
     1. Unit [UOM]
     2. Sales Ledger
     3. Other Charges_1 Ledger
@@ -357,7 +362,7 @@ def prepare_sales_order_payload(data: Dict[str, Any], logger: AirbyteLogger):
 
     sales_order_payload = {}
     for key, value in data.items():
-        if key in sales_order_fields:
+        if (key in sales_order_fields) and (str(value)) != "":
             sales_order_payload[key] = value
 
     return json.dumps({"body": [sales_order_payload]})
@@ -369,15 +374,18 @@ def insert_sales_order_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
     sales_order_payload = prepare_sales_order_payload(data=data, logger=logger)
 
     try:
+        logger.info(f"sales order payload : {sales_order_payload}")
         response = requests.request(method="POST", url=sales_order_template_url, data=sales_order_payload, headers=sales_order_headers)
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(
+                f'sales order [Customer name = {data["Customer Name"]} , Voucher number = {data["Voucher Number"]}] successfully inserted into Tally'
+            )
+        else:
+            logger.warn(
+                f'sales order [Customer name = {data["Customer Name"]} , Voucher number = {data["Voucher Number"]}] cannot be inserted into Tally, Error : {response.content}'
+            )
     except Exception as e:
-        logger.error(f"request for sales order not successful, {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("sales order successfully inserted into Tally")
-    else:
-        logger.info("sales order cannot be inserted into Tally")
+        logger.exception(f"request for sales order not successful, {e}")
 
 
 # 5. Payment Voucher Template - *** Working *** (Bill Date format : dd-mm-yyyy)
@@ -437,12 +445,14 @@ def insert_payment_voucher_to_tally(
         response = requests.request(
             method="POST", url=payment_voucher_template_url, data=payment_voucher_payload, headers=payment_voucher_headers
         )
-        if response.status_code == 200:
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
             logger.info(f'payment voucher with voucher number : {data["Voucher Number"]} successfully inserted into Tally')
         else:
-            logger.warn(f'payment voucher with voucher number : {data["Voucher Number"]} cannot be inserted into Tally')
+            logger.warn(
+                f'payment voucher with voucher number : {data["Voucher Number"]} cannot be inserted into Tally, Error : {response.content}'
+            )
     except Exception as e:
-        logger.error(f"request for payment voucher not successful : {e}")
+        logger.exception(f"request for payment voucher not successful : {e}")
 
 
 # 6. Receipt Voucher Template - Date format problem
@@ -498,7 +508,7 @@ def prepare_receipt_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
 
     receipt_voucher_payload = {}
     for key, value in data.items():
-        if key in receipt_voucher_fields:
+        if (key in receipt_voucher_fields) and (str(value) != ""):
             receipt_voucher_payload[key] = value
 
     return json.dumps({"body": [receipt_voucher_payload]})
@@ -512,19 +522,18 @@ def insert_receipt_voucher_to_tally(
     receipt_voucher_payload = prepare_receipt_voucher_payload(data=data, logger=logger)
 
     try:
+        logger.info(f"receipt voucher payload : {receipt_voucher_payload}")
         response = requests.request(
             method="POST", url=receipt_voucher_template_url, data=receipt_voucher_payload, headers=receipt_voucher_headers
         )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'receipt voucher with [Voucher number = {data["Voucher Number"]}] successfully inserted into Tally')
+        else:
+            logger.warn(
+                f'receipt voucher with [Voucher number = {data["Voucher Number"]}] cannot be inserted into Tally, Error : {response.content}'
+            )
     except Exception as e:
-        logger.error(f"request for receipt voucher not successful, {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("receipt voucher successfully inserted into Tally")
-    else:
-        logger.info("receipt voucher cannot be inserted into Tally")
-
-    logger.info(f"result : {response.content}")
+        logger.exception(f"request for receipt voucher not successful, {e}")
 
 
 # 7. Debit note without inventory Template - Date format problem
@@ -636,7 +645,7 @@ def prepare_debitnote_without_inventory_payload(data: Dict[str, Any], logger: Ai
 
     debitnote_without_inventory_payload = {}
     for key, value in data.items():
-        if key in debitnote_without_inventory_fields:
+        if (key in debitnote_without_inventory_fields) and (str(value) != ""):
             debitnote_without_inventory_payload[key] = value
 
     return json.dumps({"body": [debitnote_without_inventory_payload]})
@@ -650,20 +659,21 @@ def insert_debitnote_without_inventory_to_tally(
     debitnote_without_inventory_payload = prepare_debitnote_without_inventory_payload(data=data, logger=logger)
 
     try:
+        logger.info(f"debit note without inventory payload : {debitnote_without_inventory_payload}")
         response = requests.request(
             method="POST",
             url=debitnote_without_inventory_template_url,
             data=debitnote_without_inventory_payload,
             headers=debitnote_without_inventory_headers,
         )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'debit note with [Voucher number = {data["Voucher No"]}] successfully inserted into Tally')
+        else:
+            logger.warn(
+                f'debit note with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally, Error : {response.content}'
+            )
     except Exception as e:
-        logger.error(f"request for debit note not successful, {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("debit note successfully inserted into Tally")
-    else:
-        logger.info("debit note cannot be inserted into Tally")
+        logger.exception(f"request for debit note not successful, {e}")
 
 
 # 8. Purchase without inventory Template - Date format problem
@@ -803,7 +813,7 @@ def prepare_purchase_without_inventory_payload(data: Dict[str, Any], logger: Air
 
     purchase_without_inventory_payload = {}
     for key, value in data.items():
-        if key in purchase_without_inventory_fields:
+        if (key in purchase_without_inventory_fields) and (str(value) != ""):
             purchase_without_inventory_payload[key] = value
 
     return json.dumps({"body": [purchase_without_inventory_payload]})
@@ -816,21 +826,25 @@ def insert_purchase_without_inventory_to_tally(
     purchase_without_inventory_headers = prepare_headers(config=config, template_key=purchase_without_inventory_template_key)
     purchase_without_inventory_payload = prepare_purchase_without_inventory_payload(data=data, logger=logger)
 
+    purchase_without_inventory_headers["AddAutoMaster"] = 1
+    purchase_without_inventory_headers["Automasterids"] = 1
+
     try:
+        logger.info(f"purchase without inventory payload : {purchase_without_inventory_payload}")
         response = requests.request(
             method="POST",
             url=purchase_without_inventory_template_url,
             data=purchase_without_inventory_payload,
             headers=purchase_without_inventory_headers,
         )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'purchase without inventory for [Voucher Number = {data["Voucher No"]}] successfully inserted into Tally')
+        else:
+            logger.warn(
+                f'purchase without inventory for [Voucher Number = {data["Voucher No"]}] cannot be inserted , Error : {response.content}'
+            )
     except Exception as e:
-        logger.error(f"request for purchase without inventory not successful, {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("purchase without inventory successfully inserted into Tally")
-    else:
-        logger.info("purchase without inventory cannot be inserted into Tally")
+        logger.exception(f"request for purchase without inventory not successful, {e}")
 
 
 # 9. Credit Note without inventory Template - Date format problem
@@ -854,7 +868,7 @@ def prepare_creditnote_without_inventory_payload(data: Dict[str, Any], logger: A
             logger.error(f"Please provide {field} as it is required field.")
             return
 
-    debitnote_without_inventory_fields = [
+    creditnote_without_inventory_fields = [
         "Date",
         "Voucher No",
         "Voucher Type",
@@ -940,12 +954,12 @@ def prepare_creditnote_without_inventory_payload(data: Dict[str, Any], logger: A
         "Narration",
     ]
 
-    debitnote_without_inventory_payload = {}
+    credit_without_inventory_payload = {}
     for key, value in data.items():
-        if key in debitnote_without_inventory_fields:
-            debitnote_without_inventory_payload[key] = value
+        if (key in creditnote_without_inventory_fields) and (str(value) != ""):
+            credit_without_inventory_payload[key] = value
 
-    return json.dumps({"body": [debitnote_without_inventory_payload]})
+    return json.dumps({"body": [credit_without_inventory_payload]})
 
 
 def insert_creditnote_without_inventory_to_tally(
@@ -956,20 +970,21 @@ def insert_creditnote_without_inventory_to_tally(
     creditnote_without_inventory_payload = prepare_creditnote_without_inventory_payload(data=data, logger=logger)
 
     try:
+        logger.info(f"credit note without inventory payload : {creditnote_without_inventory_payload}")
         response = requests.request(
             method="POST",
             url=creditnote_without_inventory_template_url,
             data=creditnote_without_inventory_payload,
             headers=creditnote_without_inventory_headers,
         )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'credit note with [Voucher number = {data["Voucher No"]}] successfully inserted into Tally')
+        else:
+            logger.warn(
+                f'credit note with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally, Error : {response.content}'
+            )
     except Exception as e:
-        logger.error(f"request for credit note not successful, {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("credit note successfully inserted into Tally")
-    else:
-        logger.info("credit note cannot be inserted into Tally")
+        logger.exception(f"request for credit note not successful, {e}")
 
 
 # 10. Sales without inventory Template - Date format problem
@@ -1124,7 +1139,7 @@ def prepare_sales_without_inventory_payload(data: Dict[str, Any], logger: Airbyt
 
     sales_without_inventory_payload = {}
     for key, value in data.items():
-        if key in sales_without_inventory_fields:
+        if (key in sales_without_inventory_fields) and (str(value) != ""):
             sales_without_inventory_payload[key] = value
 
     return json.dumps({"body": [sales_without_inventory_payload]})
@@ -1137,18 +1152,22 @@ def insert_sales_without_inventory_to_tally(
     sales_without_inventory_headers = prepare_headers(config=config, template_key=sales_without_inventory_template_key)
     sales_without_inventory_payload = prepare_sales_without_inventory_payload(data=data, logger=logger)
 
+    sales_without_inventory_headers["AddAutoMaster"] = 1
+    sales_without_inventory_headers["Automasterids"] = 1
+
     try:
+        logger.info(f"sales without inventory payload : {sales_without_inventory_payload}")
         response = requests.request(
             method="POST",
             url=sales_without_inventory_template_url,
             data=sales_without_inventory_payload,
             headers=sales_without_inventory_headers,
         )
+        if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
+            logger.info(f'sales without inventory with [Voucher number = {data["Voucher No"]}]  successfully inserted into Tally')
+        else:
+            logger.warn(
+                f'sales without inventory with [Voucher number = {data["Voucher No"]}] cannot be inserted into Tally, Error : {response.content}'
+            )
     except Exception as e:
-        logger.error(f"request for sales without inventory not successful, {e}")
-        return
-
-    if response.status_code == 200:
-        logger.info("sales without inventory successfully inserted into Tally")
-    else:
-        logger.info("sales without inventory cannot be inserted into Tally")
+        logger.exception(f"request for sales without inventory not successful, {e}")
