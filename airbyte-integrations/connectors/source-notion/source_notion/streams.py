@@ -61,8 +61,16 @@ class NotionStream(HttpStream, ABC):
         return NotionAvailabilityStrategy()
 
     @property
-    def retry_factor(self) -> float:
-        return 8
+    def retry_factor(self) -> int:
+        return 5
+
+    @property
+    def max_retries(self) -> int:
+        return 7
+
+    @property
+    def max_time(self) -> int:
+        return 60 * 11
 
     @staticmethod
     def check_invalid_start_cursor(response: requests.Response):
