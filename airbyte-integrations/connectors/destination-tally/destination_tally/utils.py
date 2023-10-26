@@ -172,11 +172,9 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
     ledger2_payload["Ledger Name"] = data["Other Ledger Name"]
 
     for key, value in data:
-        if (key in journal_voucher_fields) and (str(value) != ""):
-            if (key == "Debit / Credit") or (key == "Ledger Name") or (key == "Other Ledger Name"):
-                continue
-            else:
-                ledger2_payload[key] = value
+        fields = ["Debit / Credit", "Ledger Name", "Other Ledger Name"]
+        if (key in journal_voucher_fields) and (str(value) != "") and (not any(field==key for field in fields)):
+            ledger2_payload[key] = value
 
     return json.dumps({"body": [ledger1_payload, ledger2_payload]})
 
@@ -270,7 +268,14 @@ def insert_item_master_to_tally(config: Mapping[str, Any], data: Dict[str, Any],
     try:
         logger.info(f"item master payload : {item_master_payload}")
         response = requests.request(method="POST", url=item_master_template_url, data=item_master_payload, headers=item_master_headers)
-
+        """
+        Response format:
+        [
+            {
+                "Result": "Records 2 Processed Successfully"
+            }
+        ]
+        """
         if (response.status_code == 200) and ("processed successfully" in str(response.content).lower()):
             logger.info(f'item : {data["Item Name"]} successfully inserted into Tally')
         else:
