@@ -846,10 +846,7 @@ class AccountImpressionPerformanceReport(PerformanceReportsMixin, BingAdsStream,
         "AdDistribution",
         "DeviceType",
         "Network",
-        "DeliveredMatchType",
-        "DeviceOS",
-        "TopVsOther",
-        "BidMatchType",
+        "DeliveredMatchType"
     ]
 
     @property
