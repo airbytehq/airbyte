@@ -61,7 +61,7 @@ Authentication to the Shopify API requires a [custom application](https://help.s
 1. Enter a **Source name**.
 2. Enter your **Shopify Store** name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
 3. For **API Password**, enter your custom application's Admin API access token.
-4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Please note that this defaults to January 1st, 2020.
 5. Click **Set up source** and wait for the connection test to complete.
 
 <HideInUI>
@@ -185,7 +185,7 @@ Expand to see details about Shopify connector limitations and troubleshooting
 
 #### Rate limiting
 
-Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but in some edge cases, you may encounter the following warning message:
+Shopify has some [rate limit restrictions](https://shopify.dev/concepts/about-apis/rate-limits). Typically, there should not be issues with throttling or exceeding the rate limits but, in some edge cases, you may encounter the following warning message:
 
 ```text
 "Caught retryable error '<some_error> or null' after <some_number> tries. 
