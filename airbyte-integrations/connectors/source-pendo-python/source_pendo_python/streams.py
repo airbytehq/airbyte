@@ -166,33 +166,8 @@ class Visitors(PendoPythonStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ):
-        if next_page_token is None:
-            return {
-                "response": {
-                    "mimeType": "application/json"
-                },
-                "request": {
-                    "requestId": "visitor-list",
-                    "pipeline": [
-                        {
-                            "source": {
-                                "visitors": {
-                                    "identified": True
-                                }
-                            }
-                        },
-                        {
-                            "sort": ["visitorId"]
-                        },
-                        {"limit": self.page_size}
-                    ]
-                }
-            }
-
-        return {
-            "response": {
-                "mimeType": "application/json"
-            },
+        request_body = {
+            "response": {"mimeType": "application/json"},
             "request": {
                 "requestId": "visitor-list",
                 "pipeline": [
@@ -206,13 +181,17 @@ class Visitors(PendoPythonStream):
                     {
                         "sort": ["visitorId"]
                     },
-                    {
-                        "filter": f"visitorId > \"{next_page_token}\""
-                    },
-                    {"limit": self.page_size}
-                ]
-            }
+                    {"limit": self.page_size},
+                ],
+            },
         }
+
+        if next_page_token is not None:
+            request_body["request"]["pipeline"].insert(
+                2, {"filter": f"visitorId > \"{next_page_token}\""}
+            )
+
+        return request_body
 
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
@@ -291,49 +270,24 @@ class Accounts(PendoPythonStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ):
-        if next_page_token is None:
-            return {
-                "response": {
-                    "mimeType": "application/json"
-                },
-                "request": {
-                    "requestId": "account-list",
-                    "pipeline": [
-                        {
-                            "source": {
-                                "accounts": {}
-                            }
-                        },
-                        {
-                            "sort": ["accountId"]
-                        },
-                        {"limit": self.page_size}
-                    ]
-                }
-            }
-
-        return {
-            "response": {
-                "mimeType": "application/json"
-            },
+        request_body = {
+            "response": {"mimeType": "application/json"},
             "request": {
                 "requestId": "account-list",
                 "pipeline": [
-                    {
-                        "source": {
-                            "accounts": {}
-                        }
-                    },
-                    {
-                        "sort": ["accountId"]
-                    },
-                    {
-                        "filter": f"accountId > \"{next_page_token}\""
-                    },
-                    {"limit": self.page_size}
-                ]
-            }
+                    {"source": {"accounts": {}}},
+                    {"sort": ["accountId"]},
+                    {"limit": self.page_size},
+                ],
+            },
         }
+
+        if next_page_token is not None:
+            request_body["request"]["pipeline"].insert(
+                2, {"filter": f"accountId > \"{next_page_token}\""}
+            )
+
+        return request_body
 
     def parse_response(
         self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
