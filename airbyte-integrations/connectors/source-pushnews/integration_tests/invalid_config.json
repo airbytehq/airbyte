@@ -1,3 +1,6 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "api_key": "123456",
+  "start_date": "2000-01-01",
+  "status": "error",
+  "force_update_stats": 1
 }

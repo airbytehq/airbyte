@@ -78,6 +78,7 @@ Please use this as an example. This is not optimized.
 docker build -t airbyte/source-pushnews:dev .
 # Running the spec command against your patched connector
 docker run airbyte/source-pushnews:dev spec
+```
 
 #### Run
 Then run any of the connector commands as follows:
@@ -87,6 +88,7 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-pushnews:dev check --c
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-pushnews:dev discover --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-pushnews:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
+
 ## Testing
 
 #### Acceptance Tests

@@ -1,5 +1,6 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "value"
-  }
+  "api_key": "123456",
+  "start_date": "2023-01-01",
+  "status": "all",
+  "force_update_stats": false
 }
