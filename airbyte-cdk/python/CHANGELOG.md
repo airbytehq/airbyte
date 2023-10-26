@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.52.3
+Update source-declarative-manifest base image to update Linux alpine and Python
+
 ## 0.52.2
 
 
