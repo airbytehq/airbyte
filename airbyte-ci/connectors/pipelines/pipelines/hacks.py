@@ -50,7 +50,7 @@ async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "
         dagger_client.container()
         .from_("python:3.9-slim")
         .with_mounted_cache("/root/.cache/pip", dagger_client.cache_volume(pip_cache_volume_name))
-        .with_exec(["pip", "install", "--force-reinstall", f"airbyte-cdk=={cdk_latest_version}"])
+        .with_exec(["pip", "install", "--force-reinstall", f"airbyte-cdk=={cdk_latest_version}", "-vvv"])
         .sync()
     )
 
