@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.debezium.internals;
 
 import io.debezium.config.Configuration;
+import io.debezium.embedded.KafkaConnectUtil;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.kafka.connect.json.JsonConverter;
@@ -13,7 +14,6 @@ import org.apache.kafka.connect.runtime.WorkerConfig;
 import org.apache.kafka.connect.runtime.standalone.StandaloneConfig;
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
-import io.debezium.embedded.KafkaConnectUtil;
 
 /**
  * Represents a utility class that assists with the parsing of Debezium offset state.
