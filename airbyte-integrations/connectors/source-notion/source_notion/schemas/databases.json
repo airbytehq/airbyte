@@ -57,7 +57,7 @@
       "type": ["null", "string"]
     },
     "properties": {
-      "type": "array",
+      "type": "object",
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
@@ -323,7 +323,7 @@
                     "type": "string"
                   },
                   "type": {
-                    "enum": ["select", "multi_select"]
+                    "enum": ["multi_select"]
                   },
                   "name": {
                     "type": "string"
@@ -461,6 +461,26 @@
                       "show_unique",
                       "sum"
                     ]
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "enum": ["select"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "options.json"
+                    }
                   }
                 }
               },
