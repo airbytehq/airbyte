@@ -38,7 +38,7 @@ async def format_js(fix: bool) -> bool:
         try:
             format_container = await (
                 dagger_client.container()
-                .from_("node:18.18.0")  # Use specified Node.js version
+                .from_("node:18.18.0-slim")
                 .with_exec(
                     sh_dash_c(
                         [

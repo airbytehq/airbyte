@@ -38,7 +38,7 @@ async def format_python(fix: bool) -> bool:
         try:
             format_container = await (
                 dagger_client.container()
-                .from_("python:3.10.12")
+                .from_("python:3.10.13-slim")
                 .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
                 .with_exec(
                     sh_dash_c(
