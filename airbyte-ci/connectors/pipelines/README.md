@@ -44,7 +44,7 @@ pipx install --editable --force --python=python3.10 airbyte-ci/connectors/pipeli
 This command installs `airbyte-ci` and makes it globally available in your terminal.
 
 _Note: `--force` is required to ensure updates are applied on subsequent installs._
-_Note: `--python=python3.10` is required to ensure the correct python Oversion is used._
+_Note: `--python=python3.10` is required to ensure the correct python version is used._
 _Note: `--editable` is required to ensure the correct python version is used._
 
 If you face any installation problems feel free to reach out the Airbyte Connectors Operations team.
