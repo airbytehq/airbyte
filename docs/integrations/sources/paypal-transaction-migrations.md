@@ -1,8 +1,8 @@
 # Paypal Transaction Migration Guide
 
-## Upgrading to 2.0.1
+## Upgrading to 2.1.0
 
-Version 2.0.1 changes the format of the state object. Upgrading to 2.0.1 is safe, but downgrading to 2.0.0 is not.
+Version 2.1.0 changes the format of the state object. Upgrading to 2.1.0 is safe, but downgrading to 2.0.0 is not.
 
 To downgrade to 2.0.0:
 - Edit your connection state:
