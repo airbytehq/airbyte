@@ -50,6 +50,38 @@ class PendoPythonStream(HttpStream, ABC):
         return full_schema
 
 
+class PendoAggregationStream(PendoPythonStream):
+    json_schema = None
+
+    @property
+    def http_method(self) -> str:
+        return "POST"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "aggregation"
+
+    def request_headers(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"Content-Type": "application/json"}
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        data = response.json().get("results", [])
+        if len(data) < self.page_size:
+            return None
+        return data[-1][self.primary_key]
+
+    def parse_response(
+        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
+    ) -> Iterable[Mapping]:
+        """
+        :return an iterable containing each record in the response
+        """
+        yield from response.json().get("results", [])
+
+
 class Feature(PendoPythonStream):
     name = "Feature"
 
@@ -98,21 +130,10 @@ class AccountMetadata(PendoPythonStream):
         yield from [response.json()]
 
 
-class Visitors(PendoPythonStream):
+class Visitors(PendoAggregationStream):
     primary_key = "visitorId"
 
     name = "Visitors"
-
-    json_schema = None
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "aggregation"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if self.json_schema is None:
@@ -155,11 +176,6 @@ class Visitors(PendoPythonStream):
                 self.json_schema = base_schema
         return self.json_schema
 
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        return {"Content-Type": "application/json"}
-
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
@@ -193,36 +209,11 @@ class Visitors(PendoPythonStream):
 
         return request_body
 
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
-    ) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
-        """
-        yield from response.json().get("results", [])
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        visitors = response.json().get("results", [])
-        if len(visitors) < self.page_size:
-            return None
-        return visitors[-1][self.primary_key]
-
-
-class Accounts(PendoPythonStream):
+class Accounts(PendoAggregationStream):
     primary_key = "accountId"
 
     name = "Accounts"
-
-    json_schema = None
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "aggregation"
-
-    @property
-    def http_method(self) -> str:
-        return "POST"
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if self.json_schema is None:
@@ -259,11 +250,6 @@ class Accounts(PendoPythonStream):
                 self.json_schema = base_schema
         return self.json_schema
 
-    def request_headers(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        return {"Content-Type": "application/json"}
-
     def request_body_json(
         self,
         stream_state: Mapping[str, Any],
@@ -288,17 +274,3 @@ class Accounts(PendoPythonStream):
             )
 
         return request_body
-
-    def parse_response(
-        self, response: requests.Response, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargss
-    ) -> Iterable[Mapping]:
-        """
-        :return an iterable containing each record in the response
-        """
-        yield from response.json().get("results", [])
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        accounts = response.json().get("results", [])
-        if len(accounts) < self.page_size:
-            return None
-        return accounts[-1][self.primary_key]
