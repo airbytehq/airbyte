@@ -1,0 +1,31 @@
+data:
+  connectorSubtype: database
+  connectorType: destination
+  definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
+  dockerImageTag: 3.2.3
+  dockerRepository: airbyte/destination-snowflake-bulk
+  githubIssueLabel: destination-snowflake-bulk
+  icon: snowflake.svg
+  license: ELv2
+  name: Snowflake
+  registries:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: generally_available
+  resourceRequirements:
+    jobSpecific:
+      - jobType: sync
+        resourceRequirements:
+          memory_limit: 2Gi
+          memory_request: 2Gi
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
+  supportsDbt: false
+  tags:
+    - language:java
+  ab_internal:
+    sl: 200
+    ql: 400
+  supportLevel: certified
+metadataSpecVersion: "1.0"
