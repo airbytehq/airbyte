@@ -8,8 +8,8 @@ name: source-postgres ci - for testing only
 
 on:
   schedule:
-    # Run three time a day to collect performance metrics and observe variance
-    - cron: "0 9,13,17 * * *"
+    # Runs every hour to observe variance
+    - cron: "0 * * * *"
   workflow_dispatch:
     inputs:
       runner:
@@ -30,14 +30,51 @@ jobs:
         shell: bash
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
         id: extract_branch
-      - name: Test source-postgres
-        uses: ./.github/actions/run-dagger-pipeline
+      - name: Check if PR is from a fork
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          if [ "${{ github.event.pull_request.head.repo.fork }}" == "true" ]; then
+            echo "PR is from a fork. Exiting workflow..."
+            exit 78
+          fi
+      - name: Docker login
+        uses: docker/login-action@v1
         with:
-          context: "master"
-          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          gcp_gsm_credentials: ${{ secrets.GCP_GSM_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          git_branch: ${{ steps.extract_branch.outputs.branch }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          subcommand: "connectors --name=source-postgres test"
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Get start timestamp
+        id: get-start-timestamp
+        shell: bash
+        run: echo "name=start-timestamp=$(date +%s)" >> $GITHUB_OUTPUT
+      - name: Install Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install ci-connector-ops package
+        shell: bash
+        run: |
+          pip install pipx
+          pipx ensurepath
+          pipx install airbyte-ci/connectors/pipelines/
+      - name: Run airbyte-ci
+        shell: bash
+        run: |
+          export _EXPERIMENTAL_DAGGER_RUNNER_HOST="unix:///var/run/buildkit/buildkitd.sock"
+          airbyte-ci --is-ci --show-dagger-logs --gha-workflow-run-id=${{ github.run_id }} connectors --name=source-postgres test
+        env:
+          _EXPERIMENTAL_DAGGER_CLOUD_TOKEN: "p.eyJ1IjogIjFiZjEwMmRjLWYyZmQtNDVhNi1iNzM1LTgxNzI1NGFkZDU2ZiIsICJpZCI6ICJlNjk3YzZiYy0yMDhiLTRlMTktODBjZC0yNjIyNGI3ZDBjMDEifQ.hT6eMOYt3KZgNoVGNYI3_v4CC-s19z8uQsBkGrBhU3k"
+          CI_CONTEXT: "master"
+          CI_GIT_BRANCH: ${{ github.head_ref }}
+          CI_GIT_REVISION: ${{ github.sha }}
+          CI_GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CI_PIPELINE_START_TIMESTAMP: ${{ steps.get-start-timestamp.outputs.start-timestamp }}
+          CI_REPORT_BUCKET_NAME: airbyte-ci-reports-multi
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+          SENTRY_DSN: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          CI: "True"
