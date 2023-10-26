@@ -14,7 +14,6 @@ from typing import Optional
 
 import pkg_resources
 import requests
-from pipelines.cli.airbyte_ci import set_working_directory_to_root
 
 LOGGER = logging.getLogger(__name__)
 BIN_DIR = Path.home() / "bin"
@@ -88,16 +87,12 @@ def check_dagger_cli_install() -> str:
         return check_dagger_cli_install()
     return dagger_path
 
-
-def main():
-    set_working_directory_to_root()
+def call_current_command_with_dagger_run():
     os.environ[DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[0]] = DAGGER_CLOUD_TOKEN_ENV_VAR_NAME_VALUE[1]
+    os.environ["_DAGGER_WRAP_APPLIED"] = "true"
     exit_code = 0
-    if len(sys.argv) > 1 and any([arg in ARGS_DISABLING_TUI for arg in sys.argv]):
-        command = ["airbyte-ci-internal"] + [arg for arg in sys.argv[1:] if arg != "--no-tui"]
-    else:
-        dagger_path = check_dagger_cli_install()
-        command = [dagger_path, "run", "airbyte-ci-internal"] + sys.argv[1:]
+    dagger_path = check_dagger_cli_install()
+    command = [dagger_path, "run"] + sys.argv
     try:
         try:
             LOGGER.info(f"Running command: {command}")
@@ -109,6 +104,3 @@ def main():
         exit_code = e.returncode
     sys.exit(exit_code)
 
-
-if __name__ == "__main__":
-    main()

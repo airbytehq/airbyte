@@ -8,6 +8,8 @@ import importlib
 import logging
 import multiprocessing
 import os
+import sys
+
 from pathlib import Path
 from typing import List
 
@@ -151,6 +153,28 @@ def check_local_docker_configuration():
             f"Your docker daemon is configured with less CPUs than your local machine ({docker_cpus_count} vs. {local_cpus_count}). This may slow down the airbyte-ci execution. Please consider increasing the number of CPUs allocated to your docker daemon in the Resource Allocation settings of Docker."
         )
 
+def is_dagger_run_enabled_by_default() -> bool:
+    dagger_run_by_default = [
+        ["connectors", "test"],
+        ["connectors", "build"],
+        ["test"],
+        ["metadata_service"],
+    ]
+
+    for command_tokens in dagger_run_by_default:
+        if all(token in sys.argv for token in command_tokens):
+            return True
+
+    return False
+
+def is_current_process_wrapped_by_dagger_run() -> bool:
+    # check if the command is already wrapped by dagger run
+    # by checking if sys.argv contains the dagger run command
+    # e.g. `dagger run aibyte-ci connectors publish`
+
+    called_with_dagger_run = os.getenv("_DAGGER_WRAP_APPLIED") == "true"
+    main_logger.info(f"Called with dagger run: {called_with_dagger_run}")
+    return called_with_dagger_run
 
 # COMMANDS
 
@@ -165,6 +189,7 @@ def check_local_docker_configuration():
     },
 )
 @click.version_option(__installed_version__)
+@click.option("--enable-dagger-run/--disable-dagger-run", default=is_dagger_run_enabled_by_default)
 @click.option("--is-local/--is-ci", default=True)
 @click.option("--git-branch", default=get_current_git_branch, envvar="CI_GIT_BRANCH")
 @click.option("--git-revision", default=get_current_git_revision, envvar="CI_GIT_REVISION")
@@ -197,6 +222,7 @@ def check_local_docker_configuration():
 async def airbyte_ci(
     ctx: click.Context,
     is_local: bool,
+    enable_dagger_run: bool,
     git_branch: str,
     git_revision: str,
     diffed_branch: str,
@@ -214,6 +240,14 @@ async def airbyte_ci(
     show_dagger_logs: bool,
 ):  # noqa D103
     ctx.ensure_object(dict)
+
+
+    if enable_dagger_run and not is_current_process_wrapped_by_dagger_run():
+        main_logger.info("Re-Running airbyte-ci with dagger run.")
+        from pipelines.cli.dagger_run import call_current_command_with_dagger_run
+        call_current_command_with_dagger_run()
+        return
+
     if is_local:
         # This check is meaningful only when running locally
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.

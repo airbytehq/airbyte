@@ -52,8 +52,8 @@ If you face any installation problems feel free to reach out the Airbyte Connect
 ### Setting up connector secrets access
 
 If you plan to use Airbyte CI to run CAT (Connector Acceptance Tests), we recommend setting up GSM
-access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the 
-CI Credentials package (which Airbyte CI uses under the hood) README's 
+access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the
+CI Credentials package (which Airbyte CI uses under the hood) README's
 [Get GSM Access](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md#get-gsm-access)
 instructions.
 
@@ -123,7 +123,7 @@ At this point you can run `airbyte-ci` commands.
 
 | Option                                  | Default value                   | Mapped environment variable   | Description                                                                                 |
 | --------------------------------------- | ------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
-| `--no-tui`                              |                                 |                               | Disables the Dagger terminal UI.                                                            |
+| `--enable-dagger-run/--disable-dagger-run` |  `--enable-dagger-run``      |                               | Disables the Dagger terminal UI.                                                            |
 | `--is-local/--is-ci`                    | `--is-local`                    |                               | Determines the environment in which the CLI runs: local environment or CI environment.      |
 | `--git-branch`                          | The checked out git branch name | `CI_GIT_BRANCH`               | The git branch on which the pipelines will run.                                             |
 | `--git-revision`                        | The current branch head         | `CI_GIT_REVISION`             | The commit hash on which the pipelines will run.                                            |
@@ -155,7 +155,7 @@ Available commands:
 | `--enable-dependency-scanning / --disable-dependency-scanning` | False    | ` --disable-dependency-scanning` |                             | When enabled the dependency scanning will be performed to detect the connectors to select according to a dependency change.                                                                                                                                                                                                                                                                                                                                                               |
 | `--docker-hub-username`                                        |          |                                  | DOCKER_HUB_USERNAME         | Your username to connect to DockerHub. Required for the publish subcommand.                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `--docker-hub-password`                                        |          |                                  | DOCKER_HUB_PASSWORD         | Your password to connect to DockerHub. Required for the publish subcommand.                                                                                                                                                                                                                                                                                                                                                                                                               |
-                                                                                                                                           
+
 
 ### <a id="connectors-list-command"></a>`connectors list` command
 Retrieve the list of connectors satisfying the provided filters.
