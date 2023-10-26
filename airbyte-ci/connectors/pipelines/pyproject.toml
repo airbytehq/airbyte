@@ -18,7 +18,7 @@ docker = "^6.0.0"
 semver = "^3.0.1"
 airbyte-protocol-models = "*"
 jinja2 = "^3.0.2"
-requests = "2.28.2" # Pinned as the requests 2.29.0 version is not compatible with the docker package
+requests = "2.31.0" # Pinned as the requests 2.29.0 version is not compatible with the docker package
 airbyte-connectors-base-images = {path = "../base_images", develop = true}
 connector-ops = {path = "../connector_ops", develop = true}
 toml = "^0.10.2"
