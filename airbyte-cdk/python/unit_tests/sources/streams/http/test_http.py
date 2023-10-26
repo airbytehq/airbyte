@@ -388,6 +388,16 @@ def test_caching_sessions_are_different():
     assert stream_1.cache_filename == stream_2.cache_filename
 
 
+def test_cached_streams_wortk_when_request_path_is_not_set(mocker, requests_mock):
+    # This test verifies that HttpStreams with a cached session work even if the path is not set
+    # For instance, when running in a unit test
+    stream = CacheHttpStream()
+    with mocker.patch.object(stream._session, "send", wraps=stream._session.send):
+        requests_mock.register_uri("GET", stream.url_base)
+        records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+        assert records == [{"data": 1}]
+
+
 def test_parent_attribute_exist():
     parent_stream = CacheHttpStream()
     child_stream = CacheHttpSubStream(parent=parent_stream)
