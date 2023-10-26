@@ -902,3 +902,46 @@ class SearchQueryPerformanceReportWeekly(SearchQueryPerformanceReport):
 
 class SearchQueryPerformanceReportMonthly(SearchQueryPerformanceReport):
     report_aggregation = "Monthly"
+
+
+class UserLocationPerformanceReport(PerformanceReportsMixin, BingAdsStream, ABC):
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "UserLocationPerformanceReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "user_location_performance_report"
+    primary_key = [
+        "AccountId",
+        "AdGroupId",
+        "CampaignId",
+        "DeliveredMatchType",
+        "DeviceOS",
+        "DeviceType",
+        "Language",
+        "LocationId",
+        "QueryIntentLocationId",
+        "TimePeriod",
+        "TopVsOther",
+    ]
+
+    @property
+    def report_columns(self) -> List[str]:
+        return list(self.get_json_schema().get("properties", {}).keys())
+
+
+class UserLocationPerformanceReportHourly(UserLocationPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class UserLocationPerformanceReportDaily(UserLocationPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class UserLocationPerformanceReportWeekly(UserLocationPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class UserLocationPerformanceReportMonthly(UserLocationPerformanceReport):
+    report_aggregation = "Monthly"
