@@ -8,6 +8,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class PendoPythonStream(HttpStream, ABC):
     url_base = "https://app.pendo.io/api/v1/"
     primary_key = "id"
+    page_size = 10
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -103,8 +104,6 @@ class Visitors(PendoPythonStream):
     name = "Visitors"
 
     json_schema = None
-
-    page_size = 20
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -292,6 +291,27 @@ class Accounts(PendoPythonStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ):
+        if next_page_token is None:
+            return {
+                "response": {
+                    "mimeType": "application/json"
+                },
+                "request": {
+                    "requestId": "account-list",
+                    "pipeline": [
+                        {
+                            "source": {
+                                "accounts": {}
+                            }
+                        },
+                        {
+                            "sort": ["accountId"]
+                        },
+                        {"limit": self.page_size}
+                    ]
+                }
+            }
+
         return {
             "response": {
                 "mimeType": "application/json"
@@ -306,7 +326,11 @@ class Accounts(PendoPythonStream):
                     },
                     {
                         "sort": ["accountId"]
-                    }
+                    },
+                    {
+                        "filter": f"accountId > \"{next_page_token}\""
+                    },
+                    {"limit": self.page_size}
                 ]
             }
         }
@@ -318,3 +342,9 @@ class Accounts(PendoPythonStream):
         :return an iterable containing each record in the response
         """
         yield from response.json().get("results", [])
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        accounts = response.json().get("results", [])
+        if len(accounts) < self.page_size:
+            return None
+        return accounts[-1][self.primary_key]
