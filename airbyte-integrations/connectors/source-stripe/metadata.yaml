@@ -35,7 +35,7 @@ data:
         upgradeDeadline: "2023-09-14"
       5.0.0:
         message:
-          Version 5.0.0 fixes the `Invoices`, `Subscriptions` and `SubscriptionSchedule` stream schemas. 
+          Version 5.0.0 fixes the `Invoices`, `Subscriptions` and `SubscriptionSchedule` stream schemas.
           A schema refresh of all the affected streams is required to apply the patch.
         upgradeDeadline: "2023-11-07"
   suggestedStreams:
