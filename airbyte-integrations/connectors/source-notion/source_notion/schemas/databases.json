@@ -68,43 +68,7 @@
           "value": {
             "type": "object",
             "additionalProperties": true,
-            "anyOf": [
-              {
-                "type": "object",
-                "additionalProperties": true,
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "enum": [
-                      "checkbox",
-                      "created_by",
-                      "created_time",
-                      "date",
-                      "email",
-                      "files",
-                      "formula",
-                      "last_edited_by",
-                      "last_edited_time",
-                      "multi_select",
-                      "number",
-                      "people",
-                      "phone_number",
-                      "relation",
-                      "rich_text",
-                      "rollup",
-                      "select",
-                      "status",
-                      "title",
-                      "url"
-                    ]
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                }
-              },
+            "oneOf": [
               {
                 "type": "object",
                 "properties": {
@@ -265,6 +229,26 @@
                     "type": "string"
                   },
                   "type": {
+                    "enum": ["multi_select"]
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "options": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "options.json"
+                    }
+                  }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
                     "enum": ["number"]
                   },
                   "name": {
@@ -313,26 +297,6 @@
                       "yuan",
                       "zloty"
                     ]
-                  }
-                }
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "type": "string"
-                  },
-                  "type": {
-                    "enum": ["multi_select"]
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "options": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "options.json"
-                    }
                   }
                 }
               },
