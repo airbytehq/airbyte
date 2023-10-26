@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.52.4
+File CDK: Add unstructured parser
+
 ## 0.52.3
 Update source-declarative-manifest base image to update Linux alpine and Python
 
