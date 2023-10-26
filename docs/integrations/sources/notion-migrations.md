@@ -1,5 +1,13 @@
 # Notion Migration Guide
 
+## Upgrading to 3.0.0
+
+Version 3.0.0 introduces breaking changes to the "Blocks" stream:
+
+- The type of the `table.cells` property has been changed from an array of `rich_text` objects to an array of arrays of `rich_text` objects.
+
+Users upgrading to this version should refresh the schema for the "Blocks" stream.
+
 ## Upgrading to 2.0.0
 
 Version 2.0.0 introduces a number of changes to the JSON schemas of all streams. These changes are being introduced to reflect updates to the Notion API. Some breaking changes have been introduced that will affect the Blocks, Databases and Pages stream.
