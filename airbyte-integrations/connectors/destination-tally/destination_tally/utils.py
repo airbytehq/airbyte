@@ -173,7 +173,7 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
 
     for key, value in data:
         fields = ["Debit / Credit", "Ledger Name", "Other Ledger Name"]
-        if (key in journal_voucher_fields) and (str(value) != "") and (not any(field==key for field in fields)):
+        if (key in journal_voucher_fields) and (str(value) != "") and (not any(field == key for field in fields)):
             ledger2_payload[key] = value
 
     return json.dumps({"body": [ledger1_payload, ledger2_payload]})
