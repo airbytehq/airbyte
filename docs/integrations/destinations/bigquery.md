@@ -127,6 +127,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.0   | 2023-10-25 | [31686](https://github.com/airbytehq/airbyte/pull/31686)   | Opt out flag for typed and deduped tables                                                                                                                       |
 | 2.2.0   | 2023-10-25 | [\#31520](https://github.com/airbytehq/airbyte/pull/31520) | Stop deduping raw table                                                                                                                                         |
 | 2.1.6   | 2023-10-23 | [\#31717](https://github.com/airbytehq/airbyte/pull/31717) | Remove inadvertent Destination v2 check                                                                                                                         |
 | 2.1.5   | 2023-10-17 | [\#30069](https://github.com/airbytehq/airbyte/pull/30069) | Staging destination async                                                                                                                                       |
