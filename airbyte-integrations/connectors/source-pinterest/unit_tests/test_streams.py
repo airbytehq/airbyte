@@ -24,6 +24,10 @@ from source_pinterest.streams import (
     PinterestSubStream,
 )
 
+import os
+
+os.environ["REQUEST_CACHE_PATH"] = '/tmp'
+
 
 @pytest.fixture
 def patch_base_class(mocker):
