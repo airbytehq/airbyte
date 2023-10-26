@@ -43,6 +43,14 @@ from source_bing_ads.streams import (  # noqa: F401
     KeywordPerformanceReportHourly,
     KeywordPerformanceReportMonthly,
     KeywordPerformanceReportWeekly,
+    SearchQueryPerformanceReportDaily,
+    SearchQueryPerformanceReportHourly,
+    SearchQueryPerformanceReportMonthly,
+    SearchQueryPerformanceReportWeekly,
+    UserLocationPerformanceReportDaily,
+    UserLocationPerformanceReportHourly,
+    UserLocationPerformanceReportMonthly,
+    UserLocationPerformanceReportWeekly,
 )
 
 
@@ -80,6 +88,8 @@ class SourceBingAds(AbstractSource):
             "AdPerformanceReport",
             "CampaignPerformanceReport",
             "GeographicPerformanceReport",
+            "SearchQueryPerformanceReport",
+            "UserLocationPerformanceReport",
         )
         report_aggregation = ("Hourly", "Daily", "Weekly", "Monthly")
         streams.extend([eval(f"{report}{aggregation}")(client, config) for (report, aggregation) in product(reports, report_aggregation)])

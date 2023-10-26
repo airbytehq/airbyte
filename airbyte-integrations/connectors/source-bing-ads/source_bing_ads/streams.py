@@ -860,3 +860,88 @@ class AgeGenderAudienceReportWeekly(AgeGenderAudienceReport):
 
 class AgeGenderAudienceReportMonthly(AgeGenderAudienceReport):
     report_aggregation = "Monthly"
+
+
+class SearchQueryPerformanceReport(PerformanceReportsMixin, BingAdsStream, ABC):
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "SearchQueryPerformanceReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "search_query_performance_report"
+    primary_key = [
+        "SearchQuery",
+        "Keyword",
+        "TimePeriod",
+        "AccountId",
+        "CampaignId",
+        "Language",
+        "DeliveredMatchType",
+        "DeviceType",
+        "DeviceOS",
+        "TopVsOther",
+    ]
+
+    @property
+    def report_columns(self) -> List[str]:
+        return list(self.get_json_schema().get("properties", {}).keys())
+
+
+class SearchQueryPerformanceReportHourly(SearchQueryPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class SearchQueryPerformanceReportDaily(SearchQueryPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class SearchQueryPerformanceReportWeekly(SearchQueryPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class SearchQueryPerformanceReportMonthly(SearchQueryPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class UserLocationPerformanceReport(PerformanceReportsMixin, BingAdsStream, ABC):
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "UserLocationPerformanceReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "user_location_performance_report"
+    primary_key = [
+        "AccountId",
+        "AdGroupId",
+        "CampaignId",
+        "DeliveredMatchType",
+        "DeviceOS",
+        "DeviceType",
+        "Language",
+        "LocationId",
+        "QueryIntentLocationId",
+        "TimePeriod",
+        "TopVsOther",
+    ]
+
+    @property
+    def report_columns(self) -> List[str]:
+        return list(self.get_json_schema().get("properties", {}).keys())
+
+
+class UserLocationPerformanceReportHourly(UserLocationPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class UserLocationPerformanceReportDaily(UserLocationPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class UserLocationPerformanceReportWeekly(UserLocationPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class UserLocationPerformanceReportMonthly(UserLocationPerformanceReport):
+    report_aggregation = "Monthly"
