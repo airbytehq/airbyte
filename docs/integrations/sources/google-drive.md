@@ -110,19 +110,6 @@ The Google Drive source connector supports the following [sync modes](https://do
 | Replicate Multiple Streams \(distinct tables\) | Yes        |
 | Namespaces                                     | No         |
 
-## File Compressions
-
-| Compression | Supported? |
-| :---------- | :--------- |
-| Gzip        | Yes        |
-| Zip         | Yes        |
-| Bzip2       | Yes        |
-| Lzma        | No         |
-| Xz          | No         |
-| Snappy      | No         |
-
-Please let us know any specific compressions you'd like to see support for next!
-
 ## Path Patterns
 
 \(tl;dr -&gt; path pattern syntax using [wcmatch.glob](https://facelessuser.github.io/wcmatch/glob/). GLOBSTAR and SPLIT flags are enabled.\)
