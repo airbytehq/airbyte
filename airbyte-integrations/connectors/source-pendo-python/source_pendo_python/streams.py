@@ -103,35 +103,35 @@ class PendoAggregationStream(PendoPythonStream):
 
 
 class Feature(PendoPythonStream):
-    name = "Feature"
+    name = "feature"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "feature"
 
 
 class Guide(PendoPythonStream):
-    name = "Guide"
+    name = "guide"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "guide"
 
 
 class Page(PendoPythonStream):
-    name = "Page"
+    name = "page"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "page"
 
 
 class Report(PendoPythonStream):
-    name = "Report"
+    name = "report"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "report"
 
 
 class VisitorMetadata(PendoPythonStream):
-    name = "Visitor Metadata"
+    name = "visitor metadata"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "metadata/schema/visitor"
@@ -141,7 +141,7 @@ class VisitorMetadata(PendoPythonStream):
 
 
 class AccountMetadata(PendoPythonStream):
-    name = "Account Metadata"
+    name = "account metadata"
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "metadata/schema/account"
@@ -153,7 +153,7 @@ class AccountMetadata(PendoPythonStream):
 class Visitors(PendoAggregationStream):
     primary_key = "visitorId"
 
-    name = "Visitors"
+    name = "visitor"
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if self.json_schema is None:
@@ -213,7 +213,7 @@ class Visitors(PendoAggregationStream):
 class Accounts(PendoAggregationStream):
     primary_key = "accountId"
 
-    name = "Accounts"
+    name = "account"
 
     def get_json_schema(self) -> Mapping[str, Any]:
         if self.json_schema is None:
