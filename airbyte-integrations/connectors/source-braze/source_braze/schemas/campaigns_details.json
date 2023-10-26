@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "message": {"type": "string"},
+    "created_at" : {"type": ["null", "string"], "format": "date-time"},
+    "updated_at" : {"type": ["null", "string"], "format": "date-time"},
+    "archived": {"type": ["null", "boolean"]},
+    "draft": {"type": ["null", "boolean"]},
+    "name" : {"type": ["null", "string"]},
+    "description" : {"type": ["null", "string"]},
+    "schedule_type" : {"type": ["null", "string"]},
+    "first_sent" : {"type": ["null", "string"], "format": "date-time"},
+    "last_sent" : {"type": ["null", "string"], "format": "date-time"}
+  }
+}
