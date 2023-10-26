@@ -19,6 +19,7 @@ from .utils import (
     insert_receipt_voucher_to_tally,
     insert_sales_order_to_tally,
     insert_sales_without_inventory_to_tally,
+    insert_creditnote_without_inventory_to_tally,
 )
 
 
@@ -98,6 +99,11 @@ class DestinationTally(Destination):
                     journal_voucher_url = "https://api.excel2tally.in/api/User/JournalTemplate"
                     insert_journal_voucher_to_tally(
                         config=config, data=airbyte_message.record.data, journal_voucher_template_url=journal_voucher_url, logger=logger
+                    )
+                elif "creditnote" in airbyte_message.record.stream:
+                    credinote_without_inventory_url = "https://api.excel2tally.in/api/User/CreditNoteWithoutInventory"
+                    insert_creditnote_without_inventory_to_tally(
+                        config=config, data=airbyte_message.record.data, creditnote_without_inventory_template_url=credinote_without_inventory_url, logger=logger
                     )
             elif airbyte_message.type == Type.STATE:
                 yield airbyte_message
