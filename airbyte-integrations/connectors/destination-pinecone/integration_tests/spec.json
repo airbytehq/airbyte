@@ -199,6 +199,29 @@
             "type": "array",
             "items": { "type": "string" }
           },
+          "field_name_mappings": {
+            "title": "Field name mappings",
+            "description": "List of fields to rename. Not applicable for nested fields, but can be used to rename fields already flattened via dot notation.",
+            "default": [],
+            "type": "array",
+            "items": {
+              "title": "FieldNameMappingConfigModel",
+              "type": "object",
+              "properties": {
+                "from_field": {
+                  "title": "From field name",
+                  "description": "The field name in the source",
+                  "type": "string"
+                },
+                "to_field": {
+                  "title": "To field name",
+                  "description": "The field name to use in the destination",
+                  "type": "string"
+                }
+              },
+              "required": ["from_field", "to_field"]
+            }
+          },
           "text_splitter": {
             "title": "Text splitter",
             "description": "Split text fields into chunks based on the specified method.",
