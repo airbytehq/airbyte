@@ -10,14 +10,13 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
-from airbyte_cdk.sources.message import InMemoryMessageRepository
+from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamAvailabilityStrategy, StreamFacade
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
@@ -42,7 +41,7 @@ from source_stripe.streams import (
 )
 
 _MAX_CONCURRENCY = 3
-_PAGE_SIZE = 5
+_PAGE_SIZE = 100
 
 
 class SourceStripe(AbstractSource):
@@ -107,7 +106,7 @@ class SourceStripe(AbstractSource):
             return False, str(e)
         return True, None
 
-    def _create_concurrent_stream(self, base_stream: HttpStream) -> Stream:
+    def _create_concurrent_stream(self, base_stream: HttpStream, concurrency_level: int = _MAX_CONCURRENCY) -> Stream:
         http_requester = HttpRequester(
             url_base=base_stream.url_base,
             request_options_provider=InterpolatedRequestOptionsProvider(
@@ -126,7 +125,7 @@ class SourceStripe(AbstractSource):
                 cursor_value="{{ last_records[-1]['id'] if last_records else None }}",
                 config={},
                 parameters={},
-                page_size=self.PAGE_SIZE,
+                page_size=_PAGE_SIZE,
                 stop_condition="{{ not response.has_more }}",
             ),
             config={},
@@ -155,7 +154,7 @@ class SourceStripe(AbstractSource):
         concurrent_stream = StreamFacade(
             ThreadBasedConcurrentStream(
                 partition_generator=partition_generator,
-                max_workers=self.MAX_WORKERS,
+                max_workers=concurrency_level,
                 name=base_stream.name,
                 json_schema=base_stream.get_json_schema(),
                 availability_strategy=StreamAvailabilityStrategy(base_stream, self),
@@ -510,12 +509,7 @@ class SourceStripe(AbstractSource):
             # We cap the number of workers to avoid hitting the Stripe rate limit
             # The limit can be removed or increased once we have proper rate limiting
             concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
-            streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-            return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level) for stream in streams]
-        else:
-            return streams
-
-        if self._use_concurrent_cdk:
-            main_streams = [self._create_concurrent_stream(base_stream) for base_stream in main_streams]
+            main_streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+            main_streams = [self._create_concurrent_stream(base_stream, concurrency_level) for base_stream in main_streams]
 
         return main_streams + substreams
