@@ -718,7 +718,7 @@ public abstract class BaseTypingDedupingTest {
       throws Exception {
     final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamNamespace, streamName);
     if (disableFinalTableComparison) {
-      assertAll(() -> DIFFER.diffRawTableRecords(expectedRawRecords, actualRawRecords));
+      DIFFER.diffRawTableRecords(expectedRawRecords, actualRawRecords);
     } else {
       final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName);
       DIFFER.verifySyncResult(expectedRawRecords, actualRawRecords, expectedFinalRecords, actualFinalRecords);
