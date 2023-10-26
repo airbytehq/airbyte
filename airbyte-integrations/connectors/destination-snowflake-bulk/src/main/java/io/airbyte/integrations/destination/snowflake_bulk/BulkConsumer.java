@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.snowflake_bulk;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -26,7 +27,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final Map<AirbyteSamNameNamespacePair, TestingLogger> loggers;
+  private final Map<AirbyteStreamNameNamespacePair, TestingLogger> loggers;
 
   public BulkConsumer(final JsonNode config,
       final ConfiguredAirbyteCatalog configuredCatalog,
