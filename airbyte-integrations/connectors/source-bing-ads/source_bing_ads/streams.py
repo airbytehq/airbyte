@@ -839,15 +839,6 @@ class AccountImpressionPerformanceReport(PerformanceReportsMixin, BingAdsStream,
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "account_impression_performance_report"
-    primary_key = [
-        "AccountId",
-        "TimePeriod",
-        "CurrencyCode",
-        "AdDistribution",
-        "DeviceType",
-        "Network",
-        "DeliveredMatchType"
-    ]
 
     @property
     def report_columns(self):
