@@ -256,8 +256,8 @@
     "table_row": {
       "type": "object",
       "properties": {
-        "cells": { 
-          "type": ["null", "array"], 
+        "cells": {
+          "type": ["null", "array"],
           "items": {
             "type": ["null", "array"],
             "items": { "$ref": "rich_text.json" }

@@ -28,7 +28,7 @@ data:
       3.0.0:
         message:
           Version 3.0.0 introduces schema changes to the blocks and databases streams.
-          The "cells" property in the blocks stream has been changed from 
+          The "cells" property in the blocks stream has been changed from
           an array of "rich-text" objects to an array of arrays of "rich-text" objects, and
           a duplicated "properties" enumeration has been removed from the databases stream.
         upgradeDeadline: "2023-11-09"
