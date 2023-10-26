@@ -15,13 +15,13 @@ import org.slf4j.LoggerFactory;
 
 public class MyLogger {
 
-  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Logger.class);
+  private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MyLogger.class);
 
   protected final AirbyteStreamNameNamespacePair streamNamePair;
   protected final int maxEntryCount;
   protected int loggedEntryCount = 0;
 
-  public Logger(final AirbyteStreamNameNamespacePair streamNamePair, final int maxEntryCount) {
+  public MyLogger(final AirbyteStreamNameNamespacePair streamNamePair, final int maxEntryCount) {
     this.streamNamePair = streamNamePair;
     this.maxEntryCount = maxEntryCount;
   }
