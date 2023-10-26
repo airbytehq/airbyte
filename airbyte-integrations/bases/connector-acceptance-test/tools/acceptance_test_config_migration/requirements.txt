@@ -60,7 +60,7 @@ toml==0.10.2
 tomli==2.0.1
 typing_extensions==4.4.0
 url-normalize==1.4.3
-urllib3==1.26.12
+urllib3==1.26.18
 websocket-client==1.4.2
 wmctrl==0.4
 wrapt==1.14.1
