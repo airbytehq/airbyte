@@ -3,4 +3,6 @@
 ## Upgrading to 2.0.0
 
 
-Following 2.0.0 config change, we are changing field format to `date-time` for following fields `pipeline.created_at` and `pipeline.updated_at` in Deployments stream, `expires_at` in Group Members and Project Members streams as Gitlab API docs declares. This is a breaking change as `format` was changed. You will need to refresh the source schema and reset affected streams after upgrading.
+In the 2.0.0 config change, several streams were updated to date-time field format, as declared in the Gitlab API.
+These changes impact `pipeline.created_at` and` pipeline.updated_at` fields for stream Deployments and `expires_at` field for stream Group Members and stream Project Members.
+You will need to refresh the source schema and reset affected streams after upgrading.
