@@ -3,7 +3,6 @@
 #
 
 import copy
-from functools import partial
 from typing import Any, Callable, Iterable, Mapping, Optional, Union
 
 import requests
