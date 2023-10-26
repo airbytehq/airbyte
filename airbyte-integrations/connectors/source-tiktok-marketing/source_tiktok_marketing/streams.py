@@ -198,7 +198,7 @@ class TiktokStream(HttpStream, ABC):
         """
         data = response.json()
         if data["code"]:
-            raise TiktokException(data, response.url, response.status_code)
+            raise TiktokException(data, response.url, response.status_code, self.retried_40002_counter)
         data = data["data"]
         if self.response_list_field in data:
             data = data[self.response_list_field]
@@ -236,7 +236,7 @@ class TiktokStream(HttpStream, ABC):
         if data["code"] in (40100, 50002):
             return True
         if data["code"] == 40002 and self.retried_40002_counter < 10:
-            self.logger.warning(f"Caught 40002{data}, {response.url}, {self.retried_40002_counter}")
+            self.logger.warning(f"Caught 40002: {data}, {response.url}, {self.retried_40002_counter}")
             self.retried_40002_counter += 1
             return True
         return super().should_retry(response)
