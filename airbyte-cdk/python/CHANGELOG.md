@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.52.2
+
+
 ## 0.52.1
 Add max time for backoff handler
 
