@@ -20,7 +20,7 @@ interface Iprops {
 const HeaderSection: React.FC<Iprops> = ({ data, sourceDefinition, onSelect, activeItem }) => {
   return (
     <>
-      <DefinitioDetails name={sourceDefinition.name} icon={sourceDefinition.icon} type="source" />
+      <DefinitioDetails name={sourceDefinition?.name} icon={sourceDefinition?.icon} type="source" />
       <TabContainer>
         <TabMenu data={data} onSelect={onSelect} activeItem={activeItem} size="16" lastOne />
       </TabContainer>

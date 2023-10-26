@@ -10,18 +10,19 @@ import { JobInfo } from "core/domain/job";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
+import { useAnalyticsService } from "./Analytics";
+import { useRemoveConnectionsFromList } from "./useConnectionHook";
+import { useCurrentWorkspace } from "./useWorkspace";
 import {
   SourceRead,
   SynchronousJobRead,
   WebBackendConnectionRead,
   SourceCloneRequestBody,
+  SourceReadItem,
 } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../../services/connector/useSuspenseQuery";
 import { SCOPE_WORKSPACE } from "../../services/Scope";
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
-import { useAnalyticsService } from "./Analytics";
-import { useRemoveConnectionsFromList } from "./useConnectionHook";
-import { useCurrentWorkspace } from "./useWorkspace";
 
 export const sourcesKeys = {
   all: [SCOPE_WORKSPACE, "sources"] as const,
@@ -54,12 +55,21 @@ function useSourceService() {
 interface SourceList {
   sources: SourceRead[];
 }
-
+interface PaginatedSourceList {
+  sources: SourceRead[];
+  total: number;
+  pageSize: number;
+}
 const useSourceList = (): SourceList => {
   const workspace = useCurrentWorkspace();
   const service = useSourceService();
 
   return useSuspenseQuery(sourcesKeys.lists(), () => service.list(workspace.workspaceId));
+};
+const usePaginatedSources = (filters: any): PaginatedSourceList => {
+  const service = useSourceService();
+
+  return useSuspenseQuery(sourcesKeys.list(filters), () => service.filteredList(filters));
 };
 
 const useGetSource = <T extends string | undefined | null>(
@@ -71,7 +81,13 @@ const useGetSource = <T extends string | undefined | null>(
     enabled: isDefined(sourceId),
   });
 };
+const useGetSourceItem = <T extends string | undefined | null>(
+  sourceId: T
+): T extends string ? SourceReadItem : SourceReadItem | undefined => {
+  const service = useSourceService();
 
+  return useSuspenseQuery(sourcesKeys.detail(sourceId ?? ""), () => service.getSingleSource(sourceId ?? ""));
+};
 const useCreateSource = () => {
   const service = useSourceService();
   const queryClient = useQueryClient();
@@ -105,6 +121,38 @@ const useCreateSource = () => {
 };
 
 const useDeleteSource = () => {
+  const service = useSourceService();
+  const queryClient = useQueryClient();
+  const analyticsService = useAnalyticsService();
+  const removeConnectionsFromList = useRemoveConnectionsFromList();
+
+  return useMutation(
+    (payload: { source: SourceRead; connectionsWithSource: WebBackendConnectionRead[] }) =>
+      service.delete(payload.source.sourceId),
+    {
+      onSuccess: (_data, ctx) => {
+        analyticsService.track(Namespace.SOURCE, Action.DELETE, {
+          actionDescription: "Source deleted",
+          connector_source: ctx.source.sourceName,
+          connector_source_definition_id: ctx.source.sourceDefinitionId,
+        });
+
+        queryClient.removeQueries(sourcesKeys.detail(ctx.source.sourceId));
+        queryClient.setQueryData(
+          sourcesKeys.lists(),
+          (lst: SourceList | undefined) =>
+            ({
+              sources: lst?.sources.filter((conn) => conn.sourceId !== ctx.source.sourceId) ?? [],
+            } as SourceList)
+        );
+
+        const connectionIds = ctx.connectionsWithSource.map((item) => item.connectionId);
+        removeConnectionsFromList(connectionIds);
+      },
+    }
+  );
+};
+const useDeleteSourceItem = () => {
   const service = useSourceService();
   const queryClient = useQueryClient();
   const analyticsService = useAnalyticsService();
@@ -227,4 +275,7 @@ export {
   useCloneSource,
   useUpdateSource,
   useDiscoverSchema,
+  usePaginatedSources,
+  useGetSourceItem,
+  useDeleteSourceItem,
 };

@@ -10,12 +10,12 @@ import Table from "components/Table";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import useRouter from "hooks/useRouter";
 
-import { RoutePaths } from "../../pages/routePaths";
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 import LastSyncCell from "./components/LastSyncCell";
 import NameCell from "./components/NameCell";
 import NewTabIconButton from "./components/NewTabIconButton";
 import { ITableDataItem, SortOrderEnum } from "./types";
+import { RoutePaths } from "../../pages/routePaths";
 
 const SwitchContent = styled.div`
   display: flex;
@@ -108,9 +108,13 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
           );
         },
       },
+      // {
+      //   Header: <FormattedMessage id="tables.status" />,
+      //   accessor: "statusLang",
+      // },
       {
         Header: <FormattedMessage id="tables.status" />,
-        accessor: "statusLang",
+        accessor: "status",
       },
       {
         Header: (

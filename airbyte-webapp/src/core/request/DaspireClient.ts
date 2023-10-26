@@ -20,7 +20,17 @@ export interface FilterConnectionRequestBody {
   destinationDefinitionId: string;
   status: string;
 }
+export interface FilterSourceRequestBody {
+  workspaceId: string;
+  pageSize: number;
+  pageCurrent: number;
+}
 
+export interface FilterDestinationRequestBody {
+  workspaceId: string;
+  pageSize: number;
+  pageCurrent: number;
+}
 export interface WebBackendFilteredConnectionReadList {
   connections: WebBackendConnectionRead[];
   total: number;
