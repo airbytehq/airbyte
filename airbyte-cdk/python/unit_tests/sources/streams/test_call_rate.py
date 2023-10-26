@@ -4,11 +4,12 @@
 import os
 import tempfile
 import time
+from datetime import timedelta
 from typing import Iterable, Mapping
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRateLimitHit, CallRatePolicy, Duration, HttpRequestMatcher, Rate
+from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRateLimitHit, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
@@ -90,9 +91,9 @@ class TestHttpRequestMatcher:
 
 def test_http_request_matching(mocker):
     """Test policy lookup based on matchers."""
-    users_policy = mocker.Mock(spec=CallRatePolicy)
-    groups_policy = mocker.Mock(spec=CallRatePolicy)
-    root_policy = mocker.Mock(spec=CallRatePolicy)
+    users_policy = mocker.Mock(spec=MovingWindowCallRatePolicy)
+    groups_policy = mocker.Mock(spec=MovingWindowCallRatePolicy)
+    root_policy = mocker.Mock(spec=MovingWindowCallRatePolicy)
 
     api_budget = APIBudget()
     api_budget.add_policy(
@@ -115,7 +116,7 @@ def test_http_request_matching(mocker):
 
     users_request = Request("GET", url="http://domain/api/users")
     api_budget.acquire_call(users_request, block=False), "first call, first matcher"
-    users_policy.try_acquire.assert_called_once_with(users_request)
+    users_policy.try_acquire.assert_called_once_with(users_request, weight=1)
     groups_policy.try_acquire.assert_not_called()
     root_policy.try_acquire.assert_not_called()
 
@@ -127,7 +128,7 @@ def test_http_request_matching(mocker):
     group_request = Request("POST", url="http://domain/api/groups")
     api_budget.acquire_call(group_request, block=False), "first call, second matcher"
     assert users_policy.try_acquire.call_count == 2
-    groups_policy.try_acquire.assert_called_once_with(group_request)
+    groups_policy.try_acquire.assert_called_once_with(group_request, weight=1)
     root_policy.try_acquire.assert_not_called()
 
     api_budget.acquire_call(Request("POST", url="http://domain/api/groups"), block=False), "second call, second matcher"
@@ -139,13 +140,13 @@ def test_http_request_matching(mocker):
     api_budget.acquire_call(any_get_request, block=False), "first call, third matcher"
     assert users_policy.try_acquire.call_count == 2
     assert groups_policy.try_acquire.call_count == 2
-    root_policy.try_acquire.assert_called_once_with(any_get_request)
+    root_policy.try_acquire.assert_called_once_with(any_get_request, weight=1)
 
 
 class TestCallRatePolicy:
     def test_limit_rate(self):
         """try_acquire must respect configured call rate and throw CallRateLimitHit when hit the limit."""
-        policy = CallRatePolicy(rates=[Rate(10, Duration.MINUTE)])
+        policy = MovingWindowCallRatePolicy(rates=[Rate(10, timedelta(minutes=1))])
 
         for i in range(10):
             policy.try_acquire("call", weight=1), f"{i + 1} call"
@@ -162,7 +163,7 @@ class TestCallRatePolicy:
 
     def test_limit_rate_support_custom_weight(self):
         """try_acquire must take into account provided weight and throw CallRateLimitHit when hit the limit."""
-        policy = CallRatePolicy(rates=[Rate(10, Duration.MINUTE)])
+        policy = MovingWindowCallRatePolicy(rates=[Rate(10, timedelta(minutes=1))])
 
         policy.try_acquire("call", weight=2), "1st call with weight of 2"
         with pytest.raises(CallRateLimitHit) as excinfo:
@@ -171,11 +172,11 @@ class TestCallRatePolicy:
 
     def test_multiple_limit_rates(self):
         """try_acquire must take into all call rates and apply stricter."""
-        policy = CallRatePolicy(
+        policy = MovingWindowCallRatePolicy(
             rates=[
-                Rate(10, Duration.MINUTE),
-                Rate(3, Duration.SECOND * 10),
-                Rate(2, Duration.HOUR),
+                Rate(10, timedelta(minutes=10)),
+                Rate(3, timedelta(seconds=10)),
+                Rate(2, timedelta(hours=1)),
             ],
         )
 
@@ -193,14 +194,14 @@ class TestHttpStreamIntegration:
         """Test that HttpStream will use call budget when provided"""
         requests_mock.get(f"{StubDummyHttpStream.url_base}/", json={"data": "test"})
 
-        mocker.patch.object(CallRatePolicy, "try_acquire")
+        mocker.patch.object(MovingWindowCallRatePolicy, "try_acquire")
 
         api_budget = APIBudget()
         api_budget.add_policy(
             request_matcher=HttpRequestMatcher(url=f"{StubDummyHttpStream.url_base}/", method="GET"),
-            policy=CallRatePolicy(
+            policy=MovingWindowCallRatePolicy(
                 rates=[
-                    Rate(2, Duration.MINUTE),
+                    Rate(2, timedelta(minutes=1)),
                 ],
             ),
         )
@@ -210,21 +211,21 @@ class TestHttpStreamIntegration:
         for i in range(10):
             assert next(records) == {"data": "some_data"}
 
-        assert CallRatePolicy.try_acquire.call_count == 10
+        assert MovingWindowCallRatePolicy.try_acquire.call_count == 10
 
     @pytest.mark.usefixtures("enable_cache")
     def test_with_cache(self, mocker, requests_mock):
         """Test that HttpStream will use call budget when provided and not cached"""
         requests_mock.get(f"{StubDummyHttpStream.url_base}/", json={"data": "test"})
 
-        mocker.patch.object(CallRatePolicy, "try_acquire")
+        mocker.patch.object(MovingWindowCallRatePolicy, "try_acquire")
 
         api_budget = APIBudget()
         api_budget.add_policy(
             request_matcher=HttpRequestMatcher(url=f"{StubDummyHttpStream.url_base}/", method="GET"),
-            policy=CallRatePolicy(
+            policy=MovingWindowCallRatePolicy(
                 rates=[
-                    Rate(2, Duration.MINUTE),
+                    Rate(2, timedelta(minutes=1)),
                 ],
             ),
         )
@@ -235,4 +236,4 @@ class TestHttpStreamIntegration:
         for i in range(10):
             assert next(records) == {"data": "some_data"}
 
-        assert CallRatePolicy.try_acquire.call_count == 1
+        assert MovingWindowCallRatePolicy.try_acquire.call_count == 1

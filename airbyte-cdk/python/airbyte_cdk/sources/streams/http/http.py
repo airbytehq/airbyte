@@ -15,7 +15,7 @@ import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.call_rate import APIBudget, SessionProxyWithCallRate
+from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.types import JsonType
@@ -39,12 +39,9 @@ class HttpStream(Stream, ABC):
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
     # TODO: remove legacy HttpAuthenticator authenticator references
-    def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: APIBudget = APIBudget()):
-        if self.use_cache:
-            self._session = SessionProxyWithCallRate(self.request_cache(), api_budget)
-        else:
-            self._session = SessionProxyWithCallRate(requests.Session(), api_budget)
-
+    def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
+        self._api_budget: APIBudget = api_budget or APIBudget()
+        self._session = self.request_session()
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
@@ -65,13 +62,20 @@ class HttpStream(Stream, ABC):
         """
         return False
 
-    def request_cache(self) -> requests.Session:
-        cache_dir = Path(os.environ[ENV_REQUEST_CACHE_PATH])
-        return requests_cache.CachedSession(str(cache_dir / self.cache_filename), backend="sqlite")
+    def request_session(self) -> requests.Session:
+        """
+        Session factory based on use_cache property and call rate limits (api_budget parameter)
+        :return: instance of request-based session
+        """
+        if self.use_cache:
+            cache_dir = Path(os.environ[ENV_REQUEST_CACHE_PATH])
+            return CachedLimiterSession(cache_name=str(cache_dir / self.cache_filename), backend="sqlite", api_budget=self._api_budget)
+        else:
+            return LimiterSession(api_budget=self._api_budget)
 
     def clear_cache(self) -> None:
         """
-        clear cached requests for current session, can be called any time
+        Clear cached requests for current session, can be called any time
         """
         if isinstance(self._session, requests_cache.CachedSession):
             # Call to untyped function "clear" in typed context
@@ -303,8 +307,9 @@ class HttpStream(Stream, ABC):
                 args["json"] = json
             elif data:
                 args["data"] = data
-        # Returning Any from function declared to return "PreparedRequest"
-        return self._session.prepare_request(requests.Request(**args))  # type: ignore[no-any-return]
+        prepared_request: requests.PreparedRequest = self._session.prepare_request(requests.Request(**args))
+
+        return prepared_request
 
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:
