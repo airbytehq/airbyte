@@ -142,8 +142,8 @@ class SourceStripe(AbstractSource):
             base_stream,
             paginated_requester,
             request_params={
-                "created[gte]": lambda slice: slice.get("created[gte]") if slice else None,
-                "created[lte]": lambda slice: slice.get("created[lte]") if slice else None,
+                "created[gte]": lambda _slice: _slice.get("created[gte]") if _slice else None,
+                "created[lte]": lambda _slice: _slice.get("created[lte]") if _slice else None,
             },
         )
 
