@@ -127,7 +127,23 @@ We split dependencies between two groups, dependencies that are:
 ### Publishing a new version of the connector
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
 1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
 1. Create a Pull Request.
 1. Pat yourself on the back for being an awesome contributor.
 1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+
+### Bumping the DuckDB version of this connector
+
+1. Find the latest version here: [duckdb · PyPI](https://pypi.org/project/duckdb/#description)
+2. In a terminal, bump the DuckDB version using Poetry:
+   - `poetry add duckdb=X.Y.Z`, for instance `poetry add duckdb=0.9.1`. This overrides the previously-set version.
+   - `poetry lock`. This updates
+   - `git commit -m "bump DuckDB version to 0.9.1"`
+3. Run install and test locally:
+   - `poetry install && poetry run pytest`
+4. Bump the version of the connector:
+   1. Update the version number of the connector in `poetry.toml`.
+   2. Update the changelog in `./docs/integrations/destinations/duckdb.md`.
+   3. If this is a breaking change, document it in the `breakingChanges` section of `metadata.yaml`.
+5. Run connector acceptance tests:
+   1. `pipx install ./airbyte-ci/connectors/pipelines` - Installs `airbyte-ci` CLI.
+   2. `airbyte-ci connectors --name=destination-duckdb test` Runs the CI tests. Note: This will also run as part of CI when you push changes and mark the PR "Ready for Review".)

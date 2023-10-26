@@ -4,19 +4,40 @@
 
 import json
 import logging
+from datetime import date, datetime
+from decimal import Decimal, getcontext
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pandas as pd
 from airbyte_cdk.models import ConfiguredAirbyteStream, DestinationSyncMode
-from destination_aws_datalake.config_reader import ConnectorConfig, PartitionOptions
 
 from .aws import AwsHandler
+from .config_reader import ConnectorConfig, PartitionOptions
+from .constants import EMPTY_VALUES, GLUE_TYPE_MAPPING_DECIMAL, GLUE_TYPE_MAPPING_DOUBLE, PANDAS_TYPE_MAPPING
 
+# By default we set glue decimal type to decimal(28,25)
+# this setting matches that precision.
+getcontext().prec = 25
 logger = logging.getLogger("airbyte")
 
 
+class DictEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            return str(obj)
+
+        if isinstance(obj, (pd.Timestamp, datetime)):
+            # all timestamps and datetimes are converted to UTC
+            return obj.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        if isinstance(obj, date):
+            return obj.strftime("%Y-%m-%d")
+
+        return super(DictEncoder, self).default(obj)
+
+
 class StreamWriter:
-    def __init__(self, aws_handler: AwsHandler, config: ConnectorConfig, configured_stream: ConfiguredAirbyteStream):
+    def __init__(self, aws_handler: AwsHandler, config: ConnectorConfig, configured_stream: ConfiguredAirbyteStream) -> None:
         self._aws_handler: AwsHandler = aws_handler
         self._config: ConnectorConfig = config
         self._configured_stream: ConfiguredAirbyteStream = configured_stream
@@ -32,17 +53,18 @@ class StreamWriter:
 
         logger.info(f"Creating StreamWriter for {self._database}:{self._table}")
 
-    def _get_date_columns(self) -> list:
+    def _get_date_columns(self) -> List[str]:
         date_columns = []
         for key, val in self._schema.items():
             typ = val.get("type")
-            if (isinstance(typ, str) and typ == "string") or (isinstance(typ, list) and "string" in typ):
+            typ = self._get_json_schema_type(typ)
+            if isinstance(typ, str) and typ == "string":
                 if val.get("format") in ["date-time", "date"]:
                     date_columns.append(key)
 
         return date_columns
 
-    def _add_partition_column(self, col: str, df: pd.DataFrame) -> list:
+    def _add_partition_column(self, col: str, df: pd.DataFrame) -> Dict[str, str]:
         partitioning = self._config.partitioning
 
         if partitioning == PartitionOptions.NONE:
@@ -91,36 +113,63 @@ class StreamWriter:
 
         return record
 
-    def _fix_obvious_type_violations(self, record: Dict[str, Any]) -> Dict[str, Any]:
+    def _json_schema_cast_value(self, value, schema_entry) -> Any:
+        typ = schema_entry.get("type")
+        typ = self._get_json_schema_type(typ)
+        props = schema_entry.get("properties")
+        items = schema_entry.get("items")
+
+        if typ == "string":
+            format = schema_entry.get("format")
+            if format == "date-time":
+                return pd.to_datetime(value, errors="coerce", utc=True)
+
+            return str(value) if value and value != "" else None
+
+        elif typ == "integer":
+            return pd.to_numeric(value, errors="coerce")
+
+        elif typ == "number":
+            if self._config.glue_catalog_float_as_decimal:
+                return Decimal(str(value)) if value else Decimal("0")
+            return pd.to_numeric(value, errors="coerce")
+
+        elif typ == "boolean":
+            return bool(value)
+
+        elif typ == "null":
+            return None
+
+        elif typ == "object":
+            if value in EMPTY_VALUES:
+                return None
+
+            if isinstance(value, dict) and props:
+                for key, val in value.items():
+                    if key in props:
+                        value[key] = self._json_schema_cast_value(val, props[key])
+                return value
+
+        elif typ == "array" and items:
+            if value in EMPTY_VALUES:
+                return None
+
+            if isinstance(value, list):
+                return [self._json_schema_cast_value(item, items) for item in value]
+
+        return value
+
+    def _json_schema_cast(self, record: Dict[str, Any]) -> Dict[str, Any]:
         """
         Helper that fixes obvious type violations in a record's top level keys that may
         cause issues when casting data to pyarrow types. Such as:
         - Objects having empty strings or " " or "-" as value instead of null or {}
         - Arrays having empty strings or " " or "-" as value instead of null or []
         """
-        schema_keys = self._schema.keys()
-        for key in schema_keys:
+        for key, schema_type in self._schema.items():
             typ = self._schema[key].get("type")
             typ = self._get_json_schema_type(typ)
-            if typ in ["object", "array"]:
-                if record.get(key) in ["", " ", "-", "/", "null"]:
-                    record[key] = None
-
-        return record
-
-    def _add_missing_columns(self, record: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Helper that adds missing columns to a record's top level keys. Required
-        for awswrangler to create the correct schema in glue, even with the explicit
-        schema passed in, awswrangler will remove those columns when not present
-        in the dataframe
-        """
-        schema_keys = self._schema.keys()
-        records_keys = record.keys()
-        difference = list(set(schema_keys).difference(set(records_keys)))
-
-        for key in difference:
-            record[key] = None
+            record[key] = self._json_schema_cast_value(record.get(key), schema_type)
 
         return record
 
@@ -153,15 +202,6 @@ class StreamWriter:
         return types[0]
 
     def _get_pandas_dtypes_from_json_schema(self, df: pd.DataFrame) -> Dict[str, str]:
-        type_mapper = {
-            "string": "string",
-            "integer": "Int64",
-            "number": "float64",
-            "boolean": "bool",
-            "object": "object",
-            "array": "object",
-        }
-
         column_types = {}
 
         typ = "string"
@@ -176,15 +216,16 @@ class StreamWriter:
 
                 typ = self._get_json_schema_type(typ)
 
-            column_types[col] = type_mapper.get(typ, "string")
+            column_types[col] = PANDAS_TYPE_MAPPING.get(typ, "string")
 
         return column_types
 
-    def _get_json_schema_types(self):
+    def _get_json_schema_types(self) -> Dict[str, str]:
         types = {}
         for key, val in self._schema.items():
             typ = val.get("type")
             types[key] = self._get_json_schema_type(typ)
+
         return types
 
     def _is_invalid_struct_or_array(self, schema: Dict[str, Any]) -> bool:
@@ -243,19 +284,11 @@ class StreamWriter:
         """
         Helper that infers glue dtypes from a json schema.
         """
-
-        type_mapper = {
-            "string": "string",
-            "integer": "bigint",
-            "number": "decimal(38, 25)" if self._config.glue_catalog_float_as_decimal else "double",
-            "boolean": "boolean",
-            "null": "string",
-        }
+        type_mapper = GLUE_TYPE_MAPPING_DECIMAL if self._config.glue_catalog_float_as_decimal else GLUE_TYPE_MAPPING_DOUBLE
 
         column_types = {}
         json_columns = set()
-        for (col, definition) in schema.items():
-
+        for col, definition in schema.items():
             result_typ = None
             col_typ = definition.get("type")
             airbyte_type = definition.get("airbyte_type")
@@ -275,7 +308,7 @@ class StreamWriter:
 
             if col_typ == "object":
                 properties = definition.get("properties")
-                allow_additional_properties = definition.get("additionalProperties")
+                allow_additional_properties = definition.get("additionalProperties", False)
                 if properties and not allow_additional_properties and self._is_invalid_struct_or_array(properties):
                     object_props, _ = self._get_glue_dtypes_from_json_schema(properties)
                     result_typ = f"struct<{','.join([f'{k}:{v}' for k, v in object_props.items()])}>"
@@ -336,8 +369,7 @@ class StreamWriter:
 
     def append_message(self, message: Dict[str, Any]):
         clean_message = self._drop_additional_top_level_properties(message)
-        clean_message = self._fix_obvious_type_violations(clean_message)
-        clean_message = self._add_missing_columns(clean_message)
+        clean_message = self._json_schema_cast(clean_message)
         self._messages.append(clean_message)
 
     def reset(self):
@@ -362,7 +394,7 @@ class StreamWriter:
         date_columns = self._get_date_columns()
         for col in date_columns:
             if col in df.columns:
-                df[col] = pd.to_datetime(df[col])
+                df[col] = pd.to_datetime(df[col], format="mixed", utc=True)
 
                 # Create date column for partitioning
                 if self._cursor_fields and col in self._cursor_fields:
@@ -378,7 +410,7 @@ class StreamWriter:
         # so they can be queried with json_extract
         for col in json_casts:
             if col in df.columns:
-                df[col] = df[col].apply(json.dumps)
+                df[col] = df[col].apply(lambda x: json.dumps(x, cls=DictEncoder))
 
         if self._sync_mode == DestinationSyncMode.overwrite and self._partial_flush_count < 1:
             logger.debug(f"Overwriting {len(df)} records to {self._database}:{self._table}")
