@@ -3,6 +3,7 @@
 #
 
 import copy
+from functools import partial
 from typing import Any, Callable, Iterable, Mapping, Optional, Union
 
 import requests
@@ -89,6 +90,7 @@ class SourcePartitionGenerator(PartitionGenerator):
         for s in self._stream.stream_slices(sync_mode=sync_mode):
             yield SourcePartition(
                 copy.deepcopy(s),
+                self._stream,
                 self._requester,
                 request_headers=self._request_headers,
                 request_params=self._request_params,
@@ -101,6 +103,7 @@ class SourcePartition(Partition):
     def __init__(
         self,
         _slice: Mapping[str, Any],
+        stream: Stream,
         requester: PaginatedRequester,
         request_headers: Optional[Mapping[str, Any]] = None,
         request_params: Optional[Mapping[str, Any]] = None,
@@ -108,6 +111,7 @@ class SourcePartition(Partition):
         request_body_json: Optional[Mapping[str, Any]] = None,
     ):
         self._slice = _slice
+        self._stream = stream
         self._requester = requester
         self._request_headers = request_headers
         self._request_params = request_params
@@ -115,13 +119,15 @@ class SourcePartition(Partition):
         self._request_body_json = request_body_json
 
     def read(self) -> Iterable[Record]:
-        for r in self._requester.send_requests(
+        for record in self._requester.send_requests(
             request_params=self._parse_request_arguments(self._request_params),
             request_headers=self._parse_request_arguments(self._request_headers),
             request_body_data=self._parse_request_arguments(self._request_body_data),
             request_body_json=self._parse_request_arguments(self._request_body_json),
         ):
-            yield Record(r)
+            record_data = dict(record)
+            self._stream.transformer.transform(record_data, self._stream.get_json_schema())
+            yield Record(record_data)
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         return self._slice
