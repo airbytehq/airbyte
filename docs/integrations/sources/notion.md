@@ -112,6 +112,7 @@ The connector is restricted by Notion [request limits](https://developers.notion
 
 | Version | Date       | Pull Request                                             | Subject                                            |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------- |
+| 3.0.0   | 2023-10-26 | [31870](https://github.com/airbytehq/airbyte/pull/31870) | Schema fixes for `blocks` and `databases` streams  |
 | 2.0.6   | 2023-10-25 | [31825](https://github.com/airbytehq/airbyte/pull/31825) | Increase max_retries on retryable errors           |
 | 2.0.5   | 2023-10-23 | [31742](https://github.com/airbytehq/airbyte/pull/31742) | Add 'synced_block' property to Blocks schema       |
 | 2.0.4   | 2023-10-19 | [31625](https://github.com/airbytehq/airbyte/pull/31625) | Fix check_connection method                        |
