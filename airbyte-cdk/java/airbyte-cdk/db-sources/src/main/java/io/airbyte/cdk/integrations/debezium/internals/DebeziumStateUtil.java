@@ -13,6 +13,7 @@ import org.apache.kafka.connect.runtime.WorkerConfig;
 import org.apache.kafka.connect.runtime.standalone.StandaloneConfig;
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
+import io.debezium.embedded.KafkaConnectUtil;
 
 /**
  * Represents a utility class that assists with the parsing of Debezium offset state.
@@ -37,7 +38,7 @@ public interface DebeziumStateUtil {
    * @return A configured and started {@link FileOffsetBackingStore} instance.
    */
   default FileOffsetBackingStore getFileOffsetBackingStore(final Properties properties) {
-    final FileOffsetBackingStore fileOffsetBackingStore = new FileOffsetBackingStore();
+    final FileOffsetBackingStore fileOffsetBackingStore = new FileOffsetBackingStore(KafkaConnectUtil.converterForOffsetStore());
     final Map<String, String> propertiesMap = Configuration.from(properties).asMap();
     propertiesMap.put(WorkerConfig.KEY_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
     propertiesMap.put(WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
