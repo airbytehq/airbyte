@@ -87,8 +87,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         seen: Set[str] = set()
         while len(folder_id_queue) > 0:
             (path, folder_id) = folder_id_queue.pop()
+            # fetch all files in this folder (1000 is the max page size)
             request = service.files().list(
-                q=f"'{folder_id}' in parents", pageSize=10, fields="nextPageToken, files(id, name, modifiedTime, mimeType)"
+                q=f"'{folder_id}' in parents", pageSize=1000, fields="nextPageToken, files(id, name, modifiedTime, mimeType)"
             )
             while True:
                 results = request.execute()

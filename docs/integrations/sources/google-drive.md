@@ -23,7 +23,7 @@ The Google Drive source connector pulls data from a single folder in Google Driv
 
 The Google Drive source connector supports authentication via either OAuth or Service Account Key Authentication.
 <!-- env:cloud -->
-For **Airbyte Cloud** users, we highly recommend using OAuth, as it significantly simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-google-Drive-source-connector-in-airbyte).
+For **Airbyte Cloud** users, we highly recommend using OAuth, as it significantly simplifies the setup process and allows you to authenticate [directly from the Airbyte UI](#set-up-the-google-drive-source-connector-in-airbyte).
 
 <!-- /env:cloud -->
 
@@ -32,7 +32,7 @@ For **Airbyte Cloud** users, we highly recommend using OAuth, as it significantl
 For **Airbyte Open Source** users, we recommend using Service Account Key Authentication. Follow the steps below to create a service account, generate a key, and enable the Google Drive API.
 
 :::note
-If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. Be sure to set the scopes to `https://www.googleapis.com/auth/spreadDrive.readonly`. You will need to obtain your client ID, client secret, and refresh token for the connector setup.
+If you prefer to use OAuth for authentication with **Airbyte Open Source**, you can follow [Google's OAuth instructions](https://developers.google.com/identity/protocols/oauth2) to create an authentication app. Be sure to set the scopes to `https://www.googleapis.com/auth/drive.readonly`. You will need to obtain your client ID, client secret, and refresh token for the connector setup.
 :::
 
 ### Set up the service account key (Airbyte Open Source)
@@ -93,13 +93,13 @@ To set up Google Drive as a source in Airbyte Cloud:
 
 <!-- /env:oss -->
 
-6. For **Folder Link**, enter the link to the Google Drive folder. To get the link, go to the folder you want to sync, and copy the current URL.
+6. For **Folder Link**, enter the link to the Google Drive folder. To get the link, navigate to the folder you want to sync in the Google Drive UI, and copy the current URL.
 7. Configure the optional **Start Date** parameter that marks a starting date and time in UTC for data replication. Any files that have _not_ been modified since this specified date/time will _not_ be replicated. Use the provided datepicker (recommended) or enter the desired date programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. Leaving this field blank will replicate data from all files that have not been excluded by the **Path Pattern** and **Path Prefix**.
 8. Click **Set up source** and wait for the tests to complete.
 
 ## Supported sync modes
 
-The Amazon S3 source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+The Google Drive source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 | Feature                                        | Supported? |
 | :--------------------------------------------- | :--------- |
@@ -251,38 +251,6 @@ The Markdown/PDF/Docx format is currently an experimental feature and not subjec
 The Markdown/PDF/Docx format is a special format that allows you to extract text from Markdown, PDF, and Word documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
-# TODO
-
-### Output schema
-
-Each sheet in the selected spreadsheet is synced as a separate stream. Each selected column in the sheet is synced as a string field.
-
-Airbyte only supports replicating [Grid](https://developers.google.com/Drive/api/reference/rest/v4/spreadDrive/Drive#SheetType) Drive.
-
-## Supported sync modes
-
-The Google Drive source connector supports the following sync modes:
-
-- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
-- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
-
-## Data type map
-
-| Integration Type | Airbyte Type | Notes |
-|:-----------------|:-------------|:------|
-| any type         | `string`     |       |
-
-## Performance consideration
-
-The [Google API rate limits](https://developers.google.com/Drive/api/limits) are:
-
-- 300 read requests per minute per project
-- 60 requests per minute per user per project
-
-Airbyte batches requests to the API in order to efficiently pull data and respect these rate limits. We recommend not using the same user or service account for more than 3 instances of the Google Drive source connector to ensure high transfer speeds.
-
-## Troubleshooting
-- If your sheet is completely empty(no header rows) or deleted, Airbyte will not delete the table in the destination. If this happens, the sync logs will contain a message saying the sheet has been skipped when syncing the full spreadsheet.
 
 ## Changelog
 
