@@ -103,7 +103,7 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      step: "P{{ config.get('time_window', 1) }}D"
+      step: "P{{ config.get('time_window', 7) }}D"
       cursor_granularity: PT1S
     $parameters:
       path: "transactions"
