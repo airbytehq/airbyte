@@ -6,12 +6,12 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.1",
+    "airbyte-cdk",
     "backoff",
     "requests",
     "google-auth-httplib2",
     "google-api-python-client",
-    "PyYAML==6.0",
+    "PyYAML~=6.0",
     "pydantic~=1.9.2",
 ]
 
