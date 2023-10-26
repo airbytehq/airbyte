@@ -415,490 +415,483 @@
           "type": "string"
         },
         "badge": {
-          "anyOf": [
-            {
-              "type": "null"
+          "type": ["null", "object"],
+          "properties": {
+            "name": {
+              "type": "string"
             },
-            {
+            "color": {
+              "type": "string"
+            },
+            "width": {
+              "type": "integer"
+            },
+            "bbJson": {
               "type": "object",
               "properties": {
-                "name": {
+                "id": {
                   "type": "string"
                 },
-                "color": {
-                  "type": "string"
-                },
-                "width": {
-                  "type": "integer"
-                },
-                "bbJson": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    },
-                    "web": {
-                      "type": "object",
-                      "properties": {
-                        "type": {
-                          "type": "string"
-                        },
-                        "domId": {
-                          "type": "string"
-                        },
-                        "layout": {
-                          "type": "string"
-                        },
-                        "ariaLabel": {
-                          "type": "string"
-                        },
-                        "domClasses": {
-                          "type": "array"
-                        },
-                        "semanticTag": {
-                          "type": "string"
-                        },
-                        "ariaExpanded": {
-                          "type": "string"
-                        },
-                        "pseudoStyles": {
-                          "type": "array"
-                        },
-                        "translationId": {
-                          "type": "string"
-                        }
-                      }
-                    },
-                    "views": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "string"
-                          },
-                          "web": {
-                            "type": "object",
-                            "properties": {
-                              "type": {
-                                "type": "string"
-                              },
-                              "domId": {
-                                "type": "string"
-                              },
-                              "altText": {
-                                "type": "string"
-                              },
-                              "wrapper": {
-                                "type": "object",
-                                "properties": {
-                                  "type": {
-                                    "type": "string"
-                                  },
-                                  "props": {
-                                    "type": "object",
-                                    "properties": {
-                                      "id": {
-                                        "type": "string"
-                                      },
-                                      "class": {
-                                        "type": "string"
-                                      },
-                                      "data-img-id": {
-                                        "type": "string"
-                                      }
-                                    }
-                                  },
-                                  "children": {
-                                    "type": "array"
-                                  }
-                                }
-                              },
-                              "domClasses": {
-                                "type": "array"
-                              },
-                              "semanticTag": {
-                                "type": "string"
-                              },
-                              "pseudoStyles": {
-                                "type": "array"
-                              },
-                              "translationId": {
-                                "type": "string"
-                              }
-                            }
-                          },
-                          "views": {
-                            "type": "array"
-                          },
-                          "widget": {
-                            "type": "string"
-                          },
-                          "actions": {
-                            "type": "array"
-                          },
-                          "layoutId": {
-                            "type": "null"
-                          },
-                          "properties": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "name": {
-                                  "type": "string"
-                                },
-                                "type": {
-                                  "type": "string"
-                                },
-                                "value": {
-                                  "type": [
-                                    "integer",
-                                    "string"
-                                  ]
-                                }
-                              }
-                            }
-                          },
-                          "uiMetadata": {
-                            "type": "object",
-                            "properties": {
-                              "name": {
-                                "type": "string"
-                              },
-                              "wizard": {
-                                "type": "object",
-                                "properties": {
-                                  "defaultValues": {
-                                    "type": "object"
-                                  },
-                                  "defaultActions": {
-                                    "type": "object"
-                                  }
-                                }
-                              }
-                            }
-                          },
-                          "templateName": {
-                            "type": "null"
-                          }
-                        }
-                      }
-                    },
-                    "widget": {
-                      "type": "string"
-                    },
-                    "actions": {
-                      "type": "array"
-                    },
-                    "layoutId": {
-                      "type": "null"
-                    },
-                    "properties": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "name": {
-                            "type": "string"
-                          },
-                          "type": {
-                            "type": "string"
-                          },
-                          "value": {
-                            "type": [
-                              "integer",
-                              "string"
-                            ]
-                          }
-                        }
-                      }
-                    },
-                    "uiMetadata": {
-                      "type": "object",
-                      "properties": {
-                        "name": {
-                          "type": "string"
-                        },
-                        "wizard": {
-                          "type": "object",
-                          "properties": {
-                            "defaultValues": {
-                              "type": "object"
-                            },
-                            "defaultActions": {
-                              "type": "object"
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "templateName": {
-                      "type": "null"
-                    }
-                  }
-                },
-                "height": {
-                  "type": "integer"
-                },
-                "domJson": {
+                "web": {
                   "type": "object",
                   "properties": {
                     "type": {
                       "type": "string"
                     },
-                    "props": {
-                      "type": "object",
+                    "domId": {
+                      "type": "string"
+                    },
+                    "layout": {
+                      "type": "string"
+                    },
+                    "ariaLabel": {
+                      "type": "string"
+                    },
+                    "domClasses": {
+                      "type": "array"
+                    },
+                    "semanticTag": {
+                      "type": "string"
+                    },
+                    "ariaExpanded": {
+                      "type": "string"
+                    },
+                    "pseudoStyles": {
+                      "type": "array"
+                    },
+                    "translationId": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "views": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "web": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string"
+                          },
+                          "domId": {
+                            "type": "string"
+                          },
+                          "altText": {
+                            "type": "string"
+                          },
+                          "wrapper": {
+                            "type": "object",
+                            "properties": {
+                              "type": {
+                                "type": "string"
+                              },
+                              "props": {
+                                "type": "object",
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "class": {
+                                    "type": "string"
+                                  },
+                                  "data-img-id": {
+                                    "type": "string"
+                                  }
+                                }
+                              },
+                              "children": {
+                                "type": "array"
+                              }
+                            }
+                          },
+                          "domClasses": {
+                            "type": "array"
+                          },
+                          "semanticTag": {
+                            "type": "string"
+                          },
+                          "pseudoStyles": {
+                            "type": "array"
+                          },
+                          "translationId": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "views": {
+                        "type": "array"
+                      },
+                      "widget": {
+                        "type": "string"
+                      },
+                      "actions": {
+                        "type": "array"
+                      },
+                      "layoutId": {
+                        "type": "null"
+                      },
                       "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "type": {
-                          "type": "string"
-                        },
-                        "class": {
-                          "type": "string"
-                        },
-                        "style": {
+                        "type": "array",
+                        "items": {
                           "type": "object",
                           "properties": {
-                            "top": {
+                            "name": {
                               "type": "string"
                             },
-                            "left": {
+                            "type": {
                               "type": "string"
                             },
-                            "float": {
-                              "type": "string"
-                            },
-                            "right": {
-                              "type": "string"
-                            },
-                            "width": {
-                              "type": "string"
-                            },
-                            "border": {
-                              "type": "string"
-                            },
-                            "bottom": {
-                              "type": "string"
-                            },
-                            "height": {
-                              "type": "string"
-                            },
-                            "display": {
-                              "type": "string"
-                            },
-                            "z-index": {
-                              "type": "integer"
-                            },
-                            "position": {
-                              "type": "string"
-                            },
-                            "font-size": {
-                              "type": "string"
-                            },
-                            "min-width": {
-                              "type": "string"
-                            },
-                            "background": {
-                              "type": "string"
-                            },
-                            "box-shadow": {
-                              "type": "string"
-                            },
-                            "margin-top": {
-                              "type": "string"
-                            },
-                            "min-height": {
-                              "type": "string"
-                            },
-                            "line-height": {
-                              "type": "integer"
-                            },
-                            "margin-left": {
-                              "type": "string"
-                            },
-                            "padding-top": {
-                              "type": "string"
-                            },
-                            "margin-right": {
-                              "type": "string"
-                            },
-                            "padding-left": {
-                              "type": "string"
-                            },
-                            "border-radius": {
-                              "type": "string"
-                            },
-                            "margin-bottom": {
-                              "type": "string"
-                            },
-                            "padding-right": {
-                              "type": "string"
-                            },
-                            "padding-bottom": {
-                              "type": "string"
-                            },
-                            "vertical-align": {
-                              "type": "string"
+                            "value": {
+                              "type": [
+                                "integer",
+                                "string"
+                              ]
                             }
                           }
+                        }
+                      },
+                      "uiMetadata": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "wizard": {
+                            "type": "object",
+                            "properties": {
+                              "defaultValues": {
+                                "type": "object"
+                              },
+                              "defaultActions": {
+                                "type": "object"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "templateName": {
+                        "type": "null"
+                      }
+                    }
+                  }
+                },
+                "widget": {
+                  "type": "string"
+                },
+                "actions": {
+                  "type": "array"
+                },
+                "layoutId": {
+                  "type": "null"
+                },
+                "properties": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": [
+                          "integer",
+                          "string"
+                        ]
+                      }
+                    }
+                  }
+                },
+                "uiMetadata": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "wizard": {
+                      "type": "object",
+                      "properties": {
+                        "defaultValues": {
+                          "type": "object"
                         },
-                        "aria-label": {
+                        "defaultActions": {
+                          "type": "object"
+                        }
+                      }
+                    }
+                  }
+                },
+                "templateName": {
+                  "type": "null"
+                }
+              }
+            },
+            "height": {
+              "type": "integer"
+            },
+            "domJson": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string"
+                },
+                "props": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "class": {
+                      "type": "string"
+                    },
+                    "style": {
+                      "type": "object",
+                      "properties": {
+                        "top": {
                           "type": "string"
                         },
-                        "data-layout": {
+                        "left": {
                           "type": "string"
                         },
-                        "aria-expanded": {
+                        "float": {
+                          "type": "string"
+                        },
+                        "right": {
+                          "type": "string"
+                        },
+                        "width": {
+                          "type": "string"
+                        },
+                        "border": {
+                          "type": "string"
+                        },
+                        "bottom": {
+                          "type": "string"
+                        },
+                        "height": {
+                          "type": "string"
+                        },
+                        "display": {
+                          "type": "string"
+                        },
+                        "z-index": {
+                          "type": "integer"
+                        },
+                        "position": {
+                          "type": "string"
+                        },
+                        "font-size": {
+                          "type": "string"
+                        },
+                        "min-width": {
+                          "type": "string"
+                        },
+                        "background": {
+                          "type": "string"
+                        },
+                        "box-shadow": {
+                          "type": "string"
+                        },
+                        "margin-top": {
+                          "type": "string"
+                        },
+                        "min-height": {
+                          "type": "string"
+                        },
+                        "line-height": {
+                          "type": "integer"
+                        },
+                        "margin-left": {
+                          "type": "string"
+                        },
+                        "padding-top": {
+                          "type": "string"
+                        },
+                        "margin-right": {
+                          "type": "string"
+                        },
+                        "padding-left": {
+                          "type": "string"
+                        },
+                        "border-radius": {
+                          "type": "string"
+                        },
+                        "margin-bottom": {
+                          "type": "string"
+                        },
+                        "padding-right": {
+                          "type": "string"
+                        },
+                        "padding-bottom": {
+                          "type": "string"
+                        },
+                        "vertical-align": {
                           "type": "string"
                         }
                       }
                     },
-                    "children": {
-                      "type": "array",
-                      "items": {
+                    "aria-label": {
+                      "type": "string"
+                    },
+                    "data-layout": {
+                      "type": "string"
+                    },
+                    "aria-expanded": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "children": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "css": {
+                        "type": "array"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "props": {
                         "type": "object",
                         "properties": {
-                          "css": {
-                            "type": "array"
+                          "id": {
+                            "type": "string"
+                          },
+                          "alt": {
+                            "type": "string"
+                          },
+                          "src": {
+                            "type": "string"
                           },
                           "type": {
                             "type": "string"
                           },
-                          "props": {
+                          "class": {
+                            "type": "string"
+                          },
+                          "style": {
                             "type": "object",
                             "properties": {
-                              "id": {
+                              "float": {
                                 "type": "string"
                               },
-                              "alt": {
+                              "width": {
                                 "type": "string"
                               },
-                              "src": {
+                              "border": {
                                 "type": "string"
                               },
-                              "type": {
+                              "height": {
                                 "type": "string"
                               },
-                              "class": {
+                              "margin": {
                                 "type": "string"
                               },
-                              "style": {
-                                "type": "object",
-                                "properties": {
-                                  "float": {
-                                    "type": "string"
-                                  },
-                                  "width": {
-                                    "type": "string"
-                                  },
-                                  "border": {
-                                    "type": "string"
-                                  },
-                                  "height": {
-                                    "type": "string"
-                                  },
-                                  "margin": {
-                                    "type": "string"
-                                  },
-                                  "display": {
-                                    "type": "string"
-                                  },
-                                  "padding": {
-                                    "type": "string"
-                                  },
-                                  "box-shadow": {
-                                    "type": "string"
-                                  },
-                                  "line-height": {
-                                    "type": "integer"
-                                  },
-                                  "vertical-align": {
-                                    "type": "string"
-                                  }
-                                }
-                              },
-                              "scoped": {
+                              "display": {
                                 "type": "string"
                               },
-                              "data-img-id": {
+                              "padding": {
                                 "type": "string"
                               },
-                              "data-_pendo-image-1": {
+                              "box-shadow": {
                                 "type": "string"
                               },
-                              "data-_pendo-image-wrapper-1": {
+                              "line-height": {
+                                "type": "integer"
+                              },
+                              "vertical-align": {
                                 "type": "string"
                               }
                             }
                           },
-                          "children": {
-                            "type": "array",
-                            "items": {
+                          "scoped": {
+                            "type": "string"
+                          },
+                          "data-img-id": {
+                            "type": "string"
+                          },
+                          "data-_pendo-image-1": {
+                            "type": "string"
+                          },
+                          "data-_pendo-image-wrapper-1": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "children": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string"
+                            },
+                            "props": {
                               "type": "object",
                               "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "alt": {
+                                  "type": "string"
+                                },
+                                "src": {
+                                  "type": "string"
+                                },
                                 "type": {
                                   "type": "string"
                                 },
-                                "props": {
+                                "class": {
+                                  "type": "string"
+                                },
+                                "style": {
                                   "type": "object",
                                   "properties": {
-                                    "id": {
+                                    "float": {
                                       "type": "string"
                                     },
-                                    "alt": {
+                                    "width": {
                                       "type": "string"
                                     },
-                                    "src": {
+                                    "border": {
                                       "type": "string"
                                     },
-                                    "type": {
+                                    "height": {
                                       "type": "string"
                                     },
-                                    "class": {
+                                    "margin": {
                                       "type": "string"
                                     },
-                                    "style": {
-                                      "type": "object",
-                                      "properties": {
-                                        "float": {
-                                          "type": "string"
-                                        },
-                                        "width": {
-                                          "type": "string"
-                                        },
-                                        "border": {
-                                          "type": "string"
-                                        },
-                                        "height": {
-                                          "type": "string"
-                                        },
-                                        "margin": {
-                                          "type": "string"
-                                        },
-                                        "display": {
-                                          "type": "string"
-                                        },
-                                        "padding": {
-                                          "type": "string"
-                                        },
-                                        "box-shadow": {
-                                          "type": "string"
-                                        },
-                                        "line-height": {
-                                          "type": "integer"
-                                        },
-                                        "vertical-align": {
-                                          "type": "string"
-                                        }
-                                      }
+                                    "display": {
+                                      "type": "string"
                                     },
-                                    "data-_pendo-image-1": {
+                                    "padding": {
+                                      "type": "string"
+                                    },
+                                    "box-shadow": {
+                                      "type": "string"
+                                    },
+                                    "line-height": {
+                                      "type": "integer"
+                                    },
+                                    "vertical-align": {
                                       "type": "string"
                                     }
                                   }
+                                },
+                                "data-_pendo-image-1": {
+                                  "type": "string"
                                 }
                               }
                             }
@@ -907,39 +900,39 @@
                       }
                     }
                   }
-                },
-                "offsets": {
-                  "type": "object",
-                  "properties": {
-                    "top": {
-                      "type": "integer"
-                    },
-                    "left": {
-                      "type": "integer"
-                    },
-                    "right": {
-                      "type": "integer"
-                    }
-                  }
-                },
-                "imageUrl": {
-                  "type": "string"
-                },
-                "position": {
-                  "type": "string"
-                },
-                "isOnlyShowOnce": {
-                  "type": "boolean"
-                },
-                "showGuideOnBadgeHover": {
-                  "type": "boolean"
-                },
-                "showBadgeOnlyOnElementHover": {
-                  "type": "boolean"
                 }
               }
+            },
+            "offsets": {
+              "type": "object",
+              "properties": {
+                "top": {
+                  "type": "integer"
+                },
+                "left": {
+                  "type": "integer"
+                },
+                "right": {
+                  "type": "integer"
+                }
+              }
+            },
+            "imageUrl": {
+              "type": "string"
+            },
+            "position": {
+              "type": "string"
+            },
+            "isOnlyShowOnce": {
+              "type": "boolean"
+            },
+            "showGuideOnBadgeHover": {
+              "type": "boolean"
+            },
+            "showBadgeOnlyOnElementHover": {
+              "type": "boolean"
             }
-          ]
+          }
         },
         "dates": {
           "type": "object",
@@ -981,28 +974,21 @@
           "type": "integer"
         },
         "activation": {
-          "anyOf": [
-            {
-              "type": "null"
-            },
-            {
-              "type": "object",
-              "properties": {
-                "event": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "selector": {
-                  "type": "string"
-                },
-                "inheritStepOne": {
-                  "type": "boolean"
-                }
+          "type": ["null", "object"],
+          "properties": {
+            "event": {
+              "type": "array",
+              "items": {
+                "type": "string"
               }
+            },
+            "selector": {
+              "type": "string"
+            },
+            "inheritStepOne": {
+              "type": "boolean"
             }
-          ]
+          }
         },
         "isAnnouncement": {
           "type": "boolean"
