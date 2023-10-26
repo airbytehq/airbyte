@@ -106,8 +106,11 @@ class SourceJira(AbstractSource):
             return False, validation_error
         except requests.exceptions.RequestException as request_error:
             has_response = request_error.response is not None
-            is_invalid_domain = isinstance(request_error, requests.exceptions.InvalidURL) \
-                or has_response and request_error.response.status_code == requests.codes.not_found
+            is_invalid_domain = (
+                isinstance(request_error, requests.exceptions.InvalidURL)
+                or has_response
+                and request_error.response.status_code == requests.codes.not_found
+            )
 
             if is_invalid_domain:
                 raise AirbyteTracedException(
@@ -115,12 +118,12 @@ class SourceJira(AbstractSource):
                     internal_message=str(request_error),
                     failure_type=FailureType.config_error,
                 ) from None
-            
+
             # sometimes jira returns non json response
             if has_response and request_error.response.headers.get("content-type") == "application/json":
                 message = " ".join(map(str, request_error.response.json().get("errorMessages", "")))
                 return False, f"{message} {request_error}"
-        
+
             # we don't know what this is, rethrow it
             raise request_error
 
