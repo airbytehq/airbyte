@@ -8,7 +8,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class PendoPythonStream(HttpStream, ABC):
     url_base = "https://app.pendo.io/api/v1/"
     primary_key = "id"
-    page_size = 10
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
@@ -52,6 +51,7 @@ class PendoPythonStream(HttpStream, ABC):
 
 class PendoAggregationStream(PendoPythonStream):
     json_schema = None
+    page_size = 10
 
     @property
     def http_method(self) -> str:
@@ -80,6 +80,26 @@ class PendoAggregationStream(PendoPythonStream):
         :return an iterable containing each record in the response
         """
         yield from response.json().get("results", [])
+
+    def build_request_body(self, requestId, source, next_page_token) -> Optional[Mapping[str, Any]]:
+        request_body = {
+            "response": {"mimeType": "application/json"},
+            "request": {
+                "requestId": requestId,
+                "pipeline": [
+                    {"source": source},
+                    {"sort": [self.primary_key]},
+                    {"limit": self.page_size},
+                ],
+            },
+        }
+
+        if next_page_token is not None:
+            request_body["request"]["pipeline"].insert(
+                2, {"filter": f"{self.primary_key} > \"{next_page_token}\""}
+            )
+
+        return request_body
 
 
 class Feature(PendoPythonStream):
@@ -181,33 +201,13 @@ class Visitors(PendoAggregationStream):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
-        request_body = {
-            "response": {"mimeType": "application/json"},
-            "request": {
-                "requestId": "visitor-list",
-                "pipeline": [
-                    {
-                        "source": {
-                            "visitors": {
-                                "identified": True
-                            }
-                        }
-                    },
-                    {
-                        "sort": ["visitorId"]
-                    },
-                    {"limit": self.page_size},
-                ],
-            },
+    ) -> Optional[Mapping[str, Any]]:
+        source = {
+            "visitors": {
+                "identified": True
+            }
         }
-
-        if next_page_token is not None:
-            request_body["request"]["pipeline"].insert(
-                2, {"filter": f"visitorId > \"{next_page_token}\""}
-            )
-
-        return request_body
+        return self.build_request_body("visitor-list", source, next_page_token)
 
 
 class Accounts(PendoAggregationStream):
@@ -255,22 +255,6 @@ class Accounts(PendoAggregationStream):
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ):
-        request_body = {
-            "response": {"mimeType": "application/json"},
-            "request": {
-                "requestId": "account-list",
-                "pipeline": [
-                    {"source": {"accounts": {}}},
-                    {"sort": ["accountId"]},
-                    {"limit": self.page_size},
-                ],
-            },
-        }
-
-        if next_page_token is not None:
-            request_body["request"]["pipeline"].insert(
-                2, {"filter": f"accountId > \"{next_page_token}\""}
-            )
-
-        return request_body
+    ) -> Optional[Mapping[str, Any]]:
+        source = {"accounts": {}}
+        return self.build_request_body("account-list", source, next_page_token)
