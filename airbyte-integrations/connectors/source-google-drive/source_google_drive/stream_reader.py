@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import io
+import smart_open
 import json
 import logging
 import re
@@ -15,7 +15,7 @@ from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException, FailureType
 from google.oauth2 import credentials, service_account
 from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseDownload
+from googleapiclient import _auth
 
 from .spec import SourceGoogleDriveSpec
 
@@ -135,21 +135,12 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=self._get_export_mime_type(file))
         else:
             request = self.google_drive_service.files().get_media(fileId=file.id)
-        handle = io.BytesIO()
-        downloader = MediaIoBaseDownload(handle, request)
-        done = False
-        while done is False:
-            status, done = downloader.next_chunk()
 
-        handle.seek(0)
+        # Use smart_open to actually download the file - to do so, copy over uri and headers from the Google SDK object (requires us to use undocumented API _auth.get_credentials_from_http)
+        uri = request.uri
+        headers = {**request.headers, "Authorization": f"Bearer {_auth.get_credentials_from_http(self.google_drive_service._http).token}"}
 
-        if mode == FileReadMode.READ_BINARY:
-            return handle
-        else:
-            # repack the bytes into a string with the right encoding
-            text_handle = io.StringIO(handle.read().decode(encoding or "utf-8"))
-            handle.close()
-            return text_handle
+        return smart_open.open(uri=uri, transport_params={"headers":headers}, mode=mode.value, encoding=encoding)
 
     def _get_export_mime_type(self, file: GoogleDriveRemoteFile):
         """
