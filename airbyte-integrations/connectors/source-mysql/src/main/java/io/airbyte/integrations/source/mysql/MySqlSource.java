@@ -150,7 +150,7 @@ public class MySqlSource extends AbstractJdbcSource<MysqlType> implements Source
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     // #15808 Disallow connecting to db with disable, prefer or allow SSL mode when connecting directly
     // and not over SSH tunnel
-    if (MODE.equalsIgnoreCase("cloud")) {
+    if (MODE != null && MODE.equalsIgnoreCase("cloud")) {
       if (config.has(TUNNEL_METHOD)
           && config.get(TUNNEL_METHOD).has(TUNNEL_METHOD)
           && config.get(TUNNEL_METHOD).get(TUNNEL_METHOD).asText().equals(NO_TUNNEL)) {
