@@ -471,6 +471,18 @@
     "marked_for_deletion_on": {
       "type": ["null", "string"],
       "format": "date"
+    },
+    "ci_forward_deployment_rollback_allowed": {
+      "type": ["null", "boolean"]
+    },
+    "emails_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "model_experiments_access_level": {
+      "type": ["null", "string"]
+    },
+    "merge_trains_skip_train_allowed": {
+      "type": ["null", "boolean"]
     }
   }
 }

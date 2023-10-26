@@ -3,19 +3,22 @@
 #
 
 import logging
-from contextlib import contextmanager
+from datetime import datetime
 from io import IOBase
 from typing import Iterable, List, Optional, Set
 
 import boto3.session
 import pytz
 import smart_open
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.models import FailureType
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from botocore.client import BaseClient
 from botocore.client import Config as ClientConfig
+from botocore.exceptions import ClientError
 from source_s3.v4.config import Config
+from source_s3.v4.zip_reader import DecompressedStream, RemoteFileInsideArchive, ZipContentReader, ZipFileHandler
 
 
 class SourceS3StreamReader(AbstractFileBasedStreamReader):
@@ -67,27 +70,31 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
         total_n_keys = 0
 
         try:
-            if prefixes:
-                for prefix in prefixes:
-                    for remote_file in self._page(s3, globs, self.config.bucket, prefix, seen, logger):
-                        total_n_keys += 1
-                        yield remote_file
-            else:
-                for remote_file in self._page(s3, globs, self.config.bucket, None, seen, logger):
+            for current_prefix in prefixes if prefixes else [None]:
+                for remote_file in self._page(s3, globs, self.config.bucket, current_prefix, seen, logger):
                     total_n_keys += 1
                     yield remote_file
 
             logger.info(f"Finished listing objects from S3. Found {total_n_keys} objects total ({len(seen)} unique objects).")
+        except ClientError as exc:
+            if exc.response["Error"]["Code"] == "NoSuchBucket":
+                raise CustomFileBasedException(
+                    f"The bucket {self.config.bucket} does not exist.", failure_type=FailureType.config_error, exception=exc
+                )
+            self._raise_error_listing_files(globs, exc)
         except Exception as exc:
-            raise ErrorListingFiles(
-                FileBasedSourceError.ERROR_LISTING_FILES,
-                source="s3",
-                bucket=self.config.bucket,
-                globs=globs,
-                endpoint=self.config.endpoint,
-            ) from exc
+            self._raise_error_listing_files(globs, exc)
 
-    @contextmanager
+    def _raise_error_listing_files(self, globs: List[str], exc: Optional[Exception] = None):
+        """Helper method to raise the ErrorListingFiles exception."""
+        raise ErrorListingFiles(
+            FileBasedSourceError.ERROR_LISTING_FILES,
+            source="s3",
+            bucket=self.config.bucket,
+            globs=globs,
+            endpoint=self.config.endpoint,
+        ) from exc
+
     def open_file(self, file: RemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         try:
             params = {"client": self.s3_client}
@@ -96,17 +103,22 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
 
         logger.debug(f"try to open {file.uri}")
         try:
-            result = smart_open.open(f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding)
+            if isinstance(file, RemoteFileInsideArchive):
+                s3_file_object = smart_open.open(f"s3://{self.config.bucket}/{file.uri.split('#')[0]}", transport_params=params, mode="rb")
+                decompressed_stream = DecompressedStream(s3_file_object, file)
+                result = ZipContentReader(decompressed_stream, encoding)
+            else:
+                result = smart_open.open(
+                    f"s3://{self.config.bucket}/{file.uri}", transport_params=params, mode=mode.value, encoding=encoding
+                )
         except OSError:
             logger.warning(
                 f"We don't have access to {file.uri}. The file appears to have become unreachable during sync."
                 f"Check whether key {file.uri} exists in `{self.config.bucket}` bucket and/or has proper ACL permissions"
             )
-        # see https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager for why we do this
-        try:
-            yield result
-        finally:
-            result.close()
+
+        # we can simply return the result here as it is a context manager itself that will release all resources
+        return result
 
     @staticmethod
     def _is_folder(file) -> bool:
@@ -130,10 +142,11 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
                 for file in response["Contents"]:
                     if self._is_folder(file):
                         continue
-                    remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"].astimezone(pytz.utc).replace(tzinfo=None))
-                    if self.file_matches_globs(remote_file, globs) and remote_file.uri not in seen:
-                        seen.add(remote_file.uri)
-                        yield remote_file
+
+                    for remote_file in self._handle_file(file):
+                        if self.file_matches_globs(remote_file, globs) and remote_file.uri not in seen:
+                            seen.add(remote_file.uri)
+                            yield remote_file
             else:
                 logger.warning(f"Invalid response from S3; missing 'Contents' key. kwargs={kwargs}.")
 
@@ -142,6 +155,31 @@ class SourceS3StreamReader(AbstractFileBasedStreamReader):
             else:
                 logger.info(f"Finished listing objects from S3 for prefix={prefix}. Found {total_n_keys_for_prefix} objects.")
                 break
+
+    def _handle_file(self, file):
+        if file["Key"].endswith("zip"):
+            yield from self._handle_zip_file(file)
+        else:
+            yield self._handle_regular_file(file)
+
+    def _handle_zip_file(self, file):
+        zip_handler = ZipFileHandler(self.s3_client, self.config)
+        zip_members, cd_start = zip_handler.get_zip_files(file["Key"])
+
+        for zip_member in zip_members:
+            remote_file = RemoteFileInsideArchive(
+                uri=file["Key"] + "#" + zip_member.filename,
+                last_modified=datetime(*zip_member.date_time).astimezone(pytz.utc).replace(tzinfo=None),
+                start_offset=zip_member.header_offset + cd_start,
+                compressed_size=zip_member.compress_size,
+                uncompressed_size=zip_member.file_size,
+                compression_method=zip_member.compress_type,
+            )
+            yield remote_file
+
+    def _handle_regular_file(self, file):
+        remote_file = RemoteFile(uri=file["Key"], last_modified=file["LastModified"].astimezone(pytz.utc).replace(tzinfo=None))
+        return remote_file
 
 
 def _get_s3_compatible_client_args(config: Config) -> dict:

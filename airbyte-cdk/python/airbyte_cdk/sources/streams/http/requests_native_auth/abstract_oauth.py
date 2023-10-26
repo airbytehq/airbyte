@@ -4,14 +4,16 @@
 
 import logging
 from abc import abstractmethod
+from json import JSONDecodeError
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import backoff
 import pendulum
 import requests
-from airbyte_cdk.models import Level
+from airbyte_cdk.models import FailureType, Level
 from airbyte_cdk.sources.http_logger import format_http_message
 from airbyte_cdk.sources.message import MessageRepository, NoopMessageRepository
+from airbyte_cdk.utils import AirbyteTracedException
 from requests.auth import AuthBase
 
 from ..exceptions import DefaultBackoffException
@@ -28,6 +30,20 @@ class AbstractOauth2Authenticator(AuthBase):
     """
 
     _NO_STREAM_NAME = None
+
+    def __init__(
+        self,
+        refresh_token_error_status_codes: Tuple[int, ...] = (),
+        refresh_token_error_key: str = "",
+        refresh_token_error_values: Tuple[str, ...] = (),
+    ) -> None:
+        """
+        If all of refresh_token_error_status_codes, refresh_token_error_key, and refresh_token_error_values are set,
+        then http errors with such params will be wrapped in AirbyteTracedException.
+        """
+        self._refresh_token_error_status_codes = refresh_token_error_status_codes
+        self._refresh_token_error_key = refresh_token_error_key
+        self._refresh_token_error_values = refresh_token_error_values
 
     def __call__(self, request: requests.Request) -> requests.Request:
         """Attach the HTTP headers required to authenticate on the HTTP request"""
@@ -75,6 +91,16 @@ class AbstractOauth2Authenticator(AuthBase):
 
         return payload
 
+    def _wrap_refresh_token_exception(self, exception: requests.exceptions.RequestException) -> bool:
+        try:
+            exception_content = exception.response.json()
+        except JSONDecodeError:
+            return False
+        return (
+            exception.response.status_code in self._refresh_token_error_status_codes
+            and exception_content.get(self._refresh_token_error_key) in self._refresh_token_error_values
+        )
+
     @backoff.on_exception(
         backoff.expo,
         DefaultBackoffException,
@@ -92,6 +118,9 @@ class AbstractOauth2Authenticator(AuthBase):
         except requests.exceptions.RequestException as e:
             if e.response.status_code == 429 or e.response.status_code >= 500:
                 raise DefaultBackoffException(request=e.response.request, response=e.response)
+            if self._wrap_refresh_token_exception(e):
+                message = "Refresh token is invalid or expired. Please re-authenticate from Sources/<your source>/Settings."
+                raise AirbyteTracedException(internal_message=message, message=message, failure_type=FailureType.config_error)
             raise
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e

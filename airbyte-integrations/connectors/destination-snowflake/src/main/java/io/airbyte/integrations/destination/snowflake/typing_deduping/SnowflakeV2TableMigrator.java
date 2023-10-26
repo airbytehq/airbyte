@@ -19,7 +19,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SnowflakeV2TableMigrator implements V2TableMigrator<SnowflakeTableDefinition> {
+public class SnowflakeV2TableMigrator implements V2TableMigrator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeV2TableMigrator.class);
 

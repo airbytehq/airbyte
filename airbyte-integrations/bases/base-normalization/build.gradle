@@ -5,10 +5,6 @@ plugins {
     id 'airbyte-python'
 }
 
-airbytePython {
-    moduleDirectory 'normalization'
-}
-
 dependencies {
     project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 }
