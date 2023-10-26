@@ -11,11 +11,11 @@ from pipelines.helpers.utils import AIRBYTE_REPO_URL, DAGGER_CONFIG, DIFF_FILTER
 
 
 def get_current_git_revision() -> str:  # noqa D103
-    return git.Repo().head.object.hexsha
+    return git.Repo(search_parent_directories=True).head.object.hexsha
 
 
 def get_current_git_branch() -> str:  # noqa D103
-    return git.Repo().active_branch.name
+    return git.Repo(search_parent_directories=True).active_branch.name
 
 
 async def get_modified_files_in_branch_remote(

@@ -248,6 +248,9 @@ async def airbyte_ci(
         call_current_command_with_dagger_run()
         return
 
+    # NOTE: Must occur after dagger wrap
+    set_working_directory_to_root()
+
     if is_local:
         # This check is meaningful only when running locally
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
@@ -292,9 +295,6 @@ async def airbyte_ci(
         main_logger.info(f"Pull Request Number: {pull_request_number}")
         main_logger.info(f"Pipeline Start Timestamp: {pipeline_start_timestamp}")
         main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
-
-
-set_working_directory_to_root()
 
 if __name__ == "__main__":
     airbyte_ci()
