@@ -2,14 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-
-from typing import Any, List, Mapping, MutableMapping, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import FailureType
+from airbyte_cdk.entrypoint import logger as entrypoint_logger
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
@@ -22,7 +23,7 @@ from airbyte_cdk.sources.streams.concurrent.adapters import StreamAvailabilitySt
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_stripe.partition import PaginatedRequester, SourcePartitionGenerator
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
@@ -40,15 +41,22 @@ from source_stripe.streams import (
     UpdatedCursorIncrementalStripeStream,
 )
 
+_MAX_CONCURRENCY = 3
+_PAGE_SIZE = 5
+
 
 class SourceStripe(AbstractSource):
-    message_repository = InMemoryMessageRepository()
-    PAGE_SIZE = 5
-    MAX_WORKERS = 1
-
-    def __init__(self, use_concurrent_cdk: bool = False, **kwargs):
+    def __init__(self, catalog_path: Optional[str] = None, **kwargs):
         super().__init__(**kwargs)
-        self._use_concurrent_cdk = use_concurrent_cdk
+        if catalog_path:
+            catalog = self.read_catalog(catalog_path)
+            # Only use concurrent cdk if all streams are running in full_refresh
+            all_sync_mode_are_full_refresh = all(stream.sync_mode == SyncMode.full_refresh for stream in catalog.streams)
+            self._use_concurrent_cdk = all_sync_mode_are_full_refresh
+        else:
+            self._use_concurrent_cdk = False
+
+    message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
     @staticmethod
     def validate_and_fill_with_defaults(config: MutableMapping) -> MutableMapping:
@@ -498,6 +506,14 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
         ]
+        if self._use_concurrent_cdk:
+            # We cap the number of workers to avoid hitting the Stripe rate limit
+            # The limit can be removed or increased once we have proper rate limiting
+            concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
+            streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+            return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level) for stream in streams]
+        else:
+            return streams
 
         if self._use_concurrent_cdk:
             main_streams = [self._create_concurrent_stream(base_stream) for base_stream in main_streams]
