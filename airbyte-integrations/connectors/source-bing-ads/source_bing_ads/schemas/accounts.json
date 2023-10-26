@@ -120,24 +120,24 @@
     },
     "TaxCertificate": {
       "type": ["null", "object"],
-      "properties" : {
+      "properties": {
         "TaxCertificateBlobContainerName": {
-          "type" : ["null", "string"]
+          "type": ["null", "string"]
         },
         "Status": {
-          "type" : ["null", "string"],
+          "type": ["null", "string"],
           "enum": ["Invalid", "Pending", "Valid"]
         },
         "TaxCertificates": {
-          "type" : ["null", "array"],
-          "items" : {
-            "type" : ["null", "object"],
-            "properties" : {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
               "key": {
-                "type" : ["null", "string"]
+                "type": ["null", "string"]
               },
               "value": {
-                "type" : ["null", "string"]
+                "type": ["null", "string"]
               }
             }
           }
