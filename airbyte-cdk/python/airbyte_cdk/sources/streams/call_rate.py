@@ -75,7 +75,11 @@ class AbstractCallRatePolicy(abc.ABC):
 
     @abc.abstractmethod
     def update(self, available_calls: Optional[int], call_reset_ts: Optional[datetime.datetime]) -> None:
-        """Update call rate counting with current values"""
+        """Update call rate counting with current values
+
+        :param available_calls:
+        :param call_reset_ts:
+        """
 
 
 class FixedWindowCallRatePolicy(AbstractCallRatePolicy):
