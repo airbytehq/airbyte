@@ -27,7 +27,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
   private final JsonNode config;
   private final ConfiguredAirbyteCatalog configuredCatalog;
   private final Consumer<AirbyteMessage> outputRecordCollector;
-  private final Map<AirbyteStreamNameNamespacePair, TestingLogger> loggers;
+  private final Map<AirbyteStreamNameNamespacePair, MyLogger> loggers;
 
   public BulkConsumer(final JsonNode config,
       final ConfiguredAirbyteCatalog configuredCatalog,
@@ -43,7 +43,7 @@ public class BulkConsumer implements AirbyteMessageConsumer {
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
       final AirbyteStream stream = configuredStream.getStream();
       final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair.fromAirbyteStream(stream);
-      final TestingLogger logger = loggerFactory.create(streamNamePair);
+      final MyLogger logger = new MyLogger(streamNamePair, 1000);
       loggers.put(streamNamePair, logger);
     }
   }
