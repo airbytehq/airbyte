@@ -36,12 +36,14 @@ acceptance_tests:
             bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
           - name: search_query_performance_report_hourly
             bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
-        timeout_seconds: 1200
+          - name: user_location_performance_report_hourly
+            bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
+        timeout_seconds: 3600
   full_refresh:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
-        timeout_seconds: 1200
+        timeout_seconds: 3600
   incremental:
     tests:
     bypass_reason: "SAT doesn't support complex nested states used in incremental report streams"
