@@ -57,7 +57,7 @@
       "type": ["null", "string"]
     },
     "properties": {
-      "type": "object",
+      "type": "array",
       "items": {
         "type": ["null", "object"],
         "additionalProperties": true,
