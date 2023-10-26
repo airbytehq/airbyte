@@ -158,7 +158,7 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
     ]
 
     ledger1_payload = {"Debit / Credit": data["Debit / Credit"]}
-    for key, value in data:
+    for key, value in data.items():
         if (key in journal_voucher_fields) and (str(value) != "") and (key != "Other Ledger Name"):
             ledger1_payload[key] = value
 
@@ -168,7 +168,7 @@ def prepare_journal_voucher_payload(data: Dict[str, Any], logger: AirbyteLogger)
         ledger2_payload = {"Debit / Credit": "Dr"}
     ledger2_payload["Ledger Name"] = data["Other Ledger Name"]
 
-    for key, value in data:
+    for key, value in data.items():
         fields = ["Debit / Credit", "Ledger Name", "Other Ledger Name"]
         if (key in journal_voucher_fields) and (str(value) != "") and (not any(field == key for field in fields)):
             ledger2_payload[key] = value
