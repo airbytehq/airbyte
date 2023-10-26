@@ -1,22 +1,13 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+from abc import ABC, abstractmethod
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, List, Mapping, Optional, Tuple, Type
+from typing import Any, Generic, List, Mapping, Optional, Set, Tuple, Type, TypeVar
 
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.file_based.availability_strategy.abstract_file_based_availability_strategy import (
-    AbstractFileBasedAvailabilityStrategy,
-)
-from airbyte_cdk.sources.file_based.discovery_policy import AbstractDiscoveryPolicy, DefaultDiscoveryPolicy
-from airbyte_cdk.sources.file_based.file_based_source import default_parsers
-from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
-from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
-from airbyte_cdk.sources.file_based.schema_validation_policies import AbstractSchemaValidationPolicy
-from airbyte_cdk.sources.file_based.stream.cursor import AbstractFileBasedCursor
-from unit_tests.sources.file_based.in_memory_files_source import InMemoryFilesSource
+from airbyte_cdk.models import AirbyteAnalyticsTraceMessage, SyncMode
+from airbyte_cdk.sources import AbstractSource
 
 
 @dataclass
@@ -25,32 +16,42 @@ class IncrementalScenarioConfig:
     expected_output_state: Optional[Mapping[str, Any]] = None
 
 
-class TestScenario:
+SourceType = TypeVar("SourceType", bound=AbstractSource)
+
+
+class SourceBuilder(ABC, Generic[SourceType]):
+    """
+    A builder that creates a source instance of type SourceType
+    """
+
+    @abstractmethod
+    def build(self, configured_catalog: Optional[Mapping[str, Any]]) -> SourceType:
+        raise NotImplementedError()
+
+
+class TestScenario(Generic[SourceType]):
     def __init__(
         self,
         name: str,
         config: Mapping[str, Any],
-        files: Mapping[str, Any],
-        file_type: str,
+        source: SourceType,
         expected_spec: Optional[Mapping[str, Any]],
         expected_check_status: Optional[str],
         expected_catalog: Optional[Mapping[str, Any]],
         expected_logs: Optional[Mapping[str, List[Mapping[str, Any]]]],
         expected_records: List[Mapping[str, Any]],
-        availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy],
-        discovery_policy: Optional[AbstractDiscoveryPolicy],
-        validation_policies: Mapping[str, AbstractSchemaValidationPolicy],
-        parsers: Mapping[str, FileTypeParser],
-        stream_reader: Optional[AbstractFileBasedStreamReader],
         expected_check_error: Tuple[Optional[Type[Exception]], Optional[str]],
         expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]],
         expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]],
         incremental_scenario_config: Optional[IncrementalScenarioConfig],
-        file_write_options: Mapping[str, Any],
-        cursor_cls: Optional[Type[AbstractFileBasedCursor]],
+        expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]] = None,
+        log_levels: Optional[Set[str]] = None,
     ):
+        if log_levels is None:
+            log_levels = {"ERROR", "WARN", "WARNING"}
         self.name = name
         self.config = config
+        self.source = source
         self.expected_spec = expected_spec
         self.expected_check_status = expected_check_status
         self.expected_catalog = expected_catalog
@@ -59,37 +60,28 @@ class TestScenario:
         self.expected_check_error = expected_check_error
         self.expected_discover_error = expected_discover_error
         self.expected_read_error = expected_read_error
-        self.source = InMemoryFilesSource(
-            files,
-            file_type,
-            availability_strategy,
-            discovery_policy,
-            validation_policies,
-            parsers,
-            stream_reader,
-            self.configured_catalog(SyncMode.incremental if incremental_scenario_config else SyncMode.full_refresh),
-            file_write_options,
-            cursor_cls,
-        )
         self.incremental_scenario_config = incremental_scenario_config
+        self.expected_analytics = expected_analytics
+        self.log_levels = log_levels
         self.validate()
 
     def validate(self) -> None:
         assert self.name
         if not self.expected_catalog:
             return
-        streams = {s["name"] for s in self.config["streams"]}
+        if self.expected_read_error or self.expected_check_error:
+            return
+        # Only verify the streams if no errors are expected
+        streams = set([s.name for s in self.source.streams(self.config)])
         expected_streams = {s["name"] for s in self.expected_catalog["streams"]}
         assert expected_streams <= streams
 
     def configured_catalog(self, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:
-        if not self.expected_catalog:
-            return None
         catalog: Mapping[str, Any] = {"streams": []}
-        for stream in self.expected_catalog["streams"]:
+        for stream in self.source.streams(self.config):
             catalog["streams"].append(
                 {
-                    "stream": stream,
+                    "stream": stream.name,
                     "sync_mode": sync_mode.value,
                     "destination_sync_mode": "append",
                 }
@@ -104,134 +96,120 @@ class TestScenario:
             return []
 
 
-class TestScenarioBuilder:
+class TestScenarioBuilder(Generic[SourceType]):
+    """
+    A builder that creates a TestScenario instance for a source of type SourceType
+    """
+
     def __init__(self) -> None:
         self._name = ""
         self._config: Mapping[str, Any] = {}
-        self._files: Mapping[str, Any] = {}
-        self._file_type: Optional[str] = None
         self._expected_spec: Optional[Mapping[str, Any]] = None
         self._expected_check_status: Optional[str] = None
         self._expected_catalog: Mapping[str, Any] = {}
         self._expected_logs: Optional[Mapping[str, Any]] = None
         self._expected_records: List[Mapping[str, Any]] = []
-        self._availability_strategy: Optional[AbstractFileBasedAvailabilityStrategy] = None
-        self._discovery_policy: AbstractDiscoveryPolicy = DefaultDiscoveryPolicy()
-        self._validation_policies: Optional[Mapping[str, AbstractSchemaValidationPolicy]] = None
-        self._parsers = default_parsers
-        self._stream_reader: Optional[AbstractFileBasedStreamReader] = None
         self._expected_check_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._expected_discover_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._expected_read_error: Tuple[Optional[Type[Exception]], Optional[str]] = None, None
         self._incremental_scenario_config: Optional[IncrementalScenarioConfig] = None
-        self._file_write_options: Mapping[str, Any] = {}
-        self._cursor_cls: Optional[Type[AbstractFileBasedCursor]] = None
+        self._expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]] = None
+        self.source_builder: Optional[SourceBuilder[SourceType]] = None
+        self._log_levels = None
 
-    def set_name(self, name: str) -> "TestScenarioBuilder":
+    def set_name(self, name: str) -> "TestScenarioBuilder[SourceType]":
         self._name = name
         return self
 
-    def set_config(self, config: Mapping[str, Any]) -> "TestScenarioBuilder":
+    def set_config(self, config: Mapping[str, Any]) -> "TestScenarioBuilder[SourceType]":
         self._config = config
         return self
 
-    def set_files(self, files: Mapping[str, Any]) -> "TestScenarioBuilder":
-        self._files = files
-        return self
-
-    def set_file_type(self, file_type: str) -> "TestScenarioBuilder":
-        self._file_type = file_type
-        return self
-
-    def set_expected_spec(self, expected_spec: Mapping[str, Any]) -> "TestScenarioBuilder":
+    def set_expected_spec(self, expected_spec: Mapping[str, Any]) -> "TestScenarioBuilder[SourceType]":
         self._expected_spec = expected_spec
         return self
 
-    def set_expected_check_status(self, expected_check_status: str) -> "TestScenarioBuilder":
+    def set_expected_check_status(self, expected_check_status: str) -> "TestScenarioBuilder[SourceType]":
         self._expected_check_status = expected_check_status
         return self
 
-    def set_expected_catalog(self, expected_catalog: Mapping[str, Any]) -> "TestScenarioBuilder":
+    def set_expected_catalog(self, expected_catalog: Mapping[str, Any]) -> "TestScenarioBuilder[SourceType]":
         self._expected_catalog = expected_catalog
         return self
 
-    def set_expected_logs(self, expected_logs: Mapping[str, List[Mapping[str, Any]]]) -> "TestScenarioBuilder":
+    def set_expected_logs(self, expected_logs: Mapping[str, List[Mapping[str, Any]]]) -> "TestScenarioBuilder[SourceType]":
         self._expected_logs = expected_logs
         return self
 
-    def set_expected_records(self, expected_records: List[Mapping[str, Any]]) -> "TestScenarioBuilder":
+    def set_expected_records(self, expected_records: List[Mapping[str, Any]]) -> "TestScenarioBuilder[SourceType]":
         self._expected_records = expected_records
         return self
 
-    def set_parsers(self, parsers: Mapping[Type[Any], FileTypeParser]) -> "TestScenarioBuilder":
-        self._parsers = parsers
-        return self
-
-    def set_availability_strategy(self, availability_strategy: AbstractFileBasedAvailabilityStrategy) -> "TestScenarioBuilder":
-        self._availability_strategy = availability_strategy
-        return self
-
-    def set_discovery_policy(self, discovery_policy: AbstractDiscoveryPolicy) -> "TestScenarioBuilder":
-        self._discovery_policy = discovery_policy
-        return self
-
-    def set_validation_policies(self, validation_policies: Mapping[str, AbstractSchemaValidationPolicy]) -> "TestScenarioBuilder":
-        self._validation_policies = validation_policies
-        return self
-
-    def set_stream_reader(self, stream_reader: AbstractFileBasedStreamReader) -> "TestScenarioBuilder":
-        self._stream_reader = stream_reader
-        return self
-
-    def set_cursor_cls(self, cursor_cls: AbstractFileBasedCursor) -> "TestScenarioBuilder":
-        self._cursor_cls = cursor_cls
-        return self
-
-    def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig) -> "TestScenarioBuilder":
+    def set_incremental_scenario_config(self, incremental_scenario_config: IncrementalScenarioConfig) -> "TestScenarioBuilder[SourceType]":
         self._incremental_scenario_config = incremental_scenario_config
         return self
 
-    def set_expected_check_error(self, error: Optional[Type[Exception]], message: str) -> "TestScenarioBuilder":
+    def set_expected_check_error(self, error: Optional[Type[Exception]], message: str) -> "TestScenarioBuilder[SourceType]":
         self._expected_check_error = error, message
         return self
 
-    def set_expected_discover_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder":
+    def set_expected_discover_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder[SourceType]":
         self._expected_discover_error = error, message
         return self
 
-    def set_expected_read_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder":
+    def set_expected_read_error(self, error: Type[Exception], message: str) -> "TestScenarioBuilder[SourceType]":
         self._expected_read_error = error, message
         return self
 
-    def set_file_write_options(self, file_write_options: Mapping[str, Any]) -> "TestScenarioBuilder":
-        self._file_write_options = file_write_options
+    def set_log_levels(self, levels: Set[str]) -> "TestScenarioBuilder":
+        self._log_levels = levels
         return self
 
-    def copy(self) -> "TestScenarioBuilder":
+    def set_source_builder(self, source_builder: SourceBuilder[SourceType]) -> "TestScenarioBuilder[SourceType]":
+        self.source_builder = source_builder
+        return self
+
+    def set_expected_analytics(self, expected_analytics: Optional[List[AirbyteAnalyticsTraceMessage]]) -> "TestScenarioBuilder[SourceType]":
+        self._expected_analytics = expected_analytics
+        return self
+
+    def copy(self) -> "TestScenarioBuilder[SourceType]":
         return deepcopy(self)
 
-    def build(self) -> TestScenario:
-        if self._file_type is None:
-            raise ValueError("file_type is not set")
+    def build(self) -> "TestScenario[SourceType]":
+        if self.source_builder is None:
+            raise ValueError("source_builder is not set")
+        source = self.source_builder.build(
+            self._configured_catalog(SyncMode.incremental if self._incremental_scenario_config else SyncMode.full_refresh)
+        )
         return TestScenario(
             self._name,
             self._config,
-            self._files,
-            self._file_type,
+            source,
             self._expected_spec,
             self._expected_check_status,
             self._expected_catalog,
             self._expected_logs,
             self._expected_records,
-            self._availability_strategy,
-            self._discovery_policy,
-            self._validation_policies or {},
-            self._parsers,
-            self._stream_reader,
             self._expected_check_error,
             self._expected_discover_error,
             self._expected_read_error,
             self._incremental_scenario_config,
-            self._file_write_options,
-            self._cursor_cls,
+            self._expected_analytics,
+            self._log_levels,
         )
+
+    def _configured_catalog(self, sync_mode: SyncMode) -> Optional[Mapping[str, Any]]:
+        if not self._expected_catalog:
+            return None
+        catalog: Mapping[str, Any] = {"streams": []}
+        for stream in self._expected_catalog["streams"]:
+            catalog["streams"].append(
+                {
+                    "stream": stream,
+                    "sync_mode": sync_mode.value,
+                    "destination_sync_mode": "append",
+                }
+            )
+
+        return catalog
