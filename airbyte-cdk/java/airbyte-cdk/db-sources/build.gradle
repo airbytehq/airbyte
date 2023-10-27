@@ -24,25 +24,6 @@ test {
     }
 }
 
-// These replace application entrypoints:
-task runPythonSourceAcceptanceTest(type: JavaExec) {
-    // From `standard-source-test`:
-    main = 'io.airbyte.cdk.integrations.standardtest.source.PythonSourceAcceptanceTest'
-    classpath = sourceSets.main.runtimeClasspath
-}
-task runStandardFilesTest(type: JavaExec) {
-    // From `base-standard-source-test-file`:
-    main = 'io.airbyte.cdk.integrations.standardtest.source.fs.TestSourceMain'
-    classpath = sourceSets.main.runtimeClasspath
-}
-// This doesn't seem to be used anywhere:
-// task runJdbcSource(type: JavaExec) {
-//     // From `source-jdbc`:
-//     main = 'io.airbyte.cdk.integrations.source.jdbc.JdbcSource'
-//     classpath = sourceSets.main.runtimeClasspath
-// }
-
-
 project.configurations {
     // From `base-debezium`:
     testFixturesImplementation.extendsFrom implementation
@@ -165,7 +146,6 @@ dependencies {
     // From source-jdbc
     implementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.postgresql
-    // integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation libs.testcontainers.postgresql
     testFixturesImplementation libs.airbyte.protocol
     // todo (cgardens) - the java-test-fixtures plugin doesn't by default extend from test.

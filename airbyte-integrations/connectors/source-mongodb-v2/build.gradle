@@ -43,7 +43,6 @@ dependencies {
     testImplementation libs.testcontainers.mongodb
 
     integrationTestJavaImplementation libs.apache.commons.lang
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
 
     dataGeneratorImplementation project(":airbyte-commons")
