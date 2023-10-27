@@ -28,13 +28,13 @@ class AirbyteJavaConnectorExtension {
             // Import transitive (compileOnly) first party CDK dependencies.
             // TODO: Bring these into the CDK or refactor them out.
             implementation project.project(':airbyte-commons')
-            implementation project.project(':airbyte-commons-cli')
             implementation project.project(':airbyte-json-validation')
 
             testImplementation project.project(':airbyte-commons')
         }
         if (useLocalCdk) {
             project.dependencies {
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
                 implementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
                 implementation project.project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
                 implementation project.project(':airbyte-cdk:java:airbyte-cdk:init-oss')
@@ -58,6 +58,7 @@ class AirbyteJavaConnectorExtension {
             }
         } else {
             project.dependencies {
+                implementation "io.airbyte.cdk:airbyte-cdk-airbyte-commons-cli:${cdkVersionRequired}"
                 implementation "io.airbyte.cdk:airbyte-cdk-airbyte-api:${cdkVersionRequired}"
                 implementation "io.airbyte.cdk:airbyte-cdk-config-models-oss:${cdkVersionRequired}"
                 implementation "io.airbyte.cdk:airbyte-cdk-init-oss:${cdkVersionRequired}"

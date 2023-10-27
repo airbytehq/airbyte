@@ -159,7 +159,6 @@ if (isCiServer || isAirbyteCI) {
 rootProject.name = 'airbyte'
 
 include ':airbyte-commons'
-include ':airbyte-commons-cli'
 include ':airbyte-json-validation'
 
 include ':tools:code-generator'
@@ -167,6 +166,7 @@ include ':octavia-cli'
 
 include ':airbyte-cdk:python'
 include ':airbyte-cdk:java:airbyte-cdk'
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli'
 include ':airbyte-cdk:java:airbyte-cdk:airbyte-commons-protocol'
 include ':airbyte-cdk:java:airbyte-cdk:airbyte-api'
 include ':airbyte-cdk:java:airbyte-cdk:config-models-oss'

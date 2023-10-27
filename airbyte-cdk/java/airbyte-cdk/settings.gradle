@@ -1,5 +1,6 @@
 rootProject.name = 'airbyte'
 
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli'
 include ':airbyte-cdk:java:airbyte-cdk:airbyte-commons-protocol'
 include ':airbyte-cdk:java:airbyte-cdk:airbyte-api'
 include ':airbyte-cdk:java:airbyte-cdk:config-models-oss'

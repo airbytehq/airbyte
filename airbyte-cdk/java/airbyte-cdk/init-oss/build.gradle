@@ -9,7 +9,7 @@ dependencies {
 
     implementation 'commons-cli:commons-cli:1.4'
     implementation project(':airbyte-commons')
-    implementation project(':airbyte-commons-cli')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
     implementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     implementation libs.airbyte.protocol
     implementation project(':airbyte-json-validation')
