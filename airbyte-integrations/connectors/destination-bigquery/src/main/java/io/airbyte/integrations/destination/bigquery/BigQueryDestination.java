@@ -482,12 +482,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
   public static void main(final String[] args) throws Exception {
     if ("--write".equals(args[0])) {
-      final BigQueryException e = new BigQueryException(42, "edgao demo exception: oh no we couldn't find table foo.bar at [84:126]");
-      // This puts the mangled string into the trace external message and the original string into the
-      // internal message, which is backwards
+      final List<String> targetStrings = List.of("foo", "bar", "baz");
+      final BigQueryException e = new BigQueryException(42, "Not found: Table bar.baz was not found in location US at [53:5]");
+
+      final String mangledMessage =
+          "airbyte_destination_bigquery_error: "
+          + targetStrings.stream().reduce(
+              e.getMessage().replaceAll("\\d", "?"),
+              (message, targetString) -> message.replace(targetString, "?"));
+
+      // This puts the mangled string into the trace external message and the original string into the internal message, which is backwards
       // we'll need to add a new utility method to this class that does the right thing
-      // AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "edgao demo exception: oh no we couldn't find
-      // table ?.? at [84:126]");
+//      AirbyteTraceMessageUtility.emitSystemErrorTrace(e, mangledMessage);
       final Consumer<AirbyteMessage> outputRecordCollector = Destination::defaultOutputRecordCollector;
       outputRecordCollector.accept(new AirbyteMessage()
           .withType(AirbyteMessage.Type.TRACE)
@@ -495,8 +501,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
               .withEmittedAt((double) System.currentTimeMillis())
               .withType(AirbyteTraceMessage.Type.ERROR)
               .withError(new AirbyteErrorTraceMessage()
-                  .withMessage("edgao demo exception: oh no we couldn't find table foo.bar at [84:126]")
-                  .withInternalMessage("airbyte_destination_bigquery_modified: edgao demo exception: oh no we couldn't find table ?.? at [84:126]")
+                  .withMessage(e.getMessage())
+                  .withInternalMessage(mangledMessage)
                   .withStackTrace(ExceptionUtils.getStackTrace(e)))));
       throw e;
     }
