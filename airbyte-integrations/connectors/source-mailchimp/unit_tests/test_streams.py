@@ -2,9 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from unittest.mock import MagicMock
 
-import logging
 import pytest
 import requests
 import responses
@@ -295,7 +295,6 @@ def test_403_error_handling(
 
     stream = stream(authenticator=auth)
 
-
     if stream.__class__.__name__ == "EmailActivity":
         stream.stream_slices = MagicMock(return_value=[{"campaign_id": "123"}])
 
@@ -309,9 +308,7 @@ def test_403_error_handling(
             assert expected_reason_substring in reason
         else:
             assert reason is None
-    
+
     # Handle non-403 error
     except HTTPError as e:
         assert e.response.status_code == status_code
-
-    
