@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -33,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -108,6 +111,19 @@ public abstract class BaseTypingDedupingTest {
   protected abstract List<JsonNode> dumpRawTableRecords(String streamNamespace, String streamName) throws Exception;
 
   /**
+   * Utility method for tests to check if table exists
+   *
+   * @param streamNamespace
+   * @param streamName
+   * @return
+   * @throws Exception
+   */
+  protected boolean checkTableExists(String streamNamespace, String streamName) {
+    // Implementation is specific to destination's tests.
+    return true;
+  }
+
+  /**
    * For a given stream, return the records that exist in the destination's final table. Each record
    * must be in the format {"_airbyte_raw_id": "...", "_airbyte_extracted_at": "...", "_airbyte_meta":
    * {...}, "field1": ..., "field2": ..., ...}. If the destination renames (e.g. upcases) the airbyte
@@ -178,6 +194,16 @@ public abstract class BaseTypingDedupingTest {
     return config;
   }
 
+  /**
+   * Override this method only when skipping T&D and only compare raw tables and skip final table
+   * comparison. For every other case it should always return false.
+   *
+   * @return
+   */
+  protected boolean disableFinalTableComparison() {
+    return false;
+  }
+
   @BeforeEach
   public void setup() throws Exception {
     config = generateConfig();
@@ -226,9 +252,9 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
 
     // Second sync
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
@@ -237,7 +263,7 @@ public abstract class BaseTypingDedupingTest {
 
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
   /**
@@ -261,18 +287,18 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
 
     // Second sync
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
   /**
@@ -300,18 +326,18 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
 
     // Second sync
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
   /**
@@ -337,18 +363,18 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
 
     // Second sync
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
   /**
@@ -372,18 +398,18 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_dedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, null, streamName);
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, null, streamName, disableFinalTableComparison());
 
     // Second sync
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl", null, streamName);
 
     runSync(catalog, messages2);
 
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, null, streamName);
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, null, streamName, disableFinalTableComparison());
   }
 
   @Test
@@ -424,9 +450,9 @@ public abstract class BaseTypingDedupingTest {
 
     runSync(catalog, messages1);
 
-    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_raw.jsonl");
+    final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_expectedrecords_nondedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
 
     // Second sync
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
@@ -437,11 +463,11 @@ public abstract class BaseTypingDedupingTest {
     runSync(catalog, messages2);
 
     // The raw data is unaffected by the schema, but the final table should not have a `name` column.
-    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_raw.jsonl");
+    final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl").stream()
         .peek(record -> ((ObjectNode) record).remove(getSqlGenerator().buildColumnId("name").name()))
         .toList();
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
   @Test
@@ -500,15 +526,15 @@ public abstract class BaseTypingDedupingTest {
     runSync(catalog, messages1);
 
     verifySyncResult(
-        readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl"),
+        readRecords("dat/sync1_expectedrecords_raw.jsonl"),
         readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
         namespace1,
-        streamName);
+        streamName, disableFinalTableComparison());
     verifySyncResult(
-        readRecords("dat/sync1_expectedrecords_dedup_raw2.jsonl"),
+        readRecords("dat/sync1_expectedrecords_raw2.jsonl"),
         readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
         namespace2,
-        streamName);
+        streamName, disableFinalTableComparison());
 
     // Second sync
     final List<AirbyteMessage> messages2 = Stream.concat(
@@ -518,15 +544,15 @@ public abstract class BaseTypingDedupingTest {
     runSync(catalog, messages2);
 
     verifySyncResult(
-        readRecords("dat/sync2_expectedrecords_incremental_dedup_raw.jsonl"),
+        readRecords("dat/sync2_expectedrecords_raw.jsonl"),
         readRecords("dat/sync2_expectedrecords_incremental_dedup_final.jsonl"),
         namespace1,
-        streamName);
+        streamName, disableFinalTableComparison());
     verifySyncResult(
-        readRecords("dat/sync2_expectedrecords_incremental_dedup_raw2.jsonl"),
+        readRecords("dat/sync2_expectedrecords_raw2.jsonl"),
         readRecords("dat/sync2_expectedrecords_incremental_dedup_final2.jsonl"),
         namespace2,
-        streamName);
+        streamName, disableFinalTableComparison());
   }
 
   /**
@@ -585,16 +611,15 @@ public abstract class BaseTypingDedupingTest {
     // And this will dump sync2's entire stdout to our stdout
     endSync(sync2);
 
-    verifySyncResult(
-        readRecords("dat/sync1_expectedrecords_dedup_raw.jsonl"),
-        readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
-        namespace1,
-        streamName);
-    verifySyncResult(
-        readRecords("dat/sync1_expectedrecords_dedup_raw2.jsonl"),
-        readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
-        namespace2,
-        streamName);
+    // For simplicity, don't verify the raw table. Assume that if the final table is correct, then
+    // the raw data is correct. This is generally a safe assumption.
+    assertAll(
+        () -> DIFFER.diffFinalTableRecords(
+            readRecords("dat/sync1_expectedrecords_dedup_final.jsonl"),
+            dumpFinalTableRecords(namespace1, streamName)),
+        () -> DIFFER.diffFinalTableRecords(
+            readRecords("dat/sync1_expectedrecords_dedup_final2.jsonl"),
+            dumpFinalTableRecords(namespace2, streamName)));
   }
 
   @Test
@@ -641,7 +666,7 @@ public abstract class BaseTypingDedupingTest {
 
     final List<JsonNode> expectedRawRecords1 = readRecords("dat/sync1_cursorchange_expectedrecords_dedup_raw.jsonl");
     final List<JsonNode> expectedFinalRecords1 = readRecords("dat/sync1_cursorchange_expectedrecords_dedup_final.jsonl");
-    verifySyncResult(expectedRawRecords1, expectedFinalRecords1);
+    verifySyncResult(expectedRawRecords1, expectedFinalRecords1, disableFinalTableComparison());
 
     // Second sync
     final List<AirbyteMessage> messages2 = readMessages("dat/sync2_messages.jsonl");
@@ -652,7 +677,7 @@ public abstract class BaseTypingDedupingTest {
 
     final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_cursorchange_expectedrecords_incremental_dedup_raw.jsonl");
     final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_cursorchange_expectedrecords_incremental_dedup_final.jsonl");
-    verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+    verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
   }
 
   @Test
@@ -678,18 +703,26 @@ public abstract class BaseTypingDedupingTest {
     // this test probably needs some configuration per destination to specify what values are supported?
   }
 
-  protected void verifySyncResult(final List<JsonNode> expectedRawRecords, final List<JsonNode> expectedFinalRecords) throws Exception {
-    verifySyncResult(expectedRawRecords, expectedFinalRecords, streamNamespace, streamName);
+  protected void verifySyncResult(final List<JsonNode> expectedRawRecords,
+                                  final List<JsonNode> expectedFinalRecords,
+                                  boolean disableFinalTableComparison)
+      throws Exception {
+    verifySyncResult(expectedRawRecords, expectedFinalRecords, streamNamespace, streamName, disableFinalTableComparison);
   }
 
   private void verifySyncResult(final List<JsonNode> expectedRawRecords,
                                 final List<JsonNode> expectedFinalRecords,
                                 final String streamNamespace,
-                                final String streamName)
+                                final String streamName,
+                                boolean disableFinalTableComparison)
       throws Exception {
     final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamNamespace, streamName);
-    final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName);
-    DIFFER.verifySyncResult(expectedRawRecords, actualRawRecords, expectedFinalRecords, actualFinalRecords);
+    if (disableFinalTableComparison) {
+      DIFFER.diffRawTableRecords(expectedRawRecords, actualRawRecords);
+    } else {
+      final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamNamespace, streamName);
+      DIFFER.verifySyncResult(expectedRawRecords, actualRawRecords, expectedFinalRecords, actualFinalRecords);
+    }
   }
 
   public static List<JsonNode> readRecords(final String filename) throws IOException {
@@ -724,7 +757,15 @@ public abstract class BaseTypingDedupingTest {
   }
 
   protected void runSync(final ConfiguredAirbyteCatalog catalog, final List<AirbyteMessage> messages, final String imageName) throws Exception {
-    final AirbyteDestination destination = startSync(catalog, imageName);
+    runSync(catalog, messages, imageName, Function.identity());
+  }
+
+  protected void runSync(final ConfiguredAirbyteCatalog catalog,
+                         final List<AirbyteMessage> messages,
+                         final String imageName,
+                         Function<JsonNode, JsonNode> configTransformer)
+      throws Exception {
+    final AirbyteDestination destination = startSync(catalog, imageName, configTransformer);
     pushMessages(messages, destination);
     endSync(destination);
   }
@@ -734,6 +775,22 @@ public abstract class BaseTypingDedupingTest {
   }
 
   protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog, final String imageName) throws Exception {
+    return startSync(catalog, imageName, Function.identity());
+  }
+
+  /**
+   *
+   * @param catalog
+   * @param imageName
+   * @param configTransformer - test specific config overrides or additions can be performed with this
+   *        function
+   * @return
+   * @throws Exception
+   */
+  protected AirbyteDestination startSync(final ConfiguredAirbyteCatalog catalog,
+                                         final String imageName,
+                                         Function<JsonNode, JsonNode> configTransformer)
+      throws Exception {
     synchronized (this) {
       catalog.getStreams().forEach(s -> streamsToTearDown.add(AirbyteStreamNameNamespacePair.fromAirbyteStream(s.getStream())));
     }
@@ -749,11 +806,11 @@ public abstract class BaseTypingDedupingTest {
         localRoot.toString(),
         "host",
         Collections.emptyMap());
-
+    final JsonNode transformedConfig = configTransformer.apply(config);
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
         .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class))
-        .withDestinationConnectionConfiguration(config);
+        .withDestinationConnectionConfiguration(transformedConfig);
 
     final AirbyteDestination destination = new DefaultAirbyteDestination(new AirbyteIntegrationLauncher(
         "0",
