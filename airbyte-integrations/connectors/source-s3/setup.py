@@ -23,7 +23,6 @@ TEST_REQUIREMENTS = [
     "pytest-order",
     "netifaces~=0.11.0",
     "docker",
-    "avro==1.11.0",
 ]
 
 setup(

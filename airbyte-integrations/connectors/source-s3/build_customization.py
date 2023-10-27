@@ -50,6 +50,7 @@ def install_tesseract_and_poppler(connector_container: Container) -> Container:
 
     return connector_container
 
+
 async def pre_connector_install(connector_container: Container) -> Container:
     """
     Handles pre-installation setup for the connector by installing necessary system dependencies such as Tesseract-OCR and Poppler-utils.
