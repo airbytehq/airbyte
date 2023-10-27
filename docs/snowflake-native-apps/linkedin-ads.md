@@ -164,10 +164,10 @@ hourly, then a sync will be started immediately. The next sync will start at 11:
 time. In the event that your sync runs longer than one hour, a new sync will start at the next available time.
 
 ### Manual Syncs
-In addition to scheduled syncs, you can also configure a connection only sync data on-demand by setting "Replication Frequency" to
+In addition to scheduled syncs, you can also configure a connection to only sync data on-demand by setting "Replication Frequency" to
 `MANUAL`. After creating a connection, from the `Connections List` page, you can use the "Sync Now" button to trigger a sync of
 your API data to your Snowflake database. You can also use this button to manually trigger connections that sync according to a
-schedule. If there is already a sync in progress, this button will be greyed out. 
+schedule. If there is already a sync in progress, this button will be disabled. 
 
 ### Sync History
 From the `Connections List` page, you can view information about past syncs for each connection to determine when your
