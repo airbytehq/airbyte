@@ -71,9 +71,10 @@ class HttpStream(Stream, ABC):
         # Use in-memory cache if cache_dir is not set
         # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
         if cache_dir:
-            return requests_cache.CachedSession(str(Path(cache_dir) / self.cache_filename), backend="sqlite")  # type: ignore # there are no typeshed stubs for requests_cache
+            sqlite_path = str(Path(cache_dir) / self.cache_filename)
         else:
-            return requests_cache.CachedSession(backend=requests_cache.SQLiteCache(use_memory=True))  # type: ignore # there are no typeshed stubs for requests_cache
+             sqlite_path = "file::memory:?cache=shared"
+         return requests_cache.CachedSession(sqlite_path, backend="sqlite")  # type: ignore # there are no typeshed stubs for requests_cache
 
     def clear_cache(self) -> None:
         """
