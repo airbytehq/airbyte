@@ -27,9 +27,9 @@ def clear_template_cache(config: Mapping[str, Any], template: str, template_key:
         if (response.status_code == 200) and (any(result in str(response.content).lower() for result in results)):
             logger.info(f"Cache for {template} has been successfully cleared from the API Server.")
         else:
-            logger.warn(f"unable to clear data for {template} from the API Server , Error : {response.content}")
+            logger.warn(f"unable to clear cache for {template} from the API Server , Error : {response.content}")
     except Exception as e:
-        logger.exception(f"Request for deleting data for {template} is not successful , Exception : {e}")
+        logger.exception(f"Request for deleting cache for {template} is not successful , Exception : {e}")
 
 
 def prepare_headers(config: Mapping[str, Any], template_key: str):
