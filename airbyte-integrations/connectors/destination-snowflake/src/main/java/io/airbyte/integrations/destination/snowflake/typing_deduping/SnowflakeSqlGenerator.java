@@ -159,25 +159,20 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   @Override
   public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp) {
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), minRawTimestamp);
-    String dedupFinalTable = "";
-    String cdcDeletes = "";
+    final String handleNewRecordsRecords;
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
-      cdcDeletes = cdcDeletes(stream, finalSuffix);
+      handleNewRecordsRecords = upsertNewRecords(stream, finalSuffix, minRawTimestamp);
+    } else {
+      handleNewRecordsRecords = insertNewRecords(stream, finalSuffix, minRawTimestamp);
     }
     final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
 
     return new StringSubstitutor(Map.of(
-        "insert_new_records", insertNewRecords,
-        "dedup_final_table", dedupFinalTable,
-        "cdc_deletes", cdcDeletes,
+        "handleNewRecords", handleNewRecordsRecords,
         "commit_raw_table", commitRawTable)).replace(
             """
             BEGIN TRANSACTION;
-            ${insert_new_records}
-            ${dedup_final_table}
-            ${cdc_deletes}
+            ${handleNewRecords}
             ${commit_raw_table}
             COMMIT;
             """);
@@ -292,12 +287,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
     }
   }
 
-  @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream,
-                          final String finalSuffix,
-                          final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
-                          final Optional<Instant> minRawTimestamp) {
-    final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
+  private String insertNewRecords(final StreamConfig stream,
+                                  final String finalSuffix,
+                                  final Optional<Instant> minRawTimestamp) {
+    final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
     final String extractNewRawRecords = extractNewRawRecords(stream, minRawTimestamp);
 
     return new StringSubstitutor(Map.of(
@@ -313,6 +306,100 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
               "_AIRBYTE_EXTRACTED_AT"
             )
             ${extractNewRawRecords};""");
+  }
+
+  private String upsertNewRecords(final StreamConfig stream,
+                                  final String finalSuffix,
+                                  final Optional<Instant> minRawTimestamp) {
+    final String pkEquivalent = stream.primaryKey().stream().map(pk -> {
+      final String quotedPk = pk.name(QUOTE);
+      // either the PKs are equal, or they're both NULL
+      return "(TARGET_TABLE." + quotedPk + " = NEW_RECORD." + quotedPk
+          + " OR (TARGET_TABLE." + quotedPk + " IS NULL AND NEW_RECORD." + quotedPk + " IS NULL))";
+    }).collect(joining(" AND "));
+
+    final String columnList = stream.columns().keySet().stream()
+        .map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",")
+        .collect(joining("\n"));
+    final String newRecordColumnList = stream.columns().keySet().stream()
+        .map(quotedColumnId -> "NEW_RECORD." + quotedColumnId.name(QUOTE) + ",")
+        .collect(joining("\n"));
+    final String extractNewRawRecords = extractNewRawRecords(stream, minRawTimestamp);
+
+    final String cursorComparison;
+    if (stream.cursor().isPresent()) {
+      final String cursor = stream.cursor().get().name(QUOTE);
+      // Build a condition for "NEW_RECORD is more recent than TARGET_TABLE":
+      cursorComparison =
+          // First, compare the cursors.
+          "(TARGET_TABLE." + cursor + " < NEW_RECORD." + cursor
+          // Then, break ties with extracted_at. (also explicitly check for both NEW_RECORD and final table
+          // having null cursor
+          // because NULL != NULL in SQL)
+              + " OR (TARGET_TABLE." + cursor + " = NEW_RECORD." + cursor
+              + " AND TARGET_TABLE._AIRBYTE_EXTRACTED_AT < NEW_RECORD._AIRBYTE_EXTRACTED_AT)"
+              + " OR (TARGET_TABLE." + cursor + " IS NULL AND NEW_RECORD." + cursor
+              + " IS NULL AND TARGET_TABLE._AIRBYTE_EXTRACTED_AT < NEW_RECORD._AIRBYTE_EXTRACTED_AT)"
+              // Or, if the final table has null cursor but NEW_RECORD has non-null cursor, then take the new
+              // record.
+              + " OR (TARGET_TABLE." + cursor + " IS NULL AND NEW_RECORD." + cursor + " IS NOT NULL))";
+    } else {
+      // If there's no cursor, then we just take the most-recently-emitted record
+      cursorComparison = "TARGET_TABLE._AIRBYTE_EXTRACTED_AT < NEW_RECORD._AIRBYTE_EXTRACTED_AT";
+    }
+
+    final String cdcDeleteClause;
+    final String cdcSkipInsertClause;
+    if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+      // Execute CDC deletions if there's already a record
+      cdcDeleteClause = "WHEN MATCHED AND NEW_RECORD._AB_CDC_DELETED_AT IS NOT NULL AND " + cursorComparison + " THEN DELETE";
+      // And skip insertion entirely if there's no matching record.
+      // (This is possible if a single T+D batch contains both an insertion and deletion for the same PK)
+      cdcSkipInsertClause = "AND NEW_RECORD._AB_CDC_DELETED_AT IS NULL";
+    } else {
+      cdcDeleteClause = "";
+      cdcSkipInsertClause = "";
+    }
+
+    final String columnAssignments = stream.columns().keySet().stream()
+        .map(airbyteType -> {
+          final String column = airbyteType.name(QUOTE);
+          return column + " = NEW_RECORD." + column + ",";
+        }).collect(joining("\n"));
+
+    return new StringSubstitutor(Map.of(
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()),
+        "extractNewRawRecords", extractNewRawRecords,
+        "pkEquivalent", pkEquivalent,
+        "cdcDeleteClause", cdcDeleteClause,
+        "cursorComparison", cursorComparison,
+        "columnAssignments", columnAssignments,
+        "cdcSkipInsertClause", cdcSkipInsertClause,
+        "column_list", columnList,
+        "newRecordColumnList", newRecordColumnList)).replace(
+            """
+            MERGE INTO ${final_table_id} AS TARGET_TABLE
+            USING (
+              ${extractNewRawRecords}
+            ) NEW_RECORD
+            ON ${pkEquivalent}
+            ${cdcDeleteClause}
+            WHEN MATCHED AND ${cursorComparison} THEN UPDATE SET
+              ${columnAssignments}
+              _AIRBYTE_META = NEW_RECORD._AIRBYTE_META,
+              _AIRBYTE_RAW_ID = NEW_RECORD._AIRBYTE_RAW_ID,
+              _AIRBYTE_EXTRACTED_AT = NEW_RECORD._AIRBYTE_EXTRACTED_AT
+            WHEN NOT MATCHED ${cdcSkipInsertClause} THEN INSERT (
+              ${column_list}
+              _AIRBYTE_META,
+              _AIRBYTE_RAW_ID,
+              _AIRBYTE_EXTRACTED_AT
+            ) VALUES (
+              ${newRecordColumnList}
+              NEW_RECORD._AIRBYTE_META,
+              NEW_RECORD._AIRBYTE_RAW_ID,
+              NEW_RECORD._AIRBYTE_EXTRACTED_AT
+            );""");
   }
 
   private String extractNewRawRecords(final StreamConfig stream, final Optional<Instant> minRawTimestamp) {
