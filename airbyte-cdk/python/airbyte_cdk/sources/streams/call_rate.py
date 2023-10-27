@@ -18,6 +18,7 @@ from pyrate_limiter import Rate as PyRateRate
 from pyrate_limiter import RateItem, TimeClock
 from pyrate_limiter.exceptions import BucketFullException
 
+# prevents mypy from complaining about missing session attributes in LimiterMixin
 if TYPE_CHECKING:
     MIXIN_BASE = requests.Session
 else:
@@ -65,6 +66,14 @@ class AbstractCallRatePolicy(abc.ABC):
     """
 
     @abc.abstractmethod
+    def matches(self, request: Any) -> bool:
+        """Tells if this policy matches specific request and should apply to it
+
+        :param request:
+        :return: True if policy should apply to this request, False - otherwise
+        """
+
+    @abc.abstractmethod
     def try_acquire(self, request: Any, weight: int) -> None:
         """Try to acquire request
 
@@ -80,113 +89,6 @@ class AbstractCallRatePolicy(abc.ABC):
         :param available_calls:
         :param call_reset_ts:
         """
-
-
-class FixedWindowCallRatePolicy(AbstractCallRatePolicy):
-    def __init__(self, window: TimeWindow, call_limit: int):
-        self._current_window = TimeWindow(window.start, window.end)
-        self._offset = window.end - window.start
-        self._call_limit = call_limit
-        self._calls_num = 0
-
-    @property
-    def current_window(self) -> TimeWindow:
-        return self._current_window
-
-    def try_acquire(self, request: Any, weight: int) -> None:
-        self._update_current_window()
-
-        if self._calls_num >= self._call_limit:
-            reset_in = self.current_window.end - datetime.datetime.now()
-            error_message = (
-                f"reached maximum number of allowed calls {self._call_limit} " f"per {self._offset} interval, next reset in {reset_in}."
-            )
-            raise CallRateLimitHit(
-                error=error_message,
-                item=request,
-                weight=weight,
-                rate=f"{self._call_limit} per {self._offset}",
-                time_to_wait=reset_in,
-            )
-
-        self._calls_num += 1
-
-    def update(self, available_calls: Optional[int], call_reset_ts: Optional[datetime.datetime]) -> None:
-        """Update call rate counters, by default only reacts to decreasing updates of available_calls and changes to call_reset_ts
-
-        :param available_calls:
-        :param call_reset_ts:
-        """
-        self._update_current_window()
-        current_available_calls = self._call_limit - self._calls_num
-
-        if available_calls is not None and current_available_calls > available_calls:
-            logger.info("got update from api, adjusting available calls from %s to %s", current_available_calls, available_calls)
-            self._calls_num = self._call_limit - available_calls
-
-        if call_reset_ts is not None and call_reset_ts != self.current_window.end:
-            logger.info("got update from api, adjusting reset time from %s to %s", self.current_window.end, call_reset_ts)
-            self.current_window.end = call_reset_ts
-
-    def _update_current_window(self) -> None:
-        now = datetime.datetime.now()
-        if now > self.current_window.end:
-            logger.info("current window %s has being reset, %s calls available now", self.current_window, self._call_limit)
-            self._current_window = TimeWindow(self._current_window.end, self._current_window.end + self._offset)
-            self._calls_num = 0
-
-
-class MovingWindowCallRatePolicy(AbstractCallRatePolicy):
-    """
-    Policy to control requests rate implemented on top of PyRateLimiter lib.
-    """
-
-    def __init__(self, rates: list[Rate]):
-        """Constructor
-
-        :param rates: list of rates, the order is important and must be ascending
-        """
-        pyrate_rates = [PyRateRate(limit=rate.limit, interval=int(rate.interval.total_seconds() * 1000)) for rate in rates]
-        self._bucket = InMemoryBucket(pyrate_rates)
-        # Limiter will create the background task that clears old requests in the bucket
-        self._limiter = Limiter(self._bucket)
-
-    def try_acquire(self, request: Any, weight: int) -> None:
-        try:
-            self._limiter.try_acquire(request, weight=weight)
-        except BucketFullException as exc:
-            item = self._limiter.bucket_factory.wrap_item(request, weight)
-            assert isinstance(item, RateItem)
-
-            with self._limiter.lock:
-                time_to_wait = self._bucket.waiting(item)
-                assert isinstance(time_to_wait, int)
-
-                raise CallRateLimitHit(
-                    error=str(exc.meta_info["error"]),
-                    item=request,
-                    weight=int(exc.meta_info["weight"]),
-                    rate=str(exc.meta_info["rate"]),
-                    time_to_wait=timedelta(milliseconds=time_to_wait),
-                )
-
-    def update(self, available_calls: Optional[int], call_reset_ts: Optional[datetime.datetime]) -> None:
-        """Adjust call bucket to reflect the state of the API server
-
-        :param available_calls:
-        :param call_reset_ts:
-        :return:
-        """
-        if available_calls is not None and call_reset_ts is None:  # we do our best to sync buckets with API
-            if available_calls == 0:
-                with self._limiter.lock:
-                    items_to_add = self._bucket.count() < self._bucket.rates[0].limit
-                    if items_to_add > 0:
-                        now: int = TimeClock().now()  # type: ignore[no-untyped-call]
-                        self._bucket.put(RateItem(name="dummy", timestamp=now, weight=items_to_add))
-        # TODO: add support if needed, it might be that it is not possible to make a good solution for this case
-        # if available_calls is not None and call_reset_ts is not None:
-        #     ts = call_reset_ts.timestamp()
 
 
 class RequestMatcher(abc.ABC):
@@ -264,8 +166,141 @@ class HttpRequestMatcher(RequestMatcher):
         return True
 
 
+class BaseCallRatePolicy(AbstractCallRatePolicy, abc.ABC):
+    def __init__(self, matchers: list[RequestMatcher]):
+        self._matchers = matchers
+
+    def matches(self, request: Any) -> bool:
+        """Tell if this policy matches specific request and should apply to it
+
+        :param request:
+        :return: True if policy should apply to this request, False - otherwise
+        """
+
+        if not self._matchers:
+            return True
+        return any(matcher(request) for matcher in self._matchers)
+
+
+class FixedWindowCallRatePolicy(BaseCallRatePolicy):
+    def __init__(self, window: TimeWindow, call_limit: int, **kwargs: Any):
+        """A policy that allows {call_limit} calls within a {window} time interval
+
+        :param window:
+        :param call_limit:
+        """
+
+        self._current_window = TimeWindow(window.start, window.end)
+        self._offset = window.end - window.start
+        self._call_limit = call_limit
+        self._calls_num = 0
+        super().__init__(**kwargs)
+
+    def try_acquire(self, request: Any, weight: int) -> None:
+        if not self.matches(request):
+            raise ValueError("Request does not match the policy")
+
+        self._update_current_window()
+
+        if self._calls_num >= self._call_limit:
+            reset_in = self._current_window.end - datetime.datetime.now()
+            error_message = (
+                f"reached maximum number of allowed calls {self._call_limit} " f"per {self._offset} interval, next reset in {reset_in}."
+            )
+            raise CallRateLimitHit(
+                error=error_message,
+                item=request,
+                weight=weight,
+                rate=f"{self._call_limit} per {self._offset}",
+                time_to_wait=reset_in,
+            )
+
+        self._calls_num += 1
+
+    def update(self, available_calls: Optional[int], call_reset_ts: Optional[datetime.datetime]) -> None:
+        """Update call rate counters, by default only reacts to decreasing updates of available_calls and changes to call_reset_ts
+
+        :param available_calls:
+        :param call_reset_ts:
+        """
+        self._update_current_window()
+        current_available_calls = self._call_limit - self._calls_num
+
+        if available_calls is not None and current_available_calls > available_calls:
+            logger.info("got update from api, adjusting available calls from %s to %s", current_available_calls, available_calls)
+            self._calls_num = self._call_limit - available_calls
+
+        if call_reset_ts is not None and call_reset_ts != self._current_window.end:
+            logger.info("got update from api, adjusting reset time from %s to %s", self._current_window.end, call_reset_ts)
+            self._current_window.end = call_reset_ts
+
+    def _update_current_window(self) -> None:
+        now = datetime.datetime.now()
+        if now > self._current_window.end:
+            logger.info("current window %s has being reset, %s calls available now", self._current_window, self._call_limit)
+            self._current_window = TimeWindow(self._current_window.end, self._current_window.end + self._offset)
+            self._calls_num = 0
+
+
+class MovingWindowCallRatePolicy(BaseCallRatePolicy):
+    """
+    Policy to control requests rate implemented on top of PyRateLimiter lib.
+    """
+
+    def __init__(self, rates: list[Rate], **kwargs: Any):
+        """Constructor
+
+        :param rates: list of rates, the order is important and must be ascending
+        """
+        pyrate_rates = [PyRateRate(limit=rate.limit, interval=int(rate.interval.total_seconds() * 1000)) for rate in rates]
+        self._bucket = InMemoryBucket(pyrate_rates)
+        # Limiter will create the background task that clears old requests in the bucket
+        self._limiter = Limiter(self._bucket)
+        super().__init__(**kwargs)
+
+    def try_acquire(self, request: Any, weight: int) -> None:
+        if not self.matches(request):
+            raise ValueError("Request does not match the policy")
+
+        try:
+            self._limiter.try_acquire(request, weight=weight)
+        except BucketFullException as exc:
+            item = self._limiter.bucket_factory.wrap_item(request, weight)
+            assert isinstance(item, RateItem)
+
+            with self._limiter.lock:
+                time_to_wait = self._bucket.waiting(item)
+                assert isinstance(time_to_wait, int)
+
+                raise CallRateLimitHit(
+                    error=str(exc.meta_info["error"]),
+                    item=request,
+                    weight=int(exc.meta_info["weight"]),
+                    rate=str(exc.meta_info["rate"]),
+                    time_to_wait=timedelta(milliseconds=time_to_wait),
+                )
+
+    def update(self, available_calls: Optional[int], call_reset_ts: Optional[datetime.datetime]) -> None:
+        """Adjust call bucket to reflect the state of the API server
+
+        :param available_calls:
+        :param call_reset_ts:
+        :return:
+        """
+        if available_calls is not None and call_reset_ts is None:  # we do our best to sync buckets with API
+            if available_calls == 0:
+                with self._limiter.lock:
+                    items_to_add = self._bucket.count() < self._bucket.rates[0].limit
+                    if items_to_add > 0:
+                        now: int = TimeClock().now()  # type: ignore[no-untyped-call]
+                        self._bucket.put(RateItem(name="dummy", timestamp=now, weight=items_to_add))
+        # TODO: add support if needed, it might be that it is not possible to make a good solution for this case
+        # if available_calls is not None and call_reset_ts is not None:
+        #     ts = call_reset_ts.timestamp()
+
+
 class AbstractAPIBudget(abc.ABC):
-    """Interface to some API where client allowed to have N calls per T interval.
+    """Interface to some API where a client allowed to have N calls per T interval.
 
     Important: APIBudget is not doing any API calls, the end user code is responsible to call this interface
         to respect call rate limitation of the API.
@@ -273,15 +308,6 @@ class AbstractAPIBudget(abc.ABC):
     It supports multiple policies applied to different group of requests. To distinct these groups we use RequestMatchers.
     Individual policy represented by MovingWindowCallRatePolicy and currently supports only moving window strategy.
     """
-
-    @abc.abstractmethod
-    def add_policy(self, request_matcher: RequestMatcher, policy: AbstractCallRatePolicy) -> None:
-        """Add policy for calls
-
-        :param request_matcher: callable to match request object with corresponding policy
-        :param policy: to acquire calls
-        :return:
-        """
 
     @abc.abstractmethod
     def acquire_call(self, request: Any, block: bool = True, timeout: Optional[float] = None) -> None:
@@ -294,7 +320,7 @@ class AbstractAPIBudget(abc.ABC):
         """
 
     @abc.abstractmethod
-    def match_request(self, request: Any) -> Optional[AbstractCallRatePolicy]:
+    def get_matching_policy(self, request: Any) -> Optional[AbstractCallRatePolicy]:
         """Find matching call rate policy for specific request"""
 
     @abc.abstractmethod
@@ -309,39 +335,34 @@ class AbstractAPIBudget(abc.ABC):
 class APIBudget(AbstractAPIBudget):
     """Default APIBudget implementation"""
 
-    maximum_attempts_to_acquire: int = 10
+    def __init__(self, policies: list[AbstractCallRatePolicy], maximum_attempts_to_acquire: int = 10) -> None:
+        """Constructor
 
-    def __init__(self) -> None:
-        """Constructor"""
-        self._policies: list[tuple[RequestMatcher, AbstractCallRatePolicy]] = []
-
-    def add_policy(self, request_matcher: RequestMatcher, policy: AbstractCallRatePolicy) -> None:
-        """Add policy for calls
-
-        :param request_matcher: callable to match request object with corresponding policy
-        :param policy: to acquire calls
-        :return:
+        :param policies: list of policies in this budget
+        :param maximum_attempts_to_acquire: number of attempts before throwing hit ratelimit exception
         """
 
-        self._policies.append((request_matcher, policy))
+        self._policies = policies
+        self._maximum_attempts_to_acquire = maximum_attempts_to_acquire
 
-    def match_request(self, request: Any) -> Optional[AbstractCallRatePolicy]:
-        for matcher, policy in self._policies:
-            if matcher(request):
+    def get_matching_policy(self, request: Any) -> Optional[AbstractCallRatePolicy]:
+        for policy in self._policies:
+            if policy.matches(request):
                 return policy
         return None
 
     def acquire_call(self, request: Any, block: bool = True, timeout: Optional[float] = None) -> None:
         """Try to get a call from budget, will block by default.
-        Matchers will be called sequentially in same the order they were added. The first matcher that returns True will
+        Matchers will be called sequentially in the same order they were added.
+        The first matcher that returns True will
 
         :param request:
         :param block: when true (default) will block the current thread until call credit is available
-        :param timeout: if set will limit maximum time in block, otherwise will wait until credit is available
-        :raises: CallRateLimitHit - when no credits left and if timeout was set the waiting time exceed the timeout
+        :param timeout: if provided will limit maximum time in block, otherwise will wait until credit is available
+        :raises: CallRateLimitHit - when no calls left and if timeout was set the waiting time exceed the timeout
         """
 
-        policy = self.match_request(request)
+        policy = self.get_matching_policy(request)
         if policy:
             self._do_acquire(request=request, policy=policy, block=block, timeout=timeout)
         elif self._policies:
@@ -365,7 +386,7 @@ class APIBudget(AbstractAPIBudget):
         """
         last_exception = None
         # sometimes we spend all budget before a second attempt, so we have few more here
-        for attempt in range(1, self.maximum_attempts_to_acquire):
+        for attempt in range(1, self._maximum_attempts_to_acquire):
             try:
                 policy.try_acquire(request, weight=1)
                 return
@@ -384,17 +405,33 @@ class APIBudget(AbstractAPIBudget):
                     raise
 
         if last_exception:
-            logger.info("we used all %s attempts to acquire and failed", self.maximum_attempts_to_acquire)
+            logger.info("we used all %s attempts to acquire and failed", self._maximum_attempts_to_acquire)
             raise last_exception
 
 
 class HttpAPIBudget(APIBudget):
-    """Implementation of AbstractAPIBudget for http"""
+    """Implementation of AbstractAPIBudget for HTTP"""
 
-    status_codes_for_rate_limit_hit = (429,)
+    def __init__(
+        self,
+        ratelimit_reset_header: str = "ratelimit-reset",
+        ratelimit_remaining_header: str = "ratelimit-remaining",
+        status_codes_for_ratelimit_hit: tuple[int] = (429,),
+        **kwargs: Any,
+    ):
+        """Constructor
+
+        :param ratelimit_reset_header: name of the header that has a timestamp of the next reset of call budget
+        :param ratelimit_remaining_header: name of the header that has the number of calls left
+        :param status_codes_for_ratelimit_hit: list of HTTP status codes that signal about rate limit being hit
+        """
+        self._ratelimit_reset_header = ratelimit_reset_header
+        self._ratelimit_remaining_header = ratelimit_remaining_header
+        self._status_codes_for_ratelimit_hit = status_codes_for_ratelimit_hit
+        super().__init__(**kwargs)
 
     def update_from_response(self, request: Any, response: Any) -> None:
-        policy = self.match_request(request)
+        policy = self.get_matching_policy(request)
         if not policy:
             return
 
@@ -404,15 +441,15 @@ class HttpAPIBudget(APIBudget):
             policy.update(available_calls=available_calls, call_reset_ts=reset_ts)
 
     def get_reset_ts_from_response(self, response: requests.Response) -> Optional[datetime.datetime]:
-        if response.headers.get("ratelimit-reset"):
-            return datetime.datetime.fromtimestamp(int(response.headers["ratelimit-reset"]))
+        if response.headers.get(self._ratelimit_reset_header):
+            return datetime.datetime.fromtimestamp(int(response.headers[self._ratelimit_reset_header]))
         return None
 
     def get_calls_left_from_response(self, response: requests.Response) -> Optional[int]:
-        if response.headers.get("ratelimit-remaining"):
-            return int(response.headers["ratelimit-remaining"])
+        if response.headers.get(self._ratelimit_remaining_header):
+            return int(response.headers[self._ratelimit_remaining_header])
 
-        if response.status_code in self.status_codes_for_rate_limit_hit:
+        if response.status_code in self._status_codes_for_ratelimit_hit:
             return 0
 
         return None
