@@ -20,6 +20,7 @@ from .utils import (
     insert_receipt_voucher_to_tally,
     insert_sales_order_to_tally,
     insert_sales_without_inventory_to_tally,
+    clear_post_data,
 )
 
 
@@ -36,6 +37,25 @@ class DestinationTally(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         logger = AirbyteLogger()
+
+        # Clear the data for all the templates from the API Server
+        templates = {
+            "Ledger Master": "16",
+            "Payment Voucher": "13",
+            "Journal Voucher": "18",
+            "Receipt Voucher": "12",
+            "Item Master": "15",
+            "Purchase without Inventory": "8",
+            "Sales without Inventory": "2",
+            "Debit Note without Inventory": "11",
+            "Credit Note without Inventory": "5",
+            "Sales Order": "3",
+        }
+
+        for key, template_key in templates.items():
+            clear_post_data(config=config, template=key, template_key=template_key, logger=logger)
+
+        # Insert data into Tally
         for airbyte_message in input_messages:
             if airbyte_message.type == Type.RECORD:
                 # check if airbyte stream contains any of supported_streams
