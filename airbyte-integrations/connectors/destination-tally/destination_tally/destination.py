@@ -10,7 +10,7 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
 from .utils import (
-    clear_post_data,
+    clear_template_cache,
     insert_creditnote_without_inventory_to_tally,
     insert_debitnote_without_inventory_to_tally,
     insert_item_master_to_tally,
@@ -53,7 +53,7 @@ class DestinationTally(Destination):
         }
 
         for key, template_key in templates.items():
-            clear_post_data(config=config, template=key, template_key=template_key, logger=logger)
+            clear_template_cache(config=config, template=key, template_key=template_key, logger=logger)
 
         # Insert data into Tally
         for airbyte_message in input_messages:
