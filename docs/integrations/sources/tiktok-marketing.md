@@ -30,9 +30,9 @@ To access the Sandbox environment:
 
 ### Step 1: Set up TikTok
 
-1. Create a TikTok For Business account: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702715936951297)
-2. (Open source only) Create developer application: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702716474845185)
-3. (Open source only) For a sandbox environment: create a Sandbox Ad Account [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1701890920013825)
+1. Create a TikTok For Business account: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855099573250)
+2. (Open source only) Create developer application: [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855242728450)
+3. (Open source only) For a sandbox environment: create a Sandbox Ad Account [Link](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1738855331457026)
 
 ### Step 2: Set up the source connector in Airbyte
 
@@ -113,9 +113,12 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 ### Output Schemas
 
-**[Advertisers](https://ads.tiktok.com/marketing_api/docs?id=1708503202263042) Stream**
+**[Advertisers](https://business-api.tiktok.com/portal/docs?id=1738455508553729) Stream**
 
-```
+<details>
+<summary>Advertisers schema example</summary>
+
+```json
 {
   "contacter": "Ai***te",
   "phonenumber": "+13*****5753",
@@ -147,10 +150,16 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
   "company": "Airbyte"
 }
 ```
+</details>
 
-**[AdGroups](https://ads.tiktok.com/marketing_api/docs?id=1708503489590273) Stream**
+<br>
 
-```
+**[AdGroups](https://business-api.tiktok.com/portal/docs?id=1739314558673922) Stream**
+
+<details>
+<summary>AdGroups schema example</summary>
+
+```json
 {
   "placement_type": "PLACEMENT_TYPE_AUTOMATIC",
   "budget": 20,
@@ -170,7 +179,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
   "include_custom_actions": [],
   "operation_system": [],
   "pixel_id": null,
-  "dayparting": "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
+  "dayparting": "111111111",
   "app_type": null,
   "conversion_id": 0,
   "rf_predict_cpr": null,
@@ -232,10 +241,16 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
   "is_share_disable": false
 }
 ```
+</details>
 
-**[Ads](https://ads.tiktok.com/marketing_api/docs?id=1708572923161602) Stream**
+<br>
 
-```
+**[Ads](https://business-api.tiktok.com/portal/docs?id=1735735588640770) Stream**
+
+<details>
+<summary>Ads schema example</summary>
+
+```json
 {
   "vast_moat": false,
   "is_new_structure": true,
@@ -279,11 +294,19 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
   "impression_tracking_url": null,
   "is_creative_authorized": false
 }
-```
-
-**[Campaigns](https://ads.tiktok.com/marketing_api/docs?id=1708582970809346) Stream**
 
 ```
+
+</details>
+
+<br>
+
+**[Campaigns](https://business-api.tiktok.com/portal/docs?id=1739315828649986) Stream**
+
+<details>
+<summary>Campaigns schema example</summary>
+
+```json
 {
   "create_time": "2021-10-19 18:18:08",
   "campaign_id": 1714073078669329,
@@ -303,10 +326,16 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
   "objective": "LANDING_PAGE"
 }
 ```
+</details>
 
-**AdsReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
+<br>
 
-```
+**AdsReportsDaily Stream - [BasicReports](https://business-api.tiktok.com/portal/docs?id=1738864915188737)**
+
+<details>
+<summary>AdsReportsDaily schema example</summary>
+
+```json
 {
   "dimensions": {
     "ad_id": 1728545390695442,
@@ -351,11 +380,18 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "dpa_target_audience_type": null
   }
 }
-```
-
-**AdvertisersReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
 
 ```
+</details>
+
+<br>
+
+**AdvertisersReportsDaily Stream - [BasicReports](https://business-api.tiktok.com/portal/docs?id=1738864915188737)**
+
+<details>
+<summary>AdvertisersReportsDaily schema example</summary>
+
+```json
 {
   "metrics": {
     "cpm": 5.43,
@@ -377,10 +413,18 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 
 ```
+</details>
 
-**AdGroupsReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
+<br>
 
-```
+
+
+**AdGroupsReportsDaily Stream - [BasicReports](https://business-api.tiktok.com/portal/docs?id=1738864915188737)**
+
+<details>
+<summary>AdGroupsReportsDaily schema example</summary>
+
+```json
 {
   "metrics": {
     "real_time_conversion": 0,
@@ -422,11 +466,19 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "stat_time_day": "2022-03-29 00:00:00"
   }
 }
-```
-
-**CampaignsReportsDaily Stream - [BasicReports](https://ads.tiktok.com/marketing_api/docs?id=1707957200780290)**
 
 ```
+
+</details>
+
+<br>
+
+**CampaignsReportsDaily Stream - [BasicReports](https://business-api.tiktok.com/portal/docs?id=1738864915188737)**
+
+<details>
+<summary>CampaignsReportsDaily schema example</summary>
+
+```json
 {
   "metrics": {
     "cpc": 0.43,
@@ -447,10 +499,16 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 
 ```
+</details>
 
-**AdsAudienceReportsDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
+<br>
 
-```
+**AdsAudienceReportsDaily Stream - [AudienceReports](https://business-api.tiktok.com/portal/docs?id=1738864928947201)**
+
+<details>
+<summary>AdsAudienceReportsDaily schema example</summary>
+
+```json
 {
   {
     "result": 17,
@@ -491,11 +549,18 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "stat_time_day": "2022-03-28 00:00:00"
   }
 }
-```
-
-**AdvertisersAudienceReportsDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
 
 ```
+</details>
+
+<br>
+
+**AdvertisersAudienceReportsDaily Stream - [AudienceReports](https://business-api.tiktok.com/portal/docs?id=1738864928947201)**
+
+<details>
+<summary>AdvertisersAudienceReportsDaily schema example</summary>
+
+```json
 {
   "dimensions": {
     "stat_time_day": "2022-03-28 00:00:00",
@@ -512,11 +577,18 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "impressions": 752
   }
 }
-```
-
-**AdGroupAudienceReportsDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
 
 ```
+</details>
+
+<br>
+
+**AdGroupAudienceReportsDaily Stream - [AudienceReports](https://business-api.tiktok.com/portal/docs?id=1738864928947201)**
+
+<details>
+<summary>AdGroupAudienceReportsDaily schema example</summary>
+
+```json
 {
   "dimensions": {
     "gender": "MALE",
@@ -554,11 +626,18 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "tt_app_id": 0
   }
 }
-```
-
-**CampaignsAudienceReportsByCountryDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
 
 ```
+</details>
+
+<br>
+
+**CampaignsAudienceReportsByCountryDaily Stream - [AudienceReports](https://business-api.tiktok.com/portal/docs?id=1738864928947201)**
+
+<details>
+<summary>CampaignsAudienceReportsByCountryDaily schema example</summary>
+
+```json
 {
   "metrics": {
     "impressions": 5870,
@@ -577,10 +656,11 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 
 ```
+</details>
 
 ## Performance considerations
 
-The connector is restricted by [requests limitation](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1725359439428610). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector is restricted by [requests limitation](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 
