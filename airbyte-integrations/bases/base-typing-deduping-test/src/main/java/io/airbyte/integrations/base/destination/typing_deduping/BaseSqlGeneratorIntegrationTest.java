@@ -556,11 +556,11 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
-   * Verify that we correctly only process raw records with recent extracted_at.
-   * In practice, destinations should not do this - but their SQL should work correctly.
+   * Verify that we correctly only process raw records with recent extracted_at. In practice,
+   * destinations should not do this - but their SQL should work correctly.
    * <p>
-   * Create two raw records, one with an old extracted_at. Verify that updatedTable
-   * only T+Ds the new record, and doesn't set loaded_at on the old record.
+   * Create two raw records, one with an old extracted_at. Verify that updatedTable only T+Ds the new
+   * record, and doesn't set loaded_at on the old record.
    */
   @Test
   public void ignoreOldRawRecords() throws Exception {
@@ -569,26 +569,26 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     insertRawTableRecords(
         streamId,
         List.of(
-          Jsons.deserialize(
-              """
-              {
-                "_airbyte_raw_id": "c5bcae50-962e-4b92-b2eb-1659eae31693",
-                "_airbyte_extracted_at": "2022-01-01T00:00:00Z",
-                "_airbyte_data": {
-                  "string": "foo"
+            Jsons.deserialize(
+                """
+                {
+                  "_airbyte_raw_id": "c5bcae50-962e-4b92-b2eb-1659eae31693",
+                  "_airbyte_extracted_at": "2022-01-01T00:00:00Z",
+                  "_airbyte_data": {
+                    "string": "foo"
+                  }
                 }
-              }
-              """),
-          Jsons.deserialize(
-              """
-              {
-                "_airbyte_raw_id": "93f1bdd8-1916-4e6c-94dc-29a5d9701179",
-                "_airbyte_extracted_at": "2023-01-01T01:00:00Z",
-                "_airbyte_data": {
-                  "string": "bar"
+                """),
+            Jsons.deserialize(
+                """
+                {
+                  "_airbyte_raw_id": "93f1bdd8-1916-4e6c-94dc-29a5d9701179",
+                  "_airbyte_extracted_at": "2023-01-01T01:00:00Z",
+                  "_airbyte_data": {
+                    "string": "bar"
+                  }
                 }
-              }
-              """)));
+                """)));
 
     final String sql = generator.updateTable(incrementalAppendStream, "", Optional.of(Instant.parse("2023-01-01T00:00:00Z")));
     destinationHandler.execute(sql);
