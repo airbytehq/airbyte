@@ -239,6 +239,8 @@ class Segments(IncrementalMailChimpStream):
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        
+        stream_state = stream_state or {}
 
         parent = Lists(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
         for slice in parent:
