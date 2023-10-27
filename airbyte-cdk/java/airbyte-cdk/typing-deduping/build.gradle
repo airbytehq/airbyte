@@ -7,10 +7,9 @@ dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
 
-    testImplementation project(':airbyte-commons')
-
-    testFixturesImplementation project(':airbyte-commons')
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
 
     testFixturesImplementation libs.airbyte.protocol
 

@@ -16,7 +16,7 @@ dependencies {
     // First party main dependencies
     // TODO: Bring these into the CDK or refactor them out.
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
-    compileOnly project(':airbyte-commons')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
@@ -32,7 +32,7 @@ dependencies {
     implementation 'net.i2p.crypto:eddsa:0.3.0'
 
     // First party test dependencies
-    testImplementation project(':airbyte-commons')
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-sources'))
 
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'

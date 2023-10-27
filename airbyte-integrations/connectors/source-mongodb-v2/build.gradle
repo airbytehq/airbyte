@@ -44,7 +44,8 @@ dependencies {
     integrationTestJavaImplementation libs.apache.commons.lang
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
 
-    dataGeneratorImplementation project(":airbyte-commons")
+    dataGeneratorImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+
     dataGeneratorImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
     dataGeneratorImplementation libs.mongo.driver.sync
     dataGeneratorImplementation libs.kotlin.logging

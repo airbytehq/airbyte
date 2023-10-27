@@ -9,9 +9,9 @@ dependencies {
     annotationProcessor libs.bundles.micronaut.annotation.processor
     api libs.bundles.micronaut.annotation
 
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
     implementation libs.airbyte.protocol
-    implementation project(':airbyte-commons')
 }
 
 jsonSchema2Pojo {
