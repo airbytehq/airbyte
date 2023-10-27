@@ -228,7 +228,7 @@ To use a Google Cloud Storage bucket, enter the information for the bucket you c
 
 ## Output schema
 
-Airbyte outputs each stream into its own raw table in `airbyte_internal` schema by default (can be overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_ deduplicated. 
+Airbyte outputs each stream into its own raw table in `airbyte_internal` schema by default (can be overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_ deduplicated.
 
 ### Raw Table schema
 
@@ -239,7 +239,7 @@ Airbyte outputs each stream into its own raw table in `airbyte_internal` schema 
 | \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP WITH TIME ZONE |
 | \_airbyte_data         | A JSON blob with the event data.                                   | VARIANT                  |
 
-**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table could be subject to change in future versions. 
+**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table could be subject to change in future versions.
 
 **Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a dedicated transient database for Airbyte. For more information, refer to[ Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
 
@@ -277,6 +277,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.1           | 2023-10-27 | [31683](https://github.com/airbytehq/airbyte/pull/31683)   | Performance enhancement (switch to a `merge` statement for incremental-dedup syncs)                                                                             |
 | 3.4.0           | 2023-10-25 | [31686](https://github.com/airbytehq/airbyte/pull/31686)   | Opt out flag for typed and deduped tables                                                                                                                       |
 | 3.3.0           | 2023-10-25 | [\#31520](https://github.com/airbytehq/airbyte/pull/31520) | Stop deduping raw table                                                                                                                                         |
 | 3.2.3           | 2023-10-17 | [\#31191](https://github.com/airbytehq/airbyte/pull/31191) | Improve typing+deduping performance by filtering new raw records on extracted_at                                                                                |
