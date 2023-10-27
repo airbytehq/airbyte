@@ -24,9 +24,9 @@ def clear_post_data(config: Mapping[str, Any], template: str, template_key: str,
     response = requests.request(method="POST", url=url, headers=headers)
     results = ["document downloaded", "no document found"]
     if (response.status_code == 200) and (any(result in str(response.content).lower() for result in results)):
-        logger.info(f'Data for {template} has been successfully cleared from the API Server.')
+        logger.info(f"Data for {template} has been successfully cleared from the API Server.")
     else:
-        logger.warn(f'Cannot clear the data from API Server , Error : {response.content}')
+        logger.warn(f"Cannot clear the data from API Server , Error : {response.content}")
 
 
 def prepare_headers(config: Mapping[str, Any], template_key: str):

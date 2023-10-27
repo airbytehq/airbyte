@@ -10,6 +10,7 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
 from .utils import (
+    clear_post_data,
     insert_creditnote_without_inventory_to_tally,
     insert_debitnote_without_inventory_to_tally,
     insert_item_master_to_tally,
@@ -20,7 +21,6 @@ from .utils import (
     insert_receipt_voucher_to_tally,
     insert_sales_order_to_tally,
     insert_sales_without_inventory_to_tally,
-    clear_post_data,
 )
 
 
