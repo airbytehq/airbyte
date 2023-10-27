@@ -6,7 +6,7 @@ use futures::{
     stream, StreamExt, TryStreamExt,
 };
 use tokio::{
-    io::{copy, AsyncWrite},
+    io::{copy, AsyncWrite, AsyncWriteExt},
     process::{Child, ChildStdin, ChildStdout},
     sync::Mutex,
 };
@@ -244,14 +244,12 @@ pub async fn run_airbyte_source_connector(
 async fn streaming_all(
     request_stream: InterceptorStream,
     mut request_stream_writer: ChildStdin,
-    response_stream: InterceptorStream,
+    mut response_stream: InterceptorStream,
     response_stream_writer: Arc<Mutex<Pin<Box<dyn AsyncWrite + Sync + Send>>>>,
     response_finished_sender: oneshot::Sender<bool>,
 ) -> Result<(), Error> {
     let mut request_stream_reader =
         StreamReader::new(request_stream);
-    let mut response_stream_reader =
-        StreamReader::new(response_stream);
 
     let request_stream_copy = async move {
         copy(&mut request_stream_reader, &mut request_stream_writer).await?;
@@ -261,7 +259,19 @@ async fn streaming_all(
 
     let response_stream_copy = async move {
         let mut writer = response_stream_writer.lock().await;
-        copy(&mut response_stream_reader, writer.deref_mut()).await?;
+
+        while let Some(result) = response_stream.next().await {
+            match result {
+                Ok(bytes) => {
+                    writer.write(&bytes).await?;
+                },
+                Err(e @ Error::EmptyStream) => {
+                    tracing::warn!("{}", e.to_string());
+                }
+                Err(e) => Err::<(), std::io::Error>(e.into())?,
+            }
+        };
+
         response_finished_sender
             .send(true)
             .expect("send write finished signal twice");

@@ -62,16 +62,9 @@ fn main() -> anyhow::Result<()> {
     // (Note that tokio::io maps AsyncRead of file descriptors to blocking tasks under the hood).
     runtime.shutdown_background();
 
-    tracing::warn!(raw_response = ?result);
     match result {
         Err(Error::ExitCode(code)) => {
             std::process::exit(code);
-        },
-        Err(e @ Error::EmptyStream) | Err(e @ Error::CheckpointPending) => {
-            // In some cases, we want to let the last error of the connector
-            // be picked up by connector-init as the actual error
-            tracing::warn!(message = e.to_string());
-            std::process::exit(1);
         },
         Err(err) => Err(err.into()),
         Ok(()) => {
