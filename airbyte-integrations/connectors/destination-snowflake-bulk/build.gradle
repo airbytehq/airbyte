@@ -38,6 +38,8 @@ integrationTestJava {
 }
 
 dependencies {
+    implementation project(':airbyte-integrations:connectors:destination-snowflake')
+
     implementation 'com.google.cloud:google-cloud-storage:1.113.16'
     implementation 'com.google.auth:google-auth-library-oauth2-http:0.25.5'
     implementation 'net.snowflake:snowflake-jdbc:3.14.1'
