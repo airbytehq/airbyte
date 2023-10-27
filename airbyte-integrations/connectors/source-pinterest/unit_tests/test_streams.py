@@ -25,7 +25,7 @@ from source_pinterest.streams import (
     PinterestSubStream,
 )
 
-os.environ["REQUEST_CACHE_PATH"] = '/tmp'
+os.environ["REQUEST_CACHE_PATH"] = "/tmp"
 
 
 @pytest.fixture
