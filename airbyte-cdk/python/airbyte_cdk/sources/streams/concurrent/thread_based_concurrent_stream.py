@@ -127,7 +127,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
 
     def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
-        self._wait_while_too_many_pending_futures(futures)
+        #self._wait_while_too_many_pending_futures(futures)
         futures.append(self._threadpool.submit(function, *args))
 
     def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
