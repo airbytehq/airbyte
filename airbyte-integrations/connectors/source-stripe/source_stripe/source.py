@@ -44,6 +44,17 @@ _MAX_CONCURRENCY = 3
 _PAGE_SIZE = 100
 
 
+class StripePaginationStrategy(CursorPaginationStrategy):
+    def stop(self, response, headers, last_records) -> bool:
+        return "has_more" not in response
+
+    def get_cursor_value(self, response, headers, last_records) -> str:
+        if "has_more" in response and response["has_more"] and response.get("data", []):
+            last_object_id = response["data"][-1]["id"]
+            return last_object_id
+        return None
+
+
 class SourceStripe(AbstractSource):
     def __init__(self, catalog_path: Optional[str] = None, **kwargs):
         super().__init__(**kwargs)
@@ -121,13 +132,7 @@ class SourceStripe(AbstractSource):
         )
 
         paginator = DefaultPaginator(
-            CursorPaginationStrategy(
-                cursor_value="{{ last_records[-1]['id'] if last_records else None }}",
-                config={},
-                parameters={},
-                page_size=_PAGE_SIZE,
-                stop_condition="{{ not response.has_more }}",
-            ),
+            StripePaginationStrategy(page_size=_PAGE_SIZE),
             config={},
             url_base="",
             parameters={},
@@ -499,7 +504,8 @@ class SourceStripe(AbstractSource):
             ),
             StripeSubStream(
                 name="usage_records",
-                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice.get('parent', {}).get('id')}/usage_record_summaries",
+                path=lambda self, stream_slice, *args,
+                            **kwargs: f"subscription_items/{stream_slice.get('parent', {}).get('id')}/usage_record_summaries",
                 parent=subscription_items,
                 primary_key=None,
                 **args,
