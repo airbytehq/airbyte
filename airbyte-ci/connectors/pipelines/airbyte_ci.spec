@@ -3,7 +3,7 @@ from PyInstaller.utils.hooks import collect_all
 
 datas = []
 binaries = []
-hiddenimports = []
+hiddenimports = ['strawberry']
 tmp_ret = collect_all('pipelines')
 datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 tmp_ret = collect_all('beartype')
@@ -32,7 +32,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='airbyte_ci',
+    name='airbyte_ci_macos',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
