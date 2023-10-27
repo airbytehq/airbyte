@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.52.5
+use in-memory cache if no file path is provided
+
 ## 0.52.4
 File CDK: Add unstructured parser
 
