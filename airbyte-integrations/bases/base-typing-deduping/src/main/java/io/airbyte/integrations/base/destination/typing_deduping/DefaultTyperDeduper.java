@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * <li>{@link #typeAndDedupe(String, String, boolean)} as needed throughout the sync</li>
  * <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
- * Note that createFinalTables initializes some internal state. The other methods will throw an
+ * Note that #prepareTables() initializes some internal state. The other methods will throw an
  * exception if that method was not called.
  */
 public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper {
@@ -54,7 +54,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private final DestinationHandler<DialectTableDefinition> destinationHandler;
 
   private final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator;
-  private final V2TableMigrator<DialectTableDefinition> v2TableMigrator;
+  private final V2TableMigrator v2TableMigrator;
   private final ParsedCatalog parsedCatalog;
   private Set<StreamId> overwriteStreamsWithTmpTable;
   private final Set<Pair<String, String>> streamsWithSuccessfulSetup;
@@ -76,7 +76,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                              final DestinationHandler<DialectTableDefinition> destinationHandler,
                              final ParsedCatalog parsedCatalog,
                              final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
-                             final V2TableMigrator<DialectTableDefinition> v2TableMigrator,
+                             final V2TableMigrator v2TableMigrator,
                              final int defaultThreadCount) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
@@ -97,7 +97,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                              final ParsedCatalog parsedCatalog,
                              final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
                              final int defaultThreadCount) {
-    this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator<>(), defaultThreadCount);
+    this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator(), defaultThreadCount);
   }
 
   public void prepareTables() throws Exception {

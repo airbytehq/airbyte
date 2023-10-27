@@ -150,7 +150,8 @@ if (isCiServer || isAirbyteCI) {
             bucket = 'ab-ci-cache'
             prefix = "${System.getProperty('s3BuildCachePrefix', 'connectors')}-ci-cache/"
             push = isAirbyteCI
-            enabled = System.getenv().containsKey("S3_BUILD_CACHE_ACCESS_KEY_ID")
+            // Sometimes the env var is set, but with an empty value. Ignore this case.
+            enabled = !System.getenv().getOrDefault("S3_BUILD_CACHE_ACCESS_KEY_ID", "").isEmpty()
         }
     }
 }
