@@ -43,6 +43,7 @@ The Mailchimp source connector supports the following streams:
 [Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)
 [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info)
 [Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)
+[Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)
 [Unsubscribes](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/)
 
 ### A note on primary keys
