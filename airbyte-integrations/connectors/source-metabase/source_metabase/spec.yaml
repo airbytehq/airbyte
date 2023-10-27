@@ -14,7 +14,7 @@ connectionSpecification:
         URL to your metabase instance API
       examples:
         - "https://localhost:3000/api/"
-      pattern: "^https://"
+      pattern: "^https://|^http://"
       order: 0
     username:
       type: string
