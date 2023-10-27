@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import os
 from http import HTTPStatus
 from unittest.mock import MagicMock
 
@@ -23,8 +24,6 @@ from source_pinterest.streams import (
     PinterestStream,
     PinterestSubStream,
 )
-
-import os
 
 os.environ["REQUEST_CACHE_PATH"] = '/tmp'
 
