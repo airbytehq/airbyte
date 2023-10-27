@@ -5,13 +5,13 @@ plugins {
 dependencies {
     implementation libs.airbyte.protocol
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
+    testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
 
     testImplementation project(':airbyte-commons')
 
     testFixturesImplementation project(':airbyte-commons')
 
-    testFixturesImplementation project(':airbyte-config-oss:config-models-oss')
-    testFixturesImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     testFixturesImplementation libs.airbyte.protocol
 
     testFixturesImplementation(enforcedPlatform('org.junit:junit-bom:5.8.2'))

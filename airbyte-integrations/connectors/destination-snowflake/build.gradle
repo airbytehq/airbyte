@@ -47,13 +47,11 @@ dependencies {
     implementation "io.aesy:datasize:1.0.0"
     implementation 'com.zaxxer:HikariCP:5.0.1'
 
-    implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
     implementation libs.airbyte.protocol
 
 //    this is a configuration to make mockito work with final classes
     testImplementation 'org.mockito:mockito-inline:2.13.0'
 
-    integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 }

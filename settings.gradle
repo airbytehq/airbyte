@@ -162,27 +162,25 @@ include ':airbyte-commons'
 include ':airbyte-api'
 include ':airbyte-commons-cli'
 include ':airbyte-commons-protocol'
-include ':airbyte-config-oss:init-oss'
-include ':airbyte-config-oss:config-models-oss' // reused by acceptance tests in connector base.
-include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
 include ':airbyte-json-validation'
 include ':airbyte-test-utils'
-
-include ':airbyte-connector-test-harnesses:acceptance-test-harness'
 
 include ':tools:code-generator'
 include ':octavia-cli'
 
 include ':airbyte-cdk:python'
 include ':airbyte-cdk:java:airbyte-cdk'
+include ':airbyte-cdk:java:airbyte-cdk:config-models-oss'
+include ':airbyte-cdk:java:airbyte-cdk:init-oss'
+include ':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness'
 include ':airbyte-cdk:java:airbyte-cdk:core'
 include ':airbyte-cdk:java:airbyte-cdk:db-destinations'
 include ':airbyte-cdk:java:airbyte-cdk:db-sources'
 include ':airbyte-cdk:java:airbyte-cdk:typing-deduping'
+
 include ':airbyte-integrations:bases:base'
 include ':airbyte-integrations:bases:base-java'
 include ':airbyte-integrations:bases:base-normalization'
-include ':airbyte-integrations:bases:connector-acceptance-test'
 include ':airbyte-integrations:connector-templates:generator'
 include ':airbyte-integrations:connectors-performance:source-harness'
 include ':airbyte-integrations:connectors-performance:destination-harness'
