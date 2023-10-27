@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.debezium.internals;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.lang.MoreBooleans;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -48,29 +49,35 @@ public class DebeziumShutdownProcedure<T> {
 
   private Runnable transfer() {
     return () -> {
-      while (!sourceQueue.isEmpty() || !MoreBooleans.isTruthy(publisherStatusSupplier.get())) {
+      while (!hasEngineShutDown()) {
         try {
-          T event = sourceQueue.poll(10, TimeUnit.SECONDS);
-          if (event != null) {
-            targetQueue.put(event);
-          }
+          targetQueue.put(sourceQueue.poll(10, TimeUnit.SECONDS));
         } catch (final InterruptedException e) {
           Thread.currentThread().interrupt();
           throw new RuntimeException(e);
         }
       }
+      // At this point, the engine has shut down, and therefore nothing will be writing to the queue any
+      // more. Empty it.
+      sourceQueue.drainTo(targetQueue);
     };
+  }
+
+  private boolean hasEngineShutDown() {
+    return MoreBooleans.isTruthy(publisherStatusSupplier.get());
   }
 
   private void initiateTransfer() {
     executorService.execute(transfer());
   }
 
-  public LinkedBlockingQueue<T> getRecordsRemainingAfterShutdown() {
+  public ArrayList<T> getRecordsRemainingAfterShutdown() {
     if (!hasTransferThreadShutdown) {
-      LOGGER.warn("Queue transfer thread has not shutdown, some records might be missing");
+      LOGGER.warn("Queue transfer thread has not shutdown, some records might be missing.");
     }
-    return targetQueue;
+    ArrayList<T> result = new ArrayList<>();
+    targetQueue.drainTo(result);
+    return result;
   }
 
   /**
@@ -83,8 +90,8 @@ public class DebeziumShutdownProcedure<T> {
    * complete we just have to read the remaining records from the {@link targetQueue}
    */
   public void initiateShutdownProcedure() {
-    if (publisherStatusSupplier.get()) {
-      LOGGER.info("Engine has already shutdown");
+    if (hasEngineShutDown()) {
+      LOGGER.info("Debezium Engine has already shut down.");
       return;
     }
     Exception exceptionDuringEngineClose = null;
