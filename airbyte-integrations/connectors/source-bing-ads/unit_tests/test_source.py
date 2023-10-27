@@ -28,7 +28,7 @@ def logger_mock_fixture():
 @patch.object(source_bing_ads.source, "Client")
 def test_streams_config_based(mocked_client, config):
     streams = SourceBingAds().streams(config)
-    assert len(streams) == 37
+    assert len(streams) == 41
 
 
 @patch.object(source_bing_ads.source, "Client")

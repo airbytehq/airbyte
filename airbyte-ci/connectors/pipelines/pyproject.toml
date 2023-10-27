@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pipelines"
-version = "2.5.1"
+version = "2.5.2"
 description = "Packaged maintained by the connector operations team to perform CI for connectors' pipelines"
 authors = ["Airbyte <contact@airbyte.io>"]
 
@@ -17,7 +17,6 @@ more-itertools = "^8.11.0"
 docker = "^6.0.0"
 semver = "^3.0.1"
 airbyte-protocol-models = "*"
-tabulate = "^0.8.9"
 jinja2 = "^3.0.2"
 requests = "2.28.2" # Pinned as the requests 2.29.0 version is not compatible with the docker package
 airbyte-connectors-base-images = {path = "../base_images", develop = true}
