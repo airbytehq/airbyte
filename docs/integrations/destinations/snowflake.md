@@ -166,6 +166,7 @@ Navigate to the Airbyte UI to set up Snowflake as a destination. You can authent
 | Username                                                                                              | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                               |
 | Password                                                                                              | The password associated with the username.                                                                                                                                                        |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`   |
+| Disable Final Tables (Optional)                                                                       | Disables writing final Typed tables See [output schema](#output-schema). WARNING! The data format in _airbyte_data is likely stable but there are no guarantees that other metadata columns will remain the same in future versions   |
 
 ### OAuth 2.0
 
@@ -227,13 +228,18 @@ To use a Google Cloud Storage bucket, enter the information for the bucket you c
 
 ## Output schema
 
-Airbyte outputs each stream into its own table with the following columns in Snowflake:
+Airbyte outputs each stream into its own raw table in `airbyte_internal` schema by default (can be overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_ deduplicated. 
 
-| Airbyte field        | Description                                                    | Column type              |
-|----------------------|----------------------------------------------------------------|--------------------------|
-| \_airbyte_ab_id      | A UUID assigned to each processed event                        | VARCHAR                  |
-| \_airbyte_emitted_at | A timestamp for when the event was pulled from the data source | TIMESTAMP WITH TIME ZONE |
-| \_airbyte_data       | A JSON blob with the event data.                               | VARIANT                  |
+### Raw Table schema
+
+| Airbyte field          | Description                                                        | Column type              |
+|------------------------|--------------------------------------------------------------------|--------------------------|
+| \_airbyte_raw_id       | A UUID assigned to each processed event                            | VARCHAR                  |
+| \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP WITH TIME ZONE |
+| \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP WITH TIME ZONE |
+| \_airbyte_data         | A JSON blob with the event data.                                   | VARIANT                  |
+
+**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table could be subject to change in future versions. 
 
 **Note:** By default, Airbyte creates permanent tables. If you prefer transient tables, create a dedicated transient database for Airbyte. For more information, refer to[ Working with Temporary and Transient Tables](https://docs.snowflake.com/en/user-guide/tables-temp-transient.html)
 
@@ -271,6 +277,7 @@ Otherwise, make sure to grant the role the required permissions in the desired n
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:----------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.4.0           | 2023-10-25 | [31686](https://github.com/airbytehq/airbyte/pull/31686)   | Opt out flag for typed and deduped tables                                                                                                                       |
 | 3.3.0           | 2023-10-25 | [\#31520](https://github.com/airbytehq/airbyte/pull/31520) | Stop deduping raw table                                                                                                                                         |
 | 3.2.3           | 2023-10-17 | [\#31191](https://github.com/airbytehq/airbyte/pull/31191) | Improve typing+deduping performance by filtering new raw records on extracted_at                                                                                |
 | 3.2.2           | 2023-10-10 | [\#31194](https://github.com/airbytehq/airbyte/pull/31194) | Deallocate unused per stream buffer memory when empty                                                                                                           |
