@@ -267,10 +267,10 @@ async fn streaming_all(
                 },
                 // This error usually happens because there is an underlying error
                 // in the connector. We don't want this error to obscure the real error
-                // so we just log it as a warning and let the last output error
+                // so we just log it as a debug and let the last output error
                 // to take precedence
                 Err(e @ Error::EmptyStream) => {
-                    tracing::warn!("{}", e.to_string());
+                    tracing::debug!("{}", e.to_string());
                 }
                 Err(e) => Err::<(), std::io::Error>(e.into())?,
             }
