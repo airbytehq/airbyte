@@ -9,7 +9,7 @@ dependencies:
   repository: https://airbytehq.github.io/helm-charts/
   version: 0.43.22
 - name: webapp
-  repository: https://airbytehq.github.io/helm-charts/
+  repository: file://../airbyte-webapp
   version: 0.43.22
 - name: server
   repository: file://../airbyte-server
@@ -29,5 +29,5 @@ dependencies:
 - name: connector-builder-server
   repository: https://airbytehq.github.io/helm-charts/
   version: 0.43.22
-digest: sha256:cd0bc2180d518dc292c8d02e62e87f2150e9b6c81d48424cb7c216f0569b8d0c
-generated: "2023-02-01T23:26:15.204239-05:00"
+digest: sha256:7d1eda404923cc92c040d9364115c18813831441ec7773414356c6be12c5b6cf
+generated: "2023-10-27T13:57:11.494879-04:00"

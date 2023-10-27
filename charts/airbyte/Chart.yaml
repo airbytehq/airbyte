@@ -39,15 +39,15 @@ dependencies:
     version: 0.43.22
   - condition: webapp.enabled
     name: webapp
-    repository: "https://airbytehq.github.io/helm-charts/"
+    repository: file://../airbyte-webapp
     version: 0.43.22
   - condition: server.enabled
     name: server
-    repository: "https://airbytehq.github.io/helm-charts/"
+    repository: file://../airbyte-server
     version: 0.43.22
   - condition: worker.enabled
     name: worker
-    repository: "https://airbytehq.github.io/helm-charts/"
+    repository: file://../airbyte-worker
     version: 0.43.22
   - condition: pod-sweeper.enabled
     name: pod-sweeper

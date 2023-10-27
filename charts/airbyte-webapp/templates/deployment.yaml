@@ -51,6 +51,10 @@ spec:
       initContainers:
       {{- toYaml .Values.extraInitContainers | nindent 6 }}
       {{- end }}
+      {{- if .Values.securityContext }}
+      securityContext: 
+      {{- toYaml .Values.securityContext | nindent 8 }}
+      {{- end }}
       containers:
       - name: airbyte-webapp-container
         image: {{ printf "%s:%s" .Values.image.repository (include "webapp.imageTag" .) }}
