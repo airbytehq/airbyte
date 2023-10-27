@@ -13,8 +13,8 @@ dependencies {
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
 
-    compileOnly project(':airbyte-json-validation')
     testImplementation project(':airbyte-commons')
     testFixturesCompileOnly project(':airbyte-commons')
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
@@ -23,9 +23,6 @@ dependencies {
 
     implementation libs.airbyte.protocol
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-
-    // First party test dependencies
-    testImplementation project(':airbyte-test-utils')
 
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 

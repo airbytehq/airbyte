@@ -23,7 +23,6 @@ dependencies {
 
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     testImplementation libs.testcontainers.clickhouse
-    testImplementation project(":airbyte-json-validation")
 
     // https://mvnrepository.com/artifact/org.testcontainers/clickhouse
     integrationTestJavaImplementation libs.testcontainers.clickhouse

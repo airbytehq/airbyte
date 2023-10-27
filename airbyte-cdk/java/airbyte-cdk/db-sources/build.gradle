@@ -64,11 +64,10 @@ dependencies {
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
 
-    compileOnly project(':airbyte-json-validation')
     testImplementation project(':airbyte-commons')
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
-    testImplementation project(':airbyte-test-utils')
     testFixturesCompileOnly project(':airbyte-commons')
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')

@@ -30,5 +30,4 @@ dependencies {
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation 'org.apache.commons:commons-dbcp2:2.7.0'
     testImplementation "org.mockito:mockito-inline:4.1.0"
-    testImplementation project(":airbyte-json-validation")
 }

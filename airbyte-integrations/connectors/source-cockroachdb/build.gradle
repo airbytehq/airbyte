@@ -6,7 +6,7 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.1.0'
     features = ['db-sources']
-    useLocalCdk = false
+    useLocalCdk = true
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -24,6 +24,4 @@ dependencies {
 
     testImplementation libs.testcontainers.cockroachdb
     testImplementation 'org.apache.commons:commons-lang3:3.11'
-
-    testImplementation project(":airbyte-json-validation")
 }

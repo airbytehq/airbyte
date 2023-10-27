@@ -19,6 +19,5 @@ dependencies {
     implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:source-e2e-test')
 
-    testImplementation project(":airbyte-json-validation")
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-e2e-test-cloud')
 }
