@@ -124,6 +124,48 @@ def test_stream_parse_json_error(auth, caplog):
 
 
 @pytest.mark.parametrize(
+    "stream_slice,stream_state,next_page_token,expected_params",
+    [
+        # Test case 1: no state, no next_page_token
+        (
+            {"list_id": "123"},
+            {},
+            None,
+            {
+                "count": 1000,
+                "sort_dir": "ASC",
+                "sort_field": "updated_at",
+                "list_id": "123",
+                "exclude_fields": "segments._links"
+            }
+        ),
+        # Test case 2: state and next_page_token
+        (
+            {"list_id": "123"},
+            {"123": {"updated_at": "2023-10-15T00:00:00Z"}},
+            {"offset": 1000},
+            {
+                "count": 1000,
+                "sort_dir": "ASC",
+                "sort_field": "updated_at",
+                "list_id": "123",
+                "offset": 1000,
+                "exclude_fields": "segments._links",
+                "since_updated_at": "2023-10-15T00:00:00Z"
+            }
+        ),
+    ]
+)
+def test_segments_request_params(auth, stream_slice, stream_state, next_page_token, expected_params):
+    segments_stream = Segments(authenticator=auth)
+    params = segments_stream.request_params(
+        stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token
+    )
+    assert params == expected_params
+
+
+
+@pytest.mark.parametrize(
     "current_stream_state,latest_record,expected_state",
     [
         # Test case 1: current_stream_state is empty

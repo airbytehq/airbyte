@@ -11,7 +11,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
+from airbyte_cdk.sources.streams.http import HttpStream
 
 logger = logging.getLogger("airbyte")
 
@@ -253,6 +253,15 @@ class Segments(IncrementalMailChimpStream):
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         # Exclude the _links field, as it is not user-relevant data
         params["exclude_fields"] = f"{self.data_field}._links"
+
+        # Get the current state value for this list, if it exists
+        # Then, use the value in state to filter the request
+        current_slice = stream_slice.get("list_id")
+        filter_date = stream_state.get(current_slice)
+
+        if filter_date:
+            params[self.filter_field] = filter_date.get(self.cursor_field)
+
         return params
     
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
