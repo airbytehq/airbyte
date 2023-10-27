@@ -124,9 +124,9 @@ public class AirbyteDebeziumHandler<T> {
 
   /**
    *
-   * @param canShortCircuitDebeziumEngine This argument may be set to true in cases where we already know that the
-   *                                      Debezium Engine is not going to be producing any change events. In this
-   *                                      case, this method skips provisioning a Debezium Engine altogether.
+   * @param canShortCircuitDebeziumEngine This argument may be set to true in cases where we already
+   *        know that the Debezium Engine is not going to be producing any change events. In this
+   *        case, this method skips provisioning a Debezium Engine altogether.
    */
   public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
                                                                        final CdcSavedInfoFetcher cdcSavedInfoFetcher,
