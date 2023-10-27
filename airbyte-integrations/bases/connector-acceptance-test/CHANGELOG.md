@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.1
+Centralize timeout duration declaration and increase timeout for discover.
+
 ## 2.1.0
 Make the container under test a sessions scoped fixture. 
 Support loading it from its Dagger container id for better performance. 
