@@ -115,7 +115,10 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 **[Advertisers](https://business-api.tiktok.com/portal/docs?id=1738455508553729) Stream**
 
-```
+<details>
+<summary>Advertisers schema example</summary>
+
+```json
 {
   "contacter": "Ai***te",
   "phonenumber": "+13*****5753",
@@ -147,10 +150,16 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
   "company": "Airbyte"
 }
 ```
+</details>
+
+<br>
 
 **[AdGroups](https://business-api.tiktok.com/portal/docs?id=1739314558673922) Stream**
 
-```
+<details>
+<summary>AdGroups schema example</summary>
+
+```json
 {
   "placement_type": "PLACEMENT_TYPE_AUTOMATIC",
   "budget": 20,
@@ -232,10 +241,16 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
   "is_share_disable": false
 }
 ```
+</details>
+
+<br>
 
 **[Ads](https://business-api.tiktok.com/portal/docs?id=1735735588640770) Stream**
 
-```
+<details>
+<summary>Ads schema example</summary>
+
+```json
 {
   "vast_moat": false,
   "is_new_structure": true,
@@ -279,11 +294,19 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
   "impression_tracking_url": null,
   "is_creative_authorized": false
 }
+
 ```
+
+</details>
+
+<br>
 
 **[Campaigns](https://business-api.tiktok.com/portal/docs?id=1739315828649986) Stream**
 
-```
+<details>
+<summary>Campaigns schema example</summary>
+
+```json
 {
   "create_time": "2021-10-19 18:18:08",
   "campaign_id": 1714073078669329,
@@ -303,10 +326,16 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
   "objective": "LANDING_PAGE"
 }
 ```
+</details>
+
+<br>
 
 **AdsReportsDaily Stream - [BasicReports](https://business-api.tiktok.com/portal/docs?id=1738864915188737)**
 
-```
+<details>
+<summary>AdsReportsDaily schema example</summary>
+
+```json
 {
   "dimensions": {
     "ad_id": 1728545390695442,
@@ -351,11 +380,18 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "dpa_target_audience_type": null
   }
 }
+
 ```
+</details>
+
+<br>
 
 **AdvertisersReportsDaily Stream - [BasicReports](https://business-api.tiktok.com/portal/docs?id=1738864915188737)**
 
-```
+<details>
+<summary>AdvertisersReportsDaily schema example</summary>
+
+```json
 {
   "metrics": {
     "cpm": 5.43,
@@ -377,10 +413,18 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 
 ```
+</details>
+
+<br>
+
+
 
 **AdGroupsReportsDaily Stream - [BasicReports](https://business-api.tiktok.com/portal/docs?id=1738864915188737)**
 
-```
+<details>
+<summary>AdGroupsReportsDaily schema example</summary>
+
+```json
 {
   "metrics": {
     "real_time_conversion": 0,
@@ -422,11 +466,19 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "stat_time_day": "2022-03-29 00:00:00"
   }
 }
+
 ```
+
+</details>
+
+<br>
 
 **CampaignsReportsDaily Stream - [BasicReports](https://business-api.tiktok.com/portal/docs?id=1738864915188737)**
 
-```
+<details>
+<summary>CampaignsReportsDaily schema example</summary>
+
+```json
 {
   "metrics": {
     "cpc": 0.43,
@@ -447,10 +499,16 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 
 ```
+</details>
+
+<br>
 
 **AdsAudienceReportsDaily Stream - [AudienceReports](https://business-api.tiktok.com/portal/docs?id=1738864928947201)**
 
-```
+<details>
+<summary>AdsAudienceReportsDaily schema example</summary>
+
+```json
 {
   {
     "result": 17,
@@ -491,11 +549,18 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "stat_time_day": "2022-03-28 00:00:00"
   }
 }
+
 ```
+</details>
+
+<br>
 
 **AdvertisersAudienceReportsDaily Stream - [AudienceReports](https://business-api.tiktok.com/portal/docs?id=1738864928947201)**
 
-```
+<details>
+<summary>AdvertisersAudienceReportsDaily schema example</summary>
+
+```json
 {
   "dimensions": {
     "stat_time_day": "2022-03-28 00:00:00",
@@ -512,11 +577,18 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "impressions": 752
   }
 }
+
 ```
+</details>
+
+<br>
 
 **AdGroupAudienceReportsDaily Stream - [AudienceReports](https://business-api.tiktok.com/portal/docs?id=1738864928947201)**
 
-```
+<details>
+<summary>AdGroupAudienceReportsDaily schema example</summary>
+
+```json
 {
   "dimensions": {
     "gender": "MALE",
@@ -554,11 +626,18 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "tt_app_id": 0
   }
 }
+
 ```
+</details>
+
+<br>
 
 **CampaignsAudienceReportsByCountryDaily Stream - [AudienceReports](https://business-api.tiktok.com/portal/docs?id=1738864928947201)**
 
-```
+<details>
+<summary>CampaignsAudienceReportsByCountryDaily schema example</summary>
+
+```json
 {
   "metrics": {
     "impressions": 5870,
@@ -577,6 +656,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 }
 
 ```
+</details>
 
 ## Performance considerations
 
