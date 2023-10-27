@@ -32,6 +32,15 @@ def test_stream_read(requests_mock, auth, stream, endpoint):
     ]
     stream_url = stream.url_base + endpoint
     requests_mock.register_uri("GET", stream_url, stream_responses)
+
+    # Mock the 'lists' endpoint as Segments stream_slice
+    lists_url = stream.url_base + "lists"
+    lists_response = {
+        "json": {
+            "lists": [{"id": "123"}]
+        }
+    }
+    requests_mock.register_uri("GET", lists_url, [lists_response])
     records = read_full_refresh(stream)
 
     assert records
@@ -112,6 +121,35 @@ def test_stream_parse_json_error(auth, caplog):
     responses.add("GET", stream_url, body="not_valid_json")
     read_incremental(stream, {})
     assert "response.content=b'not_valid_json'" in caplog.text
+
+
+@pytest.mark.parametrize(
+    "current_stream_state,latest_record,expected_state",
+    [
+        # Test case 1: current_stream_state is empty
+        (
+            {},
+            {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"},
+            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}}
+        ),
+        # Test case 2: latest_record's cursor is higher than current_stream_state for list_1 and updates it
+        (
+            {"list_1": {"updated_at": "2023-10-14T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
+            {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"},
+            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}}
+        ),
+        # Test case 3: latest_record's cursor is lower than current_stream_state for list_2, no state update
+        (
+            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
+            {"list_id": "list_2", "updated_at": "2023-10-14T00:00:00Z"},
+            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}}
+        ),
+    ]
+)
+def test_segments_get_updated_state(auth, current_stream_state, latest_record, expected_state):
+    segments_stream = Segments(authenticator=auth)
+    updated_state = segments_stream.get_updated_state(current_stream_state, latest_record)
+    assert updated_state == expected_state
 
 
 def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaigns_stream, mock_campaigns_response):
