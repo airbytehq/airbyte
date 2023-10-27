@@ -146,7 +146,13 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
     }
 
     // Read the records that Debezium might have fetched right at the time we called shutdown
-    for (ChangeEvent<String, String> event : debeziumShutdownProcedure.getRecordsRemainingAfterShutdown()) {
+    while (!debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().isEmpty()) {
+      final ChangeEvent<String, String> event;
+      try {
+        event = debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().poll(100, TimeUnit.MILLISECONDS);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
       if (event == null || isHeartbeatEvent(event)) {
         continue;
       }

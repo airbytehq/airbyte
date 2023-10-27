@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.debezium.internals;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.lang.MoreBooleans;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -49,17 +48,17 @@ public class DebeziumShutdownProcedure<T> {
 
   private Runnable transfer() {
     return () -> {
-      while (!hasEngineShutDown()) {
+      while (!sourceQueue.isEmpty() || !hasEngineShutDown()) {
         try {
-          targetQueue.put(sourceQueue.poll(10, TimeUnit.SECONDS));
+          final T event = sourceQueue.poll(100, TimeUnit.MILLISECONDS);
+          if (event != null) {
+            targetQueue.put(event);
+          }
         } catch (final InterruptedException e) {
           Thread.currentThread().interrupt();
           throw new RuntimeException(e);
         }
       }
-      // At this point, the engine has shut down, and therefore nothing will be writing to the queue any
-      // more. Empty it.
-      sourceQueue.drainTo(targetQueue);
     };
   }
 
@@ -71,13 +70,11 @@ public class DebeziumShutdownProcedure<T> {
     executorService.execute(transfer());
   }
 
-  public ArrayList<T> getRecordsRemainingAfterShutdown() {
+  public LinkedBlockingQueue<T> getRecordsRemainingAfterShutdown() {
     if (!hasTransferThreadShutdown) {
-      LOGGER.warn("Queue transfer thread has not shutdown, some records might be missing.");
+      LOGGER.warn("Queue transfer thread has not shut down, some records might be missing.");
     }
-    ArrayList<T> result = new ArrayList<>();
-    targetQueue.drainTo(result);
-    return result;
+    return targetQueue;
   }
 
   /**
