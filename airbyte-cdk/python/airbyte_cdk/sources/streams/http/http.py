@@ -7,6 +7,7 @@ import logging
 import os
 import urllib
 from abc import ABC, abstractmethod
+from datetime import timedelta
 from pathlib import Path
 from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import urljoin
@@ -15,7 +16,14 @@ import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
-from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
+from airbyte_cdk.sources.streams.call_rate import (
+    APIBudget,
+    CachedLimiterSession,
+    HttpRequestMatcher,
+    LimiterSession,
+    MovingWindowCallRatePolicy,
+    Rate,
+)
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.types import JsonType
@@ -41,6 +49,7 @@ class HttpStream(Stream, ABC):
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
         self._api_budget: APIBudget = api_budget or APIBudget()
+        self._api_budget.add_policy(HttpRequestMatcher(), MovingWindowCallRatePolicy([Rate(limit=1, interval=timedelta(seconds=2))]))
         self._session = self.request_session()
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
