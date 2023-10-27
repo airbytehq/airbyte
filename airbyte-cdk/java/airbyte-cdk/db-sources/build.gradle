@@ -70,7 +70,7 @@ dependencies {
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     testImplementation project(':airbyte-test-utils')
     testFixturesCompileOnly project(':airbyte-commons')
-    testFixturesCompileOnly project(':airbyte-api')
+    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
 

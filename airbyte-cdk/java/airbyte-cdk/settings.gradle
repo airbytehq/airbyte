@@ -1,5 +1,6 @@
 rootProject.name = 'airbyte'
 
+include ':airbyte-cdk:java:airbyte-cdk:airbyte-api'
 include ':airbyte-cdk:java:airbyte-cdk:config-models-oss'
 include ':airbyte-cdk:java:airbyte-cdk:init-oss'
 include ':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness'
