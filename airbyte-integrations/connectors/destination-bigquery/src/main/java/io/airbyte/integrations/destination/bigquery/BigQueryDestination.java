@@ -487,13 +487,14 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
       final String mangledMessage =
           "airbyte_destination_bigquery_error: "
-          + targetStrings.stream().reduce(
-              e.getMessage().replaceAll("\\d", "?"),
-              (message, targetString) -> message.replace(targetString, "?"));
+              + targetStrings.stream().reduce(
+                  e.getMessage().replaceAll("\\d", "?"),
+                  (message, targetString) -> message.replace(targetString, "?"));
 
-      // This puts the mangled string into the trace external message and the original string into the internal message, which is backwards
+      // This puts the mangled string into the trace external message and the original string into the
+      // internal message, which is backwards
       // we'll need to add a new utility method to this class that does the right thing
-//      AirbyteTraceMessageUtility.emitSystemErrorTrace(e, mangledMessage);
+      // AirbyteTraceMessageUtility.emitSystemErrorTrace(e, mangledMessage);
       final Consumer<AirbyteMessage> outputRecordCollector = Destination::defaultOutputRecordCollector;
       outputRecordCollector.accept(new AirbyteMessage()
           .withType(AirbyteMessage.Type.TRACE)
