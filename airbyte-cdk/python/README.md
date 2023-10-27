@@ -154,7 +154,7 @@ HTTP requests to `localhost:8113/data` should now return the body defined in the
 
 A subset of the CDK is dedicated to sources that have the notion of files. It's located in `airbyte-cdk/sources/file_based`. When using this part of the CDK, install the CDK using the `file-based` extra: `pip install airbyte-cdk[file-based]`.
 
-As the `unstructured` parser of the file based CDK requires some native dependencies to be installed, link the `file_based_build_customization.py` file in the connector as `build_customization.py`.
+As the `unstructured` parser of the file based CDK requires some native dependencies to be installed, copy the `file_based_build_customization.py` file into the connector as `build_customization.py`.
 
 ## Coming Soon
 

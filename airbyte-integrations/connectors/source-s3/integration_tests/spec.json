@@ -21,7 +21,7 @@
         "order": 10,
         "type": "array",
         "items": {
-          "title": "BasedStreamConfig",
+          "title": "FileBasedStreamConfig",
           "type": "object",
           "properties": {
             "name": {
