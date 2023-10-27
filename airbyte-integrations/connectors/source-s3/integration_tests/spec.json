@@ -21,7 +21,7 @@
         "order": 10,
         "type": "array",
         "items": {
-          "title": "S3FileBasedStreamConfig",
+          "title": "BasedStreamConfig",
           "type": "object",
           "properties": {
             "name": {

@@ -150,6 +150,12 @@ HTTP requests to `localhost:8113/data` should now return the body defined in the
 1. Open a PR
 2. Once it is approved and **merged**, an Airbyte member must run the `Publish CDK Manually` workflow from master using `release-type=major|manor|patch` and setting the changelog message.
 
+#### File-based CDK
+
+A subset of the CDK is dedicated to sources that have the notion of files. It's located in `airbyte-cdk/sources/file_based`. When using this part of the CDK, install the CDK using the `file-based` extra: `pip install airbyte-cdk[file-based]`.
+
+As the `unstructured` parser of the file based CDK requires some native dependencies to be installed, link the `file_based_build_customization.py` file in the connector as `build_customization.py`.
+
 ## Coming Soon
 
 * Full OAuth 2.0 support \(including refresh token issuing flow via UI or CLI\)
