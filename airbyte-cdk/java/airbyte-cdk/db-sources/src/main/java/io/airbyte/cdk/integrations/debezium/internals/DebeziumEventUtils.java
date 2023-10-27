@@ -106,8 +106,9 @@ public class DebeziumEventUtils {
                                                     final CdcMetadataInjector cdcMetadataInjector,
                                                     final Set<String> configuredFields) {
 
-    if ((before == null || before.isNull()) && (after == null || after.isNull()) ) {
-      // In case a mongodb document was updated and then deleted, the update change event will not have any information ({after: null})
+    if ((before == null || before.isNull()) && (after == null || after.isNull())) {
+      // In case a mongodb document was updated and then deleted, the update change event will not have
+      // any information ({after: null})
       // We are going to treat it as a delete.
       return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields);
     } else {
