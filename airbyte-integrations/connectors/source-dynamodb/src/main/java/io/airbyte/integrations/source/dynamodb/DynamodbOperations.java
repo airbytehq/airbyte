@@ -58,9 +58,7 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
   }
 
   public List<String> listTables() {
-
     List<String> tableNames = new ArrayList<>();
-    /* Test: Creating ListTableRequest with limit 3 */
     ListTablesRequest listTablesRequest = ListTablesRequest.builder().build();
     boolean completed = false;
 
