@@ -35,11 +35,7 @@ def test_stream_read(requests_mock, auth, stream, endpoint):
 
     # Mock the 'lists' endpoint as Segments stream_slice
     lists_url = stream.url_base + "lists"
-    lists_response = {
-        "json": {
-            "lists": [{"id": "123"}]
-        }
-    }
+    lists_response = {"json": {"lists": [{"id": "123"}]}}
     requests_mock.register_uri("GET", lists_url, [lists_response])
     records = read_full_refresh(stream)
 
@@ -131,13 +127,7 @@ def test_stream_parse_json_error(auth, caplog):
             {"list_id": "123"},
             {},
             None,
-            {
-                "count": 1000,
-                "sort_dir": "ASC",
-                "sort_field": "updated_at",
-                "list_id": "123",
-                "exclude_fields": "segments._links"
-            }
+            {"count": 1000, "sort_dir": "ASC", "sort_field": "updated_at", "list_id": "123", "exclude_fields": "segments._links"},
         ),
         # Test case 2: state and next_page_token
         (
@@ -151,42 +141,35 @@ def test_stream_parse_json_error(auth, caplog):
                 "list_id": "123",
                 "offset": 1000,
                 "exclude_fields": "segments._links",
-                "since_updated_at": "2023-10-15T00:00:00Z"
-            }
+                "since_updated_at": "2023-10-15T00:00:00Z",
+            },
         ),
-    ]
+    ],
 )
 def test_segments_request_params(auth, stream_slice, stream_state, next_page_token, expected_params):
     segments_stream = Segments(authenticator=auth)
-    params = segments_stream.request_params(
-        stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token
-    )
+    params = segments_stream.request_params(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
     assert params == expected_params
-
 
 
 @pytest.mark.parametrize(
     "current_stream_state,latest_record,expected_state",
     [
         # Test case 1: current_stream_state is empty
-        (
-            {},
-            {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"},
-            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}}
-        ),
+        ({}, {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"}, {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}}),
         # Test case 2: latest_record's cursor is higher than current_stream_state for list_1 and updates it
         (
             {"list_1": {"updated_at": "2023-10-14T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
             {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"},
-            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}}
+            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
         ),
         # Test case 3: latest_record's cursor is lower than current_stream_state for list_2, no state update
         (
             {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
             {"list_id": "list_2", "updated_at": "2023-10-14T00:00:00Z"},
-            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}}
+            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
         ),
-    ]
+    ],
 )
 def test_segments_get_updated_state(auth, current_stream_state, latest_record, expected_state):
     segments_stream = Segments(authenticator=auth)
