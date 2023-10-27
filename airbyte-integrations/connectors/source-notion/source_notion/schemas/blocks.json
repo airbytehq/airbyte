@@ -256,11 +256,11 @@
     "table_row": {
       "type": "object",
       "properties": {
-        "cells": { 
+        "cells": {
           "type": ["null", "array"],
           "items": {
             "type": ["null", "array"],
-            "items": {"$ref": "rich_text.json" }
+            "items": { "$ref": "rich_text.json" }
           }
         }
       }
