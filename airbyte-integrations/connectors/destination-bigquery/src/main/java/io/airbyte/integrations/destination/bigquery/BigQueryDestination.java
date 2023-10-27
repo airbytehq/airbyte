@@ -8,6 +8,7 @@ import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
@@ -19,6 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
+import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
@@ -50,15 +52,18 @@ import io.airbyte.integrations.destination.gcs.GcsNameTransformer;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -69,6 +74,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -283,7 +289,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
         randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
 
-        String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
+        final String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
         final String streamName = stream.getName();
         final String targetTableName;
 
@@ -305,7 +311,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
         try {
           putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
-        } catch (IOException e) {
+        } catch (final IOException e) {
           throw new RuntimeException(e);
         }
       }
@@ -387,7 +393,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             typerDeduper.typeAndDedupe();
             typerDeduper.commitFinalTables();
             typerDeduper.cleanup();
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new RuntimeException(e);
           }
         },
@@ -477,6 +483,24 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static void main(final String[] args) throws Exception {
+    if ("--write".equals(args[0])) {
+      final BigQueryException e = new BigQueryException(42, "edgao demo exception: oh no we couldn't find table foo.bar at [84:126]");
+      // This puts the mangled string into the trace external message and the original string into the internal message, which is backwards
+      // we'll need to add a new utility method to this class that does the right thing
+//      AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "edgao demo exception: oh no we couldn't find table ?.? at [84:126]");
+      final Consumer<AirbyteMessage> outputRecordCollector = Destination::defaultOutputRecordCollector;
+      outputRecordCollector.accept(new AirbyteMessage()
+          .withType(AirbyteMessage.Type.TRACE)
+          .withTrace(new AirbyteTraceMessage()
+              .withEmittedAt((double) System.currentTimeMillis())
+              .withType(AirbyteTraceMessage.Type.ERROR)
+              .withError(new AirbyteErrorTraceMessage()
+                  .withMessage("edgao demo exception: oh no we couldn't find table foo.bar at [84:126]")
+                  .withInternalMessage("airbyte_destination_bigquery_modified: edgao demo exception: oh no we couldn't find table ?.? at [84:126]")
+                  .withStackTrace(ExceptionUtils.getStackTrace(e)))));
+      throw e;
+    }
+
     final Destination destination = new BigQueryDestination();
     new IntegrationRunner(destination).run(args);
   }
