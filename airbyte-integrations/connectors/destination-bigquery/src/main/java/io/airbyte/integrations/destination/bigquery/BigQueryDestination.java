@@ -20,7 +20,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
@@ -63,7 +62,6 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -485,9 +483,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public static void main(final String[] args) throws Exception {
     if ("--write".equals(args[0])) {
       final BigQueryException e = new BigQueryException(42, "edgao demo exception: oh no we couldn't find table foo.bar at [84:126]");
-      // This puts the mangled string into the trace external message and the original string into the internal message, which is backwards
+      // This puts the mangled string into the trace external message and the original string into the
+      // internal message, which is backwards
       // we'll need to add a new utility method to this class that does the right thing
-//      AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "edgao demo exception: oh no we couldn't find table ?.? at [84:126]");
+      // AirbyteTraceMessageUtility.emitSystemErrorTrace(e, "edgao demo exception: oh no we couldn't find
+      // table ?.? at [84:126]");
       final Consumer<AirbyteMessage> outputRecordCollector = Destination::defaultOutputRecordCollector;
       outputRecordCollector.accept(new AirbyteMessage()
           .withType(AirbyteMessage.Type.TRACE)
