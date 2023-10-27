@@ -15,7 +15,6 @@ import java.sql.SQLSyntaxErrorException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Predicate;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,15 +29,13 @@ public class ConnectorExceptionUtil {
   public static final String COMMON_EXCEPTION_MESSAGE_TEMPLATE = "Could not connect with provided configuration. Error: %s";
   static final String RECOVERY_CONNECTION_ERROR_MESSAGE =
       "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
-          "Please see https://docs.airbyte.com/integrations/sources/postgres/#sync-data-from-postgres-hot-standby-server for options and workarounds";
+          "Please see https://go.airbyte.com/pg-hot-standby-error-message for options and workarounds";
 
   public static final List<Integer> HTTP_AUTHENTICATION_ERROR_CODES = ImmutableList.of(401, 403);
-  private static final List<Predicate<Throwable>> configErrorPredicates =
-      List.of(getConfigErrorPredicate(), getConnectionErrorPredicate(),
-          isRecoveryConnectionExceptionPredicate(), isUnknownColumnInFieldListException());
 
   public static boolean isConfigError(final Throwable e) {
-    return configErrorPredicates.stream().anyMatch(predicate -> predicate.test(e));
+    return isConfigErrorException(e) || isConnectionError(e) ||
+        isRecoveryConnectionException(e) || isUnknownColumnInFieldListException(e);
   }
 
   public static String getDisplayMessage(final Throwable e) {
@@ -46,9 +43,9 @@ public class ConnectorExceptionUtil {
       return ((ConfigErrorException) e).getDisplayMessage();
     } else if (e instanceof final ConnectionErrorException connEx) {
       return ErrorMessage.getErrorMessage(connEx.getStateCode(), connEx.getErrorCode(), connEx.getExceptionMessage(), connEx);
-    } else if (isRecoveryConnectionExceptionPredicate().test(e)) {
+    } else if (isRecoveryConnectionException(e)) {
       return RECOVERY_CONNECTION_ERROR_MESSAGE;
-    } else if (isUnknownColumnInFieldListException().test(e)) {
+    } else if (isUnknownColumnInFieldListException(e)) {
       return e.getMessage();
     } else {
       return String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, e.getMessage() != null ? e.getMessage() : "");
@@ -88,22 +85,22 @@ public class ConnectorExceptionUtil {
     }
   }
 
-  private static Predicate<Throwable> getConfigErrorPredicate() {
-    return e -> e instanceof ConfigErrorException;
+  private static boolean isConfigErrorException(Throwable e) {
+    return e instanceof ConfigErrorException;
   }
 
-  private static Predicate<Throwable> getConnectionErrorPredicate() {
-    return e -> e instanceof ConnectionErrorException;
+  private static boolean isConnectionError(Throwable e) {
+    return e instanceof ConnectionErrorException;
   }
 
-  private static Predicate<Throwable> isRecoveryConnectionExceptionPredicate() {
-    return e -> e instanceof SQLException && e.getMessage()
+  private static boolean isRecoveryConnectionException(Throwable e) {
+    return e instanceof SQLException && e.getMessage()
         .toLowerCase(Locale.ROOT)
         .contains("due to conflict with recovery");
   }
 
-  private static Predicate<Throwable> isUnknownColumnInFieldListException() {
-    return e -> e instanceof SQLSyntaxErrorException
+  private static boolean isUnknownColumnInFieldListException(Throwable e) {
+    return e instanceof SQLSyntaxErrorException
         && e.getMessage()
             .toLowerCase(Locale.ROOT)
             .contains("unknown column")

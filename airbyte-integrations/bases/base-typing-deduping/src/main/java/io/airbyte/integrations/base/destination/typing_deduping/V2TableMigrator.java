@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-public interface V2TableMigrator<DialectTableDefinition> {
+public interface V2TableMigrator {
 
   void migrateIfNecessary(final StreamConfig streamConfig) throws Exception;
 

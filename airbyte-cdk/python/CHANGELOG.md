@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.52.6
+make  parameter as not required for default backoff handler
+
+## 0.52.5
+use in-memory cache if no file path is provided
+
+## 0.52.4
+File CDK: Add unstructured parser
+
+## 0.52.3
+Update source-declarative-manifest base image to update Linux alpine and Python
+
+## 0.52.2
+
+
 ## 0.52.1
 Add max time for backoff handler
 
