@@ -832,6 +832,12 @@ class AccountPerformanceReportMonthly(AccountPerformanceReport):
 
 
 class AccountImpressionPerformanceReport(PerformanceReportsMixin, BingAdsStream, ABC):
+    """
+    Report source: https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13
+    Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
+    see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
+    """
+
     data_field: str = ""
     service_name: str = "ReportingService"
     report_name: str = "AccountPerformanceReport"
@@ -839,6 +845,7 @@ class AccountImpressionPerformanceReport(PerformanceReportsMixin, BingAdsStream,
     additional_fields: str = ""
     cursor_field = "TimePeriod"
     report_schema_name = "account_impression_performance_report"
+    primary_key = None
 
     @property
     def report_columns(self):
