@@ -66,21 +66,24 @@ class CursorPaginationStrategy(PaginationStrategy, ABC):
 
 
 class LowCodeCursorPaginationStrategy(CursorPaginationStrategy):
-    parameters: Mapping[str, Any]
-    config: Config = field(default_factory=dict)
-    page_size: Optional[int] = None
-    cursor_value = str
-    stop_condition: str
 
-    def __init__(self):
-        if isinstance(self.cursor_value, str):
-            self.cursor_value = InterpolatedString.create(self.cursor_value, parameters=self.parameters)
-        if isinstance(self.stop_condition, str):
-            self.stop_condition = InterpolatedBoolean(condition=self.stop_condition, parameters=self.parameters)
-        super().__init__(page_size=self.page_size, decoder=self.decoder)
+    def __init__(self, cursor_value: str, decoder, page_size, config, parameters, stop_condition):
+        if isinstance(cursor_value, str):
+            self.cursor_value = InterpolatedString.create(cursor_value, parameters=parameters)
+        else:
+            self.cursor_value = cursor_value
+        if isinstance(stop_condition, str):
+            self.stop_condition = InterpolatedBoolean(condition=stop_condition, parameters=parameters)
+        else:
+            self.stop_condition = stop_condition
+        super().__init__(page_size=page_size, decoder=decoder)
+        self._config = config
 
     def stop(self, response, headers, last_records) -> bool:
-        return self.stop_condition.eval(response=response, headers=headers, last_records=last_records)
+        if self.stop_condition:
+            return self.stop_condition.eval(response=response, headers=headers, last_records=last_records, config=self._config)
+        else:
+            return False
 
     def get_cursor_value(self, response, headers, last_records) -> str:
-        return self.cursor_value.eval(response=response, headers=headers, last_records=last_records)
+        return self.cursor_value.eval(response=response, headers=headers, last_records=last_records, config=self._config)

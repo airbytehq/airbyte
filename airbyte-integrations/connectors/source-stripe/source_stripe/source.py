@@ -49,7 +49,7 @@ class StripePaginationStrategy(CursorPaginationStrategy):
         return "has_more" not in response
 
     def get_cursor_value(self, response, headers, last_records) -> str:
-        if "has_more" in response and response["has_more"] and response.get("data", []):
+        if response["has_more"] and response.get("data", []):
             last_object_id = response["data"][-1]["id"]
             return last_object_id
         return None
@@ -504,8 +504,7 @@ class SourceStripe(AbstractSource):
             ),
             StripeSubStream(
                 name="usage_records",
-                path=lambda self, stream_slice, *args,
-                            **kwargs: f"subscription_items/{stream_slice.get('parent', {}).get('id')}/usage_record_summaries",
+                path=lambda self, stream_slice, *args, **kwargs: f"subscription_items/{stream_slice.get('parent', {}).get('id')}/usage_record_summaries",
                 parent=subscription_items,
                 primary_key=None,
                 **args,

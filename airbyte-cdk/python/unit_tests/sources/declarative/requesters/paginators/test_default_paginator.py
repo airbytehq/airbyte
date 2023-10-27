@@ -15,7 +15,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator imp
     RequestOption,
     RequestOptionType,
 )
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy, LowCodeCursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 
@@ -121,7 +121,7 @@ def test_default_paginator_with_cursor(
     url_base = "https://airbyte.io"
     config = {}
     parameters = {}
-    strategy = CursorPaginationStrategy(
+    strategy = LowCodeCursorPaginationStrategy(
         page_size=limit,
         cursor_value=cursor_value,
         stop_condition=stop_condition,

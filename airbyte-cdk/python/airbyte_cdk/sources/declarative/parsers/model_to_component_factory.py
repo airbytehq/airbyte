@@ -102,6 +102,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     PageIncrement,
     StopConditionPaginationStrategyDecorator,
 )
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import LowCodeCursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
@@ -364,7 +365,7 @@ class ModelToComponentFactory:
         else:
             decoder = JsonDecoder(parameters=model.parameters or {})
 
-        return CursorPaginationStrategy(
+        return LowCodeCursorPaginationStrategy(
             cursor_value=model.cursor_value,
             decoder=decoder,
             page_size=model.page_size,

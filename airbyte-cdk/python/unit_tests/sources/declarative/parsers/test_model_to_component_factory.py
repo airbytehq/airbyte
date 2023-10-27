@@ -57,6 +57,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     PageIncrement,
     StopConditionPaginationStrategyDecorator,
 )
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import LowCodeCursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption, RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
@@ -235,7 +236,7 @@ spec:
     assert stream.retriever.paginator.url_base.string == "https://api.sendgrid.com/v3/"
     assert stream.retriever.paginator.url_base.default == "https://api.sendgrid.com/v3/"
 
-    assert isinstance(stream.retriever.paginator.pagination_strategy, CursorPaginationStrategy)
+    assert isinstance(stream.retriever.paginator.pagination_strategy, LowCodeCursorPaginationStrategy)
     assert isinstance(stream.retriever.paginator.pagination_strategy.decoder, JsonDecoder)
     assert stream.retriever.paginator.pagination_strategy.cursor_value.string == "{{ response._metadata.next }}"
     assert stream.retriever.paginator.pagination_strategy.cursor_value.default == "{{ response._metadata.next }}"
