@@ -1,0 +1,21 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    implementation libs.airbyte.protocol
+    implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+
+    testImplementation project(':airbyte-commons')
+
+    testFixturesImplementation project(':airbyte-commons')
+
+    testFixturesImplementation project(':airbyte-config-oss:config-models-oss')
+    testFixturesImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+    testFixturesImplementation libs.airbyte.protocol
+
+    testFixturesImplementation(enforcedPlatform('org.junit:junit-bom:5.8.2'))
+    testFixturesImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params'
+    testFixturesImplementation 'org.mockito:mockito-core:4.6.1'
+}

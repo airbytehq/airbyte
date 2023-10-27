@@ -5,8 +5,8 @@ plugins {
 
 airbyteJavaConnector {
     cdkVersionRequired = '0.1.7'
-    features = ['db-destinations']
-    useLocalCdk = false
+    features = ['db-destinations', 'typing-deduping']
+    useLocalCdk = true
 }
 
 airbyteJavaConnector.addCdkDependencies()
@@ -46,10 +46,6 @@ dependencies {
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
     implementation "io.aesy:datasize:1.0.0"
     implementation 'com.zaxxer:HikariCP:5.0.1'
-
-    implementation project(':airbyte-integrations:bases:base-typing-deduping')
-    testImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
 
     implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-integrations:connectors:destination-gcs')

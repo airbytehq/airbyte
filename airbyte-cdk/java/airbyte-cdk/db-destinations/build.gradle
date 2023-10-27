@@ -1,6 +1,8 @@
 dependencies {
     // Depends on core CDK classes (OK 👍)
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
 
     // First party main dependencies
     // TODO: Bring these into the CDK or refactor them out.
@@ -11,13 +13,10 @@ dependencies {
     compileOnly project(':airbyte-config-oss:init-oss')
     compileOnly project(':airbyte-json-validation')
     testImplementation project(':airbyte-commons')
-    testImplementation project(':airbyte-integrations:bases:base-typing-deduping')
     testFixturesCompileOnly project(':airbyte-commons')
     testFixturesCompileOnly project(':airbyte-config-oss:config-models-oss')
     testFixturesCompileOnly project(':airbyte-config-oss:init-oss')
 
-    // TODO: Merge into the CDK when possible, to avoid potential of conflicting versions:
-    compileOnly project(':airbyte-integrations:bases:base-typing-deduping')
 
     implementation libs.airbyte.protocol
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
