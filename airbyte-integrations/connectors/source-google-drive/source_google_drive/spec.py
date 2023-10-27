@@ -72,4 +72,8 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
 
         cls.remove_discriminator(schema)
 
+        # Remove legacy settings
+        dpath.util.delete(schema, "properties/streams/items/properties/legacy_prefix")
+        dpath.util.delete(schema, "properties/streams/items/properties/format/oneOf/*/properties/inference_type")
+
         return schema

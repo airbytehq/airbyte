@@ -37,12 +37,6 @@
                 "type": "string"
               }
             },
-            "legacy_prefix": {
-              "title": "Legacy Prefix",
-              "description": "The path prefix configured in v3 versions of the S3 connector. This option is deprecated in favor of a single glob.",
-              "airbyte_hidden": true,
-              "type": "string"
-            },
             "validation_policy": {
               "title": "Validation Policy",
               "description": "The name of the validation policy that dictates sync behavior when a record does not adhere to the stream schema.",
@@ -229,13 +223,6 @@
                         "type": "string"
                       },
                       "uniqueItems": true
-                    },
-                    "inference_type": {
-                      "title": "Inference Type",
-                      "description": "How to infer the types of the columns. If none, inference default to strings.",
-                      "default": "None",
-                      "airbyte_hidden": true,
-                      "enum": ["None", "Primitive Types Only"]
                     }
                   }
                 },
@@ -268,6 +255,19 @@
                       "type": "boolean"
                     }
                   }
+                },
+                {
+                  "title": "Document File Type Format (Experimental)",
+                  "type": "object",
+                  "properties": {
+                    "filetype": {
+                      "title": "Filetype",
+                      "default": "unstructured",
+                      "const": "unstructured",
+                      "type": "string"
+                    }
+                  },
+                  "description": "Extract text from document formats (.pdf, .docx, .md) and emit as one record per file."
                 }
               ]
             },
