@@ -21,7 +21,7 @@ dependencies {
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
     implementation project(':airbyte-commons')
-    implementation project(':airbyte-commons-protocol')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-protocol')
     implementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
 
     implementation project(':airbyte-json-validation')
