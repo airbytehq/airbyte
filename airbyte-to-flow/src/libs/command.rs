@@ -11,7 +11,7 @@ pub fn check_exit_status(result: std::io::Result<ExitStatus>) -> Result<(), Erro
     match result {
         Ok(status) => {
             if status.success() {
-                tracing::info!("atf: exited without error");
+                tracing::debug!("atf: exited without error");
                 Ok(())
             } else {
                 match status.code() {

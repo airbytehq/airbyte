@@ -21,6 +21,7 @@ export DOCKER_BUILD_ARCH=amd64
 
 if [ -f "airbyte-integrations/connectors/$connector/requirements.txt" ]; then
    ./tools/bin/setup_connector_venv.sh $connector python3.9
+    export AIRBYTE_TO_FLOW_TAG="dev"
    ./gradlew :airbyte-integrations:connectors:$connector:airbyteDocker
    docker tag docker.io/airbyte/$connector:dev ghcr.io/estuary/$connector:local
 else

@@ -68,7 +68,7 @@ fn main() -> anyhow::Result<()> {
         },
         Err(err) => Err(err.into()),
         Ok(()) => {
-            tracing::info!(message = "atf exiting");
+            tracing::debug!(message = "atf exiting");
             Ok(())
         }
     }
