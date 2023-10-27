@@ -39,7 +39,6 @@ dependencies {
     implementation libs.airbyte.protocol
     implementation libs.mongo.driver.sync
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium'))
     testImplementation libs.testcontainers.mongodb
 
     integrationTestJavaImplementation libs.apache.commons.lang
