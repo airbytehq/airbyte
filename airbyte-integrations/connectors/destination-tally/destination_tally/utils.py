@@ -9,7 +9,7 @@ import requests
 from airbyte_cdk import AirbyteLogger
 
 
-def clear_post_data(config: Mapping[str, Any], template_key: str, logger: AirbyteLogger):
+def clear_template_cache(config: Mapping[str, Any], template: str, template_key: str, logger: AirbyteLogger):
     url = "https://api.excel2tally.in/api/User/ApproveDownload"
     headers = {
         "X-Auth-Key": config["auth_key"],
@@ -21,11 +21,15 @@ def clear_post_data(config: Mapping[str, Any], template_key: str, logger: Airbyt
         "CompanyName": config["company_name"],
     }
 
-    response = requests.request(method="POST", url=url, headers=headers)
-    if response.status_code == 200:
-        logger.info("previous post data for ledger cleared")
-    else:
-        logger.warn("couldn't clear the post data")
+    try:
+        response = requests.request(method="POST", url=url, headers=headers)
+        results = ["document downloaded", "no document found"]
+        if (response.status_code == 200) and (any(result in str(response.content).lower() for result in results)):
+            logger.info(f"Cache for {template} has been successfully cleared from the API Server.")
+        else:
+            logger.warn(f"unable to clear cache for {template} from the API Server , Error : {response.content}")
+    except Exception as e:
+        logger.exception(f"Request for deleting cache for {template} is not successful , Exception : {e}")
 
 
 def prepare_headers(config: Mapping[str, Any], template_key: str):
