@@ -12,9 +12,9 @@ import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/Airbyte
 import { LOCALES } from "locales";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/components/JobsList";
 
-import { getJobStatus } from "../JobItem";
 import AttemptDetails from "./AttemptDetails";
 import styles from "./MainInfo.module.scss";
+import { getJobStatus } from "../JobItem";
 
 const getJobConfig = (job: SynchronousJobRead | JobsWithJobs) =>
   (job as SynchronousJobRead).configType ?? (job as JobsWithJobs).job.configType;
@@ -85,7 +85,7 @@ const MainInfo: React.FC<MainInfoProps> = ({ job, attempts = [], isOpen, onExpan
         </div>
       </Cell>
       <Cell className={styles.timestampCell}>
-        <div>
+        <div className={styles.time}>
           <FormattedTimeParts value={getJobCreatedAt(job) * 1000} hour="numeric" minute="2-digit">
             {(parts) => (
               <span>{`${parts[0].value}:${parts[2].value}${

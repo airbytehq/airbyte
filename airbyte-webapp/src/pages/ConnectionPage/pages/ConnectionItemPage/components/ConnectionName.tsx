@@ -115,8 +115,11 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
           endIcon={<FontAwesomeIcon className={styles.icon} icon={faEdit} />}
           sx={{
             color: "rgb(26, 25, 77)!important",
-            fontSize: isSmallScreen ? "16px" : "22px",
+            fontSize: isSmallScreen ? "14px" : "22px",
             fontWeight: "500",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+            backgroundColor: "red",
             border: "1px solid #eff0f5!important",
             "&:hover": {
               cursor: "pointer",

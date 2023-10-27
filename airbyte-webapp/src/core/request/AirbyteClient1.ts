@@ -248,8 +248,8 @@ export interface OAuthConsentRead {
   consentUrl: string;
 }
 
-export interface SourceOauthConsentRequest {
-  sourceDefinitionId: SourceDefinitionId;
+export interface DestinationOauthConsentRequest {
+  destinationDefinitionId: DestinationDefinitionId;
   workspaceId: WorkspaceId;
   /** The url to redirect to after getting the user consent */
   redirectUrl: string;
@@ -357,8 +357,8 @@ export interface AdvancedAuth {
  */
 export type OAuthConfiguration = unknown;
 
-export interface DestinationOauthConsentRequest {
-  destinationDefinitionId: DestinationDefinitionId;
+export interface SourceOauthConsentRequest {
+  sourceDefinitionId: SourceDefinitionId;
   workspaceId: WorkspaceId;
   /** The url to redirect to after getting the user consent */
   redirectUrl: string;
@@ -1031,16 +1031,19 @@ export interface ConnectionDisplayFlag {
   flag: boolean;
 }
 
-export interface ConnectionRead {
+export interface ConnectionReadList {
+  connections: ConnectionRead[];
+}
+
+export interface WebBackendConnectionUpdate {
+  /** Name that will be set to the connection */
+  name?: string;
   connectionId: ConnectionId;
-  name: string;
   namespaceDefinition?: NamespaceDefinitionType;
   /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
   namespaceFormat?: string;
   /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
   prefix?: string;
-  sourceId: SourceId;
-  destinationId: DestinationId;
   operationIds?: OperationId[];
   syncCatalog: AirbyteCatalog;
   schedule?: ConnectionSchedule;
@@ -1048,11 +1051,9 @@ export interface ConnectionRead {
   scheduleData?: ConnectionScheduleData;
   status: ConnectionStatus;
   resourceRequirements?: ResourceRequirements;
+  skipReset?: boolean;
+  operations?: WebBackendOperationCreateOrUpdate[];
   sourceCatalogId?: string;
-}
-
-export interface ConnectionReadList {
-  connections: ConnectionRead[];
 }
 
 export interface WebBackendConnectionCreate {
@@ -1138,15 +1139,16 @@ export interface ConnectionSearch {
   destination?: DestinationSearch;
 }
 
-export interface WebBackendConnectionUpdate {
-  /** Name that will be set to the connection */
-  name?: string;
+export interface ConnectionRead {
   connectionId: ConnectionId;
+  name: string;
   namespaceDefinition?: NamespaceDefinitionType;
   /** Used when namespaceDefinition is 'customformat'. If blank then behaves like namespaceDefinition = 'destination'. If "${SOURCE_NAMESPACE}" then behaves like namespaceDefinition = 'source'. */
   namespaceFormat?: string;
   /** Prefix that will be prepended to the name of each stream when it is written to the destination. */
   prefix?: string;
+  sourceId: SourceId;
+  destinationId: DestinationId;
   operationIds?: OperationId[];
   syncCatalog: AirbyteCatalog;
   schedule?: ConnectionSchedule;
@@ -1154,8 +1156,6 @@ export interface WebBackendConnectionUpdate {
   scheduleData?: ConnectionScheduleData;
   status: ConnectionStatus;
   resourceRequirements?: ResourceRequirements;
-  skipReset?: boolean;
-  operations?: WebBackendOperationCreateOrUpdate[];
   sourceCatalogId?: string;
 }
 
@@ -1242,6 +1242,11 @@ export interface DestinationPageReadList {
 
 export interface DestinationReadList {
   destinations: DestinationRead[];
+}
+
+export interface DestinationReadWithConnection {
+  DestinationRead: DestinationRead;
+  WebBackendConnectionReadList?: WebBackendConnectionReadList;
 }
 
 export interface DestinationCloneConfiguration {
@@ -1414,6 +1419,11 @@ export interface SourceRead {
 
 export interface SourceReadList {
   sources: SourceRead[];
+}
+
+export interface SourceReadWithConnection {
+  SourceRead: SourceRead;
+  ConnectionReadList?: WebBackendConnectionReadList;
 }
 
 export interface SourceUpdate {
@@ -2141,6 +2151,24 @@ export const getSource = (sourceIdRequestBody: SourceIdRequestBody, options?: Se
 };
 
 /**
+ * @summary Get source with connection
+ */
+export const getSourceWithConnection = (
+  sourceIdRequestBody: SourceIdRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<SourceReadWithConnection>(
+    {
+      url: `/v1/sources/connection/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: sourceIdRequestBody,
+    },
+    options
+  );
+};
+
+/**
  * @summary Search sources
  */
 export const searchSources = (sourceSearch: SourceSearch, options?: SecondParameter<typeof apiOverride>) => {
@@ -2577,6 +2605,24 @@ export const getDestination = (
   return apiOverride<DestinationRead>(
     {
       url: `/v1/destinations/get`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: destinationIdRequestBody,
+    },
+    options
+  );
+};
+
+/**
+ * @summary Get destination with connection
+ */
+export const getDestinationWithConnection = (
+  destinationIdRequestBody: DestinationIdRequestBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride<DestinationReadWithConnection>(
+    {
+      url: `/v1/destinations/connection/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: destinationIdRequestBody,
@@ -3529,6 +3575,7 @@ export type UpdateSourceResult = NonNullable<Awaited<ReturnType<typeof updateSou
 export type ListSourcesForWorkspaceResult = NonNullable<Awaited<ReturnType<typeof listSourcesForWorkspace>>>;
 export type PageSourcesForWorkspaceResult = NonNullable<Awaited<ReturnType<typeof pageSourcesForWorkspace>>>;
 export type GetSourceResult = NonNullable<Awaited<ReturnType<typeof getSource>>>;
+export type GetSourceWithConnectionResult = NonNullable<Awaited<ReturnType<typeof getSourceWithConnection>>>;
 export type SearchSourcesResult = NonNullable<Awaited<ReturnType<typeof searchSources>>>;
 export type CloneSourceResult = NonNullable<Awaited<ReturnType<typeof cloneSource>>>;
 export type DeleteSourceResult = NonNullable<Awaited<ReturnType<typeof deleteSource>>>;
@@ -3577,6 +3624,7 @@ export type UpdateDestinationResult = NonNullable<Awaited<ReturnType<typeof upda
 export type ListDestinationsForWorkspaceResult = NonNullable<Awaited<ReturnType<typeof listDestinationsForWorkspace>>>;
 export type PageDestinationsForWorkspaceResult = NonNullable<Awaited<ReturnType<typeof pageDestinationsForWorkspace>>>;
 export type GetDestinationResult = NonNullable<Awaited<ReturnType<typeof getDestination>>>;
+export type GetDestinationWithConnectionResult = NonNullable<Awaited<ReturnType<typeof getDestinationWithConnection>>>;
 export type SearchDestinationsResult = NonNullable<Awaited<ReturnType<typeof searchDestinations>>>;
 export type CheckConnectionToDestinationResult = NonNullable<Awaited<ReturnType<typeof checkConnectionToDestination>>>;
 export type CheckConnectionToDestinationForUpdateResult = NonNullable<
