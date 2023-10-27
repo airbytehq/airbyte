@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import anyio
-import click
+import asyncclick as click
 from pipelines.airbyte_ci.metadata.pipeline import run_metadata_orchestrator_deploy_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 
@@ -24,9 +23,8 @@ def deploy(ctx: click.Context):
 
 @deploy.command(cls=DaggerPipelineCommand, name="orchestrator", help="Deploy the metadata service orchestrator to production")
 @click.pass_context
-def deploy_orchestrator(ctx: click.Context) -> bool:
-    return anyio.run(
-        run_metadata_orchestrator_deploy_pipeline,
+async def deploy_orchestrator(ctx: click.Context) -> bool:
+    await run_metadata_orchestrator_deploy_pipeline(
         ctx.obj["is_local"],
         ctx.obj["git_branch"],
         ctx.obj["git_revision"],
