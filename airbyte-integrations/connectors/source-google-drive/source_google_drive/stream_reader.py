@@ -163,7 +163,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         downloader = MediaIoBaseDownload(handle, request)
         done = False
         while done is False:
-            status, done = downloader.next_chunk()
+            _, done = downloader.next_chunk()
 
         handle.seek(0)
 
