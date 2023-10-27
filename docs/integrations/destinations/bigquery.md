@@ -70,7 +70,20 @@ The BigQuery destination connector supports the following [sync modes](https://d
 
 ## Output schema
 
-Airbyte outputs each stream into its own table in BigQuery. Each table contains three columns:
+Airbyte outputs each stream into its own raw table in `airbyte_internal` dataset by default (can be overriden by user) and a final table with Typed columns. Contents in raw table are _NOT_ deduplicated. 
+
+### Raw Table schema
+
+| Airbyte field          | Description                                                        | Column type              |
+|------------------------|--------------------------------------------------------------------|--------------------------|
+| \_airbyte_raw_id       | A UUID assigned to each processed event                            | STRING                   |
+| \_airbyte_extracted_at | A timestamp for when the event was pulled from the data source     | TIMESTAMP                |
+| \_airbyte_loaded_at    | Timestamp to indicate when the record was loaded into Typed tables | TIMESTAMP                |
+| \_airbyte_data         | A JSON blob with the event data.                                   | STRING                   |
+
+**Note:** Although the contents of the `_airbyte_data` are fairly stable, schema of the raw table could be subject to change in future versions. 
+
+### Final Table schema
 
 - `airbyte_raw_id`: A UUID assigned by Airbyte to each event that is processed. The column type in BigQuery is `String`.
 - `airbyte_extracted_at`: A timestamp representing when the event was pulled from the data source. The column type in BigQuery is `Timestamp`.
@@ -127,6 +140,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.0   | 2023-10-25 | [31686](https://github.com/airbytehq/airbyte/pull/31686)   | Opt out flag for typed and deduped tables                                                                                                                       |
 | 2.2.0   | 2023-10-25 | [\#31520](https://github.com/airbytehq/airbyte/pull/31520) | Stop deduping raw table                                                                                                                                         |
 | 2.1.6   | 2023-10-23 | [\#31717](https://github.com/airbytehq/airbyte/pull/31717) | Remove inadvertent Destination v2 check                                                                                                                         |
 | 2.1.5   | 2023-10-17 | [\#30069](https://github.com/airbytehq/airbyte/pull/30069) | Staging destination async                                                                                                                                       |
