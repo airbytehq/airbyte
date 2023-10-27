@@ -38,6 +38,8 @@ acceptance_tests:
             bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
           - name: user_location_performance_report_hourly
             bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
+          - name: account_impression_performance_report_hourly
+            bypass_reason: "Empty report; hourly data fetched is limited to 180 days"
         timeout_seconds: 3600
   full_refresh:
     tests:
