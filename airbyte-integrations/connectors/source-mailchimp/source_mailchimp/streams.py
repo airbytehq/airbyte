@@ -226,20 +226,21 @@ class Reports(IncrementalMailChimpStream):
 
     def path(self, **kwargs) -> str:
         return "reports"
-    
+
 
 class Segments(IncrementalMailChimpStream):
     """
     Get information about all available segments for a specific list.
     Docs link: https://mailchimp.com/developer/marketing/api/list-segments/list-segments/
     """
+
     cursor_field = "updated_at"
     data_field = "segments"
-    
+
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
-        
+
         stream_state = stream_state or {}
 
         parent = Lists(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
@@ -249,9 +250,9 @@ class Segments(IncrementalMailChimpStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         list_id = stream_slice.get("list_id")
         return f"lists/{list_id}/segments"
-    
+
     def request_params(self, stream_state=None, stream_slice=None, **kwargs):
-        
+
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
         # Exclude the _links field, as it is not user-relevant data
         params["exclude_fields"] = f"{self.data_field}._links"
@@ -265,7 +266,7 @@ class Segments(IncrementalMailChimpStream):
             params[self.filter_field] = filter_date.get(self.cursor_field)
 
         return params
-    
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
         list_id = latest_record.get("list_id")
