@@ -148,7 +148,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
       return stateMessage;
     }
 
-    while (changeEventIterator.hasNext()) {
+    if (changeEventIterator.hasNext()) {
       final ChangeEventWithMetadata event = changeEventIterator.next();
 
       if (cdcStateHandler.isCdcCheckpointEnabled()) {
@@ -175,15 +175,7 @@ public class DebeziumStateDecoratingIterator<T> extends AbstractIterator<Airbyte
         }
       }
       recordsLastSync++;
-      try {
-        return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, debeziumConnectorType);
-      } catch (final BsonInvalidOperationException ex) {
-        // https://github.com/airbytehq/oncall/issues/3203
-        LOGGER.warn("Invalid bson operation. continuing to next record ({}:{})",
-            event.event() != null ? event.event().key() : "null",
-            event.event() != null ? event.event().value() : "null",
-            ex);
-      }
+      return DebeziumEventUtils.toAirbyteMessage(event, cdcMetadataInjector, configuredAirbyteCatalog, emittedAt, debeziumConnectorType);
     }
 
     isSyncFinished = true;
