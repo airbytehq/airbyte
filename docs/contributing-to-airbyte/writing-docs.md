@@ -16,7 +16,7 @@ The Docs team maintains a list of [#good-first-issues](https://github.com/airbyt
 Before contributing to Airbyte docs, read the Airbyte Community [Code of Conduct](../project-overview/code-of-conduct.md).
 
 :::tip
-If you're new to GitHub and Markdown, complete [the First Contributions tutorial](https://github.com/firstcontributions/first-contributions) and learn [Markdown basics](https://guides.github.com/features/mastering-markdown/) before contributing to Airbyte documentation. 
+If you're new to GitHub and Markdown, complete [the First Contributions tutorial](https://github.com/firstcontributions/first-contributions) and learn [Markdown basics](https://guides.github.com/features/mastering-markdown/) before contributing to Airbyte documentation. Even if you're familiar with the basics, you may be interested in Airbyte's [custom markdown extensions for connector docs](#custom-markdown-extensions-for-connector-docs).
 :::
 
 You can contribute to Airbyte docs in two ways:
@@ -64,7 +64,7 @@ To make complex changes or edit multiple files, edit the files on your local mac
    yarn start
    ```
 
-   Then navigate to [http://localhost:3000/](http://localhost:3000/). Whenever you make and save changes, you will see them reflected in the server. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
+   Then navigate to [http://localhost:3005/](http://localhost:3005/). Whenever you make and save changes, you will see them reflected in the server. You can stop the running server in OSX/Linux by pressing `Ctrl-C` in the terminal.  
 
    You can also build the docs locally and see the resulting changes. This is useful if you introduce changes that need to be run at build-time (e.g. adding a docs plug-in). To do so, run:
 
@@ -83,6 +83,67 @@ To make complex changes or edit multiple files, edit the files on your local mac
     :::
 
 5. Assign `airbytehq/docs` as a Reviewer for your pull request. 
+
+### Custom markdown extensions for connector docs
+Airbyte's markdown documentation—particularly connector-specific documentation—needs to gracefully support multiple different contexts: key details may differ between open-source builds and Airbyte Cloud, and the more exhaustive explanations appropriate for https://docs.airbyte.com may bury key details when rendered as inline documentation within the Airbyte application. In order to support all these different contexts without resorting to multiple overlapping files that must be maintained in parallel, Airbyte's documentation tooling supports multiple nonstandard features. 
+
+Please familiarize yourself with all the tools available to you when writing documentation for a connector, so that you can provide appropriately tailored information to your readers in whichever context they see it. 
+
+:::note
+As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com.
+:::
+
+#### Jump to the relevant documentation section when specific Connector Builder inputs are focused with `<FieldAnchor>`
+In the documentation, the relevant section needs to be wrapped in a `<FieldAnchor field="path.to.field" />` component. These are rendered as regular divs in the documentation site, so they have no effect in places other than the in-app documentation panel—however, note that there must be blank lines between a custom tag like `FieldAnchor` the content it wraps for the documentation site to render markdown syntax inside the custom tag to html.
+
+To mark a section as highlighted after the user picks an option from a `oneOf`: use a `field` prop like `path.to.field[value-of-selection-key]`. It's also possible to highlight the same section for multiple fields by separating them with commas, like `<FieldAnchor path="path.to.field1,path.to.field.2">`.
+
+#### Prevent specific content from rendering in the UI with `<HideInUI>`
+Certain content is important to document, but unhelpful in the context of the Airbyte UI's inline documentation views: 
+- background information that helps users understand a connector but doesn't affect configuration
+- edge cases that are unusual but time-consuming to solve
+- context for readers on the documentation site about environment-specific content (see [below](#environment-specific-in-app-content-with-magic-html-comments))
+
+Wrapping such content in a pair of `<HideInUI>...</HideInUI>` tags will prevent it from being rendered within the Airbyte UI without affecting its presentation on https://docs.airbyte.com. This allows a single markdown file to be the source of truth for both a streamlined in-app reference and a more thorough treatment on the documentation website.
+
+#### Environment-specific in-app content with magic html comments
+Sometimes, there are connector setup instructions which differ between open-source Airbyte builds and Airbyte Cloud. Document both cases, but wrap each in a pair of special HTML comments:
+```md
+<!-- env:oss -->
+<HideInUI>
+
+## For open source:
+
+</HideInUI>
+
+Only open-source builds of the Airbyte UI will render this content.
+<!-- /env:oss -->
+
+<!-- env:cloud -->
+<HideInUI>
+
+## For Airbyte Cloud:
+
+</HideInUI>
+
+Only cloud builds of the Airbyte UI will render this content.
+<!-- /env:oss -->
+
+Content outside of the magic-comment-delimited blocks will be rendered everywhere.
+```
+Note that the documentation site will render _all_ environment-specific content, so please introduce environment-specific variants with some documentation-site-only context (e.g. a subheading) to disambiguate.
+
+#### Collapsible content with `<details>` and `<summary>`
+```md
+## Ordinary markdown content
+<details>
+  <summary>Here is an expandible section! Everything but this title is hidden by default.</summary>
+  Here is the dropdown content; if users expand this section, they will be able to read your valuable but perhaps nonessential content.
+</details>
+
+Markdown content
+```
+Eagle-eyed readers may note that _all_ markdown should support this feature since it's part of the html spec. However, it's worth special mention since these dropdowns have been styled to be a graceful visual fit within our rendered documentation in all environments.
 
 ## Additional guidelines
 
