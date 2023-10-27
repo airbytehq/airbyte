@@ -265,6 +265,10 @@ async fn streaming_all(
                 Ok(bytes) => {
                     writer.write(&bytes).await?;
                 },
+                // This error usually happens because there is an underlying error
+                // in the connector. We don't want this error to obscure the real error
+                // so we just log it as a warning and let the last output error
+                // to take precedence
                 Err(e @ Error::EmptyStream) => {
                     tracing::warn!("{}", e.to_string());
                 }

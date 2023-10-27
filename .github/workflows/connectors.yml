@@ -211,13 +211,14 @@ jobs:
           if [[ "$GITHUB_EVENT_NAME" == "pull_request" && '${{ needs.paths-filter.outputs.atf_modified }}' == 'true' ]]; then
             AIRBYTE_TO_FLOW_TAG=${{ steps.prep.outputs.tag }}
           fi
-          echo "$GITHUB_EVENT_NAME"
-          echo $AIRBYTE_TO_FLOW_TAG
 
           if [ -f "airbyte-integrations/connectors/${{ matrix.connector.name }}/requirements.txt" ]; then
+            export AIRBYTE_TO_FLOW_TAG
+
             ./gradlew :airbyte-integrations:connectors:${{ matrix.connector.name }}:build
             docker tag docker.io/airbyte/${{ matrix.connector.name }}:dev ghcr.io/estuary/${{ matrix.connector.name }}:${{ steps.prep.outputs.tag }}
           else
+
             docker build "airbyte-integrations/connectors/${{ matrix.connector.name }}" \
                    -f "airbyte-integrations/connectors/${{ matrix.connector.name }}/Dockerfile" \
                    --build-arg AIRBYTE_TO_FLOW_TAG=$AIRBYTE_TO_FLOW_TAG \
