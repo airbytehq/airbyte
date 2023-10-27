@@ -18,7 +18,7 @@ use proto_flow::flow::ConnectorState;
 
 use crate::{
     apis::InterceptorStream,
-    errors::{interceptor_stream_to_io_stream, io_stream_to_interceptor_stream, Error},
+    errors::{io_stream_to_interceptor_stream, Error},
     interceptors::airbyte_source_interceptor::{AirbyteSourceInterceptor, Operation},
     libs::command::{check_exit_status, invoke_connector_delayed},
 };
@@ -249,9 +249,9 @@ async fn streaming_all(
     response_finished_sender: oneshot::Sender<bool>,
 ) -> Result<(), Error> {
     let mut request_stream_reader =
-        StreamReader::new(interceptor_stream_to_io_stream(request_stream));
+        StreamReader::new(request_stream);
     let mut response_stream_reader =
-        StreamReader::new(interceptor_stream_to_io_stream(response_stream));
+        StreamReader::new(response_stream);
 
     let request_stream_copy = async move {
         copy(&mut request_stream_reader, &mut request_stream_writer).await?;

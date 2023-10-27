@@ -1,4 +1,4 @@
-ARG AIRBYTE_TO_FLOW_TAG="9218477"
+ARG AIRBYTE_TO_FLOW_TAG="1ae3654"
 FROM ghcr.io/estuary/airbyte-to-flow:$AIRBYTE_TO_FLOW_TAG as airbyte-to-flow
 
 FROM python:3.9.11-alpine3.15 as base

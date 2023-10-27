@@ -1,7 +1,7 @@
 use crate::libs::airbyte_catalog::Message;
 use crate::{apis::InterceptorStream, errors::create_custom_error};
 
-use crate::errors::{interceptor_stream_to_io_stream, io_stream_to_interceptor_stream, Error};
+use crate::errors::{io_stream_to_interceptor_stream, Error};
 use bytelines::AsyncByteLines;
 use bytes::Bytes;
 use futures::{StreamExt, TryStream, TryStreamExt};
@@ -17,9 +17,9 @@ pub fn stream_lines(
     in_stream: InterceptorStream,
 ) -> impl TryStream<Item = Result<Bytes, Error>, Error = Error, Ok = bytes::Bytes> {
     io_stream_to_interceptor_stream(
-        AsyncByteLines::new(StreamReader::new(interceptor_stream_to_io_stream(
+        AsyncByteLines::new(StreamReader::new(
             in_stream,
-        )))
+        ))
         .into_stream()
         .map_ok(Bytes::from),
     )

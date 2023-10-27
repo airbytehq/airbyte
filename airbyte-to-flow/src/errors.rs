@@ -1,7 +1,7 @@
 use std::num::ParseIntError;
 
 use bytes::Bytes;
-use futures::{Stream, TryStream, TryStreamExt};
+use futures::{Stream, TryStreamExt};
 use validator::ValidationErrors;
 
 use crate::apis::InterceptorStream;
@@ -74,10 +74,10 @@ pub fn create_custom_error(message: &str) -> std::io::Error {
     std::io::Error::new(std::io::ErrorKind::Other, message)
 }
 
-pub fn interceptor_stream_to_io_stream(
-    stream: InterceptorStream,
-) -> impl TryStream<Item = std::io::Result<Bytes>, Ok = Bytes, Error = std::io::Error> {
-    stream.map_err(|e| create_custom_error(&e.to_string()))
+impl Into<std::io::Error> for Error {
+    fn into(self) -> std::io::Error {
+        create_custom_error(&self.to_string())
+    }
 }
 
 pub fn io_stream_to_interceptor_stream(
