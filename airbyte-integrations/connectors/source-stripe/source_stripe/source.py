@@ -510,6 +510,8 @@ class SourceStripe(AbstractSource):
             # The limit can be removed or increased once we have proper rate limiting
             concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
             main_streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+
             main_streams = [self._create_concurrent_stream(base_stream, concurrency_level) for base_stream in main_streams]
+            substreams = [StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level) for stream in substreams]
 
         return main_streams + substreams

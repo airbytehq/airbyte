@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.utils.transform import TypeTransformer
 from airbyte_protocol.models import SyncMode
 
 
@@ -89,8 +90,9 @@ class SourcePartitionGenerator(PartitionGenerator):
         for s in self._stream.stream_slices(sync_mode=sync_mode):
             yield SourcePartition(
                 copy.deepcopy(s),
-                self._stream,
-                self._requester,
+                transformer=self._stream.transformer,
+                json_schema=self._stream.get_json_schema(),
+                requester=self._requester,
                 request_headers=self._request_headers,
                 request_params=self._request_params,
                 request_body_data=self._request_body_data,
@@ -102,7 +104,8 @@ class SourcePartition(Partition):
     def __init__(
         self,
         _slice: Mapping[str, Any],
-        stream: Stream,
+        transformer: TypeTransformer,
+        json_schema: Mapping[str, Any],
         requester: PaginatedRequester,
         request_headers: Optional[Mapping[str, Any]] = None,
         request_params: Optional[Mapping[str, Any]] = None,
@@ -110,7 +113,8 @@ class SourcePartition(Partition):
         request_body_json: Optional[Mapping[str, Any]] = None,
     ):
         self._slice = _slice
-        self._stream = stream
+        self._transformer = transformer
+        self._json_schema = json_schema
         self._requester = requester
         self._request_headers = request_headers
         self._request_params = request_params
@@ -125,7 +129,7 @@ class SourcePartition(Partition):
             request_body_json=self._parse_request_arguments(self._request_body_json),
         ):
             record_data = dict(record)
-            self._stream.transformer.transform(record_data, self._stream.get_json_schema())
+            self._transformer.transform(record_data, self._json_schema)
             yield Record(record_data)
 
     def to_slice(self) -> Optional[Mapping[str, Any]]:
