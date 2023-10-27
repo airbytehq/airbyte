@@ -12,6 +12,8 @@ acceptance_tests:
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
+      - config_path: "integration_tests/invalid_config_domain.json"
+        status: "failed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
