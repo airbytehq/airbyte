@@ -93,7 +93,7 @@ const SourceTable: React.FC<IProps> = ({ data, entity }) => {
         ),
         headerHighlighted: true,
         accessor: "name",
-        customWidth: 22,
+        customWidth: 40,
         Cell: ({ cell, row }: CellProps<SourceTableDataItem>) => (
           <NameColums>
             <NameCell value={cell.value} onClickRow={() => clickEditRow(row.original.sourceId)} />
@@ -112,7 +112,7 @@ const SourceTable: React.FC<IProps> = ({ data, entity }) => {
             />
           </div>
         ),
-        customWidth: 22,
+        customWidth: 40,
         accessor: "sourceName",
         Cell: ({ cell }: CellProps<SourceTableDataItem>) => <ConnectorCell value={cell.value} />,
       },

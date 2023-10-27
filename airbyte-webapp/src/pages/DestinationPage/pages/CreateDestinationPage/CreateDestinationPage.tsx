@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import styled from "styled-components";
 
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
 import { FormPageContent } from "components/ConnectorBlocks";
@@ -17,6 +18,9 @@ import { DestinationForm } from "./components/DestinationForm";
 
 export const CreateDestinationPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.DESTINATION_NEW);
+  const Container = styled.div`
+    padding-top: 130px;
+  `;
 
   const { push, location } = useRouter();
   const [successRequest, setSuccessRequest] = useState(false);
@@ -81,12 +85,15 @@ export const CreateDestinationPage: React.FC = () => {
       <ConnectionStep lightMode type="destination" activeStep={CreateStepTypes.CREATE_SOURCE} />
       <ConnectorDocumentationWrapper>
         {currentStep === CreateStepTypes.TEST_CONNECTION && (
-          <TestConnection
-            onBack={handleBackButton}
-            onFinish={handleFinishButton}
-            isLoading={isLoading}
-            type="destination"
-          />
+          <Container>
+            {" "}
+            <TestConnection
+              onBack={handleBackButton}
+              onFinish={handleFinishButton}
+              isLoading={isLoading}
+              type="destination"
+            />
+          </Container>
         )}
         {currentStep === CreateStepTypes.CREATE_DESTINATION && (
           <FormPageContent>

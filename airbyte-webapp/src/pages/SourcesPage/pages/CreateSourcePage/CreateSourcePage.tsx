@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import styled from "styled-components";
 
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
 import { FormPageContent } from "components/ConnectorBlocks";
@@ -77,14 +78,25 @@ const CreateSourcePage: React.FC = () => {
     setLoadingStatus(isLoading || false);
     setFetchingConnectorError(error);
   };
+  const Container = styled.div`
+    padding-top: 130px;
+  `;
 
   return (
     <>
       <HeadTitle titles={[{ id: "sources.newSourceTitle" }]} />
       <ConnectionStep lightMode type="source" />
       <ConnectorDocumentationWrapper>
+        {" "}
         {currentStep === CreateStepTypes.TEST_CONNECTION && (
-          <TestConnection onBack={handleBackButton} onFinish={handleFinishButton} isLoading={isLoading} type="source" />
+          <Container>
+            <TestConnection
+              onBack={handleBackButton}
+              onFinish={handleFinishButton}
+              isLoading={isLoading}
+              type="source"
+            />
+          </Container>
         )}
         {currentStep === CreateStepTypes.CREATE_SOURCE && (
           <FormPageContent>

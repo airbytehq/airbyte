@@ -6,6 +6,13 @@ const Text = styled.div`
   font-size: 28px;
   line-height: 40px;
   margin-bottom: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  @media (max-width: 768px) {
+    font-size: 18px;
+    line-height: 30px;
+  }
 `;
 
 const Loading = keyframes`
@@ -23,6 +30,10 @@ const LoadingImage = styled.img`
   height: 100px;
   display: inline-block;
   animation: ${Loading} 1.8s linear infinite;
+  @media (max-width: 768px) {
+    width: 50px;
+    height: 50px;
+  }
 `;
 
 const TestingLoading: React.FC = () => {
