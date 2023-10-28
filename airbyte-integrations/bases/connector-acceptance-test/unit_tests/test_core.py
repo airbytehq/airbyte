@@ -2,9 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from unittest import mock
-from unittest.mock import MagicMock, patch
-
 import pytest
 from _pytest.outcomes import Failed
 from airbyte_protocol.models import (
@@ -21,9 +18,12 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
-from connector_acceptance_test.config import BasicReadTestConfig, Config, ExpectedRecordsConfig, IgnoredFieldsConfiguration
-from connector_acceptance_test.tests import test_core
+from unittest import mock
+from unittest.mock import MagicMock, patch
 
+from connector_acceptance_test.config import BasicReadTestConfig, Config, \
+    ExpectedRecordsConfig, IgnoredFieldsConfiguration
+from connector_acceptance_test.tests import test_core
 from .conftest import does_not_raise
 
 pytestmark = pytest.mark.anyio
@@ -57,6 +57,22 @@ def test_discovery(schema, cursors, should_fail):
             t.test_defined_cursors_exist_in_schema(discovered_catalog)
     else:
         t.test_defined_cursors_exist_in_schema(discovered_catalog)
+
+
+def test_discovery_uniquely_named_streams():
+    t = test_core.TestDiscovery()
+    stream_a = AirbyteStream.parse_obj(
+        {
+            "name": "test_stream",
+            "json_schema": {"properties": {"created": {"type": "string"}}},
+            "default_cursor_field": ["created"],
+            "supported_sync_modes": ["full_refresh", "incremental"],
+        }
+    )
+    streams = [stream_a, stream_a]
+    assert t.streams_are_uniquely_named(streams) == False
+    streams.pop()
+    assert t.streams_are_uniquely_named(streams)
 
 
 @pytest.mark.parametrize(
