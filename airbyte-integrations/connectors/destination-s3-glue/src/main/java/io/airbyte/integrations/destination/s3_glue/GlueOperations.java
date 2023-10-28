@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.cdk.integrations.destination.s3.S3DestinationConfig;
 import io.airbyte.cdk.integrations.destination.s3.S3Format;
@@ -144,8 +145,9 @@ public class GlueOperations implements MetastoreOperations {
         if (jsonNode.has("properties")) {
           String objectType = "struct<";
           Map<String, JsonNode> properties = objectMapper.convertValue(jsonNode.get("properties"), new TypeReference<>() {});
-          String columnTypes = properties.entrySet().stream()
-              .map(p -> p.getKey() + ":" + transformSchemaRecursive(p.getValue(), s3Format))
+          Stream<String> columnTypesStream = properties.entrySet().stream()
+              .map(p -> p.getKey() + ":" + transformSchemaRecursive(p.getValue(), s3Format));
+          String columnTypes = Stream.concat(columnTypesStream, Stream.of("_airbyte_additional_properties:map<string,string>"))
               .collect(Collectors.joining(","));
           objectType += (columnTypes + ">");
           yield objectType;
