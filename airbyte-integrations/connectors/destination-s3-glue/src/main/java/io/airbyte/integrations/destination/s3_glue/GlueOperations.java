@@ -152,7 +152,12 @@ public class GlueOperations implements MetastoreOperations {
           objectType += (columnTypes + ">");
           yield objectType;
         } else {
-          yield "string";
+          yield switch (s3Format) {
+            case JSONL -> "string";
+            // Avro conversion uses doubles:
+            case PARQUET -> "binary";
+            default -> throw new RuntimeException("Unexpected output format: " + s3Format);
+          };
         }
       }
       default -> type;
