@@ -36,6 +36,9 @@
     "age": {
       "type": ["null", "string"]
     },
+    "province_id": {
+      "type": ["null", "string"]
+    },
     "metrics": {
       "type": ["null", "object"],
       "properties": {
@@ -133,6 +136,9 @@
           "type": ["null", "string"]
         },
         "real_time_result_rate": {
+          "type": ["null", "string"]
+        },
+        "province_id": {
           "type": ["null", "string"]
         }
       }
