@@ -9,3 +9,8 @@ os.environ[ENV_REQUEST_CACHE_PATH] = ENV_REQUEST_CACHE_PATH
 @pytest.fixture(autouse=True)
 def patch_sleep(mocker):
     mocker.patch("time.sleep")
+
+
+@pytest.fixture(autouse=True)
+def disable_cache(mocker):
+    mocker.patch("source_tiktok_marketing.streams.AdvertiserIds.use_cache", new_callable=mocker.PropertyMock, return_value=False)

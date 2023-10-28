@@ -6,20 +6,20 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.2",
+    "airbyte-cdk",
 ]
 
 TEST_REQUIREMENTS = [
     "requests-mock~=1.9.3",
-    "pytest~=6.1",
+    "pytest~=6.2",
     "pytest-mock~=3.6.1",
 ]
 
 setup(
     name="source_qonto",
-    description="Source implementation for Qonto API.",
-    author="Leïla Ballouard",
-    author_email="leila.ballouard@backmarket.com",
+    description="Source implementation for Qonto.",
+    author="Airbyte",
+    author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
