@@ -7,16 +7,42 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
+from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
+from airbyte_cdk.destinations.vector_db_based.writer import Writer
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteMessage,
+    ConfiguredAirbyteCatalog,
+    ConnectorSpecification,
+    DestinationSyncMode,
+    Status,
+)
+from destination_vectara.config import ConfigModel
+from destination_vectara.indexer import VectaraIndexer
+from destination_vectara.no_embedder import NoEmbedder
+
+BATCH_SIZE = 128
 
 
 class DestinationVectara(Destination):
+
+    indexer: Indexer
+    embedder: Embedder
+
+    def _init_indexer(self, config: ConfigModel):
+        self.embedder = (
+            create_from_config(config.embedding, config.processing)
+            if config.embedding.mode != "no_embedding"
+            else NoEmbedder(config.embedding)
+        )
+        self.indexer = VectaraIndexer(config.indexing)
+
     def write(
         self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
         """
-        TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
 
         This method returns an iterable (typically a generator of AirbyteMessages via yield) containing state messages received
@@ -31,7 +57,10 @@ class DestinationVectara(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
 
-        pass
+        config_model = ConfigModel.parse_obj(config)
+        self._init_indexer(config_model)
+        writer = Writer(config_model.processing, self.indexer, self.embedder, batch_size=BATCH_SIZE)
+        yield from writer.write(configured_catalog, input_messages)
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
@@ -45,9 +74,19 @@ class DestinationVectara(Destination):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-        try:
-            # TODO
-
+        self._init_indexer(ConfigModel.parse_obj(config))
+        embedder_error = self.embedder.check()
+        indexer_error = self.indexer.check()
+        errors = [error for error in [embedder_error, indexer_error] if error is not None]
+        if len(errors) > 0:
+            return AirbyteConnectionStatus(status=Status.FAILED, message="\n".join(errors))
+        else:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+
+    def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
+        return ConnectorSpecification(
+            documentationUrl="https://docs.airbyte.com/integrations/destinations/vectara",
+            supportsIncremental=True,
+            supported_destination_sync_modes=[DestinationSyncMode.overwrite, DestinationSyncMode.append, DestinationSyncMode.append_dedup],
+            connectionSpecification=ConfigModel.schema(),
+        )
