@@ -27,6 +27,28 @@ def check_source(repo_line: str) -> AirbyteConnectionStatus:
     return source.check(logger_mock, config)
 
 
+@responses.activate
+@pytest.mark.parametrize(
+    "config, expected",
+    (
+        (
+            {
+                "start_date": "2021-08-27T00:00:46Z",
+                "access_token": "test_token",
+                "repository": "airbyte/test",
+            },
+            True,
+        ),
+        ({"access_token": "test_token", "repository": "airbyte/test"}, True),
+    ),
+)
+def test_check_start_date(config, expected):
+    responses.add(responses.GET, "https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "test_full_name"})
+    source = SourceGithub()
+    status, _ = source.check_connection(logger=logging.getLogger("airbyte"), config=config)
+    assert status == expected
+
+
 @pytest.mark.parametrize(
     "api_url, deployment_env, expected_message",
     (
@@ -116,12 +138,16 @@ def test_get_branches_data():
         ],
     )
 
-    default_branches, branches_to_pull = source._get_branches_data("", repository_args)
+    default_branches, branches_to_pull = source._get_branches_data([], repository_args)
     assert default_branches == {"airbytehq/integration-test": "master"}
     assert branches_to_pull == {"airbytehq/integration-test": ["master"]}
 
     default_branches, branches_to_pull = source._get_branches_data(
-        "airbytehq/integration-test/feature/branch_0 airbytehq/integration-test/feature/branch_1 airbytehq/integration-test/feature/branch_3",
+        [
+            "airbytehq/integration-test/feature/branch_0",
+            "airbytehq/integration-test/feature/branch_1",
+            "airbytehq/integration-test/feature/branch_3",
+        ],
         repository_args,
     )
 
@@ -148,7 +174,7 @@ def test_get_org_repositories():
         ],
     )
 
-    config = {"repository": "airbytehq/integration-test docker/*"}
+    config = {"repositories": ["airbytehq/integration-test", "docker/*"]}
     source = SourceGithub()
     config = source._ensure_default_values(config)
     organisations, repositories = source._get_org_repositories(config, authenticator=None)
@@ -164,15 +190,6 @@ def test_organization_or_repo_available(monkeypatch):
         config = {"access_token": "test_token", "repository": ""}
         source.streams(config=config)
     assert exc_info.value.args[0] == "No streams available. Please check permissions"
-
-
-def tests_get_and_prepare_repositories_config():
-    config = {"repository": "airbytehq/airbyte airbytehq/airbyte.test  airbytehq/integration-test"}
-    assert SourceGithub._get_and_prepare_repositories_config(config) == {
-        "airbytehq/airbyte",
-        "airbytehq/airbyte.test",
-        "airbytehq/integration-test",
-    }
 
 
 def test_check_config_repository():
@@ -204,32 +221,19 @@ def test_check_config_repository():
         "https://github.com/airbytehq/airbyte",
     ]
 
-    config["repository"] = ""
+    config["repositories"] = []
     with pytest.raises(AirbyteTracedException):
         assert command_check(source, config)
-    config["repository"] = " "
+    config["repositories"] = []
     with pytest.raises(AirbyteTracedException):
         assert command_check(source, config)
 
     for repos in repos_ok:
-        config["repository"] = repos
+        config["repositories"] = [repos]
         assert command_check(source, config)
 
     for repos in repos_fail:
-        config["repository"] = repos
-        with pytest.raises(AirbyteTracedException):
-            assert command_check(source, config)
-
-    config["repository"] = " ".join(repos_ok)
-    assert command_check(source, config)
-    config["repository"] = "    ".join(repos_ok)
-    assert command_check(source, config)
-    config["repository"] = ",".join(repos_ok)
-    with pytest.raises(AirbyteTracedException):
-        assert command_check(source, config)
-
-    for repos in repos_fail:
-        config["repository"] = " ".join(repos_ok[: len(repos_ok) // 2] + [repos] + repos_ok[len(repos_ok) // 2 :])
+        config["repositories"] = [repos]
         with pytest.raises(AirbyteTracedException):
             assert command_check(source, config)
 
@@ -301,3 +305,64 @@ def test_streams_page_size():
             assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
         else:
             assert stream.page_size == constants.DEFAULT_PAGE_SIZE
+
+
+@responses.activate
+@pytest.mark.parametrize(
+    "config, expected",
+    (
+        (
+            {
+                "start_date": "2021-08-27T00:00:46Z",
+                "access_token": "test_token",
+                "repository": "airbyte/test",
+            },
+            39,
+        ),
+        ({"access_token": "test_token", "repository": "airbyte/test"}, 39),
+    ),
+)
+def test_streams_config_start_date(config, expected):
+    responses.add(responses.GET, "https://api.github.com/repos/airbyte/test?per_page=100", json={"full_name": "airbyte/test"})
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbyte/test?per_page=100",
+        json={"full_name": "airbyte/test", "default_branch": "default_branch"},
+    )
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/airbyte/test/branches?per_page=100",
+        json=[{"repository": "airbyte/test", "name": "name"}],
+    )
+    source = SourceGithub()
+    streams = source.streams(config=config)
+    # projects stream that uses start date
+    project_stream = streams[4]
+    assert len(streams) == expected
+    if config.get("start_date"):
+        assert project_stream._start_date == "2021-08-27T00:00:46Z"
+    else:
+        assert not project_stream._start_date
+
+
+@pytest.mark.parametrize(
+    "error_message, expected_user_friendly_message",
+    [
+        (
+            "404 Client Error: Not Found for url: https://api.github.com/repos/repo_name",
+            'Repo name: "repo_name" is unknown, "repository" config option should use existing full repo name <organization>/<repository>',
+        ),
+        (
+            "404 Client Error: Not Found for url: https://api.github.com/orgs/org_name",
+            'Organization name: "org_name" is unknown, "repository" config option should be updated. Please validate your repository config.',
+        ),
+        (
+            "401 Client Error: Unauthorized for url",
+            "Github credentials have expired or changed, please review your credentials and re-authenticate or renew your access token.",
+        ),
+    ],
+)
+def test_user_friendly_message(error_message, expected_user_friendly_message):
+    source = SourceGithub()
+    user_friendly_error_message = source.user_friendly_error_message(error_message)
+    assert user_friendly_error_message == expected_user_friendly_message

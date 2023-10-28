@@ -46,6 +46,8 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
             .with_env_variable("POETRY_VIRTUALENVS_IN_PROJECT", "false")
             .with_env_variable("POETRY_NO_INTERACTION", "1")
             .with_exec(["pip", "install", "poetry==1.6.1"], skip_entrypoint=True)
+            # Install socat 1.7.4.4
+            .with_exec(["sh", "-c", "apt update && apt-get install -y socat=1.7.4.4-2"])
         )
 
     async def run_sanity_checks(self, platform: dagger.Platform):
@@ -64,3 +66,5 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
         await python_sanity_checks.check_pip_version(container, "23.2.1")
         await python_sanity_checks.check_poetry_version(container, "1.6.1")
         await python_sanity_checks.check_python_image_has_expected_env_vars(container)
+        await base_sanity_checks.check_a_command_is_available_using_version_option(container, "socat", "-V")
+        await base_sanity_checks.check_socat_version(container, "1.7.4.4")

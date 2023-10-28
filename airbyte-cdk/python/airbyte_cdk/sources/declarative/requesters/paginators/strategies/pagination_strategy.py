@@ -4,9 +4,10 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Any, List, Optional
 
 import requests
+from airbyte_cdk.sources.declarative.types import Record
 
 
 @dataclass
@@ -15,8 +16,15 @@ class PaginationStrategy:
     Defines how to get the next page token
     """
 
+    @property
     @abstractmethod
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+    def initial_token(self) -> Optional[Any]:
+        """
+        Return the initial value of the token
+        """
+
+    @abstractmethod
+    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
         """
         :param response: response to process
         :param last_records: records extracted from the response
@@ -25,7 +33,7 @@ class PaginationStrategy:
         pass
 
     @abstractmethod
-    def reset(self):
+    def reset(self) -> None:
         """
         Reset the pagination's inner state
         """
