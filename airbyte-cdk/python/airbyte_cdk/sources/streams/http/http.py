@@ -52,6 +52,7 @@ class HttpStream(Stream, ABC):
     def cache_filename(self) -> str:
         """
         Override if needed. Return the name of cache file
+        Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
         """
         return f"{self.name}.sqlite"
 
@@ -59,6 +60,7 @@ class HttpStream(Stream, ABC):
     def use_cache(self) -> bool:
         """
         Override if needed. If True, all records will be cached.
+        Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
         """
         return False
 
@@ -68,8 +70,14 @@ class HttpStream(Stream, ABC):
         :return: instance of request-based session
         """
         if self.use_cache:
-            cache_dir = Path(os.environ[ENV_REQUEST_CACHE_PATH])
-            return CachedLimiterSession(cache_name=str(cache_dir / self.cache_filename), backend="sqlite", api_budget=self._api_budget)
+            cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
+            # Use in-memory cache if cache_dir is not set
+            # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
+            if cache_dir:
+                sqlite_path = str(Path(cache_dir) / self.cache_filename)
+            else:
+                sqlite_path = "file::memory:?cache=shared"
+            return CachedLimiterSession(sqlite_path, backend="sqlite", api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
         else:
             return LimiterSession(api_budget=self._api_budget)
 
@@ -78,8 +86,7 @@ class HttpStream(Stream, ABC):
         Clear cached requests for current session, can be called any time
         """
         if isinstance(self._session, requests_cache.CachedSession):
-            # Call to untyped function "clear" in typed context
-            self._session.cache.clear()  # type: ignore[no-untyped-call]
+            self._session.cache.clear()  # type: ignore # cache.clear is not typed
 
     @property
     @abstractmethod
@@ -108,6 +115,13 @@ class HttpStream(Stream, ABC):
         Override if needed. Specifies maximum amount of retries for backoff policy. Return None for no limit.
         """
         return 5
+
+    @property
+    def max_time(self) -> Union[int, None]:
+        """
+        Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
+        """
+        return 60 * 10
 
     @property
     def retry_factor(self) -> float:
@@ -388,11 +402,19 @@ class HttpStream(Stream, ABC):
         Add this condition to avoid an endless loop if it hasn't been set
         explicitly (i.e. max_retries is not None).
         """
+        max_time = self.max_time
+        """
+        According to backoff max_time docstring:
+            max_time: The maximum total amount of time to try for before
+                giving up. Once expired, the exception will be allowed to
+                escape. If a callable is passed, it will be
+                evaluated at runtime and its return value used.
+        """
         if max_tries is not None:
             max_tries = max(0, max_tries) + 1
 
-        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries)(self._send)
-        backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
+        user_backoff_handler = user_defined_backoff_handler(max_tries=max_tries, max_time=max_time)(self._send)
+        backoff_handler = default_backoff_handler(max_tries=max_tries, max_time=max_time, factor=self.retry_factor)
         return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
     @classmethod

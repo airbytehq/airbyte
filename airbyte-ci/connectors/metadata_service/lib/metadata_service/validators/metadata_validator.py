@@ -146,11 +146,36 @@ def validate_docs_path_exists(metadata_definition: ConnectorMetadataDefinitionV0
     return True, None
 
 
+def validate_metadata_base_images_in_dockerhub(
+    metadata_definition: ConnectorMetadataDefinitionV0, validator_opts: ValidatorOptions
+) -> ValidationResult:
+    metadata_definition_dict = metadata_definition.dict()
+
+    image_address = get(metadata_definition_dict, "data.connectorOptions.baseImage")
+    if image_address is None:
+        return True, None
+
+    try:
+        image_name, tag_with_sha_prefix, digest = image_address.split(":")
+        # As we query the DockerHub API we need to remove the docker.io prefix
+        image_name = image_name.replace("docker.io/", "")
+    except ValueError:
+        return False, f"Image {image_address} is not in the format <image>:<tag>@<sha>"
+    tag = tag_with_sha_prefix.split("@")[0]
+
+    print(f"Checking that the base images is on dockerhub: {image_address}")
+    if not is_image_on_docker_hub(image_name, tag, digest):
+        return False, f"Image {image_address} does not exist in DockerHub"
+
+    return True, None
+
+
 PRE_UPLOAD_VALIDATORS = [
     validate_all_tags_are_keyvalue_pairs,
     validate_at_least_one_language_tag,
     validate_major_version_bump_has_breaking_change_entry,
     validate_docs_path_exists,
+    validate_metadata_base_images_in_dockerhub,
 ]
 
 POST_UPLOAD_VALIDATORS = PRE_UPLOAD_VALIDATORS + [
