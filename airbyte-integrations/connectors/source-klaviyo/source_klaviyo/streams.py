@@ -13,6 +13,8 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
+from .availability_strategy import KlaviyoAvailabilityStrategyLatest
+
 
 class KlaviyoStreamLatest(HttpStream, ABC):
     """Base stream for api version v2023-02-22"""
@@ -26,8 +28,8 @@ class KlaviyoStreamLatest(HttpStream, ABC):
         self._api_key = api_key
 
     @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return KlaviyoAvailabilityStrategyLatest()
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
         base_headers = super().request_headers(**kwargs)
@@ -60,7 +62,7 @@ class KlaviyoStreamLatest(HttpStream, ABC):
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
-        # If next_page_token is set, all of the parameters are already provided
+        # If next_page_token is set, all the parameters are already provided
         if next_page_token:
             return next_page_token
         else:
@@ -81,7 +83,7 @@ class KlaviyoStreamLatest(HttpStream, ABC):
 class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
     """Base class for all incremental streams, requires cursor_field to be declared"""
 
-    def __init__(self, start_date: str, **kwargs):
+    def __init__(self, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
         self._start_ts = start_date
 
@@ -101,22 +103,26 @@ class IncrementalKlaviyoStreamLatest(KlaviyoStreamLatest, ABC):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
 
         if not params.get("filter"):
-            latest_cursor = pendulum.parse(self._start_ts)
             stream_state_cursor_value = stream_state.get(self.cursor_field)
-            if stream_state_cursor_value:
-                latest_cursor = max(latest_cursor, pendulum.parse(stream_state[self.cursor_field]))
-            params["filter"] = "greater-than(" + self.cursor_field + "," + latest_cursor.isoformat() + ")"
+            latest_cursor = self._start_ts or stream_state_cursor_value
+            if latest_cursor:
+                latest_cursor = pendulum.parse(latest_cursor)
+                if stream_state_cursor_value:
+                    latest_cursor = max(latest_cursor, pendulum.parse(stream_state_cursor_value))
+                params["filter"] = f"greater-than({self.cursor_field},{latest_cursor.isoformat()})"
             params["sort"] = self.cursor_field
         return params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest
+        record and the current state and picks the 'most' recent cursor. This is how a stream's state is determined.
+        Required for incremental.
         """
         current_stream_cursor_value = current_stream_state.get(self.cursor_field, self._start_ts)
-        latest_record_cursor_value = latest_record[self.cursor_field]
-        latest_cursor = max(pendulum.parse(latest_record_cursor_value), pendulum.parse(current_stream_cursor_value))
+        latest_cursor = pendulum.parse(latest_record[self.cursor_field])
+        if current_stream_cursor_value:
+            latest_cursor = max(latest_cursor, pendulum.parse(current_stream_cursor_value))
         return {self.cursor_field: latest_cursor.isoformat()}
 
 
@@ -148,11 +154,8 @@ class KlaviyoStreamV1(HttpStream, ABC):
         transform_function = self.get_custom_transform()
         self.transformer.registerCustomTransform(transform_function)
 
-    @property
-    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
-        return None
-
-    def get_custom_transform(self):
+    @staticmethod
+    def get_custom_transform():
         def custom_transform_date_rfc3339(original_value, field_schema):
             if original_value and "format" in field_schema and field_schema["format"] == "date-time":
                 transformed_value = pendulum.parse(original_value).to_rfc3339_string()
@@ -163,17 +166,15 @@ class KlaviyoStreamV1(HttpStream, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
+        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests.
+        This dict is passed to most other methods in this class to help you form headers, request bodies, query params, etc.
         :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
+        :return If there is another page in the result, a mapping (e.g: dict) containing info needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
         decoded_response = response.json()
         if decoded_response["end"] < decoded_response["total"] - 1:  # end is zero based
-            return {
-                "page": decoded_response["page"] + 1,
-            }
+            return {"page": decoded_response["page"] + 1}
 
         return None
 
@@ -195,9 +196,9 @@ class KlaviyoStreamV1(HttpStream, ABC):
 class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
     """Base class for all incremental streams, requires cursor_field to be declared"""
 
-    def __init__(self, start_date: str, **kwargs):
+    def __init__(self, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
-        self._start_ts = int(pendulum.parse(start_date).timestamp())
+        self._start_ts = int(pendulum.parse(start_date).timestamp()) if start_date else 0
         self._start_sync = int(pendulum.now().timestamp())
 
     @property
@@ -223,8 +224,9 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest
+        record and the current state and picks the 'most' recent cursor. This is how a stream's state is determined.
+        Required for incremental.
         """
         state_ts = int(current_stream_state.get(self.cursor_field, 0))
         latest_record = latest_record.get(self.cursor_field)
@@ -239,10 +241,10 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
+        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests.
+        This dict is passed to most other methods in this class to help you form headers, request bodies, query params, etc.
         :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
+        :return If there is another page in the result, a mapping (e.g: dict) containing info needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
         decoded_response = response.json()
@@ -255,16 +257,16 @@ class IncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
 class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
     """Base class for all streams that natively incremental but supports desc & asc order"""
 
-    def __init__(self, start_date: str, **kwargs):
+    def __init__(self, start_date: Optional[str], **kwargs):
         super().__init__(**kwargs)
-        self._start_datetime = pendulum.parse(start_date)
+        self._start_datetime = pendulum.parse(start_date) if start_date else None
         self._reversed = False
         self._reached_old_records = False
         self._low_boundary = None
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
-        """How often to checkpoint state (i.e: emit a STATE message). By default return the same value as page_size"""
+        """How often to checkpoint state (i.e: emit a STATE message). By default, return the same value as page_size"""
         return None if self._reversed else self.page_size
 
     @property
@@ -281,7 +283,9 @@ class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
         stream_state = stream_state or {}
         if stream_state:
             self._reversed = True
-            self._low_boundary = max(pendulum.parse(stream_state[self.cursor_field]), self._start_datetime)
+            self._low_boundary = pendulum.parse(stream_state[self.cursor_field])
+            if self._start_datetime:
+                self._low_boundary = max(pendulum.parse(stream_state[self.cursor_field]), self._start_datetime)
         params = super().request_params(stream_state=stream_state, **kwargs)
         params["sort"] = "desc" if self._reversed else "asc"
 
@@ -289,8 +293,9 @@ class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
+        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest
+        record and the current state and picks the 'most' recent cursor. This is how a stream's state is determined.
+        Required for incremental.
         """
 
         latest_cursor = pendulum.parse(latest_record[self.cursor_field])
@@ -300,10 +305,10 @@ class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests. This dict is passed
-        to most other methods in this class to help you form headers, request bodies, query params, etc..
+        This method should return a Mapping (e.g: dict) containing whatever information required to make paginated requests.
+        This dict is passed to most other methods in this class to help you form headers, request bodies, query params, etc.
         :param response: the most recent response from the API
-        :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
+        :return If there is another page in the result, a mapping (e.g: dict) containing info needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
 
@@ -317,13 +322,11 @@ class ReverseIncrementalKlaviyoStreamV1(KlaviyoStreamV1, ABC):
         """:return an iterable containing each record in the response"""
 
         for record in super().parse_response(response=response, **kwargs):
-            if self._reversed:
-                if pendulum.parse(record[self.cursor_field]) < self._low_boundary:
-                    self._reached_old_records = True
-                    continue
-            else:
-                if pendulum.parse(record[self.cursor_field]) < self._start_datetime:
-                    continue
+            if self._reversed and pendulum.parse(record[self.cursor_field]) < self._low_boundary:
+                self._reached_old_records = True
+                continue
+            elif self._start_datetime and pendulum.parse(record[self.cursor_field]) < self._start_datetime:
+                continue
             yield record
 
 

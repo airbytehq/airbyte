@@ -2,10 +2,6 @@
 
 This page contains the setup guide and reference information for the [Airtable](https://airtable.com/api) source connector.
 
-:::caution
-Currently, this source connector works with `Standard` subscription plan only. `Enterprise` level accounts are not supported yet.
-:::
-
 ## Prerequisites
 
 * An active Airtable account
@@ -15,8 +11,24 @@ Currently, this source connector works with `Standard` subscription plan only. `
   - `schema.bases:read`
 
 ## Setup guide
-
 ### Step 1: Set up Airtable
+
+<!-- env:oss -->
+#### For Airbyte Open Source:
+1. Go to https://airtable.com/create/tokens to create new token.
+    ![Generate new Token](../../.gitbook/assets/source/airtable/generate_new_token.png)
+2. Add following scopes:
+   - `data.records:read`
+   - `data.recordComments:read`
+   - `schema.bases:read`
+
+    ![Add Scopes](../../.gitbook/assets/source/airtable/add_scopes.png)
+3. Select required bases or allow access to all available and press the `Create Token` button.
+    ![Add Bases](../../.gitbook/assets/source/airtable/add_bases.png)
+4. Save token from the popup window.
+<!-- /env:oss -->
+
+### Step 2: Set up Airtable connector in Airbyte
 
 <!-- env:cloud -->
 ### For Airbyte Cloud:
@@ -51,15 +63,16 @@ Please keep in mind that if you start syncing a table via Airbyte, then rename i
 
 The airtable source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature           | Supported?\(Yes/No\) | Notes |
-|:------------------|:---------------------|:------|
-| Full Refresh Sync | Yes                  |       |
-| Incremental Sync  | No                   |       |
-
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 
 ## Supported Tables
 
-This source allows you to pull all available tables and bases using `Metadata API` for a given authenticated user. In case you rename or add a column to any existing table, you will need to recreate the source to update the Airbyte catalog. 
+This source allows you to pull all available tables and bases using `Metadata API` for a given authenticated user. In case you rename or add a column to any existing table, you will need to recreate the source to update the Airbyte catalog.
+
+### Performance Considerations
+
+See information about rate limits [here](https://airtable.com/developers/web/api/rate-limits).
 
 ## Data type map
 
@@ -103,15 +116,16 @@ This source allows you to pull all available tables and bases using `Metadata AP
     - number/integer
     - nested lists/objects
 
-### Performance Considerations (Airbyte Open-Source)
-
-See information about rate limits [here](https://airtable.com/developers/web/api/rate-limits).
-
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------|
-| 4.1.0   | 2023-10-10 | [31044](https://github.com/airbytehq/airbyte/pull/31044) | Add source table name to output records    |
+| 4.1.5 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 4.1.4   | 2023-10-19 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update docstings                                                                       |
+| 4.1.3   | 2023-10-13 | [31360](https://github.com/airbytehq/airbyte/pull/31360) | Update error message for invalid permissions                                           |
+| 4.1.2   | 2023-10-10 | [31215](https://github.com/airbytehq/airbyte/pull/31215) | Exclude bases without permission                                                       |
+| 4.1.1   | 2023-10-10 | [31119](https://github.com/airbytehq/airbyte/pull/31119) | Add user-friendly error message when refresh token has expired                         |
+| 4.1.0   | 2023-10-10 | [31044](https://github.com/airbytehq/airbyte/pull/31044) | Add source table name to output records                                                |
 | 4.0.0   | 2023-10-09 | [31181](https://github.com/airbytehq/airbyte/pull/31181) | Additional schema processing for the FORMULA schema type: Convert to simple data types |
 | 3.0.1   | 2023-05-10 | [25946](https://github.com/airbytehq/airbyte/pull/25946) | Skip stream if it does not appear in catalog                                           |
 | 3.0.0   | 2023-03-20 | [22704](https://github.com/airbytehq/airbyte/pull/22704) | Fix for stream name uniqueness                                                         |

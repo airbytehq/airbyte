@@ -8,6 +8,12 @@ from typing import Any, Dict, Mapping
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 
 
+class MissingAccessTokenError(Exception):
+    """
+    Raised when the token is `None` instead of the real value
+    """
+
+
 class NotImplementedAuth(Exception):
     """Not implemented Auth option error"""
 
@@ -34,7 +40,11 @@ class ShopifyAuthenticator(TokenAuthenticator):
         auth_method: str = credentials.get("auth_method")
 
         if auth_method in ["oauth2.0", "access_token"]:
-            return {auth_header: credentials.get("access_token")}
+            access_token = credentials.get("access_token")
+            if access_token:
+                return {auth_header: access_token}
+            else:
+                raise MissingAccessTokenError
         elif auth_method == "api_password":
             return {auth_header: credentials.get("api_password")}
         else:

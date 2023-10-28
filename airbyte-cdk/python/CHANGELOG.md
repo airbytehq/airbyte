@@ -1,5 +1,71 @@
 # Changelog
 
+## 0.52.6
+make  parameter as not required for default backoff handler
+
+## 0.52.5
+use in-memory cache if no file path is provided
+
+## 0.52.4
+File CDK: Add unstructured parser
+
+## 0.52.3
+Update source-declarative-manifest base image to update Linux alpine and Python
+
+## 0.52.2
+
+
+## 0.52.1
+Add max time for backoff handler
+
+## 0.52.0
+File CDK: Add CustomFileBasedException for custom errors
+
+## 0.51.44
+low-code: Allow connector developers to specify the type of an added field
+
+## 0.51.43
+concurrent cdk: fail fast if a partition raises an exception
+
+## 0.51.42
+File CDK: Avoid listing all files for check command
+
+## 0.51.41
+Vector DB CDK: Expose stream identifier logic, add field remapping to processing | File CDK: Emit analytics message for used streams
+
+## 0.51.40
+Add filters for base64 encode and decode in Jinja Interpolation 
+
+## 0.51.39
+Few bug fixes for concurrent cdk
+
+## 0.51.38
+Add ability to wrap HTTP errors with specific status codes occurred during access token refresh into AirbyteTracedException
+
+## 0.51.37
+Enable debug logging when running availability check
+
+## 0.51.36
+Enable debug logging when running availability check
+
+## 0.51.35
+File CDK: Allow configuring number of tested files for schema inference and parsability check
+
+## 0.51.34
+Vector DB CDK: Fix OpenAI compatible embedder when used without api key
+
+## 0.51.33
+Vector DB CDK: Improve batching process
+
+## 0.51.32
+Introduce experimental ThreadBasedConcurrentStream
+
+## 0.51.31
+Fix initialize of token_expiry_is_time_of_expiration field
+
+## 0.51.30
+Add new token_expiry_is_time_of_expiration property for AbstractOauth2Authenticator for indicate that token's expiry_in is a time of expiration
+
 ## 0.51.29
 Coerce read_records to iterable in http availabilty strategy
 
