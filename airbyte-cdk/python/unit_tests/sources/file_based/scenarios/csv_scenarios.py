@@ -284,6 +284,19 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                 },
                                             },
                                         },
+                                        {
+                                            "title": "Document File Type Format (Experimental)",
+                                            "type": "object",
+                                            "properties": {
+                                                "filetype": {
+                                                    "title": "Filetype",
+                                                    "default": "unstructured",
+                                                    "const": "unstructured",
+                                                    "type": "string",
+                                                }
+                                            },
+                                            "description": "Extract text from document formats (.pdf, .docx, .md) and emit as one record per file.",
+                                        },
                                     ],
                                 },
                                 "schemaless": {
