@@ -95,18 +95,15 @@ def test_http_request_matching(mocker):
     groups_policy = mocker.Mock(spec=MovingWindowCallRatePolicy)
     root_policy = mocker.Mock(spec=MovingWindowCallRatePolicy)
 
-    api_budget = APIBudget()
-    api_budget.add_policy(
-        request_matcher=HttpRequestMatcher(url="http://domain/api/users", method="GET"),
-        policy=users_policy,
-    )
-    api_budget.add_policy(
-        request_matcher=HttpRequestMatcher(url="http://domain/api/groups", method="POST"),
-        policy=groups_policy,
-    )
-    api_budget.add_policy(
-        request_matcher=HttpRequestMatcher(method="GET"),
-        policy=root_policy,
+    users_policy.matches.side_effect = HttpRequestMatcher(url="http://domain/api/users", method="GET")
+    groups_policy.matches.side_effect = HttpRequestMatcher(url="http://domain/api/groups", method="POST")
+    root_policy.matches.side_effect = HttpRequestMatcher(method="GET")
+    api_budget = APIBudget(
+        policies=[
+            users_policy,
+            groups_policy,
+            root_policy,
+        ]
     )
 
     api_budget.acquire_call(Request("POST", url="http://domain/unmatched_endpoint"), block=False), "unrestricted call"
@@ -146,7 +143,7 @@ def test_http_request_matching(mocker):
 class TestCallRatePolicy:
     def test_limit_rate(self):
         """try_acquire must respect configured call rate and throw CallRateLimitHit when hit the limit."""
-        policy = MovingWindowCallRatePolicy(rates=[Rate(10, timedelta(minutes=1))])
+        policy = MovingWindowCallRatePolicy(rates=[Rate(10, timedelta(minutes=1))], matchers=[])
 
         for i in range(10):
             policy.try_acquire("call", weight=1), f"{i + 1} call"
@@ -163,7 +160,7 @@ class TestCallRatePolicy:
 
     def test_limit_rate_support_custom_weight(self):
         """try_acquire must take into account provided weight and throw CallRateLimitHit when hit the limit."""
-        policy = MovingWindowCallRatePolicy(rates=[Rate(10, timedelta(minutes=1))])
+        policy = MovingWindowCallRatePolicy(rates=[Rate(10, timedelta(minutes=1))], matchers=[])
 
         policy.try_acquire("call", weight=2), "1st call with weight of 2"
         with pytest.raises(CallRateLimitHit) as excinfo:
@@ -173,6 +170,7 @@ class TestCallRatePolicy:
     def test_multiple_limit_rates(self):
         """try_acquire must take into all call rates and apply stricter."""
         policy = MovingWindowCallRatePolicy(
+            matchers=[],
             rates=[
                 Rate(10, timedelta(minutes=10)),
                 Rate(3, timedelta(seconds=10)),
@@ -196,14 +194,15 @@ class TestHttpStreamIntegration:
 
         mocker.patch.object(MovingWindowCallRatePolicy, "try_acquire")
 
-        api_budget = APIBudget()
-        api_budget.add_policy(
-            request_matcher=HttpRequestMatcher(url=f"{StubDummyHttpStream.url_base}/", method="GET"),
-            policy=MovingWindowCallRatePolicy(
-                rates=[
-                    Rate(2, timedelta(minutes=1)),
-                ],
-            ),
+        api_budget = APIBudget(
+            policies=[
+                MovingWindowCallRatePolicy(
+                    matchers=[HttpRequestMatcher(url=f"{StubDummyHttpStream.url_base}/", method="GET")],
+                    rates=[
+                        Rate(2, timedelta(minutes=1)),
+                    ],
+                ),
+            ]
         )
 
         stream = StubDummyHttpStream(api_budget=api_budget, authenticator=TokenAuthenticator(token="ABCD"))
@@ -220,14 +219,17 @@ class TestHttpStreamIntegration:
 
         mocker.patch.object(MovingWindowCallRatePolicy, "try_acquire")
 
-        api_budget = APIBudget()
-        api_budget.add_policy(
-            request_matcher=HttpRequestMatcher(url=f"{StubDummyHttpStream.url_base}/", method="GET"),
-            policy=MovingWindowCallRatePolicy(
-                rates=[
-                    Rate(2, timedelta(minutes=1)),
-                ],
-            ),
+        api_budget = APIBudget(
+            policies=[
+                MovingWindowCallRatePolicy(
+                    matchers=[
+                        HttpRequestMatcher(url=f"{StubDummyHttpStream.url_base}/", method="GET"),
+                    ],
+                    rates=[
+                        Rate(2, timedelta(minutes=1)),
+                    ],
+                )
+            ]
         )
 
         stream = StubDummyCacheHttpStream(api_budget=api_budget)
