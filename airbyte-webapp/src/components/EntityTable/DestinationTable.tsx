@@ -94,7 +94,7 @@ const DestinationTable: React.FC<IProps> = ({ data, entity }) => {
         ),
         headerHighlighted: true,
         accessor: "name",
-        customWidth: 22,
+        customWidth: 40,
         Cell: ({ cell, row }: CellProps<DestinationRead>) => (
           <NameColums>
             <NameCell value={cell.value} onClickRow={() => clickEditRow(row.original.destinationId)} />
@@ -113,7 +113,7 @@ const DestinationTable: React.FC<IProps> = ({ data, entity }) => {
             />
           </div>
         ),
-        customWidth: 22,
+        customWidth: 40,
         accessor: "destinationName",
         Cell: ({ cell }: CellProps<DestinationRead>) => <ConnectorCell value={cell.value} />,
       },
