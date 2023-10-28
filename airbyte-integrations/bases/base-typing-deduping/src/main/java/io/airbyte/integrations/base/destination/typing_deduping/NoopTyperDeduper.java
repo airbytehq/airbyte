@@ -11,12 +11,12 @@ import java.util.concurrent.locks.Lock;
 public class NoopTyperDeduper implements TyperDeduper {
 
   @Override
-  public void prepareTables() throws Exception {
+  public void prepareTables() {
 
   }
 
   @Override
-  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun) throws Exception {
+  public void typeAndDedupe(final String originalNamespace, final String originalName, final boolean mustRun) {
 
   }
 
@@ -31,18 +31,20 @@ public class NoopTyperDeduper implements TyperDeduper {
       }
 
       @Override
-      public void lockInterruptibly() throws InterruptedException {
+      public void lockInterruptibly() {
 
       }
 
       @Override
       public boolean tryLock() {
-        return false;
+        // To mimic NoOp behavior always return true that lock is acquired
+        return true;
       }
 
       @Override
-      public boolean tryLock(final long time, final TimeUnit unit) throws InterruptedException {
-        return false;
+      public boolean tryLock(final long time, final TimeUnit unit) {
+        // To mimic NoOp behavior always return true that lock is acquired
+        return true;
       }
 
       @Override
@@ -59,12 +61,12 @@ public class NoopTyperDeduper implements TyperDeduper {
   }
 
   @Override
-  public void commitFinalTables() throws Exception {
+  public void commitFinalTables() {
 
   }
 
   @Override
-  public void typeAndDedupe() throws Exception {
+  public void typeAndDedupe() {
 
   }
 

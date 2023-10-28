@@ -1,50 +1,51 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
+  "type": ["object", "null"],
+  "additionalProperties": true,
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "name": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "standard": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "hidden": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "customStatuses": {
-      "type": "array",
+      "type": ["array", "null"],
       "items": {
         "type": ["object", "null"],
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "name": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "standardName": {
-            "type": "boolean"
+            "type": ["boolean", "null"]
           },
           "color": {
             "type": ["string", "null"]
           },
           "standard": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "group": {
-            "type": "string"
+            "type": ["string", "null"]
           },
           "hidden": {
-            "type": "string"
+            "type": ["string", "null"]
           }
         }
       }
     },
     "title": {
-      "type": "string"
+      "type": ["string", "null"]
     }
   }
 }

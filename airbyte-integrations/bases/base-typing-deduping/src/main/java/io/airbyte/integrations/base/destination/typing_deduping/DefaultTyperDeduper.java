@@ -11,6 +11,7 @@ import static java.util.Collections.singleton;
 
 import autovalue.shaded.kotlin.Pair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * <li>{@link #typeAndDedupe(String, String, boolean)} as needed throughout the sync</li>
  * <li>{@link #commitFinalTables()} once at the end of the sync</li>
  * </ol>
- * Note that createFinalTables initializes some internal state. The other methods will throw an
+ * Note that #prepareTables() initializes some internal state. The other methods will throw an
  * exception if that method was not called.
  */
 public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper {
@@ -53,10 +54,11 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
   private final DestinationHandler<DialectTableDefinition> destinationHandler;
 
   private final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator;
-  private final V2TableMigrator<DialectTableDefinition> v2TableMigrator;
+  private final V2TableMigrator v2TableMigrator;
   private final ParsedCatalog parsedCatalog;
   private Set<StreamId> overwriteStreamsWithTmpTable;
   private final Set<Pair<String, String>> streamsWithSuccessfulSetup;
+  private final Map<StreamId, Optional<Instant>> minExtractedAtByStream;
   // We only want to run a single instance of T+D per stream at a time. These objects are used for
   // synchronization per stream.
   // Use a read-write lock because we need the same semantics:
@@ -74,13 +76,14 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                              final DestinationHandler<DialectTableDefinition> destinationHandler,
                              final ParsedCatalog parsedCatalog,
                              final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
-                             final V2TableMigrator<DialectTableDefinition> v2TableMigrator,
+                             final V2TableMigrator v2TableMigrator,
                              final int defaultThreadCount) {
     this.sqlGenerator = sqlGenerator;
     this.destinationHandler = destinationHandler;
     this.parsedCatalog = parsedCatalog;
     this.v1V2Migrator = v1V2Migrator;
     this.v2TableMigrator = v2TableMigrator;
+    this.minExtractedAtByStream = new ConcurrentHashMap<>();
     this.streamsWithSuccessfulSetup = ConcurrentHashMap.newKeySet(parsedCatalog.streams().size());
     this.tdLocks = new ConcurrentHashMap<>();
     this.internalTdLocks = new ConcurrentHashMap<>();
@@ -94,7 +97,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
                              final ParsedCatalog parsedCatalog,
                              final DestinationV1V2Migrator<DialectTableDefinition> v1V2Migrator,
                              final int defaultThreadCount) {
-    this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator<>(), defaultThreadCount);
+    this(sqlGenerator, destinationHandler, parsedCatalog, v1V2Migrator, new NoopV2TableMigrator(), defaultThreadCount);
   }
 
   public void prepareTables() throws Exception {
@@ -148,6 +151,9 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
           // The table doesn't exist. Create it. Don't force.
           destinationHandler.execute(sqlGenerator.createTable(stream, NO_SUFFIX, false));
         }
+        final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(stream.id());
+        minExtractedAtByStream.put(stream.id(), minTimestampForSync);
+
         streamsWithSuccessfulSetup.add(new Pair<>(stream.id().originalNamespace(), stream.id().originalName()));
 
         // Use fair locking. This slows down lock operations, but that performance hit is by far dwarfed
@@ -214,7 +220,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
           try {
             LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
             final String suffix = getFinalTableSuffix(streamConfig.id());
-            final String sql = sqlGenerator.updateTable(streamConfig, suffix);
+            final String sql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAtByStream.get(streamConfig.id()));
             destinationHandler.execute(sql);
           } finally {
             LOGGER.info("Allowing other threads to proceed for {}.{}", originalNamespace, originalName);
