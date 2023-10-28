@@ -5,6 +5,7 @@
 import unittest
 from unittest.mock import Mock, call
 
+import pytest
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
@@ -50,6 +51,15 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         assert availability == STREAM_AVAILABLE
         self._availability_strategy.check_availability.assert_called_once_with(self._logger)
 
+    def test_check_for_error_raises_an_exception_if_any_of_the_futures_are_not_done(self):
+        futures = [Mock() for _ in range(3)]
+        for f in futures:
+            f.exception.return_value = None
+        futures[0].done.return_value = False
+
+        with self.assertRaises(Exception):
+            self._stream._check_for_errors(futures)
+
     def test_check_for_error_raises_no_exception_if_all_futures_succeeded(self):
         futures = [Mock() for _ in range(3)]
         for f in futures:
@@ -66,14 +76,17 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         with self.assertRaises(Exception):
             self._stream._check_for_errors(futures)
 
-    def test_check_for_error_raises_an_exception_if_any_of_the_futures_are_not_done(self):
-        futures = [Mock() for _ in range(3)]
-        for f in futures:
-            f.exception.return_value = None
-        futures[0].done.return_value = False
+    def test_read_raises_an_exception_if_a_partition_raises_an_exception(self):
+        partition = Mock(spec=Partition)
+        partition.read.side_effect = RuntimeError("error")
+        self._partition_generator.generate.return_value = [partition]
+        with pytest.raises(RuntimeError):
+            list(self._stream.read())
 
-        with self.assertRaises(Exception):
-            self._stream._check_for_errors(futures)
+    def test_read_raises_an_exception_if_partition_generator_raises_an_exception(self):
+        self._partition_generator.generate.side_effect = RuntimeError("error")
+        with pytest.raises(RuntimeError):
+            list(self._stream.read())
 
     def test_read_no_slice_message(self):
         partition = Mock(spec=Partition)

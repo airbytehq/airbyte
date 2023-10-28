@@ -13,7 +13,7 @@ import requests
 
 if TYPE_CHECKING:
     from dagger import Client, Container
-    from pipelines.contexts import ConnectorContext
+    from pipelines.airbyte_ci.connectors.context import ConnectorContext
 
 
 async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "pip_cache") -> None:
@@ -50,7 +50,7 @@ async def cache_latest_cdk(dagger_client: Client, pip_cache_volume_name: str = "
         dagger_client.container()
         .from_("python:3.9-slim")
         .with_mounted_cache("/root/.cache/pip", dagger_client.cache_volume(pip_cache_volume_name))
-        .with_exec(["pip", "install", "--force-reinstall", f"airbyte-cdk=={cdk_latest_version}"])
+        .with_exec(["pip", "install", "--force-reinstall", f"airbyte-cdk=={cdk_latest_version}", "-vvv"])
         .sync()
     )
 
@@ -108,20 +108,3 @@ def get_cachebuster(context: ConnectorContext, logger: Logger) -> str:
         )
         return str(context.pipeline_start_timestamp)
     return "0"
-
-
-def get_gradle_cache_volume_name(context: ConnectorContext, logger: Logger) -> str:
-    """
-    This function will return a semi-static gradle cache volume name for connectors in CONNECTORS_WITHOUT_CACHING and a static value for all other connectors.
-    By semi-static I mean that the gradle cache volume name will change on each pipeline execution but will be the same for all the steps of the pipeline.
-    This hack is useful to collect unbiased metrics on the CI speed for connectors in CONNECTORS_WITHOUT_CACHING: it guarantees that the gradle cache volume will be empty on each pipeline execution and no remote caching is used.
-
-    Returns:
-        str: The gradle cache volume name.
-    """
-    if context.connector.technical_name in CONNECTORS_WITHOUT_CACHING:
-        logger.warning(
-            f"Getting a fresh gradle cache volume name for {context.connector.technical_name} to not use remote caching. Only used in the context of the CI performance improvements project for {context.connector.technical_name}."
-        )
-        return f"gradle-cache-{context.pipeline_start_timestamp}"
-    return "gradle-cache"

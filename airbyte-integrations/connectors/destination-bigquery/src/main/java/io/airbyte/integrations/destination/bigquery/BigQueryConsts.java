@@ -24,6 +24,8 @@ public class BigQueryConsts {
   public static final String KEEP_GCS_FILES = "keep_files_in_gcs-bucket";
   public static final String KEEP_GCS_FILES_VAL = "Keep all tmp files in GCS";
 
+  public static final String DISABLE_TYPE_DEDUPE = "disable_type_dedupe";
+
   public static final String NAMESPACE_PREFIX = "n";
 
   // tests
