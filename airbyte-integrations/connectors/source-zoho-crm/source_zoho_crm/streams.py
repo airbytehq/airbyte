@@ -41,6 +41,8 @@ class ZohoCrmStream(HttpStream, ABC):
         if self.module:
             if len(self.module.fields) > 50:
                 self.logger.warning("ZohoCRM only allows a max of 50 parameters per query, dropping all fields after 50")
+
+            # Dropping all params after the 50th param because the fields query param only supports a max of 50 values
             params["fields"] = ",".join([field.api_name for field in self.module.fields][:50])
         if next_page_token:
             params.update(**next_page_token)

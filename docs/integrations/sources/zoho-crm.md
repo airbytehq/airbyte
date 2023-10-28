@@ -23,6 +23,8 @@ Some of Zoho CRM Modules may not be available for sync due to limitations of Zoh
 Connector streams and schemas are built dynamically on top of Metadata that is available from the REST API - please see [Modules API](https://www.zoho.com/crm/developer/docs/api/v2/modules-api.html), [Modules Metadata API](https://www.zoho.com/crm/developer/docs/api/v2/module-meta.html), [Fields Metadata API](https://www.zoho.com/crm/developer/docs/api/v2/field-meta.html).
 The list of available streams is the list of Modules as long as Module Metadata is available for each of them from the Zoho CRM API, and Fields Metadata is available for each of the fields. If a module you want to sync is not available from this connector, it's because the Zoho CRM API does not make it available. 
 
+For the request parameter `fields` a maximum of 50 values/params are supported, so remaining parameters are dropped (if any).
+
 ### Data type mapping
 
 | Integration Type      | Airbyte Type | Notes                     |
