@@ -2,13 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import dpath.util
 import functools
 import json
-import jsonschema
 import logging
-import pytest
 import re
+from collections import Counter, defaultdict
+from functools import reduce
+from logging import Logger
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, Tuple
+from xmlrpc.client import Boolean
+
+import dpath.util
+import jsonschema
+import pytest
 from airbyte_protocol.models import (
     AirbyteRecordMessage,
     AirbyteStream,
@@ -21,13 +27,6 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
-from collections import Counter, defaultdict
-from functools import reduce
-from logging import Logger
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Set, \
-    Tuple
-from xmlrpc.client import Boolean
-
 from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import (
     BasicReadTestConfig,
@@ -39,10 +38,8 @@ from connector_acceptance_test.config import (
     IgnoredFieldsConfiguration,
     SpecTestConfig,
 )
-from connector_acceptance_test.utils import ConnectorRunner, SecretDict, \
-    delete_fields, filter_output, make_hashable, verify_records_schema
-from connector_acceptance_test.utils.backward_compatibility import \
-    CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
+from connector_acceptance_test.utils import ConnectorRunner, SecretDict, delete_fields, filter_output, make_hashable, verify_records_schema
+from connector_acceptance_test.utils.backward_compatibility import CatalogDiffChecker, SpecDiffChecker, validate_previous_configs
 from connector_acceptance_test.utils.common import (
     build_configured_catalog_from_custom_catalog,
     build_configured_catalog_from_discovered_catalog_and_empty_streams,
@@ -57,8 +54,7 @@ from connector_acceptance_test.utils.json_schema_helper import (
     get_object_structure,
     get_paths_in_connector_config,
 )
-from connector_acceptance_test.utils.timeouts import FIVE_MINUTES, ONE_MINUTE, \
-    TEN_MINUTES
+from connector_acceptance_test.utils.timeouts import FIVE_MINUTES, ONE_MINUTE, TEN_MINUTES
 
 pytestmark = [
     pytest.mark.anyio,

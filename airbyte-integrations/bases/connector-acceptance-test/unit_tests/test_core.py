@@ -2,6 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from unittest import mock
+from unittest.mock import MagicMock, patch
+
 import pytest
 from _pytest.outcomes import Failed
 from airbyte_protocol.models import (
@@ -18,12 +21,9 @@ from airbyte_protocol.models import (
     TraceType,
     Type,
 )
-from unittest import mock
-from unittest.mock import MagicMock, patch
-
-from connector_acceptance_test.config import BasicReadTestConfig, Config, \
-    ExpectedRecordsConfig, IgnoredFieldsConfiguration
+from connector_acceptance_test.config import BasicReadTestConfig, Config, ExpectedRecordsConfig, IgnoredFieldsConfiguration
 from connector_acceptance_test.tests import test_core
+
 from .conftest import does_not_raise
 
 pytestmark = pytest.mark.anyio
