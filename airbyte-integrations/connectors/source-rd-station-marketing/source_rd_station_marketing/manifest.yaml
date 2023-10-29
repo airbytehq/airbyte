@@ -3,10 +3,10 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - Segmentations
+    - segmentations
 streams:
   - type: DeclarativeStream
-    name: AnalyticsConversions
+    name: analytics_conversions
     primary_key:
       - asset_id
     retriever:
@@ -51,7 +51,7 @@ streams:
         field_name: end_date
         type: RequestOption
   - type: DeclarativeStream
-    name: AnalyticsEmails
+    name: analytics_emails
     primary_key:
       - campaign_id
     retriever:
@@ -96,7 +96,7 @@ streams:
         field_name: end_date
         type: RequestOption
   - type: DeclarativeStream
-    name: AnalyticsFunnel
+    name: analytics_funnel
     primary_key:
       - reference_day
     retriever:
@@ -141,7 +141,7 @@ streams:
         field_name: end_date
         type: RequestOption
   - type: DeclarativeStream
-    name: AnalyticsWorkflowEmailsStatistics
+    name: analytics_workflow_emails_statistics
     primary_key:
       - workflow_id
     retriever:
@@ -186,7 +186,7 @@ streams:
         field_name: end_date
         type: RequestOption
   - type: DeclarativeStream
-    name: Emails
+    name: emails
     primary_key:
       - id
     retriever:
@@ -227,7 +227,7 @@ streams:
           page_size: 125
           start_from_page: 1
   - type: DeclarativeStream
-    name: Embeddables
+    name: embeddables
     primary_key:
       - id
     retriever:
@@ -267,7 +267,7 @@ streams:
           page_size: 125
           start_from_page: 1
   - type: DeclarativeStream
-    name: Fields
+    name: fields
     primary_key:
       - uuid
     retriever:
@@ -296,7 +296,7 @@ streams:
       paginator:
         type: NoPagination
   - type: DeclarativeStream
-    name: LandingPages
+    name: landing_pages
     primary_key:
       - id
     retriever:
@@ -336,7 +336,7 @@ streams:
           page_size: 125
           start_from_page: 1
   - type: DeclarativeStream
-    name: Popups
+    name: popups
     primary_key:
       - id
     retriever:
@@ -376,7 +376,7 @@ streams:
           page_size: 125
           start_from_page: 1
   - type: DeclarativeStream
-    name: Segmentations
+    name: segmentations
     primary_key:
       - id
     retriever:
@@ -417,7 +417,7 @@ streams:
           page_size: 125
           start_from_page: 1
   - type: DeclarativeStream
-    name: Workflows
+    name: workflows
     primary_key:
       - id
     retriever:
@@ -459,8 +459,8 @@ streams:
           start_from_page: 1
 spec:
   type: Spec
-  documentationUrl: https://docs.airbyte.io/integrations/sources/rd-station-marketing
-  connectionSpecification:
+  documentation_url: https://docs.airbyte.io/integrations/sources/rd-station-marketing
+  connection_specification:
     "$schema": http://json-schema.org/draft-07/schema#
     title: RD Station Marketing Spec
     type: object
