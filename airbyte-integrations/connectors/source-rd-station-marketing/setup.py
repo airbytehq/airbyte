@@ -6,19 +6,19 @@
 from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
-    "airbyte-cdk~=0.2",
+    "airbyte-cdk~=0.1",
 ]
 
 TEST_REQUIREMENTS = [
-    "pytest~=6.1",
+    "requests-mock~=1.9.3",
+    "pytest~=6.2",
     "pytest-mock~=3.6.1",
-    "responses~=0.13.3",
-    "requests-mock",
+    "connector-acceptance-test",
 ]
 
 setup(
     name="source_rd_station_marketing",
-    description="Source implementation for RD Station Marketing.",
+    description="Source implementation for Rd Station Marketing.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

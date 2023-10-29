@@ -1,0 +1,544 @@
+version: 0.35.0
+type: DeclarativeSource
+check:
+  type: CheckStream
+  stream_names:
+    - Segmentations
+streams:
+  - type: DeclarativeStream
+    name: AnalyticsConversions
+    primary_key:
+      - asset_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.rd.services
+        path: /platform/analytics/conversions
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.rd.services/auth/token
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - conversions
+      paginator:
+        type: NoPagination
+    incremental_sync:
+      type: DatetimeBasedCursor
+      datetime_format: "%Y-%m-%d"
+      start_datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+      end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      step: P1M
+      cursor_field: asset_updated_at
+      cursor_granularity: P1D
+      start_time_option:
+        inject_into: request_parameter
+        field_name: start_date
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: end_date
+        type: RequestOption
+  - type: DeclarativeStream
+    name: AnalyticsEmails
+    primary_key:
+      - campaign_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.rd.services
+        path: /platform/analytics/emails
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.rd.services/auth/token
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - emails
+      paginator:
+        type: NoPagination
+    incremental_sync:
+      type: DatetimeBasedCursor
+      datetime_format: "%Y-%m-%d"
+      start_datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+      end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      step: P1M
+      cursor_field: send_at
+      cursor_granularity: P1D
+      start_time_option:
+        inject_into: request_parameter
+        field_name: start_date
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: end_date
+        type: RequestOption
+  - type: DeclarativeStream
+    name: AnalyticsFunnel
+    primary_key:
+      - reference_day
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.rd.services
+        path: /platform/analytics/funnel
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.rd.services/auth/token
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - funnel
+      paginator:
+        type: NoPagination
+    incremental_sync:
+      type: DatetimeBasedCursor
+      datetime_format: "%Y-%m-%d"
+      start_datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+      end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      step: P1M
+      cursor_field: reference_day
+      cursor_granularity: P1D
+      start_time_option:
+        inject_into: request_parameter
+        field_name: start_date
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: end_date
+        type: RequestOption
+  - type: DeclarativeStream
+    name: AnalyticsWorkflowEmailsStatistics
+    primary_key:
+      - workflow_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.rd.services
+        path: /platform/analytics/workflow_emails_statistics
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.rd.services/auth/token
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - workflow_email_statistics
+      paginator:
+        type: NoPagination
+    incremental_sync:
+      type: DatetimeBasedCursor
+      datetime_format: "%Y-%m-%d"
+      start_datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+      end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
+      step: P1M
+      cursor_field: updated_at
+      cursor_granularity: P1D
+      start_time_option:
+        inject_into: request_parameter
+        field_name: start_date
+        type: RequestOption
+      end_time_option:
+        inject_into: request_parameter
+        field_name: end_date
+        type: RequestOption
+  - type: DeclarativeStream
+    name: Emails
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.rd.services
+        path: /platform/emails
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.rd.services/auth/token
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          inject_into: request_parameter
+          field_name: page_size
+          type: RequestOption
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 125
+          start_from_page: 1
+  - type: DeclarativeStream
+    name: Embeddables
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.rd.services
+        path: /platform/embeddables
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.rd.services/auth/token
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          inject_into: request_parameter
+          field_name: page_size
+          type: RequestOption
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 125
+          start_from_page: 1
+  - type: DeclarativeStream
+    name: Fields
+    primary_key:
+      - uuid
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.rd.services
+        path: /platform/contacts/fields
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.rd.services/auth/token
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - fields
+      paginator:
+        type: NoPagination
+  - type: DeclarativeStream
+    name: LandingPages
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.rd.services
+        path: /platform/landing_pages
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.rd.services/auth/token
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          inject_into: request_parameter
+          field_name: page_size
+          type: RequestOption
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 125
+          start_from_page: 1
+  - type: DeclarativeStream
+    name: Popups
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.rd.services
+        path: /platform/popups
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.rd.services/auth/token
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          inject_into: request_parameter
+          field_name: page_size
+          type: RequestOption
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 125
+          start_from_page: 1
+  - type: DeclarativeStream
+    name: Segmentations
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.rd.services
+        path: /platform/segmentations
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.rd.services/auth/token
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - segmentations
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          inject_into: request_parameter
+          field_name: page_size
+          type: RequestOption
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 125
+          start_from_page: 1
+  - type: DeclarativeStream
+    name: Workflows
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.rd.services
+        path: /platform/workflows
+        http_method: GET
+        request_parameters: {}
+        request_headers: {}
+        request_body_json: {}
+        authenticator:
+          type: OAuthAuthenticator
+          client_id: "{{ config['client_id'] }}"
+          client_secret: "{{ config['client_secret'] }}"
+          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_request_body: {}
+          token_refresh_endpoint: https://api.rd.services/auth/token
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - workflows
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: page
+        page_size_option:
+          inject_into: request_parameter
+          field_name: page_size
+          type: RequestOption
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 125
+          start_from_page: 1
+spec:
+  type: Spec
+  documentationUrl: https://docs.airbyte.io/integrations/sources/rd-station-marketing
+  connectionSpecification:
+    "$schema": http://json-schema.org/draft-07/schema#
+    title: RD Station Marketing Spec
+    type: object
+    required:
+      - start_date
+    additionalProperties: true
+    properties:
+      authorization:
+        type: object
+        title: Authentication Type
+        description: Choose one of the possible authorization method
+        oneOf:
+          - title: Sign in via RD Station (OAuth)
+            type: object
+            required:
+              - auth_type
+            properties:
+              auth_type:
+                type: string
+                const: Client
+                order: 0
+              client_id:
+                title: Client ID
+                type: string
+                description: The Client ID of your RD Station developer application.
+                airbyte_secret: true
+              client_secret:
+                title: Client Secret
+                type: string
+                description: The Client Secret of your RD Station developer application
+                airbyte_secret: true
+              refresh_token:
+                title: Refresh Token
+                type: string
+                description: The token for obtaining the new access token.
+                airbyte_secret: true
+      start_date:
+        title: Start Date
+        description:
+          UTC date and time in the format 2017-01-25T00:00:00Z. Any data
+          before this date will not be replicated. When specified and not None, then
+          stream will behave as incremental
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+        examples:
+          - "2017-01-25T00:00:00Z"
+        type: string
+  supportsIncremental: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    oauth_config_specification:
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - authorization
+              - refresh_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: true
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - authorization
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - authorization
+              - client_secret
