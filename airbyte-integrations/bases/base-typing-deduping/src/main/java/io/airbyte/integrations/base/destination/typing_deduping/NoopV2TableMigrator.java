@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.base.destination.typing_deduping;
 
-public class NoopV2TableMigrator<DialectTableDefinition> implements V2TableMigrator<DialectTableDefinition> {
+public class NoopV2TableMigrator implements V2TableMigrator {
 
   @Override
   public void migrateIfNecessary(final StreamConfig streamConfig) {
