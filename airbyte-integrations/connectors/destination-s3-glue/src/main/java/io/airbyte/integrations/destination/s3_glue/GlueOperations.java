@@ -87,6 +87,7 @@ public class GlueOperations implements MetastoreOperations {
     if (jsonSchema.has("properties")) {
       Map<String, JsonNode> properties = objectMapper.convertValue(jsonSchema.get("properties"), new TypeReference<>() {});
       return properties.entrySet().stream()
+          // TODO  This needs to expand out since a single column can become an array
           .map(es -> new Column().withName(es.getKey()).withType(transformSchemaRecursive(es.getValue(), s3Format)))
           .collect(Collectors.toSet());
     } else {
@@ -171,8 +172,10 @@ public class GlueOperations implements MetastoreOperations {
       return Set.of("binary");
     }
     if (type.isArray()) {
-      Set<String> types = objectMapper.convertValue(type, new TypeReference<>() {});
-      return types.stream().filter(t -> !t.equals("null")).collect(Collectors.toSet());
+      return Set.of("array");
+      // TODO Better Support Arrays
+      // Set<String> types = objectMapper.convertValue(type, new TypeReference<>() {});
+      // return types.stream().filter(t -> !t.equals("null")).collect(Collectors.toSet());
     } else {
       return Set.of(type.asText());
     }
