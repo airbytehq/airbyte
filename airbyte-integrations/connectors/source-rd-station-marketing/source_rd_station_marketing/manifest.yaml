@@ -23,7 +23,7 @@ streams:
           type: OAuthAuthenticator
           client_id: "{{ config['client_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.rd.services/auth/token
       record_selector:
@@ -68,7 +68,7 @@ streams:
           type: OAuthAuthenticator
           client_id: "{{ config['client_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.rd.services/auth/token
       record_selector:
@@ -113,7 +113,7 @@ streams:
           type: OAuthAuthenticator
           client_id: "{{ config['client_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.rd.services/auth/token
       record_selector:
@@ -158,7 +158,7 @@ streams:
           type: OAuthAuthenticator
           client_id: "{{ config['client_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.rd.services/auth/token
       record_selector:
@@ -203,7 +203,7 @@ streams:
           type: OAuthAuthenticator
           client_id: "{{ config['client_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.rd.services/auth/token
       record_selector:
@@ -244,7 +244,7 @@ streams:
           type: OAuthAuthenticator
           client_id: "{{ config['client_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.rd.services/auth/token
       record_selector:
@@ -284,7 +284,7 @@ streams:
           type: OAuthAuthenticator
           client_id: "{{ config['client_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.rd.services/auth/token
       record_selector:
@@ -313,7 +313,7 @@ streams:
           type: OAuthAuthenticator
           client_id: "{{ config['client_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.rd.services/auth/token
       record_selector:
@@ -353,7 +353,7 @@ streams:
           type: OAuthAuthenticator
           client_id: "{{ config['client_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.rd.services/auth/token
       record_selector:
@@ -393,7 +393,7 @@ streams:
           type: OAuthAuthenticator
           client_id: "{{ config['client_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.rd.services/auth/token
       record_selector:
@@ -434,7 +434,7 @@ streams:
           type: OAuthAuthenticator
           client_id: "{{ config['client_id'] }}"
           client_secret: "{{ config['client_secret'] }}"
-          refresh_token: "{{ config['client_refresh_token'] }}"
+          refresh_token: "{{ config['refresh_token'] }}"
           refresh_request_body: {}
           token_refresh_endpoint: https://api.rd.services/auth/token
       record_selector:
