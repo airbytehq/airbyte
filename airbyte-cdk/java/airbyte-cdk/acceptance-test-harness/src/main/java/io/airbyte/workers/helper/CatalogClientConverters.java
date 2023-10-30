@@ -50,7 +50,7 @@ public class CatalogClientConverters {
 
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static AirbyteStream toConfiguredProtocol(final io.airbyte.api.client.model.generated.AirbyteStream stream,
-                                                                               AirbyteStreamConfiguration config)
+                                                    AirbyteStreamConfiguration config)
       throws JsonValidationException {
     if (config.getFieldSelectionEnabled() != null && config.getFieldSelectionEnabled()) {
       // Validate the selected field paths.
@@ -122,7 +122,7 @@ public class CatalogClientConverters {
   }
 
   private static AirbyteStreamConfiguration generateDefaultConfiguration(
-                                                                                                               final io.airbyte.api.client.model.generated.AirbyteStream stream) {
+                                                                         final io.airbyte.api.client.model.generated.AirbyteStream stream) {
     final AirbyteStreamConfiguration result =
         new AirbyteStreamConfiguration()
             .aliasName(Names.toAlphanumericAndUnderscore(stream.getName()))
