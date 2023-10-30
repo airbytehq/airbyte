@@ -7,6 +7,7 @@
 # of airbyte-cdk rather than a standalone package.
 from .airbyte_protocol import (
     AdvancedAuth,
+    AirbyteAnalyticsTraceMessage,
     AirbyteCatalog,
     AirbyteConnectionStatus,
     AirbyteControlConnectorConfigMessage,

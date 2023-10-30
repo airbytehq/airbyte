@@ -4,11 +4,11 @@
 
 import logging
 import traceback
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple
 
 from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.file_based.availability_strategy import AbstractFileBasedAvailabilityStrategy
-from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import CheckAvailabilityError, CustomFileBasedException, FileBasedSourceError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import conforms_to_schema
@@ -55,28 +55,34 @@ class DefaultFileBasedAvailabilityStrategy(AbstractFileBasedAvailabilityStrategy
         """
         parser = stream.get_parser()
         try:
-            files = self._check_list_files(stream)
+            file = self._check_list_files(stream)
             if not parser.parser_max_n_files_for_parsability == 0:
-                self._check_parse_record(stream, files[0], logger)
+                self._check_parse_record(stream, file, logger)
             else:
                 # If the parser is set to not check parsability, we still want to check that we can open the file.
-                handle = stream.stream_reader.open_file(files[0], parser.file_read_mode, None, logger)
+                handle = stream.stream_reader.open_file(file, parser.file_read_mode, None, logger)
                 handle.close()
         except CheckAvailabilityError:
             return False, "".join(traceback.format_exc())
 
         return True, None
 
-    def _check_list_files(self, stream: "AbstractFileBasedStream") -> List[RemoteFile]:
+    def _check_list_files(self, stream: "AbstractFileBasedStream") -> RemoteFile:
+        """
+        Check that we can list files from the stream.
+
+        Returns the first file if successful, otherwise raises a CheckAvailabilityError.
+        """
         try:
-            files = stream.list_files()
+            file = next(iter(stream.get_files()))
+        except StopIteration:
+            raise CheckAvailabilityError(FileBasedSourceError.EMPTY_STREAM, stream=stream.name)
+        except CustomFileBasedException as exc:
+            raise CheckAvailabilityError(str(exc), stream=stream.name) from exc
         except Exception as exc:
             raise CheckAvailabilityError(FileBasedSourceError.ERROR_LISTING_FILES, stream=stream.name) from exc
 
-        if not files:
-            raise CheckAvailabilityError(FileBasedSourceError.EMPTY_STREAM, stream=stream.name)
-
-        return files
+        return file
 
     def _check_parse_record(self, stream: "AbstractFileBasedStream", file: RemoteFile, logger: logging.Logger) -> None:
         parser = stream.get_parser()

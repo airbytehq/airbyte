@@ -1,33 +1,40 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - api.typeform.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
+  connectorSubtype: api
+  connectorType: source
+  definitionId: e7eff203-90bf-43e5-a240-19ea3056c474
+  dockerImageTag: 1.1.2
+  dockerRepository: airbyte/source-typeform
+  documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
+  githubIssueLabel: source-typeform
+  icon: typeform.svg
+  license: MIT
+  name: Typeform
   registries:
     cloud:
       enabled: true
     oss:
       enabled: true
-  connectorSubtype: api
-  connectorType: source
-  definitionId: e7eff203-90bf-43e5-a240-19ea3056c474
-  dockerImageTag: 1.1.0
-  dockerRepository: airbyte/source-typeform
-  githubIssueLabel: source-typeform
-  icon: typeform.svg
-  license: MIT
-  name: Typeform
   releaseDate: 2021-07-10
   releaseStage: generally_available
-  supportLevel: certified
-  documentationUrl: https://docs.airbyte.com/integrations/sources/typeform
   releases:
     breakingChanges:
       1.1.0:
+        message:
+          This version migrates the Typeform connector to the low-code framework
+          for greater maintainability. This introduces a breaking change to the state
+          format for the `responses` stream. If you are using the incremental sync
+          mode for this stream, you will need to reset affected connections after
+          upgrading to prevent sync failures.
         upgradeDeadline: "2023-09-25"
-        message: "This version migrates the Typeform connector to the low-code framework for greater maintainability. This introduces a breaking change to the state format for the `responses` stream. If you are using the incremental sync mode for this stream, you will need to reset affected connections after upgrading to prevent sync failures."
+  supportLevel: certified
   tags:
     - language:low-code
-  ab_internal:
-    sl: 200
-    ql: 400
 metadataSpecVersion: "1.0"
