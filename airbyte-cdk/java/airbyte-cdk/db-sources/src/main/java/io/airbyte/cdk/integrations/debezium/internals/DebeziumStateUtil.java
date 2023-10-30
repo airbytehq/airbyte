@@ -38,7 +38,7 @@ public interface DebeziumStateUtil {
    * @return A configured and started {@link FileOffsetBackingStore} instance.
    */
   default FileOffsetBackingStore getFileOffsetBackingStore(final Properties properties) {
-    final FileOffsetBackingStore fileOffsetBackingStore = new FileOffsetBackingStore(KafkaConnectUtil.converterForOffsetStore());
+    final FileOffsetBackingStore fileOffsetBackingStore = KafkaConnectUtil.fileOffsetBackingStore();
     final Map<String, String> propertiesMap = Configuration.from(properties).asMap();
     propertiesMap.put(WorkerConfig.KEY_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
     propertiesMap.put(WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
