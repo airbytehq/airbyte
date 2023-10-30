@@ -41,8 +41,6 @@ class WeaviateIndexer(Indexer):
 
     def __init__(self, config: WeaviateIndexingConfigModel):
         super().__init__(config)
-        self.buffered_objects: MutableMapping[str, BufferedObject] = {}
-        self.objects_with_error: MutableMapping[str, BufferedObject] = {}
 
     def _create_client(self):
         headers = {
@@ -132,7 +130,6 @@ class WeaviateIndexer(Indexer):
                 object_id = str(uuid.uuid4())
                 class_name = self.stream_to_class_name(chunk.record.stream)
                 self.client.batch.add_data_object(weaviate_object, class_name, object_id, vector=chunk.embedding)
-                self.buffered_objects[object_id] = BufferedObject(object_id, weaviate_object, chunk.embedding, class_name)
             self._flush()
 
     def stream_to_class_name(self, stream_name: str) -> str:
