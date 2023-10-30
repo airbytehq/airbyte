@@ -6,8 +6,8 @@ package io.airbyte.integrations.source.mongodb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.airbyte.cdk.db.mongodb.MongoUtils;
-import io.airbyte.cdk.db.mongodb.MongoUtils.MongoInstanceType;
+import io.airbyte.integrations.destination.mongodb.MongoUtils;
+import io.airbyte.integrations.destination.mongodb.MongoUtils.MongoInstanceType;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingSource;
