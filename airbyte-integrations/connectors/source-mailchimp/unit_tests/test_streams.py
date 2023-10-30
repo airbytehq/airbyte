@@ -282,6 +282,12 @@ def test_unsubscribes_get_updated_state(unsubscribes_stream, mock_unsubscribes_s
             None,
         ),
     ],
+    ids=[
+        "Campaigns 403 error",
+        "EmailActivity 403 error",
+        "Lists 200 success",
+        "Lists 400 error",
+    ]
 )
 def test_403_error_handling(
     auth, requests_mock, stream, url, status_code, response_content, expected_availability, expected_reason_substring
@@ -305,7 +311,6 @@ def test_403_error_handling(
         assert is_available is expected_availability
 
         if expected_reason_substring:
-            print(reason)
             assert expected_reason_substring in reason
         else:
             assert reason is None
