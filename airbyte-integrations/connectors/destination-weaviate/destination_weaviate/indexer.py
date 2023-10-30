@@ -9,8 +9,7 @@ import os
 import re
 import uuid
 from collections import defaultdict
-from dataclasses import dataclass
-from typing import Any, List, Mapping, MutableMapping, Optional
+from typing import Optional
 
 import weaviate
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD
@@ -28,21 +27,11 @@ class WeaviatePartialBatchError(Exception):
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
 
-@dataclass
-class BufferedObject:
-    id: str
-    properties: Mapping[str, Any]
-    vector: Optional[List[Any]]
-    class_name: str
-
-
 class WeaviateIndexer(Indexer):
     config: WeaviateIndexingConfigModel
 
     def __init__(self, config: WeaviateIndexingConfigModel):
         super().__init__(config)
-        self.buffered_objects: MutableMapping[str, BufferedObject] = {}
-        self.objects_with_error: MutableMapping[str, BufferedObject] = {}
 
     def _create_client(self):
         headers = {
@@ -132,7 +121,6 @@ class WeaviateIndexer(Indexer):
                 object_id = str(uuid.uuid4())
                 class_name = self.stream_to_class_name(chunk.record.stream)
                 self.client.batch.add_data_object(weaviate_object, class_name, object_id, vector=chunk.embedding)
-                self.buffered_objects[object_id] = BufferedObject(object_id, weaviate_object, chunk.embedding, class_name)
             self._flush()
 
     def stream_to_class_name(self, stream_name: str) -> str:
