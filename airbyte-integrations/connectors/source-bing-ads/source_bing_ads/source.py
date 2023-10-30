@@ -36,6 +36,7 @@ from source_bing_ads.streams import (  # noqa: F401
     AppInstallAdLabels,
     AppInstallAds,
     BudgetSummaryReport,
+    CampaignLabels,
     CampaignPerformanceReportDaily,
     CampaignPerformanceReportHourly,
     CampaignPerformanceReportMonthly,
@@ -45,6 +46,7 @@ from source_bing_ads.streams import (  # noqa: F401
     GeographicPerformanceReportHourly,
     GeographicPerformanceReportMonthly,
     GeographicPerformanceReportWeekly,
+    KeywordLabels,
     KeywordPerformanceReportDaily,
     KeywordPerformanceReportHourly,
     KeywordPerformanceReportMonthly,
@@ -57,7 +59,7 @@ from source_bing_ads.streams import (  # noqa: F401
     UserLocationPerformanceReportDaily,
     UserLocationPerformanceReportHourly,
     UserLocationPerformanceReportMonthly,
-    UserLocationPerformanceReportWeekly, KeywordLabels,
+    UserLocationPerformanceReportWeekly,
 )
 
 
@@ -89,6 +91,7 @@ class SourceBingAds(AbstractSource):
             BudgetSummaryReport(client, config),
             Labels(client, config),
             KeywordLabels(client, config),
+            CampaignLabels(client, config),
         ]
 
         reports = (
