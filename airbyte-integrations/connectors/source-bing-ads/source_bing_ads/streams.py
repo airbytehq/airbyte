@@ -212,6 +212,7 @@ class BingAdsBulkStream(BingAdsBaseStream, ABC):
         actual_record["AccountId"] = stream_slice.get("account_id")
         return actual_record
 
+
 class AppInstallAdRecord(BingAdsBulkStream):
     data_scope = ["EntityData"]
     download_entities = ["AppInstallAds"]
