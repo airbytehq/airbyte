@@ -268,10 +268,6 @@ If a child stream is synced independently of its parent stream, a full sync will
 | 0.1.6   | 2021-06-24 | [4009](https://github.com/airbytehq/airbyte/pull/4009)   | Added pages, price rules and discount codes streams                                                                             |
 | 0.1.5   | 2021-06-10 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Added `AIRBYTE_ENTRYPOINT` for Kubernetes support                                                                               |
 | 0.1.4   | 2021-06-09 | [3926](https://github.com/airbytehq/airbyte/pull/3926)   | New attributes to Orders schema                                                                                                 |
-<<<<<<< HEAD
 | 0.1.3   | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787)   | Added Native Shopify Source Connector                                                                                           |
 
 </HideInUI>
-=======
-| 0.1.3   | 2021-06-08 | [3787](https://github.com/airbytehq/airbyte/pull/3787)   | Added Native Shopify Source Connector                                                                                           |
->>>>>>> 3e764712f473bdebb42af6d318e283dbba5a1877
