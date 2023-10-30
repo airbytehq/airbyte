@@ -1,6 +1,10 @@
 # Notion
 
+<HideInUI>
+
 This page contains the setup guide and reference information for the Notion source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
@@ -82,6 +86,8 @@ If you are authenticating via OAuth2.0 for **Airbyte Open Source**, you will nee
 6. (Optional) You may optionally provide a **Start Date** using the provided datepicker, or by programmatically entering a UTC date and time in the format: `YYYY-MM-DDTHH:mm:ss.SSSZ`. When using incremental syncs, only data generated after this date will be replicated. If left blank, Airbyte will set the start date two years from the current date by default.
 7. Click **Set up source** and wait for the tests to complete.
 
+<HideInUI>
+
 ## Supported sync modes
 
 The Notion source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -104,9 +110,23 @@ The Notion source connector supports the following streams:
 - [Pages](https://developers.notion.com/reference/retrieve-a-page)
 - [Users](https://developers.notion.com/reference/get-users)
 
-## Performance considerations
+## Limitations & Troubleshooting
+
+<details>
+
+<summary>
+
+Expand to see details about Notion connector limitations and troubleshooting
+
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
 
 The connector is restricted by Notion [request limits](https://developers.notion.com/reference/request-limits). The Notion connector should not run into Notion API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+
+</details>
 
 ## Changelog
 
@@ -147,3 +167,5 @@ The connector is restricted by Notion [request limits](https://developers.notion
 | 0.1.2   | 2022-01-11 | [9084](https://github.com/airbytehq/airbyte/pull/9084)   | Fix documentation URL                              |
 | 0.1.1   | 2021-12-30 | [9207](https://github.com/airbytehq/airbyte/pull/9207)   | Update connector fields title/description          |
 | 0.1.0   | 2021-10-17 | [7092](https://github.com/airbytehq/airbyte/pull/7092)   | Initial Release                                    |
+
+</HideInUI>
