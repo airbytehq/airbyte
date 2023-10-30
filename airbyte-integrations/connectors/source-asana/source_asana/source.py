@@ -18,10 +18,12 @@ from .streams import (
     CustomFields,
     Portfolios,
     PortfoliosCompact,
+    OrganizationExports,
     Projects,
     Sections,
     SectionsCompact,
     Stories,
+    StoriesCompact,
     Tags,
     Tasks,
     TeamMemberships,
@@ -58,8 +60,8 @@ class SourceAsana(AbstractSource):
             )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        args = {"authenticator": self._get_authenticator(config)}
-        return [
+        args = {"authenticator": self._get_authenticator(config), "test_mode": config["test_mode"]}
+        streams = [
             AttachmentsCompact(**args),
             Attachments(**args),
             CustomFields(**args),
@@ -68,6 +70,7 @@ class SourceAsana(AbstractSource):
             Projects(**args),
             SectionsCompact(**args),
             Sections(**args),
+            StoriesCompact(**args),
             Stories(**args),
             Tags(**args),
             Tasks(**args),
@@ -76,3 +79,6 @@ class SourceAsana(AbstractSource):
             Users(**args),
             Workspaces(**args),
         ]
+        if "organization_export_ids" in config:
+            streams.append(OrganizationExports(organization_export_ids=config.get("organization_export_ids"), **args))
+        return streams

@@ -62,6 +62,21 @@ NOT_AUDIENCE_METRICS = [
     "complete_payment",
     "value_per_complete_payment",
     "total_complete_payment_rate",
+    "profile_visits_rate",
+    "purchase",
+    "purchase_rate",
+    "registration",
+    "registration_rate",
+    "sales_lead",
+    "sales_lead_rate",
+    "cost_per_app_install",
+    "cost_per_purchase",
+    "cost_per_registration",
+    "total_purchase_value",
+    "cost_per_sales_lead",
+    "cost_per_total_sales_lead",
+    "cost_per_total_app_event_add_to_cart",
+    "total_app_event_add_to_cart",
 ]
 
 T = TypeVar("T")
@@ -87,7 +102,8 @@ T = TypeVar("T")
 #         | └─AdGroupAudienceReportsByPlatform     (11 ad_group_audience_reports_by_platform)
 #         ├─AdsAudienceReports                     (12 ads_audience_reports)
 #         | ├─AdsAudienceReportsByCountry          (13 ads_audience_reports_by_country)
-#         | └─AdsAudienceReportsByPlatform         (14 ads_audience_reports_by_platform)
+#         | ├─AdsAudienceReportsByPlatform         (14 ads_audience_reports_by_platform)
+#         | ├─AdsAudienceReportsByProvince         (14 ads_audience_reports_by_platform)
 #         ├─AdvertisersAudienceReports             (15 advertisers_audience_reports)
 #         | ├─AdvertisersAudienceReportsByCountry  (16 advertisers_audience_reports_by_country)
 #         | └─AdvertisersAudienceReportsByPlatform (17 advertisers_audience_reports_by_platform)
@@ -273,7 +289,7 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
 
     @transformer.registerCustomTransform
     def transform_function(original_value: Any, field_schema: Dict[str, Any]) -> Any:
-        """Custom traun"""
+        """Custom transformation"""
         if original_value == "-":
             return None
         elif isinstance(original_value, float):
@@ -847,25 +863,21 @@ class AudienceReport(BasicReports, ABC):
 
 
 class CampaignsAudienceReports(AudienceReport):
-
     ref_pk = "campaign_id"
     report_level = ReportLevel.CAMPAIGN
 
 
 class AdGroupAudienceReports(AudienceReport):
-
     ref_pk = "adgroup_id"
     report_level = ReportLevel.ADGROUP
 
 
 class AdsAudienceReports(AudienceReport):
-
     ref_pk = "ad_id"
     report_level = ReportLevel.AD
 
 
 class AdvertisersAudienceReports(AudienceReport):
-
     ref_pk = "advertiser_id"
     report_level = ReportLevel.ADVERTISER
 
@@ -916,3 +928,9 @@ class AdvertisersAudienceReportsByPlatform(AdvertisersAudienceReports):
     """Custom reports for advertisers by platform"""
 
     audience_dimensions = ["platform"]
+
+
+class AdsAudienceReportsByProvince(AdsAudienceReports):
+    """Custom reports for ads by province"""
+
+    audience_dimensions = ["province_id"]
