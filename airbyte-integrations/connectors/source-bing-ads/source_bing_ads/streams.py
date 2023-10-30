@@ -222,10 +222,13 @@ class AppInstallAdLabels(BingAdsBulkStream):
 
 
 class Labels(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
+    """
+
     data_scope = ["EntityData"]
     download_entities = ["Labels"]
 
-    # TODO: check primary key
     primary_key = "Id"
 
 

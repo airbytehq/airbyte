@@ -2,11 +2,26 @@
   "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "AdFormatPreference": {
+    "Color": {
       "type": ["null", "string"]
     },
-    "DevicePreference": {
+    "Client Id": {
+      "type": ["null", "string"]
+    },
+    "Description Id": {
+      "type": ["null", "string"]
+    },
+    "Id": {
       "type": ["null", "integer"]
+    },
+    "Label": {
+      "type": ["null", "string"]
+    },
+    "Modified Time": {
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "type": ["null", "string"]
     }
   }
 }
