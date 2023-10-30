@@ -31,7 +31,7 @@ from source_salesforce.exceptions import TmpFileIOError
 from suds import sudsobject
 
 
-class BingAdsStream(Stream, ABC):
+class BingAdsBaseStream(Stream, ABC):
     primary_key: Optional[Union[str, List[str], List[List[str]]]] = None
 
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
@@ -39,6 +39,8 @@ class BingAdsStream(Stream, ABC):
         self.client = client
         self.config = config
 
+
+class BingAdsStream(BingAdsBaseStream, ABC):
     @property
     @abstractmethod
     def data_field(self) -> str:
@@ -147,7 +149,7 @@ class BingAdsStream(Stream, ABC):
         yield from []
 
 
-class BingAdsBulkStream(BingAdsStream, ABC):
+class BingAdsBulkStream(BingAdsBaseStream, ABC):
     @property
     @abstractmethod
     def data_scope(self) -> List[str]:
@@ -177,7 +179,6 @@ class BingAdsBulkStream(BingAdsStream, ABC):
         **kwargs: Mapping[str, Any],
     ) -> Iterable[Mapping[str, Any]]:
         stream_state = stream_state or {}
-        next_page_token = None
         account_id = str(stream_slice.get("account_id")) if stream_slice else None
         customer_id = str(stream_slice.get("customer_id")) if stream_slice else None
 
@@ -190,7 +191,7 @@ class BingAdsBulkStream(BingAdsStream, ABC):
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
                     for row in chunk:
-                        if row.get('Type') not in ('Format Version', 'Account'):
+                        if row.get("Type") not in ("Format Version", "Account"):
                             # TODO: use get_json_schema to yield out only required properties
                             yield row
         except pd.errors.EmptyDataError as e:
@@ -200,57 +201,32 @@ class BingAdsBulkStream(BingAdsStream, ABC):
             raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Called: {report_file_path}. Stream: {self.name}", ioe)
         finally:
             # remove binary tmp file, after data is read
-            # TODO: uncomment remove
-            # os.remove(report_file_path)
-            pass
+            os.remove(report_file_path)
         yield from []
 
 
 class AppInstallAdRecord(BingAdsBulkStream):
-    # TODO: refactor to campaigns and remove campaign
-    # data_scope = ["EntityData", "QualityScoreData"]
-    data_scope = ["EntityData",]# "QualityScoreData"]
+    data_scope = ["EntityData"]
     download_entities = ["AppInstallAds"]
 
+    # TODO: check primary key
     primary_key = "Id"
-    # Stream caches incoming responses to avoid duplicated http requests
-    # TODO: refactor as this fields are not required for bulk requests
-    data_field: str = "AdvertiserAccount"
-    service_name: str = "CustomerManagementService"
-    operation_name: str = "SearchAccounts"
-    additional_fields: str = "TaxCertificate AccountMode"
-
-
 
 
 class AppInstallAdLabels(BingAdsBulkStream):
     data_scope = ["EntityData"]
     download_entities = ["AppInstallAdLabels"]
 
+    # TODO: check primary key
     primary_key = "Id"
-    # Stream caches incoming responses to avoid duplicated http requests
-    # TODO: refactor as this fields are not required for bulk requests
-    use_cache: bool = True
-    data_field: str = "AdvertiserAccount"
-    service_name: str = "CustomerManagementService"
-    operation_name: str = "SearchAccounts"
 
 
 class Labels(BingAdsBulkStream):
     data_scope = ["EntityData"]
     download_entities = ["Labels"]
 
+    # TODO: check primary key
     primary_key = "Id"
-    # TODO: refactor as this fields are not required for bulk requests
-    data_field: str = "AdvertiserAccount"
-    service_name: str = "CustomerManagementService"
-    operation_name: str = "SearchAccounts"
-    additional_fields: str = "TaxCertificate AccountMode"
-    # report_aggregation = 'a'
-    # report_columns = 'a'
-    # report_name = 'a'
-    # maximum page size
-    page_size_limit: int = 1000
 
 
 class Accounts(BingAdsStream):

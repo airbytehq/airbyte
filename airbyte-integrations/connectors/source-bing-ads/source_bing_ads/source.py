@@ -33,6 +33,7 @@ from source_bing_ads.streams import (  # noqa: F401
     AgeGenderAudienceReportHourly,
     AgeGenderAudienceReportMonthly,
     AgeGenderAudienceReportWeekly,
+    AppInstallAdLabels,
     AppInstallAdRecord,
     BudgetSummaryReport,
     CampaignPerformanceReportDaily,
@@ -48,6 +49,7 @@ from source_bing_ads.streams import (  # noqa: F401
     KeywordPerformanceReportHourly,
     KeywordPerformanceReportMonthly,
     KeywordPerformanceReportWeekly,
+    Labels,
     SearchQueryPerformanceReportDaily,
     SearchQueryPerformanceReportHourly,
     SearchQueryPerformanceReportMonthly,
@@ -55,7 +57,7 @@ from source_bing_ads.streams import (  # noqa: F401
     UserLocationPerformanceReportDaily,
     UserLocationPerformanceReportHourly,
     UserLocationPerformanceReportMonthly,
-    UserLocationPerformanceReportWeekly, AppInstallAdLabels,  Labels,
+    UserLocationPerformanceReportWeekly,
 )
 
 
