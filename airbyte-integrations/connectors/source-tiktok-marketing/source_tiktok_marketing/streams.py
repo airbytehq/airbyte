@@ -299,6 +299,7 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         # convert end date to TikTok format
         # example:  "2021-08-24" => "2021-08-24 00:00:00"
         self._end_time = pendulum.parse(end_date or DEFAULT_END_DATE).strftime("%Y-%m-%d 00:00:00")
+        self.include_deleted = kwargs.get("include_deleted", False)
         self.max_cursor_date = None
         self._advertiser_ids = []
 
@@ -372,6 +373,8 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token=next_page_token, **kwargs)
+        if self.include_deleted:
+            params.update({"filtering": '{"secondary_status": "AD_STATUS_ALL"}'})
         if next_page_token:
             params.update(next_page_token)
         return params
@@ -519,7 +522,6 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def __init__(self, **kwargs):
         report_granularity = kwargs.pop("report_granularity", None)
         self.attribution_window = kwargs.get("attribution_window") or 0
-        self.include_deleted = kwargs.get("include_deleted", False)
         super().__init__(**kwargs)
 
         # Important:
