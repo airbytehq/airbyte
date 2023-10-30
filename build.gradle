@@ -63,6 +63,50 @@ allprojects {
     version = rootProject.ext.version
 }
 
+// python is required by the root project to run CAT tests for connectors
+python {
+    envPath = '.venv'
+    minPythonVersion = '3.10' // should be 3.10 for local development
+
+    // Amazon Linux support.
+    // The airbyte-ci tool runs gradle tasks in AL2023-based containers.
+    // In AL2023, `python3` is necessarily v3.9, and later pythons need to be installed and named explicitly.
+    // See https://github.com/amazonlinux/amazon-linux-2023/issues/459 for details.
+    try {
+        if ("python3.11 --version".execute().waitFor() == 0) {
+            // python3.11 definitely exists at this point, use it instead of 'python3'.
+            pythonBinary "python3.11"
+        }
+    } catch (IOException _) {
+        // Swallow exception if python3.11 is not installed.
+    }
+    // Pyenv support.
+    try {
+        def pyenvRoot = "pyenv root".execute()
+        def pyenvLatest = "pyenv latest ${minPythonVersion}".execute()
+        // Pyenv definitely exists at this point: use 'python' instead of 'python3' in all cases.
+        pythonBinary "python"
+        if (pyenvRoot.waitFor() == 0 && pyenvLatest.waitFor() == 0) {
+            pythonPath "${pyenvRoot.text.trim()}/versions/${pyenvLatest.text.trim()}/bin"
+        }
+    } catch (IOException _) {
+        // Swallow exception if pyenv is not installed.
+    }
+
+    scope = 'VIRTUALENV'
+    installVirtualenv = true
+    // poetry is required for installing and running airbyte-ci
+    pip 'poetry:1.5.1'
+}
+
+def cleanPythonVenv = rootProject.tasks.register('cleanPythonVenv', Exec) {
+    commandLine 'rm'
+    args '-rf', "${rootProject.projectDir.absolutePath}/.venv"
+}
+rootProject.tasks.named('clean').configure {
+    dependsOn cleanPythonVenv
+}
+
 // format tasks per project
 allprojects {
 
@@ -396,7 +440,7 @@ def poetryCleanVirtualenv = tasks.register('cleanVirtualenv', Exec) {
         rootProject.file('.venv/bin/python').exists()
     }
 }
-clean.configure {
+cleanPythonVenv.configure {
     dependsOn poetryCleanVirtualenv
 }
 
