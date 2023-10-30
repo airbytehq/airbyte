@@ -40,6 +40,15 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
+        "f59b426832": { "updated_at": "2230-02-26T05:42:10+00:00" }
+      },
+      "stream_descriptor": { "name": "segments" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
         "00f14fbfd8": { "timestamp": "2231-09-26T05:42:10+00:00" }
       },
       "stream_descriptor": { "name": "unsubscribes" }
