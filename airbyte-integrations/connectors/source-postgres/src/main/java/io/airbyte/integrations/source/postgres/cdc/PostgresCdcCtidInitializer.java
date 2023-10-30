@@ -167,6 +167,8 @@ public class PostgresCdcCtidInitializer {
       final PostgresCdcStateHandler postgresCdcStateHandler = new PostgresCdcStateHandler(stateManager);
 
       final boolean canShortCircuitDebeziumEngine = savedOffset.isPresent() &&
+      // Until the need presents itself in production, short-circuiting should only be done in tests.
+          sourceConfig.has("is_test") && sourceConfig.get("is_test").asBoolean() &&
           !postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
               database.getDatabaseConfig(),
               sourceConfig.get("replication_method").get("replication_slot").asText(),
