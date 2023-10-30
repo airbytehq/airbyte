@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -422,47 +421,160 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
                                          final String finalSuffix,
                                          final boolean forceSafeCasting,
                                          final Optional<Instant> minRawTimestamp) {
-    final String insertNewRecords = insertNewRecords(stream, finalSuffix, stream.columns(), forceSafeCasting, minRawTimestamp);
-    String dedupFinalTable = "";
-    String cdcDeletes = "";
-    String dedupRawTable = "";
+    final String handleNewRecords;
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
-      dedupRawTable = dedupRawTable(stream.id(), finalSuffix);
-      // If we're in dedup mode, then we must have a cursor
-      dedupFinalTable = dedupFinalTable(stream.id(), finalSuffix, stream.primaryKey(), stream.cursor());
-      cdcDeletes = cdcDeletes(stream, finalSuffix, stream.columns(), forceSafeCasting);
+      handleNewRecords = upsertNewRecords(stream, finalSuffix, forceSafeCasting, minRawTimestamp);
+    } else {
+      handleNewRecords = insertNewRecords(stream, finalSuffix, forceSafeCasting, minRawTimestamp);
     }
     final String commitRawTable = commitRawTable(stream.id(), minRawTimestamp);
 
     return new StringSubstitutor(Map.of(
-        "insert_new_records", insertNewRecords,
-        "dedup_final_table", dedupFinalTable,
-        "cdc_deletes", cdcDeletes,
-        "dedupe_raw_table", dedupRawTable,
+        "handleNewRecords", handleNewRecords,
         "commit_raw_table", commitRawTable)).replace(
             """
             BEGIN TRANSACTION;
-            ${insert_new_records}
-            ${dedup_final_table}
-            ${dedupe_raw_table}
-            ${cdc_deletes}
+            ${handleNewRecords}
             ${commit_raw_table}
             COMMIT TRANSACTION;
             """);
   }
 
-  @VisibleForTesting
-  String insertNewRecords(final StreamConfig stream,
-                          final String finalSuffix,
-                          final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
-                          final boolean forceSafeCasting,
-                          final Optional<Instant> minRawTimestamp) {
-    final String columnCasts = streamColumns.entrySet().stream().map(
+  private String insertNewRecords(final StreamConfig stream,
+                                  final String finalSuffix,
+                                  final boolean forceSafeCasting,
+                                  final Optional<Instant> minRawTimestamp) {
+    final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
+    final String extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting, minRawTimestamp);
+
+    return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
+        "column_list", columnList,
+        "extractNewRawRecords", extractNewRawRecords)).replace(
+            """
+            INSERT INTO ${project_id}.${final_table_id}
+            (
+            ${column_list}
+              _airbyte_meta,
+              _airbyte_raw_id,
+              _airbyte_extracted_at
+            )
+            ${extractNewRawRecords};""");
+  }
+
+  private String upsertNewRecords(final StreamConfig stream,
+                                  final String finalSuffix,
+                                  final boolean forceSafeCasting,
+                                  final Optional<Instant> minRawTimestamp) {
+    final String pkEquivalent = stream.primaryKey().stream().map(pk -> {
+      final String quotedPk = pk.name(QUOTE);
+      // either the PKs are equal, or they're both NULL
+      return "(target_table." + quotedPk + " = new_record." + quotedPk
+          + " OR (target_table." + quotedPk + " IS NULL AND new_record." + quotedPk + " IS NULL))";
+    }).collect(joining(" AND "));
+
+    final String columnList = stream.columns().keySet().stream()
+        .map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",")
+        .collect(joining("\n"));
+    final String newRecordColumnList = stream.columns().keySet().stream()
+        .map(quotedColumnId -> "new_record." + quotedColumnId.name(QUOTE) + ",")
+        .collect(joining("\n"));
+    final String extractNewRawRecords = extractNewRawRecords(stream, forceSafeCasting, minRawTimestamp);
+
+    final String cursorComparison;
+    if (stream.cursor().isPresent()) {
+      final String cursor = stream.cursor().get().name(QUOTE);
+      // Build a condition for "new_record is more recent than target_table":
+      cursorComparison =
+          // First, compare the cursors.
+          "(target_table." + cursor + " < new_record." + cursor
+          // Then, break ties with extracted_at. (also explicitly check for both new_record and final table
+          // having null cursor
+          // because NULL != NULL in SQL)
+              + " OR (target_table." + cursor + " = new_record." + cursor
+              + " AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)"
+              + " OR (target_table." + cursor + " IS NULL AND new_record." + cursor
+              + " IS NULL AND target_table._airbyte_extracted_at < new_record._airbyte_extracted_at)"
+              // Or, if the final table has null cursor but new_record has non-null cursor, then take the new
+              // record.
+              + " OR (target_table." + cursor + " IS NULL AND new_record." + cursor + " IS NOT NULL))";
+    } else {
+      // If there's no cursor, then we just take the most-recently-emitted record
+      cursorComparison = "target_table._airbyte_extracted_at < new_record._airbyte_extracted_at";
+    }
+
+    final String cdcDeleteClause;
+    final String cdcSkipInsertClause;
+    if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+      // Execute CDC deletions if there's already a record
+      cdcDeleteClause = "WHEN MATCHED AND new_record._ab_cdc_deleted_at IS NOT NULL AND " + cursorComparison + " THEN DELETE";
+      // And skip insertion entirely if there's no matching record.
+      // (This is possible if a single T+D batch contains both an insertion and deletion for the same PK)
+      cdcSkipInsertClause = "AND new_record._ab_cdc_deleted_at IS NULL";
+    } else {
+      cdcDeleteClause = "";
+      cdcSkipInsertClause = "";
+    }
+
+    final String columnAssignments = stream.columns().keySet().stream()
+        .map(airbyteType -> {
+          final String column = airbyteType.name(QUOTE);
+          return column + " = new_record." + column + ",";
+        }).collect(joining("\n"));
+
+    return new StringSubstitutor(Map.of(
+        "project_id", '`' + projectId + '`',
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
+        "extractNewRawRecords", extractNewRawRecords,
+        "pkEquivalent", pkEquivalent,
+        "cdcDeleteClause", cdcDeleteClause,
+        "cursorComparison", cursorComparison,
+        "columnAssignments", columnAssignments,
+        "cdcSkipInsertClause", cdcSkipInsertClause,
+        "column_list", columnList,
+        "newRecordColumnList", newRecordColumnList)).replace(
+            """
+            MERGE ${project_id}.${final_table_id} target_table
+            USING (
+              ${extractNewRawRecords}
+            ) new_record
+            ON ${pkEquivalent}
+            ${cdcDeleteClause}
+            WHEN MATCHED AND ${cursorComparison} THEN UPDATE SET
+              ${columnAssignments}
+              _airbyte_meta = new_record._airbyte_meta,
+              _airbyte_raw_id = new_record._airbyte_raw_id,
+              _airbyte_extracted_at = new_record._airbyte_extracted_at
+            WHEN NOT MATCHED ${cdcSkipInsertClause} THEN INSERT (
+              ${column_list}
+              _airbyte_meta,
+              _airbyte_raw_id,
+              _airbyte_extracted_at
+            ) VALUES (
+              ${newRecordColumnList}
+              new_record._airbyte_meta,
+              new_record._airbyte_raw_id,
+              new_record._airbyte_extracted_at
+            );""");
+  }
+
+  /**
+   * A SQL SELECT statement that extracts new records from the raw table, casts their columns, and
+   * builds their airbyte_meta column.
+   * <p>
+   * In dedup mode: Also extracts all raw CDC deletion records (for tombstoning purposes) and dedupes
+   * the records (since we only need the most-recent record to upsert).
+   */
+  private String extractNewRawRecords(final StreamConfig stream,
+                                      final boolean forceSafeCasting,
+                                      final Optional<Instant> minRawTimestamp) {
+    final String columnCasts = stream.columns().entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue(), forceSafeCasting) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
     final String columnErrors;
     if (forceSafeCasting) {
-      columnErrors = "[" + streamColumns.entrySet().stream().map(
+      columnErrors = "[" + stream.columns().entrySet().stream().map(
           col -> new StringSubstitutor(Map.of(
               "raw_col_name", escapeColumnNameForJsonPath(col.getKey().originalName()),
               "col_type", toDialectType(col.getValue()).name(),
@@ -483,55 +595,99 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
       columnErrors = "[]";
     }
 
-    final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
-
-    String cdcConditionalOrIncludeStatement = "";
-    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP && streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
-      cdcConditionalOrIncludeStatement = """
-                                         OR (
-                                           _airbyte_loaded_at IS NOT NULL
-                                           AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
-                                         )
-                                         """;
-    }
-
+    final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
     final String extractedAtCondition = buildExtractedAtCondition(minRawTimestamp);
 
-    return new StringSubstitutor(Map.of(
-        "project_id", '`' + projectId + '`',
-        "raw_table_id", stream.id().rawTableId(QUOTE),
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
-        "column_casts", columnCasts,
-        "column_errors", columnErrors,
-        "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
-        "extractedAtCondition", extractedAtCondition,
-        "column_list", columnList)).replace(
-            """
-            INSERT INTO ${project_id}.${final_table_id}
-            (
-            ${column_list}
-              _airbyte_meta,
-              _airbyte_raw_id,
-              _airbyte_extracted_at
-            )
-            WITH intermediate_data AS (
+    if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
+      // When deduping, we need to dedup the raw records. Note the row_number() invocation in the SQL
+      // statement. Do the same extract+cast CTE + airbyte_meta construction as in non-dedup mode, but
+      // then add a row_number column so that we only take the most-recent raw record for each PK.
+
+      // We also explicitly include old CDC deletion records, which act as tombstones to correctly delete
+      // out-of-order records.
+      String cdcConditionalOrIncludeStatement = "";
+      if (stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
+        cdcConditionalOrIncludeStatement = """
+                                           OR (
+                                             _airbyte_loaded_at IS NOT NULL
+                                             AND JSON_VALUE(`_airbyte_data`, '$._ab_cdc_deleted_at') IS NOT NULL
+                                           )
+                                           """;
+      }
+
+      final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
+      final String cursorOrderClause = stream.cursor()
+          .map(cursorId -> cursorId.name(QUOTE) + " DESC NULLS LAST,")
+          .orElse("");
+
+      return new StringSubstitutor(Map.of(
+          "project_id", '`' + projectId + '`',
+          "raw_table_id", stream.id().rawTableId(QUOTE),
+          "column_casts", columnCasts,
+          "column_errors", columnErrors,
+          "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
+          "extractedAtCondition", extractedAtCondition,
+          "column_list", columnList,
+          "pk_list", pkList,
+          "cursor_order_clause", cursorOrderClause)).replace(
+              """
+              WITH intermediate_data AS (
+                SELECT
+              ${column_casts}
+                ${column_errors} AS column_errors,
+                _airbyte_raw_id,
+                _airbyte_extracted_at
+                FROM ${project_id}.${raw_table_id}
+                WHERE (
+                    _airbyte_loaded_at IS NULL
+                    ${cdcConditionalOrIncludeStatement}
+                  ) ${extractedAtCondition}
+              ), new_records AS (
+                SELECT
+                ${column_list}
+                  to_json(struct(COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), []) AS errors)) AS _airbyte_meta,
+                  _airbyte_raw_id,
+                  _airbyte_extracted_at
+                FROM intermediate_data
+              ), numbered_rows AS (
+                SELECT *, row_number() OVER (
+                  PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} `_airbyte_extracted_at` DESC
+                ) AS row_number
+                FROM new_records
+              )
+              SELECT ${column_list} _airbyte_meta, _airbyte_raw_id, _airbyte_extracted_at
+              FROM numbered_rows
+              WHERE row_number = 1""");
+    } else {
+      // When not deduplicating, we just need to handle type casting.
+      // Extract+cast the not-yet-loaded records in a CTE, then select that CTE and build airbyte_meta.
+
+      return new StringSubstitutor(Map.of(
+          "project_id", '`' + projectId + '`',
+          "raw_table_id", stream.id().rawTableId(QUOTE),
+          "column_casts", columnCasts,
+          "column_errors", columnErrors,
+          "extractedAtCondition", extractedAtCondition,
+          "column_list", columnList)).replace(
+              """
+              WITH intermediate_data AS (
+                SELECT
+              ${column_casts}
+                ${column_errors} AS column_errors,
+                _airbyte_raw_id,
+                _airbyte_extracted_at
+                FROM ${project_id}.${raw_table_id}
+                WHERE
+                  _airbyte_loaded_at IS NULL
+                  ${extractedAtCondition}
+              )
               SELECT
-            ${column_casts}
-              ${column_errors} AS column_errors,
-              _airbyte_raw_id,
-              _airbyte_extracted_at
-              FROM ${project_id}.${raw_table_id}
-              WHERE
-                _airbyte_loaded_at IS NULL
-                ${cdcConditionalOrIncludeStatement}
-                ${extractedAtCondition}
-            )
-            SELECT
-            ${column_list}
-              to_json(struct(COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), []) AS errors)) AS _airbyte_meta,
-              _airbyte_raw_id,
-              _airbyte_extracted_at
-            FROM intermediate_data;""");
+              ${column_list}
+                to_json(struct(COALESCE((SELECT ARRAY_AGG(unnested_column_errors IGNORE NULLS) FROM UNNEST(column_errors) unnested_column_errors), []) AS errors)) AS _airbyte_meta,
+                _airbyte_raw_id,
+                _airbyte_extracted_at
+              FROM intermediate_data""");
+    }
   }
 
   private static String buildExtractedAtCondition(final Optional<Instant> minRawTimestamp) {
@@ -569,63 +725,20 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
             ;""");
   }
 
-  @VisibleForTesting
-  String cdcDeletes(final StreamConfig stream,
-                    final String finalSuffix,
-                    final LinkedHashMap<ColumnId, AirbyteType> streamColumns,
-                    final boolean forceSafeCasting) {
-
+  private String cdcDeletes(final StreamConfig stream, final String finalSuffix) {
     if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
       return "";
     }
-
-    if (!streamColumns.containsKey(CDC_DELETED_AT_COLUMN)) {
+    if (!stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
       return "";
     }
 
-    final String pkList = stream.primaryKey().stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    final String pkCasts =
-        stream.primaryKey().stream().map(pk -> extractAndCast(pk, streamColumns.get(pk), forceSafeCasting)).collect(joining(",\n"));
-
-    // we want to grab IDs for deletion from the raw table (not the final table itself) to hand
-    // out-of-order record insertions after the delete has been registered
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix),
-        "raw_table_id", stream.id().rawTableId(QUOTE),
-        "pk_list", pkList,
-        "pk_extracts", pkCasts,
-        "quoted_cdc_delete_column", QUOTE + "_ab_cdc_deleted_at" + QUOTE)).replace(
+        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix))).replace(
             """
             DELETE FROM ${project_id}.${final_table_id}
-            WHERE
-              (${pk_list}) IN (
-                SELECT (
-                    ${pk_extracts}
-                  )
-                FROM  ${project_id}.${raw_table_id}
-                WHERE JSON_TYPE(PARSE_JSON(JSON_QUERY(`_airbyte_data`, '$._ab_cdc_deleted_at'), wide_number_mode=>'round')) != 'null'
-              )
-            ;""");
-  }
-
-  @VisibleForTesting
-  String dedupRawTable(final StreamId id, final String finalSuffix) {
-    return new StringSubstitutor(Map.of(
-        "project_id", '`' + projectId + '`',
-        "raw_table_id", id.rawTableId(QUOTE),
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix))).replace(
-            // Note that this leaves _all_ deletion records in the raw table. We _could_ clear them out, but it
-            // would be painful,
-            // and it only matters in a few edge cases.
-            """
-            DELETE FROM
-              ${project_id}.${raw_table_id}
-            WHERE
-              `_airbyte_raw_id` NOT IN (
-                SELECT `_airbyte_raw_id` FROM ${project_id}.${final_table_id}
-              )
-            ;""");
+            WHERE _ab_cdc_deleted_at IS NOT NULL;""");
   }
 
   @VisibleForTesting
@@ -724,7 +837,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return wrap(open, content + " as " + asType, ")");
   }
 
-  private static Set<String> getPks(StreamConfig stream) {
+  private static Set<String> getPks(final StreamConfig stream) {
     return stream.primaryKey() != null ? stream.primaryKey().stream().map(ColumnId::name).collect(Collectors.toSet()) : Collections.emptySet();
   }
 
