@@ -70,7 +70,8 @@ public class AirbyteExceptionHandlerTest {
         () -> Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
         () -> Assertions.assertEquals("Error happened in foo.bar", traceMessage.getTrace().getError().getMessage()),
         () -> Assertions.assertEquals("Error happened in ?.?", traceMessage.getTrace().getError().getInternalMessage()),
-        () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType())
+        () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType()),
+        () -> Assertions.assertNull(traceMessage.getTrace().getError().getStackTrace(), "Stacktrace should be null if deinterpolating the error message")
     );
   }
 

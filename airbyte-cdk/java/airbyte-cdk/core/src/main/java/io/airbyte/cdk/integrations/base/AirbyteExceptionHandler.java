@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.integrations.base;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -30,7 +31,7 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   public static final List<String> STRINGS_TO_REMOVE = new ArrayList<>();
 
   @Override
-  public void uncaughtException(Thread t, Throwable e) {
+  public void uncaughtException(final Thread thread, final Throwable throwable) {
     // This is a naive AirbyteTraceMessage emission in order to emit one when any error occurs in a
     // connector.
     // If a connector implements AirbyteTraceMessage emission itself, this code will result in an
@@ -40,17 +41,30 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
     // the sync."
     // from the spec:
     // https://docs.google.com/document/d/1ctrj3Yh_GjtQ93aND-WH3ocqGxsmxyC3jfiarrF6NY0/edit#
-    LOGGER.error(logMessage, e);
-    if (STRINGS_TO_REMOVE.isEmpty()) {
-      // If there are no strings to deinterpolate, then just emit a naive trace message.
-      AirbyteTraceMessageUtility.emitSystemErrorTrace(e, logMessage);
+    LOGGER.error(logMessage, throwable);
+
+    // Attempt to deinterpolate the error message before emitting a trace message
+    final String mangledMessage = STRINGS_TO_REMOVE.stream().reduce(
+        throwable.getMessage(),
+        (message, targetString) -> message.replace(targetString, "?"));
+    if (mangledMessage.equals(throwable.getMessage())) {
+      // If deinterpolating did not modify the message, then emit our default trace message
+      AirbyteTraceMessageUtility.emitSystemErrorTrace(throwable, logMessage);
     } else {
-      final String mangledMessage = STRINGS_TO_REMOVE.stream().reduce(
-          e.getMessage(),
-          (message, targetString) -> message.replace(targetString, "?"));
-      AirbyteTraceMessageUtility.emitCustomErrorTrace(e.getMessage(), mangledMessage);
+      AirbyteTraceMessageUtility.emitCustomErrorTrace(throwable.getMessage(), mangledMessage);
     }
+
     terminate();
+  }
+
+  public static void addAllStringsInConfig(JsonNode node) {
+    if (node.isTextual()) {
+      STRINGS_TO_REMOVE.add(node.asText());
+    } else if (node.isContainerNode()) {
+      for (JsonNode subNode : node) {
+        addAllStringsInConfig(subNode);
+      }
+    }
   }
 
   // by doing this in a separate method we can mock it to avoid closing the jvm and therefore test

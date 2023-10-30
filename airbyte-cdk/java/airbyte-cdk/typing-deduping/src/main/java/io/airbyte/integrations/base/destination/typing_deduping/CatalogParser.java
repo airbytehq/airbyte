@@ -7,6 +7,7 @@ package io.airbyte.integrations.base.destination.typing_deduping;
 import static io.airbyte.cdk.integrations.base.JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class CatalogParser {
     final List<StreamConfig> streamConfigs = new ArrayList<>();
     for (final ConfiguredAirbyteStream stream : catalog.getStreams()) {
       final StreamConfig originalStreamConfig = toStreamConfig(stream);
+      final StreamConfig actualStreamConfig;
       // Use empty string quote because we don't really care
       if (streamConfigs.stream().anyMatch(s -> s.id().finalTableId("").equals(originalStreamConfig.id().finalTableId("")))
           || streamConfigs.stream().anyMatch(s -> s.id().rawTableId("").equals(originalStreamConfig.id().rawTableId("")))) {
@@ -53,16 +55,29 @@ public class CatalogParser {
         // We're taking a hash of the quoted namespace and the unquoted stream name
         final String hash = DigestUtils.sha1Hex(originalStreamConfig.id().finalNamespace() + "&airbyte&" + originalName).substring(0, 3);
         final String newName = originalName + "_" + hash;
-        streamConfigs.add(new StreamConfig(
+        actualStreamConfig = new StreamConfig(
             sqlGenerator.buildStreamId(originalNamespace, newName, rawNamespace),
             originalStreamConfig.syncMode(),
             originalStreamConfig.destinationSyncMode(),
             originalStreamConfig.primaryKey(),
             originalStreamConfig.cursor(),
-            originalStreamConfig.columns()));
+            originalStreamConfig.columns());
       } else {
-        streamConfigs.add(originalStreamConfig);
+        actualStreamConfig = originalStreamConfig;
       }
+      streamConfigs.add(actualStreamConfig);
+
+      // Populate some interesting strings into the exception handler string deinterpolator
+      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().rawNamespace());
+      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().rawName());
+      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().finalNamespace());
+      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().finalName());
+      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().originalNamespace());
+      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().originalName());
+      actualStreamConfig.columns().keySet().forEach(columnId -> {
+        AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(columnId.name());
+        AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(columnId.originalName());
+      });
     }
     return new ParsedCatalog(streamConfigs);
   }
