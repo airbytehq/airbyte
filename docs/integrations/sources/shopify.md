@@ -40,8 +40,6 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 <!-- env:oss -->
 ### Airbyte Open Source
 
-<HideInUI>
-
 #### Create a custom app
 
 Authentication to the Shopify API requires a [custom application](https://help.shopify.com/en/manual/apps/app-types/custom-apps). Follow these instructions to create a custom app and find your Admin API Access Token.
@@ -54,8 +52,6 @@ Authentication to the Shopify API requires a [custom application](https://help.s
 6. Click **Install app** to give this app access to your data.
 7. Once installed, go to **API Credentials** to copy the **Admin API Access Token**. You are now ready to set up the source in Airbyte!
 
-</HideInUI>
-
 #### Connect using API Password
 
 1. Enter a **Source name**.
@@ -63,8 +59,6 @@ Authentication to the Shopify API requires a [custom application](https://help.s
 3. For **API Password**, enter your custom application's Admin API access token.
 4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Please note that this defaults to January 1st, 2020.
 5. Click **Set up source** and wait for the connection test to complete.
-
-<HideInUI>
 
 ### Custom app scopes
 
@@ -104,6 +98,8 @@ Add the following scopes to your custom app to ensure Airbyte can sync all avail
 * `read_translations`
 
 <!-- env:oss -->
+
+<HideInUI>
 
 ## Supported sync modes
 
