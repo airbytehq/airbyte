@@ -2,12 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from unittest.mock import MagicMock
 
 import pytest
 import requests
 import responses
 from airbyte_cdk.models import SyncMode
+from requests.exceptions import HTTPError
 from source_mailchimp.streams import Campaigns, EmailActivity, Lists, Segments
 from utils import read_full_refresh, read_incremental
 
@@ -327,3 +329,76 @@ def test_parse_response(stream_state, expected_records, unsubscribes_stream):
 def test_unsubscribes_get_updated_state(unsubscribes_stream, mock_unsubscribes_state, latest_record, expected_updated_state):
     updated_state = unsubscribes_stream.get_updated_state(mock_unsubscribes_state, latest_record)
     assert updated_state == expected_updated_state
+
+
+@pytest.mark.parametrize(
+    "stream,url,status_code,response_content,expected_availability,expected_reason_substring",
+    [
+        (
+            Campaigns,
+            "https://some_dc.api.mailchimp.com/3.0/campaigns",
+            403,
+            b'{"object": "error", "status": 403, "code": "restricted_resource"}',
+            False,
+            "Unable to read campaigns stream",
+        ),
+        (
+            EmailActivity,
+            "https://some_dc.api.mailchimp.com/3.0/reports/123/email-activity",
+            403,
+            b'{"object": "error", "status": 403, "code": "restricted_resource"}',
+            False,
+            "Unable to read email_activity stream",
+        ),
+        (
+            Lists,
+            "https://some_dc.api.mailchimp.com/3.0/lists",
+            200,
+            b'{ "lists": [{"id": "123", "date_created": "2022-01-01T00:00:00+000"}]}',
+            True,
+            None,
+        ),
+        (
+            Lists,
+            "https://some_dc.api.mailchimp.com/3.0/lists",
+            400,
+            b'{ "object": "error", "status": 404, "code": "invalid_action"}',
+            False,
+            None,
+        ),
+    ],
+    ids=[
+        "Campaigns 403 error",
+        "EmailActivity 403 error",
+        "Lists 200 success",
+        "Lists 400 error",
+    ],
+)
+def test_403_error_handling(
+    auth, requests_mock, stream, url, status_code, response_content, expected_availability, expected_reason_substring
+):
+    """
+    Test that availability strategy flags streams with 403 error as unavailable
+    and returns appropriate message.
+    """
+
+    requests_mock.get(url=url, status_code=status_code, content=response_content)
+
+    stream = stream(authenticator=auth)
+
+    if stream.__class__.__name__ == "EmailActivity":
+        stream.stream_slices = MagicMock(return_value=[{"campaign_id": "123"}])
+
+    try:
+        is_available, reason = stream.check_availability(logger=logging.Logger, source=MagicMock())
+
+        assert is_available is expected_availability
+
+        if expected_reason_substring:
+            assert expected_reason_substring in reason
+        else:
+            assert reason is None
+
+    # Handle non-403 error
+    except HTTPError as e:
+        assert e.response.status_code == status_code
