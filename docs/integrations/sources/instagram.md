@@ -87,7 +87,7 @@ AirbyteRecords are required to conform to the [Airbyte type](https://docs.airbyt
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                        |
 |:--------|:-----------| :------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.14  | 2023-10-30 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Capture media_product_type column                                                                                              |
+| 1.0.14  | 2023-11-13 | [32423](https://github.com/airbytehq/airbyte/pull/32423) | Capture media_product_type column                                                                                              |
 | 1.0.13  | 2023-11-10 | [32245](https://github.com/airbytehq/airbyte/pull/32245) | Add skipping reading MediaInsights stream if an error code 10 is received                                                      |
 | 1.0.12  | 2023-11-07 | [32200](https://github.com/airbytehq/airbyte/pull/32200) | The backoff strategy has been updated to make some errors retriable                                                            |
 | 1.0.11  | 2023-08-03 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes                                                                                           |
