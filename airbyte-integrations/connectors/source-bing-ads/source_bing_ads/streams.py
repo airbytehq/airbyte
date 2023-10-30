@@ -209,7 +209,7 @@ class BingAdsBulkStream(BingAdsBaseStream, ABC):
         This method filter out only available properites.
         """
         actual_record = {key: value for key, value in record.items() if key in self.get_json_schema()["properties"].keys()}
-        actual_record["AccountId"] = stream_slice.get("account_id")
+        actual_record["Account Id"] = stream_slice.get("account_id")
         return actual_record
 
 class AppInstallAdRecord(BingAdsBulkStream):
