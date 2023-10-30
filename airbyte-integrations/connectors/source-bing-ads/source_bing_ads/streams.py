@@ -5,7 +5,7 @@ import os
 import ssl
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.error import URLError
 
 import pandas as pd
@@ -196,7 +196,7 @@ class BingAdsBulkStream(BingAdsBaseStream, ABC):
 
         yield from []
 
-    def read_with_chunks(self, path: str, chunk_size:int = 1024) -> Iterable[Tuple[int, Mapping[str, Any]]]:
+    def read_with_chunks(self, path: str, chunk_size: int = 1024) -> Iterable[Tuple[int, Mapping[str, Any]]]:
         try:
             with open(path, "r") as data:
                 chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix", dtype=object)
@@ -239,6 +239,7 @@ class AppInstallAdLabels(BingAdsBulkStream):
     """
     https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13
     """
+
     data_scope = ["EntityData"]
     download_entities = ["AppInstallAdLabels"]
 
