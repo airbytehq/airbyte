@@ -242,6 +242,17 @@ class Labels(BingAdsBulkStream):
     primary_key = "Id"
 
 
+class KeywordLabels(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13
+    """
+
+    data_scope = ["EntityData"]
+    download_entities = ["KeywordLabels"]
+
+    primary_key = "Id"
+
+
 class Accounts(BingAdsStream):
     """
     Searches for accounts that the current authenticated user can access.
