@@ -49,8 +49,7 @@ public class AirbyteExceptionHandlerTest {
     assertAll(
         () -> Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
         () -> Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
-        () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType())
-    );
+        () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType()));
   }
 
   @Test
@@ -66,8 +65,8 @@ public class AirbyteExceptionHandlerTest {
         () -> Assertions.assertEquals("Error happened in foo.bar", traceMessage.getTrace().getError().getMessage()),
         () -> Assertions.assertEquals("Error happened in ?.?", traceMessage.getTrace().getError().getInternalMessage()),
         () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType()),
-        () -> Assertions.assertNull(traceMessage.getTrace().getError().getStackTrace(), "Stacktrace should be null if deinterpolating the error message")
-    );
+        () -> Assertions.assertNull(traceMessage.getTrace().getError().getStackTrace(),
+            "Stacktrace should be null if deinterpolating the error message"));
   }
 
   @Test
@@ -89,8 +88,8 @@ public class AirbyteExceptionHandlerTest {
       @SneakyThrows
       public void run() {
         final IntegrationRunner runner = Mockito.mock(IntegrationRunner.class);
-        doThrow(new RuntimeException(message)).when(runner).run(new String[]{"write"});
-        runner.run(new String[]{"write"});
+        doThrow(new RuntimeException(message)).when(runner).run(new String[] {"write"});
+        runner.run(new String[] {"write"});
       }
 
     };
@@ -105,6 +104,7 @@ public class AirbyteExceptionHandlerTest {
     System.setOut(originalOut);
     AirbyteExceptionHandler.STRINGS_TO_REMOVE.clear();
   }
+
   private AirbyteMessage findFirstTraceMessage() {
     final Optional<AirbyteMessage> maybeTraceMessage = Arrays.stream(outContent.toString().split("\n"))
         .map(line -> Jsons.deserialize(line, AirbyteMessage.class))
@@ -113,4 +113,5 @@ public class AirbyteExceptionHandlerTest {
     assertTrue(maybeTraceMessage.isPresent(), "Expected to find a trace message in stdout");
     return maybeTraceMessage.get();
   }
+
 }

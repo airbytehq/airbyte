@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,8 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   public static final String logMessage = "Something went wrong in the connector. See the logs for more details.";
 
   // Basic deinterpolation helpers to avoid doing _really_ dumb deinterpolation.
-  // E.g. if "id" is in the list of strings to remove, we don't want to modify the message "Invalid identifier".
+  // E.g. if "id" is in the list of strings to remove, we don't want to modify the message "Invalid
+  // identifier".
   private static final String REGEX_PREFIX = "(^|[^A-Za-z0-9_])";
   private static final String REGEX_SUFFIX = "($|[^A-Za-z0-9_])";
 
@@ -31,10 +31,10 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
    * <p>
    * If this is active, then the trace message will:
    * <ol>
-   *   <li>Not contain the stacktrace at all. This causes Sentry to use its fallback grouping
-   *   (using exception class and message)</li>
-   *   <li>Contain the original exception message as the external message, and a mangled message
-   *   as the internal message.</li>
+   * <li>Not contain the stacktrace at all. This causes Sentry to use its fallback grouping (using
+   * exception class and message)</li>
+   * <li>Contain the original exception message as the external message, and a mangled message as the
+   * internal message.</li>
    * </ol>
    */
   public static final List<String> STRINGS_TO_REMOVE = new ArrayList<>();
@@ -77,7 +77,8 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
     // 1. The character before the target string (or an empty string, if it matched start-of-string)
     // 2. The target string
     // 3. The character after the target string (or empty string for end-of-string)
-    // We want to preserve the characters before and after the target string, so we use $1 and $3 to reinsert them
+    // We want to preserve the characters before and after the target string, so we use $1 and $3 to
+    // reinsert them
     // but the target string is replaced with just '?'
     return matcher.replaceAll("$1?$3");
   }
