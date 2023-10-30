@@ -187,7 +187,6 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        print(2)
         self._state.update({str(value["Account Id"]): {self.cursor_field: value[self.cursor_field]}})
 
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
