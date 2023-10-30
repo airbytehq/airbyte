@@ -45,9 +45,7 @@ public class AirbyteExceptionHandlerTest {
   void testTraceMessageEmission() throws Exception {
     runTestWithMessage("error");
 
-    final Optional<AirbyteMessage> maybeTraceMessage = findFirstTraceMessage();
-    assertTrue(maybeTraceMessage.isPresent());
-    final AirbyteMessage traceMessage = maybeTraceMessage.get();
+    final AirbyteMessage traceMessage = findFirstTraceMessage();
     assertAll(
         () -> Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
         () -> Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
@@ -62,10 +60,7 @@ public class AirbyteExceptionHandlerTest {
 
     runTestWithMessage("Error happened in foo.bar");
 
-    // now we turn the std out from the thread into json and check it's the expected TRACE message
-    final Optional<AirbyteMessage> maybeTraceMessage = findFirstTraceMessage();
-    assertTrue(maybeTraceMessage.isPresent());
-    final AirbyteMessage traceMessage = maybeTraceMessage.get();
+    final AirbyteMessage traceMessage = findFirstTraceMessage();
     assertAll(
         () -> Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
         () -> Assertions.assertEquals("Error happened in foo.bar", traceMessage.getTrace().getError().getMessage()),
@@ -73,6 +68,17 @@ public class AirbyteExceptionHandlerTest {
         () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType()),
         () -> Assertions.assertNull(traceMessage.getTrace().getError().getStackTrace(), "Stacktrace should be null if deinterpolating the error message")
     );
+  }
+
+  @Test
+  void testMessageSmartDeinterpolation() throws Exception {
+    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("foo");
+    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("bar");
+
+    runTestWithMessage("Error happened in foobar");
+
+    final AirbyteMessage traceMessage = findFirstTraceMessage();
+    Assertions.assertNotEquals("Error happened in ??", traceMessage.getTrace().getError().getMessage(), "foobar should not be deinterpolated");
   }
 
   private void runTestWithMessage(final String message) throws InterruptedException {
@@ -99,10 +105,12 @@ public class AirbyteExceptionHandlerTest {
     System.setOut(originalOut);
     AirbyteExceptionHandler.STRINGS_TO_REMOVE.clear();
   }
-  private Optional<AirbyteMessage> findFirstTraceMessage() {
-    return Arrays.stream(outContent.toString().split("\n"))
+  private AirbyteMessage findFirstTraceMessage() {
+    final Optional<AirbyteMessage> maybeTraceMessage = Arrays.stream(outContent.toString().split("\n"))
         .map(line -> Jsons.deserialize(line, AirbyteMessage.class))
         .filter(message -> message.getType() == AirbyteMessage.Type.TRACE)
         .findFirst();
+    assertTrue(maybeTraceMessage.isPresent(), "Expected to find a trace message in stdout");
+    return maybeTraceMessage.get();
   }
 }

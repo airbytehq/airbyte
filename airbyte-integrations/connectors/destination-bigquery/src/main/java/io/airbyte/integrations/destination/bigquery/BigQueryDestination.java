@@ -227,8 +227,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                                        final ConfiguredAirbyteCatalog catalog,
                                                                        final Consumer<AirbyteMessage> outputRecordCollector)
       throws Exception {
-    AirbyteExceptionHandler.addAllStringsInConfig(config);
-
     final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
     final String defaultNamespace = BigQueryUtils.getDatasetId(config);
     setDefaultStreamNamespace(catalog, defaultNamespace);
@@ -238,6 +236,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final ParsedCatalog parsedCatalog = parseCatalog(config, catalog, datasetLocation);
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
+
+    AirbyteExceptionHandler.addAllStringsInConfig(config);
 
     if (uploadingMethod == UploadingMethod.STANDARD) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +

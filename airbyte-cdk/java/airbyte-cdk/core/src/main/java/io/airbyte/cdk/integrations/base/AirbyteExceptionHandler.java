@@ -7,6 +7,10 @@ package io.airbyte.cdk.integrations.base;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.apache.commons.io.filefilter.SuffixFileFilter;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +18,11 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AirbyteExceptionHandler.class);
   public static final String logMessage = "Something went wrong in the connector. See the logs for more details.";
+
+  // Basic deinterpolation helpers to avoid doing _really_ dumb deinterpolation.
+  // E.g. if "id" is in the list of strings to remove, we don't want to modify the message "Invalid identifier".
+  private static final String REGEX_PREFIX = "(^|[^A-Za-z0-9_])";
+  private static final String REGEX_SUFFIX = "($|[^A-Za-z0-9_])";
 
   /**
    * If this list is populated, then the exception handler will attempt to deinterpolate the error
@@ -46,7 +55,7 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
     // Attempt to deinterpolate the error message before emitting a trace message
     final String mangledMessage = STRINGS_TO_REMOVE.stream().reduce(
         throwable.getMessage(),
-        (message, targetString) -> message.replace(targetString, "?"));
+        AirbyteExceptionHandler::deinterpolate);
     if (mangledMessage.equals(throwable.getMessage())) {
       // If deinterpolating did not modify the message, then emit our default trace message
       AirbyteTraceMessageUtility.emitSystemErrorTrace(throwable, logMessage);
@@ -57,11 +66,27 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
     terminate();
   }
 
-  public static void addAllStringsInConfig(JsonNode node) {
+  @NotNull
+  private static String deinterpolate(final String message, final String targetString) {
+    final String quotedTarget = '(' + Pattern.quote(targetString) + ')';
+    final String targetRegex = REGEX_PREFIX + quotedTarget + REGEX_SUFFIX;
+    final Pattern pattern = Pattern.compile(targetRegex);
+    final Matcher matcher = pattern.matcher(message);
+
+    // The pattern has three capturing groups:
+    // 1. The character before the target string (or an empty string, if it matched start-of-string)
+    // 2. The target string
+    // 3. The character after the target string (or empty string for end-of-string)
+    // We want to preserve the characters before and after the target string, so we use $1 and $3 to reinsert them
+    // but the target string is replaced with just '?'
+    return matcher.replaceAll("$1?$3");
+  }
+
+  public static void addAllStringsInConfig(final JsonNode node) {
     if (node.isTextual()) {
       STRINGS_TO_REMOVE.add(node.asText());
     } else if (node.isContainerNode()) {
-      for (JsonNode subNode : node) {
+      for (final JsonNode subNode : node) {
         addAllStringsInConfig(subNode);
       }
     }
