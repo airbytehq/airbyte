@@ -5,7 +5,7 @@ import os
 import ssl
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union, Tuple
 from urllib.error import URLError
 
 import pandas as pd
@@ -157,14 +157,16 @@ class BingAdsBulkStream(BingAdsBaseStream, ABC):
     @property
     @abstractmethod
     def data_scope(self) -> List[str]:
-        # TODO: add more description to docstring
-        """List of data_scopes"""
+        """
+        Defines scopes or types of data to download. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/datascope?view=bingads-13
+        """
 
     @property
     @abstractmethod
     def download_entities(self) -> List[str]:
-        # TODO: add more description to docstring
-        """List of download entities"""
+        """
+        Defines the entities that should be downloaded. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13
+        """
 
     def stream_slices(
         self,
@@ -189,23 +191,28 @@ class BingAdsBulkStream(BingAdsBaseStream, ABC):
         report_file_path = self.client.get_bulk_entity(
             data_scope=self.data_scope, download_entities=self.download_entities, customer_id=customer_id, account_id=account_id
         )
+        for record in self.read_with_chunks(report_file_path):
+            yield self.transform(record, stream_slice)
+
+        yield from []
+
+    def read_with_chunks(self, path: str, chunk_size:int = 1024) -> Iterable[Tuple[int, Mapping[str, Any]]]:
         try:
-            with open(report_file_path, "r") as data:
-                chunks = pd.read_csv(data, chunksize=1024, iterator=True, dialect="unix", dtype=object)
+            with open(path, "r") as data:
+                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix", dtype=object)
                 for chunk in chunks:
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
                     for row in chunk:
                         if row.get("Type") not in ("Format Version", "Account"):
-                            yield self.transform(row, stream_slice)
+                            yield row
         except pd.errors.EmptyDataError as e:
             self.logger.info(f"Empty data received. {e}")
             yield from []
         except IOError as ioe:
-            raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Called: {report_file_path}. Stream: {self.name}", ioe)
+            raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Called: {path}. Stream: {self.name}", ioe)
         finally:
             # remove binary tmp file, after data is read
-            os.remove(report_file_path)
-        yield from []
+            os.remove(path)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         """
@@ -218,6 +225,10 @@ class BingAdsBulkStream(BingAdsBaseStream, ABC):
 
 
 class AppInstallAds(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13
+    """
+
     data_scope = ["EntityData"]
     download_entities = ["AppInstallAds"]
 
@@ -225,6 +236,9 @@ class AppInstallAds(BingAdsBulkStream):
 
 
 class AppInstallAdLabels(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13
+    """
     data_scope = ["EntityData"]
     download_entities = ["AppInstallAdLabels"]
 
