@@ -100,23 +100,6 @@ allprojects {
             }
         }
     }
-//    tasks.matching { it.name =~ /spotless.*/ }.configureEach {
-//        dependsOn tasks.matching { it.name == 'generate' }
-//    }
-    tasks.matching { it.name =~ /spotlessStyling.*/ }.configureEach {
-        dependsOn rootProject.tasks.named('nodeSetup')
-        dependsOn rootProject.tasks.named('npmSetup')
-    }
-    // TODO: remove this once the CI routinely enforces formatting checks.
-    tasks.matching { it.name =~ /spotless.*Check/ }.configureEach {
-        enabled = false
-    }
-
-    tasks.register('format') {
-        dependsOn tasks.matching { it.name == 'generate' }
-        dependsOn tasks.matching { it.name =~ /spotless.*Apply/ }
-        dependsOn tasks.matching { it.name =~ /.*PythonFormat/ }
-    }
 }
 
 def getCDKTargetVersion() {
