@@ -209,7 +209,7 @@ class BingAdsBulkStream(BingAdsBaseStream, ABC):
             self.logger.info(f"Empty data received. {e}")
             yield from []
         except IOError as ioe:
-            raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Called: {path}. Stream: {self.name}", ioe)
+            raise TmpFileIOError(f"The IO/Error occurred while reading tmp data. Called: {path}. Stream: {self.name}", ioe)
         finally:
             # remove binary tmp file, after data is read
             os.remove(path)
@@ -217,7 +217,7 @@ class BingAdsBulkStream(BingAdsBaseStream, ABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         """
         Bing Ads Bulk API returns all available properties for all entities.
-        This method filter out only available properites.
+        This method filter out only available properties.
         """
         actual_record = {key: value for key, value in record.items() if key in self.get_json_schema()["properties"].keys()}
         actual_record["Account Id"] = stream_slice.get("account_id")
