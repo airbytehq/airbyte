@@ -101,8 +101,8 @@ spec:
     title: Freshcaller Spec
     type: object
     required:
-    - domain
-    - api_key
+      - domain
+      - api_key
     additionalProperties: true
     properties:
       domain:
@@ -110,12 +110,11 @@ spec:
         title: Domain for Freshcaller account
         description: Used to construct Base URL for the Freshcaller APIs
         examples:
-        - snaptravel
+          - snaptravel
       api_key:
         type: string
         title: API Key
-        description: Freshcaller API Key. See the <a href="https://docs.airbyte.com/integrations/sources/freshcaller">docs</a>
-          for more information on how to obtain this key.
+        description: Freshcaller API Key. See the <a href="https://docs.airbyte.com/integrations/sources/freshcaller">docs</a> for more information on how to obtain this key.
         airbyte_secret: true
       requests_per_minute:
         title: Requests per minute
@@ -128,7 +127,7 @@ spec:
         type: string
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:
-        - '2022-01-01T12:00:00Z'
+          - "2022-01-01T12:00:00Z"
       sync_lag_minutes:
         title: Lag in minutes for each sync
         type: integer
