@@ -21,4 +21,6 @@ dependencies {
 
     implementation 'org.apache.kafka:kafka-clients:2.8.0'
     implementation 'com.joestelmach:natty:0.11'
+
+    implementation libs.google.cloud.storage
 }

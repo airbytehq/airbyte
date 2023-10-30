@@ -41,6 +41,8 @@ dependencies {
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'org.apache.commons:commons-csv:1.4'
 
+    implementation libs.google.cloud.storage
+
     // Optional dependencies
     // TODO: Change these to 'compileOnly' or 'testCompileOnly'
     implementation 'com.azure:azure-storage-blob:12.12.0'

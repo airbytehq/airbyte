@@ -10,6 +10,7 @@ dependencies {
     testFixturesImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
 
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.16.0'
 
     testFixturesImplementation libs.airbyte.protocol
 

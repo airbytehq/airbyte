@@ -21,6 +21,7 @@ dependencies {
     implementation libs.airbyte.protocol
 
     implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
+    implementation libs.google.cloud.storage
 
     testImplementation libs.testcontainers.mongodb
 

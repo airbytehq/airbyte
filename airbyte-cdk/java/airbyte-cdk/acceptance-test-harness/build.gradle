@@ -9,6 +9,7 @@ dependencies {
     implementation platform(libs.micronaut.bom)
     implementation libs.bundles.micronaut
 
+    implementation group: 'joda-time', name: 'joda-time', version: '2.12.5'
     implementation 'io.fabric8:kubernetes-client:5.12.2'
     implementation 'com.auth0:java-jwt:3.19.2'
     implementation libs.guava

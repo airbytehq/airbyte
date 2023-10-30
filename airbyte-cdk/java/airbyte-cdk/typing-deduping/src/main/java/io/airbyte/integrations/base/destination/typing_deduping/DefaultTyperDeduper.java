@@ -9,7 +9,7 @@ import static io.airbyte.integrations.base.destination.typing_deduping.FutureUti
 import static io.airbyte.integrations.base.destination.typing_deduping.FutureUtils.reduceExceptions;
 import static java.util.Collections.singleton;
 
-import autovalue.shaded.kotlin.Pair;
+import org.apache.commons.lang3.tuple.Pair;
 import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.time.Instant;
 import java.util.HashSet;
@@ -154,7 +154,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
         final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(stream.id());
         minExtractedAtByStream.put(stream.id(), minTimestampForSync);
 
-        streamsWithSuccessfulSetup.add(new Pair<>(stream.id().originalNamespace(), stream.id().originalName()));
+        streamsWithSuccessfulSetup.add(Pair.of(stream.id().originalNamespace(), stream.id().originalName()));
 
         // Use fair locking. This slows down lock operations, but that performance hit is by far dwarfed
         // by our IO costs. This lock needs to be fair because the raw table writers are running almost
@@ -194,7 +194,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
       final var originalNamespace = streamConfig.id().originalNamespace();
       final var originalName = streamConfig.id().originalName();
       try {
-        if (!streamsWithSuccessfulSetup.contains(new Pair<>(originalNamespace, originalName))) {
+        if (!streamsWithSuccessfulSetup.contains(Pair.of(originalNamespace, originalName))) {
           // For example, if T+D setup fails, but the consumer tries to run T+D on all streams during close,
           // we should skip it.
           LOGGER.warn("Skipping typing and deduping for {}.{} because we could not set up the tables for this stream.", originalNamespace,
@@ -260,7 +260,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     LOGGER.info("Committing final tables");
     final Set<CompletableFuture<Optional<Exception>>> tableCommitTasks = new HashSet<>();
     for (final StreamConfig streamConfig : parsedCatalog.streams()) {
-      if (!streamsWithSuccessfulSetup.contains(new Pair<>(streamConfig.id().originalNamespace(), streamConfig.id().originalName()))) {
+      if (!streamsWithSuccessfulSetup.contains(Pair.of(streamConfig.id().originalNamespace(),
+          streamConfig.id().originalName()))) {
         LOGGER.warn("Skipping committing final table for for {}.{} because we could not set up the tables for this stream.",
             streamConfig.id().originalNamespace(), streamConfig.id().originalName());
         continue;
