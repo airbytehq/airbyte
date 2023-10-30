@@ -147,10 +147,11 @@ class PipelineContext:
     @property
     def github_commit_status(self) -> dict:
         """Build a dictionary used as kwargs to the update_commit_status_check function."""
+        target_url = self.report.html_report_url if self.report else self.gha_workflow_run_url
         return {
             "sha": self.git_revision,
             "state": self.state.value["github_state"],
-            "target_url": self.gha_workflow_run_url,
+            "target_url": target_url,
             "description": self.state.value["description"],
             "context": self.pipeline_name,
             "should_send": self.is_pr,

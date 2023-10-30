@@ -4,8 +4,8 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.7'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.2.0'
+    features = ['db-destinations', 'typing-deduping']
     useLocalCdk = false
 }
 
@@ -47,17 +47,10 @@ dependencies {
     implementation "io.aesy:datasize:1.0.0"
     implementation 'com.zaxxer:HikariCP:5.0.1'
 
-    implementation project(':airbyte-integrations:bases:base-typing-deduping')
-    testImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
-    integrationTestJavaImplementation project(':airbyte-integrations:bases:base-typing-deduping-test')
-
-    implementation project(':airbyte-config-oss:config-models-oss')
     implementation project(':airbyte-integrations:connectors:destination-gcs')
-    implementation libs.airbyte.protocol
 
 //    this is a configuration to make mockito work with final classes
     testImplementation 'org.mockito:mockito-inline:2.13.0'
 
-    integrationTestJavaImplementation project(':airbyte-connector-test-harnesses:acceptance-test-harness')
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 }

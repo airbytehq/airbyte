@@ -4,7 +4,7 @@
 
 import os
 from pathlib import Path
-from typing import List, Set, Tuple
+from typing import List, Optional, Set, Tuple
 
 import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
@@ -90,7 +90,7 @@ def get_selected_connectors_with_modified_files(
     return selected_connectors_with_modified_files
 
 
-def validate_environment(is_local: bool, use_remote_secrets: bool):
+def validate_environment(is_local: bool):
     """Check if the required environment variables exist."""
     if is_local:
         if not Path(".git").is_dir():
@@ -100,14 +100,43 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
             "GCP_GSM_CREDENTIALS",
             "CI_REPORT_BUCKET_NAME",
             "CI_GITHUB_ACCESS_TOKEN",
+            "DOCKER_HUB_USERNAME",
+            "DOCKER_HUB_PASSWORD",
         ]
         for required_env_var in required_env_vars_for_ci:
             if os.getenv(required_env_var) is None:
                 raise click.UsageError(f"When running in a CI context a {required_env_var} environment variable must be set.")
-    if use_remote_secrets and os.getenv("GCP_GSM_CREDENTIALS") is None:
-        raise click.UsageError(
-            "You have to set the GCP_GSM_CREDENTIALS if you want to download secrets from GSM. See README for instructions ('Setting up connector secrets access'). Set the --use-remote-secrets option to false otherwise."
-        )
+
+
+def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
+    """Check if the connector secrets should be loaded from Airbyte GSM or from the local secrets directory.
+
+    Args:
+        use_remote_secrets (Optional[bool]): Whether to use remote connector secrets or local connector secrets according to user inputs.
+
+    Raises:
+        click.UsageError: If the --use-remote-secrets flag was provided but no GCP_GSM_CREDENTIALS environment variable was found.
+
+    Returns:
+        bool: Whether to use remote connector secrets (True) or local connector secrets (False).
+    """
+    gcp_gsm_credentials_is_set = bool(os.getenv("GCP_GSM_CREDENTIALS"))
+    if use_remote_secrets is None:
+        if gcp_gsm_credentials_is_set:
+            main_logger.info("GCP_GSM_CREDENTIALS environment variable found, using remote connector secrets.")
+            return True
+        else:
+            main_logger.info("No GCP_GSM_CREDENTIALS environment variable found, using local connector secrets.")
+            return False
+    if use_remote_secrets:
+        if gcp_gsm_credentials_is_set:
+            main_logger.info("GCP_GSM_CREDENTIALS environment variable found, using remote connector secrets.")
+            return True
+        else:
+            raise click.UsageError("The --use-remote-secrets flag was provided but no GCP_GSM_CREDENTIALS environment variable was found.")
+    else:
+        main_logger.info("Using local connector secrets as the --use-local-secrets flag was provided")
+        return False
 
 
 @click.group(
@@ -123,7 +152,12 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
         "upgrade_base_image": "pipelines.airbyte_ci.connectors.upgrade_base_image.commands.upgrade_base_image",
     },
 )
-@click.option("--use-remote-secrets", default=True)  # specific to connectors
+@click.option(
+    "--use-remote-secrets/--use-local-secrets",
+    help="Use Airbyte GSM connector secrets or local connector secrets.",
+    type=bool,
+    default=None,
+)
 @click.option(
     "--name",
     "names",
@@ -196,7 +230,7 @@ def validate_environment(is_local: bool, use_remote_secrets: bool):
 @click_ignore_unused_kwargs
 async def connectors(
     ctx: click.Context,
-    use_remote_secrets: bool,
+    use_remote_secrets: Optional[bool],
     names: Tuple[str],
     languages: Tuple[ConnectorLanguage],
     support_levels: Tuple[str],
@@ -206,8 +240,9 @@ async def connectors(
     enable_dependency_scanning: bool,
 ):
     """Group all the connectors-ci command."""
-    validate_environment(ctx.obj["is_local"], use_remote_secrets)
+    validate_environment(ctx.obj["is_local"])
 
+    ctx.obj["use_remote_secrets"] = should_use_remote_secrets(use_remote_secrets)
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
         names,
         support_levels,
