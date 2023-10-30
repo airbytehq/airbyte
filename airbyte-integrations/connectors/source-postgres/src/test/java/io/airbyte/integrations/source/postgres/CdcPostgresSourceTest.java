@@ -567,8 +567,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Override
   protected JsonNode getConfig() {
-    // Clone it to guard against accidental mutations.
-    return Jsons.clone(config);
+    return config;
   }
 
   @Override

@@ -23,7 +23,6 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.engine.ChangeEvent;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Properties;
@@ -99,10 +98,6 @@ public class AirbyteDebeziumHandler<T> {
             .fromIterator(MoreIterators.singletonIteratorFromSupplier(cdcStateHandler::saveStateAfterCompletionOfSnapshotOfNewStreams)));
   }
 
-  /**
-   * In the default case here, we don't know for sure whether the Debezium Engine will produce records
-   * or not. We therefore pass {@link canShortCircuitDebeziumEngine} = false.
-   */
   public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
                                                                        final CdcSavedInfoFetcher cdcSavedInfoFetcher,
                                                                        final CdcStateHandler cdcStateHandler,
@@ -111,59 +106,24 @@ public class AirbyteDebeziumHandler<T> {
                                                                        final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
                                                                        final Instant emittedAt,
                                                                        final boolean addDbNameToState) {
-    return getIncrementalIterators(
-        catalog,
-        cdcSavedInfoFetcher,
-        cdcStateHandler,
-        cdcMetadataInjector,
-        connectorProperties,
-        debeziumConnectorType,
-        emittedAt, addDbNameToState,
-        false);
-  }
-
-  /**
-   *
-   * @param canShortCircuitDebeziumEngine This argument may be set to true in cases where we already
-   *        know that the Debezium Engine is not going to be producing any change events. In this
-   *        case, this method skips provisioning a Debezium Engine altogether.
-   */
-  public AutoCloseableIterator<AirbyteMessage> getIncrementalIterators(final ConfiguredAirbyteCatalog catalog,
-                                                                       final CdcSavedInfoFetcher cdcSavedInfoFetcher,
-                                                                       final CdcStateHandler cdcStateHandler,
-                                                                       final CdcMetadataInjector cdcMetadataInjector,
-                                                                       final Properties connectorProperties,
-                                                                       final DebeziumPropertiesManager.DebeziumConnectorType debeziumConnectorType,
-                                                                       final Instant emittedAt,
-                                                                       final boolean addDbNameToState,
-                                                                       final boolean canShortCircuitDebeziumEngine) {
     LOGGER.info("Using CDC: {}", true);
-    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
-        cdcSavedInfoFetcher.getSavedOffset(),
+    final LinkedBlockingQueue<ChangeEvent<String, String>> queue = new LinkedBlockingQueue<>(queueSize.orElse(QUEUE_CAPACITY));
+    final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(cdcSavedInfoFetcher.getSavedOffset(),
         addDbNameToState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
     final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager =
-        trackSchemaHistory ? schemaHistoryManager(
-            cdcSavedInfoFetcher.getSavedSchemaHistory(),
-            cdcStateHandler.compressSchemaHistoryForState())
+        trackSchemaHistory ? schemaHistoryManager(cdcSavedInfoFetcher.getSavedSchemaHistory(), cdcStateHandler.compressSchemaHistoryForState())
             : Optional.empty();
+    final DebeziumRecordPublisher publisher = new DebeziumRecordPublisher(connectorProperties, config, catalog, offsetManager,
+        schemaHistoryManager, debeziumConnectorType);
+    publisher.start(queue);
 
-    final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator;
-    if (!canShortCircuitDebeziumEngine) {
-      final var publisher = new DebeziumRecordPublisher(
-          connectorProperties, config, catalog, offsetManager, schemaHistoryManager, debeziumConnectorType);
-      final var queue = new LinkedBlockingQueue<ChangeEvent<String, String>>(queueSize.orElse(QUEUE_CAPACITY));
-      publisher.start(queue);
-      // handle state machine around pub/sub logic.
-      eventIterator = new DebeziumRecordIterator<>(
-          queue,
-          targetPosition,
-          publisher::hasClosed,
-          new DebeziumShutdownProcedure<>(queue, publisher::close, publisher::hasClosed),
-          firstRecordWaitTime);
-    } else {
-      LOGGER.info("Short-circuiting Debezium Engine: nothing of interest in target replication stream interval.");
-      eventIterator = AutoCloseableIterators.fromIterator(Collections.emptyIterator());
-    }
+    // handle state machine around pub/sub logic.
+    final AutoCloseableIterator<ChangeEventWithMetadata> eventIterator = new DebeziumRecordIterator<>(
+        queue,
+        targetPosition,
+        publisher::hasClosed,
+        new DebeziumShutdownProcedure<>(queue, publisher::close, publisher::hasClosed),
+        firstRecordWaitTime);
 
     final Duration syncCheckpointDuration =
         config.get(SYNC_CHECKPOINT_DURATION_PROPERTY) != null ? Duration.ofSeconds(config.get(SYNC_CHECKPOINT_DURATION_PROPERTY).asLong())
