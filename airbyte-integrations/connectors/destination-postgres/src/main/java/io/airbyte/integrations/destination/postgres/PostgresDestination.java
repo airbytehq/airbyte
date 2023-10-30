@@ -15,7 +15,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.Destination;
-import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.cdk.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.commons.json.Jsons;
@@ -67,7 +66,7 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     if (encodedDatabase != null) {
       try {
         encodedDatabase = URLEncoder.encode(encodedDatabase, "UTF-8");
-      } catch (UnsupportedEncodingException e) {
+      } catch (final UnsupportedEncodingException e) {
         // Should never happen
         e.printStackTrace();
       }
@@ -91,13 +90,6 @@ public class PostgresDestination extends AbstractJdbcDestination implements Dest
     }
 
     return Jsons.jsonNode(configBuilder.build());
-  }
-
-  public static void main(final String[] args) throws Exception {
-    final Destination destination = PostgresDestination.sshWrappedDestination();
-    LOGGER.info("starting destination: {}", PostgresDestination.class);
-    new IntegrationRunner(destination).run(args);
-    LOGGER.info("completed destination: {}", PostgresDestination.class);
   }
 
 }

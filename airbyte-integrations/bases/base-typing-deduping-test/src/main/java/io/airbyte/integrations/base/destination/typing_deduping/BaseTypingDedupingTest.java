@@ -820,7 +820,8 @@ public abstract class BaseTypingDedupingTest {
         null,
         null,
         false,
-        new EnvVariableFeatureFlags()));
+        new EnvVariableFeatureFlags(),
+        Collections.emptyMap()));
 
     destination.start(destinationConfig, jobRoot, Collections.emptyMap());
 

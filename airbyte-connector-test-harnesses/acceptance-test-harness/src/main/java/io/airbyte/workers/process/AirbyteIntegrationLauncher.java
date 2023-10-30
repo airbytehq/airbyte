@@ -38,6 +38,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final ProcessFactory processFactory;
   private final ResourceRequirements resourceRequirement;
   private final FeatureFlags featureFlags;
+  private final Map<String, String> additionalEnvironmentVariables;
 
   /**
    * If true, launcher will use a separated isolated pool to run the job.
@@ -54,7 +55,8 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
                                     final ResourceRequirements resourceRequirement,
                                     final AllowedHosts allowedHosts,
                                     final boolean useIsolatedPool,
-                                    final FeatureFlags featureFlags) {
+                                    final FeatureFlags featureFlags,
+                                    final Map<String, String> additionalEnvironmentVariables) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
@@ -63,6 +65,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
     this.allowedHosts = allowedHosts;
     this.featureFlags = featureFlags;
     this.useIsolatedPool = useIsolatedPool;
+    this.additionalEnvironmentVariables = additionalEnvironmentVariables;
   }
 
   @Override
@@ -82,7 +85,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Map.of(JOB_TYPE_KEY, SPEC_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
-        Collections.emptyMap(),
+        additionalEnvironmentVariables,
         "spec");
   }
 
@@ -103,7 +106,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Map.of(JOB_TYPE_KEY, CHECK_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
-        Collections.emptyMap(),
+        additionalEnvironmentVariables,
         "check",
         CONFIG, configFilename);
   }
