@@ -4,12 +4,12 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = [
             'db-sources', // required for tests
             'db-destinations',
     ]
-    useLocalCdk = true
+    useLocalCdk = false
 }
 
 airbyteJavaConnector.addCdkDependencies()
