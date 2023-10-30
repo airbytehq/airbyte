@@ -269,6 +269,36 @@
         },
         "total_app_event_add_to_cart": {
           "type": ["null", "number"]
+        },
+        "registration": {
+          "type": ["null", "number"]
+        },
+        "total_registration": {
+          "type": ["null", "number"]
+        },
+        "user_registration": {
+          "type": ["null", "number"]
+        },
+        "skan_registration": {
+          "type": ["null", "number"]
+        },
+        "skan_total_registration": {
+          "type": ["null", "number"]
+        },
+        "complete_payment": {
+          "type": ["null", "number"]
+        },
+        "purchase": {
+          "type": ["null", "number"]
+        },
+        "total_purchase": {
+          "type": ["null", "number"]
+        },
+        "skan_purchase": {
+          "type": ["null", "number"]
+        },
+        "skan_total_purchase": {
+          "type": ["null", "number"]
         }
       }
     },

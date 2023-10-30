@@ -755,6 +755,16 @@ class BasicReports(IncrementalTiktokStream, ABC):
                     "complete_payment",
                     "value_per_complete_payment",
                     "total_complete_payment_rate",
+                    "registration",
+                    "total_registration",
+                    "user_registration",
+                    "skan_registration",
+                    "skan_total_registration",
+                    "complete_payment",
+                    "purchase",
+                    "total_purchase",
+                    "skan_purchase",
+                    "skan_total_purchase",
                 ]
             )
 
