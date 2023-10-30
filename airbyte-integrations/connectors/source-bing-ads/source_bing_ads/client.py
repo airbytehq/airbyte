@@ -254,6 +254,7 @@ class Client:
         data_scope: List[str],
         customer_id: Optional[str] = None,
         account_id: Optional[str] = None,
+        start_date: Optional[str] = None,
     ) -> str:
         """
         Return path with zipped csv archive
@@ -263,7 +264,7 @@ class Client:
             data_scope=data_scope,
             download_entities=download_entities,
             file_type=FILE_TYPE,
-            # last_sync_time_in_utc=None, # TODO: use for incremental
+            last_sync_time_in_utc=start_date,
             result_file_directory=os.getcwd(),
             result_file_name=str(uuid.uuid4()),
             overwrite_result_file=True,  # Set this value true if you want to overwrite the same file.
