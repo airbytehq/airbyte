@@ -8,7 +8,7 @@ import pytest
 import requests
 import responses
 from airbyte_cdk.models import SyncMode
-from source_mailchimp.streams import Campaigns, EmailActivity, Lists
+from source_mailchimp.streams import Campaigns, EmailActivity, Lists, Segments
 from utils import read_full_refresh, read_incremental
 
 
@@ -17,6 +17,7 @@ from utils import read_full_refresh, read_incremental
     [
         (Lists, "lists"),
         (Campaigns, "campaigns"),
+        (Segments, "lists/123/segments"),
     ],
 )
 def test_stream_read(requests_mock, auth, stream, endpoint):
@@ -31,6 +32,11 @@ def test_stream_read(requests_mock, auth, stream, endpoint):
     ]
     stream_url = stream.url_base + endpoint
     requests_mock.register_uri("GET", stream_url, stream_responses)
+
+    # Mock the 'lists' endpoint as Segments stream_slice
+    lists_url = stream.url_base + "lists"
+    lists_response = {"json": {"lists": [{"id": "123"}]}}
+    requests_mock.register_uri("GET", lists_url, [lists_response])
     records = read_full_refresh(stream)
 
     assert records
@@ -113,6 +119,73 @@ def test_stream_parse_json_error(auth, caplog):
     assert "response.content=b'not_valid_json'" in caplog.text
 
 
+@pytest.mark.parametrize(
+    "stream_slice,stream_state,next_page_token,expected_params",
+    [
+        # Test case 1: no state, no next_page_token
+        (
+            {"list_id": "123"},
+            {},
+            None,
+            {"count": 1000, "sort_dir": "ASC", "sort_field": "updated_at", "list_id": "123", "exclude_fields": "segments._links"},
+        ),
+        # Test case 2: state and next_page_token
+        (
+            {"list_id": "123"},
+            {"123": {"updated_at": "2023-10-15T00:00:00Z"}},
+            {"offset": 1000},
+            {
+                "count": 1000,
+                "sort_dir": "ASC",
+                "sort_field": "updated_at",
+                "list_id": "123",
+                "offset": 1000,
+                "exclude_fields": "segments._links",
+                "since_updated_at": "2023-10-15T00:00:00Z",
+            },
+        ),
+    ],
+    ids=[
+        "no state, no next_page_token",
+        "state and next_page_token",
+    ],
+)
+def test_segments_request_params(auth, stream_slice, stream_state, next_page_token, expected_params):
+    segments_stream = Segments(authenticator=auth)
+    params = segments_stream.request_params(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
+    assert params == expected_params
+
+
+@pytest.mark.parametrize(
+    "current_stream_state,latest_record,expected_state",
+    [
+        # Test case 1: current_stream_state is empty
+        ({}, {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"}, {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}}),
+        # Test case 2: latest_record's cursor is higher than current_stream_state for list_1 and updates it
+        (
+            {"list_1": {"updated_at": "2023-10-14T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
+            {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"},
+            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
+        ),
+        # Test case 3: latest_record's cursor is lower than current_stream_state for list_2, no state update
+        (
+            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
+            {"list_id": "list_2", "updated_at": "2023-10-14T00:00:00Z"},
+            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
+        ),
+    ],
+    ids=[
+        "current_stream_state is empty",
+        "latest_record's cursor > than current_stream_state for list_1",
+        "latest_record's cursor < current_stream_state for list_2",
+    ],
+)
+def test_segments_get_updated_state(auth, current_stream_state, latest_record, expected_state):
+    segments_stream = Segments(authenticator=auth)
+    updated_state = segments_stream.get_updated_state(current_stream_state, latest_record)
+    assert updated_state == expected_state
+
+
 def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaigns_stream, mock_campaigns_response):
     campaigns_url = campaigns_stream.url_base + campaigns_stream.path()
     requests_mock.register_uri("GET", campaigns_url, json={"campaigns": mock_campaigns_response})
@@ -157,6 +230,12 @@ def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaign
                 {"campaign_id": "campaign_1", "email_id": "email_4", "timestamp": "2022-01-03T00:00:00Z"},
             ],
         ),
+    ],
+    ids=[
+        "all records >= state",
+        "one record < state",
+        "one record >= state",
+        "no state, all records returned",
     ],
 )
 def test_parse_response(stream_state, expected_records, unsubscribes_stream):
@@ -237,6 +316,12 @@ def test_parse_response(stream_state, expected_records, unsubscribes_stream):
                 "campaign_4": {"timestamp": "2022-01-04T00:00:00Z"},
             },
         ),
+    ],
+    ids=[
+        "latest_record > and updates the state of campaign_1",
+        "latest_record > and updates the state of campaign_2",
+        "latest_record < and does not update the state of campaign_3",
+        "latest_record sets state of campaign_4",
     ],
 )
 def test_unsubscribes_get_updated_state(unsubscribes_stream, mock_unsubscribes_state, latest_record, expected_updated_state):
