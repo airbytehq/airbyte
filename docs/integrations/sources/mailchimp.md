@@ -75,6 +75,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 0.7.0   | 2023-10-27 | [31940](https://github.com/airbytehq/airbyte/pull/31940) | Implement availability strategy                                            |
 | 0.6.0   | 2023-10-27 | [31922](https://github.com/airbytehq/airbyte/pull/31922) | Add Segments stream                                                        |
 | 0.5.0   | 2023-10-20 | [31675](https://github.com/airbytehq/airbyte/pull/31675) | Add Unsubscribes stream                                                    |
 | 0.4.1   | 2023-05-02 | [25717](https://github.com/airbytehq/airbyte/pull/25717) | Handle unknown error in EmailActivity                                      |
