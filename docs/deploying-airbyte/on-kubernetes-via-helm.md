@@ -79,7 +79,7 @@ After adding the repo, perform the repo indexing process by running `helm repo u
 
 After this you can browse all charts uploaded to repository by running `helm search repo airbyte`
 
-It'll produce the output similar to below:
+It'll produce output similar to below:
 
 ```text
 NAME                            	CHART VERSION	APP VERSION	DESCRIPTION
