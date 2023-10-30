@@ -6,7 +6,6 @@ import io
 import json
 import logging
 import re
-import traceback
 from datetime import datetime
 from io import IOBase
 from typing import Any, Dict, Iterable, List, Optional, Set

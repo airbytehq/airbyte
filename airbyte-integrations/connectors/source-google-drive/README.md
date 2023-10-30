@@ -58,17 +58,10 @@ python main.py read --config secrets/config.json --catalog integration_tests/con
 ### Locally running the connector docker image
 
 #### Build
-First, make sure you build the latest Docker image:
+Build the docker image via `airbyte-ci`:
 ```
-docker build . --no-cache -t airbyte/source-google-drive:dev
+airbyte-ci connectors --name=source-google-drive build
 ```
-
-You can also build the connector image via Gradle:
-```
-./gradlew :airbyte-integrations:connectors:source-google-drive:airbyteDocker
-```
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
 
 #### Run
 Then run any of the connector commands as follows:
