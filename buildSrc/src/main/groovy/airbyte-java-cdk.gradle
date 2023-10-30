@@ -35,7 +35,7 @@ class AirbyteJavaCdkPlugin implements Plugin<Project> {
             getProject().fileTree(dir: '.', include: '**/build.gradle').forEach(file -> {
                 String content = file.getText();
                 if (content.contains("useLocalCdk = true")) {
-                    content = content.replace("useLocalCdk = true", "useLocalCdk = false");
+                    content = content.replace("useLocalCdk = true", "useLocalCdk = true");
                     file.setText(content);
                     System.out.println("Updated " + file.getPath());
                 }

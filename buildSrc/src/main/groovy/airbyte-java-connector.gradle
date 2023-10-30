@@ -9,7 +9,7 @@ import org.gradle.api.tasks.testing.Test
 
 class AirbyteJavaConnectorExtension {
 
-    boolean useLocalCdk = false
+    boolean useLocalCdk = true
     String cdkVersionRequired
     List<String> features = []  // e.g. 'db-sources', 'db-destinations'
     Project project

@@ -20,7 +20,7 @@ dependencies {
     implementation libs.bundles.datadog
 
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
-    implementation project(':airbyte-commons')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-protocol')
     implementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')

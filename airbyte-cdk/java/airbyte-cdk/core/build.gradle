@@ -13,11 +13,9 @@ dependencies {
     api libs.jooq
     api libs.jooq.meta
 
-    // First party main dependencies
-    // TODO: Bring these into the CDK or refactor them out.
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
-    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
+    implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
