@@ -43,6 +43,7 @@ The Mailchimp source connector supports the following streams:
 [Email Activity](https://mailchimp.com/developer/marketing/api/email-activity-reports/list-email-activity/)
 [Lists](https://mailchimp.com/developer/api/marketing/lists/get-list-info)
 [Reports](https://mailchimp.com/developer/marketing/api/reports/list-campaign-reports/)
+[Segments](https://mailchimp.com/developer/marketing/api/list-segments/list-segments/)
 [Unsubscribes](https://mailchimp.com/developer/marketing/api/unsub-reports/list-unsubscribed-members/)
 
 ### A note on primary keys
@@ -74,6 +75,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
+| 0.6.0   | 2023-10-27 | [31922](https://github.com/airbytehq/airbyte/pull/31922) | Add Segments stream                                                        |
 | 0.5.0   | 2023-10-20 | [31675](https://github.com/airbytehq/airbyte/pull/31675) | Add Unsubscribes stream                                                    |
 | 0.4.1   | 2023-05-02 | [25717](https://github.com/airbytehq/airbyte/pull/25717) | Handle unknown error in EmailActivity                                      |
 | 0.4.0   | 2023-04-11 | [23290](https://github.com/airbytehq/airbyte/pull/23290) | Add Automations stream                                                     |
