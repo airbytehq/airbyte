@@ -16,7 +16,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation group: 'com.vertica.jdbc', name: 'vertica-jdbc', version: '12.0.3-0'
     implementation group: 'org.testcontainers', name: 'jdbc', version: '1.18.0'
 }

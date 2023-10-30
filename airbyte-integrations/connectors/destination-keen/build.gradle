@@ -17,10 +17,10 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'org.apache.kafka:kafka-clients:2.8.0'
     implementation 'com.joestelmach:natty:0.11'
 
+    // TODO: remove this dependency
     implementation libs.google.cloud.storage
 }

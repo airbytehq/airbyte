@@ -46,6 +46,7 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
 
+    // TODO: remove these dependencies (what's S3 doing here???)
     implementation libs.aws.java.sdk.s3
     implementation libs.s3
 }

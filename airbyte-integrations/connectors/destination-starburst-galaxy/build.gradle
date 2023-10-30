@@ -16,7 +16,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation project(path: ':airbyte-integrations:connectors:destination-s3')
 
     implementation ('io.trino:trino-iceberg:411') {exclude group: 'commons-cli', module: 'commons-cli'}

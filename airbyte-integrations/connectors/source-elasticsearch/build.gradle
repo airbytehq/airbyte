@@ -17,7 +17,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'

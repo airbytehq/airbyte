@@ -17,7 +17,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation group: 'com.rockset', name: 'rockset-java', version: '0.9.0'
     implementation group: 'org.awaitility', name: 'awaitility', version: '4.1.1'

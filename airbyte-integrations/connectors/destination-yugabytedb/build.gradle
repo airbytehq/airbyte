@@ -16,7 +16,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'com.yugabyte:jdbc-yugabytedb:42.3.5-yb-1'
 

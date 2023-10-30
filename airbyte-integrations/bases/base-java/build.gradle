@@ -4,7 +4,6 @@ plugins {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')

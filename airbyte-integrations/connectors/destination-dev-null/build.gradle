@@ -17,7 +17,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:destination-e2e-test')
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-dev-null')

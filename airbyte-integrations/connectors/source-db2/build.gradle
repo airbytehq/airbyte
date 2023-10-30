@@ -17,7 +17,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation group: 'com.ibm.db2', name: 'jcc', version: '11.5.5.0'
 

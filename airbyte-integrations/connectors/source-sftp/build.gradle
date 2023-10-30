@@ -16,7 +16,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-csv:2.13.2'
     implementation 'com.jcraft:jsch:0.1.55'
 

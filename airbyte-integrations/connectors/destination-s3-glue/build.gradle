@@ -16,7 +16,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     // https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-glue
     implementation 'com.amazonaws:aws-java-sdk-glue:1.12.334'

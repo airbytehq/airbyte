@@ -17,7 +17,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'com.azure:azure-storage-blob:12.20.2'
     implementation 'org.apache.commons:commons-csv:1.4'

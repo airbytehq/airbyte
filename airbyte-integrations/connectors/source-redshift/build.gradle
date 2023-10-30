@@ -17,7 +17,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'com.amazon.redshift:redshift-jdbc42:1.2.43.1067'
 

@@ -17,5 +17,4 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 }

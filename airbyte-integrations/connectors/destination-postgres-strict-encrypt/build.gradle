@@ -17,7 +17,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:destination-postgres')
 
     integrationTestJavaImplementation libs.testcontainers.postgresql

@@ -17,7 +17,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation project(':airbyte-integrations:connectors:destination-mongodb')
     implementation 'org.mongodb:mongodb-driver-sync:4.3.0'

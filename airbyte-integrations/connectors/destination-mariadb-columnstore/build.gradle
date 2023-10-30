@@ -17,7 +17,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'org.mariadb.jdbc:mariadb-java-client:2.7.4'
     implementation 'com.vdurmont:semver4j:3.1.0'

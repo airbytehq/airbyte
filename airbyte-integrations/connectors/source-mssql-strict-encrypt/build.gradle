@@ -23,7 +23,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:source-mssql')
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'

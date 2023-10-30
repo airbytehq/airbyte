@@ -19,7 +19,6 @@ def testContainersVersion = '1.17.5'
 def assertVersion = '3.23.1'
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation platform('software.amazon.awssdk:bom:2.18.1')
     // https://mvnrepository.com/artifact/software.amazon.awssdk/dynamodb

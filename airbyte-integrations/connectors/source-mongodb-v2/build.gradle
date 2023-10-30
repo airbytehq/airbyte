@@ -36,7 +36,6 @@ sourceSets {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation libs.mongo.driver.sync
 
     testImplementation libs.testcontainers.mongodb

@@ -5,7 +5,6 @@ dependencies {
     implementation libs.bundles.micronaut.annotation
     testImplementation libs.bundles.micronaut.test
 
-    implementation libs.airbyte.protocol
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
 }

@@ -20,7 +20,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:destination-mssql')
 
     implementation 'com.microsoft.sqlserver:mssql-jdbc:8.4.1.jre14'

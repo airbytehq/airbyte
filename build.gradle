@@ -561,11 +561,10 @@ subprojects { subproj ->
 
         // SLF4J as a facade over Log4j2 required dependencies
         implementation libs.bundles.log4j
+        implementation libs.appender.log4j2
 
         // Bridges from other logging implementations to SLF4J
         implementation libs.bundles.slf4j
-
-        implementation libs.appender.log4j2
 
         // Lombok dependencies
         compileOnly libs.lombok
@@ -583,6 +582,9 @@ subprojects { subproj ->
         // adds owasp plugin
         spotbugsPlugins libs.findsecbugs.plugin
         implementation libs.spotbugs.annotations
+
+        // Airbyte dependencies.
+        implementation libs.airbyte.protocol
     }
 
 

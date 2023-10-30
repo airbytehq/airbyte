@@ -17,6 +17,5 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation 'com.amazonaws:aws-java-sdk-dynamodb:1.12.47'
 }

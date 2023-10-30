@@ -33,7 +33,6 @@ configurations.all {
 dependencies {
     testImplementation libs.jooq
     testImplementation libs.hikaricp
-    implementation libs.airbyte.protocol
 
     migrations libs.testcontainers.postgresql
     migrations sourceSets.main.output

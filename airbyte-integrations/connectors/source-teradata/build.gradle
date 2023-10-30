@@ -16,7 +16,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'com.teradata.jdbc:terajdbc:20.00.00.06'
 

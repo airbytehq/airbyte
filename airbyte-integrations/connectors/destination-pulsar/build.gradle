@@ -17,7 +17,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     implementation 'org.apache.pulsar:pulsar-client:2.8.1'
 

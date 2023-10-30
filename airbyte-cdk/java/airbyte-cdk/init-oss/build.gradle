@@ -12,7 +12,6 @@ dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
     implementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
-    implementation libs.airbyte.protocol
     implementation libs.lombok
     implementation libs.micronaut.cache.caffeine
 

@@ -16,7 +16,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'com.networknt:json-schema-validator:1.0.72'
 

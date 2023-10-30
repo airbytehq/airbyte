@@ -25,7 +25,6 @@ dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-protocol')
     implementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
     implementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
-    implementation libs.airbyte.protocol
 
     testAnnotationProcessor platform(libs.micronaut.bom)
     testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor

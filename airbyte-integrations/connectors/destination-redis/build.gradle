@@ -20,7 +20,6 @@ def redisDriver = '3.7.0'
 def assertVersion = '3.21.0'
 
 dependencies {
-    implementation libs.airbyte.protocol
 
     // https://mvnrepository.com/artifact/redis.clients/jedis
     implementation "redis.clients:jedis:${redisDriver}"
