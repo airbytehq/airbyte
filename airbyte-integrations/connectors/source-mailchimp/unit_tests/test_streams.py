@@ -145,6 +145,10 @@ def test_stream_parse_json_error(auth, caplog):
             },
         ),
     ],
+    ids=[
+        "no state, no next_page_token",
+        "state and next_page_token",
+    ]
 )
 def test_segments_request_params(auth, stream_slice, stream_state, next_page_token, expected_params):
     segments_stream = Segments(authenticator=auth)
@@ -170,6 +174,11 @@ def test_segments_request_params(auth, stream_slice, stream_state, next_page_tok
             {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
         ),
     ],
+    ids=[
+        "current_stream_state is empty",
+        "latest_record's cursor > than current_stream_state for list_1",
+        "latest_record's cursor < current_stream_state for list_2",
+    ]
 )
 def test_segments_get_updated_state(auth, current_stream_state, latest_record, expected_state):
     segments_stream = Segments(authenticator=auth)
@@ -222,6 +231,12 @@ def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaign
             ],
         ),
     ],
+    ids=[
+        "all records >= state",
+        "one record < state",
+        "one record >= state",
+        "no state, all records returned",
+    ]
 )
 def test_parse_response(stream_state, expected_records, unsubscribes_stream):
     mock_response = MagicMock(spec=requests.Response)
@@ -302,6 +317,12 @@ def test_parse_response(stream_state, expected_records, unsubscribes_stream):
             },
         ),
     ],
+    ids=[
+        "latest_record > and updates the state of campaign_1",
+        "latest_record > and updates the state of campaign_2",
+        "latest_record < and does not update the state of campaign_3",
+        "latest_record sets state of campaign_4",
+    ]
 )
 def test_unsubscribes_get_updated_state(unsubscribes_stream, mock_unsubscribes_state, latest_record, expected_updated_state):
     updated_state = unsubscribes_stream.get_updated_state(mock_unsubscribes_state, latest_record)
