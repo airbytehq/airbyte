@@ -9,7 +9,7 @@ import org.gradle.api.tasks.testing.Test
 
 class AirbyteJavaConnectorExtension {
 
-    boolean useLocalCdk = false
+    boolean useLocalCdk = true
     String cdkVersionRequired
     List<String> features = []  // e.g. 'db-sources', 'db-destinations'
     Project project
@@ -24,27 +24,21 @@ class AirbyteJavaConnectorExtension {
         features.each { feature ->
             submoduleNames.add(feature)
         }
-        project.dependencies {
-            // Import transitive (compileOnly) first party CDK dependencies.
-            // TODO: Bring these into the CDK or refactor them out.
-            implementation project.project(':airbyte-api')
-            implementation project.project(':airbyte-commons')
-            implementation project.project(':airbyte-commons-cli')
-            implementation project.project(':airbyte-config-oss:config-models-oss')
-            implementation project.project(':airbyte-config-oss:init-oss')
-            implementation project.project(':airbyte-json-validation')
-
-            testImplementation project.project(':airbyte-api')
-            testImplementation project.project(':airbyte-commons')
-            testImplementation project.project(':airbyte-config-oss:config-models-oss')
-            testImplementation project.project(':airbyte-test-utils')
-
-            integrationTestJavaImplementation project.project(':airbyte-config-oss:config-models-oss')
-            integrationTestJavaImplementation project.project(':airbyte-config-oss:init-oss')
-            integrationTestJavaImplementation project.project(':airbyte-connector-test-harnesses:acceptance-test-harness')
-        }
         if (useLocalCdk) {
             project.dependencies {
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:init-oss')
+                testImplementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+                testImplementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
+                testImplementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
+                testImplementation project.project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+                integrationTestJavaImplementation project.project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+                integrationTestJavaImplementation project.project(':airbyte-cdk:java:airbyte-cdk:init-oss')
+                integrationTestJavaImplementation project.project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
                 submoduleNames.each { submoduleName ->
                     // Add the CDK module to the dependencies
                     def cdkModule = project.project(":airbyte-cdk:java:airbyte-cdk:${submoduleName}")
@@ -60,6 +54,19 @@ class AirbyteJavaConnectorExtension {
             }
         } else {
             project.dependencies {
+                implementation "io.airbyte.cdk:airbyte-cdk-airbyte-commons:${cdkVersionRequired}"
+                implementation "io.airbyte.cdk:airbyte-cdk-airbyte-json-validation:${cdkVersionRequired}"
+                implementation "io.airbyte.cdk:airbyte-cdk-airbyte-commons-cli:${cdkVersionRequired}"
+                implementation "io.airbyte.cdk:airbyte-cdk-airbyte-api:${cdkVersionRequired}"
+                implementation "io.airbyte.cdk:airbyte-cdk-config-models-oss:${cdkVersionRequired}"
+                implementation "io.airbyte.cdk:airbyte-cdk-init-oss:${cdkVersionRequired}"
+                testImplementation "io.airbyte.cdk:airbyte-cdk-airbyte-commons:${cdkVersionRequired}"
+                testImplementation "io.airbyte.cdk:airbyte-cdk-airbyte-json-validation:${cdkVersionRequired}"
+                testImplementation "io.airbyte.cdk:airbyte-cdk-airbyte-api:${cdkVersionRequired}"
+                testImplementation "io.airbyte.cdk:airbyte-cdk-config-models-oss:${cdkVersionRequired}"
+                integrationTestJavaImplementation "io.airbyte.cdk:airbyte-cdk-config-models-oss:${cdkVersionRequired}"
+                integrationTestJavaImplementation "io.airbyte.cdk:airbyte-cdk-init-oss:${cdkVersionRequired}"
+                integrationTestJavaImplementation "io.airbyte.cdk:airbyte-cdk-acceptance-test-harness:${cdkVersionRequired}"
                 submoduleNames.each { submoduleName ->
                     // Add the cdkModule to the dependencies
                     def cdkModule = "io.airbyte.cdk:airbyte-cdk-${submoduleName}:${cdkVersionRequired}"
