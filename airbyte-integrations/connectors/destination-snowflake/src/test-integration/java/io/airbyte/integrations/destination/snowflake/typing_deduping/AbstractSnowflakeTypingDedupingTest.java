@@ -151,7 +151,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
       final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_raw.jsonl");
       final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_append_final.jsonl");
-      verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+      verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
     } finally {
       // manually drop the lowercased schema, since we no longer have the code to do it automatically
       // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code
@@ -184,7 +184,7 @@ public abstract class AbstractSnowflakeTypingDedupingTest extends BaseTypingDedu
 
       final List<JsonNode> expectedRawRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_raw.jsonl");
       final List<JsonNode> expectedFinalRecords2 = readRecords("dat/sync2_expectedrecords_fullrefresh_overwrite_final.jsonl");
-      verifySyncResult(expectedRawRecords2, expectedFinalRecords2);
+      verifySyncResult(expectedRawRecords2, expectedFinalRecords2, disableFinalTableComparison());
     } finally {
       // manually drop the lowercased schema, since we no longer have the code to do it automatically
       // (the raw table is still in lowercase "airbyte_internal"."whatever", so the auto-cleanup code
