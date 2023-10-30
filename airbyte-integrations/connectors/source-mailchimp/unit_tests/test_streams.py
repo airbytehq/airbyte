@@ -372,7 +372,7 @@ def test_unsubscribes_get_updated_state(unsubscribes_stream, mock_unsubscribes_s
         "EmailActivity 403 error",
         "Lists 200 success",
         "Lists 400 error",
-    ]
+    ],
 )
 def test_403_error_handling(
     auth, requests_mock, stream, url, status_code, response_content, expected_availability, expected_reason_substring
