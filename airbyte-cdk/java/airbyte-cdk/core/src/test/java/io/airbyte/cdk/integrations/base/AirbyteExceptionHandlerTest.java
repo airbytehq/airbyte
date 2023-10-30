@@ -30,18 +30,51 @@ public class AirbyteExceptionHandlerTest {
 
   PrintStream originalOut = System.out;
   private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+  private AirbyteExceptionHandler airbyteExceptionHandler;
 
   @BeforeEach
   public void setup() {
     System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
+
+    // mocking terminate() method in AirbyteExceptionHandler, so we don't kill the JVM
+    airbyteExceptionHandler = spy(new AirbyteExceptionHandler());
+    doNothing().when(airbyteExceptionHandler).terminate();
   }
 
   @Test
   void testTraceMessageEmission() throws Exception {
-    // mocking terminate() method in AirbyteExceptionHandler, so we don't kill the JVM
-    final AirbyteExceptionHandler airbyteExceptionHandler = spy(new AirbyteExceptionHandler());
-    doNothing().when(airbyteExceptionHandler).terminate();
+    runTestWithMessage("error");
 
+    final Optional<AirbyteMessage> maybeTraceMessage = findFirstTraceMessage();
+    assertTrue(maybeTraceMessage.isPresent());
+    final AirbyteMessage traceMessage = maybeTraceMessage.get();
+    assertAll(
+        () -> Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
+        () -> Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
+        () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType())
+    );
+  }
+
+  @Test
+  void testMessageDeinterpolation() throws Exception {
+    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("foo");
+    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("bar");
+
+    runTestWithMessage("Error happened in foo.bar");
+
+    // now we turn the std out from the thread into json and check it's the expected TRACE message
+    final Optional<AirbyteMessage> maybeTraceMessage = findFirstTraceMessage();
+    assertTrue(maybeTraceMessage.isPresent());
+    final AirbyteMessage traceMessage = maybeTraceMessage.get();
+    assertAll(
+        () -> Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
+        () -> Assertions.assertEquals("Error happened in foo.bar", traceMessage.getTrace().getError().getMessage()),
+        () -> Assertions.assertEquals("Error happened in ?.?", traceMessage.getTrace().getError().getInternalMessage()),
+        () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType())
+    );
+  }
+
+  private void runTestWithMessage(final String message) throws InterruptedException {
     // have to spawn a new thread to test the uncaught exception handling,
     // because junit catches any exceptions in main thread, i.e. they're not 'uncaught'
     final Thread thread = new Thread() {
@@ -49,8 +82,8 @@ public class AirbyteExceptionHandlerTest {
       @SneakyThrows
       public void run() {
         final IntegrationRunner runner = Mockito.mock(IntegrationRunner.class);
-        doThrow(new RuntimeException("error")).when(runner).run(new String[] {"write"});
-        runner.run(new String[] {"write"});
+        doThrow(new RuntimeException(message)).when(runner).run(new String[]{"write"});
+        runner.run(new String[]{"write"});
       }
 
     };
@@ -58,22 +91,12 @@ public class AirbyteExceptionHandlerTest {
     thread.start();
     thread.join();
     System.out.flush();
-
-    // now we turn the std out from the thread into json and check it's the expected TRACE message
-    final Optional<AirbyteMessage> maybeTraceMessage = findFirstTraceMessage();
-    assertTrue(maybeTraceMessage.isPresent());
-    final AirbyteMessage traceMessage = maybeTraceMessage.get();
-    assertAll(
-        () -> Assertions.assertEquals(AirbyteMessage.Type.TRACE, traceMessage.getType()),
-        () -> Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
-        () -> Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
-        () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType())
-    );
   }
 
   @AfterEach
   public void teardown() {
     System.setOut(originalOut);
+    AirbyteExceptionHandler.STRINGS_TO_REMOVE.clear();
   }
   private Optional<AirbyteMessage> findFirstTraceMessage() {
     return Arrays.stream(outContent.toString().split("\n"))
