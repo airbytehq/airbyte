@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "connector-acceptance-test"
-version = "2.1.1"
+version = "2.1.2"
 description = "Contains acceptance tests for connectors."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "MIT"
@@ -42,4 +42,3 @@ requests = "<2.29.0"
 pytest-xdist = "^3.3.1"
 
 [tool.poetry.dev-dependencies]
-

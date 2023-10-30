@@ -70,9 +70,9 @@ def test_discovery_uniquely_named_streams():
         }
     )
     streams = [stream_a, stream_a]
-    assert t.streams_are_uniquely_named(streams) == False
+    assert t.duplicated_stream_names(streams) == ["test_stream"]
     streams.pop()
-    assert t.streams_are_uniquely_named(streams)
+    assert len(t.duplicated_stream_names(streams)) == 0
 
 
 @pytest.mark.parametrize(
