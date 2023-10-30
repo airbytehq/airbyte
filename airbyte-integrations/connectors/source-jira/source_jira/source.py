@@ -105,17 +105,27 @@ class SourceJira(AbstractSource):
         except ValidationError as validation_error:
             return False, validation_error
         except requests.exceptions.RequestException as request_error:
-            if request_error.response.status_code == requests.codes.not_found:
+            has_response = request_error.response is not None
+            is_invalid_domain = (
+                isinstance(request_error, requests.exceptions.InvalidURL)
+                or has_response
+                and request_error.response.status_code == requests.codes.not_found
+            )
+
+            if is_invalid_domain:
                 raise AirbyteTracedException(
-                    message="Config validation error: please validate your domain.",
+                    message="Config validation error: please check that your domain is valid and does not include protocol (e.g: https://).",
                     internal_message=str(request_error),
                     failure_type=FailureType.config_error,
                 ) from None
+
             # sometimes jira returns non json response
-            message = ""
-            if request_error.response.headers.get("content-type") == "application/json":
+            if has_response and request_error.response.headers.get("content-type") == "application/json":
                 message = " ".join(map(str, request_error.response.json().get("errorMessages", "")))
-            return False, f"{message} {request_error}"
+                return False, f"{message} {request_error}"
+
+            # we don't know what this is, rethrow it
+            raise request_error
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform(config)
