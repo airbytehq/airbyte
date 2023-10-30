@@ -72,7 +72,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -483,13 +482,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   public static void main(final String[] args) throws Exception {
     if ("--write".equals(args[0])) {
       final List<String> targetStrings = List.of("foo", "bar", "baz");
-      final BigQueryException e = new BigQueryException(42, "Not found: Table bar.baz was not found in location US at [53:5]");
+      final BigQueryException e = new BigQueryException(42, "Some other error happened for foo.bar");
 
-      final String mangledMessage =
-          "airbyte_destination_bigquery_error: "
-              + targetStrings.stream().reduce(
-                  e.getMessage().replaceAll("\\d", "?"),
-                  (message, targetString) -> message.replace(targetString, "?"));
+      final String mangledMessage = targetStrings.stream().reduce(
+          e.getMessage(),
+          (message, targetString) -> message.replace(targetString, "?"));
 
       // This puts the mangled string into the trace external message and the original string into the
       // internal message, which is backwards
@@ -503,8 +500,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
               .withType(AirbyteTraceMessage.Type.ERROR)
               .withError(new AirbyteErrorTraceMessage()
                   .withMessage(e.getMessage())
-                  .withInternalMessage(mangledMessage)
-                  .withStackTrace(ExceptionUtils.getStackTrace(e)))));
+                  .withInternalMessage(mangledMessage))));
       throw e;
     }
 
