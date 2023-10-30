@@ -547,6 +547,7 @@ subprojects { subproj ->
     }
 
     // TODO: These should be added to the CDK or to the individual projects that need them:
+
     dependencies {
         implementation(platform("com.fasterxml.jackson:jackson-bom:2.13.0"))
         implementation(platform("org.glassfish.jersey:jersey-bom:2.31"))
@@ -560,16 +561,10 @@ subprojects { subproj ->
 
         // SLF4J as a facade over Log4j2 required dependencies
         implementation libs.bundles.log4j
+        implementation libs.appender.log4j2
 
         // Bridges from other logging implementations to SLF4J
         implementation libs.bundles.slf4j
-
-        // Dependencies for logging to cloud storage, as well as the various clients used to do so.
-        implementation libs.appender.log4j2
-        implementation libs.aws.java.sdk.s3
-        implementation libs.google.cloud.storage
-
-        implementation libs.s3
 
         // Lombok dependencies
         compileOnly libs.lombok
@@ -587,7 +582,12 @@ subprojects { subproj ->
         // adds owasp plugin
         spotbugsPlugins libs.findsecbugs.plugin
         implementation libs.spotbugs.annotations
+
+        // Airbyte dependencies.
+        implementation libs.airbyte.protocol
     }
+
+
 
     tasks.withType(SpotBugsTask).configureEach {
         // Reports can be found under each subproject in build/spotbugs/

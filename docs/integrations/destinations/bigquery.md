@@ -140,6 +140,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.2   | 2023-10-30 | [31960](https://github.com/airbytehq/airbyte/pull/31960)   | Adopt java CDK version 0.2.0.                                                                                                                                   |
 | 2.3.1   | 2023-10-27 | [31529](https://github.com/airbytehq/airbyte/pull/31529)   | Performance enhancement (switch to a `merge` statement for incremental-dedup syncs)                                                                             |
 | 2.3.0   | 2023-10-25 | [31686](https://github.com/airbytehq/airbyte/pull/31686)   | Opt out flag for typed and deduped tables                                                                                                                       |
 | 2.2.0   | 2023-10-25 | [\#31520](https://github.com/airbytehq/airbyte/pull/31520) | Stop deduping raw table                                                                                                                                         |
