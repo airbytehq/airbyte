@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.52.6
+make  parameter as not required for default backoff handler
+
 ## 0.52.5
 use in-memory cache if no file path is provided
 
