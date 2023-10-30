@@ -1,12 +1,18 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 300
   allowedHosts:
     hosts:
       - "*.googleapis.com"
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
-  dockerImageTag: 1.3.5
+  dockerImageTag: 1.3.6
   dockerRepository: airbyte/source-google-search-console
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
   githubIssueLabel: source-google-search-console
   icon: googlesearchconsole.svg
   license: Elv2
@@ -26,11 +32,7 @@ data:
       - sitemaps
       - sites
       - search_analytics_all_fields
-  documentationUrl: https://docs.airbyte.com/integrations/sources/google-search-console
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 300
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"
