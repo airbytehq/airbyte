@@ -30,7 +30,6 @@ from source_bing_ads.reports import (
     PerformanceReportsMixin,
     ReportsMixin,
 )
-from source_salesforce.exceptions import TmpFileIOError
 from suds import sudsobject
 
 
@@ -237,7 +236,10 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
             self.logger.info(f"Empty data received. {e}")
             yield from []
         except IOError as ioe:
-            raise TmpFileIOError(f"The IO/Error occurred while reading tmp data. Called: {path}. Stream: {self.name}", ioe)
+            self.logger.fatal(
+                f"The IO/Error occurred while reading tmp data. Called: {path}. Stream: {self.name}",
+            )
+            raise ioe
         finally:
             # remove binary tmp file, after data is read
             os.remove(path)
