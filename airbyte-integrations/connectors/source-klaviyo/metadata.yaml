@@ -33,7 +33,7 @@ data:
         message: In this release, for 'events' stream changed type of 'event_properties/items/quantity' field from integer to number. Users will need to refresh the source schema and reset events streams after upgrading.
         upgradeDeadline: "2023-11-30"
       2.0.0:
-        message: In this release, for 'flows' stream changed cursor field from 'created' to 'updated'. Users will need to refresh the source schema and reset events streams after upgrading.
+        message: In this release, the cursor for the 'flows' stream has changed from 'created' to 'updated'. Users will need to refresh the source schema and reset the 'flows' stream after upgrading.
         upgradeDeadline: "2023-11-30"
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   tags:
