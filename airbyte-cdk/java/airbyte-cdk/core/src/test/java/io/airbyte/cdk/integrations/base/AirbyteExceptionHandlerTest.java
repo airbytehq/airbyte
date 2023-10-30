@@ -4,46 +4,50 @@
 
 package io.airbyte.cdk.integrations.base;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.spy;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Optional;
 import lombok.SneakyThrows;
-import org.junit.After;
-import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.slf4j.LoggerFactory;
 
 public class AirbyteExceptionHandlerTest {
 
   PrintStream originalOut = System.out;
-  private volatile ByteArrayOutputStream outContent = new ByteArrayOutputStream();
+  private final ByteArrayOutputStream outContent = new ByteArrayOutputStream();
 
-  @Before
-  public void setUpOut() {
+  @BeforeEach
+  public void setup() {
     System.setOut(new PrintStream(outContent, true, StandardCharsets.UTF_8));
   }
 
   @Test
   void testTraceMessageEmission() throws Exception {
     // mocking terminate() method in AirbyteExceptionHandler, so we don't kill the JVM
-    AirbyteExceptionHandler airbyteExceptionHandler = spy(new AirbyteExceptionHandler());
+    final AirbyteExceptionHandler airbyteExceptionHandler = spy(new AirbyteExceptionHandler());
     doNothing().when(airbyteExceptionHandler).terminate();
 
     // have to spawn a new thread to test the uncaught exception handling,
     // because junit catches any exceptions in main thread, i.e. they're not 'uncaught'
-    Thread thread = new Thread() {
+    final Thread thread = new Thread() {
 
       @SneakyThrows
       public void run() {
-        setUpOut();
         final IntegrationRunner runner = Mockito.mock(IntegrationRunner.class);
         doThrow(new RuntimeException("error")).when(runner).run(new String[] {"write"});
         runner.run(new String[] {"write"});
@@ -54,20 +58,27 @@ public class AirbyteExceptionHandlerTest {
     thread.start();
     thread.join();
     System.out.flush();
-    revertOut();
 
     // now we turn the std out from the thread into json and check it's the expected TRACE message
-    JsonNode traceMsgJson = Jsons.deserialize(outContent.toString(StandardCharsets.UTF_8));
-    LoggerFactory.getLogger(AirbyteExceptionHandlerTest.class).debug(traceMsgJson.toString());
-    Assertions.assertEquals("TRACE", traceMsgJson.get("type").asText());
-    Assertions.assertEquals("ERROR", traceMsgJson.get("trace").get("type").asText());
-    Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMsgJson.get("trace").get("error").get("message").asText());
-    Assertions.assertEquals("system_error", traceMsgJson.get("trace").get("error").get("failure_type").asText());
+    final Optional<AirbyteMessage> maybeTraceMessage = findFirstTraceMessage();
+    assertTrue(maybeTraceMessage.isPresent());
+    final AirbyteMessage traceMessage = maybeTraceMessage.get();
+    assertAll(
+        () -> Assertions.assertEquals(AirbyteMessage.Type.TRACE, traceMessage.getType()),
+        () -> Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
+        () -> Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
+        () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType())
+    );
   }
 
-  @After
-  public void revertOut() {
+  @AfterEach
+  public void teardown() {
     System.setOut(originalOut);
   }
-
+  private Optional<AirbyteMessage> findFirstTraceMessage() {
+    return Arrays.stream(outContent.toString().split("\n"))
+        .map(line -> Jsons.deserialize(line, AirbyteMessage.class))
+        .filter(message -> message.getType() == AirbyteMessage.Type.TRACE)
+        .findFirst();
+  }
 }
