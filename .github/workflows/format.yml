@@ -11,7 +11,7 @@ on:
   pull_request:
 jobs:
   format-check:
-    runs-on: ubuntu-latest
+    runs-on: medium-runner
     name: "Check All Formatting Rules"
     timeout-minutes: 40
     steps:
