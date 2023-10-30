@@ -29,7 +29,7 @@ class OAuth2(BaseModel):
 
 class VectaraIndexingConfigModel(BaseModel):
     oauth2: OAuth2 = Field(
-        ..., title="OAuth2.0 Credentials", description="OAuth2.0 credentials used to authenticate admin actions (creating/deleting corpora)", discriminator="mode", type="object", order=1
+        ..., title="OAuth2.0 Credentials", description="OAuth2.0 credentials used to authenticate admin actions (creating/deleting corpora)", type="object", order=1
     )
     customer_id: str = Field(..., title="Customer ID", description="Your customer id as it is in the authenticaion url", order=2)
     corpus_name: str = Field(..., title="Corpus Name", description="The Name of Corpus to load data into", order=2)
@@ -49,7 +49,6 @@ class ConfigModel(BaseModel):
         CohereEmbeddingConfigModel,
         FakeEmbeddingConfigModel,
         FromFieldEmbeddingConfigModel,
-        NoEmbeddingConfigModel,
         OpenAICompatibleEmbeddingConfigModel,
     ] = Field(..., title="Embedding", description="Embedding configuration", discriminator="mode", group="embedding", type="object")
     indexing: VectaraIndexingConfigModel

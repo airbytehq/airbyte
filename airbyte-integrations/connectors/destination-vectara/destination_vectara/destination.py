@@ -20,7 +20,6 @@ from airbyte_cdk.models import (
 )
 from destination_vectara.config import ConfigModel
 from destination_vectara.indexer import VectaraIndexer
-from destination_vectara.no_embedder import NoEmbedder
 
 BATCH_SIZE = 128
 
