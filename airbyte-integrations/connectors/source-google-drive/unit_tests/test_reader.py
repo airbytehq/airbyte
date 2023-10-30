@@ -207,7 +207,7 @@ def flatten_list(list_of_lists):
             id="Duplicates",
         ),
         pytest.param(
-            "subfolder/*.csv",
+            "subfolder/**/*.csv",
             [
                 [
                     {
@@ -242,11 +242,135 @@ def flatten_list(list_of_lists):
                     uri="subfolder/another_file.csv",
                     id="def",
                     mimeType="text/csv",
-                    name="another_file.csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
             ],
             id="Glob matching and subdirectories",
+        ),
+        pytest.param(
+            "subfolder/*.csv",
+            [
+                [
+                    {
+                        "files": [
+                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "sub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                            # This won't get queued because it has no chance of matching the glob
+                            {
+                                "id": "sub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "ignored_subfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # second request is for requesting the subfolder
+                    {
+                        "files": [
+                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            # This will get queued because it matches the prefix (event though it can't match the glob)
+                            {
+                                "id": "subsub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subsubfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # third request is for requesting the subsubfolder
+                    {
+                        "files": [
+                            {
+                                "id": "ghi",
+                                "mimeType": "text/csv",
+                                "name": "yet_another_file.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="subfolder/another_file.csv",
+                    id="def",
+                    mimeType="text/csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
+            ],
+            id="Glob matching and ignoring most subdirectories that can't be matched",
+        ),
+        pytest.param(
+            "subfolder/subsubfolder/*.csv",
+            [
+                [
+                    {
+                        "files": [
+                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "sub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # second request is for requesting the subfolder
+                    {
+                        "files": [
+                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            # This will get queued because it matches the prefix (event though it can't match the glob)
+                            {
+                                "id": "subsub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subsubfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # third request is for requesting the subsubfolder
+                    {
+                        "files": [
+                            {
+                                "id": "ghi",
+                                "mimeType": "text/csv",
+                                "name": "yet_another_file.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                            # This will get queued because it matches the prefix (event though it can't match the glob)
+                            {
+                                "id": "subsubsub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "ignored_subsubsubfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [{"files": []}],
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="subfolder/subsubfolder/yet_another_file.csv",
+                    id="ghi",
+                    mimeType="text/csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
+            ],
+            id="Glob matching and ignoring subdirectories that can't be matched, multiple levels",
         ),
         pytest.param(
             "*",

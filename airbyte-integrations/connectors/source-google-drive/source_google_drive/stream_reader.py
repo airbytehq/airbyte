@@ -6,6 +6,7 @@ import io
 import json
 import logging
 import re
+import traceback
 from datetime import datetime
 from io import IOBase
 from typing import Any, Dict, Iterable, List, Optional, Set
@@ -86,6 +87,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         """
         service = self.google_drive_service
         root_folder_id = self._get_folder_id(self.config.folder_url)
+        # ignore prefix argument as it's legacy only and this is a new connector
+        prefixes = self.get_prefixes_from_globs(globs)
 
         folder_id_queue = [("", root_folder_id)]
         seen: Set[str] = set()
@@ -105,14 +108,20 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                     seen.add(new_file["id"])
                     file_name = path + self._get_file_name(new_file)
                     if new_file["mimeType"] == FOLDER_MIME_TYPE:
-                        folder_id_queue.append((f"{file_name}/", new_file["id"]))
+                        folder_name = f"{file_name}/"
+                        # check prefix matching in both directions to handle
+                        prefix_matches_folder_name = any(prefix.startswith(folder_name) for prefix in prefixes)
+                        folder_name_matches_prefix = any(folder_name.startswith(prefix) for prefix in prefixes)
+                        if prefix_matches_folder_name or folder_name_matches_prefix or len(prefixes) == 0:
+                            folder_id_queue.append((folder_name, new_file["id"]))
                         continue
-                    last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
-                    remote_file = GoogleDriveRemoteFile(
-                        uri=file_name, last_modified=last_modified, id=new_file["id"], mimeType=new_file["mimeType"]
-                    )
-                    if self.file_matches_globs(remote_file, globs):
-                        yield remote_file
+                    else:
+                        last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                        remote_file = GoogleDriveRemoteFile(
+                            uri=file_name, last_modified=last_modified, id=new_file["id"], mimeType=new_file["mimeType"]
+                        )
+                        if self.file_matches_globs(remote_file, globs):
+                            yield remote_file
                 request = service.files().list_next(request, results)
                 if request is None:
                     break
