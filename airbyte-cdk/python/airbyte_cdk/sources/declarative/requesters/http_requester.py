@@ -62,7 +62,7 @@ class HttpRequester(Requester):
 
     _DEFAULT_MAX_RETRY = 5
     _DEFAULT_RETRY_FACTOR = 5
-    _DELAULT_MAX_TIME = 60 * 10
+    _DEFAULT_MAX_TIME = 60 * 10
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
@@ -177,7 +177,7 @@ class HttpRequester(Requester):
         Override if needed. Specifies maximum total waiting time (in seconds) for backoff policy. Return None for no limit.
         """
         if self.error_handler is None:
-            return self._DELAULT_MAX_TIME
+            return self._DEFAULT_MAX_TIME
         return self.error_handler.max_time
 
     @property

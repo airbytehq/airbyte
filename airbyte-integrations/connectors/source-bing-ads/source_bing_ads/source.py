@@ -10,6 +10,10 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_bing_ads.client import Client
 from source_bing_ads.streams import (  # noqa: F401
+    AccountImpressionPerformanceReportDaily,
+    AccountImpressionPerformanceReportHourly,
+    AccountImpressionPerformanceReportMonthly,
+    AccountImpressionPerformanceReportWeekly,
     AccountPerformanceReportDaily,
     AccountPerformanceReportHourly,
     AccountPerformanceReportMonthly,
@@ -82,6 +86,7 @@ class SourceBingAds(AbstractSource):
 
         reports = (
             "AgeGenderAudienceReport",
+            "AccountImpressionPerformanceReport",
             "AccountPerformanceReport",
             "KeywordPerformanceReport",
             "AdGroupPerformanceReport",

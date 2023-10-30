@@ -7,7 +7,6 @@ import json
 import logging
 import os
 import re
-import time
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass
@@ -59,6 +58,9 @@ class WeaviateIndexer(Indexer):
         else:
             self.client = weaviate.Client(url=self.config.host, additional_headers=headers)
 
+        # disable dynamic batching because it's handled asynchroniously in the client
+        self.client.batch.configure(batch_size=None, dynamic=False)
+
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
         if deployment_mode.casefold() == CLOUD_DEPLOYMENT_MODE and not self._uses_safe_config():
@@ -75,7 +77,7 @@ class WeaviateIndexer(Indexer):
     def pre_sync(self, catalog: ConfiguredAirbyteCatalog) -> None:
         self._create_client()
         classes = {c["class"]: c for c in self.client.schema.get().get("classes", [])}
-        self.has_record_id_metadata = defaultdict(None)
+        self.has_record_id_metadata = defaultdict(lambda: False)
         for stream in catalog.streams:
             class_name = self.stream_to_class_name(stream.stream.name)
             schema = classes[class_name] if class_name in classes else None
@@ -110,13 +112,12 @@ class WeaviateIndexer(Indexer):
 
     def delete(self, delete_ids, namespace, stream):
         if len(delete_ids) > 0:
-            # Delete ids in all classes that have the record id metadata
-            for class_name in self.has_record_id_metadata.keys():
-                if self.has_record_id_metadata[class_name]:
-                    self.client.batch.delete_objects(
-                        class_name=class_name,
-                        where={"path": [METADATA_RECORD_ID_FIELD], "operator": "ContainsAny", "valueStringArray": delete_ids},
-                    )
+            class_name = self.stream_to_class_name(stream)
+            if self.has_record_id_metadata[class_name]:
+                self.client.batch.delete_objects(
+                    class_name=class_name,
+                    where={"path": [METADATA_RECORD_ID_FIELD], "operator": "ContainsAny", "valueStringArray": delete_ids},
+                )
 
     def index(self, document_chunks, namespace, stream):
         if len(document_chunks) == 0:
@@ -161,27 +162,14 @@ class WeaviateIndexer(Indexer):
         return result
 
     def _flush(self, retries: int = 3):
-        if len(self.objects_with_error) > 0 and retries == 0:
-            error_msg = f"Objects had errors and retries failed as well. Object IDs: {self.objects_with_error.keys()}"
-            raise WeaviatePartialBatchError(error_msg)
-
         results = self.client.batch.create_objects()
-        self.objects_with_error.clear()
+        all_errors = []
+
         for result in results:
             errors = result.get("result", {}).get("errors", [])
             if errors:
-                obj_id = result.get("id")
-                self.objects_with_error[obj_id] = self.buffered_objects.get(obj_id)
-                logging.info(f"Object {obj_id} had errors: {errors}. Going to retry.")
+                all_errors.extend(errors)
 
-        for buffered_object in self.objects_with_error.values():
-            self.client.batch.add_data_object(
-                buffered_object.properties, buffered_object.class_name, buffered_object.id, vector=buffered_object.vector
-            )
-
-        if len(self.objects_with_error) > 0 and retries > 0:
-            logging.info("sleeping 2 seconds before retrying batch again")
-            time.sleep(2)
-            self._flush(retries - 1)
-
-        self.buffered_objects.clear()
+        if len(all_errors) > 0:
+            error_msg = "Errors while loading: " + ", ".join([str(error) for error in all_errors])
+            raise WeaviatePartialBatchError(error_msg)
