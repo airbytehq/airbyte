@@ -24,10 +24,9 @@ tiktoken_dependency = "tiktoken==0.4.0"
 
 unstructured_dependencies = [
     "unstructured==0.10.19",
-    "unstructured[docx]==0.10.19",
+    "unstructured[docx,pptx]==0.10.19",
     "pdf2image==1.16.3",
     "pdfminer.six==20221105",
-    "unstructured[docx]==0.10.19",
     "unstructured.pytesseract>=0.3.12",
     "pytesseract==0.3.10",
     "markdown",
@@ -37,7 +36,7 @@ setup(
     name="airbyte-cdk",
     # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
     # updated if our semver format changes such as using release candidate versions.
-    version="0.52.4",
+    version="0.52.7",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
