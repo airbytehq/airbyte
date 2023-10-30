@@ -648,10 +648,20 @@ class TestDiscovery(BaseTest):
         """Verify that discover produce correct schema."""
         output = await docker_runner.call_discover(config=connector_config)
         catalog_messages = filter_output(output, Type.CATALOG)
+        duplicated_stream_names = self.duplicated_stream_names(catalog_messages[0].catalog.streams)
 
         assert len(catalog_messages) == 1, "Catalog message should be emitted exactly once"
         assert catalog_messages[0].catalog, "Message should have catalog"
         assert catalog_messages[0].catalog.streams, "Catalog should contain streams"
+        assert len(duplicated_stream_names) == 0, f"Catalog should have uniquely named streams, duplicates are: {duplicated_stream_names}"
+
+    def duplicated_stream_names(self, streams) -> List[str]:
+        """Counts number of times a stream appears in the catalog"""
+        name_counts = dict()
+        for stream in streams:
+            count = name_counts.get(stream.name, 0)
+            name_counts[stream.name] = count + 1
+        return [k for k, v in name_counts.items() if v > 1]
 
     def test_defined_cursors_exist_in_schema(self, discovered_catalog: Mapping[str, Any]):
         """Check if all of the source defined cursor fields are exists on stream's json schema."""
