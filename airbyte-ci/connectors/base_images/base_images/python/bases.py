@@ -17,7 +17,7 @@ class AirbytePythonConnectorBaseImage(bases.AirbyteConnectorBaseImage):
 
     root_image: Final[published_image.PublishedImage] = PYTHON_3_9_18
     repository: Final[str] = "airbyte/python-connector-base"
-    pip_cache_name: Final[str] = "pip-cache"
+    pip_cache_name: Final[str] = "pip_cache"
     nltk_data_path: Final[str] = "/usr/share/nltk_data"
     ntlk_data = {
         "tokenizers": {"https://github.com/nltk/nltk_data/raw/5db857e6f7df11eabb5e5665836db9ec8df07e28/packages/tokenizers/punkt.zip"},
