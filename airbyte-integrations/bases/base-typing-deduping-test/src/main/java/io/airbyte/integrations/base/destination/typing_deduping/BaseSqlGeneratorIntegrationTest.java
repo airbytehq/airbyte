@@ -556,6 +556,54 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   }
 
   /**
+   * Verify that we correctly only process raw records with recent extracted_at. In practice,
+   * destinations should not do this - but their SQL should work correctly.
+   * <p>
+   * Create two raw records, one with an old extracted_at. Verify that updatedTable only T+Ds the new
+   * record, and doesn't set loaded_at on the old record.
+   */
+  @Test
+  public void ignoreOldRawRecords() throws Exception {
+    createRawTable(streamId);
+    createFinalTable(incrementalAppendStream, "");
+    insertRawTableRecords(
+        streamId,
+        List.of(
+            Jsons.deserialize(
+                """
+                {
+                  "_airbyte_raw_id": "c5bcae50-962e-4b92-b2eb-1659eae31693",
+                  "_airbyte_extracted_at": "2022-01-01T00:00:00Z",
+                  "_airbyte_data": {
+                    "string": "foo"
+                  }
+                }
+                """),
+            Jsons.deserialize(
+                """
+                {
+                  "_airbyte_raw_id": "93f1bdd8-1916-4e6c-94dc-29a5d9701179",
+                  "_airbyte_extracted_at": "2023-01-01T01:00:00Z",
+                  "_airbyte_data": {
+                    "string": "bar"
+                  }
+                }
+                """)));
+
+    final String sql = generator.updateTable(incrementalAppendStream, "", Optional.of(Instant.parse("2023-01-01T00:00:00Z")));
+    destinationHandler.execute(sql);
+
+    final List<JsonNode> rawRecords = dumpRawTableRecords(streamId);
+    final List<JsonNode> finalRecords = dumpFinalTableRecords(streamId, "");
+    assertAll(
+        () -> assertEquals(
+            1,
+            rawRecords.stream().filter(record -> record.get("_airbyte_loaded_at") == null).count(),
+            "Raw table should only have non-null loaded_at on the newer record"),
+        () -> assertEquals(1, finalRecords.size(), "T+D should only execute on the newer record"));
+  }
+
+  /**
    * Test JSON Types encounted for a String Type field.
    *
    * @throws Exception
@@ -659,13 +707,11 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
     final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamId, "");
     verifyRecordCounts(
-        1,
+        2,
         actualRawRecords,
         1,
         actualFinalRecords);
-    assertAll(
-        () -> assertEquals("bar", actualRawRecords.get(0).get("_airbyte_data").get("string").asText()),
-        () -> assertEquals("bar", actualFinalRecords.get(0).get(generator.buildColumnId("string").name()).asText()));
+    assertEquals("bar", actualFinalRecords.get(0).get(generator.buildColumnId("string").name()).asText());
   }
 
   @Test
@@ -796,10 +842,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
-        // We keep the newest raw record per PK
-        7,
+        11,
         dumpRawTableRecords(streamId),
-        5,
+        6,
         dumpFinalTableRecords(streamId, ""));
   }
 
@@ -824,11 +869,12 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_updateafterdelete_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty());
+    final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(cdcIncrementalAppendStream.id());
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", minTimestampForSync);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
-        1,
+        2,
         dumpRawTableRecords(streamId),
         0,
         dumpFinalTableRecords(streamId, ""));
@@ -861,11 +907,12 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "",
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_insertafterdelete_inputrecords_final.jsonl"));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty());
+    final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(cdcIncrementalAppendStream.id());
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", minTimestampForSync);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
-        1,
+        2,
         dumpRawTableRecords(streamId),
         1,
         dumpFinalTableRecords(streamId, ""));

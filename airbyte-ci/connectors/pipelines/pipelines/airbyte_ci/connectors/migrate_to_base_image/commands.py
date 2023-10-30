@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import anyio
-import click
+import asyncclick as click
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.migrate_to_base_image.pipeline import run_connector_migration_to_base_image_pipeline
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -17,7 +16,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 )
 @click.argument("pull-request-number", type=str)
 @click.pass_context
-def migrate_to_base_image(
+async def migrate_to_base_image(
     ctx: click.Context,
     pull_request_number: str,
 ) -> bool:
@@ -51,8 +50,7 @@ def migrate_to_base_image(
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
 
-    anyio.run(
-        run_connectors_pipelines,
+    await run_connectors_pipelines(
         connectors_contexts,
         run_connector_migration_to_base_image_pipeline,
         "Migration to base image pipeline",

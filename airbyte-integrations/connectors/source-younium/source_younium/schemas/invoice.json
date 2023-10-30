@@ -12,6 +12,15 @@
     "status": {
       "type": ["null", "string"]
     },
+    "created": {
+      "type": ["null", "string"]
+    },
+    "invoiceDeliveryMethod": {
+      "type": ["null", "string"]
+    },
+    "modified": {
+      "type": ["null", "string"]
+    },
     "account": {
       "type": "object",
       "properties": {

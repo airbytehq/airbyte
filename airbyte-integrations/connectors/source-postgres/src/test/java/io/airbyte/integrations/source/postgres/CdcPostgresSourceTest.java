@@ -282,7 +282,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   @Override
   protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
                                                             final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
-    assertEquals(7, stateMessages.size());
+    assertEquals(7, stateMessages.size(), stateMessages.toString());
     for (int i = 0; i <= 4; i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
       assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessage.getType());
