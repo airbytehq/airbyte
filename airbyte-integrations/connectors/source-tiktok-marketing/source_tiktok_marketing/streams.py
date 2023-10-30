@@ -311,6 +311,7 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         # convert end date to TikTok format
         # example:  "2021-08-24" => "2021-08-24 00:00:00"
         self._end_time = pendulum.parse(end_date or DEFAULT_END_DATE).strftime("%Y-%m-%d 00:00:00")
+        self.include_deleted = kwargs.get("include_deleted", False)
         self.max_cursor_date = None
         self._advertiser_ids = []
 
@@ -372,8 +373,13 @@ class FullRefreshTiktokStream(TiktokStream, ABC):
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
-    ) -> MutableMapping[str, Any]:
-        params = {"page_size": self.page_size}
+        ) -> MutableMapping[str, Any]:
+        params = super().request_params(next_page_token=next_page_token)
+        params["page_size"] = self.page_size
+        # include_deleted should not be launched for reports streams
+        if self.include_deleted and self.name in ('ads', 'ad_groups', 'campaigns'):
+            prefix = self.name.upper().replace("_", "")[:-1] # ad_groups -> ADGROUP for example
+            params.update({"filtering": '{"secondary_status": "' + prefix + '_STATUS_ALL"}'})
         if self.fields:
             params["fields"] = self.convert_array_param(self.fields)
         if stream_slice:
@@ -580,7 +586,6 @@ class BasicReports(IncrementalTiktokStream, ABC):
     def __init__(self, **kwargs):
         report_granularity = kwargs.pop("report_granularity", None)
         self.attribution_window = kwargs.get("attribution_window") or 0
-        self.include_deleted = kwargs.get("include_deleted", False)
         super().__init__(**kwargs)
 
         # Important:
