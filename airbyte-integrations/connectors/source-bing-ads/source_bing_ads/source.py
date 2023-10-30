@@ -10,6 +10,10 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_bing_ads.client import Client
 from source_bing_ads.streams import (  # noqa: F401
+    AccountImpressionPerformanceReportDaily,
+    AccountImpressionPerformanceReportHourly,
+    AccountImpressionPerformanceReportMonthly,
+    AccountImpressionPerformanceReportWeekly,
     AccountPerformanceReportDaily,
     AccountPerformanceReportHourly,
     AccountPerformanceReportMonthly,
@@ -47,6 +51,10 @@ from source_bing_ads.streams import (  # noqa: F401
     SearchQueryPerformanceReportHourly,
     SearchQueryPerformanceReportMonthly,
     SearchQueryPerformanceReportWeekly,
+    UserLocationPerformanceReportDaily,
+    UserLocationPerformanceReportHourly,
+    UserLocationPerformanceReportMonthly,
+    UserLocationPerformanceReportWeekly,
 )
 
 
@@ -78,6 +86,7 @@ class SourceBingAds(AbstractSource):
 
         reports = (
             "AgeGenderAudienceReport",
+            "AccountImpressionPerformanceReport",
             "AccountPerformanceReport",
             "KeywordPerformanceReport",
             "AdGroupPerformanceReport",
@@ -85,6 +94,7 @@ class SourceBingAds(AbstractSource):
             "CampaignPerformanceReport",
             "GeographicPerformanceReport",
             "SearchQueryPerformanceReport",
+            "UserLocationPerformanceReport",
         )
         report_aggregation = ("Hourly", "Daily", "Weekly", "Monthly")
         streams.extend([eval(f"{report}{aggregation}")(client, config) for (report, aggregation) in product(reports, report_aggregation)])
