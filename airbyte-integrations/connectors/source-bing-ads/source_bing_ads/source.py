@@ -33,6 +33,7 @@ from source_bing_ads.streams import (  # noqa: F401
     AgeGenderAudienceReportHourly,
     AgeGenderAudienceReportMonthly,
     AgeGenderAudienceReportWeekly,
+    AppInstallAdRecord,
     BudgetSummaryReport,
     CampaignPerformanceReportDaily,
     CampaignPerformanceReportHourly,
@@ -54,7 +55,7 @@ from source_bing_ads.streams import (  # noqa: F401
     UserLocationPerformanceReportDaily,
     UserLocationPerformanceReportHourly,
     UserLocationPerformanceReportMonthly,
-    UserLocationPerformanceReportWeekly,
+    UserLocationPerformanceReportWeekly, AppInstallAdLabels,  Labels,
 )
 
 
@@ -79,9 +80,12 @@ class SourceBingAds(AbstractSource):
         streams = [
             Accounts(client, config),
             AdGroups(client, config),
+            AppInstallAdRecord(client, config),
+            AppInstallAdLabels(client, config),
             Ads(client, config),
             Campaigns(client, config),
             BudgetSummaryReport(client, config),
+            Labels(client, config),
         ]
 
         reports = (

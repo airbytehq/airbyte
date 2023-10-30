@@ -1,18 +1,19 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import os
 import ssl
 import time
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 from urllib.error import URLError
 
+import pandas as pd
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from bingads.service_client import ServiceClient
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
+from numpy import nan
 from source_bing_ads.client import Client
 from source_bing_ads.reports import (
     ALL_CONVERSION_FIELDS,
@@ -26,6 +27,7 @@ from source_bing_ads.reports import (
     PerformanceReportsMixin,
     ReportsMixin,
 )
+from source_salesforce.exceptions import TmpFileIOError
 from suds import sudsobject
 
 
@@ -143,6 +145,112 @@ class BingAdsStream(Stream, ABC):
                 break
 
         yield from []
+
+
+class BingAdsBulkStream(BingAdsStream, ABC):
+    @property
+    @abstractmethod
+    def data_scope(self) -> List[str]:
+        # TODO: add more description to docstring
+        """List of data_scopes"""
+
+    @property
+    @abstractmethod
+    def download_entities(self) -> List[str]:
+        # TODO: add more description to docstring
+        """List of download entities"""
+
+    def stream_slices(
+        self,
+        **kwargs: Mapping[str, Any],
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
+            yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+
+        yield from []
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs: Mapping[str, Any],
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        next_page_token = None
+        account_id = str(stream_slice.get("account_id")) if stream_slice else None
+        customer_id = str(stream_slice.get("customer_id")) if stream_slice else None
+
+        report_file_path = self.client.get_bulk_entity(
+            data_scope=self.data_scope, download_entities=self.download_entities, customer_id=customer_id, account_id=account_id
+        )
+        try:
+            with open(report_file_path, "r") as data:
+                chunks = pd.read_csv(data, chunksize=1024, iterator=True, dialect="unix", dtype=object)
+                for chunk in chunks:
+                    chunk = chunk.replace({nan: None}).to_dict(orient="records")
+                    for row in chunk:
+                        if row.get('Type') not in ('Format Version', 'Account'):
+                            # TODO: use get_json_schema to yield out only required properties
+                            yield row
+        except pd.errors.EmptyDataError as e:
+            self.logger.info(f"Empty data received. {e}")
+            yield from []
+        except IOError as ioe:
+            raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Called: {report_file_path}. Stream: {self.name}", ioe)
+        finally:
+            # remove binary tmp file, after data is read
+            # TODO: uncomment remove
+            # os.remove(report_file_path)
+            pass
+        yield from []
+
+
+class AppInstallAdRecord(BingAdsBulkStream):
+    # TODO: refactor to campaigns and remove campaign
+    # data_scope = ["EntityData", "QualityScoreData"]
+    data_scope = ["EntityData",]# "QualityScoreData"]
+    download_entities = ["AppInstallAds"]
+
+    primary_key = "Id"
+    # Stream caches incoming responses to avoid duplicated http requests
+    # TODO: refactor as this fields are not required for bulk requests
+    data_field: str = "AdvertiserAccount"
+    service_name: str = "CustomerManagementService"
+    operation_name: str = "SearchAccounts"
+    additional_fields: str = "TaxCertificate AccountMode"
+
+
+
+
+class AppInstallAdLabels(BingAdsBulkStream):
+    data_scope = ["EntityData"]
+    download_entities = ["AppInstallAdLabels"]
+
+    primary_key = "Id"
+    # Stream caches incoming responses to avoid duplicated http requests
+    # TODO: refactor as this fields are not required for bulk requests
+    use_cache: bool = True
+    data_field: str = "AdvertiserAccount"
+    service_name: str = "CustomerManagementService"
+    operation_name: str = "SearchAccounts"
+
+
+class Labels(BingAdsBulkStream):
+    data_scope = ["EntityData"]
+    download_entities = ["Labels"]
+
+    primary_key = "Id"
+    # TODO: refactor as this fields are not required for bulk requests
+    data_field: str = "AdvertiserAccount"
+    service_name: str = "CustomerManagementService"
+    operation_name: str = "SearchAccounts"
+    additional_fields: str = "TaxCertificate AccountMode"
+    # report_aggregation = 'a'
+    # report_columns = 'a'
+    # report_name = 'a'
+    # maximum page size
+    page_size_limit: int = 1000
 
 
 class Accounts(BingAdsStream):
