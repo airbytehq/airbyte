@@ -46,6 +46,9 @@ jobs:
         uses: ./.github/actions/run-dagger-pipeline
         with:
           context: "pull_request"
+          docker_hub_password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+          docker_hub_username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           subcommand: "format --check"
 
   notify-failure-slack-channel:
