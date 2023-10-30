@@ -760,7 +760,6 @@ class BasicReports(IncrementalTiktokStream, ABC):
                     "user_registration",
                     "skan_registration",
                     "skan_total_registration",
-                    "complete_payment",
                     "purchase",
                     "total_purchase",
                     "skan_purchase",
