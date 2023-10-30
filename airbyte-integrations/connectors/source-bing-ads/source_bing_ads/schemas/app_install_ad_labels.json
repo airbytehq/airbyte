@@ -5,20 +5,14 @@
     "Account Id": {
       "type": ["null", "integer"]
     },
-    "Color": {
-      "type": ["null", "string"]
-    },
     "Client Id": {
-      "type": ["null", "string"]
-    },
-    "Description": {
       "type": ["null", "string"]
     },
     "Id": {
       "type": ["null", "integer"]
     },
-    "Label": {
-      "type": ["null", "string"]
+    "Parent Id": {
+      "type": ["null", "integer"]
     },
     "Modified Time": {
       "type": ["null", "string"]

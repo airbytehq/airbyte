@@ -11,6 +11,7 @@ from urllib.error import URLError
 import pandas as pd
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from bingads.service_client import ServiceClient
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from numpy import nan
@@ -150,6 +151,9 @@ class BingAdsStream(BingAdsBaseStream, ABC):
 
 
 class BingAdsBulkStream(BingAdsBaseStream, ABC):
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
     @property
     @abstractmethod
     def data_scope(self) -> List[str]:
@@ -212,11 +216,11 @@ class BingAdsBulkStream(BingAdsBaseStream, ABC):
         actual_record["Account Id"] = stream_slice.get("account_id")
         return actual_record
 
-class AppInstallAdRecord(BingAdsBulkStream):
+
+class AppInstallAds(BingAdsBulkStream):
     data_scope = ["EntityData"]
     download_entities = ["AppInstallAds"]
 
-    # TODO: check primary key
     primary_key = "Id"
 
 
@@ -224,7 +228,6 @@ class AppInstallAdLabels(BingAdsBulkStream):
     data_scope = ["EntityData"]
     download_entities = ["AppInstallAdLabels"]
 
-    # TODO: check primary key
     primary_key = "Id"
 
 

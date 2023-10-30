@@ -34,7 +34,7 @@ from source_bing_ads.streams import (  # noqa: F401
     AgeGenderAudienceReportMonthly,
     AgeGenderAudienceReportWeekly,
     AppInstallAdLabels,
-    AppInstallAdRecord,
+    AppInstallAds,
     BudgetSummaryReport,
     CampaignPerformanceReportDaily,
     CampaignPerformanceReportHourly,
@@ -82,7 +82,7 @@ class SourceBingAds(AbstractSource):
         streams = [
             Accounts(client, config),
             AdGroups(client, config),
-            AppInstallAdRecord(client, config),
+            AppInstallAds(client, config),
             AppInstallAdLabels(client, config),
             Ads(client, config),
             Campaigns(client, config),
