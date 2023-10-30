@@ -192,8 +192,7 @@ class BingAdsBulkStream(BingAdsBaseStream, ABC):
                     chunk = chunk.replace({nan: None}).to_dict(orient="records")
                     for row in chunk:
                         if row.get("Type") not in ("Format Version", "Account"):
-                            # TODO: use get_json_schema to yield out only required properties
-                            yield row
+                            yield self.transform(row, stream_slice)
         except pd.errors.EmptyDataError as e:
             self.logger.info(f"Empty data received. {e}")
             yield from []
@@ -204,6 +203,14 @@ class BingAdsBulkStream(BingAdsBaseStream, ABC):
             os.remove(report_file_path)
         yield from []
 
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        """
+        Bing Ads Bulk API returns all available properties for all entities.
+        This method filter out only available properites.
+        """
+        actual_record = {key: value for key, value in record.items() if key in self.get_json_schema()["properties"].keys()}
+        actual_record["AccountId"] = stream_slice.get("account_id")
+        return actual_record
 
 class AppInstallAdRecord(BingAdsBulkStream):
     data_scope = ["EntityData"]
