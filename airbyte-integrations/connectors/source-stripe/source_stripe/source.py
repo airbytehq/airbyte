@@ -8,13 +8,15 @@ import pendulum
 import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, EpochValueStateConverter
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
@@ -35,15 +37,11 @@ _MAX_CONCURRENCY = 3
 
 
 class SourceStripe(AbstractSource):
-    def __init__(self, catalog_path: Optional[str] = None, **kwargs):
+    def __init__(self, state, catalog: ConfiguredAirbyteCatalog, use_concurrent_cdk: bool = False, **kwargs):
         super().__init__(**kwargs)
-        if catalog_path:
-            catalog = self.read_catalog(catalog_path)
-            # Only use concurrent cdk if all streams are running in full_refresh
-            all_sync_mode_are_full_refresh = all(stream.sync_mode == SyncMode.full_refresh for stream in catalog.streams)
-            self._use_concurrent_cdk = all_sync_mode_are_full_refresh
-        else:
-            self._use_concurrent_cdk = False
+        self._state = state
+        self._catalog = catalog
+        self._use_concurrent_cdk = use_concurrent_cdk
 
     message_repository = InMemoryMessageRepository(entrypoint_logger.level)
 
@@ -435,6 +433,48 @@ class SourceStripe(AbstractSource):
             # The limit can be removed or increased once we have proper rate limiting
             concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
             streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-            return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level) for stream in streams]
+            state_manager = EpochValueStateConverter(stream_instance_map={s.name: s for s in streams}, state=self._state)
+            return [
+                StreamFacade.create_from_stream(
+                    stream,
+                    self,
+                    entrypoint_logger,
+                    concurrency_level,
+                    state_manager.get_stream_state(stream.name, stream.namespace),
+                    ConcurrentCursor(
+                        stream.name,
+                        stream.namespace,
+                        self.message_repository,
+                        state_manager,
+                        CursorField(stream.cursor_field if type(stream.cursor_field) == list else [stream.cursor_field]),
+                        self._get_slice_boundary_fields(stream, state_manager),
+                    )
+                    if self._is_incremental(stream)
+                    else NoopCursor(),
+                )
+                for stream in streams
+            ]
         else:
             return streams
+
+    def _get_slice_boundary_fields(self, stream: Stream, state_manager: ConnectorStateManager) -> Optional[Tuple[str, str]]:
+        if isinstance(stream, UpdatedCursorIncrementalStripeLazySubStream):
+            return None  # TODO validate on incremental with state
+        return None if state_manager.get_stream_state(stream.name, stream.namespace) else ("created[gte]", "created[lte]")
+
+    def _get_configured_stream(self, stream: Stream) -> Optional[ConfiguredAirbyteStream]:
+        catalog_stream = [catalog_stream for catalog_stream in self._catalog.streams if catalog_stream.stream.name == stream.name]
+        if len(catalog_stream) == 0:
+            return None
+        if len(catalog_stream) != 1:
+            raise ValueError(f"Stream {stream.name} is in catalog {len(catalog_stream)} times")
+        return catalog_stream[0]
+
+    def _get_cursor_field(self, stream: Stream) -> Optional[List[str]]:
+        configured_stream = self._get_configured_stream(stream)
+        return configured_stream.cursor_field if configured_stream else None
+
+    def _is_incremental(self, stream: Stream) -> bool:
+        configured_stream = self._get_configured_stream(stream)
+        # FIXME This seems to create duplication with AbstractSource which I'm not a big fan of
+        return bool(configured_stream.sync_mode == SyncMode.incremental and stream.supports_incremental) if configured_stream else False
