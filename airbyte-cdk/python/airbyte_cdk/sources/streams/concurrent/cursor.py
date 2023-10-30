@@ -21,11 +21,14 @@ class Comparable(Protocol):
 
 
 class CursorField:
-    def __init__(self, path: List[str]) -> None:
-        self._path = path
+    def __init__(self, cursor_field_key: str) -> None:
+        self._cursor_field_key = cursor_field_key
 
     def extract_value(self, record: Record) -> Comparable:
-        return _extract_value(record.data, self._path)  # type: ignore  # we assume that the value the path points at is a comparable
+        cursor_value = record.data.get(self._cursor_field_key)
+        if cursor_value is None:
+            raise ValueError(f"Could not find cursor field {self._cursor_field_key} in record")
+        return cursor_value  # type: ignore  # we assume that the value the path points at is a comparable
 
 
 class Cursor(ABC):

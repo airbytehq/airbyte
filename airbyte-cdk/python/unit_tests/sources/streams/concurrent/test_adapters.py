@@ -24,8 +24,8 @@ from airbyte_cdk.sources.streams.core import Stream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 _ANY_SYNC_MODE = SyncMode.full_refresh
-_ANY_CURSOR_FIELD = None
-_ANY_STATE = None
+_ANY_STATE = {"state_key": "state_value"}
+_ANY_CURSOR_FIELD = ["a", "cursor", "key"]
 
 
 @pytest.mark.parametrize(
@@ -82,6 +82,7 @@ def test_stream_partition_generator(sync_mode):
     partitions = list(partition_generator.generate())
     slices = [partition.to_slice() for partition in partitions]
     assert slices == stream_slices
+    stream.stream_slices.assert_called_once_with(sync_mode=_ANY_SYNC_MODE, cursor_field=_ANY_CURSOR_FIELD, stream_state=_ANY_STATE)
 
 
 @pytest.mark.parametrize(
@@ -252,7 +253,7 @@ class StreamFacadeTest(unittest.TestCase):
         stream.cursor_field = "cursor"
 
         facade = StreamFacade.create_from_stream(
-            stream, self._source, self._logger, self._max_workers, _ANY_STATE, _ANY_CURSOR_FIELD, self._cursor
+            stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor
         )
 
         assert facade.name == "stream"
@@ -266,7 +267,7 @@ class StreamFacadeTest(unittest.TestCase):
         stream.cursor_field = []
 
         facade = StreamFacade.create_from_stream(
-            stream, self._source, self._logger, self._max_workers, _ANY_STATE, _ANY_CURSOR_FIELD, self._cursor
+            stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor
         )
         facade._abstract_stream._primary_key is None
 
@@ -277,7 +278,7 @@ class StreamFacadeTest(unittest.TestCase):
         stream.cursor_field = []
 
         facade = StreamFacade.create_from_stream(
-            stream, self._source, self._logger, self._max_workers, _ANY_STATE, _ANY_CURSOR_FIELD, self._cursor
+            stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor
         )
         facade._abstract_stream._primary_key == ["id", "name"]
 
@@ -287,7 +288,7 @@ class StreamFacadeTest(unittest.TestCase):
         stream.cursor_field = []
 
         facade = StreamFacade.create_from_stream(
-            stream, self._source, self._logger, self._max_workers, _ANY_STATE, _ANY_CURSOR_FIELD, self._cursor
+            stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor
         )
 
         assert facade.cursor_field == []
@@ -299,7 +300,7 @@ class StreamFacadeTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             StreamFacade.create_from_stream(
-                stream, self._source, self._logger, self._max_workers, _ANY_STATE, _ANY_CURSOR_FIELD, self._cursor
+                stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor
             )
 
     def test_create_from_stream_raises_exception_if_primary_key_has_invalid_type(self):
@@ -309,7 +310,7 @@ class StreamFacadeTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             StreamFacade.create_from_stream(
-                stream, self._source, self._logger, self._max_workers, _ANY_STATE, _ANY_CURSOR_FIELD, self._cursor
+                stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor
             )
 
     def test_create_from_stream_raises_exception_if_cursor_field_is_nested(self):
@@ -320,7 +321,7 @@ class StreamFacadeTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             StreamFacade.create_from_stream(
-                stream, self._source, self._logger, self._max_workers, _ANY_STATE, _ANY_CURSOR_FIELD, self._cursor
+                stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor
             )
 
     def test_create_from_stream_with_cursor_field_as_list(self):
@@ -330,7 +331,7 @@ class StreamFacadeTest(unittest.TestCase):
         stream.cursor_field = ["cursor"]
 
         facade = StreamFacade.create_from_stream(
-            stream, self._source, self._logger, self._max_workers, _ANY_STATE, _ANY_CURSOR_FIELD, self._cursor
+            stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor
         )
         assert facade.cursor_field == "cursor"
 
@@ -342,14 +343,14 @@ class StreamFacadeTest(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             StreamFacade.create_from_stream(
-                self._stream, self._source, self._logger, self._max_workers, {}, _ANY_CURSOR_FIELD, self._cursor
+                self._stream, self._source, self._logger, self._max_workers, {}, self._cursor
             )
 
     def test_get_error_display_message_no_display_message(self):
         self._stream.get_error_display_message.return_value = "display_message"
 
         facade = StreamFacade.create_from_stream(
-            self._stream, self._source, self._logger, self._max_workers, _ANY_STATE, _ANY_CURSOR_FIELD, self._cursor
+            self._stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor
         )
 
         expected_display_message = None
@@ -363,7 +364,7 @@ class StreamFacadeTest(unittest.TestCase):
         self._stream.get_error_display_message.return_value = "display_message"
 
         facade = StreamFacade.create_from_stream(
-            self._stream, self._source, self._logger, self._max_workers, _ANY_STATE, _ANY_CURSOR_FIELD, self._cursor
+            self._stream, self._source, self._logger, self._max_workers, _ANY_STATE, self._cursor
         )
 
         expected_display_message = "display_message"

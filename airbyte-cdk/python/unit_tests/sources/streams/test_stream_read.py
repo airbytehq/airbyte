@@ -21,7 +21,6 @@ _A_CURSOR_FIELD = ["NESTED", "CURSOR"]
 _DEFAULT_INTERNAL_CONFIG = InternalConfig()
 _STREAM_NAME = "STREAM"
 _NO_STATE = None
-_NO_CURSOR_FIELD = None
 
 
 class _MockStream(Stream):
@@ -60,7 +59,7 @@ def _concurrent_stream(slice_to_partition_mapping, slice_logger, logger, message
     source = Mock()
     source._slice_logger = slice_logger
     source.message_repository = message_repository
-    stream = StreamFacade.create_from_stream(stream, source, logger, 1, _NO_STATE, _NO_CURSOR_FIELD, NoopCursor())
+    stream = StreamFacade.create_from_stream(stream, source, logger, 1, _NO_STATE, NoopCursor())
     stream.logger.setLevel(logger.level)
     return stream
 

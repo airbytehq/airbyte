@@ -404,7 +404,7 @@ test_incremental_stream_with_slice_boundaries = (
                 )
             ]
         )
-        .set_incremental(CursorField(["cursor_field"]), ("from", "to"))
+        .set_incremental(CursorField("cursor_field"), ("from", "to"))
     )
     .set_expected_records(
         [
@@ -429,7 +429,7 @@ test_incremental_stream_with_slice_boundaries = (
 _NO_SLICE_BOUNDARIES = None
 test_incremental_stream_without_slice_boundaries = (
     TestScenarioBuilder()
-    .set_name("test_incremental_stream_with_slice_boundaries")
+    .set_name("test_incremental_stream_without_slice_boundaries")
     .set_config({})
     .set_source_builder(
         StreamFacadeSourceBuilder()
@@ -450,7 +450,7 @@ test_incremental_stream_without_slice_boundaries = (
                 )
             ]
         )
-        .set_incremental(CursorField(["cursor_field"]), _NO_SLICE_BOUNDARIES)
+        .set_incremental(CursorField("cursor_field"), _NO_SLICE_BOUNDARIES)
     )
     .set_expected_records(
         [

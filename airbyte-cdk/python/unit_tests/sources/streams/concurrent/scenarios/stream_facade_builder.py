@@ -15,7 +15,6 @@ from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 
 _NO_STATE = None
-_NO_CATALOG_CURSOR_FIELD = None
 
 
 class StreamFacadeSource(AbstractSource):
@@ -44,7 +43,6 @@ class StreamFacadeSource(AbstractSource):
                 stream.logger,
                 self._max_workers,
                 _NO_STATE,
-                _NO_CATALOG_CURSOR_FIELD,
                 ConcurrentCursor(
                     stream.name,
                     stream.namespace,

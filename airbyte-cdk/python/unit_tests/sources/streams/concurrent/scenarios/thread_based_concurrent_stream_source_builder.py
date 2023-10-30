@@ -34,7 +34,7 @@ class LegacyStream(Stream):
         stream_slice: Optional[Mapping[str, Any]] = None,
         stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
-        return []
+        yield from []
 
 
 class ConcurrentCdkSource(AbstractSource):

@@ -12,7 +12,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 _A_STREAM_NAME = "a stream name"
 _A_STREAM_NAMESPACE = "a stream namespace"
 _ANY_STATE = None
-_A_CURSOR_FIELD_PATH = ["a", "cursor", "field", "path"]
+_A_CURSOR_FIELD_KEY = "a_cursor_field_key"
 _NO_PARTITION_IDENTIFIER = None
 _NO_SLICE = None
 _NO_SLICE_BOUNDARIES = None
@@ -29,11 +29,8 @@ def _partition(identifier: Optional[Mapping[str, Any]], _slice: Optional[Mapping
     return partition
 
 
-def _record(cursor_value: Comparable):
-    current = {_A_CURSOR_FIELD_PATH[-1]: cursor_value}
-    for field in reversed(_A_CURSOR_FIELD_PATH[:-1]):
-        current = {field: current}
-    return Record(current)
+def _record(cursor_value: Comparable) -> Record:
+    return Record(data={_A_CURSOR_FIELD_KEY: cursor_value})
 
 
 class ConcurrentCursorTest(TestCase):
@@ -48,7 +45,7 @@ class ConcurrentCursorTest(TestCase):
             _ANY_STATE,
             self._message_repository,
             self._state_manager,
-            CursorField(_A_CURSOR_FIELD_PATH),
+            CursorField(_A_CURSOR_FIELD_KEY),
             _SLICE_BOUNDARY_FIELDS,
         )
 
@@ -59,7 +56,7 @@ class ConcurrentCursorTest(TestCase):
             _ANY_STATE,
             self._message_repository,
             self._state_manager,
-            CursorField(_A_CURSOR_FIELD_PATH),
+            CursorField(_A_CURSOR_FIELD_KEY),
             None,
         )
 

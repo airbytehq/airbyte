@@ -10,6 +10,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
@@ -54,7 +55,6 @@ class StreamFacade(Stream):
         logger: logging.Logger,
         max_workers: int,
         state: Optional[MutableMapping[str, Any]],
-        catalog_cursor_field: Optional[List[str]],
         cursor: Cursor,
     ) -> Stream:
         """
@@ -79,7 +79,7 @@ class StreamFacade(Stream):
                     stream,
                     message_repository,
                     SyncMode.full_refresh if isinstance(cursor, NoopCursor) else SyncMode.incremental,
-                    catalog_cursor_field,
+                    [cursor_field] if cursor_field is not None else None,
                     state,
                 ),
                 max_workers=max_workers,
@@ -156,13 +156,13 @@ class StreamFacade(Stream):
         """
         yield from self._read_records()
 
-    def read_incremental(  # type: ignore  # ignoring typing for ConnectorStateManager because of circular dependencies
+    def read_incremental(
         self,
         cursor_field: Optional[List[str]],
         logger: logging.Logger,
         slice_logger: SliceLogger,
         stream_state: MutableMapping[str, Any],
-        state_manager,
+        state_manager: ConnectorStateManager,
         per_stream_state_enabled: bool,
         internal_config: InternalConfig,
     ) -> Iterable[StreamData]:
@@ -287,6 +287,7 @@ class StreamPartition(Partition):
             #  Both are not used for Stripe so we should be good for the first iteration of Concurrent CDK. However, Stripe still do
             #  `if not stream_state` to know if it calls the Event stream or not
             for record_data in self._stream.read_records(
+                cursor_field=self._cursor_field,
                 sync_mode=SyncMode.full_refresh,
                 stream_slice=copy.deepcopy(self._slice),
                 stream_state=self._state,
