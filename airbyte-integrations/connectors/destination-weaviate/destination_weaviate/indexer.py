@@ -9,8 +9,7 @@ import os
 import re
 import uuid
 from collections import defaultdict
-from dataclasses import dataclass
-from typing import Any, List, Mapping, Optional
+from typing import Optional
 
 import weaviate
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD
