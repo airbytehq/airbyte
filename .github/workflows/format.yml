@@ -1,4 +1,4 @@
-name: Format Code (Python + Java)
+name: Check for formatting errors
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -10,9 +10,9 @@ on:
       - master
   pull_request:
 jobs:
-  format-and-commit:
+  format-check:
     runs-on: ubuntu-latest
-    name: "Apply All Formatting Rules"
+    name: "Check All Formatting Rules"
     timeout-minutes: 40
     steps:
       - name: Checkout Airbyte
@@ -20,16 +20,16 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           # Important that this is set so that CI checks are triggered again
-          # Without this we would be be forever waiting on required checks to pass
+          # Without this we would be forever waiting on required checks to pass
           token: ${{ secrets.GH_PAT_APPROVINGTON_OCTAVIA }}
 
-      # IMPORTANT! This is nessesary to make sure that a status is reported on the PR
-      # even if the workflow is skipped. If we used github actions filters, the workflow
+      # IMPORTANT! This is necessary to make sure that a status is reported on the PR
+      # even if the workflow is skipped. If we used GitHub Actions filters, the workflow
       # would not be reported as skipped, but instead would be forever pending.
       #
       # I KNOW THIS SOUNDS CRAZY, BUT IT IS TRUE.
       #
-      # Also it gets worse
+      # Also, it gets worse
       #
       # IMPORTANT! DO NOT CHANGE THE QUOTES AROUND THE GLOBS. THEY ARE REQUIRED.
       # MAKE SURE TO TEST ANY SYNTAX CHANGES BEFORE MERGING.
@@ -42,59 +42,17 @@ jobs:
               - '**/*'
               - '!**/*.md'
 
-      - uses: actions/setup-java@v3
+      - name: Run airbyte-ci formatting checks
+        uses: ./.github/actions/run-dagger-pipeline
         with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-
-      - name: Set up CI Gradle Properties
-        run: |
-          mkdir -p ~/.gradle/
-          cat > ~/.gradle/gradle.properties <<EOF
-          org.gradle.jvmargs=-Xmx8g -Xss4m \
-            --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-            --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-          org.gradle.workers.max=8
-          org.gradle.vfs.watch=false
-          EOF
-
-      - name: Format
-        if: steps.changes.outputs.format_any_changed == 'true'
-        uses: Wandalen/wretry.action@v1.0.42
-        with:
-          command: ./gradlew format --scan --info --stacktrace
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
-
-      # This is helpful in the case that we change a previously committed generated file to be ignored by git.
-      - name: Remove any files that have been gitignored
-        run: git ls-files -i -c --exclude-from=.gitignore | xargs -r git rm --cached
-
-      - name: Commit Formatting Changes (PR)
-        uses: stefanzweifel/git-auto-commit-action@v4
-        # do not commit if master branch
-        if: github.ref != 'refs/heads/master'
-        with:
-          commit_message: Automated Commit - Formatting Changes
-          commit_user_name: Octavia Squidington III
-          commit_user_email: octavia-squidington-iii@users.noreply.github.com
-
-      - name: "Fail on Formatting Changes (Master)"
-        if: github.ref == 'refs/heads/master'
-        run: git --no-pager diff && test -z "$(git --no-pager diff)"
+          context: "pull_request"
+          subcommand: "format --check"
 
   notify-failure-slack-channel:
     name: "Notify Slack Channel on Build Failures"
     runs-on: ubuntu-latest
     needs:
-      - format-and-commit
+      - format-check
     if: ${{ failure() && github.ref == 'refs/heads/master' }}
     steps:
       - name: Checkout Airbyte
