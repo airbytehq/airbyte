@@ -10,7 +10,7 @@ import re
 import uuid
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Any, List, Mapping, MutableMapping, Optional
+from typing import Any, List, Mapping, Optional
 
 import weaviate
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD
@@ -26,14 +26,6 @@ class WeaviatePartialBatchError(Exception):
 
 
 CLOUD_DEPLOYMENT_MODE = "cloud"
-
-
-@dataclass
-class BufferedObject:
-    id: str
-    properties: Mapping[str, Any]
-    vector: Optional[List[Any]]
-    class_name: str
 
 
 class WeaviateIndexer(Indexer):
