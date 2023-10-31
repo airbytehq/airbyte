@@ -215,6 +215,21 @@ class EmailActivity(IncrementalMailChimpStream):
                 yield {**item, **activity_item}
 
 
+class ListMembers(IncrementalMailChimpStream):
+    cursor_field = "last_changed"
+    data_field = "members"
+
+    def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        stream_state = stream_state or {}
+        parent = Lists(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh)
+        for slice in parent:
+            yield {"list_id": slice["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        list_id = stream_slice.get("list_id")
+        return f"lists/{list_id}/members"
+
+
 class Reports(IncrementalMailChimpStream):
     cursor_field = "send_time"
     data_field = "reports"
