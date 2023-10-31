@@ -81,7 +81,7 @@
       "type": ["null", "number"]
     },
     "CostPerConversion": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "Language": {
       "type": ["null", "string"]

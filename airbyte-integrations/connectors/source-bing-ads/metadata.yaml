@@ -16,7 +16,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 47f25999-dd5e-4636-8c39-e7cea2453331
-  dockerImageTag: 1.4.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-bing-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/bing-ads
   githubIssueLabel: source-bing-ads
@@ -39,6 +39,13 @@ data:
           primary keys. A data reset and schema refresh of all the affected streams
           is required for the changes to take effect.
         upgradeDeadline: "2023-10-25"
+      2.0.0:
+        message:
+          Version 2.0.0 updates schemes for Accounts, Campaigns and Search Query Performance Report streams.
+          LinkedAgencies was changed from string to object in Accounts stream. BiddingScheme.MaxCpc.Amount 
+          was changed from string to number in Campaigns stream. And CostPerConversion was changed from integer 
+          to number. Users will need to refresh the source schema and reset affected streams after upgrading.
+        upgradeDeadline: "2023-11-16"
   supportLevel: certified
   tags:
     - language:python
