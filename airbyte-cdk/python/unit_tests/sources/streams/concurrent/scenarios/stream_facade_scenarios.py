@@ -437,8 +437,7 @@ test_incremental_stream_without_slice_boundaries = (
             [
                 _MockStream(
                     [
-                        ({"from": 0, "to": 1}, [{"id": "1", "cursor_field": 0}, {"id": "2", "cursor_field": 1}]),
-                        ({"from": 1, "to": 2}, [{"id": "3", "cursor_field": 2}, {"id": "4", "cursor_field": 3}]),
+                        (None, [{"id": "1", "cursor_field": 0}, {"id": "2", "cursor_field": 3}]),
                     ],
                     "stream1",
                     json_schema={
@@ -455,12 +454,45 @@ test_incremental_stream_without_slice_boundaries = (
     .set_expected_records(
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
-            {"data": {"id": "2", "cursor_field": 1}, "stream": "stream1"},
-            {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
-            {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
+            {"data": {"id": "2", "cursor_field": 3}, "stream": "stream1"},
             {"stream1": {"slices": [{"start": 0, "end": 3}]}},
         ]
     )
+    .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
+    .set_incremental_scenario_config(
+        IncrementalScenarioConfig(
+            input_state=[],
+        )
+    )
+    .build()
+)
+
+test_incremental_stream_with_many_slices_but_without_slice_boundaries = (
+    TestScenarioBuilder()
+    .set_name("test_incremental_stream_with_many_slices_byt_without_slice_boundaries")
+    .set_config({})
+    .set_source_builder(
+        StreamFacadeSourceBuilder()
+        .set_streams(
+            [
+                _MockStream(
+                    [
+                        ({"parent_id": 1}, [{"id": "1", "cursor_field": 0}]),
+                        ({"parent_id": 309}, [{"id": "3", "cursor_field": 0}]),
+                    ],
+                    "stream1",
+                    json_schema={
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": ["null", "string"]},
+                        },
+                    },
+                )
+            ]
+        )
+        .set_incremental(CursorField("cursor_field"), _NO_SLICE_BOUNDARIES)
+    )
+    .set_expected_read_error(ValueError, "test exception")
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(

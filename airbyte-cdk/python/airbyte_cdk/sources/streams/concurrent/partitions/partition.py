@@ -25,14 +25,10 @@ class Partition(ABC):
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         """
         Converts the partition to a slice that can be serialized and deserialized.
-        :return: A mapping representing a slice
-        """
-        pass
 
-    @abstractmethod
-    def identifier(self) -> Optional[Mapping[str, Any]]:
-        """
-        :return: A mapping representing the identifier of the partition
+        Note: it would have been interesting to have a type of `Mapping[str, Comparable]` to simplify typing but some slices can have nested
+         values ([example](https://github.com/airbytehq/airbyte/blob/1ce84d6396e446e1ac2377362446e3fb94509461/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L584-L596))
+        :return: A mapping representing a slice
         """
         pass
 

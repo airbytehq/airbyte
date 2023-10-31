@@ -22,9 +22,8 @@ _SLICE_BOUNDARY_FIELDS = (_LOWER_SLICE_BOUNDARY_FIELD, _UPPER_SLICE_BOUNDARY_FIE
 _A_VERY_HIGH_CURSOR_VALUE = 1000000000
 
 
-def _partition(identifier: Optional[Mapping[str, Any]], _slice: Optional[Mapping[str, Any]]) -> Partition:
+def _partition(_slice: Optional[Mapping[str, Any]]) -> Partition:
     partition = Mock(spec=Partition)
-    partition.identifier.return_value = identifier
     partition.to_slice.return_value = _slice
     return partition
 
@@ -63,10 +62,6 @@ class ConcurrentCursorTest(TestCase):
     def test_given_boundary_fields_when_close_partition_then_emit_state(self) -> None:
         self._cursor_with_slice_boundary_fields().close_partition(
             _partition(
-                {
-                    "id_key_1": "id_key_1_value",
-                    "id_key_2": "id_key_2_value",
-                },
                 {_LOWER_SLICE_BOUNDARY_FIELD: 12, _UPPER_SLICE_BOUNDARY_FIELD: 30},
             )
         )
@@ -78,8 +73,6 @@ class ConcurrentCursorTest(TestCase):
             {
                 "slices": [
                     {
-                        "id_key_1": "id_key_1_value",
-                        "id_key_2": "id_key_2_value",
                         "start": 12,
                         "end": 30,
                     },
@@ -91,40 +84,14 @@ class ConcurrentCursorTest(TestCase):
         cursor = self._cursor_with_slice_boundary_fields()
         cursor.observe(_record(_A_VERY_HIGH_CURSOR_VALUE))
 
-        cursor.close_partition(_partition(_NO_PARTITION_IDENTIFIER, {_LOWER_SLICE_BOUNDARY_FIELD: 12, _UPPER_SLICE_BOUNDARY_FIELD: 30}))
+        cursor.close_partition(_partition({_LOWER_SLICE_BOUNDARY_FIELD: 12, _UPPER_SLICE_BOUNDARY_FIELD: 30}))
 
         assert self._state_manager.update_state_for_stream.call_args_list[0].args[2]["slices"][0]["end"] != _A_VERY_HIGH_CURSOR_VALUE
 
-    def test_given_no_boundary_fields_and_partition_id_when_close_partition_then_raise_error(self) -> None:
-        cursor = self._cursor_without_slice_boundary_fields()
-
-        with pytest.raises(ValueError):
-            cursor.close_partition(
-                _partition(
-                    {
-                        "id_key_1": "id_key_1_value",
-                    },
-                    _NO_SLICE,
-                )
-            )
-
-    def test_given_no_boundary_fields_when_close_partition_then_do_not_emit_state(self) -> None:
+    def test_given_no_boundary_fields_when_close_partition_then_emit_state(self) -> None:
         cursor = self._cursor_without_slice_boundary_fields()
         cursor.observe(_record(10))
-        cursor.close_partition(
-            _partition(
-                _NO_PARTITION_IDENTIFIER,
-                _NO_SLICE,
-            )
-        )
-
-        assert self._state_manager.update_state_for_stream.call_count == 0
-
-    def test_given_no_boundary_fields_when_end_sync_then_emit_state(self) -> None:
-        cursor = self._cursor_without_slice_boundary_fields()
-        cursor.observe(_record(10))
-
-        cursor.end_sync()
+        cursor.close_partition(_partition(_NO_SLICE))
 
         self._state_manager.update_state_for_stream.assert_called_once_with(
             _A_STREAM_NAME,
@@ -139,17 +106,25 @@ class ConcurrentCursorTest(TestCase):
             },
         )
 
+    def test_given_no_boundary_fields_when_close_multiple_partitions_then_raise_exception(self) -> None:
+        cursor = self._cursor_without_slice_boundary_fields()
+        cursor.observe(_record(10))
+        cursor.close_partition(_partition(_NO_SLICE))
+
+        with pytest.raises(ValueError):
+            cursor.close_partition(_partition(_NO_SLICE))
+
     def test_given_no_records_observed_when_close_partition_then_do_not_emit_state(self) -> None:
         cursor = self._cursor_without_slice_boundary_fields()
-        cursor.close_partition(_partition(_NO_PARTITION_IDENTIFIER, _NO_SLICE))
+        cursor.close_partition(_partition(_NO_SLICE))
         assert self._message_repository.emit_message.call_count == 0
 
     def test_given_slice_boundaries_and_no_slice_when_close_partition_then_raise_error(self) -> None:
         cursor = self._cursor_with_slice_boundary_fields()
         with pytest.raises(KeyError):
-            cursor.close_partition(_partition(_NO_PARTITION_IDENTIFIER, _NO_SLICE))
+            cursor.close_partition(_partition(_NO_SLICE))
 
     def test_given_slice_boundaries_not_matching_slice_when_close_partition_then_raise_error(self) -> None:
         cursor = self._cursor_with_slice_boundary_fields()
         with pytest.raises(KeyError):
-            cursor.close_partition(_partition(_NO_PARTITION_IDENTIFIER, {"not_matching_key": "value"}))
+            cursor.close_partition(_partition({"not_matching_key": "value"}))

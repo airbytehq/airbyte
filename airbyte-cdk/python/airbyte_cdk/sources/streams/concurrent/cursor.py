@@ -46,22 +46,12 @@ class Cursor(ABC):
         """
         raise NotImplementedError()
 
-    @abstractmethod
-    def end_sync(self) -> None:
-        """
-        Indicate to the cursor that the sync has been successfully processed
-        """
-        raise NotImplementedError()
-
 
 class NoopCursor(Cursor):
     def observe(self, record: Record) -> None:
         pass
 
     def close_partition(self, partition: Partition) -> None:
-        pass
-
-    def end_sync(self) -> None:
         pass
 
 
@@ -84,8 +74,10 @@ class ConcurrentCursor(Cursor):
         self._message_repository = message_repository
         self._connector_state_manager = connector_state_manager
         self._cursor_field = cursor_field
+        # To see some example where the slice boundaries might not be defined, check https://github.com/airbytehq/airbyte/blob/1ce84d6396e446e1ac2377362446e3fb94509461/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L363-L379
         self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
         self._most_recent_record: Optional[Record] = None
+        self._has_closed_at_least_one_slice = False
 
         # TODO to migrate state. The migration should probably be outside of this class. Impact of not having this:
         #  * Given a sync that emits no records, the emitted state message will be empty
@@ -112,29 +104,29 @@ class ConcurrentCursor(Cursor):
         if slice_count_before < len(self._state["slices"]):
             self._merge_partitions()
             self._emit_state_message()
+        self._has_closed_at_least_one_slice = True
 
-    def end_sync(self) -> None:
-        if not self._slice_boundary_fields and self._most_recent_record:
+    def _add_slice_to_state(self, partition: Partition) -> None:
+        if self._slice_boundary_fields:
+            self._state["slices"].append(
+                {
+                    "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
+                    "end": self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
+                }
+            )
+        elif self._most_recent_record:
+            if self._has_closed_at_least_one_slice:
+                raise ValueError(
+                    "Given that slice_boundary_fields is not defined and that per-partition state is not supported, only one slice is "
+                    "expected."
+                )
+
             self._state["slices"].append(
                 {
                     "start": 0,  # FIXME this only works with int datetime
                     "end": self._extract_cursor_value(self._most_recent_record),
                 }
             )
-            self._emit_state_message()
-
-    def _add_slice_to_state(self, partition: Partition) -> None:
-        partition_identifier = partition.identifier() or {}
-        if self._slice_boundary_fields:
-            self._state["slices"].append(
-                {
-                    "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
-                    "end": self._extract_from_slice(partition, self._slice_boundary_fields[self._END_BOUNDARY]),
-                    **partition_identifier,
-                }
-            )
-        elif partition_identifier:
-            raise ValueError("Per partition state is not supported for ConcurrentCursor yet")
 
     def _emit_state_message(self) -> None:
         self._connector_state_manager.update_state_for_stream(self._stream_name, self._stream_namespace, self._state)

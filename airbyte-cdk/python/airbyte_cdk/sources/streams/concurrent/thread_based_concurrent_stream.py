@@ -128,7 +128,6 @@ class ThreadBasedConcurrentStream(AbstractStream):
                 # All partitions were generated and process. We're done here
                 break
         self._check_for_errors(futures)
-        self._cursor.end_sync()
 
     def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
