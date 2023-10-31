@@ -46,12 +46,14 @@ import com.mysql.cj.jdbc.result.ResultSetMetaData;
 import com.mysql.cj.result.Field;
 import io.airbyte.cdk.db.SourceOperations;
 import io.airbyte.cdk.db.jdbc.AbstractJdbcCompatibleSourceOperations;
+import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Set;
@@ -124,6 +126,14 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       case NULL -> json.set(columnName, NullNode.instance);
       default -> putDefault(json, columnName, resultSet, colIndex);
     }
+  }
+
+  /**
+   * MySQL handling of time.
+   */
+  @Override
+  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, DateTimeConverter.convertToTime(this.getObject(resultSet, index, LocalTime.class)));
   }
 
   /**
