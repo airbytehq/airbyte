@@ -11,26 +11,19 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 
 pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContext)
 
-
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def java(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext):
+async def java(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None):
     """Format java, groovy, and sql code via spotless."""
 
-    success = await format_java(dagger_client, ctx)
+    success = await check_java(ctx, dagger_client)
     if not success:
         click.Abort()
 
 
-async def format_java(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext) -> bool:
+async def check_java(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client]) -> bool:
     logger = logging.getLogger("format")
-
-    fix = ctx.params["fix"]
-    if fix:
-        gradle_command = ["./gradlew", "spotlessApply"]
-    else:
-        gradle_command = ["./gradlew", "spotlessCheck", "--scan"]
 
     if not dagger_client:
         dagger_client = await ctx.get_dagger_client(pipeline_name="Format Java")
@@ -66,16 +59,14 @@ async def format_java(dagger_client: Optional[dagger.Client], ctx: ClickPipeline
                     exclude=DEFAULT_FORMAT_IGNORE_LIST,
                 ),
             )
-            .with_workdir(f"/src")
-            .with_exec(gradle_command)
+            .with_workdir("/src")
+            .with_exec(["./gradlew", "spotlessCheck", "--scan"])
         )
 
         await format_container
-        if fix:
-            await format_container.directory("/src").export(".")
         return True
 
     except dagger.ExecError as e:
-        logger.error("Format failed")
+        logger.error("Format check failed")
         logger.error(e.stderr)
         return False
