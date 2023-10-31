@@ -19,17 +19,11 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
     cls=LazyGroup,
     help="Commands related to formatting.",
     lazy_subcommands={
-        # "java": "pipelines.airbyte_ci.format.java.commands.java",
-        # "js": "pipelines.airbyte_ci.format.js.commands.js",
-        # "license": "pipelines.airbyte_ci.format.license.commands.license",
-        # "python": "pipelines.airbyte_ci.format.python.commands.python",
-        # "check": "pipelines.airbyte_ci.format.commands.check",
-        # "fix": "pipelines.airbyte_ci.format.commands.fix",
+        "check": "pipelines.airbyte_ci.format.commands.check",
+        "fix": "pipelines.airbyte_ci.format.commands.fix",
     },
     invoke_without_command=True,
-    # chain=True,
 )
-# @click.option("--fix/--check", type=bool, default=None, help="Whether to automatically fix any formatting issues detected.  [required]")
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
@@ -48,7 +42,7 @@ async def format(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     #     await ctx.invoke(python, dagger_client)
 
 
-@format.group(chain=True)
+@click.group(chain=True)
 @pass_pipeline_context
 @click_ignore_unused_kwargs
 async def check(ctx: ClickPipelineContext):
@@ -86,7 +80,7 @@ async def python(ctx: ClickPipelineContext):
 
 
 
-@format.group(chain=True)
+@click.group(chain=True)
 @pass_pipeline_context
 @click_ignore_unused_kwargs
 async def fix(ctx: ClickPipelineContext):
