@@ -425,6 +425,66 @@
       "sync_mode": "incremental",
       "cursor_field": ["TimePeriod"],
       "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "labels",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["Modified Time"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "app_install_ads",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "app_install_ad_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "campaign_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "keyword_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "ad_group_labels",
+        "json_schema": {},
+        "supported_sync_modes": ["incremental", "full_refresh"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["TimePeriod"],
+      "destination_sync_mode": "append"
     }
   ]
 }
