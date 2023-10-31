@@ -79,7 +79,7 @@
     },
     "Param2": {
       "type": ["null", "string"]
-      },
+    },
     "Param3": {
       "type": ["null", "string"]
     },
