@@ -36,11 +36,7 @@ def flatten_list(list_of_lists):
         pytest.param(
             "*",
             [[{"files": [{"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"}]}]],
-            [
-                GoogleDriveRemoteFile(
-                    uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
-                )
-            ],
+            [GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1))],
             id="Single file",
         ),
         pytest.param(
@@ -56,14 +52,11 @@ def flatten_list(list_of_lists):
                 ]
             ],
             [
-                GoogleDriveRemoteFile(
-                    uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
-                ),
+                GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
                 GoogleDriveRemoteFile(
                     uri="another_file.csv",
                     id="def",
                     mimeType="text/csv",
-                    name="another_file.csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
             ],
@@ -82,14 +75,11 @@ def flatten_list(list_of_lists):
                 ]
             ],
             [
-                GoogleDriveRemoteFile(
-                    uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
-                ),
+                GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
                 GoogleDriveRemoteFile(
                     uri="another_file.csv",
                     id="def",
                     mimeType="text/csv",
-                    name="another_file.csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
             ],
@@ -150,21 +140,17 @@ def flatten_list(list_of_lists):
                 ],
             ],
             [
-                GoogleDriveRemoteFile(
-                    uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
-                ),
+                GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
                 GoogleDriveRemoteFile(
                     uri="subfolder/another_file.csv",
                     id="def",
                     mimeType="text/csv",
-                    name="another_file.csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
                 GoogleDriveRemoteFile(
                     uri="subfolder/subsubfolder/yet_another_file.csv",
                     id="ghi",
                     mimeType="text/csv",
-                    name="yet_another_file.csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
             ],
@@ -216,14 +202,12 @@ def flatten_list(list_of_lists):
                 ],
             ],
             [
-                GoogleDriveRemoteFile(
-                    uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
-                ),
+                GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
             ],
             id="Duplicates",
         ),
         pytest.param(
-            "subfolder/*.csv",
+            "subfolder/**/*.csv",
             [
                 [
                     {
@@ -258,11 +242,233 @@ def flatten_list(list_of_lists):
                     uri="subfolder/another_file.csv",
                     id="def",
                     mimeType="text/csv",
-                    name="another_file.csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
             ],
             id="Glob matching and subdirectories",
+        ),
+        pytest.param(
+            "subfolder/*.csv",
+            [
+                [
+                    {
+                        "files": [
+                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "sub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                            # This won't get queued because it has no chance of matching the glob
+                            {
+                                "id": "sub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "ignored_subfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # second request is for requesting the subfolder
+                    {
+                        "files": [
+                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            # This will get queued because it matches the prefix (event though it can't match the glob)
+                            {
+                                "id": "subsub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subsubfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # third request is for requesting the subsubfolder
+                    {
+                        "files": [
+                            {
+                                "id": "ghi",
+                                "mimeType": "text/csv",
+                                "name": "yet_another_file.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="subfolder/another_file.csv",
+                    id="def",
+                    mimeType="text/csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
+            ],
+            id="Glob matching and ignoring most subdirectories that can't be matched",
+        ),
+        pytest.param(
+            "subfolder/subsubfolder/*.csv",
+            [
+                [
+                    {
+                        "files": [
+                            {"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            {
+                                "id": "sub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # second request is for requesting the subfolder
+                    {
+                        "files": [
+                            {"id": "def", "mimeType": "text/csv", "name": "another_file.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"},
+                            # This will get queued because it matches the prefix (event though it can't match the glob)
+                            {
+                                "id": "subsub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "subsubfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [
+                    # third request is for requesting the subsubfolder
+                    {
+                        "files": [
+                            {
+                                "id": "ghi",
+                                "mimeType": "text/csv",
+                                "name": "yet_another_file.csv",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                            # This will get queued because it matches the prefix (event though it can't match the glob)
+                            {
+                                "id": "subsubsub",
+                                "mimeType": "application/vnd.google-apps.folder",
+                                "name": "ignored_subsubsubfolder",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            },
+                        ]
+                    },
+                ],
+                [{"files": []}],
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="subfolder/subsubfolder/yet_another_file.csv",
+                    id="ghi",
+                    mimeType="text/csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
+            ],
+            id="Glob matching and ignoring subdirectories that can't be matched, multiple levels",
+        ),
+        pytest.param(
+            "*",
+            [
+                [
+                    {
+                        "files": [
+                            {
+                                "id": "abc",
+                                "mimeType": "application/vnd.google-apps.document",
+                                "name": "MyDoc",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            }
+                        ]
+                    }
+                ]
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="MyDoc.docx", id="abc", mimeType="application/vnd.google-apps.document", last_modified=datetime.datetime(2021, 1, 1)
+                )
+            ],
+            id="Google Doc as docx",
+        ),
+        pytest.param(
+            "*",
+            [
+                [
+                    {
+                        "files": [
+                            {
+                                "id": "abc",
+                                "mimeType": "application/vnd.google-apps.presentation",
+                                "name": "MySlides",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            }
+                        ]
+                    }
+                ]
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="MySlides.pdf",
+                    id="abc",
+                    mimeType="application/vnd.google-apps.presentation",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                )
+            ],
+            id="Presentation as pdf",
+        ),
+        pytest.param(
+            "*",
+            [
+                [
+                    {
+                        "files": [
+                            {
+                                "id": "abc",
+                                "mimeType": "application/vnd.google-apps.drawing",
+                                "name": "MyDrawing",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            }
+                        ]
+                    }
+                ]
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="MyDrawing.pdf",
+                    id="abc",
+                    mimeType="application/vnd.google-apps.drawing",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                )
+            ],
+            id="Drawing as pdf",
+        ),
+        pytest.param(
+            "*",
+            [
+                [
+                    {
+                        "files": [
+                            {
+                                "id": "abc",
+                                "mimeType": "application/vnd.google-apps.video",
+                                "name": "MyVideo",
+                                "modifiedTime": "2021-01-01T00:00:00.000Z",
+                            }
+                        ]
+                    }
+                ]
+            ],
+            [
+                GoogleDriveRemoteFile(
+                    uri="MyVideo", id="abc", mimeType="application/vnd.google-apps.video", last_modified=datetime.datetime(2021, 1, 1)
+                )
+            ],
+            id="Other google file types as is",
         ),
     ],
 )
@@ -296,9 +502,7 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
     "file, file_content, mode, expect_export, expected_mime_type, expected_read, expect_raise",
     [
         pytest.param(
-            GoogleDriveRemoteFile(
-                uri="avro_file", id="abc", mimeType="text/csv", name="avro_file", last_modified=datetime.datetime(2021, 1, 1)
-            ),
+            GoogleDriveRemoteFile(uri="avro_file", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
             b"test",
             FileReadMode.READ_BINARY,
             False,
@@ -308,9 +512,7 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
             id="Read binary file",
         ),
         pytest.param(
-            GoogleDriveRemoteFile(
-                uri="test.csv", id="abc", mimeType="text/csv", name="test.csv", last_modified=datetime.datetime(2021, 1, 1)
-            ),
+            GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
             b"test",
             FileReadMode.READ,
             False,
@@ -324,7 +526,6 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
                 uri="abc",
                 id="abc",
                 mimeType="application/vnd.google-apps.document",
-                name="My Googledoc",
                 last_modified=datetime.datetime(2021, 1, 1),
             ),
             b"test",
@@ -334,38 +535,6 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
             b"test",
             False,
             id="Read google doc as binary file with export",
-        ),
-        pytest.param(
-            GoogleDriveRemoteFile(
-                uri="abc",
-                id="abc",
-                mimeType="application/vnd.google-apps.spreadsheet",
-                name="My Sheet",
-                last_modified=datetime.datetime(2021, 1, 1),
-            ),
-            b"test",
-            FileReadMode.READ_BINARY,
-            True,
-            "application/pdf",
-            b"test",
-            False,
-            id="Read google sheet as binary file with export",
-        ),
-        pytest.param(
-            GoogleDriveRemoteFile(
-                uri="abc",
-                id="abc",
-                mimeType="application/vnd.google-apps.spreadsheet",
-                name="My Sheet",
-                last_modified=datetime.datetime(2021, 1, 1),
-            ),
-            b"test",
-            FileReadMode.READ,
-            True,
-            None,
-            None,
-            True,
-            id="Read google sheet as text (fails)",
         ),
     ],
 )

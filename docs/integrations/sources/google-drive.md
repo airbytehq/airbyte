@@ -3,12 +3,12 @@
 This page contains the setup guide and reference information for the Google Drive source connector.
 
 :::info
-The Google Drive source connector pulls data from a single folder in Google Drive. Subfolders are recursively included in the sync. All files in the specified folder and all root folders will be considered.
+The Google Drive source connector pulls data from a single folder in Google Drive. Subfolders are recursively included in the sync. All files in the specified folder and all sub folders will be considered.
 :::
 
 ## Prerequisites
 
-- Drive folder link - The link to the Google Drive folder you want to sync
+- Drive folder link - The link to the Google Drive folder you want to sync files from (includes files located in subfolders)
 <!-- env:cloud -->
 - **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet  
 <!-- /env:cloud -->
@@ -110,19 +110,6 @@ The Google Drive source connector supports the following [sync modes](https://do
 | Replicate Multiple Streams \(distinct tables\) | Yes        |
 | Namespaces                                     | No         |
 
-## File Compressions
-
-| Compression | Supported? |
-| :---------- | :--------- |
-| Gzip        | Yes        |
-| Zip         | Yes        |
-| Bzip2       | Yes        |
-| Lzma        | No         |
-| Xz          | No         |
-| Snappy      | No         |
-
-Please let us know any specific compressions you'd like to see support for next!
-
 ## Path Patterns
 
 \(tl;dr -&gt; path pattern syntax using [wcmatch.glob](https://facelessuser.github.io/wcmatch/glob/). GLOBSTAR and SPLIT flags are enabled.\)
@@ -148,10 +135,10 @@ Some example patterns:
 - `**/prefix*.csv` : match all csv files with specific prefix.
 - `**/prefix*.parquet` : match all parquet files with specific prefix.
 
-Let's look at a specific example, matching the following bucket layout:
+Let's look at a specific example, matching the following folder layout (`MyFolder` is the folder specified in the connector config as the root folder, which the patterns are relative to):
 
 ```text
-myBucket
+MyFolder
     -> log_files
     -> some_table_files
         -> part1.csv
@@ -242,15 +229,17 @@ The Avro parser uses the [Fastavro library](https://fastavro.readthedocs.io/en/l
 
 There are currently no options for JSONL parsing.
 
-### Markdown/PDF/Docx Format (Experimental)
+### Document File Type Format (Experimental)
 
 :::warning
-The Markdown/PDF/Docx format is currently an experimental feature and not subject to SLAs. Use at your own risk.
+The Document file type format is currently an experimental feature and not subject to SLAs. Use at your own risk.
 :::
 
-The Markdown/PDF/Docx format is a special format that allows you to extract text from Markdown, PDF, and Word documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
+The Document file type format is a special format that allows you to extract text from Markdown, PDF, Word, Powerpoint and Google documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`) or Docx (`docx`) file.
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
+
+Google documents are exported as Docx files while spreadsheets, presentations and drawings are exported as PDF files.
 
 ## Changelog
 

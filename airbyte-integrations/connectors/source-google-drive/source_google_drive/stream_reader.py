@@ -7,7 +7,7 @@ import logging
 import re
 from datetime import datetime
 from io import IOBase
-from typing import Iterable, List, Optional, Set
+from typing import Any, Dict, Iterable, List, Optional, Set
 
 import smart_open
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
@@ -20,9 +20,12 @@ from googleapiclient.discovery import build
 from .spec import SourceGoogleDriveSpec
 
 FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
-EXPORTABLE_DOCUMENTS_MIME_TYPE_PREFIX = "application/vnd.google-apps."
 GOOGLE_DOC_MIME_TYPE = "application/vnd.google-apps.document"
-GOOGLE_SHEET_MIME_TYPE = "application/vnd.google-apps.spreadsheet"
+EXPORTABLE_DOCUMENTS_MIME_TYPES = [
+    GOOGLE_DOC_MIME_TYPE,
+    "application/vnd.google-apps.presentation",
+    "application/vnd.google-apps.drawing",
+]
 
 
 class GoogleDriveRemoteFile(RemoteFile):
@@ -82,6 +85,8 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         """
         service = self.google_drive_service
         root_folder_id = self._get_folder_id(self.config.folder_url)
+        # ignore prefix argument as it's legacy only and this is a new connector
+        prefixes = self.get_prefixes_from_globs(globs)
 
         folder_id_queue = [("", root_folder_id)]
         seen: Set[str] = set()
@@ -99,16 +104,22 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                     if new_file["id"] in seen:
                         continue
                     seen.add(new_file["id"])
-                    file_name = path + new_file["name"]
+                    file_name = path + self._get_file_name(new_file)
                     if new_file["mimeType"] == FOLDER_MIME_TYPE:
-                        folder_id_queue.append((f"{file_name}/", new_file["id"]))
+                        folder_name = f"{file_name}/"
+                        # check prefix matching in both directions to handle
+                        prefix_matches_folder_name = any(prefix.startswith(folder_name) for prefix in prefixes)
+                        folder_name_matches_prefix = any(folder_name.startswith(prefix) for prefix in prefixes)
+                        if prefix_matches_folder_name or folder_name_matches_prefix or len(prefixes) == 0:
+                            folder_id_queue.append((folder_name, new_file["id"]))
                         continue
-                    last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
-                    remote_file = GoogleDriveRemoteFile(
-                        uri=file_name, last_modified=last_modified, id=new_file["id"], mimeType=new_file["mimeType"]
-                    )
-                    if self.file_matches_globs(remote_file, globs):
-                        yield remote_file
+                    else:
+                        last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                        remote_file = GoogleDriveRemoteFile(
+                            uri=file_name, last_modified=last_modified, id=new_file["id"], mimeType=new_file["mimeType"]
+                        )
+                        if self.file_matches_globs(remote_file, globs):
+                            yield remote_file
                 request = service.files().list_next(request, results)
                 if request is None:
                     break
@@ -128,10 +139,32 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             # If no match is found
             raise ValueError(f"Could not extract folder ID from {url}")
 
+    def _is_exportable_document(self, mime_type: str):
+        """
+        Returns true if the given file is a Google App document that can be exported.
+        """
+        return mime_type in EXPORTABLE_DOCUMENTS_MIME_TYPES
+
+    def _get_file_name(self, file: Dict[str, Any]):
+        """
+        Returns the file name for the given file.
+
+        Google Docs are exported as Docx to preserve as much formatting as possible, other google app documents are exported as PDFs.
+        For all other files, the file name is returned as is.
+        """
+        if file["mimeType"] == GOOGLE_DOC_MIME_TYPE:
+            return f"{file['name']}.docx"
+        elif self._is_exportable_document(file["mimeType"]):
+            return f"{file['name']}.pdf"
+        else:
+            return file["name"]
+
     def open_file(self, file: GoogleDriveRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        if file.mimeType.startswith(EXPORTABLE_DOCUMENTS_MIME_TYPE_PREFIX):
+        if self._is_exportable_document(file.mimeType):
             if mode == FileReadMode.READ:
-                raise ValueError("Cannot read Google Docs/Sheets/Presentations and so on as text. Please set the format to PDF")
+                raise ValueError(
+                    "Google Docs/Drawings/Presentations can only be processed using the document file type format. Please set the format accordingly or adjust the glob pattern."
+                )
             request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=self._get_export_mime_type(file))
         else:
             request = self.google_drive_service.files().get_media(fileId=file.id)

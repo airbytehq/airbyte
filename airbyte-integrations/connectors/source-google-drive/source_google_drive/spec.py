@@ -48,7 +48,11 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
     class Config:
         title = "Google Drive Source Spec"
 
-    folder_url: str = Field(description="URL for the folder you want to sync", order=0)
+    folder_url: str = Field(
+        description="URL for the folder you want to sync. Using individual streams and glob patterns, it's possible to only sync a subset of all files located in the folder.",
+        examples=["https://drive.google.com/drive/folders/1Xaz0vXXXX2enKnNYU5qSt9NS70gvMyYn"],
+        order=0,
+    )
 
     credentials: Union[OAuthCredentials, ServiceAccountCredentials] = Field(
         title="Authentication", description="Credentials for connecting to the Google Drive API", discriminator="auth_type", type="object"
@@ -71,5 +75,9 @@ class SourceGoogleDriveSpec(AbstractFileBasedSpec, BaseModel):
         schema = super().schema(*args, **kwargs)
 
         cls.remove_discriminator(schema)
+
+        # Remove legacy settings
+        dpath.util.delete(schema, "properties/streams/items/properties/legacy_prefix")
+        dpath.util.delete(schema, "properties/streams/items/properties/format/oneOf/*/properties/inference_type")
 
         return schema
