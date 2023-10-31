@@ -44,7 +44,7 @@ simple_markdown_scenario = (
                 "c": {
                     "contents": bytes("Detected via mime type", "UTF-8"),
                     "last_modified": "2023-06-05T03:54:07.000Z",
-                    "mime_type": "text/markdown"
+                    "mime_type": "text/markdown",
                 },
             }
         )

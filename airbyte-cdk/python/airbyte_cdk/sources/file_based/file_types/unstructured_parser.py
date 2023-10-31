@@ -12,7 +12,7 @@ from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeP
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from airbyte_cdk.sources.file_based.schema_helpers import SchemaType
 from unstructured.documents.elements import Formula, ListItem, Title
-from unstructured.file_utils.filetype import FileType, detect_filetype, STR_TO_FILETYPE
+from unstructured.file_utils.filetype import STR_TO_FILETYPE, FileType, detect_filetype
 
 unstructured_partition_pdf = None
 unstructured_partition_docx = None
@@ -26,11 +26,10 @@ def _import_unstructured() -> None:
     global unstructured_partition_docx
     global unstructured_partition_pptx
     global unstructured_optional_decode
-    from unstructured.partition.pdf import partition_pdf
     from unstructured.partition.docx import partition_docx
-    from unstructured.partition.pptx import partition_pptx
-
     from unstructured.partition.md import optional_decode
+    from unstructured.partition.pdf import partition_pdf
+    from unstructured.partition.pptx import partition_pptx
 
     # separate global variables to properly propagate typing
     unstructured_partition_pdf = partition_pdf
@@ -89,7 +88,12 @@ class UnstructuredParser(FileTypeParser):
 
     def _read_file(self, file_handle: IOBase, remote_file: RemoteFile) -> str:
         _import_unstructured()
-        if (not unstructured_partition_pdf) or (not unstructured_partition_docx) or (not unstructured_partition_pptx) or (not unstructured_optional_decode):
+        if (
+            (not unstructured_partition_pdf)
+            or (not unstructured_partition_docx)
+            or (not unstructured_partition_pptx)
+            or (not unstructured_optional_decode)
+        ):
             # check whether unstructured library is actually available for better error message and to ensure proper typing (can't be None after this point)
             raise Exception("unstructured library is not available")
 
@@ -138,7 +142,7 @@ class UnstructuredParser(FileTypeParser):
         file_type = detect_filetype(
             filename=remote_file.uri,
         )
-        if not file_type is None and not file_type == FileType.UNK:
+        if file_type is not None and not file_type == FileType.UNK:
             return file_type
 
         type_based_on_content = detect_filetype(file=file)
