@@ -9,14 +9,16 @@ import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocument
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 import TestConnection from "views/Connector/TestConnection";
 
-import { RoutePaths } from "../../../routePaths";
 import SourceCopy from "./components/SourceCopy";
+import { RoutePaths } from "../../../routePaths";
 
 const Container = styled.div`
   padding: 0px 0px 0px 70px;
   height: 100%;
 `;
-
+const PaddingContainer = styled.div`
+  padding-top: 130px;
+`;
 const CopySourcePage: React.FC = () => {
   const { query, push } = useRouter<{ id: string }, { id: string; "*": string }>();
   const [currentStep, setCurrentStep] = useState(CreateStepTypes.CREATE_SOURCE);
@@ -41,16 +43,18 @@ const CopySourcePage: React.FC = () => {
         <Container>
           {/* <DefinitioDetails name={destinationDefinition.name} icon={destinationDefinition.icon} type="destination" /> */}
           {currentStep === CreateStepTypes.TEST_CONNECTION && (
-            <TestConnection
-              isLoading={loadingStatus}
-              type="source"
-              onBack={() => {
-                setCurrentStep(CreateStepTypes.CREATE_SOURCE);
-              }}
-              onFinish={() => {
-                goBack();
-              }}
-            />
+            <PaddingContainer>
+              <TestConnection
+                isLoading={loadingStatus}
+                type="source"
+                onBack={() => {
+                  setCurrentStep(CreateStepTypes.CREATE_SOURCE);
+                }}
+                onFinish={() => {
+                  goBack();
+                }}
+              />
+            </PaddingContainer>
           )}
           {currentStep === CreateStepTypes.CREATE_SOURCE && (
             <SourceCopy
