@@ -622,7 +622,7 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
 
       return new StringSubstitutor(Map.of(
           "project_id", '`' + projectId + '`',
-          "raw_table_id", QUOTE + stream.id().rawName() + QUOTE + "." + QUOTE + "foo_" + stream.id().rawName() + QUOTE,
+          "raw_table_id", stream.id().rawTableId(QUOTE),
           "column_casts", columnCasts,
           "column_errors", columnErrors,
           "cdcConditionalOrIncludeStatement", cdcConditionalOrIncludeStatement,
