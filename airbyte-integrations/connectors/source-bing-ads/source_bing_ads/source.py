@@ -19,6 +19,7 @@ from source_bing_ads.streams import (  # noqa: F401
     AccountPerformanceReportMonthly,
     AccountPerformanceReportWeekly,
     Accounts,
+    AdGroupLabels,
     AdGroupPerformanceReportDaily,
     AdGroupPerformanceReportHourly,
     AdGroupPerformanceReportMonthly,
@@ -84,6 +85,7 @@ class SourceBingAds(AbstractSource):
         streams = [
             Accounts(client, config),
             AdGroups(client, config),
+            AdGroupLabels(client, config),
             AppInstallAds(client, config),
             AppInstallAdLabels(client, config),
             Ads(client, config),
