@@ -32,7 +32,7 @@ async def create_airbyte_ci_release(
         image (str): The docker image to use for building the binary
         platform_name (str): The name of the platform to build the binary for (e.g. debian, macos)
     """
-    artifact_name = f"airbyte-ci-{platform_name}-{CURRENT_VERSION}"
+    artifact_name = f"airbyte-ci-{platform_name}"
     main_logger.info(f"Building {artifact_name} on {image}")
 
     container = await (
@@ -72,13 +72,21 @@ async def create_airbyte_ci_release(
         .with_exec(["ls", "-la", "dist"])
     )
 
-    await upload_to_gcs(
-        dagger_client=dagger_client,
-        file_to_upload=container.file(f"./dist/{artifact_name}"),
-        key=f"airbyte-ci-releases/{artifact_name}",
-        bucket=ci_artifact_bucket_name,
-        gcs_credentials=ci_gcs_credentials_secret,
-    )
+    binary_file = container.file(f"./dist/{artifact_name}")
+    gcs_folder_name = "airbyte-ci-releases"
+    file_paths_to_upload = [
+        f"{gcs_folder_name}/{artifact_name}-latest",
+        f"{gcs_folder_name}/{artifact_name}-{CURRENT_VERSION}",
+    ]
+
+    for file_path in file_paths_to_upload:
+        await upload_to_gcs(
+            dagger_client=dagger_client,
+            file_to_upload=binary_file,
+            key=file_path,
+            bucket=ci_artifact_bucket_name,
+            gcs_credentials=ci_gcs_credentials_secret,
+        )
 
 async def run_release(ci_artifact_bucket_name: str, ci_gcs_credentials: str):
     """
