@@ -1,22 +1,40 @@
+import importlib
 import sys
 import anyio
 import dagger
+from pipelines import main_logger
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 
 PLATFORMS_TO_BUILD = {
-    "airbyte_ci_debian": "python:3.10-slim",
-    "airbyte_ci_macos": "arm64v8/python:3.10-slim",
+    "debian": "python:3.10-slim",
+    "macos": "arm64v8/python:3.10-slim",
 }
 
 DIRECTORIES_TO_MOUNT = [".git", "airbyte-ci"]
+
+CURRENT_VERSION = importlib.metadata.version("pipelines")
+
 
 async def create_airbyte_ci_release(
     dagger_client: dagger.Client,
     ci_gcs_credentials_secret: dagger.Secret,
     ci_artifact_bucket_name: str,
     image: str,
-    output_filename: str
+    platform_name: str
 ):
+    """
+    Build the airbyte-ci binary for a given platform
+
+    Args:
+        dagger_client (dagger.Client): The dagger client
+        ci_gcs_credentials_secret (dagger.Secret): The GCS credentials to use for uploading the binary
+        ci_artifact_bucket_name (str): The name of the bucket to upload the binary to
+        image (str): The docker image to use for building the binary
+        platform_name (str): The name of the platform to build the binary for (e.g. debian, macos)
+    """
+    artifact_name = f"airbyte-ci-{platform_name}-{CURRENT_VERSION}"
+    main_logger.info(f"Building {artifact_name} on {image}")
+
     container = await (
         dagger_client
         .container()
@@ -46,18 +64,18 @@ async def create_airbyte_ci_release(
             "--hidden-import",
             "strawberry",
             "--name",
-            output_filename,
+            artifact_name,
             "--onefile",
             "pipelines/cli/airbyte_ci.py",
         ])
-        .with_exec([f"./dist/{output_filename}", "--version"])
+        .with_exec([f"./dist/{artifact_name}", "--version"])
         .with_exec(["ls", "-la", "dist"])
     )
 
     await upload_to_gcs(
         dagger_client=dagger_client,
-        file_to_upload=container.file(f"./dist/{output_filename}"),
-        key=f"airbyte-ci-releases/{output_filename}",
+        file_to_upload=container.file(f"./dist/{artifact_name}"),
+        key=f"airbyte-ci-releases/{artifact_name}",
         bucket=ci_artifact_bucket_name,
         gcs_credentials=ci_gcs_credentials_secret,
     )
@@ -72,14 +90,14 @@ async def run_release(ci_artifact_bucket_name: str, ci_gcs_credentials: str):
         ci_gcs_credentials_secret = dagger_client.set_secret("ci_gcs_credentials", ci_gcs_credentials)
 
         async with anyio.create_task_group() as tg_main:
-            for output_filename, image in PLATFORMS_TO_BUILD.items():
+            for platform_name, image in PLATFORMS_TO_BUILD.items():
                 tg_main.start_soon(
                     create_airbyte_ci_release,
                     dagger_client,
                     ci_gcs_credentials_secret,
                     ci_artifact_bucket_name,
                     image,
-                    output_filename
+                    platform_name
                 )
 
         return True
