@@ -207,6 +207,7 @@ def is_current_process_wrapped_by_dagger_run() -> bool:
 @click.option("--ci-git-user", default="octavia-squidington-iii", envvar="CI_GIT_USER", type=str)
 @click.option("--ci-github-access-token", envvar="CI_GITHUB_ACCESS_TOKEN", type=str)
 @click.option("--ci-report-bucket-name", envvar="CI_REPORT_BUCKET_NAME", type=str)
+@click.option("--ci-artifact-bucket-name", envvar="CI_ARTIFACT_BUCKET_NAME", type=str)
 @click.option(
     "--ci-gcs-credentials",
     help="The service account to use during CI.",
@@ -234,6 +235,7 @@ async def airbyte_ci(
     ci_git_user: str,
     ci_github_access_token: str,
     ci_report_bucket_name: str,
+    ci_artifact_bucket_name: str,
     ci_gcs_credentials: str,
     ci_job_key: str,
     s3_build_cache_access_key_id: str,
@@ -264,6 +266,7 @@ async def airbyte_ci(
     )
     ctx.obj["ci_context"] = ci_context
     ctx.obj["ci_report_bucket_name"] = ci_report_bucket_name
+    ctx.obj["ci_artifact_bucket_name"] = ci_artifact_bucket_name
     ctx.obj["ci_gcs_credentials"] = ci_gcs_credentials
     ctx.obj["ci_git_user"] = ci_git_user
     ctx.obj["ci_github_access_token"] = ci_github_access_token
