@@ -429,32 +429,6 @@ def flatten_list(list_of_lists):
                         "files": [
                             {
                                 "id": "abc",
-                                "mimeType": "application/vnd.google-apps.spreadsheet",
-                                "name": "MySheet",
-                                "modifiedTime": "2021-01-01T00:00:00.000Z",
-                            }
-                        ]
-                    }
-                ]
-            ],
-            [
-                GoogleDriveRemoteFile(
-                    uri="MySheet.pdf",
-                    id="abc",
-                    mimeType="application/vnd.google-apps.spreadsheet",
-                    last_modified=datetime.datetime(2021, 1, 1),
-                )
-            ],
-            id="Spreadsheet as pdf",
-        ),
-        pytest.param(
-            "*",
-            [
-                [
-                    {
-                        "files": [
-                            {
-                                "id": "abc",
                                 "mimeType": "application/vnd.google-apps.drawing",
                                 "name": "MyDrawing",
                                 "modifiedTime": "2021-01-01T00:00:00.000Z",
@@ -561,36 +535,6 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
             b"test",
             False,
             id="Read google doc as binary file with export",
-        ),
-        pytest.param(
-            GoogleDriveRemoteFile(
-                uri="abc",
-                id="abc",
-                mimeType="application/vnd.google-apps.spreadsheet",
-                last_modified=datetime.datetime(2021, 1, 1),
-            ),
-            b"test",
-            FileReadMode.READ_BINARY,
-            True,
-            "application/pdf",
-            b"test",
-            False,
-            id="Read google sheet as binary file with export",
-        ),
-        pytest.param(
-            GoogleDriveRemoteFile(
-                uri="abc",
-                id="abc",
-                mimeType="application/vnd.google-apps.spreadsheet",
-                last_modified=datetime.datetime(2021, 1, 1),
-            ),
-            b"test",
-            FileReadMode.READ,
-            True,
-            None,
-            None,
-            True,
-            id="Read google sheet as text (fails)",
         ),
     ],
 )

@@ -3,12 +3,12 @@
 This page contains the setup guide and reference information for the Google Drive source connector.
 
 :::info
-The Google Drive source connector pulls data from a single folder in Google Drive. Subfolders are recursively included in the sync. All files in the specified folder and all root folders will be considered.
+The Google Drive source connector pulls data from a single folder in Google Drive. Subfolders are recursively included in the sync. All files in the specified folder and all sub folders will be considered.
 :::
 
 ## Prerequisites
 
-- Drive folder link - The link to the Google Drive folder you want to sync
+- Drive folder link - The link to the Google Drive folder you want to sync files from (includes files located in subfolders)
 <!-- env:cloud -->
 - **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet  
 <!-- /env:cloud -->
@@ -135,10 +135,10 @@ Some example patterns:
 - `**/prefix*.csv` : match all csv files with specific prefix.
 - `**/prefix*.parquet` : match all parquet files with specific prefix.
 
-Let's look at a specific example, matching the following bucket layout:
+Let's look at a specific example, matching the following folder layout (`MyFolder` is the folder specified in the connector config as the root folder, which the patterns are relative to):
 
 ```text
-myBucket
+MyFolder
     -> log_files
     -> some_table_files
         -> part1.csv

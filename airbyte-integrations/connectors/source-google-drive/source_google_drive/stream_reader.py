@@ -23,7 +23,6 @@ FOLDER_MIME_TYPE = "application/vnd.google-apps.folder"
 GOOGLE_DOC_MIME_TYPE = "application/vnd.google-apps.document"
 EXPORTABLE_DOCUMENTS_MIME_TYPES = [
     GOOGLE_DOC_MIME_TYPE,
-    "application/vnd.google-apps.spreadsheet",
     "application/vnd.google-apps.presentation",
     "application/vnd.google-apps.drawing",
 ]
@@ -163,7 +162,9 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
     def open_file(self, file: GoogleDriveRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
         if self._is_exportable_document(file.mimeType):
             if mode == FileReadMode.READ:
-                raise ValueError("Cannot read Google Docs/Sheets/Presentations and so on as text. Please set the format to PDF")
+                raise ValueError(
+                    "Google Docs/Drawings/Presentations can only be processed using the document file type format. Please set the format accordingly or adjust the glob pattern."
+                )
             request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=self._get_export_mime_type(file))
         else:
             request = self.google_drive_service.files().get_media(fileId=file.id)
