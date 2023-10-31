@@ -3,6 +3,7 @@
 #
 
 import datetime
+from dataclasses import dataclass
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -499,25 +500,21 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
 
 
 @pytest.mark.parametrize(
-    "file, file_content, mode, expect_export, expected_mime_type, expected_read, expect_raise",
+    "file, mode, expect_export, expected_mime_type, expect_raise",
     [
         pytest.param(
             GoogleDriveRemoteFile(uri="avro_file", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
-            b"test",
             FileReadMode.READ_BINARY,
             False,
             None,
-            b"test",
             False,
             id="Read binary file",
         ),
         pytest.param(
             GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
-            b"test",
             FileReadMode.READ,
             False,
             None,
-            "test",
             False,
             id="Read text file",
         ),
@@ -528,45 +525,39 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
                 mimeType="application/vnd.google-apps.document",
                 last_modified=datetime.datetime(2021, 1, 1),
             ),
-            b"test",
             FileReadMode.READ_BINARY,
             True,
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            b"test",
             False,
             id="Read google doc as binary file with export",
         ),
     ],
 )
-@patch("source_google_drive.stream_reader.MediaIoBaseDownload")
+@patch("source_google_drive.stream_reader.smart_open")
 @patch("source_google_drive.stream_reader.service_account")
 @patch("source_google_drive.stream_reader.build")
+@patch("source_google_drive.stream_reader._auth")
 def test_open_file(
+    mock_google_auth,
     mock_build_service,
     mock_service_account,
-    mock_basedownload,
+    mock_smart_open,
     file,
-    file_content,
     mode,
     expect_export,
     expected_mime_type,
-    expected_read,
     expect_raise,
 ):
     mock_request = MagicMock()
-    mock_downloader = MagicMock()
+    mock_request.uri = "http://google.com/testuri"
+    mock_request.headers = {"test": "header"}
 
-    def mock_next_chunk():
-        handle = mock_basedownload.call_args[0][0]
-        if handle.tell() > 0:
-            return (None, True)
-        else:
-            handle.write(file_content)
-            return (None, False)
+    @dataclass
+    class Credentials:
+        token: str
 
-    mock_downloader.next_chunk.side_effect = mock_next_chunk
-
-    mock_basedownload.return_value = mock_downloader
+    mock_google_auth.get_credentials_from_http.return_value = Credentials("mytoken")
+    mock_smart_open.open.return_value = MagicMock()
 
     files_service = MagicMock()
     if expect_export:
@@ -579,10 +570,19 @@ def test_open_file(
 
     if expect_raise:
         with pytest.raises(ValueError):
-            create_reader().open_file(file, mode, None, MagicMock()).read()
+            create_reader().open_file(file, mode, None, MagicMock())
     else:
-        assert expected_read == create_reader().open_file(file, mode, None, MagicMock()).read()
-        assert mock_downloader.next_chunk.call_count == 2
+        assert mock_smart_open.open.return_value is create_reader().open_file(file, mode, None, MagicMock())
+        mock_smart_open.open.assert_has_calls(
+            [
+                call(
+                    uri=mock_request.uri,
+                    transport_params={"headers": {"test": "header", "Authorization": "Bearer mytoken"}},
+                    mode=mode.value,
+                    encoding=None,
+                )
+            ]
+        )
         if expect_export:
             files_service.export_media.assert_has_calls([call(fileId=file.id, mimeType=expected_mime_type)])
         else:

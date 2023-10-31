@@ -11,6 +11,7 @@ MAIN_REQUIREMENTS = [
     "google-auth-httplib2==0.1.1",
     "google-auth-oauthlib==1.1.0",
     "google-api-python-client-stubs==1.18.0",
+    "smart-open[http]==6.4.0",
 ]
 
 TEST_REQUIREMENTS = [

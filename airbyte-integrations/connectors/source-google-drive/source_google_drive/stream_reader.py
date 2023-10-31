@@ -171,6 +171,10 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
 
         # Use smart_open to actually download the file - to do so, copy over uri and headers from the Google SDK object (requires us to use undocumented API _auth.get_credentials_from_http)
         uri = request.uri
+        print("xxxxxxxxxx")
+        print(file.uri)
+        print(uri)
+        print("xxxxxxxxxx")
         headers = {**request.headers, "Authorization": f"Bearer {_auth.get_credentials_from_http(self.google_drive_service._http).token}"}
 
         return smart_open.open(uri=uri, transport_params={"headers": headers}, mode=mode.value, encoding=encoding)
