@@ -79,7 +79,11 @@ class NotionStream(HttpStream, ABC):
             if message.startswith("The start_cursor provided is invalid: "):
                 return message
 
-    def throttle_request_page_size(self, current_page_size):
+    @staticmethod
+    def throttle_request_page_size(current_page_size):
+        """
+        Helper method to halve page_size when encountering a 504 Gateway Timeout error.
+        """
         throttled_page_size = max(current_page_size // 2, 10)
         return throttled_page_size
 
