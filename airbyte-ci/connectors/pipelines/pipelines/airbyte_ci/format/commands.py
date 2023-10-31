@@ -7,6 +7,7 @@ Module exposing the tests command to test airbyte-ci projects.
 """
 
 import asyncclick as click
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 
 
@@ -22,7 +23,8 @@ from pipelines.cli.lazy_group import LazyGroup
     invoke_without_command=True,
 )
 @click.option("--fix/--check", type=bool, default=None, help="Whether to automatically fix any formatting issues detected.  [required]")
-@click.pass_context
+@click_merge_args_into_context_obj
+@click_ignore_unused_kwargs
 async def format(ctx: click.Context, fix: bool):
     from pipelines.airbyte_ci.format.java.commands import java
     from pipelines.airbyte_ci.format.js.commands import js
