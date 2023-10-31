@@ -13,7 +13,9 @@ from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
-from airbyte_cdk.sources.declarative.types import Config
+from airbyte_cdk.sources.declarative.types import Config, Record
+
+DECODED_RESPONSE_TYPE = Union[Mapping[str, Any], List[dict[str, Any]]]
 
 
 @dataclass
@@ -37,13 +39,13 @@ class CursorPaginationStrategy(PaginationStrategy, ABC):
     def stop_condition(self) -> bool:
         return True
 
-    def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
+    def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
 
         # The default way that link is presented in requests.Response is a string of various links (last, next, etc). This
         # is not indexable or useful for parsing the cursor, so we replace it with the link dictionary from response.links
         headers = response.headers
-        headers["link"] = response.links
+        headers["link"] = response.links  # type: ignore[assignment]
 
         if self.stop_condition:
             should_stop = self.stop(response=decoded_response, headers=headers, last_records=last_records)
@@ -53,7 +55,7 @@ class CursorPaginationStrategy(PaginationStrategy, ABC):
         return token if token else None
 
     @abstractmethod
-    def stop(self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]) -> bool:
+    def stop(self, response: DECODED_RESPONSE_TYPE, headers: Mapping[str, Any], last_records: List[Record]) -> bool:
         """
         Returns the value of whether to continue pagination or stop
 
@@ -66,9 +68,7 @@ class CursorPaginationStrategy(PaginationStrategy, ABC):
         """
 
     @abstractmethod
-    def get_cursor_value(
-        self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]
-    ) -> Optional[str]:
+    def get_cursor_value(self, response: DECODED_RESPONSE_TYPE, headers: Mapping[str, Any], last_records: List[Record]) -> Optional[str]:
         """
         Returns the string of actual cursor field as next_page_token value
 
@@ -80,7 +80,7 @@ class CursorPaginationStrategy(PaginationStrategy, ABC):
         return: Optional[str]
         """
 
-    def reset(self):
+    def reset(self) -> None:
         # No state to reset
         pass
 
@@ -122,10 +122,13 @@ class LowCodeCursorPaginationStrategy(CursorPaginationStrategy):
     def stop_condition(self) -> bool:
         return self._stop_condition is not None
 
-    def stop(self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]) -> bool:
-        return self._stop_condition.eval(self.config, response=response, headers=headers, last_records=last_records)
+    def stop(self, response: DECODED_RESPONSE_TYPE, headers: Mapping[str, Any], last_records: List[Record]) -> bool:
+        if not self._stop_condition:
+            return False
 
-    def get_cursor_value(
-        self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]
-    ) -> Optional[str]:
-        return self.cursor_value.eval(config=self.config, response=response, headers=headers, last_records=last_records)
+        stop_value: bool = self._stop_condition.eval(self.config, response=response, headers=headers, last_records=last_records)
+        return stop_value
+
+    def get_cursor_value(self, response: DECODED_RESPONSE_TYPE, headers: Mapping[str, Any], last_records: List[Record]) -> Optional[str]:
+        cursor_value = self.cursor_value.eval(config=self.config, response=response, headers=headers, last_records=last_records)
+        return cursor_value or None
