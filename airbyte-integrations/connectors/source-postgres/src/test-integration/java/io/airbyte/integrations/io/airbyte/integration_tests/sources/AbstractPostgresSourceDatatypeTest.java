@@ -17,11 +17,12 @@ import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.Set;
 import org.jooq.DSLContext;
+import org.testcontainers.containers.JdbcDatabaseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
-  protected PostgreSQLContainer<?> container;
+  protected JdbcDatabaseContainer<?> container;
   protected JsonNode config;
   protected DSLContext dslContext;
   protected static final String SCHEMA_NAME = "test";
@@ -189,8 +190,8 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .sourceType("date")
               .fullSourceDataType(type)
               .airbyteType(JsonSchemaType.STRING_DATE)
-              .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "'2022/11/12'", "'1987.12.01'")
-              .addExpectedValues("1999-01-08", "1991-02-10 BC", "2022-11-12", "1987-12-01")
+              .addInsertValues("'1999-01-08'", "'1991-02-10 BC'", "'2022/11/12'", "'1987.12.01'", "'-InFinITy'", "'InFinITy'")
+              .addExpectedValues("1999-01-08", "1991-02-10 BC", "2022-11-12", "1987-12-01", "-infinity", "+infinity")
               .build());
     }
 
@@ -454,14 +455,16 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   "TIMESTAMP '0001-01-01 00:00:00.000000'",
                   // The last possible timestamp in BCE
                   "TIMESTAMP '0001-12-31 23:59:59.999999 BC'",
-                  "'epoch'")
+                  "'epoch'",
+                  "'-InFinITy'", "'InFinITy'")
               .addExpectedValues(
                   "2004-10-19T10:23:00.000000",
                   "2004-10-19T10:23:54.123456",
                   "3004-10-19T10:23:54.123456 BC",
                   "0001-01-01T00:00:00.000000",
                   "0001-12-31T23:59:59.999999 BC",
-                  "1970-01-01T00:00:00.000000")
+                  "1970-01-01T00:00:00.000000",
+                  "-infinity", "+infinity")
               .build());
     }
 
@@ -476,8 +479,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .addExpectedValues((String) null)
               .build());
     }
-
-    addTimestampWithInfinityValuesTest();
 
     // timestamp with time zone
     for (final String fullSourceType : Set.of("timestamptz", "timestamp with time zone")) {
@@ -497,14 +498,14 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
                   "TIMESTAMP WITH TIME ZONE '0001-12-31 16:00:00.000000-08 BC'",
                   // The last possible timestamp in BCE (15:59-08 == 23:59Z)
                   "TIMESTAMP WITH TIME ZONE '0001-12-31 15:59:59.999999-08 BC'",
-                  "null")
+                  "null", "'-InFinITy'", "'InFinITy'")
               .addExpectedValues(
                   "2004-10-19T18:23:00.000000Z",
                   "2004-10-19T18:23:54.123456Z",
                   "3004-10-19T18:23:54.123456Z BC",
                   "0001-01-01T00:00:00.000000Z",
                   "0001-12-31T23:59:59.999999Z BC",
-                  null)
+                  null, "-infinity", "+infinity")
               .build());
     }
 
@@ -634,23 +635,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     }
   }
 
-  protected void addTimestampWithInfinityValuesTest() {
-    // timestamp without time zone
-    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone not null default now()")) {
-      addDataTypeTestData(
-          TestDataHolder.builder()
-              .sourceType("timestamp")
-              .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-              .addInsertValues(
-                  "'infinity'",
-                  "'-infinity'")
-              .addExpectedValues(
-                  "+292278994-08-16T23:00:00.000000",
-                  "+292269055-12-02T23:00:00.000000 BC")
-              .build());
-    }
-  }
 
   private void addArraysTestData() {
     addDataTypeTestData(
