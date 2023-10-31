@@ -145,3 +145,9 @@ async def check_poppler_utils_version(python_image_container: dagger.Container, 
 
     if f"pdftotext version {poppler_version}" not in pdf_to_text_version_output:
         raise errors.SanityCheckError(f"unexpected poppler version: {pdf_to_text_version_output}")
+
+
+async def check_cdk_system_dependencies(python_image_container: dagger.Container):
+    await check_nltk_data(python_image_container)
+    await check_tesseract_version(python_image_container, "5.3.0")
+    await check_poppler_utils_version(python_image_container, "22.12.0")
