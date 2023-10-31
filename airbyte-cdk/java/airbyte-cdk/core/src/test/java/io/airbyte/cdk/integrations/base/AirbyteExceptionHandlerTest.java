@@ -40,6 +40,8 @@ public class AirbyteExceptionHandlerTest {
     // mocking terminate() method in AirbyteExceptionHandler, so we don't kill the JVM
     airbyteExceptionHandler = spy(new AirbyteExceptionHandler());
     doNothing().when(airbyteExceptionHandler).terminate();
+
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(RuntimeException.class);
   }
 
   @Test
@@ -104,6 +106,27 @@ public class AirbyteExceptionHandlerTest {
 
     final AirbyteMessage traceMessage = findFirstTraceMessage();
     assertEquals("Error happened in ?.foo", traceMessage.getTrace().getError().getInternalMessage());
+  }
+
+  /**
+   * We should only deinterpolate specific exception classes.
+   */
+  @Test
+  void testClassDeinterpolation() throws Exception {
+    AirbyteExceptionHandler.THROWABLES_TO_DEINTERPOLATE.clear();
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(ArrayIndexOutOfBoundsException.class);
+    AirbyteExceptionHandler.addStringForDeinterpolation("foo");
+
+    runTestWithMessage("Error happened in foo");
+
+    final AirbyteMessage traceMessage = findFirstTraceMessage();
+    // We shouldn't deinterpolate at all in this case, so we will get the default trace message behavior.
+    assertAll(
+        () -> assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
+        () -> assertEquals(
+            "java.lang.RuntimeException: Error happened in foo",
+            traceMessage.getTrace().getError().getInternalMessage())
+    );
   }
 
   private void runTestWithMessage(final String message) throws InterruptedException {
