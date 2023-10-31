@@ -78,7 +78,8 @@ public interface SqlGenerator<DialectTableDefinition> {
    *        performance.
    * @param useExpensiveSaferCasting often the data coming from the source can be faithfully
    *        represented in the destination without issue, and using a "CAST" expression works fine,
-   *        however sometimes
+   *        however sometimes we get badly typed data. In these cases we can use a more expensive
+   *        query which handles casting exceptions.
    */
   String updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp, final boolean useExpensiveSaferCasting);
 
