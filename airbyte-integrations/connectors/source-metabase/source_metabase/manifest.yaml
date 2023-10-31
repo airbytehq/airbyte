@@ -68,7 +68,7 @@ definitions:
     $parameters:
       name: "native_query_snippets"
       path: "native-query-snippet"
-    
+
   users_stream:
     primary_key: "id"
     retriever:
