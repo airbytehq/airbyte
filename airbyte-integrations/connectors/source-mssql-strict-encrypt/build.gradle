@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -23,7 +23,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation project(':airbyte-integrations:connectors:source-mssql')
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'

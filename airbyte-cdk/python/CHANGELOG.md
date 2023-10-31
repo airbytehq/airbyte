@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.52.7
+File CDK: Add pptx support
+
 ## 0.52.6
 make  parameter as not required for default backoff handler
 
