@@ -22,7 +22,7 @@ streams:
         request_body_json: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -60,7 +60,7 @@ streams:
         request_body_json: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -98,7 +98,7 @@ streams:
         request_body_json: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -136,7 +136,7 @@ streams:
         request_body_json: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -174,7 +174,7 @@ streams:
         request_body_json: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -196,7 +196,7 @@ streams:
           stop_condition: '{{ response.data.next_url == "null" }}'
           page_size: 100
   - type: DeclarativeStream
-    name: labor_groups_types
+    name: labor_group_types
     primary_key: []
     retriever:
       type: SimpleRetriever
@@ -212,7 +212,7 @@ streams:
         request_body_json: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -250,7 +250,7 @@ streams:
         request_body_json: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -288,7 +288,7 @@ streams:
         request_body_json: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -326,7 +326,7 @@ streams:
         request_body_json: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -364,7 +364,7 @@ streams:
         request_body_json: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -402,7 +402,7 @@ streams:
         request_body_json: {}
         authenticator:
           type: BearerAuthenticator
-          api_token: "{{ config['api_key'] }}"
+          api_token: "{{ config['token'] }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -433,7 +433,7 @@ spec:
     type: object
     required:
       - token
-    additionalProperties: false
+    additionalProperties: true
     properties:
       token:
         title: token
@@ -441,3 +441,4 @@ spec:
         description:
           Use Sync with Zenefits button on the link given on the readme file,
           and get the token to access the api
+        airbyte_secret: true
