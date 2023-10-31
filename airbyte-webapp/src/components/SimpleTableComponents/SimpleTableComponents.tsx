@@ -27,6 +27,7 @@ export const Header = styled(Row)`
   color: ${({ theme }) => theme.textColor};
   height: 17px;
   padding: 0;
+  width: 100%;
 `;
 
 export const Cell = styled.div<{

@@ -1,7 +1,7 @@
 import { faEdit } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+// import { Button } from "@mui/material";
+// import { useTheme } from "@mui/material/styles";
 import React, { ChangeEvent, useState } from "react";
 
 import { Input } from "components";
@@ -22,14 +22,14 @@ interface ConnectionNameProps {
 const InputWithKeystroke = withKeystrokeHandler(Input);
 
 const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
-  const theme = useTheme();
+  // const theme = useTheme();
   const { name } = connection;
   const [editingState, setEditingState] = useState(false);
   const [loading, setLoading] = useState(false);
   const [connectionName, setConnectionName] = useState<string | undefined>(connection.name);
   const [connectionNameBackup, setConnectionNameBackup] = useState(connectionName);
   const { mutateAsync: updateConnection } = useUpdateConnection();
-  const isSmallScreen = theme.breakpoints.up("sm");
+  // const isSmallScreen = theme.breakpoints.up("sm");
 
   const inputChange = ({ currentTarget: { value } }: ChangeEvent<HTMLInputElement>) => setConnectionName(value);
 
@@ -102,38 +102,38 @@ const ConnectionName: React.FC<ConnectionNameProps> = ({ connection }) => {
           )}
         </div>
       ) : (
-        // <button className={styles.nameContainer} onClick={() => setEditingState(true)}>
-        //   <div>
-        //     <h2>{name}</h2>
-        //   </div>
-        //   <FontAwesomeIcon className={styles.icon} icon={faEdit} />
-        // </button>
+        <button className={styles.nameContainer} onClick={() => setEditingState(true)}>
+          <div>
+            <h2>{name}</h2>
+          </div>
+          <FontAwesomeIcon className={styles.icon} icon={faEdit} />
+        </button>
 
-        <Button
-          variant="outlined"
-          size="large"
-          endIcon={<FontAwesomeIcon className={styles.icon} icon={faEdit} />}
-          sx={{
-            color: "rgb(26, 25, 77)!important",
-            fontSize: isSmallScreen ? "14px" : "22px",
-            fontWeight: "500",
-            whiteSpace: "nowrap",
-            textOverflow: "ellipsis",
-            backgroundColor: "red",
-            border: "1px solid #eff0f5!important",
-            "&:hover": {
-              cursor: "pointer",
-              backgroundColor: "#eff0f5",
-              "& .icon": {
-                display: "block",
-                color: "#27272a",
-              },
-            },
-          }}
-          onClick={() => setEditingState(true)}
-        >
-          {name}
-        </Button>
+        // <Button
+        //   variant="outlined"
+        //   size="large"
+        //   endIcon={<FontAwesomeIcon className={styles.icon} icon={faEdit} />}
+        //   sx={{
+        //     color: "rgb(26, 25, 77)!important",
+        //     fontSize: isSmallScreen ? "14px" : "22px",
+        //     fontWeight: "500",
+        //     whiteSpace: "nowrap",
+        //     textOverflow: "ellipsis",
+        //     backgroundColor: "red",
+        //     border: "1px solid #eff0f5!important",
+        //     "&:hover": {
+        //       cursor: "pointer",
+        //       backgroundColor: "#eff0f5",
+        //       "& .icon": {
+        //         display: "block",
+        //         color: "#27272a",
+        //       },
+        //     },
+        //   }}
+        //   onClick={() => setEditingState(true)}
+        // >
+        //   {name}
+        // </Button>
       )}
     </div>
   );

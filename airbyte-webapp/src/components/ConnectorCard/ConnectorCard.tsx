@@ -34,6 +34,10 @@ const EntityIcon = styled.div`
   border-radius: 18px;
   padding: 6px;
   box-sizing: border-box;
+  @media (max-width: 600px) {
+    width: 60px;
+    height: 60px;
+  }
 `;
 
 const ConnectionName = styled.div`

@@ -15,9 +15,11 @@
 %catalogHeader {
   min-height: 33px;
   margin-bottom: 0 !important;
-  background-color: red;
+
+  // background-color: red;
   display: flex;
-  flex-wrap: wrap;
+
+  // flex-wrap: wrap;
   white-space: nowrap;
 }
 
@@ -30,7 +32,8 @@
 .catalogSubheaderBorderTop {
   border-top: 1px solid #f8f8fa;
   margin-top: 6px;
-  background-color: aqua;
+
+  // background-color: aqua;
   width: 100%;
   display: flex;
 }
@@ -53,7 +56,6 @@
   }
 
   .catalogSubheaderBorderTop {
-    display: flex;
-    justify-content: space-evenly;
+    display: none;
   }
 }
