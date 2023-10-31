@@ -138,8 +138,52 @@
         }
       }
     },
+    "banks": {
+      "type": "object",
+      "properties": {
+        "ref_object": {
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
+        },
+        "url": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "date_of_birth": {
+      "type": ["string", "null"]
+    },
     "status": {
       "type": ["string", "null"]
+    },
+    "federal_filing_status": {
+      "type": ["string", "null"]
+    },
+    "gender": {
+      "type": ["string", "null"]
+    },
+    "personal_email": {
+      "type": ["string", "null"]
+    },
+    "personal_phone": {
+      "type": ["string", "null"]
+    },
+    "personal_pronoun": {
+      "type": ["string", "null"]
+    },
+    "photo_thumbnail_url": {
+      "type": ["string", "null"]
+    },
+    "photo_url": {
+      "type": ["string", "null"]
+    },
+    "social_security_number": {
+      "type": ["string", "null"]
+    },
+    "is_full_admin": {
+      "type": ["boolean", "null"]
     },
     "last_name": {
       "type": ["string", "null"]
