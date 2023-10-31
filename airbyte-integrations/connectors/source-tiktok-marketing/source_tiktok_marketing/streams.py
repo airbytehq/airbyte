@@ -373,8 +373,10 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(next_page_token=next_page_token, **kwargs)
-        if self.include_deleted:
-            params.update({"filtering": '{"secondary_status": "AD_STATUS_ALL"}'})
+        # include_deleted should not be launched for reports streams
+        if self.include_deleted and self.name in ('ads', 'ad_groups', 'campaigns'):
+            prefix = self.name.upper().replace("_", "")[:-1] # ad_groups -> ADGROUP for example
+            params.update({"filtering": '{"secondary_status": "' + prefix + '_STATUS_ALL"}'})
         if next_page_token:
             params.update(next_page_token)
         return params
