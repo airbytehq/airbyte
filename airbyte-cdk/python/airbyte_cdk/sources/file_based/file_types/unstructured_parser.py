@@ -3,7 +3,7 @@
 #
 import logging
 from io import BytesIO, IOBase
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
@@ -52,7 +52,7 @@ class UnstructuredParser(FileTypeParser):
         logger: logging.Logger,
     ) -> SchemaType:
         with stream_reader.open_file(file, self.file_read_mode, None, logger) as file_handle:
-            filetype = self._get_filetype(file_handle, file.uri)
+            filetype, _ = self._get_filetype(file_handle, file.uri)
 
             if filetype not in self._supported_file_types():
                 raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=file.uri)
@@ -83,7 +83,7 @@ class UnstructuredParser(FileTypeParser):
             # check whether unstructured library is actually available for better error message and to ensure proper typing (can't be None after this point)
             raise Exception("unstructured library is not available")
 
-        filetype = self._get_filetype(file_handle, file_name)
+        filetype, detected_from_file_name = self._get_filetype(file_handle, file_name)
 
         if filetype == FileType.MD:
             file_content: bytes = file_handle.read()
@@ -99,18 +99,28 @@ class UnstructuredParser(FileTypeParser):
             file = BytesIO(file_handle.read())
             file_handle.seek(0)
 
-        elements = unstructured_partition(file=file, metadata_filename=file_name)
+        elements = unstructured_partition(file=file, metadata_filename=file_name if detected_from_file_name else None)
         return self._render_markdown(elements)
 
-    def _get_filetype(self, file: IOBase, file_name: str) -> Any:
+    def _get_filetype(self, file: IOBase, file_name: str) -> Tuple[Any, bool]:
         # set name to none, otherwise unstructured will try to get the modified date from the local file system
         if hasattr(file, "name"):
             file.name = None
 
-        return detect_filetype(
-            file=file,
-            file_filename=file_name,
+        # detect_filetype is either using the file name or file content
+        # if possible, try to leverage the file name to detect the file type
+        # if the file name is not available, use the file content
+        file_type = detect_filetype(
+            filename=file_name,
         )
+        if not file_type is None and not file_type == FileType.UNK:
+            return file_type, True
+
+        type_based_on_content = detect_filetype(file=file)
+
+        file.seek(0)
+
+        return type_based_on_content, False
 
     def _supported_file_types(self) -> List[Any]:
         return [FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX]
