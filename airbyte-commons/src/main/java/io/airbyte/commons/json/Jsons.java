@@ -165,6 +165,7 @@ public class Jsons {
     try {
       return Optional.of(OBJECT_MAPPER.convertValue(jsonNode, klass));
     } catch (final Exception e) {
+      System.out.println("exception debug: " + e.getMessage());
       return Optional.empty();
     }
   }
