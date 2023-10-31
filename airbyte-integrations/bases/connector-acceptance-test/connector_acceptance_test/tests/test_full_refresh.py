@@ -14,8 +14,7 @@ from connector_acceptance_test.base import BaseTest
 from connector_acceptance_test.config import IgnoredFieldsConfiguration
 from connector_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, full_refresh_only_catalog, make_hashable
 from connector_acceptance_test.utils.json_schema_helper import CatalogField
-
-# from airbyte_pr import ConfiguredAirbyteCatalog, Type
+from connector_acceptance_test.utils.timeouts import TWENTY_MINUTES
 
 
 def primary_keys_by_stream(configured_catalog: ConfiguredAirbyteCatalog) -> Mapping[str, List[CatalogField]]:
@@ -37,7 +36,7 @@ def primary_keys_only(record, pks):
     return ";".join([f"{pk.path}={pk.parse(record)}" for pk in pks])
 
 
-@pytest.mark.default_timeout(20 * 60)
+@pytest.mark.default_timeout(TWENTY_MINUTES)
 class TestFullRefresh(BaseTest):
     def assert_emitted_at_increase_on_subsequent_runs(self, first_read_records, second_read_records):
         first_read_records_data = [record.data for record in first_read_records]
