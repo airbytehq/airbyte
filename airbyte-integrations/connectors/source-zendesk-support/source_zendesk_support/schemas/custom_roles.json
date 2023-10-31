@@ -147,7 +147,7 @@
       "type": ["null", "boolean"]
     },
     "read_macro_content_suggestions": {
-        "type": ["null", "boolean"]
-      }
+      "type": ["null", "boolean"]
+    }
   }
 }
