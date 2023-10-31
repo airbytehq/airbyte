@@ -11,6 +11,7 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 
 pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContext)
 
+
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs

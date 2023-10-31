@@ -15,15 +15,15 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def js(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext):
+async def js(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None):
     """Format yaml and json code via prettier."""
 
-    success = await format_js(dagger_client, ctx)
+    success = await format_js(ctx, dagger_client)
     if not success:
         click.Abort()
 
 
-async def format_js(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext) -> bool:
+async def format_js(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client]) -> bool:
     """Checks whether the repository is formatted correctly.
     Args:
         fix (bool): Whether to automatically fix any formatting issues detected.
@@ -32,15 +32,7 @@ async def format_js(dagger_client: Optional[dagger.Client], ctx: ClickPipelineCo
     """
     logger = logging.getLogger(f"format")
 
-    fix = ctx.params["fix"]
-    if fix:
-        prettier_command = ["prettier", "--write", "."]
-    else:
-        prettier_command = ["prettier", "--check", "."]
-
-    if not dagger_client:
-        dagger_client = await ctx.get_dagger_client(pipeline_name="Format Yaml and Json")
-
+    dagger_client = ctx.params["dagger_client"]
     try:
         format_container = await (
             dagger_client.container()
@@ -64,12 +56,11 @@ async def format_js(dagger_client: Optional[dagger.Client], ctx: ClickPipelineCo
             .with_workdir(f"/src")
             .with_exec(["npm", "install", "-g", "npm@10.1.0"])
             .with_exec(["npm", "install", "-g", "prettier@2.8.1"])
-            .with_exec(prettier_command)
+            .with_exec(["prettier", "--write", "."])
         )
 
         await format_container
-        if fix:
-            await format_container.directory("/src").export(".")
+        await format_container.directory("/src").export(".")
         return True
     except Exception as e:
         logger.error(f"Failed to format code: {e}")
