@@ -285,13 +285,13 @@ def test_403_error_handling(
         (100, 50, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}, False),
         (50, 25, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}, False),
         (100, 100, {"status_code": 429, "json": {}, "headers": {"retry-after": "1"}}, False),
-        (100, 100, {"status_code": 200, "json": {"data": "success"}, "headers": {}}, True),
+        (50, 100, {"status_code": 200, "json": {"data": "success"}, "headers": {}}, True),
     ],
     ids=[
         "504 error, page_size 100 -> 50",
         "504 error, page_size 50 -> 25",
         "429 error, page_size 100 -> 100",
-        "200 success, page_size 100 -> 100",
+        "200 success, page_size 50 -> 100",
     ],
 )
 def test_request_throttle(initial_page_size, expected_page_size, mock_response, reset_page_size, requests_mock):
@@ -316,4 +316,4 @@ def test_request_throttle(initial_page_size, expected_page_size, mock_response, 
     # invoke parse_response to check the page_size reset logic
     list(stream.parse_response(response=response))
 
-    assert stream.page_size == (100 if reset_page_size else expected_page_size)
+    assert stream.page_size == expected_page_size
