@@ -82,6 +82,16 @@ class CustomConversions(FBMarketingStream):
         return self._api.account.get_custom_conversions(params=params)
 
 
+class CustomAudiences(FBMarketingStream):
+    """doc: https://developers.facebook.com/docs/marketing-api/reference/custom-conversion"""
+
+    entity_prefix = "customaudience"
+    enable_deleted = False
+
+    def list_objects(self, params: Mapping[str, Any]) -> Iterable:
+        return self._api.account.get_custom_audiences(params=params)
+
+
 class Ads(FBMarketingIncrementalStream):
     """doc: https://developers.facebook.com/docs/marketing-api/reference/adgroup"""
 

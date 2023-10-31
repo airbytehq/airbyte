@@ -52,6 +52,17 @@ class InsightConfig(BaseModel):
         default=[],
     )
 
+    action_report_time: str = Field(
+        title="Action Report Time",
+        description=(
+            "Determines the report time of action stats. For example, if a person saw the ad on Jan 1st "
+            "but converted on Jan 2nd, when you query the API with action_report_time=impression, you see a conversion on Jan 1st. "
+            "When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd."
+        ),
+        default="mixed",
+        enum=["conversion", "impression", "mixed"],
+    )
+
     time_increment: Optional[PositiveInt] = Field(
         title="Time Increment",
         description=(
@@ -203,5 +214,17 @@ class ConnectorConfig(BaseConfig):
     action_breakdowns_allow_empty: bool = Field(
         description="Allows action_breakdowns to be an empty list",
         default=True,
+        airbyte_hidden=True,
+    )
+
+    client_id: Optional[str] = Field(
+        description="The Client Id for your OAuth app",
+        airbyte_secret=True,
+        airbyte_hidden=True,
+    )
+
+    client_secret: Optional[str] = Field(
+        description="The Client Secret for your OAuth app",
+        airbyte_secret=True,
         airbyte_hidden=True,
     )
