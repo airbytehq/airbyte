@@ -37,3 +37,4 @@
 {"stream":"labels","data":{"Status":"Active","Id":10239203506495,"Client Id":null,"Modified Time":"04/27/2023 17:16:49.170","Description":null,"Label":"what a new label","Color":"#B0B20F","Account Id":180278106},"emitted_at":1698687185070}
 {"stream":"campaign_labels","data":{"Status":"Active","Id":10239203506494,"Parent Id":413444833,"Campaign":null,"Client Id":null,"Modified Time":"04/27/2023 17:57:38.110","Account Id":180278106},"emitted_at":1698687214960}
 {"stream":"keyword_labels","data":{"Status":"Active","Id":10239203506495,"Parent Id":84868925026027,"Client Id":null,"Modified Time":"04/27/2023 17:22:52.733","Account Id":180278106},"emitted_at":1698687224964}
+{"stream":"ad_group_labels","data":{"Status":"Active","Id":10239203506494,"Parent Id":1350201453189474,"Campaign":null,"Ad Group":null,"Client Id":null,"Modified Time":"04/27/2023 18:00:14.970","Account Id":180278106},"emitted_at":1698751388918}
