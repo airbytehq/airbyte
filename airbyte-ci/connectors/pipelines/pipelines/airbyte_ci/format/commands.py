@@ -29,10 +29,14 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click_ignore_unused_kwargs
 async def format(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     pass
-    # from pipelines.airbyte_ci.format.java.commands import java
-    # from pipelines.airbyte_ci.format.js.commands import js
-    # from pipelines.airbyte_ci.format.license.commands import license
-    # from pipelines.airbyte_ci.format.python.commands import python
+
+@click.group(chain=True)
+@pass_pipeline_context
+@click_ignore_unused_kwargs
+async def check(ctx: ClickPipelineContext):
+    """Run code format checks and fail if any checks fail."""
+    print("check group")
+    # TODO: check should handle async
 
     # if ctx.invoked_subcommand is None:
     #     dagger_client = await pipeline_ctx.get_dagger_client(pipeline_name="Format All Files")
@@ -42,12 +46,6 @@ async def format(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     #     await ctx.invoke(python, dagger_client)
 
 
-@click.group(chain=True)
-@pass_pipeline_context
-@click_ignore_unused_kwargs
-async def check(ctx: ClickPipelineContext):
-    """Run code format checks and fail if any checks fail."""
-    print("check group")
 
 @check.command()
 @pass_pipeline_context
@@ -86,6 +84,13 @@ async def python(ctx: ClickPipelineContext):
 async def fix(ctx: ClickPipelineContext):
     """Run code format checks and fix any failures."""
     print("fix group")
+
+    # if ctx.invoked_subcommand is None:
+    #     dagger_client = await pipeline_ctx.get_dagger_client(pipeline_name="Format All Files")
+    #     await ctx.invoke(license, dagger_client)
+    #     await ctx.invoke(java, dagger_client)
+    #     await ctx.invoke(js, dagger_client)
+    #     await ctx.invoke(python, dagger_client)
 
 @fix.command()
 @pass_pipeline_context
