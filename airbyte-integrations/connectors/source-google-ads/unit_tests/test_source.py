@@ -87,6 +87,10 @@ def mock_fields_meta_data():
     return Mock(get_fields_metadata=Mock(return_value={node.name: node for node in nodes}))
 
 
+@pytest.fixture()
+def fake_stream_is_missing_error():
+    return "The requested stream fake_stream was not found in the source"
+
 def test_chunk_date_range():
     start_date = "2021-03-04"
     end_date = "2021-05-04"
@@ -119,9 +123,9 @@ def test_streams_count(config, mock_account_info):
     assert len(streams) == expected_streams_number
 
 
-def test_read_missing_stream(config, mock_account_info):
+def test_read_missing_stream(config, fake_stream_is_missing_error, mock_account_info):
     source = SourceGoogleAds()
-
+    
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -135,11 +139,10 @@ def test_read_missing_stream(config, mock_account_info):
             )
         ]
     )
-
-    try:
+    with pytest.raises(KeyError) as error:
         list(source.read(AirbyteLogger(), config=config, catalog=catalog))
-    except KeyError as error:
-        pytest.fail(str(error))
+    
+    assert fake_stream_is_missing_error in str(error.value)
 
 
 @pytest.mark.parametrize(
