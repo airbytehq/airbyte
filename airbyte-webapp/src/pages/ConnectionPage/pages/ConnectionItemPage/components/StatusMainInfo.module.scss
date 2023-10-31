@@ -57,3 +57,8 @@
   justify-content: center;
   margin-top: 10px;
 }
+@media screen and (max-width: 568px) {
+  .syncDate {
+    font-size: 12px;
+  }
+}

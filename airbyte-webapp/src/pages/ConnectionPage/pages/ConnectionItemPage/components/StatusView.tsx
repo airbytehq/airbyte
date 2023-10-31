@@ -206,6 +206,7 @@ const StatusView: React.FC<StatusViewProps> = ({
             </div>
           )}
         </div>
+
         {jobs.length ? <JobsList jobs={jobs} /> : <EmptyResource text={<FormattedMessage id="sources.noSync" />} />}
       </div>
       {(moreJobPagesAvailable || isJobPageLoading) && (

@@ -15,6 +15,12 @@
 %catalogHeader {
   min-height: 33px;
   margin-bottom: 0 !important;
+
+  // background-color: red;
+  display: flex;
+
+  // flex-wrap: wrap;
+  white-space: nowrap;
 }
 
 .readonlyCatalogHeader {
@@ -26,6 +32,10 @@
 .catalogSubheaderBorderTop {
   border-top: 1px solid #f8f8fa;
   margin-top: 6px;
+
+  // background-color: aqua;
+  width: 100%;
+  display: flex;
 }
 
 .catalogSubheader {
@@ -38,4 +48,14 @@
   @extend %catalogHeader;
 
   padding-top: 6px;
+}
+@media screen and (max-width: 768px) {
+  .catalogHeader,
+  %catalogHeader {
+    display: none;
+  }
+
+  .catalogSubheaderBorderTop {
+    display: none;
+  }
 }

@@ -52,6 +52,10 @@ export const FlexRow = styled.div`
   align-items: flex-start;
   gap: 10px;
   margin-bottom: 20px;
+  @media (max-width: 586px) {
+    flex-direction: column;
+    gap: 8px;
+  }
 `;
 
 export const LeftFieldCol = styled.div`
@@ -174,6 +178,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const isEditMode: boolean = mode !== "create";
   const initialValues = useInitialValues(connection, destDefinition, isEditMode);
+  console.log(initialValues);
   const workspace = useCurrentWorkspace();
 
   const onFormSubmit = useCallback(

@@ -85,3 +85,16 @@
     border-bottom: variables.$border-thin solid colors.$red-50;
   }
 }
+@media screen and (max-width: 768px) {
+  .time {
+    display: none;
+  }
+}
+@media screen and (max-width: 560px) {
+  .justification {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
