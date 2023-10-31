@@ -11,8 +11,16 @@ import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYN
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
-import io.airbyte.cdk.integrations.debezium.internals.*;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteFileOffsetBackingStore;
+import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage;
 import io.airbyte.cdk.integrations.debezium.internals.AirbyteSchemaHistoryStorage.SchemaHistory;
+import io.airbyte.cdk.integrations.debezium.internals.ChangeEventWithMetadata;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumPropertiesManager;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordIterator;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumRecordPublisher;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumShutdownProcedure;
+import io.airbyte.cdk.integrations.debezium.internals.DebeziumStateDecoratingIterator;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.commons.util.MoreIterators;
@@ -21,6 +29,7 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.SyncMode;
 import io.debezium.engine.ChangeEvent;
+import io.debezium.engine.DebeziumEngine;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -138,6 +147,7 @@ public class AirbyteDebeziumHandler<T> {
                                                                        final boolean addDbNameToState,
                                                                        final boolean canShortCircuitDebeziumEngine) {
     LOGGER.info("Using CDC: {}", true);
+    LOGGER.info("Using DBZ version: {}", DebeziumEngine.class.getPackage().getImplementationVersion());
     final AirbyteFileOffsetBackingStore offsetManager = AirbyteFileOffsetBackingStore.initializeState(
         cdcSavedInfoFetcher.getSavedOffset(),
         addDbNameToState ? Optional.ofNullable(config.get(JdbcUtils.DATABASE_KEY).asText()) : Optional.empty());
