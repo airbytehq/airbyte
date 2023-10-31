@@ -6,6 +6,7 @@ package io.airbyte.cdk.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,8 +22,8 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   // Basic deinterpolation helpers to avoid doing _really_ dumb deinterpolation.
   // E.g. if "id" is in the list of strings to remove, we don't want to modify the message "Invalid
   // identifier".
-  private static final String REGEX_PREFIX = "(^|[^A-Za-z0-9_])";
-  private static final String REGEX_SUFFIX = "($|[^A-Za-z0-9_])";
+  private static final String REGEX_PREFIX = "(^|\\W)";
+  private static final String REGEX_SUFFIX = "($|\\W)";
 
   /**
    * If this list is populated, then the exception handler will attempt to deinterpolate the error
@@ -53,9 +54,10 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
     LOGGER.error(logMessage, throwable);
 
     // Attempt to deinterpolate the error message before emitting a trace message
-    final String mangledMessage = STRINGS_TO_REMOVE.stream().reduce(
-        throwable.getMessage(),
-        AirbyteExceptionHandler::deinterpolate);
+    final String mangledMessage = STRINGS_TO_REMOVE.stream()
+        // Sort the strings longest to shortest, in case any target string is a substring of another
+        .sorted(Comparator.comparing(String::length).reversed())
+        .reduce(throwable.getMessage(), AirbyteExceptionHandler::deinterpolate);
     if (mangledMessage.equals(throwable.getMessage())) {
       // If deinterpolating did not modify the message, then emit our default trace message
       AirbyteTraceMessageUtility.emitSystemErrorTrace(throwable, logMessage);

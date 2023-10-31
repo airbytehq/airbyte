@@ -5,6 +5,8 @@
 package io.airbyte.cdk.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -47,9 +49,9 @@ public class AirbyteExceptionHandlerTest {
 
     final AirbyteMessage traceMessage = findFirstTraceMessage();
     assertAll(
-        () -> Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
-        () -> Assertions.assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
-        () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType()));
+        () -> assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
+        () -> assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
+        () -> assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType()));
   }
 
   @Test
@@ -61,10 +63,10 @@ public class AirbyteExceptionHandlerTest {
 
     final AirbyteMessage traceMessage = findFirstTraceMessage();
     assertAll(
-        () -> Assertions.assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
-        () -> Assertions.assertEquals("Error happened in foo.bar", traceMessage.getTrace().getError().getMessage()),
-        () -> Assertions.assertEquals("Error happened in ?.?", traceMessage.getTrace().getError().getInternalMessage()),
-        () -> Assertions.assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType()),
+        () -> assertEquals(AirbyteTraceMessage.Type.ERROR, traceMessage.getTrace().getType()),
+        () -> assertEquals("Error happened in foo.bar", traceMessage.getTrace().getError().getMessage()),
+        () -> assertEquals("Error happened in ?.?", traceMessage.getTrace().getError().getInternalMessage()),
+        () -> assertEquals(AirbyteErrorTraceMessage.FailureType.SYSTEM_ERROR, traceMessage.getTrace().getError().getFailureType()),
         () -> Assertions.assertNull(traceMessage.getTrace().getError().getStackTrace(),
             "Stacktrace should be null if deinterpolating the error message"));
   }
@@ -77,7 +79,18 @@ public class AirbyteExceptionHandlerTest {
     runTestWithMessage("Error happened in foobar");
 
     final AirbyteMessage traceMessage = findFirstTraceMessage();
-    Assertions.assertNotEquals("Error happened in ??", traceMessage.getTrace().getError().getMessage(), "foobar should not be deinterpolated");
+    assertNotEquals("Error happened in ??", traceMessage.getTrace().getError().getMessage(), "foobar should not be deinterpolated");
+  }
+
+  @Test
+  void testMessageSubstringDeinterpolation() throws Exception {
+    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("airbyte");
+    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("airbyte_internal");
+
+    runTestWithMessage("Error happened in airbyte_internal.foo");
+
+    final AirbyteMessage traceMessage = findFirstTraceMessage();
+    assertEquals("Error happened in ?.foo", traceMessage.getTrace().getError().getInternalMessage());
   }
 
   private void runTestWithMessage(final String message) throws InterruptedException {
