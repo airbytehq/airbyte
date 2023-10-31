@@ -50,7 +50,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
             .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
             // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
             .addInsertValues("'24:00:00'")
-            .addExpectedValues((String) null)
+            .addExpectedValues("24:00:00")
             .build());
 
     // bit defaults to bit(1), which is equivalent to boolean
