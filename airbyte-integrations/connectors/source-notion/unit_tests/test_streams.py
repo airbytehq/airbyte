@@ -280,12 +280,12 @@ def test_403_error_handling(
 
 
 @pytest.mark.parametrize(
-    "initial_page_size, expected_page_size, mock_response, reset_page_size",
+    "initial_page_size, expected_page_size, mock_response",
     [
-        (100, 50, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}, False),
-        (50, 25, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}, False),
-        (100, 100, {"status_code": 429, "json": {}, "headers": {"retry-after": "1"}}, False),
-        (50, 100, {"status_code": 200, "json": {"data": "success"}, "headers": {}}, True),
+        (100, 50, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}),
+        (50, 25, {"status_code": 504, "json": {}, "headers": {"retry-after": "1"}}),
+        (100, 100, {"status_code": 429, "json": {}, "headers": {"retry-after": "1"}}),
+        (50, 100, {"status_code": 200, "json": {"data": "success"}, "headers": {}}),
     ],
     ids=[
         "504 error, page_size 100 -> 50",
@@ -294,7 +294,7 @@ def test_403_error_handling(
         "200 success, page_size 50 -> 100",
     ],
 )
-def test_request_throttle(initial_page_size, expected_page_size, mock_response, reset_page_size, requests_mock):
+def test_request_throttle(initial_page_size, expected_page_size, mock_response, requests_mock):
     """
     Tests that the request page_size is halved when a 504 error is encountered.
     Once a 200 success is encountered, the page_size is reset to 100 in parse_response,
@@ -310,10 +310,6 @@ def test_request_throttle(initial_page_size, expected_page_size, mock_response, 
     stream.page_size = initial_page_size
     response = requests.get("https://api.notion.com/v1/users")
 
-    if response.status_code != 200:
-        stream.backoff_time(response)
-
-    # invoke parse_response to check the page_size reset logic
-    list(stream.parse_response(response=response))
+    stream.should_retry(response=response)
 
     assert stream.page_size == expected_page_size
