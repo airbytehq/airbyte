@@ -173,13 +173,15 @@ def log_git_info(ctx: click.Context):
     main_logger.info(f"Modified Files: {ctx.obj['modified_files']}")
 
 
-def _get_gha_workflow_run_id(ctx: click.Context) -> Optional[str]:
-    if ctx.obj["is_local"]:
-        return "TESTEST"
-    return ctx.obj["gha_workflow_run_id"]
+def _get_gha_workflow_run_url(ctx: click.Context) -> Optional[str]:
+    gha_workflow_run_id = ctx.obj["gha_workflow_run_id"]
+    if not gha_workflow_run_id:
+        return None
+
+    return f"https://github.com/airbytehq/airbyte/actions/runs/{gha_workflow_run_id}"
 
 
-def _get_pull_request(ctx: click.Context):
+def _get_pull_request(ctx: click.Context) -> PullRequest or None:
     pull_request_number = ctx.obj["pull_request_number"]
     ci_github_access_token = ctx.obj["ci_github_access_token"]
 
@@ -190,17 +192,6 @@ def _get_pull_request(ctx: click.Context):
     return github.get_pull_request(pull_request_number, ci_github_access_token)
 
 
-def _get_modified_files(ctx: click.Context) -> List[Path]:
-    return transform_strs_to_paths(
-        get_modified_files(
-            ctx.obj["git_branch"],
-            ctx.obj["git_revision"],
-            ctx.obj["diffed_branch"],
-            ctx.obj["is_local"],
-            ctx.obj["ci_context"],
-            ctx.obj["pull_request"],
-        )
-    )
 def check_local_docker_configuration():
     try:
         docker_client = docker.from_env()
@@ -258,15 +249,14 @@ def check_local_docker_configuration():
 @click_track_command
 @click_merge_args_into_context_obj
 @click_append_to_context_object("is_ci", lambda ctx: not ctx.obj["is_local"])
-@click_append_to_context_object("gha_workflow_run_url", _get_gha_workflow_run_id)
+@click_append_to_context_object("gha_workflow_run_url", _get_gha_workflow_run_url)
 @click_append_to_context_object("pull_request", _get_pull_request)
 @click_ignore_unused_kwargs
 async def airbyte_ci(
     ctx: click.Context,
-    is_local: bool,
 ):  # noqa D103
     display_welcome_message()
-    if is_local:
+    if ctx.obj["is_local"]:
         # This check is meaningful only when running locally
         # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
         check_local_docker_configuration()
@@ -283,7 +273,7 @@ async def airbyte_ci(
     )
     ctx.obj["modified_files"] = transform_strs_to_paths(modified_files)
 
-    if not is_local:
+    if not ctx.obj["is_local"]:
         log_git_info(ctx)
 
 set_working_directory_to_root()

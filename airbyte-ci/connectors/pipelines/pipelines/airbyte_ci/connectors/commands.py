@@ -9,7 +9,7 @@ from typing import List, Optional, Set, Tuple
 import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj, click_append_to_context_object
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
 
@@ -227,30 +227,22 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     envvar="DOCKER_HUB_PASSWORD",
 )
 @click_merge_args_into_context_obj
+@click_append_to_context_object("use_remote_secrets", lambda ctx: should_use_remote_secrets(ctx.obj["use_remote_secrets"]) )
 @click_ignore_unused_kwargs
 async def connectors(
     ctx: click.Context,
-    use_remote_secrets: Optional[bool],
-    names: Tuple[str],
-    languages: Tuple[ConnectorLanguage],
-    support_levels: Tuple[str],
-    modified: bool,
-    metadata_changes_only: bool,
-    metadata_query: str,
-    enable_dependency_scanning: bool,
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"])
 
-    ctx.obj["use_remote_secrets"] = should_use_remote_secrets(use_remote_secrets)
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
-        names,
-        support_levels,
-        languages,
-        modified,
-        metadata_changes_only,
-        metadata_query,
+        ctx.obj["names"],
+        ctx.obj["support_levels"],
+        ctx.obj["languages"],
+        ctx.obj["modified"],
+        ctx.obj["metadata_changes_only"],
+        ctx.obj["metadata_query"],
         ctx.obj["modified_files"],
-        enable_dependency_scanning,
+        ctx.obj["enable_dependency_scanning"],
     )
     log_selected_connectors(ctx.obj["selected_connectors_with_modified_files"])

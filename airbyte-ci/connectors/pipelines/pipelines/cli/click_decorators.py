@@ -6,16 +6,16 @@ from typing import Any, Callable, Type
 import asyncclick as click
 
 
-def _contains_var_kwarg(f):
-    return any(param.kind == inspect.Parameter.VAR_KEYWORD for param in inspect.signature(f).parameters.values())
+def _contains_var_kwarg(f: Callable) -> bool:
+    return any(param.kind is inspect.Parameter.VAR_KEYWORD for param in inspect.signature(f).parameters.values())
 
 
-def _is_kwarg_of(key, f):
+def _is_kwarg_of(key: str, f: Callable) -> bool:
     param = inspect.signature(f).parameters.get(key, False)
     return param and (param.kind is inspect.Parameter.KEYWORD_ONLY or param.kind is inspect.Parameter.POSITIONAL_OR_KEYWORD)
 
 
-def click_ignore_unused_kwargs(f):
+def click_ignore_unused_kwargs(f: Callable) -> Callable:
     """Make function ignore unmatched kwargs.
 
     If the function already has the catch all **kwargs, do nothing.
@@ -34,7 +34,7 @@ def click_ignore_unused_kwargs(f):
     return inner
 
 
-def click_merge_args_into_context_obj(f):
+def click_merge_args_into_context_obj(f: Callable) -> Callable:
     """
     Decorator to pass click context and args to children commands.
     """
@@ -59,7 +59,7 @@ def click_merge_args_into_context_obj(f):
     return wrapper
 
 
-def click_append_to_context_object(key: str, value: Callable | Any):
+def click_append_to_context_object(key: str, value: Callable | Any) -> Callable:
     """
     Decorator to append a value to the click context object.
     """
@@ -81,12 +81,22 @@ def click_append_to_context_object(key: str, value: Callable | Any):
 
 
 class LazyPassDecorator:
+    """
+    Used to create a decorator that will pass an instance of the given class to the decorated function.
+    """
     def __init__(self, cls: Type[Any], *args: Any, **kwargs: Any) -> None:
+        """
+        Initialize the decorator with the given source class
+        """
         self.cls = cls
         self.args = args
         self.kwargs = kwargs
 
     def __call__(self, f: Callable[..., Any]) -> Callable[..., Any]:
+        """
+        Create a decorator that will pass an instance of the given class to the decorated function.
+        """
+
         @wraps(f)
         def decorated_function(*args: Any, **kwargs: Any) -> Any:
             # Check if the kwargs already contain the arguments being passed by the decorator
