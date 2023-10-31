@@ -28,6 +28,12 @@ export const ButtonRows = styled.div<ButtonRowsProps>`
   bottom: 0;
   z-index: 1;
   gap: 120px;
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 24px;
+    background: transparent;
+    position: static;
+  }
 `;
 
 export const BtnText = styled.div`
