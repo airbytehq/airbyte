@@ -236,7 +236,14 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     }, this.executorService);
   }
 
-  public void typeAndDedupeTransactions(final StreamConfig streamConfig) throws Exception {
+  /**
+   * It can be expensive to build the errors array in the airbyte_meta column, so we first attempt an
+   * 'unsafe' transaction which assumes everything is typed correctly. If that fails, we will run a
+   * more expensive query which handles casting errors
+   * @param streamConfig the stream to type and dedupe
+   * @throws Exception if the safe query fails
+   */
+  private void typeAndDedupeTransactions(final StreamConfig streamConfig) throws Exception {
     final String suffix = getFinalTableSuffix(streamConfig.id());
     try {
       LOGGER.info("Attempting typing and deduping for {}.{}", streamConfig.id().originalNamespace(), streamConfig.id().originalName());
