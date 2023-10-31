@@ -15,9 +15,14 @@ from source_bing_ads.streams import AccountPerformanceReportMonthly, Accounts, A
 @pytest.fixture(name="config")
 def config_fixture():
     """Generates streams settings from a config file"""
-    CONFIG_FILE = "secrets/config.json"
-    with open(CONFIG_FILE, "r") as f:
-        return json.loads(f.read())
+    return {
+        "tenant_id": "common",
+        "developer_token": "fake_developer_token",
+        "refresh_token": "fake_refresh_token",
+        "client_id": "fake_client_id",
+        "reports_start_date": "2020-01-01",
+        "lookback_window": 0
+    }
 
 
 @pytest.fixture(name="logger_mock")
