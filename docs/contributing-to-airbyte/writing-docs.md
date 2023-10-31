@@ -133,6 +133,91 @@ Content outside of the magic-comment-delimited blocks will be rendered everywher
 ```
 Note that the documentation site will render _all_ environment-specific content, so please introduce environment-specific variants with some documentation-site-only context (e.g. a subheading) to disambiguate.
 
+#### Contextually-styled callouts with admonition blocks
+We have added support for [Docusaurus' admonition syntax](https://docusaurus.io/docs/markdown-features/admonitions) to Airbyte's in-app markdown renderer.
+
+To make an admonition, wrap text with lines of three colons, with the first colons immediately followed (no space) by a tag specifying the callout's semantic styling, which will be one of `tip`, `warning`, `caution`, `danger`, `note`, or `info`. The syntax parallells a code block's, but with colons instead of backticks.
+
+Examples of the different admonition types:
+
+```md
+:::note
+
+A **note** with _Markdown_ `syntax`.
+
+:::
+```
+
+:::note
+
+A **note** with _Markdown_ `syntax`.
+
+:::
+
+```md
+:::tip
+
+A **tip** with _Markdown_ `syntax`.
+
+:::
+```
+
+:::tip
+
+A **tip** with _Markdown_ `syntax`.
+
+:::
+
+```md
+:::info
+
+Some **info** with _Markdown_ `syntax`.
+
+:::
+```
+
+:::info
+
+Some **info** with _Markdown_ `syntax`.
+
+:::
+
+```md
+:::caution
+
+A **caution** with _Markdown_ `syntax`.
+
+:::
+```
+
+:::caution
+
+A **caution** with _Markdown_ `syntax`.
+
+:::
+
+```md
+:::danger
+
+Some **dangerous** content with _Markdown_ `syntax`.
+
+:::
+```
+
+:::danger
+
+Some **dangerous** content with _Markdown_ `syntax`.
+
+:::
+
+```md
+#### Collapsible content with `<details>` and `<summary>`
+```md
+## Ordinary markdown content
+<details>
+  <summary>Here is an expandible section! Everything but this title is hidden by default.</summary>
+```
+
 #### Collapsible content with `<details>` and `<summary>`
 ```md
 ## Ordinary markdown content
