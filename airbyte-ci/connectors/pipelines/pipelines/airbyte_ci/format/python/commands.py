@@ -29,7 +29,7 @@ async def format_python(ctx: ClickPipelineContext) -> bool:
         bool: True if the check/format succeeded, false otherwise
     """
     logger = logging.getLogger(f"format")
-    fix = ctx.params.get("fix_formatting")
+    fix = ctx.params["fix"]
 
     isort_command = ["poetry", "run", "isort", "--settings-file", "pyproject.toml", "--check-only", "."]
     black_command = ["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."]

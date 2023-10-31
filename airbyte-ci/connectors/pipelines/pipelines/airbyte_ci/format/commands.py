@@ -31,8 +31,6 @@ async def format(ctx: click.Context, fix: bool):
     from pipelines.airbyte_ci.format.license.commands import license
     from pipelines.airbyte_ci.format.python.commands import python
 
-    ctx.obj["fix_formatting"] = fix
-
     if ctx.invoked_subcommand is None:
         # TODO: ctx.forward should forward the fix commands to the subcommands
         await ctx.invoke(license)

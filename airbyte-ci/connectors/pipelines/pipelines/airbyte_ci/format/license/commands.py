@@ -27,7 +27,7 @@ async def format_license(ctx: ClickPipelineContext) -> bool:
     license_text = "LICENSE_SHORT"
     logger = logging.getLogger(f"format")
 
-    fix = ctx.params.get("fix_formatting")
+    fix = ctx.params["fix"]
     if fix:
         addlicense_command = ["addlicense", "-c", "Airbyte, Inc.", "-l", "apache", "-v", "-f", license_text, "."]
     else:

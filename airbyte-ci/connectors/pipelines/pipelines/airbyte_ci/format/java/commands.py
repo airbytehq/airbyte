@@ -25,7 +25,7 @@ async def java(ctx: ClickPipelineContext):
 async def format_java(ctx: ClickPipelineContext) -> bool:
     logger = logging.getLogger("format")
 
-    fix = ctx.params.get("fix_formatting")
+    fix = ctx.params["fix"]
     if fix:
         gradle_command = ["./gradlew", "spotlessApply"]
     else:

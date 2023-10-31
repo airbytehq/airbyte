@@ -31,7 +31,7 @@ async def format_js(ctx: ClickPipelineContext) -> bool:
     """
     logger = logging.getLogger(f"format")
 
-    fix = ctx.params.get("fix_formatting")
+    fix = ctx.params["fix"]
     if fix:
         prettier_command = ["prettier", "--write", "."]
     else:
