@@ -170,9 +170,16 @@ public class GlueOperations implements MetastoreOperations {
     if (type == null || type.equals("unknown") || type.equals("null")) {
       return Set.of("binary");
     }
+    // Union Type
     if (type.isArray()) {
       Set<String> types = objectMapper.convertValue(type, new TypeReference<>() {});
-      return types.stream().filter(t -> !t.equals("null")).collect(Collectors.toSet());
+      Set<String> collectedTypes = types.stream().filter(t -> !t.equals("null")).collect(Collectors.toSet());
+      if (collectedTypes.size() > 1) {
+        // Union Type, treat as binary
+        return Set.of("binary");
+      } else {
+        return collectedTypes;
+      }
     } else {
       return Set.of(type.asText());
     }
