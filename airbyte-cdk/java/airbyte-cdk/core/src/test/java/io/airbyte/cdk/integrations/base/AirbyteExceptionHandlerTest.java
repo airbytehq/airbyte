@@ -55,8 +55,8 @@ public class AirbyteExceptionHandlerTest {
 
   @Test
   void testMessageDeinterpolation() throws Exception {
-    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("foo");
-    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("bar");
+    AirbyteExceptionHandler.addStringForDeinterpolation("foo");
+    AirbyteExceptionHandler.addStringForDeinterpolation("bar");
 
     runTestWithMessage("Error happened in foo.bar");
 
@@ -76,8 +76,8 @@ public class AirbyteExceptionHandlerTest {
    */
   @Test
   void testMessageSmartDeinterpolation() throws Exception {
-    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("foo");
-    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("bar");
+    AirbyteExceptionHandler.addStringForDeinterpolation("foo");
+    AirbyteExceptionHandler.addStringForDeinterpolation("bar");
 
     runTestWithMessage("Error happened in foobar");
 
@@ -97,8 +97,8 @@ public class AirbyteExceptionHandlerTest {
    */
   @Test
   void testMessageSubstringDeinterpolation() throws Exception {
-    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("airbyte");
-    AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("airbyte_internal");
+    AirbyteExceptionHandler.addStringForDeinterpolation("airbyte");
+    AirbyteExceptionHandler.addStringForDeinterpolation("airbyte_internal");
 
     runTestWithMessage("Error happened in airbyte_internal.foo");
 
@@ -128,7 +128,7 @@ public class AirbyteExceptionHandlerTest {
   @AfterEach
   public void teardown() {
     System.setOut(originalOut);
-    AirbyteExceptionHandler.STRINGS_TO_REMOVE.clear();
+    AirbyteExceptionHandler.STRINGS_TO_DEINTERPOLATE.clear();
   }
 
   private AirbyteMessage findFirstTraceMessage() {

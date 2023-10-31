@@ -68,15 +68,15 @@ public class CatalogParser {
       streamConfigs.add(actualStreamConfig);
 
       // Populate some interesting strings into the exception handler string deinterpolator
-      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().rawNamespace());
-      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().rawName());
-      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().finalNamespace());
-      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().finalName());
-      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().originalNamespace());
-      AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(actualStreamConfig.id().originalName());
+      AirbyteExceptionHandler.addStringForDeinterpolation(actualStreamConfig.id().rawNamespace());
+      AirbyteExceptionHandler.addStringForDeinterpolation(actualStreamConfig.id().rawName());
+      AirbyteExceptionHandler.addStringForDeinterpolation(actualStreamConfig.id().finalNamespace());
+      AirbyteExceptionHandler.addStringForDeinterpolation(actualStreamConfig.id().finalName());
+      AirbyteExceptionHandler.addStringForDeinterpolation(actualStreamConfig.id().originalNamespace());
+      AirbyteExceptionHandler.addStringForDeinterpolation(actualStreamConfig.id().originalName());
       actualStreamConfig.columns().keySet().forEach(columnId -> {
-        AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(columnId.name());
-        AirbyteExceptionHandler.STRINGS_TO_REMOVE.add(columnId.originalName());
+        AirbyteExceptionHandler.addStringForDeinterpolation(columnId.name());
+        AirbyteExceptionHandler.addStringForDeinterpolation(columnId.originalName());
       });
     }
     return new ParsedCatalog(streamConfigs);

@@ -5,9 +5,12 @@
 package io.airbyte.cdk.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +41,10 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
    * internal message.</li>
    * </ol>
    */
-  public static final List<String> STRINGS_TO_REMOVE = new ArrayList<>();
+  @VisibleForTesting
+  static final List<String> STRINGS_TO_DEINTERPOLATE = new ArrayList<>();
+  @VisibleForTesting
+  static final Set<Class<? extends Throwable>> THROWABLES_TO_DEINTERPOLATE = new HashSet<>();
 
   @Override
   public void uncaughtException(final Thread thread, final Throwable throwable) {
@@ -54,12 +60,20 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
     LOGGER.error(logMessage, throwable);
 
     // Attempt to deinterpolate the error message before emitting a trace message
-    final String mangledMessage = STRINGS_TO_REMOVE.stream()
-        // Sort the strings longest to shortest, in case any target string is a substring of another
-        .sorted(Comparator.comparing(String::length).reversed())
-        .reduce(throwable.getMessage(), AirbyteExceptionHandler::deinterpolate);
+    final String mangledMessage;
+    if (THROWABLES_TO_DEINTERPOLATE.contains(throwable.getClass())) {
+      mangledMessage = STRINGS_TO_DEINTERPOLATE.stream()
+          // Sort the strings longest to shortest, in case any target string is a substring of another
+          // e.g. "airbyte_internal" should be swapped out before "airbyte"
+          .sorted(Comparator.comparing(String::length).reversed())
+          .reduce(throwable.getMessage(), AirbyteExceptionHandler::deinterpolate);
+    } else {
+      mangledMessage = throwable.getMessage();
+    }
+
+    // If we did not modify the message (either not a deinterpolatable class, or we tried to deinterpolate
+    // but made no changes) then emit our default trace message
     if (mangledMessage.equals(throwable.getMessage())) {
-      // If deinterpolating did not modify the message, then emit our default trace message
       AirbyteTraceMessageUtility.emitSystemErrorTrace(throwable, logMessage);
     } else {
       AirbyteTraceMessageUtility.emitCustomErrorTrace(throwable.getMessage(), mangledMessage);
@@ -85,12 +99,20 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
     return matcher.replaceAll("$1?$3");
   }
 
-  public static void addAllStringsInConfig(final JsonNode node) {
+  public static void addThrowableForDeinterpolation(final Class<? extends Throwable> klass) {
+    THROWABLES_TO_DEINTERPOLATE.add(klass);
+  }
+
+  public static void addStringForDeinterpolation(final String string) {
+    STRINGS_TO_DEINTERPOLATE.add(string);
+  }
+
+  public static void addAllStringsInConfigForDeinterpolation(final JsonNode node) {
     if (node.isTextual()) {
-      STRINGS_TO_REMOVE.add(node.asText());
+      addStringForDeinterpolation(node.asText());
     } else if (node.isContainerNode()) {
       for (final JsonNode subNode : node) {
-        addAllStringsInConfig(subNode);
+        addAllStringsInConfigForDeinterpolation(subNode);
       }
     }
   }

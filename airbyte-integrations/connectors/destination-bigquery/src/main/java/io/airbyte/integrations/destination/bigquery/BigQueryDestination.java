@@ -8,6 +8,7 @@ import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
@@ -237,7 +238,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
 
-    AirbyteExceptionHandler.addAllStringsInConfig(config);
+    AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
 
     if (uploadingMethod == UploadingMethod.STANDARD) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
@@ -340,10 +341,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return Map.of(
         UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, namingResolver),
         UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, namingResolver));
-  }
-
-  protected String getTargetTableName(final String streamName) {
-    return namingResolver.getRawTableName(streamName);
   }
 
   private SerializedAirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
@@ -480,6 +477,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static void main(final String[] args) throws Exception {
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(BigQueryException.class);
     final Destination destination = new BigQueryDestination();
     new IntegrationRunner(destination).run(args);
   }
