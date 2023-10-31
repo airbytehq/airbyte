@@ -78,7 +78,7 @@ class NotionStream(HttpStream, ABC):
             message = response.json().get("message", "")
             if message.startswith("The start_cursor provided is invalid: "):
                 return message
-            
+
     def throttle_request_page_size(self, current_page_size):
         throttled_page_size = max(current_page_size // 2, 10)
         return throttled_page_size
