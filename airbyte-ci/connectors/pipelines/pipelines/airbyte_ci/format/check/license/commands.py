@@ -17,25 +17,18 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def license(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext):
+async def license(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None):
     """Add license to python and java code via addlicense."""
-    success = await format_license(dagger_client, ctx)
+    success = await format_license(ctx, dagger_client)
     if not success:
         click.Abort()
 
 
-async def format_license(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext) -> bool:
+async def format_license(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None) -> bool:
     license_text = "LICENSE_SHORT"
     logger = logging.getLogger(f"format")
 
-    fix = ctx.params["fix"]
-    if fix:
-        addlicense_command = ["addlicense", "-c", "Airbyte, Inc.", "-l", "apache", "-v", "-f", license_text, "."]
-    else:
-        addlicense_command = ["addlicense", "-c", "Airbyte, Inc.", "-l", "apache", "-v", "-f", license_text, "-check", "."]
-
-    if not dagger_client:
-        dagger_client = await ctx.get_dagger_client(pipeline_name="Format License")
+    dagger_client = ctx.params["dagger_client"]
     try:
         license_container = await (
             dagger_client.container()
@@ -50,12 +43,10 @@ async def format_license(dagger_client: Optional[dagger.Client], ctx: ClickPipel
                 ),
             )
             .with_workdir(f"/src")
-            .with_exec(addlicense_command)
+            .with_exec(["addlicense", "-c", "Airbyte, Inc.", "-l", "apache", "-v", "-f", license_text, "-check", "."])
         )
 
         await license_container
-        if fix:
-            await license_container.directory("/src").export(".")
         return True
 
     except Exception as e:

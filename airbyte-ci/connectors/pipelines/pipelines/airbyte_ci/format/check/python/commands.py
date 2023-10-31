@@ -15,14 +15,14 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def python(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext):
+async def python(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None):
     """Format python code via black and isort."""
-    success = await format_python(dagger_client, ctx)
+    success = await format_python(ctx, dagger_client)
     if not success:
         click.Abort()
 
 
-async def format_python(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext) -> bool:
+async def format_python(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None) -> bool:
     """Checks whether the repository is formatted correctly.
     Args:
         fix (bool): Whether to automatically fix any formatting issues detected.
@@ -30,17 +30,8 @@ async def format_python(dagger_client: Optional[dagger.Client], ctx: ClickPipeli
         bool: True if the check/format succeeded, false otherwise
     """
     logger = logging.getLogger(f"format")
-    fix = ctx.params["fix"]
 
-    isort_command = ["poetry", "run", "isort", "--settings-file", "pyproject.toml", "--check-only", "."]
-    black_command = ["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."]
-    if fix:
-        isort_command.remove("--check-only")
-        black_command.remove("--check")
-
-    if not dagger_client:
-        dagger_client = await ctx.get_dagger_client(pipeline_name="Format Python")
-
+    dagger_client = ctx.params["dagger_client"]
     try:
         format_container = await (
             dagger_client.container()
@@ -65,13 +56,11 @@ async def format_python(dagger_client: Optional[dagger.Client], ctx: ClickPipeli
             )
             .with_workdir(f"/src")
             .with_exec(["poetry", "install"])
-            .with_exec(isort_command)
-            .with_exec(black_command)
+            .with_exec(["poetry", "run", "isort", "--settings-file", "pyproject.toml", "--check-only", "."])
+            .with_exec(["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."])
         )
 
         await format_container
-        if fix:
-            await format_container.directory("/src").export(".")
         return True
 
     except dagger.ExecError as e:

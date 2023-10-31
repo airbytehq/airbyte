@@ -22,11 +22,10 @@ async def java(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client]
         click.Abort()
 
 
-async def check_java(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client]) -> bool:
+async def check_java(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None) -> bool:
     logger = logging.getLogger("format")
 
-    if not dagger_client:
-        dagger_client = await ctx.get_dagger_client(pipeline_name="Format Java")
+    dagger_client = ctx.params["dagger_client"]
     try:
         format_container = await (
             dagger_client.container()
