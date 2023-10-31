@@ -14,7 +14,7 @@ from pendulum import today
 from source_google_ads.custom_query_stream import IncrementalCustomQuery
 from source_google_ads.google_ads import GoogleAds
 from source_google_ads.source import SourceGoogleAds
-from source_google_ads.streams import AdGroupAdReport, chunk_date_range
+from source_google_ads.streams import AdGroupAdLegacy, chunk_date_range
 from source_google_ads.utils import GAQL
 
 from .common import MockGoogleAdsClient
@@ -33,7 +33,7 @@ def stream_mock(mocker, config, customers):
     def mock(latest_record):
         mocker.patch("source_google_ads.streams.GoogleAdsStream.read_records", Mock(return_value=[latest_record]))
         google_api = GoogleAds(credentials=config["credentials"])
-        client = AdGroupAdReport(
+        client = AdGroupAdLegacy(
             start_date=config["start_date"], api=google_api, conversion_window_days=config["conversion_window_days"], customers=customers
         )
         return client
@@ -426,7 +426,7 @@ def test_end_date_is_not_in_the_future(customers):
 
 def test_stream_slices(config, customers):
     google_api = GoogleAds(credentials=config["credentials"])
-    stream = AdGroupAdReport(
+    stream = AdGroupAdLegacy(
         start_date=config["start_date"],
         api=google_api,
         conversion_window_days=config["conversion_window_days"],

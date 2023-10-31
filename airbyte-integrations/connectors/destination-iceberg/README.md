@@ -32,8 +32,9 @@ the [instructions](https://docs.airbyte.io/connector-development#using-credentia
 
 Build the connector image via Gradle:
 
+
 ```
-./gradlew :airbyte-integrations:connectors:destination-iceberg:airbyteDocker
+./gradlew :airbyte-integrations:connectors:destination-iceberg:buildConnectorImage
 ```
 
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name`

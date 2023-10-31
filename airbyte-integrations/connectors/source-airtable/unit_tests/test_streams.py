@@ -93,6 +93,7 @@ class TestAirtableStream:
             stream_path=prepared_stream["stream_path"],
             stream_name=prepared_stream["stream"].name,
             stream_schema=prepared_stream["stream"].json_schema,
+            table_name=prepared_stream["table_name"],
             authenticator=MagicMock(),
         )
 
@@ -160,6 +161,3 @@ class TestAirtableStream:
         requests_mock.get(url, status_code=200, json=streams_json_response)
         response = requests.get(url)
         assert list(stream.parse_response(response)) == streams_processed_response
-
-
-#

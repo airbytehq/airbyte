@@ -197,6 +197,20 @@ def test_reset():
     assert request_parameters_for_second_request != request_parameters_after_reset
 
 
+def test_initial_token_with_offset_pagination():
+    page_size_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="limit", parameters={})
+    page_token_request_option = RequestOption(inject_into=RequestOptionType.request_parameter, field_name="offset", parameters={})
+    url_base = "https://airbyte.io"
+    config = {}
+    strategy = OffsetIncrement(config={}, page_size=2, parameters={}, inject_on_first_request=True)
+    paginator = DefaultPaginator(
+        strategy, config, url_base, parameters={}, page_size_option=page_size_request_option, page_token_option=page_token_request_option
+    )
+    initial_request_parameters = paginator.get_request_params()
+
+    assert initial_request_parameters == {"limit": 2, "offset": 0}
+
+
 def test_limit_page_fetched():
     maximum_number_of_pages = 5
     number_of_next_performed = maximum_number_of_pages - 1
