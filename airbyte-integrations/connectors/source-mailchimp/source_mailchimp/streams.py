@@ -216,6 +216,9 @@ class EmailActivity(IncrementalMailChimpStream):
 
 
 class ListMembers(IncrementalMailChimpStream):
+    """
+    Get 
+    """
     cursor_field = "last_changed"
     data_field = "members"
 
@@ -228,6 +231,8 @@ class ListMembers(IncrementalMailChimpStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         list_id = stream_slice.get("list_id")
         return f"lists/{list_id}/members"
+    
+    def request_params
 
 
 class Reports(IncrementalMailChimpStream):
