@@ -197,25 +197,6 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   }
 
   @Override
-  protected void addTimestampWithInfinityValuesTest() {
-    // timestamp without time zone
-    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone not null default now()")) {
-      addDataTypeTestData(
-          TestDataHolder.builder()
-              .sourceType("timestamp")
-              .fullSourceDataType(fullSourceType)
-              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
-              .addInsertValues(
-                  "'infinity'",
-                  "'-infinity'")
-              .addExpectedValues(
-                  "+294247-01-10T04:00:25.200000",
-                  "+290309-12-21T19:59:27.600000 BC")
-              .build());
-    }
-  }
-
-  @Override
   protected void addNumericValuesTest() {
     addDataTypeTestData(
         TestDataHolder.builder()

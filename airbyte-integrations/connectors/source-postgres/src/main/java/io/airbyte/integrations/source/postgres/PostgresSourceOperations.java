@@ -258,11 +258,18 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      final Timestamp timestamp = arrayResultSet.getTimestamp(2);
-      if (timestamp == null) {
-        arrayNode.add(NullNode.getInstance());
+      final String strValue = arrayResultSet.getString(2);
+      if (INFINITY_STRING.equals(strValue)) {
+        node.put(columnName, PLUS_INFINITY_STRING);
+      } else if (MINUS_INFINITY_STRING.equals(strValue)) {
+        node.put(columnName, MINUS_INFINITY_STRING);
       } else {
-        arrayNode.add(DateTimeConverter.convertToTimestamp(timestamp));
+        final Timestamp timestamp = arrayResultSet.getTimestamp(2);
+        if (timestamp == null) {
+          arrayNode.add(NullNode.getInstance());
+        } else {
+          arrayNode.add(DateTimeConverter.convertToTimestamp(timestamp));
+        }
       }
     }
     node.set(columnName, arrayNode);
@@ -273,12 +280,19 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      final OffsetDateTime timestamptz = getObject(arrayResultSet, 2, OffsetDateTime.class);
-      if (timestamptz == null) {
-        arrayNode.add(NullNode.getInstance());
+      final String strValue = arrayResultSet.getString(2);
+      if (INFINITY_STRING.equals(strValue)) {
+        node.put(columnName, PLUS_INFINITY_STRING);
+      } else if (MINUS_INFINITY_STRING.equals(strValue)) {
+        node.put(columnName, MINUS_INFINITY_STRING);
       } else {
-        final LocalDate localDate = timestamptz.toLocalDate();
-        arrayNode.add(resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));
+        final OffsetDateTime timestamptz = getObject(arrayResultSet, 2, OffsetDateTime.class);
+        if (timestamptz == null) {
+          arrayNode.add(NullNode.getInstance());
+        } else {
+          final LocalDate localDate = timestamptz.toLocalDate();
+          arrayNode.add(resolveEra(localDate, timestamptz.format(TIMESTAMPTZ_FORMATTER)));
+        }
       }
     }
     node.set(columnName, arrayNode);
@@ -288,11 +302,18 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ArrayNode arrayNode = Jsons.arrayNode();
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
-      final LocalDate date = getObject(arrayResultSet, 2, LocalDate.class);
-      if (date == null) {
-        arrayNode.add(NullNode.getInstance());
+      final String strValue = arrayResultSet.getString(2);
+      if (INFINITY_STRING.equals(strValue)) {
+        node.put(columnName, PLUS_INFINITY_STRING);
+      } else if (MINUS_INFINITY_STRING.equals(strValue)) {
+        node.put(columnName, MINUS_INFINITY_STRING);
       } else {
-        arrayNode.add(DateTimeConverter.convertToDate(date));
+        final LocalDate date = getObject(arrayResultSet, 2, LocalDate.class);
+        if (date == null) {
+          arrayNode.add(NullNode.getInstance());
+        } else {
+          arrayNode.add(DateTimeConverter.convertToDate(date));
+        }
       }
     }
     node.set(columnName, arrayNode);
@@ -387,11 +408,16 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
+  private static final String INFINITY_STRING = "infinity";
+  private static final String PLUS_INFINITY_STRING = "+infinity";
+  private static final String MINUS_INFINITY_STRING = "-infinity";
   @Override
   protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     String strValue = resultSet.getString(index);
-    if ("+infinity".equals(strValue) || "-infinity".equals(strValue)) {
-      node.put(columnName, strValue);
+    if (INFINITY_STRING.equals(strValue)) {
+      node.put(columnName, PLUS_INFINITY_STRING);
+    } else if (MINUS_INFINITY_STRING.equals(strValue)) {
+      node.put(columnName, MINUS_INFINITY_STRING);
     } else {
       //even though the super just does a toString, I find it a lot cleaner to call it anyways, in case that implementation changes
       super.putDate(node, columnName, resultSet, index);
@@ -400,19 +426,16 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   @Override
   protected void putTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
-    String strValue = resultSet.getString(index);
-    if ("+infinity".equals(strValue) || "-infinity".equals(strValue)) {
-      node.put(columnName, strValue);
-    } else {
-      super.putTime(node, columnName, resultSet, index);
-    }
+    super.putTime(node, columnName, resultSet, index);
   }
 
   @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     String strValue = resultSet.getString(index);
-    if ("+infinity".equals(strValue) || "-infinity".equals(strValue)) {
-      node.put(columnName, strValue);
+    if (INFINITY_STRING.equals(strValue)) {
+      node.put(columnName, PLUS_INFINITY_STRING);
+    } else if (MINUS_INFINITY_STRING.equals(strValue)) {
+      node.put(columnName, MINUS_INFINITY_STRING);
     } else {
       node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
     }
@@ -420,21 +443,18 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   @Override
   protected void putTimeWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    String strValue = resultSet.getString(index);
-    if ("+infinity".equals(strValue) || "-infinity".equals(strValue)) {
-      node.put(columnName, strValue);
-    } else {
-      final OffsetTime timetz = getObject(resultSet, index, OffsetTime.class);
-      node.put(columnName, DateTimeConverter.convertToTimeWithTimezone(timetz));
-    }
+    final OffsetTime timetz = getObject(resultSet, index, OffsetTime.class);
+    node.put(columnName, DateTimeConverter.convertToTimeWithTimezone(timetz));
   }
 
   @Override
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
           throws SQLException {
     String strValue = resultSet.getString(index);
-    if ("+infinity".equals(strValue) || "-infinity".equals(strValue)) {
-      node.put(columnName, strValue);
+    if (INFINITY_STRING.equals(strValue)) {
+      node.put(columnName, PLUS_INFINITY_STRING);
+    } else if (MINUS_INFINITY_STRING.equals(strValue)) {
+      node.put(columnName, MINUS_INFINITY_STRING);
     } else {
       final OffsetDateTime timestamptz = getObject(resultSet, index, OffsetDateTime.class);
       final LocalDate localDate = timestamptz.toLocalDate();
