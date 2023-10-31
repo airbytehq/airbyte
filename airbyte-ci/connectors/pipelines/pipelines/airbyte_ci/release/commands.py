@@ -8,9 +8,7 @@ from pipelines.airbyte_ci.release.pipeline import run_release
 
 @click.command()
 async def release():
-    """
-    TODO
-    """
+    """Run airbyte-ci release pipeline"""
     success = await run_release()
     if not success:
         click.Abort()
