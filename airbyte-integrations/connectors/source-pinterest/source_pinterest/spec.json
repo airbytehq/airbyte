@@ -1,7 +1,7 @@
 {
   "documentationUrl": "https://docs.airbyte.com/integrations/sources/pinterest",
   "connectionSpecification": {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft-07/schema#",
     "title": "Pinterest Spec",
     "type": "object",
     "required": ["start_date"],
@@ -56,24 +56,6 @@
                 "type": "string",
                 "title": "Refresh Token",
                 "description": "Refresh Token to obtain new Access Token, when it's expired.",
-                "airbyte_secret": true
-              }
-            }
-          },
-          {
-            "type": "object",
-            "title": "Access Token",
-            "required": ["auth_method", "access_token"],
-            "properties": {
-              "auth_method": {
-                "type": "string",
-                "const": "access_token",
-                "order": 0
-              },
-              "access_token": {
-                "type": "string",
-                "title": "Access Token",
-                "description": "The Access Token to make authenticated requests.",
                 "airbyte_secret": true
               }
             }

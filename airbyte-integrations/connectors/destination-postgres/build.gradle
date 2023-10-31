@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = [
             'db-sources', // required for tests
             'db-destinations',
@@ -20,7 +20,6 @@ application {
 }
 
 dependencies {
-    implementation libs.airbyte.protocol
     implementation libs.postgresql
 
     testImplementation libs.testcontainers.postgresql

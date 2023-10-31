@@ -6,8 +6,8 @@ package io.airbyte.integrations.source.mysql.initialsync;
 
 import static io.airbyte.integrations.source.mysql.initialsync.MySqlInitialLoadStateManager.MYSQL_STATUS_VERSION;
 
-import autovalue.shaded.com.google.common.collect.AbstractIterator;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.AbstractIterator;
 import io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants;
 import io.airbyte.integrations.source.mysql.internal.models.InternalModels.StateType;
 import io.airbyte.integrations.source.mysql.internal.models.PrimaryKeyLoadStatus;
