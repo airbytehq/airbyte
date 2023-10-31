@@ -6,7 +6,6 @@ package io.airbyte.cdk.integrations.base;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -71,6 +70,10 @@ public class AirbyteExceptionHandlerTest {
             "Stacktrace should be null if deinterpolating the error message"));
   }
 
+  /**
+   * We should only deinterpolate whole words, i.e. if the target string is not adjacent to an
+   * alphanumeric character.
+   */
   @Test
   void testMessageSmartDeinterpolation() throws Exception {
     AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("foo");
@@ -79,9 +82,19 @@ public class AirbyteExceptionHandlerTest {
     runTestWithMessage("Error happened in foobar");
 
     final AirbyteMessage traceMessage = findFirstTraceMessage();
-    assertNotEquals("Error happened in ??", traceMessage.getTrace().getError().getMessage(), "foobar should not be deinterpolated");
+    // We shouldn't deinterpolate at all in this case, so we will get the default trace message behavior.
+    assertAll(
+        () -> assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
+        () -> assertEquals(
+            "java.lang.RuntimeException: Error happened in foobar",
+            traceMessage.getTrace().getError().getInternalMessage())
+    );
   }
 
+  /**
+   * When one of the target strings is a substring of another, we should not deinterpolate the
+   * substring.
+   */
   @Test
   void testMessageSubstringDeinterpolation() throws Exception {
     AirbyteExceptionHandler.STRINGS_TO_REMOVE.add("airbyte");
