@@ -1,0 +1,32 @@
+name: Connector Ops CI - Experimental Airbyte CI Release
+
+# Note this is a workflow simply to test out if github can build using macos
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest']
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: 3.10
+
+    - run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+
+    - run: cd airbyte-ci/pipelines/airbyte_ci
+    - run: poetry install --with dev
+    - run: poetry run pyinstaller --collect-all pipelines --collect-all beartype --collect-all dagger --hidden-import strawberry --name airbyte-ci-${{ matrix.os }} --onefile pipelines/cli/airbyte_ci.py
+    - uses: actions/upload-artifact@v2
+      with:
+        path: dist/*
