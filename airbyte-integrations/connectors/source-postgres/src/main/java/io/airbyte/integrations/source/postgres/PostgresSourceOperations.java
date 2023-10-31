@@ -63,6 +63,10 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   private static final Map<Integer, PostgresType> POSTGRES_TYPE_DICT = new HashMap<>();
   private final Map<String, Map<String, ColumnInfo>> streamColumnInfo = new HashMap<>();
 
+  private static final String INFINITY_STRING = "infinity";
+  private static final String PLUS_INFINITY_STRING = "+infinity";
+  private static final String MINUS_INFINITY_STRING = "-infinity";
+
   static {
     Arrays.stream(PostgresType.class.getEnumConstants()).forEach(c -> POSTGRES_TYPE_DICT.put(c.type, c));
   }
@@ -408,9 +412,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     node.set(columnName, arrayNode);
   }
 
-  private static final String INFINITY_STRING = "infinity";
-  private static final String PLUS_INFINITY_STRING = "+infinity";
-  private static final String MINUS_INFINITY_STRING = "-infinity";
   @Override
   protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     String strValue = resultSet.getString(index);
