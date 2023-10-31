@@ -11,7 +11,7 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 
 @click.group(
     cls=LazyGroup,
-    help="Commands related to formatting.",
+    help="Run code format checks and fix any failures.",
     lazy_subcommands={
         "java": "pipelines.airbyte_ci.format.fix.java.commands.java",
         "js": "pipelines.airbyte_ci.format.fix.js.commands.js",
@@ -29,7 +29,8 @@ async def fix(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     # TODO: fix this client hacking
     ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Format License")
 
-    # if ctx.invoked_subcommand is None:
+    if ctx.invoked_subcommand is None:
+        print("no args invoked")
     #     dagger_client = await pipeline_ctx.get_dagger_client(pipeline_name="Format All Files")
     #     await ctx.invoke(license, dagger_client)
     #     await ctx.invoke(java, dagger_client)

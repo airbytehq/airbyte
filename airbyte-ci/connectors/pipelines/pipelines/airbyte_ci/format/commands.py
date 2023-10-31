@@ -24,7 +24,6 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
         "check": "pipelines.airbyte_ci.format.check.commands.check",
         "fix": "pipelines.airbyte_ci.format.fix.commands.fix",
     },
-    invoke_without_command=True,
 )
 @click_merge_args_into_context_obj
 @pass_pipeline_context

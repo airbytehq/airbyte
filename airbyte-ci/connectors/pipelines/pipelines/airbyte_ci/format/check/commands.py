@@ -17,7 +17,7 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 
 @click.group(
     cls=LazyGroup,
-    help="Commands related to formatting.",
+    help="Run code format checks and fail if any checks fail.",
     lazy_subcommands={
         "java": "pipelines.airbyte_ci.format.check.java.commands.java",
         "js": "pipelines.airbyte_ci.format.check.js.commands.js",
