@@ -103,12 +103,10 @@ All of these privileges are required for the application to extract data into Sn
 ![](./linkedin-ads-security-button.png)
 
 3. Under `Account level privileges`, click `Review` which will then present will open a pop-up of security privileges the application needs granted.
+4. Enable each of the privileges and click `Update Privileges`.
 
 ![](./linkedin-ads-privileges.png)
-<img src="./linkedin-ads-privileges.png" width="50%"/>
 
-
-4. Enable each of the privileges and click `Update Privileges`.
 5. Reload the application to ensure that the application privileges have been updated.
 
 You are now ready to begin syncing your data.
