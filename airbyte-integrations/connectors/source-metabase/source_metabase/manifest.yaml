@@ -54,6 +54,21 @@ definitions:
     $parameters:
       name: "dashboards"
       path: "dashboard"
+
+  databases_stream:
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/data_field_retriever"
+    $parameters:
+      name: "databases"
+      path: "database"
+
+  native_query_snippets_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "native_query_snippets"
+      path: "native-query-snippet"
+
   users_stream:
     primary_key: "id"
     retriever:
@@ -66,6 +81,8 @@ streams:
   - "#/definitions/collections_stream"
   - "#/definitions/dashboards_stream"
   - "#/definitions/users_stream"
+  - "#/definitions/databases_stream"
+  - "#/definitions/native_query_snippets_stream"
 
 check:
   stream_names:
