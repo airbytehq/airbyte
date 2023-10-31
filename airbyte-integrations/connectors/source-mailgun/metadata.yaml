@@ -22,7 +22,7 @@ data:
   tags:
     - language:low-code
   ab_internal:
-    sl: 200
+    sl: 100
     ql: 200
   supportLevel: community
 metadataSpecVersion: "1.0"

@@ -1,5 +1,13 @@
-{
-  "nasa-apod": {
-    "date": "2022-10-15"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "nasa_apod"
+      },
+      "stream_state": {
+        "date": "2023-10-20"
+      }
+    }
   }
-}
+]
