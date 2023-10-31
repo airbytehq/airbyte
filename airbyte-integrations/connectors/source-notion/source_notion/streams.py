@@ -136,7 +136,7 @@ class NotionStream(HttpStream, ABC):
         # If page_size has been reduced after encountering a 504 Gateway Timeout error,
         # we increase it back to the default of 100 once a success response is achieved, for the following API calls.
         if response.status_code == 200 and self.page_size != 100:
-            self.logger.info(f"Successfully reconnected after a server timeout. Increasing request page size to 100.")
+            self.logger.info("Successfully reconnected after a server timeout. Increasing request page size to 100.")
             self.page_size = 100
         # sometimes notion api returns response without results object
         data = response.json().get("results", [])
