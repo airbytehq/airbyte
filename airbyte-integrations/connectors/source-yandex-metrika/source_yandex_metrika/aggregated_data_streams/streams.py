@@ -3,19 +3,21 @@
 #
 
 
+import logging
 from abc import ABC
 from enum import Enum
 from typing import Iterable, Mapping, MutableMapping, NamedTuple
 
 import requests
+from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
-from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+
 from . import supported_fields
-from .translations import date_group_translations, attribution_translations, preset_name_translations, currency_translations
-import logging
+from .translations import attribution_translations, currency_translations, date_group_translations, preset_name_translations
+
 logger = logging.getLogger('airbyte')
 
 class DateRangeType(Enum):
@@ -120,8 +122,8 @@ class AggregateDataYandexMetrikaReport(HttpStream, ABC):
 
         params["accuracy"] = "full"
 
-        params["date1"] = self.global_config.get("date_from")
-        params["date2"] = self.global_config.get("date_to")
+        params["date1"] = self.global_config.get("prepared_date_range", {}).get("date_from").date()
+        params["date2"] = self.global_config.get("prepared_date_range", {}).get("date_to").date()
 
         if self.report_config.get("direct_client_logins"):
             params["direct_client_logins"] = ",".join(self.report_config.get("direct_client_logins"))
@@ -130,7 +132,7 @@ class AggregateDataYandexMetrikaReport(HttpStream, ABC):
             params["filters"] = self.report_config.get("filters")
 
         preset_name_input = preset_name_translations.get(self.report_config.get("preset_name"))
-        if preset_name_input:
+        if preset_name_input and preset_name_input != 'custom_report':
             params["preset"] = preset_name_input
 
         date_group_input = date_group_translations.get(self.report_config.get("date_group", "день"))

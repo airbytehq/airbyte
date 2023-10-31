@@ -25,7 +25,7 @@ COPY --from=builder /usr/share/zoneinfo/Etc/UTC /etc/localtime
 RUN echo "Etc/UTC" > /etc/timezone
 
 # bash is installed for more convenient debugging.
-RUN apk --no-cache add bash
+RUN apk --no-cache add bash libstdc++
 
 # copy payload code only
 COPY main.py ./
