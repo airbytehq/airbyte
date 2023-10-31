@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import pendulum
 import stripe
@@ -42,6 +42,19 @@ from source_stripe.streams import (
 
 _MAX_CONCURRENCY = 3
 _PAGE_SIZE = 100
+
+
+class StripePaginationStrategy(CursorPaginationStrategy):
+    def stop(self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]) -> bool:
+        return "has_more" not in response
+
+    def get_cursor_value(
+        self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]
+    ) -> Optional[str]:
+        if "has_more" in response and response["has_more"] and response.get("data", []):
+            last_object_id = response["data"][-1]["id"]
+            return last_object_id
+        return None
 
 
 class SourceStripe(AbstractSource):
@@ -121,13 +134,7 @@ class SourceStripe(AbstractSource):
         )
 
         paginator = DefaultPaginator(
-            CursorPaginationStrategy(
-                cursor_value="{{ last_records[-1]['id'] if last_records else None }}",
-                config={},
-                parameters={},
-                page_size=_PAGE_SIZE,
-                stop_condition="{{ not response.has_more }}",
-            ),
+            StripePaginationStrategy(page_size=_PAGE_SIZE),
             config={},
             url_base="",
             parameters={},

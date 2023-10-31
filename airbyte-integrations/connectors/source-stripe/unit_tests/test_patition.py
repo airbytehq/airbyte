@@ -12,7 +12,7 @@ import pytest
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies import LowCodeCursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_protocol.models import SyncMode
 from source_stripe.partition import PaginatedRequester, SourcePartitionGenerator
@@ -34,7 +34,7 @@ def paginated_requester(url_base: str = URL_BASE, stream: str = "accounts") -> P
     )
 
     paginator = DefaultPaginator(
-        CursorPaginationStrategy(
+        LowCodeCursorPaginationStrategy(
             cursor_value="{{ last_records[-1]['id'] if last_records else None }}",
             config={},
             parameters={},

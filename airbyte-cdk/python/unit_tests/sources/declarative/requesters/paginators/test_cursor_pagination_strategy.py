@@ -8,7 +8,7 @@ import pytest
 import requests
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import LowCodeCursorPaginationStrategy
 
 
 @pytest.mark.parametrize(
@@ -43,7 +43,7 @@ def test_cursor_pagination_strategy(test_name, template_string, stop_condition, 
     decoder = JsonDecoder(parameters={})
     config = {"config_key": "config_value"}
     parameters = {"key": "value"}
-    strategy = CursorPaginationStrategy(
+    strategy = LowCodeCursorPaginationStrategy(
         page_size=page_size,
         cursor_value=template_string,
         config=config,

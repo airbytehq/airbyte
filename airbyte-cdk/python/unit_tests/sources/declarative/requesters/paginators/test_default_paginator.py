@@ -15,7 +15,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator imp
     RequestOption,
     RequestOptionType,
 )
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import CursorPaginationStrategy
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import LowCodeCursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 
@@ -121,7 +121,7 @@ def test_default_paginator_with_cursor(
     url_base = "https://airbyte.io"
     config = {}
     parameters = {}
-    strategy = CursorPaginationStrategy(
+    strategy = LowCodeCursorPaginationStrategy(
         page_size=limit,
         cursor_value=cursor_value,
         stop_condition=stop_condition,
@@ -164,7 +164,7 @@ def test_page_size_option_cannot_be_set_if_strategy_has_no_limit():
     url_base = "https://airbyte.io"
     config = {}
     parameters = {}
-    strategy = CursorPaginationStrategy(page_size=None, cursor_value=cursor_value, config=config, parameters=parameters)
+    strategy = LowCodeCursorPaginationStrategy(page_size=None, cursor_value=cursor_value, config=config, parameters=parameters)
     try:
         DefaultPaginator(
             page_size_option=page_size_request_option,

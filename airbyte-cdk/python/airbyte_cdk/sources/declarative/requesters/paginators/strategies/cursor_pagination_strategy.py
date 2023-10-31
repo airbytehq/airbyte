@@ -2,7 +2,9 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
+
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
@@ -15,34 +17,25 @@ from airbyte_cdk.sources.declarative.types import Config
 
 
 @dataclass
-class CursorPaginationStrategy(PaginationStrategy):
+class CursorPaginationStrategy(PaginationStrategy, ABC):
     """
-    Pagination strategy that evaluates an interpolated string to define the next page token
+    Abstract class for cursor pagination strategy
 
     Attributes:
         page_size (Optional[int]): the number of records to request
-        cursor_value (Union[InterpolatedString, str]): template string evaluating to the cursor value
-        config (Config): connection config
-        stop_condition (Optional[InterpolatedBoolean]): template string evaluating when to stop paginating
         decoder (Decoder): decoder to decode the response
     """
 
-    cursor_value: Union[InterpolatedString, str]
-    config: Config
-    parameters: InitVar[Mapping[str, Any]]
     page_size: Optional[int] = None
-    stop_condition: Optional[Union[InterpolatedBoolean, str]] = None
     decoder: Decoder = JsonDecoder(parameters={})
-
-    def __post_init__(self, parameters: Mapping[str, Any]):
-        if isinstance(self.cursor_value, str):
-            self.cursor_value = InterpolatedString.create(self.cursor_value, parameters=parameters)
-        if isinstance(self.stop_condition, str):
-            self.stop_condition = InterpolatedBoolean(condition=self.stop_condition, parameters=parameters)
 
     @property
     def initial_token(self) -> Optional[Any]:
         return None
+
+    @property
+    def stop_condition(self) -> bool:
+        return True
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
@@ -53,11 +46,39 @@ class CursorPaginationStrategy(PaginationStrategy):
         headers["link"] = response.links
 
         if self.stop_condition:
-            should_stop = self.stop_condition.eval(self.config, response=decoded_response, headers=headers, last_records=last_records)
+            should_stop = self.stop(response=decoded_response, headers=headers, last_records=last_records)
             if should_stop:
                 return None
-        token = self.cursor_value.eval(config=self.config, last_records=last_records, response=decoded_response, headers=headers)
+        token = self.get_cursor_value(last_records=last_records, response=decoded_response, headers=headers)
         return token if token else None
+
+    @abstractmethod
+    def stop(self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]) -> bool:
+        """
+        Returns the value of whether to continue pagination or stop
+
+        Attributes:
+            response (Union[Mapping[str, Any], List]): Decoded response data
+            headers (Mapping[str, Any]): Mapping of headers
+            last_records (List[Mapping[str, Any]]): The list of the last records
+
+        return: bool
+        """
+
+    @abstractmethod
+    def get_cursor_value(
+        self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]
+    ) -> Optional[str]:
+        """
+        Returns the string of actual cursor field as next_page_token value
+
+        Attributes:
+            response (Union[Mapping[str, Any], List]): Decoded response data
+            headers (Mapping[str, Any]): Mapping of headers
+            last_records (List[Mapping[str, Any]]): The list of the last records
+
+        return: Optional[str]
+        """
 
     def reset(self):
         # No state to reset
@@ -65,3 +86,46 @@ class CursorPaginationStrategy(PaginationStrategy):
 
     def get_page_size(self) -> Optional[int]:
         return self.page_size
+
+
+class LowCodeCursorPaginationStrategy(CursorPaginationStrategy):
+    """
+    Low code pagination strategy that evaluates an interpolated string to define the next page token
+
+    Attributes:
+        page_size (Optional[int]): the number of records to request
+        cursor_value (Union[InterpolatedString, str]): template string evaluating to the cursor value
+        config (Config): connection config
+        stop_condition (Optional[Union[InterpolatedBoolean, str]]): template string evaluating when to stop paginating
+        decoder (Decoder): decoder to decode the response
+    """
+
+    def __init__(
+        self,
+        parameters: Mapping[str, Any],
+        config: Config,
+        cursor_value: Union[InterpolatedString, str],
+        stop_condition: Optional[Union[InterpolatedBoolean, str]] = None,
+        page_size: Optional[int] = None,
+        decoder: Decoder = JsonDecoder(parameters={}),
+    ):
+        self.cursor_value = (
+            InterpolatedString.create(cursor_value, parameters=parameters) if isinstance(cursor_value, str) else cursor_value
+        )
+        self._stop_condition = (
+            InterpolatedBoolean(condition=stop_condition, parameters=parameters) if isinstance(stop_condition, str) else stop_condition
+        )
+        self.config = config
+        super().__init__(page_size=page_size, decoder=decoder)
+
+    @property
+    def stop_condition(self) -> bool:
+        return self._stop_condition is not None
+
+    def stop(self, response: Mapping[str, Any], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]) -> bool:
+        return self._stop_condition.eval(self.config, response=response, headers=headers, last_records=last_records)
+
+    def get_cursor_value(
+        self, response: Mapping[str, Any], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]
+    ) -> Optional[str]:
+        return self.cursor_value.eval(config=self.config, response=response, headers=headers, last_records=last_records)

@@ -98,6 +98,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginat
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     CursorPaginationStrategy,
     CursorStopCondition,
+    LowCodeCursorPaginationStrategy,
     OffsetIncrement,
     PageIncrement,
     StopConditionPaginationStrategyDecorator,
@@ -364,7 +365,7 @@ class ModelToComponentFactory:
         else:
             decoder = JsonDecoder(parameters=model.parameters or {})
 
-        return CursorPaginationStrategy(
+        return LowCodeCursorPaginationStrategy(
             cursor_value=model.cursor_value,
             decoder=decoder,
             page_size=model.page_size,
