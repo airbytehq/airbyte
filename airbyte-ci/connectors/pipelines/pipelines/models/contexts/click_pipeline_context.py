@@ -6,7 +6,10 @@ from asyncclick import Context, get_current_context
 from dagger.api.gen import Client, Container
 from pydantic import BaseModel, Field, PrivateAttr
 
+from pipelines.cli.click_decorators import LazyPassDecorator
+
 from ..singleton import Singleton
+
 
 
 class ClickPipelineContext(BaseModel, Singleton):
@@ -75,3 +78,6 @@ class ClickPipelineContext(BaseModel, Singleton):
         client = self._dagger_client
         assert client, "Error initializing Dagger client"
         return client.pipeline(pipeline_name) if pipeline_name else client
+
+# Create @pass_pipeline_context decorator for use in click commands
+pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContext)
