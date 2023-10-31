@@ -86,7 +86,7 @@ const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMess
           </div>
         </ErrorBlock>
       ) : null}
-      <ButtonRows top="0" position="fixed" width="calc(100% - 18px)">
+      <ButtonRows top="0" position="static" width="calc(100% - 18px)">
         <BigButton type="button" onClick={onBack} secondary>
           <FormattedMessage id="form.button.back" />
         </BigButton>

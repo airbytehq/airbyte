@@ -59,7 +59,7 @@ const EditControls: React.FC<EditControlProps> = ({
     <>
       {withLine && <Line />}
       {showStatusMessage() ? <div>showStatusMessage()</div> : null}
-      <ButtonRows top="0" bottom="0" position="fixed" width="calc(100% - 240px)">
+      <ButtonRows top="0" bottom="0" position="static" width="calc(100% - 240px)">
         <BigButton type="button" secondary onClick={onBack}>
           <FormattedMessage id="form.button.back" />
         </BigButton>
