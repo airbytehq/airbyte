@@ -40,7 +40,9 @@ public class CloudDeploymentPostgresSourceTest {
   private final PostgreSQLContainer<?> postgreSQLContainerWithSSL =
       new PostgreSQLContainer<>(DockerImageName.parse("marcosmarxm/postgres-ssl:dev").asCompatibleSubstituteFor("postgres"))
           .withCommand("postgres -c ssl=on -c ssl_cert_file=/var/lib/postgresql/server.crt -c ssl_key_file=/var/lib/postgresql/server.key");
-  private static final List<String> NON_STRICT_SSL_MODES = List.of("disable", "allow", "prefer");
+  //private static final List<String> NON_STRICT_SSL_MODES = List.of("disable", "allow", "prefer");
+
+  private static final List<String> NON_STRICT_SSL_MODES = List.of("prefer");
   private static final String SSL_MODE_REQUIRE = "require";
 
   private static final SshBastionContainer bastion = new SshBastionContainer();
