@@ -240,6 +240,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
    * It can be expensive to build the errors array in the airbyte_meta column, so we first attempt an
    * 'unsafe' transaction which assumes everything is typed correctly. If that fails, we will run a
    * more expensive query which handles casting errors
+   *
    * @param streamConfig the stream to type and dedupe
    * @throws Exception if the safe query fails
    */
