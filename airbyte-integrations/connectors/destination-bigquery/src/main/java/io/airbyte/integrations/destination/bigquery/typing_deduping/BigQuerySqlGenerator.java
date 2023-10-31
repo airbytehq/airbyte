@@ -398,7 +398,10 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp, final boolean useExpensiveSaferCasting) {
+  public String updateTable(final StreamConfig stream,
+                            final String finalSuffix,
+                            final Optional<Instant> minRawTimestamp,
+                            final boolean useExpensiveSaferCasting) {
     final String handleNewRecords;
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       handleNewRecords = upsertNewRecords(stream, finalSuffix, useExpensiveSaferCasting, minRawTimestamp);
@@ -410,12 +413,12 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
     return new StringSubstitutor(Map.of(
         "handleNewRecords", handleNewRecords,
         "commit_raw_table", commitRawTable)).replace(
-        """
-        BEGIN TRANSACTION;
-        ${handleNewRecords}
-        ${commit_raw_table}
-        COMMIT TRANSACTION;
-        """);
+            """
+            BEGIN TRANSACTION;
+            ${handleNewRecords}
+            ${commit_raw_table}
+            COMMIT TRANSACTION;
+            """);
   }
 
   private String insertNewRecords(final StreamConfig stream,

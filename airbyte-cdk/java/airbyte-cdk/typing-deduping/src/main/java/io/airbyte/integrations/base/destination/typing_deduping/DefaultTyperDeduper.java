@@ -245,7 +245,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
       // TODO determine which Exceptions should not be retried even with safer sql
     } catch (Exception e) {
       LOGGER.error("Encountered Exception on unsafe SQL for stream %s %s, attempting with error handling"
-                       .formatted(streamConfig.id().originalNamespace(), streamConfig.id().originalName()), e);
+          .formatted(streamConfig.id().originalNamespace(), streamConfig.id().originalName()), e);
       final String saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAtByStream.get(streamConfig.id()), true);
       destinationHandler.execute(saferSql);
     }

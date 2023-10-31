@@ -157,7 +157,10 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp, final boolean useExpensiveSaferCasting) {
+  public String updateTable(final StreamConfig stream,
+                            final String finalSuffix,
+                            final Optional<Instant> minRawTimestamp,
+                            final boolean useExpensiveSaferCasting) {
     final String handleNewRecordsRecords;
     if (stream.destinationSyncMode() == DestinationSyncMode.APPEND_DEDUP) {
       handleNewRecordsRecords = upsertNewRecords(stream, finalSuffix, minRawTimestamp, useExpensiveSaferCasting);
@@ -182,7 +185,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   }
 
   private String cast(final String sqlExpression, final AirbyteType airbyteType, final boolean useTryCast) {
-    final String castMethod = useTryCast ? "TRY_CAST" :"CAST";
+    final String castMethod = useTryCast ? "TRY_CAST" : "CAST";
     if (airbyteType instanceof final Union u) {
       // This is guaranteed to not be a Union, so we won't recurse infinitely
       final AirbyteType chosenType = u.chooseType();
@@ -259,7 +262,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   private String insertNewRecords(final StreamConfig stream,
                                   final String finalSuffix,
-                                  final Optional<Instant> minRawTimestamp, final boolean useTryCast) {
+                                  final Optional<Instant> minRawTimestamp,
+                                  final boolean useTryCast) {
     final String columnList = stream.columns().keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
     final String extractNewRawRecords = extractNewRawRecords(stream, minRawTimestamp, useTryCast);
 
@@ -280,7 +284,8 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
 
   private String upsertNewRecords(final StreamConfig stream,
                                   final String finalSuffix,
-                                  final Optional<Instant> minRawTimestamp, final boolean useTryCast) {
+                                  final Optional<Instant> minRawTimestamp,
+                                  final boolean useTryCast) {
     final String pkEquivalent = stream.primaryKey().stream().map(pk -> {
       final String quotedPk = pk.name(QUOTE);
       // either the PKs are equal, or they're both NULL
