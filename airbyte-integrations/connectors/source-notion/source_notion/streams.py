@@ -98,7 +98,7 @@ class NotionStream(HttpStream, ABC):
             return 10
         if response.status_code == 504:
             self.page_size = self.throttle_request_page_size(self.page_size)
-            self.logger.info(f"Encountered a server timeout. Adjusting request page size to {self.page_size} and retrying.")
+            self.logger.info(f"Encountered a server timeout. Reducing request page size to {self.page_size} and retrying.")
         return super().backoff_time(response)
 
     def should_retry(self, response: requests.Response) -> bool:
@@ -130,7 +130,7 @@ class NotionStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
         # If page_size has been reduced after encountering a 504 Gateway Timeout error,
-        # we increase it back to the default of 100 once a request is successful.
+        # we increase it back to the default of 100 once a success response is achieved, for the following API calls.
         if response.status_code == 200 and self.page_size != 100:
             self.logger.info(f"Successfully reconnected after a server timeout. Increasing request page size to 100.")
             self.page_size = 100
