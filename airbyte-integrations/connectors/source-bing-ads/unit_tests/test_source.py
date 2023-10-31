@@ -21,7 +21,7 @@ def config_fixture():
         "refresh_token": "fake_refresh_token",
         "client_id": "fake_client_id",
         "reports_start_date": "2020-01-01",
-        "lookback_window": 0
+        "lookback_window": 0,
     }
 
 
