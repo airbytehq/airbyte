@@ -5,7 +5,14 @@ import requests
 
 
 class CredentialsCraftAuthenticator(TokenAuthenticator):
-    def __init__(self, credentials_craft_host: str, credentials_craft_token: str, credentials_craft_token_id: int, check_connection: bool = False, raise_exception_on_check: bool = False):
+    def __init__(
+        self,
+        credentials_craft_host: str,
+        credentials_craft_token: str,
+        credentials_craft_token_id: int,
+        check_connection: bool = False,
+        raise_exception_on_check: bool = False,
+    ):
         self._cc_host = credentials_craft_host
         self._cc_token = credentials_craft_token
         self._cc_token_id = credentials_craft_token_id
@@ -18,8 +25,7 @@ class CredentialsCraftAuthenticator(TokenAuthenticator):
 
     @property
     def _service_access_token(self) -> Mapping[str, Any]:
-        resp = requests.get(self._url, headers={
-                            "Authorization": f"Bearer {self._cc_token}"}).json()
+        resp = requests.get(self._url, headers={"Authorization": f"Bearer {self._cc_token}"}).json()
         return resp.get("access_token")
 
     def get_auth_header(self) -> Mapping[str, Any]:
@@ -31,16 +37,15 @@ class CredentialsCraftAuthenticator(TokenAuthenticator):
         try:
             requests.get(self._cc_host, timeout=15)
         except:
-            error = f"Connection to {self._cc_host} timed out"
+            error = f"CredentialsCraft - Время ожидания подключения к {self._cc_host} истекло. Возможно, отсутствует подключение к сети или отключен VPN."
 
         if not error:
-            token_resp: dict[str, Any] = requests.get(
-                self._url, headers={"Authorization": f"Bearer {self._cc_token}"}).json()
+            token_resp: dict[str, Any] = requests.get(self._url, headers={"Authorization": f"Bearer {self._cc_token}"}).json()
             if token_resp.get("error"):
-                error = token_resp.get('error')
+                error = token_resp.get("error")
 
         if error:
-            error = f'CredentialsCraft Error: {error}'
+            error = f"CredentialsCraft - {error}"
             if raise_exception:
                 raise Exception(error)
             else:

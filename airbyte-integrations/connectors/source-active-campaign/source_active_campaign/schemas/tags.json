@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "tagType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tag": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subscriber_count": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "contactGoalTags": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "templateTags": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

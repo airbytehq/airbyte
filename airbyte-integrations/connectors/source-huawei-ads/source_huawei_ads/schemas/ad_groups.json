@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "created_time": { "type": ["string", "null"] },
+    "adgroup_id": { "type": ["string", "null"] },
+    "is_retain_assistant": { "type": ["boolean", "null"] },
+    "adgroup_begin_date": { "type": ["string", "null"] },
+    "time_period_type": { "type": ["string", "null"] },
+    "creative_size_id": { "type": ["string", "null"] },
+    "campaign_name": { "type": ["string", "null"] },
+    "targeting_id": { "type": ["string", "null"] },
+    "change_to_ocpc_status": { "type": ["string", "null"] },
+    "price": { "type": ["number", "null"] },
+    "product_id": { "type": ["string", "null"] },
+    "price_type": { "type": ["string", "null"] },
+    "adgroup_status": { "type": ["string", "null"] },
+    "campaign_daily_budget_status": { "type": ["string", "null"] },
+    "show_status": { "type": ["string", "null"] },
+    "adgroup_name": { "type": ["string", "null"] },
+    "campaign_id": { "type": ["string", "null"] }
+  }
+}

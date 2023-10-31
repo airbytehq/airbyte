@@ -1,0 +1,9 @@
+{
+  "token": "TOKEN",
+  "account_name": "ACCOUNT_NAME",
+  "datetime_range": {
+    "datetime_range_type": "custom_datetime_range",
+    "datetime_from": "2023-01-01 00:00:00",
+    "datetime_to": "2023-01-03 00:00:00"
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "key_display_value": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "clicks": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "spent": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "cpc": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "ctr": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "shows": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "cpm": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "ecpm": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  }
+}

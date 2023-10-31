@@ -1,0 +1,98 @@
+documentationUrl: https://developers.activecampaign.com/reference/overview
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Active Campaign Spec
+  type: object
+  required:
+    - token
+    - account_name
+  properties:
+    token:
+      type: string
+      title: API Key
+      description: Your long-term API key can be found in your account on the Settings page under the "Developer" tab. Each user in your ActiveCampaign account has their own unique API key.
+      airbyte_secret: true
+      examples:
+        - aaaaaaaabbbbbbbbccccccc111111222222333333333
+      order: 0
+    account_name:
+      type: string
+      title: Account Name
+      description: Your Account name
+      order: 1
+    datetime_range:
+      type: object
+      title: Datetime Range
+      description: Choose datetime period that must be loaded
+      oneOf:
+        - type: object
+          title: Custom Date Range
+          required:
+            - datetime_from
+            - datetime_to
+            - datetime_range_type
+          properties:
+            datetime_range_type:
+              type: string
+              const: custom_datetime_range
+              order: 0
+            datetime_from:
+              title: Start Datetime
+              type: string
+              description: Start datetime in format YYYY-MM-DD HH-MM-SS.
+              pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$
+              examples:
+                - "2023-01-01 00:00:00"
+              order: 1
+            datetime_to:
+              title: End Datetime
+              type: string
+              description: End datetime in format YYYY-MM-DD HH-MM-SS.
+              pattern: ^$|^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$
+              examples:
+                - "2023-01-01 00:00:00"
+              order: 2
+        - type: object
+          title: Last N Days
+          required:
+            - datetime_range_type
+            - last_days_count
+          properties:
+            datetime_range_type:
+              type: string
+              const: last_days_range
+              order: 0
+            last_days_count:
+              title: Last Days Count
+              type: integer
+              description: Count of last days to load.
+              minimum: 0
+              maximum: 3650
+              examples:
+                - 30
+              order: 1
+            should_load_today:
+              title: Load Today?
+              type: boolean
+              description: Should connector load today time as End Time? If not, End Time will be yesterday.
+              order: 2
+              default: false
+        - type: object
+          title: All
+          required:
+            - datetime_range_type
+          properties:
+            datetime_range_type:
+              type: string
+              const: all
+              order: 0
+    proxy_url:
+      type: string
+      title: Proxy Url
+      description: Proxy Url in format https://user:password@host:port
+      default: ""
+      examples:
+        - https://user:password@host:port
+        - https://host:port
+        - http://user:password@host:port
+        - http://host:port

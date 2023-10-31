@@ -1,0 +1,187 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "subscriberid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "userid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "d_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "account": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reltype": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "relid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "from_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fromAddress": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "toAddress": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ccAddress": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "message": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "messageHtml": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tstamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "series_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subscriber_series_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "automation_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "service_provider": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "contact": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deal": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reference": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "contact": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deal": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "user": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reference": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

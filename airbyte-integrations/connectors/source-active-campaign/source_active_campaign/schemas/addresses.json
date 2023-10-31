@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "companyName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address1": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address2": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "city": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "state": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "district": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "zip": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "country": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "allgroup": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "isDefault": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "smsName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "addressGroup": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "addressList": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "forms": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

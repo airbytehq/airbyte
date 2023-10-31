@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "logic": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hidden": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "seriesid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "segmentid_v2": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "links": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

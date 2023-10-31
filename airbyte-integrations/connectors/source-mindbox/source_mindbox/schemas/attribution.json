@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "OrderIdsTravelataOrderId": { "type": ["string", "null"] },
+    "OrderLineProductIdsHotels": { "type": ["string", "null"] },
+    "OrderLineProductIdsTourBestPrice": { "type": ["string", "null"] },
+    "OrderLineProductIdsTravelataId": { "type": ["string", "null"] },
+    "OrderLineProductName": { "type": ["string", "null"] },
+    "OrderLineQuantity": { "type": ["string", "null"] },
+    "OrderLineBasePricePerItem": { "type": ["string", "null"] },
+    "OrderLinePriceOfLine": { "type": ["string", "null"] },
+    "OrderLineStatusIdsExternalId": { "type": ["string", "null"] },
+    "OrderLineGiftCardAmount": { "type": ["string", "null"] },
+    "OrderLineGiftCardStatusIdsSystemName": { "type": ["string", "null"] },
+    "OrderLineNumber": { "type": ["string", "null"] },
+    "OrderLineLineNumber": { "type": ["string", "null"] },
+    "OrderLineId": { "type": ["string", "null"] },
+    "OrderLineLineId": { "type": ["string", "null"] },
+    "OrderAttributionName": { "type": ["string", "null"] },
+    "OrderAttributionEntityId": { "type": ["string", "null"] },
+    "OrderAttributionEntityVariantNum": { "type": ["string", "null"] },
+    "OrderAttributionEntityType": { "type": ["string", "null"] },
+    "OrderAttributionEntityName": { "type": ["string", "null"] },
+    "OrderAttributionActionType": { "type": ["string", "null"] },
+    "OrderCustomerIdsClientId": { "type": ["string", "null"] }
+  }
+}

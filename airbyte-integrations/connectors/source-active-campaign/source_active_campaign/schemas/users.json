@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "username": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "firstName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lastName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "signature": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lang": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "localZoneid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mfaEnabled": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "lists": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "userGroup": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dealGroupTotals": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dealGroupUsers": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "configs": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dealConnection": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "userConversationsPermission": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "seatUser": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

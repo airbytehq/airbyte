@@ -1,0 +1,18 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "date": { "type": ["string", "null"] },
+    "er": { "type": ["number", "null"] },
+    "usersCount": { "type": ["number", "null"] },
+    "deltaUsersCount": { "type": ["number", "null"] },
+    "deltaPosts": { "type": ["number", "null"] },
+    "deltaInteractions": { "type": ["number", "null"] },
+    "deltaLikes": { "type": ["number", "null"] },
+    "deltaComments": { "type": ["number", "null"] },
+    "deltaRePosts": { "type": ["number", "null"] },
+    "deltaDislikes": { "type": ["number", "null"] },
+    "deltaViews": { "type": ["number", "null"] },
+    "communityID": { "type": ["string", "null"] }
+  }
+}

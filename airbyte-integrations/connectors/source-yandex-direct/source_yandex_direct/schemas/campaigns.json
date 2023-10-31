@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "Id": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "Name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "StartDate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Status": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "State": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "StatusPayment": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "StatusClarification": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "SourceId": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Currency": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

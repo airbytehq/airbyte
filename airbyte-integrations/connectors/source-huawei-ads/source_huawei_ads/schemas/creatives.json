@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "creative_name": { "type": ["null", "string"] },
+    "content_struct": { "type": ["null", "string"] },
+    "created_time": { "type": ["null", "string"] },
+    "adgroup_id": { "type": ["null", "string"] },
+    "approved_status": { "type": ["null", "string"] },
+    "creative_size": { "type": ["null", "string"] },
+    "creative_id": { "type": ["null", "string"] },
+    "creative_size_id": { "type": ["null", "string"] },
+    "creative_comment": { "type": ["null", "string"] },
+    "creative_score": { "type": ["null", "integer"] },
+    "creative_size_sub_type": { "type": ["null", "string"] },
+    "approved_message": { "type": ["null", "string"] },
+    "show_status": { "type": ["null", "string"] },
+    "creative_status": { "type": ["null", "string"] },
+    "campaign_id": { "type": ["null", "string"] },
+    "creative_size_type": { "type": ["null", "string"] }
+  }
+}

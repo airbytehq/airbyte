@@ -1,0 +1,404 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "action": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "actiondata": {
+      "type": "object",
+      "properties": {
+        "actions": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "email": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "list": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "submit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "submitdata": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "layout": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "body": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "button": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "thanks": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "style": {
+      "type": "object",
+      "properties": {
+        "dark": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "layout": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fontFamily": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "border": {
+          "type": "object",
+          "properties": {
+            "width": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "style": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "color": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "radius": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            }
+          }
+        },
+        "width": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "ac_branding": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "background": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fontcolor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "button": {
+          "type": "object",
+          "properties": {
+            "padding": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "background": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "fontcolor": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "border": {
+              "type": "object",
+              "properties": {
+                "radius": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "color": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "style": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "width": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "options": {
+      "type": "object",
+      "properties": {
+        "blanks_overwrite": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "confaction": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sendoptin": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "optin_id": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "optin_created": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "confform": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "cfields": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "header": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "class": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "html": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "default_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "parentformid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "userid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "addressid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "udate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "entries": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "aid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "defaultscreenshot": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "screenshot": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recent": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "contacts": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "deals": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "address": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "address": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

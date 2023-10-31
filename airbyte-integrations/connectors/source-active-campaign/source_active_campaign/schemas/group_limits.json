@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "groupid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limitMail": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limitMailType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limitContact": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limitList": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limitCampaign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limitCampaignType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limitAttachment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "limitUser": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "abuseRatio": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "forceSenderInfo": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "group": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

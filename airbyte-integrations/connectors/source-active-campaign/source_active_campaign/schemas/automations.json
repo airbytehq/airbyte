@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "userid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "entered": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "exited": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hidden": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "entitlements_violation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "defaultscreenshot": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "screenshot": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "campaigns": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactGoals": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactAutomations": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "blocks": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "goals": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sms": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sitemessages": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "triggers": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

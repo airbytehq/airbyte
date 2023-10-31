@@ -1,0 +1,419 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": [
+        "object",
+        "null"
+    ],
+    "properties": {
+        "activity": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "properties": {
+                "comments": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "copies": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "hidden": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "likes": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "subscribed": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "unsubscribed": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "period_from": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "period_to": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "group_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "reach": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "properties": {
+                "age": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "value": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "count": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "cities": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "count": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "value": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "countries": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "code": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "count": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "value": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "mobile_reach": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "reach": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "reach_subscribers": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sex": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "value": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "count": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "sex_age": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "value": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "count": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "visitors": {
+            "type": [
+                "object",
+                "null"
+            ],
+            "properties": {
+                "age": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "value": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "count": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "cities": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "count": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "value": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "countries": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "code": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "count": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            },
+                            "name": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "value": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "mobile_views": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "sex": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "value": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "count": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "sex_age": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": [
+                            "object",
+                            "null"
+                        ],
+                        "properties": {
+                            "value": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            },
+                            "count": {
+                                "type": [
+                                    "integer",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "views": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "visitors": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                }
+            }
+        }
+    }
+}

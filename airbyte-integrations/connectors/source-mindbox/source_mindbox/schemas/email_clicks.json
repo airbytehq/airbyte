@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "CustomerActionActionTemplateIdsSystemName": { "type": ["string", "null"] },
+    "CustomerActionActionTemplateName": { "type": ["string", "null"] },
+    "CustomerActionDateTimeUtc": { "type": ["string", "null"] },
+    "CustomerActionCustomerEmail": { "type": ["string", "null"] },
+    "CustomerActionCustomerMobilePhone": { "type": ["string", "null"] },
+    "CustomerActionRootActionIdsMindboxId": { "type": ["string", "null"] },
+    "CustomerActionRootActionActionTemplateIdsSystemName": {
+      "type": ["string", "null"]
+    },
+    "CustomerActionRootActionActionTemplateName": {
+      "type": ["string", "null"]
+    },
+    "CustomerActionMailingAction": { "type": ["string", "null"] },
+    "CustomerActionMailingName": { "type": ["string", "null"] },
+    "CustomerActionMailingIdsSystemName": { "type": ["string", "null"] },
+    "CustomerActionMailingIdsId": { "type": ["string", "null"] },
+    "CustomerActionMailingIdsVariantNum": { "type": ["string", "null"] },
+    "CustomerActionMailingLink": { "type": ["string", "null"] },
+    "CustomerActionMailingViewEmailMessageUrl": { "type": ["string", "null"] },
+    "CustomerActionMailingNotSentReasonIdsSystemName": {
+      "type": ["string", "null"]
+    },
+    "CustomerActionMailingNotSentReasonName": { "type": ["string", "null"] },
+    "CustomerActionMailingNotDeliveredReasonIdsSystemName": {
+      "type": ["string", "null"]
+    },
+    "CustomerActionMailingNotDeliveredReasonName": {
+      "type": ["string", "null"]
+    }
+  }
+}

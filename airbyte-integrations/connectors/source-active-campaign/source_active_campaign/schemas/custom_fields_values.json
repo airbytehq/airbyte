@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "contact": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "field": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "value": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "udate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "owner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "field": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

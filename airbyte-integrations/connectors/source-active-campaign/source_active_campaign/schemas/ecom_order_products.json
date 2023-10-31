@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "orderid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "connectionid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "externalid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sku": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "price": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quantity": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "category": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "imageUrl": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "productUrl": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createdDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updatedDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tstamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "ecomOrder": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ecomOrder": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

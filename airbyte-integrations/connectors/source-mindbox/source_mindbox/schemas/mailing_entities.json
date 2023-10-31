@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "MailingName": { "type": ["string", "null"] },
+    "MailingMailingUtmName": { "type": ["string", "null"] },
+    "MailingIdsSystemName": { "type": ["string", "null"] },
+    "MailingIdsId": { "type": ["string", "null"] },
+    "MailingType": { "type": ["string", "null"] },
+    "MailingChannel": { "type": ["string", "null"] },
+    "MailingSubscriptionTopicName": { "type": ["string", "null"] },
+    "MailingSubscriptionTopicIdsExternalId": { "type": ["string", "null"] },
+    "MailingCreationDateTimeUtc": { "type": ["string", "null"] },
+    "MailingLastChangedDateTimeUtc": { "type": ["string", "null"] },
+    "MailingFolderName": { "type": ["string", "null"] },
+    "MailingFolderIdsSystemName": { "type": ["string", "null"] },
+    "MailingBrandName": { "type": ["string", "null"] },
+    "MailingBrandIdsSystemName": { "type": ["string", "null"] },
+    "MailingUtmUtmSource": { "type": ["string", "null"] },
+    "MailingUtmUtmMedium": { "type": ["string", "null"] },
+    "MailingUtmUtmCampaign": { "type": ["string", "null"] },
+    "MailingUtmUtmContent": { "type": ["string", "null"] }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "groupid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "siteName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "siteLogo": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "siteLogoSmall": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "headerTextValue": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "headerHtmlValue": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "footerTextValue": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "footerHtmlValue": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "copyright": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "license": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "help": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "adminTemplateHtm": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "admin_template_htm_backup": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "adminTemplateCss": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "admin_template_css_backup": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "publicTemplateHtm": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "publicTemplateCss": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "favicon": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

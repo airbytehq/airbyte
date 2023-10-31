@@ -5,16 +5,13 @@
       "type": ["null", "string"]
     },
     "attributed_touch_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "install_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "event_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "event_name": {
       "type": ["null", "string"]
@@ -113,8 +110,7 @@
       "type": ["null", "string"]
     },
     "contributor1_touch_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "contributor2_af_prt": {
       "type": ["null", "string"]
@@ -129,8 +125,7 @@
       "type": ["null", "string"]
     },
     "contributor2_touch_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "contributor3_af_prt": {
       "type": ["null", "string"]
@@ -145,8 +140,7 @@
       "type": ["null", "string"]
     },
     "contributor3_touch_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "region": {
       "type": ["null", "string"]
@@ -250,107 +244,38 @@
     "original_url": {
       "type": ["null", "string"]
     },
-    "custom_data": {
-      "type": ["null", "string"]
-    },
-    "network_account_id": {
-      "type": ["null", "string"]
-    },
-    "install_app_store": {
-      "type": ["null", "string"]
-    },
-    "contributor1_match_type": {
-      "type": ["null", "string"]
-    },
-    "contributor2_match_type": {
-      "type": ["null", "string"]
-    },
-    "contributor3_match_type": {
-      "type": ["null", "string"]
-    },
-    "match_type": {
-      "type": ["null", "string"]
-    },
-    "gp_referrer": {
-      "type": ["null", "string"]
-    },
-    "gp_click_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "gp_install_begin": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "gp_broadcast_referrer": {
-      "type": ["null", "string"]
-    },
-    "keyword_match_type": {
-      "type": ["null", "string"]
-    },
-    "keyword_id": {
-      "type": ["null", "string"]
-    },
-    "amazon_aid": {
-      "type": ["null", "string"]
-    },
-    "device_category": {
-      "type": ["null", "string"]
-    },
-    "device_model": {
-      "type": ["null", "string"]
-    },
-    "device_download_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
-    },
-    "deeplink_url": {
-      "type": ["null", "string"]
-    },
-    "oaid": {
-      "type": ["null", "string"]
-    },
-    "is_lat": {
-      "type": ["null", "boolean"]
-    },
-    "store_reinstall": {
-      "type": ["null", "boolean"]
-    },
-    "placement": {
-      "type": ["null", "string"]
-    },
-    "mediation_network": {
-      "type": ["null", "string"]
-    },
-    "segment": {
-      "type": ["null", "string"]
-    },
-    "ad_unit": {
-      "type": ["null", "string"]
-    },
-    "monetization_network": {
-      "type": ["null", "string"]
-    },
-    "impressions": {
-      "type": ["null", "string"]
-    },
-    "blocked_reason": {
-      "type": ["null", "string"]
-    },
-    "blocked_reason_value": {
-      "type": ["null", "string"]
-    },
-    "blocked_reason_rule": {
-      "type": ["null", "string"]
-    },
-    "blocked_sub_reason": {
-      "type": ["null", "string"]
-    },
-    "rejected_reason": {
-      "type": ["null", "string"]
-    },
-    "rejected_reason_value": {
-      "type": ["null", "string"]
-    }
+    "blocked_reason_rule": { "type": ["string", "null"] },
+    "store_reinstall": { "type": ["string", "null"] },
+    "impressions": { "type": ["string", "null"] },
+    "contributor3_match_type": { "type": ["string", "null"] },
+    "gp_click_time": { "type": ["string", "null"] },
+    "match_type": { "type": ["string", "null"] },
+    "mediation_network": { "type": ["string", "null"] },
+    "oaid": { "type": ["string", "null"] },
+    "deeplink_url": { "type": ["string", "null"] },
+    "blocked_reason": { "type": ["string", "null"] },
+    "blocked_sub_reason": { "type": ["string", "null"] },
+    "gp_broadcast_referrer": { "type": ["string", "null"] },
+    "gp_install_begin": { "type": ["string", "null"] },
+    "custom_data": { "type": ["string", "null"] },
+    "rejected_reason": { "type": ["string", "null"] },
+    "device_download_time": { "type": ["string", "null"] },
+    "keyword_match_type": { "type": ["string", "null"] },
+    "contributor1_match_type": { "type": ["string", "null"] },
+    "contributor2_match_type": { "type": ["string", "null"] },
+    "device_model": { "type": ["string", "null"] },
+    "monetization_network": { "type": ["string", "null"] },
+    "segment": { "type": ["string", "null"] },
+    "is_lat": { "type": ["string", "null"] },
+    "gp_referrer": { "type": ["string", "null"] },
+    "blocked_reason_value": { "type": ["string", "null"] },
+    "device_category": { "type": ["string", "null"] },
+    "rejected_reason_value": { "type": ["string", "null"] },
+    "ad_unit": { "type": ["string", "null"] },
+    "keyword_id": { "type": ["string", "null"] },
+    "placement": { "type": ["string", "null"] },
+    "network_account_id": { "type": ["string", "null"] },
+    "install_app_store": { "type": ["string", "null"] },
+    "amazon_aid": { "type": ["string", "null"] }
   }
 }

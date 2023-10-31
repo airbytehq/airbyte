@@ -4,7 +4,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Appsflyer Spec",
     "type": "object",
-    "required": ["app_id", "api_token_v1"],
+    "required": ["app_id", "access_token"],
     "additionalProperties": false,
     "properties": {
       "app_id": {
@@ -12,16 +12,10 @@
         "type": "string",
         "description": "App identifier as found in AppsFlyer."
       },
-      "api_token_v1": {
-        "order": 1,
-        "type": "string",
-        "description": "Pull API token for authentication V1. If you change the account admin, the token changes, and you must update scripts with the new token. <a href=\"https://support.appsflyer.com/hc/en-us/articles/360004562377\">Get the API token in the Dashboard</a>.",
-        "airbyte_secret": true
-      },
-      "api_token_v2": {
+      "access_token": {
         "order": 2,
         "type": "string",
-        "description": "Pull API token for authentication V2. Only used for Cohorts Report. Cohorts report will not be available if you'll leave this field blank.",
+        "description": "Pull API token for authentication V2.",
         "airbyte_secret": true
       },
       "start_date": {
@@ -93,6 +87,68 @@
               }
             },
             "required": ["split_mode_type", "unit", "split_range_units_count"]
+          }
+        ]
+      },
+      "media_source_filter_config": {
+        "title": "Media Source Filter",
+        "description": "Use to filter by a specific media source. Applied for InAppEvents and Installs streams.",
+        "default": "no_filter",
+        "type": "object",
+        "order": 6,
+        "oneOf": [
+          {
+            "title": "Facebook",
+            "type": "object",
+            "properties": {
+              "media_source_type": {
+                "const": "facebook",
+                "order": 0,
+                "type": "string"
+              }
+            },
+            "required": ["media_source_type"]
+          },
+          {
+            "title": "Twitter",
+            "type": "object",
+            "properties": {
+              "media_source_type": {
+                "const": "twitter",
+                "order": 0,
+                "type": "string"
+              }
+            },
+            "required": ["media_source_type"]
+          },
+          {
+            "title": "Other",
+            "type": "object",
+            "properties": {
+              "media_source_type": {
+                "const": "other",
+                "order": 0,
+                "type": "string"
+              },
+              "custom_media_source_name": {
+                "order": 1,
+                "type": "string",
+                "title": "Media Source Name"
+              }
+            },
+            "required": ["media_source_type", "custom_media_source_name"]
+          },
+          {
+            "title": "No Filter",
+            "type": "object",
+            "properties": {
+              "media_source_type": {
+                "const": "no_filter",
+                "order": 0,
+                "type": "string"
+              }
+            },
+            "required": ["media_source_type"]
           }
         ]
       },

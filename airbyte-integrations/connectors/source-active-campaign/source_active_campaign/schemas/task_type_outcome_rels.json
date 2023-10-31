@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sentiment": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "disabled": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_utc_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_utc_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dealTasktype_ids": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "tasktypeOutcomeRels": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dealTasks": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

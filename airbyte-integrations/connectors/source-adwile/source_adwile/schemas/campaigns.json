@@ -1,0 +1,112 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "translation_start": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "translation_stop": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scheduler": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "geo": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "partial": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "device": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "partial": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "cpc": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "teaser_default_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}
