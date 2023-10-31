@@ -3,13 +3,15 @@
 #
 
 import logging
+
 import asyncclick as click
 from pipelines.cli.click_decorators import LazyPassDecorator, click_ignore_unused_kwargs, click_merge_args_into_context_obj
-from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext
-from pipelines.helpers.utils import sh_dash_c
 from pipelines.consts import DOCKER_VERSION
+from pipelines.helpers.utils import sh_dash_c
+from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext
 
 pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContext)
+
 
 @click.command()
 @click.argument("poetry_package_path")
@@ -72,4 +74,3 @@ async def test(
     success = await pytest_container
     if not success:
         click.Abort()
-

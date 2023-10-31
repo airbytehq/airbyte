@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field, PrivateAttr
 
 from ..singleton import Singleton
 
+
 class ClickPipelineContext(BaseModel, Singleton):
     """
     A replacement class for the Click context object passed to click functions.
@@ -15,6 +16,7 @@ class ClickPipelineContext(BaseModel, Singleton):
     This class is meant to serve as a singleton object that initializes and holds onto a single instance of the
     Dagger client, which is used to create containers for running pipelines.
     """
+
     dockerd_service: Optional[Container] = Field(default=None)
     _dagger_client: Optional[Client] = PrivateAttr(default=None)
     _click_context: Callable[[], Context] = PrivateAttr(default_factory=lambda: get_current_context)

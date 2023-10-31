@@ -84,6 +84,7 @@ class LazyPassDecorator:
     """
     Used to create a decorator that will pass an instance of the given class to the decorated function.
     """
+
     def __init__(self, cls: Type[Any], *args: Any, **kwargs: Any) -> None:
         """
         Initialize the decorator with the given source class

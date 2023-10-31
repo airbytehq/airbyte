@@ -276,6 +276,7 @@ async def airbyte_ci(
     if not ctx.obj["is_local"]:
         log_git_info(ctx)
 
+
 set_working_directory_to_root()
 
 if __name__ == "__main__":

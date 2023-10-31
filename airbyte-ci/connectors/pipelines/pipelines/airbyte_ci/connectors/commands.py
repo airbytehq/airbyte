@@ -9,7 +9,7 @@ from typing import List, Optional, Set, Tuple
 import asyncclick as click
 from connector_ops.utils import ConnectorLanguage, SupportLevelEnum, get_all_connectors_in_repo
 from pipelines import main_logger
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj, click_append_to_context_object
+from pipelines.cli.click_decorators import click_append_to_context_object, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles, get_connector_modified_files, get_modified_connectors
 
@@ -227,7 +227,7 @@ def should_use_remote_secrets(use_remote_secrets: Optional[bool]) -> bool:
     envvar="DOCKER_HUB_PASSWORD",
 )
 @click_merge_args_into_context_obj
-@click_append_to_context_object("use_remote_secrets", lambda ctx: should_use_remote_secrets(ctx.obj["use_remote_secrets"]) )
+@click_append_to_context_object("use_remote_secrets", lambda ctx: should_use_remote_secrets(ctx.obj["use_remote_secrets"]))
 @click_ignore_unused_kwargs
 async def connectors(
     ctx: click.Context,
