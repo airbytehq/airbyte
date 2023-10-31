@@ -78,20 +78,27 @@ class NotionStream(HttpStream, ABC):
             message = response.json().get("message", "")
             if message.startswith("The start_cursor provided is invalid: "):
                 return message
+            
+    def throttle_request_page_size(self, current_page_size):
+        throttled_page_size = max(current_page_size // 2, 10)
+        return throttled_page_size
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
         Notion's rate limit is approx. 3 requests per second, with larger bursts allowed.
         For a 429 response, we can use the retry-header to determine how long to wait before retrying.
-        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 8.
+        For 500-level errors, we use Airbyte CDK's default exponential backoff with a retry_factor of 5.
+        In the case of a 504 Gateway Timeout error, we can lower the page_size when retrying to reduce the load on the server.
         Docs: https://developers.notion.com/reference/errors#rate-limiting
-
         """
         retry_after = response.headers.get("retry-after", "5")
         if response.status_code == 429:
             return float(retry_after)
         if self.check_invalid_start_cursor(response):
             return 10
+        if response.status_code == 504:
+            self.page_size = self.throttle_request_page_size(self.page_size)
+            self.logger.info(f"Encountered a server timeout. Adjusting request page size to {self.page_size} and retrying.")
         return super().backoff_time(response)
 
     def should_retry(self, response: requests.Response) -> bool:
@@ -121,6 +128,12 @@ class NotionStream(HttpStream, ABC):
             return {"next_cursor": next_cursor}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+
+        # If page_size has been reduced after encountering a 504 Gateway Timeout error,
+        # we increase it back to the default of 100 once a request is successful.
+        if response.status_code == 200 and self.page_size != 100:
+            self.logger.info(f"Successfully reconnected after a server timeout. Increasing request page size to 100.")
+            self.page_size = 100
         # sometimes notion api returns response without results object
         data = response.json().get("results", [])
         yield from data
