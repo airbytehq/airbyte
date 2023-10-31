@@ -127,4 +127,5 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
 
     assertEquals(expected, actual);
   }
+
 }
