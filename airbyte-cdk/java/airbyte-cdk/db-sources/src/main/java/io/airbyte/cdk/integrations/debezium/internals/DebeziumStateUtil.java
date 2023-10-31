@@ -5,6 +5,7 @@
 package io.airbyte.cdk.integrations.debezium.internals;
 
 import io.debezium.config.Configuration;
+import io.debezium.embedded.KafkaConnectUtil;
 import java.util.Map;
 import java.util.Properties;
 import org.apache.kafka.connect.json.JsonConverter;
@@ -37,7 +38,7 @@ public interface DebeziumStateUtil {
    * @return A configured and started {@link FileOffsetBackingStore} instance.
    */
   default FileOffsetBackingStore getFileOffsetBackingStore(final Properties properties) {
-    final FileOffsetBackingStore fileOffsetBackingStore = new FileOffsetBackingStore();
+    final FileOffsetBackingStore fileOffsetBackingStore = KafkaConnectUtil.fileOffsetBackingStore();
     final Map<String, String> propertiesMap = Configuration.from(properties).asMap();
     propertiesMap.put(WorkerConfig.KEY_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
     propertiesMap.put(WorkerConfig.VALUE_CONVERTER_CLASS_CONFIG, JsonConverter.class.getName());
