@@ -122,10 +122,10 @@ class LowCodeCursorPaginationStrategy(CursorPaginationStrategy):
     def stop_condition(self) -> bool:
         return self._stop_condition is not None
 
-    def stop(self, response: Mapping[str, Any], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]) -> bool:
+    def stop(self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]) -> bool:
         return self._stop_condition.eval(self.config, response=response, headers=headers, last_records=last_records)
 
     def get_cursor_value(
-        self, response: Mapping[str, Any], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]
+        self, response: Union[Mapping[str, Any], List], headers: Mapping[str, Any], last_records: List[Mapping[str, Any]]
     ) -> Optional[str]:
         return self.cursor_value.eval(config=self.config, response=response, headers=headers, last_records=last_records)
