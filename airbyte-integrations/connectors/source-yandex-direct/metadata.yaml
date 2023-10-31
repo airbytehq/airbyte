@@ -1,0 +1,18 @@
+data:
+  connectorSubtype: api
+  connectorType: source
+  dockerImageTag: 0.3.4
+  dockerRepository: adventum/source-yandex-direct
+  githubIssueLabel: source-yandex-direct
+  icon: icon.svg
+  name: Яндекс.Директ
+  registries:
+    cloud:
+      enabled: false
+    oss:
+      enabled: true
+  releaseStage: beta
+  documentationUrl: https://yandex.ru/dev/direct/doc/
+  tags:
+    - language:python
+metadataSpecVersion: "1.0"

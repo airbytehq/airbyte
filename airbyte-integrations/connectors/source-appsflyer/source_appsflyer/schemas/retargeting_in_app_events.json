@@ -5,16 +5,13 @@
       "type": ["null", "string"]
     },
     "attributed_touch_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "install_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "event_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "event_name": {
       "type": ["null", "string"]
@@ -113,8 +110,7 @@
       "type": ["null", "string"]
     },
     "contributor1_touch_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "contributor2_af_prt": {
       "type": ["null", "string"]
@@ -129,8 +125,7 @@
       "type": ["null", "string"]
     },
     "contributor2_touch_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "contributor3_af_prt": {
       "type": ["null", "string"]
@@ -145,8 +140,7 @@
       "type": ["null", "string"]
     },
     "contributor3_touch_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "region": {
       "type": ["null", "string"]
@@ -284,12 +278,10 @@
       "type": ["null", "string"]
     },
     "gp_click_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "gp_install_begin": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "gp_broadcast_referrer": {
       "type": ["null", "string"]
@@ -313,8 +305,7 @@
       "type": ["null", "string"]
     },
     "device_download_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "deeplink_url": {
       "type": ["null", "string"]

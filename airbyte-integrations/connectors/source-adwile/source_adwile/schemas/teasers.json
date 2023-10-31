@@ -1,0 +1,127 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "desc": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "image": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "name": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "add_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "edit_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cpc": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "use_campaign_cpc": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "reject_reasons": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "inread": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "cta": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "disclaimer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mpaa_rating_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

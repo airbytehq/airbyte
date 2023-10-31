@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "body": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ldate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_sent_user_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "savedResponseCategorySavedResponse": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

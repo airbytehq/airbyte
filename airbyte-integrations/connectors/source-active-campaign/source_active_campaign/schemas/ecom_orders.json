@@ -1,0 +1,185 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "externalid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "connectionid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "customerid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "orderUrl": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "shippingMethod": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "totalPrice": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "shippingAmount": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "taxAmount": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "discountAmount": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "externalCreatedDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "totalProducts": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "createdDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updatedDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "state": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "connection": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "orderProducts": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "customer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "orderDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tstamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "connection": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "customer": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "orderProducts": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "orderDiscounts": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "orderActivities": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

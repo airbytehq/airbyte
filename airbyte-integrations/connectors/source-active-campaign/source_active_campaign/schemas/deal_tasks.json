@@ -1,0 +1,181 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "duedate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "edate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "note": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "relid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reltype": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dealTasktype": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "udate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "automation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "doneAutomation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "user": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "assignee": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string"
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "outcomeId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "outcomeInfo": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "activities": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "automation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dealTasktype": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "doneAutomation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "taskNotifications": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "user": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "assignee": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

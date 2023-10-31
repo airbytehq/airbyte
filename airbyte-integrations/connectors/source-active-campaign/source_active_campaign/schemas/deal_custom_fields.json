@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fieldLabel": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fieldType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fieldOptions": {
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "fieldDefault": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "fieldDefaultCurrency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "isFormVisible": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "isRequired": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "displayOrder": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "personalization": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "knownFieldId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "hideFieldFlag": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "createdTimestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updatedTimestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createdBy": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "updatedBy": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "dealCustomFieldData": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

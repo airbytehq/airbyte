@@ -1,5 +1,6 @@
-from typing import Mapping
+from typing import Mapping, Optional, Union
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
+from typing import Any
 import requests
 
 
@@ -23,15 +24,15 @@ class CredentialsCraftAuthenticator(TokenAuthenticator):
         return f"{self._cc_host}/api/v1/token/yandex/{self._cc_token_id}/"
 
     @property
-    def _service_access_token(self) -> Mapping[str, any]:
+    def _service_access_token(self) -> Mapping[str, Any]:
         resp = requests.get(self._url, headers={"Authorization": f"Bearer {self._cc_token}"}).json()
         return resp.get("access_token")
 
-    def get_auth_header(self) -> Mapping[str, any]:
+    def get_auth_header(self) -> Mapping[str, Any]:
         super().__init__(self._service_access_token, "OAuth", "Authorization")
         return super().get_auth_header()
 
-    def check_connection(self, raise_exception: bool = False) -> tuple[bool, str | None]:
+    def check_connection(self, raise_exception: bool = False) -> tuple[bool, Union[str, None]]:
         error = None
         try:
             requests.get(self._cc_host, timeout=15)

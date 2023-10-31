@@ -1,0 +1,545 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "descript": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "unsubscribelink": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "optinconfirm": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "p_admin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgListAdd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgListEdit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgListDelete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgListHeaders": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgListEmailaccount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgListBounce": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgMessageAdd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgMessageEdit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgMessageDelete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgMessageSend": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactAdd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactEdit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactDelete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactMerge": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactImport": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactApprove": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactExport": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactSync": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactFilters": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactActions": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactFields": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pg_user_add": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pg_user_edit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pg_user_delete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgGroupAdd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgGroupEdit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgGroupDelete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgTemplateAdd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgTemplateEdit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgTemplateDelete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgPersonalizationAdd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgPersonalizationEdit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgPersonalizationDelete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgAutomationManage": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgFormEdit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgReportsCampaign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgReportsList": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgReportsUser": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgReportsTrend": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgReportsDeal": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgStartupReports": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgStartupGettingstarted": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgAccountAdd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgAccountEdit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgAccountDelete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgAccountManageCustomField": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDeal": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealDelete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealReassign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealFields": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealGroupAdd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealGroupEdit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealGroupDelete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgSavedResponsesManage": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reqApproval": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reqApproval1st": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reqApprovalNotify": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "socialdata": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgMfaAdmin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealExport": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealManageRoles": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgAccountNoteAdd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgAccountNoteEdit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgAccountNoteDelete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealNoteAdd": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealNoteEdit": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealNoteDelete": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealListAll": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgTagManage": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgContactResubscribe": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgDealImport": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgAccountImport": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgAccountExport": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgLandingPagesAccess": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pg_web_personalization_manage": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pgAccountReassign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "userGroups": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "groupLimit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dealGroupGroups": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "listGroups": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "addressGroups": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "automationGroups": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

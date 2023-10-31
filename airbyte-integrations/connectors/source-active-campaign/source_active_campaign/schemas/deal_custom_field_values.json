@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dealCustomFieldMetumId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "dealId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "customFieldId": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "createdTimestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updatedTimestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fieldValue": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "deal": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dealCustomFieldMetum": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}

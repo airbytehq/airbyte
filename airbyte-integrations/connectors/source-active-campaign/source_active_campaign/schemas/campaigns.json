@@ -1,0 +1,668 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string"
+    },
+    "userid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "segmentid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bounceid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "realcid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sendid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "threadid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "seriesid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "formid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "basetemplateid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "basemessageid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "addressid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mdate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "sdate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ldate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "send_amt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "total_amt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "opens": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uniqueopens": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "linkclicks": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uniquelinkclicks": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subscriberclicks": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "forwards": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uniqueforwards": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hardbounces": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "softbounces": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "unsubscribes": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "unsubreasons": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updates": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "socialshares": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "replies": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "uniquereplies": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "public": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mail_transfer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mail_send": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mail_cleanup": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mailer_log_file": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tracklinks": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tracklinksanalytics": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "trackreads": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "trackreadsanalytics": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "analytics_campaign_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tweet": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "facebook": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "survey": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "embed_images": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "htmlunsub": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "textunsub": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "htmlunsubdata": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "textunsubdata": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "recurring": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "willrecur": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "split_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "split_content": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "split_offset": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "split_offset_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "split_winner_messageid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "split_winner_awaiting": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "responder_offset": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "responder_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "responder_existing": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reminder_field": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reminder_format": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "reminder_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reminder_offset": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reminder_offset_type": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reminder_offset_sign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reminder_last_cron_run": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "activerss_interval": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "activerss_url": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "activerss_items": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ip4": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "laststep": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "managetext": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schedule": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scheduleddate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "waitpreview": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deletestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "replysys": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ip": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "series_send_lock_time": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "can_skip_approval": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "use_quartz_scheduler": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "verified_opens": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "verified_unique_opens": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "segmentname": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "has_predictive_content": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "message_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "screenshot": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "campaign_message_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ed_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "automation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "campaignMessage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "campaignMessages": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "links": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "aggregateRevenues": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "segment": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "campaignLists": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "user": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "automation": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

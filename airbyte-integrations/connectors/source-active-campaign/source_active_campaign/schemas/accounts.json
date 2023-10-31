@@ -1,0 +1,95 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "accountUrl": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "createdTimestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updatedTimestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "contactCount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dealCount": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountCustomFieldData": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountContacts": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "emailActivities": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactEmails": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "owner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

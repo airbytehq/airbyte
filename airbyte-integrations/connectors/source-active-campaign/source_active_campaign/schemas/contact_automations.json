@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "contact": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "seriesid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "startid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "batchid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "adddate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "remdate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "timespan": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "lastblock": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lastlogid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lastdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "in_als": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "completedElements": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "totalElements": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "completed": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "completeValue": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "automation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contact": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactGoals": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "automationLogs": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "automation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

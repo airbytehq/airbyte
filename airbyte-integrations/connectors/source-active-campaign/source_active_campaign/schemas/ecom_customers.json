@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "connectionid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "externalid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "totalRevenue": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "totalOrders": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "totalProducts": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "avgRevenuePerOrder": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "avgProductCategory": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tstamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "connection": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "orders": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "connection": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

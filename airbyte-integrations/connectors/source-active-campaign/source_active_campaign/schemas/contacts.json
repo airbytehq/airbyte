@@ -1,0 +1,359 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "cdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "firstName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lastName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "orgid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "orgname": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "segmentio_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bounced_hard": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bounced_soft": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "bounced_date": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "ip": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ua": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "socialdata_lastcheck": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email_local": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email_domain": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sentcnt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rating_tstamp": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "gravatar": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "deleted": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "anonymized": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "adate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "udate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "edate": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "deleted_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_utc_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_utc_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "email_empty": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "mpp_tracking": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scoreValues": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "accountContacts": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "bounceLogs": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactAutomations": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactData": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactGoals": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactLists": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactLogs": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactTags": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contactDeals": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deals": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fieldValues": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "geoIps": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "organization": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "plusAppend": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trackingLogs": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scoreValues": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "accountContacts": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "automationEntryCounts": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "organization": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

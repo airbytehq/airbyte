@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "userid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ed_instanceid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ed_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fromname": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "fromemail": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reply2": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "priority": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "charset": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "encoding": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "format": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "preheader_text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "text": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "html": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "htmlfetch": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "textfetch": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hidden": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "preview_mime": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "preview_data": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "has_predictive_content": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "hyperlinks": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "user": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

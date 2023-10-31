@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "AdImageHash": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "OriginalUrl": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "PreviewUrl": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Name": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Subtype": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Associated": {
+      "type": [
+        "null",
+        "string"
+      ]
+    }
+  }
+}

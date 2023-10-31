@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "userid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ed_instanceid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ed_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "content": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "categoryid": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "used": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "waitpreview": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "importnum": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "preview_content": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "modified": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hidden": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "screenshot": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "templateLists": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "templateTags": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

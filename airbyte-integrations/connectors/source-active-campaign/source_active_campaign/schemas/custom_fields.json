@@ -1,0 +1,158 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "descript": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "type": {
+      "type": "string"
+    },
+    "isrequired": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "perstag": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "defval": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "show_in_list": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rows": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cols": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "visible": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "service": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ordernum": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "udate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_timestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "created_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_by": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "options": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "relations": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "options": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "relations": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

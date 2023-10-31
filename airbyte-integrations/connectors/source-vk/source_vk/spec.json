@@ -1,0 +1,179 @@
+{
+  "documentationUrl": "https://docsurl.com",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Vk Spec",
+    "type": "object",
+    "required": [
+      "credentials",
+      "group_ids",
+      "date_range"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "credentials": {
+        "title": "Авторизация",
+        "order": 0,
+        "type": "object",
+        "oneOf": [
+          {
+            "title": "Токен доступа",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Тип авторизации",
+                "const": "access_token_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "access_token": {
+                "title": "Токен доступа",
+                "description": "Client ID",
+                "type": "string",
+                "airbyte_secret": true
+              }
+            },
+            "required": [
+              "auth_type",
+              "access_token"
+            ]
+          },
+          {
+            "title": "CredentialsCraft",
+            "type": "object",
+            "properties": {
+              "auth_type": {
+                "title": "Тип авторизации",
+                "const": "credentials_craft_auth",
+                "order": 0,
+                "type": "string"
+              },
+              "credentials_craft_host": {
+                "title": "Хост CredentialsCraft",
+                "description": "Хост CredentialsCraft.",
+                "examples": [
+                  "https://credentialscraft.mysite.com"
+                ],
+                "type": "string",
+                "order": 1
+              },
+              "credentials_craft_token": {
+                "title": "Токен доступа к CredentialsCraft",
+                "description": "Токен для авторизации в сервисе CredentialsCraft (не токен ВК).",
+                "type": "string",
+                "airbyte_secret": true,
+                "order": 2
+              },
+              "credentials_craft_token_id": {
+                "title": "ID Токена в CredentialsCraft",
+                "desctiption": "ID токена ВК в сервисе CredentialsCraft",
+                "examples": [
+                  123
+                ],
+                "type": "integer",
+                "order": 3
+              }
+            },
+            "required": [
+              "auth_type",
+              "credentials_craft_host",
+              "credentials_craft_token",
+              "credentials_craft_token_id"
+            ]
+          }
+        ]
+      },
+      "group_ids": {
+        "title": "Список ID групп",
+        "description": "Список ID групп, по которым будет осуществляться выгрузка статистики",
+        "type": "array",
+        "items": {
+          "type": "integer"
+        },
+        "order": 1
+      },
+      "date_range": {
+        "title": "Период дат",
+        "description": "Выберите период дат для выгрузки данных",
+        "type": "object",
+        "order": 2,
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "Пользовательский период",
+            "required": [
+              "date_from",
+              "date_to",
+              "date_range_type"
+            ],
+            "properties": {
+              "date_from": {
+                "title": "Начало периода",
+                "type": "string",
+                "description": "Начало периода в формате YYYY-MM-DD.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "examples": [
+                  "2023-01-01"
+                ],
+                "order": 0
+              },
+              "date_to": {
+                "title": "End Date",
+                "type": "string",
+                "description": "Конец периода в формате YYYY-MM-DD.",
+                "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "examples": [
+                  "2023-01-30"
+                ],
+                "order": 1
+              },
+              "date_range_type": {
+                "type": "string",
+                "title": "Тип периода",
+                "description": "Custom Date",
+                "const": "custom_date",
+                "order": 2
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "Последние N дней",
+            "required": [
+              "last_days_count",
+              "should_load_today",
+              "date_range_type"
+            ],
+            "properties": {
+              "last_days_count": {
+                "title": "Количество дней",
+                "type": "integer",
+                "description": "Количество дней в периоде, который закончится сегодня",
+                "minimum": 0,
+                "maximum": 3650,
+                "examples": [
+                  30
+                ],
+                "order": 0
+              },
+              "should_load_today": {
+                "title": "Load Today?",
+                "type": "boolean",
+                "description": "Если включено - концом периода будет сегодня. Если выключено, то вчера.",
+                "order": 1,
+                "default": false
+              },
+              "date_range_type": {
+                "type": "string",
+                "title": "Тип периода",
+                "description": "Последние N дней",
+                "const": "last_n_days",
+                "order": 2
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

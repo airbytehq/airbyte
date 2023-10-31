@@ -3,24 +3,22 @@
 #
 
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
-from abc import ABC
-from time import sleep
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
+import logging
+from typing import Any, List, Mapping, Tuple
 
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.exceptions import (
-    DefaultBackoffException,
-    UserDefinedBackoffException,
-)
+from airbyte_cdk.models import ConnectorSpecification
+
+from source_yandex_direct.ads_streams import AdImages, Ads, Campaigns, YandexDirectAdsStream
+from source_yandex_direct.report_streams import CustomReport
 
 from .auth import CredentialsCraftAuthenticator
 from .schema_fields import CUSTOM_SCHEMA_FIELDS
-from .utils import random_name, last_n_days_dates, split_date_by_chunks, today, yesterday
+from .utils import HttpAvailabilityStrategy, random_name
 
 from airbyte_cdk import logger as airbyte_logger
 
@@ -30,291 +28,153 @@ from http.client import HTTPConnection
 
 HTTPConnection._http_vsn_str = "HTTP/1.0"
 
-# Basic full refresh stream
-class YandexDirectStream(HttpStream, ABC):
-
-    url_base = "https://api.direct.yandex.com/json/v5/reports"
-    http_method = "POST"
-
-    def __init__(self, auth: TokenAuthenticator, config: Mapping[str, Any]):
-        super().__init__(authenticator=auth)
-        self.config = config
-        print("self.config", self.config)
-        self.custom_constants = json.loads(self.config.get("custom_json", "{}"))
-
-    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
-        while True:
-            response = self._session.send(request, **request_kwargs)
-            response.encoding = "utf-8"
-            self.logger.info(f"Request {response.url} (Kwargs: {request_kwargs}, request body: {response.request.body})")
-            sleep_time = int(response.headers.get("retryIn", 5))
-            if response.status_code == 200:
-                return response
-            elif response.status_code == 201:
-                sleep(sleep_time)
-                logger.info("Report is creating in offline mode. Re-check after " + str(sleep_time) + " seconds")
-            elif response.status_code == 202:
-                sleep(sleep_time)
-                logger.info("Report is creating in offline mode. Re-check after " + str(sleep_time) + " seconds")
-            else:
-                if self.should_retry(response):
-                    custom_backoff_time = self.backoff_time(response)
-                    if custom_backoff_time:
-                        raise UserDefinedBackoffException(
-                            backoff=custom_backoff_time,
-                            request=request,
-                            response=response,
-                        )
-                    else:
-                        raise DefaultBackoffException(request=request, response=response)
-                elif self.raise_on_http_errors:
-                    # Raise any HTTP exceptions that happened in case there were unexpected ones
-                    response.raise_for_status()
-
-    def request_kwargs(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> Mapping[str, Any]:
-        kwargs = super().request_kwargs(stream_state, stream_slice, next_page_token)
-        kwargs.update({"stream": True})
-        return kwargs
-
-    def add_constants_to_record(self, record: Mapping[str, Any]):
-        constants = {
-            "__productName": self.config.get("product_name"),
-            "__clientName": self.config.get("client_name"),
-        }
-        constants.update(self.custom_constants)
-        record.update(constants)
-        return record
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        # parse raw TSV data to list of named dicts
-        raw_data_lines = response.iter_lines(delimiter=b"\n")
-        header = []
-        records_counter = 0
-        for line_n, line in enumerate(raw_data_lines):
-            line_values = line.decode().split("\t")
-
-            # skip empty rows
-            if not line.strip():
-                continue
-
-            # grab header and skip if it is first line
-            if line_n == 0:
-                header = line_values
-                continue
-
-            # zip values list to named dict
-            data_item = {}
-            for value_n, value in enumerate(line_values):
-                data_item[header[value_n]] = value
-            records_counter += 1
-            if records_counter == 1_000_000:
-                self.logger.warn(
-                    f"Reached 1000000th record on stream_slice {stream_slice}. It can be Direct Reports API restriction of 1 million records per report."
-                )
-            yield self.add_constants_to_record(data_item)
-        self.logger.info(f"Loaded {records_counter} records for stream_slice {stream_slice}")
-
-
-class CustomReport(YandexDirectStream):
-    def path(self, **kwargs) -> str:
-        return ""
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self.config["fields"][0]
-
-    def request_body_json(self, stream_slice: Mapping[str, Any], *args, **kwargs) -> Optional[Mapping]:
-        date_range = stream_slice["transformed_date_range"]
-        params = {
-            "params": {
-                "SelectionCriteria": {},
-                "FieldNames": self.config["fields"],
-                "ReportName": stream_slice["report_name"],
-                "ReportType": "CUSTOM_REPORT",
-                "DateRangeType": date_range["date_range_title"],
-                "Format": "TSV",
-                "IncludeVAT": "NO",
-                "IncludeDiscount": "NO",
-            }
-        }
-        if date_range["date_range_title"] == "CUSTOM_DATE":
-            params["params"]["SelectionCriteria"].update(
-                {
-                    "DateFrom": date_range["date_from"],
-                    "DateTo": date_range["date_to"],
-                }
-            )
-
-        if self.config.get("parsed_filters"):
-            params["params"]["SelectionCriteria"]["Filter"] = self.config.get("parsed_filters")
-        return params
-
-    def request_headers(self, *args, **kwargs) -> Mapping[str, Any]:
-        headers = {
-            "Accept-Language": "ru",
-            "processingMode": "auto",
-            "skipReportHeader": "true",
-            "skipReportSummary": "true",
-        }
-        headers.update(self.authenticator.get_auth_header())
-        if self.config.get("client_login"):
-            headers["Client-Login"] = self.config["client_login"]
-        return headers
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        schema = super().get_json_schema()
-        for field_name in self.config["fields"]:
-            field_schema_type = CUSTOM_SCHEMA_FIELDS.get(field_name, None)
-            if field_schema_type:
-                schema["properties"][field_name] = {"type": ["null", field_schema_type]}
-
-        extra_properties = ["__productName", "__clientName"]
-        custom_keys = json.loads(self.config["custom_json"]).keys() if self.config.get("custom_json") else []
-        extra_properties.extend(custom_keys)
-        for key in extra_properties:
-            schema["properties"][key] = {"type": ["null", "string"]}
-
-        return schema
-
-    def stream_slices(self, *args, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        split_shunks_mode = self.config.get("chunk_reports", {}).get("split_mode_type")
-        if split_shunks_mode == "do_not_split_mode":
-            slices = [{"transformed_date_range": self.config["transformed_date_range"], "report_name": random_name(10)}]
-            yield from slices
-        elif split_shunks_mode == "split_date_mode":
-            range = self.config["transformed_date_range"]
-            dates_generator = split_date_by_chunks(
-                datetime.strptime(range["date_from"], "%Y-%m-%d"),
-                datetime.strptime(range["date_to"], "%Y-%m-%d"),
-                self.config.get("chunk_reports", {}).get("split_range_days_count"),
-            )
-            for date_from, date_to in dates_generator:
-                yield {
-                    "transformed_date_range": {
-                        "date_range_title": "CUSTOM_DATE",
-                        "date_from": str(date_from.date()),
-                        "date_to": str(date_to.date()),
-                    },
-                    "report_name": random_name(10),
-                }
-        else:
-            raise ValueError(f'split_mode_type "{split_shunks_mode}" is invalid. Available: "do_not_split_mode" and "split_date_mode".')
+CONFIG_DATE_FORMAT = "%Y-%m-%d"
 
 
 # Source
 class SourceYandexDirect(AbstractSource):
+    ads_streams_classes = [Ads, AdImages, Campaigns]
+    availability_strategy = HttpAvailabilityStrategy
+
     def check_connection(self, logger, config) -> Tuple[bool, Any]:
-        date_exclusive_fields = []
-        for field_name in config["fields"]:
-            if field_name not in CUSTOM_SCHEMA_FIELDS.keys():
-                return (
-                    False,
-                    f"Unknown field name {field_name}. Check https://yandex.ru/dev/' \
-                    'direct/doc/reports/fields-list.html for available fields (CUSTOM_REPORT column).",
-                )
-            if not CUSTOM_SCHEMA_FIELDS[field_name]:
-                return (
-                    False,
-                    f"Field name {field_name} can't be used for CUSTOM_REPORT. Check ' \
-                    'https://yandex.ru/dev/direct/doc/reports/fields-list.html for ' \
-                    'available fields (CUSTOM_REPORT column).",
-                )
-            if CUSTOM_SCHEMA_FIELDS[field_name] == "filter":
-                return (
-                    False,
-                    f"Field name {field_name} is only used for filter data and can't ' \
-                    'be shown as report field. Check https://yandex.ru/dev/direct/doc/' \
-                    'reports/fields-list.html for available fields (CUSTOM_REPORT column).",
-                )
-            if field_name in ["Date", "Week", "Month", "Quarter", "Year"]:
-                date_exclusive_fields.append(field_name)
-            if (
-                field_name
-                in [
-                    "Impressions",
-                    "Ctr",
-                    "AvgImpressionPosition",
-                    "WeightedImpressions",
-                    "WeightedCtr",
-                    "AvgTrafficVolume",
-                ]
-                and "ClickType" in config["fields"]
-            ):
-                return (
-                    False,
-                    f"ClickType field is incompatible with {field_name} field. Check' \
-                    ' https://yandex.ru/dev/direct/doc/reports/compatibility.html",
-                )
-            if (
-                field_name
-                in [
-                    "AdFormat",
-                    "AdId",
-                    "Age",
-                    "CarrierType",
-                    "Gender",
-                    "MobilePlatform",
-                    "RlAdjustmentId",
-                ]
-                and "ImpressionShare" in config["fields"]
-            ):
-                return (
-                    False,
-                    f"ImpressionShare field is incompatible with {field_name} field. Check ' \
-                    'https://yandex.ru/dev/direct/doc/reports/compatibility.html",
-                )
-        if len(date_exclusive_fields) > 1:
-            date_fields = ", ".join(date_exclusive_fields)
-            return (
-                False,
-                f"{date_fields} fields are mutually exclusive: only one of them can be' \
-                ' present in the report. Check https://yandex.ru/dev/direct/doc/reports/compatibility.html",
-            )
+        spec_fields_names_for_streams = self.get_spec_fields_names_for_streams(self.ads_streams_classes)
+        for stream_class, spec_field_name in spec_fields_names_for_streams:
+            try:
+                json.loads(config.get(spec_field_name, "{}"))
+            except:
+                return False, f"Invalid JSON in {spec_field_name}. See example."
+            if not config.get(spec_field_name):
+                continue
+            stream_class_default_fields = stream_class.default_fields_names
+            stream_fields_params_from_config = json.loads(config[spec_field_name])
+            if not isinstance(stream_class_default_fields, dict):
+                return False, f"{spec_field_name} is not of valid structire. It must be object of field names. See example."
+            for key in stream_fields_params_from_config:
+                if key not in stream_class_default_fields:
+                    return False, f"{spec_field_name}: Key {key} is not available for this stream params customization. See example."
+                key_default_fields_list = stream_class_default_fields[key]
+                config_key_fields_list = stream_fields_params_from_config[key]
+                for field_name in config_key_fields_list:
+                    if field_name not in key_default_fields_list:
+                        return False, f'{spec_field_name} (key {key}): field "field_name" is not available. See example.'
 
-        if set(config["fields"]).intersection(["Criterion", "CriterionId", "CriterionType"]) and set(config["fields"]).intersection(
-            ["Criteria", "CriteriaId", "CriteriaType"]
-        ):
-            return (
-                False,
-                "Criterion, CriterionId, CriterionType fields are incompatible' \
-                ' with Criteria, CriteriaId, CriteriaType fields.",
-            )
+        for report_config in config.get("reports"):
+            report_name = report_config["name"]
 
-        do_dates_split = config.get("chunk_reports", {}).get("split_mode_type", "") == "split_date_mode"
-
-        if config["date_range"].get("last_days_count"):
-            if not do_dates_split:
-                if not config["date_range"].get("last_days_count") in [
-                    3,
-                    5,
-                    7,
-                    14,
-                    30,
-                    90,
-                    365,
-                ]:
+            date_exclusive_fields = []
+            for field_name in report_config["fields"]:
+                if field_name not in CUSTOM_SCHEMA_FIELDS.keys():
                     return (
                         False,
-                        "Last N days field only can be 3, 5, 7, 14, 30, 90 or 365.",
+                        f"Отчёт {report_name}: Неизвестное имя поля - {field_name}. "
+                        "Доступные поля: https://yandex.ru/dev/"
+                        "direct/doc/reports/fields-list.html (колонка CUSTOM_REPORT).",
                     )
+                if not CUSTOM_SCHEMA_FIELDS[field_name]:
+                    return (
+                        False,
+                        f"Отчёт {report_name}: Поле {field_name} не может быть "
+                        "использовано для отчёта CUSTOM_REPORT. "
+                        "Доступные поля: https://yandex.ru/dev/"
+                        "direct/doc/reports/fields-list.html (колонка CUSTOM_REPORT).",
+                    )
+                if CUSTOM_SCHEMA_FIELDS[field_name] == "filter":
+                    return (
+                        False,
+                        f"Отчёт {report_name}: Поле {field_name} может быть "
+                        "использовано только для фильтрации отчёта "
+                        "и не может находиться в списке отображаемых полей. "
+                        "Доступные поля: https://yandex.ru/dev/"
+                        "direct/doc/reports/fields-list.html (колонка CUSTOM_REPORT).",
+                    )
+                if field_name in ["Date", "Week", "Month", "Quarter", "Year"]:
+                    date_exclusive_fields.append(field_name)
+                if (
+                    field_name
+                    in [
+                        "Impressions",
+                        "Ctr",
+                        "AvgImpressionPosition",
+                        "WeightedImpressions",
+                        "WeightedCtr",
+                        "AvgTrafficVolume",
+                    ]
+                    and "ClickType" in report_config["fields"]
+                ):
+                    return (
+                        False,
+                        f"Отчёт {report_name}: Поле ClickType несовместимо с полем {field_name}. См. "
+                        "https://yandex.ru/dev/direct/doc/reports/compatibility.html",
+                    )
+                if (
+                    field_name
+                    in [
+                        "AdFormat",
+                        "AdId",
+                        "Age",
+                        "CarrierType",
+                        "Gender",
+                        "MobilePlatform",
+                        "RlAdjustmentId",
+                    ]
+                    and "ImpressionShare" in report_config["fields"]
+                ):
+                    return (
+                        False,
+                        f"Отчёт {report_name}: Поле ImpressionShare несовместимо с полем {field_name}. См. "
+                        "https://yandex.ru/dev/direct/doc/reports/compatibility.html",
+                    )
+            if len(date_exclusive_fields) > 1:
+                date_fields = ", ".join(date_exclusive_fields)
+                return (
+                    False,
+                    f"Отчёт {report_name}: Поля {date_fields} являются взаимоисключающими: "
+                    "только одно из них может быть использовано в отчёте."
+                    "См. https://yandex.ru/dev/direct/doc/reports/compatibility.html",
+                )
 
-        date_range_type = config["date_range"]["date_range_type"]
-        if date_range_type not in ["custom_date", "last_n_days"] and do_dates_split:
-            raise ValueError(
-                f'You can\'t use "{date_range_type}" date range with Split Report Into'
-                "Chunks option. Only last_n_days and custom_date_range available."
-            )
+            if set(report_config["fields"]).intersection(
+                [
+                    "Criterion",
+                    "CriterionId",
+                    "CriterionType",
+                ]
+            ) and set(
+                report_config["fields"]
+            ).intersection(["Criteria", "CriteriaId", "CriteriaType"]):
+                return (
+                    False,
+                    f"Отчёт {report_name}: Поля Criterion, CriterionId, CriterionType "
+                    "несовместимы с полями Criteria, CriteriaId, CriteriaType.",
+                )
+
+            if report_config.get("filters_json"):
+                try:
+                    filter_objects = json.loads(report_config["filters_json"])
+                    if not isinstance(filter_objects, list):
+                        return (
+                            False,
+                            f'Отчёт {report_name}: Фильтры (JSON) должны содержать список JSON-объектов: [{{"Field": "Year",'
+                            ' "Operator": "EQUALS", "Values": ["2021"]}, {...}, {...} ...]. См. '
+                            "https://yandex.ru/dev/direct/doc/reports/filters.html",
+                        )
+                    for filter_object in filter_objects:
+                        if not isinstance(filter_object, dict):
+                            return (
+                                False,
+                                f"Отчёт {report_name}: Фильтры (JSON) должны содержать список JSON-объектов: "
+                                f'[{{"Field": "Year", "Operator": "EQUALS", "Values": ["2021"]}}, '
+                                f'{{...}}, {{...}} ...]. "{filter_object}" фильтр имеет ошибки валидации.'
+                                f" См. https://yandex.ru/dev/direct/doc/reports/filters.html",
+                            )
+                except Exception as e:
+                    return False, e
 
         auth = self.get_auth(config)
         if isinstance(auth, CredentialsCraftAuthenticator):
-            check_auth = auth.check_connection()
-            if not check_auth[0]:
-                return check_auth
+            is_success, message = auth.check_connection()
+            if not is_success:
+                return is_success, message
 
         try:  # YYYY-MM-DD
             CLIENT_LOGIN = config.get("client_login", "")
@@ -365,28 +225,6 @@ class SourceYandexDirect(AbstractSource):
         except Exception as e:
             return False, e
 
-        if config.get("filters_json"):
-            try:
-                filter_objects = json.loads(config["filters_json"])
-                if not isinstance(filter_objects, list):
-                    return (
-                        False,
-                        'Filter JSON must be array of filter objects like this: [{"Fiield": "Year",'
-                        ' "Operator": "EQUALS", "Values": ["2021"]}, {...}, {...} ...]. Check '
-                        "https://yandex.ru/dev/direct/doc/reports/filters.html",
-                    )
-                for filter_object in filter_objects:
-                    if not isinstance(filter_object, dict):
-                        return (
-                            False,
-                            f"Filter JSON must be array of filter objects like this: "
-                            f'[{{"Fiield": "Year", "Operator": "EQUALS", "Values": ["2021"]}}, '
-                            f'{{...}}, {{...}} ...]. "{filter_object}" filter has validation errors.'
-                            f" Check https://yandex.ru/dev/direct/doc/reports/filters.html",
-                        )
-            except Exception as e:
-                return False, e
-
         return True, None
 
     def get_auth(self, config: Mapping[str, Any]) -> TokenAuthenticator:
@@ -399,53 +237,112 @@ class SourceYandexDirect(AbstractSource):
                 credentials_craft_token_id=config["credentials"]["credentials_craft_token_id"],
             )
         else:
-            raise Exception("Invalid Auth type. Available: access_token_auth and credentials_craft_auth")
+            raise Exception("Неверный тип авторизации. Доступные: access_token_auth and credentials_craft_auth")
 
-    def transform_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
-        date_range_type = config["date_range"]["date_range_type"]
-        available_date_range = {
-            "today": {"date_range_title": "TODAY"},
-            "yesterday": {"date_range_title": "YESTERDAY"},
-            "custom_date": {
-                "date_range_title": "CUSTOM_DATE",
-                "date_from": config["date_range"].get("date_from"),
-                "date_to": config["date_range"].get("date_to"),
-            },
-            "from_start_date_to_today": {
-                "date_range_title": "CUSTOM_DATE",
-                "date_from": config["date_range"].get("date_from"),
-            },
-            "last_n_days": {"date_range_title": f"LAST_" + str(config["date_range"].get("last_days_count")) + "_DAYS"},
-            "all_time": {"date_range_title": "ALL_TIME"},
-            "auto": {"date_range_title": "AUTO"},
-        }
-        config["transformed_date_range"] = available_date_range[date_range_type]
-
-        if date_range_type == "from_start_date_to_today":
-            if config["date_range"]["should_load_today"]:
-                config["transformed_date_range"]["date_to"] = str(today())
+    @staticmethod
+    def prepare_config_datetime(config: Mapping[str, Any]) -> Mapping[str, Any]:
+        date_range = config["date_range"]
+        range_type = config["date_range"]["date_range_type"]
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        prepared_range = {}
+        if range_type == "custom_date":
+            prepared_range["date_from"] = date_range["date_from"]
+            prepared_range["date_to"] = date_range["date_to"]
+        elif range_type == "from_date_from_to_today":
+            prepared_range["date_from"] = date_range["date_from"]
+            if date_range["should_load_today"]:
+                prepared_range["date_to"] = today
             else:
-                config["transformed_date_range"]["date_to"] = str(yesterday())
-
-        if config.get("chunk_reports", {}).get("split_mode_type", "") == "split_date_mode":
-            date_range_title: str = config["transformed_date_range"]["date_range_title"]
-            if date_range_title.startswith("LAST_"):
-                date_from, date_to = last_n_days_dates(config["date_range"].get("last_days_count"))
-                config["transformed_date_range"] = {
-                    "date_range_title": "CUSTOM_DATE",
-                    "date_from": str(date_from.date()),
-                    "date_to": str(date_to.date()),
-                }
-            elif date_range_title == "CUSTOM_DATE":
-                pass
+                prepared_range["date_to"] = today - timedelta(days=1)
+        elif range_type == "last_days":
+            prepared_range["date_from"] = today - timedelta(days=date_range["last_days_count"])
+            if date_range.get("should_load_today", False):
+                prepared_range["date_to"] = today
             else:
-                raise ValueError(
-                    f'You can\'t use "{date_range_title}" date range with Split '
-                    "Report Into Chunks option. Only last_n_days and custom_date_range available."
-                )
+                prepared_range["date_to"] = today - timedelta(days=1)
+        else:
+            raise ValueError("Invalid date_range_type")
 
-        config["parsed_filters"] = json.loads(config["filters_json"]) if config.get("filters_json") else None
+        if isinstance(prepared_range["date_from"], str):
+            prepared_range["date_from"] = datetime.strptime(prepared_range["date_from"], CONFIG_DATE_FORMAT)
+
+        if isinstance(prepared_range["date_to"], str):
+            prepared_range["date_to"] = datetime.strptime(prepared_range["date_to"], CONFIG_DATE_FORMAT)
+        config["prepared_date_range"] = prepared_range
         return config
 
+    def transform_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
+        config = self.prepare_config_datetime(config)
+        return config
+
+    def spec(self, logger: logging.Logger) -> ConnectorSpecification:
+        spec = super().spec(logger)
+        properties = spec.connectionSpecification["properties"]
+        extra_spec_fields = self.generate_spec_fields_for_streams(self.ads_streams_classes)
+
+        for property_order, property_key in enumerate(extra_spec_fields, len(properties)):
+            new_property = extra_spec_fields[property_key]
+            new_property["order"] = property_order
+            properties[property_key] = new_property
+
+        reports_fields_property = properties["reports"]["items"]["properties"]["fields"]
+        reports_fields_property["items"] = {
+            "title": "ReportField",
+            "enum": list(CUSTOM_SCHEMA_FIELDS.keys()),
+        }
+
+        return spec
+
+    def generate_spec_fields_for_streams(self, ads_streams_classes: List[YandexDirectAdsStream]) -> List[Mapping[str, Any]]:
+        streams_spec_fields = {}
+        for stream_class in ads_streams_classes:
+            spec_field = {
+                "description": f"Поля для стрима {stream_class.__name__}. Для полей по умолчанию - оставьте пустыми.",
+                "title": f"Поля стрима {stream_class.__name__} (JSON, необязательно)",
+                "type": "string",
+                "examples": ['{"FieldNames": ["CampaignId", "Id"], "MobileAppAdFieldNames": ["Text", "Title"]}'],
+                "order": 4,
+            }
+            streams_spec_fields[stream_class.__name__.lower() + "_fields_params"] = spec_field
+        return streams_spec_fields
+
+    def get_spec_fields_names_for_streams(
+        self,
+        streams: List[YandexDirectAdsStream],
+    ) -> List[Tuple[YandexDirectAdsStream, str]]:
+        for stream in streams:
+            yield (stream, stream.__name__.lower() + "_fields_params")
+
+    def get_spec_property_name_for_stream(self, stream: YandexDirectAdsStream) -> Mapping[str, Any]:
+        for stream_class, spec_field_name in self.get_spec_fields_names_for_streams(self.ads_streams_classes):
+            if stream.__name__ == stream_class.__name__:
+                return spec_field_name
+
     def streams(self, config: Mapping[str, Any]) -> List[Any]:
-        return [CustomReport(auth=self.get_auth(config), config=self.transform_config(config))]
+        config = self.transform_config(config)
+        auth = self.get_auth(config)
+        report_streams = []
+        for report_config in config.get("reports"):
+            report_streams.append(
+                CustomReport(
+                    auth=auth,
+                    client_login=config["client_login"],
+                    report_name=report_config["name"],
+                    fields=report_config.get("fields"),
+                    parsed_filters=json.loads(report_config["filters_json"]) if report_config.get("filters_json") else None,
+                    date_range=config["prepared_date_range"],
+                    split_range_days_count=report_config.get("split_range_days_count"),
+                )
+            )
+        ads_streams = []
+        for stream_class in self.ads_streams_classes:
+            stream_kwargs = {
+                "auth": auth,
+                "client_login": config.get("client_login"),
+            }
+            if stream_class == AdImages:
+                stream_kwargs["use_simple_loader"] = config.get("adimages_use_simple_loader", False)
+            for _, spec_fields_name in self.get_spec_fields_names_for_streams(self.ads_streams_classes):
+                stream_kwargs[spec_fields_name] = json.loads(config.get(spec_fields_name, "{}"))
+            ads_streams.append(stream_class(**stream_kwargs))
+        return [*report_streams, *ads_streams]

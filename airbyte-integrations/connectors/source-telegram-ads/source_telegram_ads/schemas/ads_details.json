@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "text": {
+      "type": ["null", "string"]
+    },
+    "promote_url": {
+      "type": ["null", "string"]
+    },
+    "cpm": {
+      "type": ["null", "number"]
+    },
+    "langs": {
+      "type": ["null", "string"]
+    },
+    "topics": {
+      "type": ["null", "string"]
+    },
+    "channels": {
+      "type": ["null", "string"]
+    },
+    "exclude_topics": {
+      "type": ["null", "string"]
+    },
+    "exclude_channels": {
+      "type": ["null", "string"]
+    },
+    "info": {
+      "type": ["null", "string"]
+    },
+    "budget": {
+      "type": ["null", "number"]
+    }
+  }
+}

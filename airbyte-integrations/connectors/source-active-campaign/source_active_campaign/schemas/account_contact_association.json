@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "account": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "contact": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "jobTitle": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "createdTimestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updatedTimestamp": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lastContactDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lastContactType": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "account": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contact": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

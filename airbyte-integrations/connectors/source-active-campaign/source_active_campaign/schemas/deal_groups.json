@@ -1,0 +1,101 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "autoassign": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "allusers": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "allgroups": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "win_probability_initialize_date": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cdate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "udate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "stages": {
+      "type": [
+        "array",
+        "null"
+      ],
+      "items": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "links": {
+      "type": "object",
+      "properties": {
+        "stages": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dealGroupUsers": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "dealGroupGroups": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "winProbabilityFeatures": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  }
+}

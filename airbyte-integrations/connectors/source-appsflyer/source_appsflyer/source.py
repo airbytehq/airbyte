@@ -3,16 +3,18 @@
 #
 
 import csv
+import http.client as http_client
+import logging
 from abc import ABC
 from datetime import datetime, timedelta
 from decimal import Decimal
 from http import HTTPStatus
-import logging
 from operator import add
 from typing import (
     Any,
     Callable,
     Dict,
+    Generator,
     Iterable,
     List,
     Mapping,
@@ -21,6 +23,16 @@ from typing import (
     Tuple,
 )
 
+import requests
+
+http_client.HTTPConnection.debuglevel = 1
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
+requests_log = logging.getLogger("requests.packages.urllib3")
+requests_log.setLevel(logging.DEBUG)
+requests_log.propagate = True
+
+
 import pendulum
 import requests
 from airbyte_cdk.logger import AirbyteLogger
@@ -28,10 +40,12 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import NoAuth
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pendulum.tz.timezone import Timezone
 
 from . import fields
+from .utils import memoized_method
 
 
 # Simple transformer
@@ -48,59 +62,55 @@ class AppsflyerStream(HttpStream, ABC):
     additional_fields = ()
     maximum_rows = 1_000_000
     transformer: TypeTransformer = TypeTransformer(
-        TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+        TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization
+    )
     slices_by_date: bool = False
 
     def __init__(
         self,
+        authenticator: TokenAuthenticator,
         app_id: str,
-        api_token_v1: str,
         backward_dates_campatibility_mode: bool,
         timezone: str,
-        chunked_reports_config: Mapping[str, Any] = {
-            "split_mode_type": "do_not_split_mode"},
-        api_token_v2: Optional[str] = None,
-        start_date: Optional[pendulum.DateTime] = None,
-        end_date: Optional[pendulum.DateTime] = None,
-        client_name: Optional[str] = "",
-        product_name: Optional[str] = "",
-        custom_constants: Optional[Mapping[str, str]] = {},
+        chunked_reports_config: Mapping[str, Any] = {"split_mode_type": "do_not_split_mode"},
+        start_date: pendulum.DateTime = None,
+        end_date: pendulum.DateTime = None,
         *args,
         **kwargs,
     ):
-        super().__init__()
+        super().__init__(authenticator=authenticator)
+        self._authenticator = authenticator
         self.app_id = app_id
-        self.api_token_v1 = api_token_v1
-        self.api_token_v2 = api_token_v2
         self.backward_dates_campatibility_mode = backward_dates_campatibility_mode
         self.start_date = start_date
         self.end_date = end_date
         self.timezone = pendulum.timezone(timezone)
         self.chunked_reports_config = chunked_reports_config
-        self.client_name = client_name
-        self.product_name = product_name
-        self.custom_constants = custom_constants
         self.additional_args = args
         self.additional_kwargs = kwargs
 
     @property
     def url_base(self) -> str:
-        return f"https://hq.appsflyer.com/export/{self.app_id}/"
+        return f"https://hq1.appsflyer.com/api/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
-    def request_kwargs(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> Mapping[str, Any]:
+    def request_kwargs(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Mapping[str, Any]:
         return {"stream": True}
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
+        stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {
-            "api_token": self.api_token_v1,
             "from": pendulum.yesterday(self.timezone).to_datetime_string(),
             "to": pendulum.today(self.timezone).to_datetime_string(),
             "timezone": self.timezone.name,
@@ -110,34 +120,13 @@ class AppsflyerStream(HttpStream, ABC):
         if self.additional_fields:
             additional_fields = (",").join(self.additional_fields)
             params["additional_fields"] = additional_fields
-            print("self.name", self.name,
-                  "self.additional_fields", self.additional_fields)
+            print("self.name", self.name, "self.additional_fields", self.additional_fields)
 
         return params
 
-    def get_json_schema(self) -> Mapping[str, Any]:
-        schema = super().get_json_schema()
-        extra_properties = ["__productName", "__clientName"]
-        custom_keys = self.custom_constants.keys()
-        extra_properties.extend(custom_keys)
-        for key in extra_properties:
-            schema["properties"][key] = {"type": ["null", "string"]}
-        return schema
-
-    def add_constants_to_record(self, record: Dict[str, Any]):
-        constants = {
-            "__productName": self.product_name,
-            "__clientName": self.client_name,
-        }
-        constants.update(self.custom_constants)
-        record.update(constants)
-        return record
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        user_additional_fields = self.additional_kwargs.get(
-            self.stream_spec_additional_fields_property_name())
-        additional_fields = list(
-            self.additional_fields if self.additional_fields else [])
+        user_additional_fields = self.additional_kwargs.get(self.additional_fields_property())
+        additional_fields = list(self.additional_fields if self.additional_fields else [])
         if isinstance(user_additional_fields, list):
             additional_fields = user_additional_fields
         fields = add(list(self.main_fields), additional_fields)
@@ -147,8 +136,7 @@ class AppsflyerStream(HttpStream, ABC):
 
         # Skip CSV Header
         safed_reader_entries = map(self.safe_none_field, reader)
-        for record in safed_reader_entries:
-            yield self.add_constants_to_record(record)
+        yield from safed_reader_entries
 
     def safe_none_field(self, entry):
         if None in entry.keys():
@@ -170,10 +158,8 @@ class AppsflyerStream(HttpStream, ABC):
         return False
 
     def should_retry(self, response: requests.Response) -> bool:
-        is_aggregate_reports_reached_limit = self.is_aggregate_reports_reached_limit(
-            response)
-        is_raw_data_reports_reached_limit = self.is_raw_data_reports_reached_limit(
-            response)
+        is_aggregate_reports_reached_limit = self.is_aggregate_reports_reached_limit(response)
+        is_raw_data_reports_reached_limit = self.is_raw_data_reports_reached_limit(response)
         is_rejected = is_aggregate_reports_reached_limit or is_raw_data_reports_reached_limit
 
         return is_rejected or super().should_retry(response)
@@ -188,8 +174,7 @@ class AppsflyerStream(HttpStream, ABC):
         else:
             return super().backoff_time(response)
 
-        AirbyteLogger().log(
-            "INFO", f"Rate limit exceded. Retry in {wait_time} seconds.")
+        AirbyteLogger().log("INFO", f"Rate limit exceded. Retry in {wait_time} seconds.")
         return wait_time
 
     @transformer.registerCustomTransform
@@ -202,7 +187,7 @@ class AppsflyerStream(HttpStream, ABC):
 
     def chunk_date_range_by_hours(
         self, start_date: pendulum.DateTime, end_date: pendulum.DateTime, delta_hours: int = 4
-    ) -> List[Mapping[str, pendulum.DateTime]]:
+    ) -> Generator[Mapping[str, pendulum.DateTime], None, None]:
         cursor = start_date
         while cursor < end_date:
             chunk_start = cursor
@@ -216,56 +201,56 @@ class AppsflyerStream(HttpStream, ABC):
             cursor = cursor.add(hours=delta_hours)
 
     def chunk_date_range_by_days(
-        self, start_date: pendulum.DateTime, end_date: pendulum.DateTime
-    ) -> List[Mapping[str, pendulum.DateTime]]:
+        self,
+        start_date: pendulum.DateTime,
+        end_date: pendulum.DateTime,
+    ) -> Generator[Mapping[str, pendulum.DateTime], None, None]:
         cursor = start_date
         while cursor < end_date:
             yield {self.cursor_field: cursor, self.cursor_field + "_end": cursor}
             cursor = cursor.add(days=1)
 
     @classmethod
-    def stream_spec_additional_fields_property_name(cls) -> str:
+    def additional_fields_property(cls) -> str:
         return cls.__name__.lower() + "_additional_fields"
 
     def stream_slices(self, *args, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        if self.chunked_reports_config['split_mode_type'] == 'do_not_split_mode':
-            slices = [{self.cursor_field: self.start_date,
-                       f"{self.cursor_field}_end": self.end_date}]
-        elif self.chunked_reports_config['split_mode_type'] == 'split_date_mode':
+        if self.chunked_reports_config["split_mode_type"] == "do_not_split_mode":
+            slices = [
+                {self.cursor_field: self.start_date, f"{self.cursor_field}_end": self.end_date}
+            ]
+        elif self.chunked_reports_config["split_mode_type"] == "split_date_mode":
             if self.slices_by_date:
-                if self.chunked_reports_config['unit'] == 'Days':
-                    delta_hours = 24 * int(
-                        self.chunked_reports_config['split_range_units_count']
-                    )
+                if self.chunked_reports_config["unit"] == "Days":
+                    delta_hours = 24 * int(self.chunked_reports_config["split_range_units_count"])
                     slices = self.chunk_date_range_by_hours(
                         start_date=self.start_date,
                         end_date=self.end_date,
-                        delta_hours=delta_hours
+                        delta_hours=delta_hours,
                     )
                 else:
                     slices = self.chunk_date_range_by_days(
                         self.start_date,
-                        self.end_date
+                        self.end_date,
                     )
             else:
-                if self.chunked_reports_config['unit'] == 'Hours':
-                    delta_hours = int(
-                        self.chunked_reports_config['split_range_units_count'])
-                elif self.chunked_reports_config['unit'] == 'Days':
-                    delta_hours = 24 * \
-                        int(self.chunked_reports_config['split_range_units_count'])
+                if self.chunked_reports_config["unit"] == "Hours":
+                    delta_hours = int(self.chunked_reports_config["split_range_units_count"])
+                elif self.chunked_reports_config["unit"] == "Days":
+                    delta_hours = 24 * int(self.chunked_reports_config["split_range_units_count"])
                 else:
                     raise Exception(
-                        f'Invalid split date range unit: \'{self.chunked_reports_config["unit"]}\'')
+                        f'Invalid split date range unit: \'{self.chunked_reports_config["unit"]}\''
+                    )
                 slices = self.chunk_date_range_by_hours(
                     start_date=self.start_date,
                     end_date=self.end_date,
-                    delta_hours=delta_hours
+                    delta_hours=delta_hours,
                 )
         else:
             raise Exception(
-                'Invalid split date range split_mode_type: '
-                f'\'{self.chunked_reports_config["split_mode_type"]}\''
+                "Invalid split date range split_mode_type: "
+                f'\'{self.chunked_reports_config["split_mode_type"]}\'',
             )
 
         slices = list(slices)
@@ -284,8 +269,7 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
     ) -> Mapping[str, Any]:
         try:
             latest_state = latest_record.get(self.cursor_field)
-            current_state = current_stream_state.get(
-                self.cursor_field) or latest_state
+            current_state = current_stream_state.get(self.cursor_field) or latest_state
 
             if current_state:
                 return {self.cursor_field: max(latest_state, current_state)}
@@ -300,18 +284,17 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
         sync_mode,
         cursor_field: List[str] = None,
         stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Optional[Mapping[str, any]]]:
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         if not self.backward_dates_campatibility_mode:
             yield from super().stream_slices()
 
         stream_state = stream_state or {}
         cursor_value = stream_state.get(self.cursor_field)
-        start_date = self.get_date(parse_date(
-            cursor_value, self.timezone), self.start_date, max)
+        start_date = self.get_date(parse_date(cursor_value, self.timezone), self.start_date, max)
         if self.start_date_abnormal(start_date):
             self.end_date = start_date
         slices = self.chunk_date_range(start_date)
-        print('slices', slices)
+        print("slices", slices)
         return slices
 
     def start_date_abnormal(self, start_date: datetime) -> bool:
@@ -327,13 +310,12 @@ class IncrementalAppsflyerStream(AppsflyerStream, ABC):
         date = comparator(cursor_value, default_date)
         return date
 
-    def chunk_date_range(self, start_date: datetime) -> List[Mapping[str, any]]:
+    def chunk_date_range(self, start_date: datetime) -> List[Mapping[str, Any]]:
         dates = []
         delta = timedelta(days=self.intervals)
         while start_date <= self.end_date:
             end_date = self.get_date(start_date + delta, self.end_date, min)
-            dates.append({self.cursor_field: start_date,
-                         self.cursor_field + "_end": end_date})
+            dates.append({self.cursor_field: start_date, self.cursor_field + "_end": end_date})
             start_date += delta
         return dates
 
@@ -342,19 +324,21 @@ class RawDataMixin:
     main_fields = fields.raw_data.main_fields
     additional_fields = fields.raw_data.additional_fields
 
+    @property
+    def url_base(self) -> str:
+        return f"https://hq1.appsflyer.com/api/raw-data/export/app/{self.app_id}/"
+
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
+        stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
+        print("RawDataMixin stream_slice", stream_slice)
         params = super().request_params(stream_state, stream_slice, next_page_token)
-        params["from"] = stream_slice.get(
-            self.cursor_field).to_datetime_string()
-        params["to"] = stream_slice.get(
-            self.cursor_field + "_end").to_datetime_string()
-        user_additional_fields = self.additional_kwargs[self.stream_spec_additional_fields_property_name(
-        )]
+        params["from"] = stream_slice.get(self.cursor_field).to_datetime_string()
+        params["to"] = stream_slice.get(self.cursor_field + "_end").to_datetime_string()
+        user_additional_fields = self.additional_kwargs[self.additional_fields_property()]
         if user_additional_fields:
             params["additional_fields"] = ",".join(user_additional_fields)
         else:
@@ -364,16 +348,27 @@ class RawDataMixin:
                 pass
         # use currency set in the app settings to align with aggregate api currency.
         params["currency"] = "preferred"
+        print("RawDataMixin params", params)
 
         return params
 
+    @memoized_method()
     def get_json_schema(self) -> Mapping[str, Any]:
-        schema = super().get_json_schema()
-        user_additional_fields = self.additional_kwargs[self.stream_spec_additional_fields_property_name(
-        )]
+        """Берёт стандартную схему, берёт указанные в конфиге additional_fields,
+            берёт полный список доступных additional_fields для стрима из пакета fields
+            удаляет из схемы additional_fields, которые не будет использоваться в схеме
+
+        Returns:
+            Mapping[str, Any]: _description_
+        """
+        schema = super().get_json_schema().copy()
+        user_additional_fields = self.additional_kwargs[self.additional_fields_property()]
         for default_additional_field in self.additional_fields:
             if default_additional_field not in user_additional_fields:
-                del schema["properties"][default_additional_field]
+                try:
+                    del schema["properties"][default_additional_field]
+                except KeyError:
+                    pass
         return schema
 
 
@@ -381,16 +376,19 @@ class AggregateDataMixin:
     cursor_field = "date"
     slices_by_date = True
 
+    @property
+    def url_base(self) -> str:
+        return f"https://hq1.appsflyer.com/api/agg-data/export/app/{self.app_id}/"
+
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
+        stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
         params["from"] = stream_slice.get(self.cursor_field).to_date_string()
-        params["to"] = stream_slice.get(
-            self.cursor_field + "_end").to_date_string()
+        params["to"] = stream_slice.get(self.cursor_field + "_end").to_date_string()
 
         return params
 
@@ -399,7 +397,7 @@ class RetargetingMixin:
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
+        stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state, stream_slice, next_page_token)
@@ -408,16 +406,59 @@ class RetargetingMixin:
         return params
 
 
-class InAppEvents(RawDataMixin, IncrementalAppsflyerStream):
+class MediaSourceFilterMixin:
+    def __init__(self, media_source_filter_config: Mapping[str, Any]):
+        """
+        {
+            "media_source_type": "facebook" | "twitter" | "other" | "no_filter",
+            "custom_media_source_name": None | "custom_abc", - can be any string from config if
+                media_source_type is "other", otherwise None
+        """
+        self.media_source_filter_config = media_source_filter_config
+
+    def request_params(self, *args, **kwargs) -> MutableMapping[str, Any]:
+        if self.media_source_filter_config.get("media_source_type") in ["facebook", "twitter"]:
+            return {
+                "media_source": self.media_source_filter_config.get("media_source_type"),
+                "category": self.media_source_filter_config.get("media_source_type"),
+            }
+        elif self.media_source_filter_config.get("media_source_type") == "other":
+            return {
+                "media_source": self.media_source_filter_config.get("custom_media_source_name"),
+                "category": "standard",
+            }
+        elif self.media_source_filter_config.get("media_source_type") == "no_filter":
+            return {}
+        else:
+            return {}
+
+
+class InAppEvents(RawDataMixin, MediaSourceFilterMixin, IncrementalAppsflyerStream):
     intervals = 31
     cursor_field = "event_time"
 
-    def __init__(self, in_app_events_event_name_filter: Optional[str] = None, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        in_app_events_event_name_filter: Optional[str] = None,
+        media_source_filter_config: Optional[Mapping[str, Any]] = {},
+        *args,
+        **kwargs,
+    ) -> None:
+        IncrementalAppsflyerStream.__init__(self, *args, **kwargs)
+        MediaSourceFilterMixin.__init__(
+            self,
+            media_source_filter_config,
+        )
+        RawDataMixin.__init__(self)
         self.in_app_events_event_name_filter = in_app_events_event_name_filter
 
     def request_params(self, *args, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(*args, **kwargs)
+        params = {
+            **IncrementalAppsflyerStream.request_params(self, *args, **kwargs),
+            **RawDataMixin.request_params(self, *args, **kwargs),
+            **MediaSourceFilterMixin.request_params(self, *args, **kwargs),
+        }
+        print("InAppEvents params", params)
         if self.in_app_events_event_name_filter:
             params["event_name"] = self.in_app_events_event_name_filter
         return params
@@ -444,16 +485,57 @@ class UninstallEvents(RawDataMixin, IncrementalAppsflyerStream):
         return "uninstall_events_report/v5"
 
 
-class Installs(RawDataMixin, IncrementalAppsflyerStream):
+class InstallsBase(RawDataMixin, MediaSourceFilterMixin, IncrementalAppsflyerStream, ABC):
     cursor_field = "install_time"
 
-    def path(
+    def __init__(
         self,
-        stream_state: Mapping[str, Any] = None,
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> str:
+        media_source_filter_config: Optional[Mapping[str, Any]] = {},
+        *args,
+        **kwargs,
+    ) -> None:
+        IncrementalAppsflyerStream.__init__(self, *args, **kwargs)
+        MediaSourceFilterMixin.__init__(
+            self,
+            media_source_filter_config,
+        )
+        RawDataMixin.__init__(self)
+
+    def request_params(self, *args, **kwargs) -> MutableMapping[str, Any]:
+        return {
+            **IncrementalAppsflyerStream.request_params(self, *args, **kwargs),
+            **MediaSourceFilterMixin.request_params(self, *args, **kwargs),
+            **RawDataMixin.request_params(self, *args, **kwargs),
+        }
+
+
+class Installs(InstallsBase):
+    def path(self, *args, **kwargs) -> str:
         return "installs_report/v5"
+
+
+class BlockedInstalls(InstallsBase):
+    main_fields = fields.blocked_installs.main_fields
+    additional_fields = fields.blocked_installs.additional_fields
+
+    def path(self, *args, **kwargs) -> str:
+        return "blocked_installs_report/v5"
+
+
+class PostAttributionInstalls(InstallsBase):
+    main_fields = fields.post_attribution_installs.main_fields
+    additional_fields = fields.post_attribution_installs.additional_fields
+
+    def path(self, *args, **kwargs) -> str:
+        return "detection/v5"
+
+
+class PostAttributionInAppEvents(InstallsBase):
+    main_fields = fields.post_attribution_in_app_events.main_fields
+    additional_fields = fields.post_attribution_in_app_events.additional_fields
+
+    def path(self, *args, **kwargs) -> str:
+        return "fraud-post-inapps/v5"
 
 
 class RetargetingInAppEvents(RetargetingMixin, InAppEvents):
@@ -525,7 +607,7 @@ class CohortsReport(AggregateDataMixin, IncrementalAppsflyerStream):
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, any] = None,
+        stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = {
@@ -569,7 +651,6 @@ class CohortsReport(AggregateDataMixin, IncrementalAppsflyerStream):
         return {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "Authorization": f"Bearer {self.api_token_v2}",
         }
 
     @property
@@ -577,7 +658,7 @@ class CohortsReport(AggregateDataMixin, IncrementalAppsflyerStream):
         return "POST"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield from map(response.json()["results"], self.add_constants_to_record)
+        yield from map(self.add_constants_to_record, response.json()["results"])
 
 
 # Source
@@ -588,24 +669,27 @@ class SourceAppsflyer(AbstractSource):
         UninstallEvents,
         RetargetingInAppEvents,
         RetargetingConversions,
+        BlockedInstalls,
+        PostAttributionInstalls,
+        PostAttributionInAppEvents,
     ]
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             timezone = config.get("timezone", "UTC")
             if timezone not in pendulum.timezones:
                 return False, "The supplied timezone is invalid."
             app_id = config["app_id"]
-            api_token = config["api_token_v1"]
             dates = pendulum.now("UTC").to_date_string()
-            test_url = (
-                f"https://hq.appsflyer.com/export/{app_id}/partners_report/v5?api_token={api_token}&from={dates}&to={dates}&timezone=UTC"
-            )
-            response = requests.get(test_url)
+            test_url = f"https://hq.appsflyer.com/export/{app_id}/partners_report/v5?from={dates}&to={dates}&timezone=UTC"
+            response = requests.get(test_url, headers=self.get_auth(config).get_auth_header())
 
             if response.status_code != 200:
-                error_message = "The supplied APP ID is invalid" if response.status_code == 404 else response.text.rstrip(
-                    "\n")
+                error_message = (
+                    "The supplied APP ID is invalid"
+                    if response.status_code == 404
+                    else response.text.rstrip("\n")
+                )
                 if error_message:
                     return False, error_message
                 response.raise_for_status()
@@ -614,22 +698,30 @@ class SourceAppsflyer(AbstractSource):
 
         return True, None
 
+    def get_auth(self, config: Mapping[str, Any]) -> TokenAuthenticator:
+        return TokenAuthenticator(token=config["access_token"])
+
     def spec(self, logger: logging.Logger):
         spec = super().spec(logger)
         properties: Dict[str, Any] = spec.connectionSpecification["properties"]
-        for property_order, raw_data_stream in enumerate(self.raw_data_streams_classes, len(properties)):
+        for property_order, raw_data_stream in enumerate(
+            self.raw_data_streams_classes, len(properties)
+        ):
+            stream_additional_fields = (
+                getattr(raw_data_stream, "additional_fields") or fields.raw_data.additional_fields
+            )
             properties.update(
                 {
-                    raw_data_stream.stream_spec_additional_fields_property_name(): {
+                    raw_data_stream.additional_fields_property(): {
                         "title": f"{raw_data_stream.__name__} Additional Fields",
                         "description": f"Comma-separated additional fields names that will be included "
                         f"in {raw_data_stream.__name__} stream schema. Leave empty if you"
                         f" don't want to load additional {raw_data_stream.__name__} fields. Fields order matters!"
-                        f" Available additional fields: {', '.join(fields.raw_data.additional_fields)}",
+                        f" Available additional fields: {', '.join(stream_additional_fields)}",
                         "type": "string",
                         "pattern": "^$|^(\\w+,?)+\\w+$",
                         "examples": ["field1,field2,field3"],
-                        "default": ",".join(fields.raw_data.additional_fields),
+                        "default": ",".join(stream_additional_fields),
                         "order": property_order,
                     }
                 }
@@ -643,35 +735,39 @@ class SourceAppsflyer(AbstractSource):
         now_date = pendulum.now().replace(tzinfo=timezone)
 
         if config.get("start_date") and config.get("end_date"):
-            config["start_date"] = pendulum.parse(
-                config["start_date"]).replace(tzinfo=timezone)
-            config["end_date"] = pendulum.parse(
-                config["end_date"]).replace(tzinfo=timezone)
+            config["start_date"] = pendulum.parse(config["start_date"]).replace(tzinfo=timezone)
+            config["end_date"] = pendulum.parse(config["end_date"]).replace(tzinfo=timezone)
         elif config.get("start_date") and not config.get("end_date"):
             config["backward_dates_campatibility_mode"] = True
-            config["start_date"] = pendulum.parse(
-                config["start_date"]).replace(tzinfo=timezone)
+            config["start_date"] = pendulum.parse(config["start_date"]).replace(tzinfo=timezone)
             config["end_date"] = now_date
         elif config.get("last_days"):
             config["start_date"] = (
-                pendulum.now().subtract(days=config["last_days"]).replace(
-                    tzinfo=timezone, hour=0, minute=0, second=0, microsecond=0)
+                pendulum.now()
+                .subtract(days=config["last_days"])
+                .replace(tzinfo=timezone, hour=0, minute=0, second=0, microsecond=0)
             )
-            config["end_date"] = now_date.replace(
-                hour=0, minute=0, second=0, microsecond=0)
-        elif not config.get("start_date") and not config.get("end_date") and not config.get("last_days"):
-            config["start_date"] = pendulum.now().subtract(
-                days=5).replace(tzinfo=timezone)
+            config["end_date"] = now_date.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif (
+            not config.get("start_date")
+            and not config.get("end_date")
+            and not config.get("last_days")
+        ):
+            config["start_date"] = pendulum.now().subtract(days=5).replace(tzinfo=timezone)
             config["end_date"] = now_date
         else:
             raise Exception("Invalid dates format or options")
+
+        config["end_date"] = config["end_date"].replace(
+            hour=23, minute=59, second=59, microsecond=999999
+        )
 
         return config
 
     def transform_config(self, config: Mapping[str, Any]) -> Mapping[str, Any]:
         config = self.transform_config_dates(config)
         for raw_data_stream_class in self.raw_data_streams_classes:
-            af_property_name = raw_data_stream_class.stream_spec_additional_fields_property_name()
+            af_property_name = raw_data_stream_class.additional_fields_property()
             if config.get(af_property_name):
                 config[af_property_name] = config[af_property_name].split(",")
             else:
@@ -680,24 +776,38 @@ class SourceAppsflyer(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self.transform_config(config)
+        auth = self.get_auth(config)
+        shared_args = dict(authenticator=auth, **config)
+        try:
+            shared_args.pop("media_source_filter_config")
+        except:
+            pass
+        media_source_filter_config = config.get(
+            "media_source_filter_config", {"media_source_type": "no_filter"}
+        )
         AirbyteLogger().log(
             "INFO",
             f"Using start_date: {config['start_date']}, end_date: {config['end_date']}",
         )
         streams: Stream = [
-            InAppEvents(**config),
-            Installs(**config),
-            UninstallEvents(**config),
-            RetargetingInAppEvents(**config),
-            RetargetingConversions(**config),
-            PartnersReport(**config),
-            DailyReport(**config),
-            GeoReport(**config),
-            RetargetingPartnersReport(**config),
-            RetargetingDailyReport(**config),
-            RetargetingGeoReport(**config),
+            InAppEvents(**shared_args, media_source_filter_config=media_source_filter_config),
+            Installs(**shared_args, media_source_filter_config=media_source_filter_config),
+            BlockedInstalls(**shared_args, media_source_filter_config=media_source_filter_config),
+            PostAttributionInstalls(
+                **shared_args,
+                media_source_filter_config=media_source_filter_config,
+            ),
+            UninstallEvents(**shared_args),
+            RetargetingInAppEvents(**shared_args),
+            RetargetingConversions(**shared_args),
+            PartnersReport(**shared_args),
+            DailyReport(**shared_args),
+            GeoReport(**shared_args),
+            RetargetingPartnersReport(**shared_args),
+            RetargetingDailyReport(**shared_args),
+            RetargetingGeoReport(**shared_args),
+            CohortsReport(**shared_args),
+            PostAttributionInAppEvents(**shared_args),
         ]
-        if config.get("api_token_v2"):
-            streams.append(CohortsReport(**config))
 
         return streams
