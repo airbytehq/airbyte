@@ -38,11 +38,13 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp) {
+  public String updateTable(final StreamConfig stream, final String finalSuffix, final Optional<Instant> minRawTimestamp,
+                            final boolean useExpensiveSaferCasting) {
     final String timestampFilter = minRawTimestamp
         .map(timestamp -> " WHERE extracted_at > " + timestamp)
         .orElse("");
-    return "UPDATE TABLE " + stream.id().finalTableId("", finalSuffix) + timestampFilter;
+    final String casting = useExpensiveSaferCasting ? " WITH" : " WITHOUT" + " SAFER CASTING";
+    return "UPDATE TABLE " + stream.id().finalTableId("", finalSuffix) + casting + timestampFilter;
   }
 
   @Override

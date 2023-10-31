@@ -67,16 +67,17 @@ public interface SqlGenerator<DialectTableDefinition> {
    * <p>
    * Implementing classes are recommended to break this into smaller methods, which can be tested in
    * isolation. However, this interface only requires a single mega-method.
-   *
-   * @param finalSuffix the suffix of the final table to write to. If empty string, writes to the
+   *  @param finalSuffix the suffix of the final table to write to. If empty string, writes to the
    *        final table directly. Useful for full refresh overwrite syncs, where we write the entire
    *        sync to a temp table and then swap it into the final table at the end.
-   * @param minRawTimestamp The latest _airbyte_extracted_at for which all raw records with that
-   *        timestamp have already been typed+deduped. Implementations MAY use this value in a
-   *        {@code _airbyte_extracted_at > minRawTimestamp} filter on the raw table to improve query
-   *        performance.
+   *
+   * @param minRawTimestamp          The latest _airbyte_extracted_at for which all raw records with that timestamp have already been typed+deduped.
+   *                                 Implementations MAY use this value in a {@code _airbyte_extracted_at > minRawTimestamp} filter on the raw table
+   *                                 to improve query performance.
+   * @param useExpensiveSaferCasting often the data coming from the source can be faithfully represented in the destination without issue, and using
+   *                                 a "CAST" expression works fine, however sometimes
    */
-  String updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp);
+  String updateTable(final StreamConfig stream, String finalSuffix, Optional<Instant> minRawTimestamp, final boolean useExpensiveSaferCasting);
 
   /**
    * Drop the previous final table, and rename the new final table to match the old final table.

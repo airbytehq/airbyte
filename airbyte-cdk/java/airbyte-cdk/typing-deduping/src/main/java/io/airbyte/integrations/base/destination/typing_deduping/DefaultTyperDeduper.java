@@ -218,10 +218,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
           final Lock externalLock = tdLocks.get(streamConfig.id()).writeLock();
           externalLock.lock();
           try {
-            LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
-            final String suffix = getFinalTableSuffix(streamConfig.id());
-            final String sql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAtByStream.get(streamConfig.id()));
-            destinationHandler.execute(sql);
+            typeAndDedupeTransactions(streamConfig);
           } finally {
             LOGGER.info("Allowing other threads to proceed for {}.{}", originalNamespace, originalName);
             externalLock.unlock();
@@ -237,6 +234,21 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
         return Optional.of(e);
       }
     }, this.executorService);
+  }
+
+  public void typeAndDedupeTransactions(final StreamConfig streamConfig) throws Exception {
+    final String suffix = getFinalTableSuffix(streamConfig.id());
+    try {
+      LOGGER.info("Attempting typing and deduping for {}.{}", streamConfig.id().originalNamespace(), streamConfig.id().originalName());
+      final String unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAtByStream.get(streamConfig.id()), false);
+      destinationHandler.execute(unsafeSql);
+      // TODO determine which Exceptions should not be retried even with safer sql
+    } catch (Exception e) {
+      LOGGER.error("Encountered Exception on unsafe SQL for stream %s %s, attempting with error handling"
+                       .formatted(streamConfig.id().originalNamespace(), streamConfig.id().originalName()), e);
+      final String saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAtByStream.get(streamConfig.id()), true);
+      destinationHandler.execute(saferSql);
+    }
   }
 
   @Override
