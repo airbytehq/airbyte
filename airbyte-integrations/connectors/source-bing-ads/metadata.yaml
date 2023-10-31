@@ -42,8 +42,8 @@ data:
       2.0.0:
         message:
           Version 2.0.0 updates schemes for Accounts, Campaigns and Search Query Performance Report streams.
-          LinkedAgencies was changed from string to object in Accounts stream. BiddingScheme.MaxCpc.Amount 
-          was changed from string to number in Campaigns stream. And CostPerConversion was changed from integer 
+          LinkedAgencies was changed from string to object in Accounts stream. BiddingScheme.MaxCpc.Amount
+          was changed from string to number in Campaigns stream. And CostPerConversion was changed from integer
           to number. Users will need to refresh the source schema and reset affected streams after upgrading.
         upgradeDeadline: "2023-11-16"
   supportLevel: certified
