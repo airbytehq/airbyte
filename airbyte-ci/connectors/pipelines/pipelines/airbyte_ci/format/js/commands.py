@@ -1,5 +1,6 @@
 import logging
 import sys
+from typing import Optional
 
 import asyncclick as click
 import dagger
@@ -14,15 +15,15 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def js(ctx: ClickPipelineContext):
+async def js(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext):
     """Format yaml and json code via prettier."""
 
-    success = await format_js(ctx)
+    success = await format_js(dagger_client, ctx)
     if not success:
         click.Abort()
 
 
-async def format_js(ctx: ClickPipelineContext) -> bool:
+async def format_js(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext) -> bool:
     """Checks whether the repository is formatted correctly.
     Args:
         fix (bool): Whether to automatically fix any formatting issues detected.
@@ -37,7 +38,8 @@ async def format_js(ctx: ClickPipelineContext) -> bool:
     else:
         prettier_command = ["prettier", "--check", "."]
 
-    dagger_client = await ctx.get_dagger_client(pipeline_name="Format Yaml and Json")
+    if not dagger_client:
+        dagger_client = await ctx.get_dagger_client(pipeline_name="Format Yaml and Json")
 
     try:
         format_container = await (

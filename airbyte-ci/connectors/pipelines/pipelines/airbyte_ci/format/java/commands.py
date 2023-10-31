@@ -1,5 +1,6 @@
 import logging
 import sys
+from typing import Optional
 
 import asyncclick as click
 import dagger
@@ -14,15 +15,15 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def java(ctx: ClickPipelineContext):
+async def java(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext):
     """Format java, groovy, and sql code via spotless."""
 
-    success = await format_java(ctx)
+    success = await format_java(dagger_client, ctx)
     if not success:
         click.Abort()
 
 
-async def format_java(ctx: ClickPipelineContext) -> bool:
+async def format_java(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext) -> bool:
     logger = logging.getLogger("format")
 
     fix = ctx.params["fix"]
@@ -31,7 +32,8 @@ async def format_java(ctx: ClickPipelineContext) -> bool:
     else:
         gradle_command = ["./gradlew", "spotlessCheck", "--scan"]
 
-    dagger_client = await ctx.get_dagger_client(pipeline_name="Format Java")
+    if not dagger_client:
+        dagger_client = await ctx.get_dagger_client(pipeline_name="Format Java")
     try:
         format_container = await (
             dagger_client.container()

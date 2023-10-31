@@ -7,9 +7,11 @@ Module exposing the tests command to test airbyte-ci projects.
 """
 
 import asyncclick as click
-from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
+from pipelines.cli.click_decorators import LazyPassDecorator, click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
+from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext
 
+pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContext)
 
 @click.group(
     cls=LazyGroup,
@@ -24,16 +26,17 @@ from pipelines.cli.lazy_group import LazyGroup
 )
 @click.option("--fix/--check", type=bool, default=None, help="Whether to automatically fix any formatting issues detected.  [required]")
 @click_merge_args_into_context_obj
+@pass_pipeline_context
 @click_ignore_unused_kwargs
-async def format(ctx: click.Context, fix: bool):
+async def format(ctx: click.Context, pipeline_ctx: ClickPipelineContext, fix: bool):
     from pipelines.airbyte_ci.format.java.commands import java
     from pipelines.airbyte_ci.format.js.commands import js
     from pipelines.airbyte_ci.format.license.commands import license
     from pipelines.airbyte_ci.format.python.commands import python
 
     if ctx.invoked_subcommand is None:
-        # TODO: ctx.forward should forward the fix commands to the subcommands
-        await ctx.invoke(license)
-        await ctx.invoke(java)
-        await ctx.invoke(js)
-        await ctx.invoke(python)
+        dagger_client = await pipeline_ctx.get_dagger_client(pipeline_name="Format All Files")
+        await ctx.invoke(license, dagger_client)
+        await ctx.invoke(java, dagger_client)
+        await ctx.invoke(js, dagger_client)
+        await ctx.invoke(python, dagger_client)

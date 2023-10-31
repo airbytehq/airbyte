@@ -2,6 +2,7 @@
 
 import logging
 import sys
+from typing import Optional
 
 import asyncclick as click
 import dagger
@@ -16,14 +17,14 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def license(ctx: ClickPipelineContext):
+async def license(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext):
     """Add license to python and java code via addlicense."""
-    success = await format_license(ctx)
+    success = await format_license(dagger_client, ctx)
     if not success:
         click.Abort()
 
 
-async def format_license(ctx: ClickPipelineContext) -> bool:
+async def format_license(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext) -> bool:
     license_text = "LICENSE_SHORT"
     logger = logging.getLogger(f"format")
 
@@ -33,7 +34,8 @@ async def format_license(ctx: ClickPipelineContext) -> bool:
     else:
         addlicense_command = ["addlicense", "-c", "Airbyte, Inc.", "-l", "apache", "-v", "-f", license_text, "-check", "."]
 
-    dagger_client = await ctx.get_dagger_client(pipeline_name="Format License")
+    if not dagger_client:
+        dagger_client = await ctx.get_dagger_client(pipeline_name="Format License")
     try:
         license_container = await (
             dagger_client.container()

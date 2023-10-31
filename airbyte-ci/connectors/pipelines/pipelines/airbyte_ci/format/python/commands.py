@@ -1,5 +1,6 @@
 import logging
 import sys
+from typing import Optional
 
 import asyncclick as click
 import dagger
@@ -14,14 +15,14 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def python(ctx: ClickPipelineContext):
+async def python(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext):
     """Format python code via black and isort."""
-    success = await format_python(ctx)
+    success = await format_python(dagger_client, ctx)
     if not success:
         click.Abort()
 
 
-async def format_python(ctx: ClickPipelineContext) -> bool:
+async def format_python(dagger_client: Optional[dagger.Client], ctx: ClickPipelineContext) -> bool:
     """Checks whether the repository is formatted correctly.
     Args:
         fix (bool): Whether to automatically fix any formatting issues detected.
@@ -37,7 +38,8 @@ async def format_python(ctx: ClickPipelineContext) -> bool:
         isort_command.remove("--check-only")
         black_command.remove("--check")
 
-    dagger_client = await ctx.get_dagger_client(pipeline_name="Format Python")
+    if not dagger_client:
+        dagger_client = await ctx.get_dagger_client(pipeline_name="Format Python")
 
     try:
         format_container = await (
