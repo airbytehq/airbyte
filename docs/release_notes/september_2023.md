@@ -3,7 +3,7 @@
 
 This page includes new features and improvements to the Airbyte Cloud and Airbyte Open Source platforms.
 
-## **✨ Highlights
+## ✨ Highlights
 
 This month, we brought 4 new destinations to Airbyte focused on AI. This enables users to seamlessly flow data from 100s of our sources into large language models. Those four destinations are:
 - [Qdrant](https://github.com/airbytehq/airbyte/pull/30332)
