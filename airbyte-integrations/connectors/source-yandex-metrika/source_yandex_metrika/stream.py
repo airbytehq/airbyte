@@ -6,7 +6,7 @@
 import logging
 from abc import ABC
 import os
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Iterable, Mapping, MutableMapping
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -31,7 +31,7 @@ class YandexMetrikaStream(HttpStream, ABC):
     url_base = "https://api-metrika.yandex.net/management/v1/"
 
     @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+    def primary_key(self) -> str | list[str] | list[list[str]] | None:
         if self.log_source == "visits":
             return "ym:s:visitID"
         if self.log_source == "hits":
@@ -44,9 +44,9 @@ class YandexMetrikaStream(HttpStream, ABC):
         date_from: str,
         date_to: str,
         last_days: int,
-        split_reports: Mapping[str, Any],
+        split_reports: Mapping[str, any],
         log_source: str,
-        fields: List[str],
+        fields: list[str],
         client_name_const: str,
         product_name_const: str,
         custom_data_const={},
@@ -114,15 +114,15 @@ class YandexMetrikaStream(HttpStream, ABC):
 
         return schema
 
-    def path(self, next_page_token: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, *args, **kwargs) -> str:
+    def path(self, next_page_token: Mapping[str, any] = None, stream_slice: Mapping[str, any] = None, *args, **kwargs) -> str:
         path = f"counter/{self.counter_id}/logrequest/{stream_slice['log_request_id']}/part/{stream_slice['part']['part_number']}/download"
         logger.info(f"Path: {path}")
         return path
 
-    def next_page_token(self, *args, **kwargs) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, *args, **kwargs) -> Mapping[str, any] | None:
         return None
 
-    def request_params(self, stream_slice: Mapping[str, Any] = None, *args, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, stream_slice: Mapping[str, any] = None, *args, **kwargs) -> MutableMapping[str, any]:
         return {
             "date1": stream_slice["date_from"],
             "date2": stream_slice["date_to"],
@@ -130,7 +130,7 @@ class YandexMetrikaStream(HttpStream, ABC):
             "source": self.log_source,
         }
 
-    def request_headers(self, stream_state=None, *args, **kwargs) -> Mapping[str, Any]:
+    def request_headers(self, stream_state=None, *args, **kwargs) -> Mapping[str, any]:
         headers = super().request_headers(stream_state, *args, **kwargs)
         headers.update({"Content-Type": "application/x-yametrika+json"})
         return headers
@@ -170,7 +170,7 @@ class YandexMetrikaStream(HttpStream, ABC):
               self.preprocessor.get_available_log_requests())
         return super().should_retry(response)
 
-    def stream_slices(self, *args, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(self, *args, **kwargs) -> Iterable[Mapping[str, any] | None]:
         if self.split_reports["split_mode_type"] == "do_not_split_mode":
             slices = [{"date_from": self.date_from, "date_to": self.date_to}]
         elif self.split_reports["split_mode_type"] == "split_date_mode":

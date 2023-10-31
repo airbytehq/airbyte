@@ -4,31 +4,31 @@
 
 
 import copy
-from datetime import datetime, timedelta
 import logging
 import shutil
+from datetime import datetime, timedelta
+from typing import Iterator, Mapping, MutableMapping
 
-from typing import Any, Iterator, List, Mapping, MutableMapping, Tuple
-
-from airbyte_cdk.sources.utils.schema_helpers import split_config
-from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, ConnectorSpecification, SyncMode, ConfiguredAirbyteCatalog
+from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteStream, ConnectorSpecification, SyncMode, \
+    ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
+from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_yandex_metrika.aggregated_data_streams.streams import AggregateDataYandexMetrikaReport, ReportConfig
 from source_yandex_metrika.raw_data_streams.stream import YandexMetrikaRawDataStream
-
 from source_yandex_metrika.raw_data_streams.threads import (
     PreprocessedSlicePartThreadsController,
     YandexMetrikaRawSliceMissingChunksObserver,
 )
+
 from .auth import CredentialsCraftAuthenticator
-from .raw_data_streams.fields import HITS_AVAILABLE_FIELDS, VISITS_AVAILABLE_FIELDS
 from .raw_data_streams.exceptions import MissingChunkIdsError
+from .raw_data_streams.fields import HITS_AVAILABLE_FIELDS, VISITS_AVAILABLE_FIELDS
 
 logger = logging.getLogger("airbyte")
 CONFIG_DATE_FORMAT = "%Y-%m-%d"
@@ -39,9 +39,9 @@ class SourceYandexMetrika(AbstractSource):
     def preprocess_raw_stream_slice(
             self,
             stream_name: str,
-            stream_slice: Mapping[str, Any],
+            stream_slice: Mapping[str, any],
             check_log_request_ability: bool = False,
-    ) -> List[Mapping[str, Any]]:
+    ) -> list[Mapping[str, any]]:
         logger.info(f"Preprocessing raw stream slice {stream_slice} for stream {stream_name}...")
         preprocessor = getattr(self, self.raw_data_stream_to_field_map[stream_name]["preprocessor_field_name"])
         is_request_on_server, request_id = preprocessor.check_if_log_request_already_on_server(stream_slice)
@@ -76,15 +76,20 @@ class SourceYandexMetrika(AbstractSource):
     def read(
             self,
             logger: logging.Logger,
-            config: Mapping[str, Any],
+            config: Mapping[str, any],
             catalog: ConfiguredAirbyteCatalog,
-            state: MutableMapping[str, Any] = None,
+            state: MutableMapping[str, any] = None,
     ) -> Iterator[AirbyteMessage]:
         connector_state = copy.deepcopy(state or {})
+
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
+
         stream_instances = {s.name: s for s in self.streams(config)}
         self._stream_to_instance_map = stream_instances
+
+        self._replace_values: dict[str, str] = {replace["old_value"]: replace["new_value"] for replace in config.get("replace_values", [])}
+
         with create_timer(self.name) as timer:
             shutil.rmtree("output", ignore_errors=True)
             for configured_stream in catalog.streams:
@@ -128,7 +133,7 @@ class SourceYandexMetrika(AbstractSource):
             logger: logging.Logger,
             stream_instance: Stream,
             configured_stream: ConfiguredAirbyteStream,
-            connector_state: MutableMapping[str, Any],
+            connector_state: MutableMapping[str, any],
             internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         self._apply_log_level_to_stream_logger(logger, stream_instance)
@@ -188,6 +193,7 @@ class SourceYandexMetrika(AbstractSource):
                         multithreading_threads_count=stream_instance_kwargs["multithreading_threads_count"],
                         timer=timer,
                         completed_chunks_observer=completed_chunks_observer,
+                        replace_values=self._replace_values,
                     )
                     logger.info("Threads controller created")
                     logger.info("Run threads process, get into main loop")
@@ -211,8 +217,9 @@ class SourceYandexMetrika(AbstractSource):
         else:
             yield from super()._read_full_refresh(logger, stream_instance, configured_stream, internal_config)
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> tuple[bool, any]:
         raw_hits_config: dict = config.get("raw_data_hits_report")
+        print(raw_hits_config)
         if raw_hits_config.get("is_enabled") == "enabled":
             for f in raw_hits_config.get("fields", []):
                 if f not in HITS_AVAILABLE_FIELDS.get_all_fields_names_list():
@@ -266,7 +273,7 @@ class SourceYandexMetrika(AbstractSource):
 
         return True, None
 
-    def transform_config(self, raw_config: dict[str, Any]) -> Mapping[str, Any]:
+    def transform_config(self, raw_config: dict[str, any]) -> Mapping[str, any]:
         transformed_config = {
             "counter_id": int(raw_config["counter_id"]),
             "aggregate_tables": [
@@ -291,7 +298,7 @@ class SourceYandexMetrika(AbstractSource):
         raw_config.update(transformed_config)
         return raw_config
 
-    def transform_date_range(self, config: Mapping[str, Any]) -> dict[str, Any]:
+    def transform_date_range(self, config: Mapping[str, any]) -> dict[str, any]:
         date_range = config["date_range"]
         range_type = config["date_range"]["date_range_type"]
         today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -322,7 +329,7 @@ class SourceYandexMetrika(AbstractSource):
         config["prepared_date_range"] = prepared_range
         return config
 
-    def get_auth(self, config: Mapping[str, Any]) -> TokenAuthenticator:
+    def get_auth(self, config: Mapping[str, any]) -> TokenAuthenticator:
         if config["credentials"]["auth_type"] == "access_token_auth":
             return TokenAuthenticator(config["credentials"]["access_token"], auth_method="OAuth")
         elif config["credentials"]["auth_type"] == "credentials_craft_auth":
@@ -337,7 +344,7 @@ class SourceYandexMetrika(AbstractSource):
             raise Exception("Неверный типа авторизации. Доступные: access_token_auth и credentials_craft_auth")
 
     @staticmethod
-    def get_values_replace_dict(config: Mapping[str, Any]) -> dict[str, str]:
+    def get_values_replace_dict(config: Mapping[str, any]) -> dict[str, str]:
         """Get values that needs to be replaced and their replacements"""
         replace_values: list[dict[str, str]] | None
         if not (replace_values := config.get("replace_values")):
@@ -372,7 +379,7 @@ class SourceYandexMetrika(AbstractSource):
         # }
         return spec
 
-    def streams(self, config: Mapping[str, Any], init_for_test: bool = False) -> List[Stream]:
+    def streams(self, config: Mapping[str, any], init_for_test: bool = False) -> list[Stream]:
         config = self.transform_config(config)
         auth = self.get_auth(config)
 

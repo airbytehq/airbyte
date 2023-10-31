@@ -1,14 +1,11 @@
-from typing import List
-
-
 class YandexMetrikaSourceFields:
     def __init__(self, fields: dict):
         self._fields = fields
 
-    def get_all_fields_names_list(self) -> List[str]:
+    def get_all_fields_names_list(self) -> list[str]:
         return [f["name"] for f in self._fields["all"]]
 
-    def get_required_fields_names_list(self) -> List[str]:
+    def get_required_fields_names_list(self) -> list[str]:
         return [f["name"] for f in self._fields["required"]]
 
     def get_all_fields(self) -> dict:

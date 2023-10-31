@@ -1,12 +1,11 @@
 from datetime import datetime, timedelta
 import random
 import string
-from typing import Any, List, Mapping
 
 DATE_FORMAT = "%Y-%m-%d"
 
 
-def daterange_days_list(date_from: str, date_to: str, days_delta: int = 1) -> List[str]:
+def daterange_days_list(date_from: str, date_to: str, days_delta: int = 1) -> list[str]:
     cursor_date = datetime.strptime(date_from, DATE_FORMAT)
     date_to = datetime.strptime(date_to, DATE_FORMAT)
     ranges = []

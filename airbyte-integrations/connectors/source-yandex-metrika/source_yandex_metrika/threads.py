@@ -4,7 +4,7 @@ import queue
 from datetime import datetime
 from queue import Queue
 from threading import Lock, Thread
-from typing import Any, Callable, List, Mapping, Optional, TypeVar
+from typing import Callable, Mapping, TypeVar
 
 import pandas as pd
 from airbyte_cdk.models import SyncMode
@@ -15,6 +15,7 @@ from .source import YandexMetrikaStream
 
 logger = logging.getLogger("airbyte")
 
+
 class LogMessagesPoolConsumer:
     def log_info(self, message: str):
         logger.info(f'({self.__class__.__name__}) - {message}')
@@ -24,7 +25,7 @@ class YandexMetrikaRawSliceMissingChunksObserver:
     def __init__(self, expected_chunks_ids: int):
         self._actually_loaded_chunk_ids = []
         self._expected_chunks_ids = expected_chunks_ids
-    
+
     @property
     def missing_chunks(self) -> list[int]:
         missing_chunk_ids = []
@@ -33,23 +34,23 @@ class YandexMetrikaRawSliceMissingChunksObserver:
                 missing_chunk_ids.append(expected_chunk_id)
 
         return missing_chunk_ids
-    
+
     def is_missing_chunks(self) -> bool:
         return bool(self.missing_chunks)
-    
+
     def add_actually_loaded_chunk_id(self, chunk_id: int) -> None:
         self._actually_loaded_chunk_ids.append(chunk_id)
-    
 
 
 class PreprocessedSlicePartProcessorThread(Thread, LogMessagesPoolConsumer):
     def __init__(
-        self,
-        name: str,
-        stream_slice: Mapping[str, Any],
-        stream_instance: YandexMetrikaStream,
-        lock: Lock,
-        completed_chunks_observer: 'YandexMetrikaRawSliceMissingChunksObserver',
+            self,
+            name: str,
+            stream_slice: Mapping[str, any],
+            stream_instance: YandexMetrikaStream,
+            lock: Lock,
+            completed_chunks_observer: 'YandexMetrikaRawSliceMissingChunksObserver',
+            replace_values: dict[str, str] | None = None,
     ):
         Thread.__init__(self, name=name, daemon=True)
         self.stream_slice = stream_slice
@@ -58,6 +59,7 @@ class PreprocessedSlicePartProcessorThread(Thread, LogMessagesPoolConsumer):
         self.records_count = 0
         self.lock = lock
         self.completed_chunks_observer = completed_chunks_observer
+        self.replace_values = replace_values
 
     def process_log_request(self):
         try:
@@ -67,28 +69,26 @@ class PreprocessedSlicePartProcessorThread(Thread, LogMessagesPoolConsumer):
             ))
             with open(filename, "r") as input_f:
                 df_reader = pd.read_csv(
-                    input_f, chunksize=5000, delimiter='\t')
+                    input_f, chunksize=5000, delimiter='\t'
+                )
                 for chunk in df_reader:
-                    print('read_chunk in thread', self.name)    
+                    print('read_chunk in thread', self.name)
                     now_millis = int(datetime.now().timestamp() * 1000)
                     with self.lock:
-                        df = pd.DataFrame(
-                            [
-                                {
+                        records: list[dict] = []
+                        for data in chunk.to_dict("records"):
+                            records.append({
                                     "type": "RECORD",
                                     "record": {
                                         "stream": self.stream_instance.name,
-                                        "data": data,
+                                        "data": data if not self.replace_values else {self.replace_values.get(key, key): value for key, value in data.items()},
                                         "emitted_at": now_millis,
                                     },
-                                }
-                                for data in chunk.to_dict("records")
-                            ]
-                        )
+                                })
+                        df = pd.DataFrame(records)
                         print(df.to_json(orient="records", lines=True))
                         self.records_count += len(df.index)
-                        print('self.records_count',
-                              self.records_count, filename)
+                        print('self.records_count', self.records_count, filename)
                         del df
             del input_f
             self.completed_chunks_observer.add_actually_loaded_chunk_id(self.stream_slice['part']['part_number'])
@@ -119,33 +119,35 @@ class PreprocessedSlicePartProcessorThread(Thread, LogMessagesPoolConsumer):
 
 _T = TypeVar("_T")
 
+
 class CustomQueue(Queue):
-    def get(self, block: bool = True, timeout: Optional[float] = None) -> _T:
+    def get(self, block: bool = True, timeout: float | None = None) -> _T:
         print('current_queue_items', list(self.queue))
         return super().get(block, timeout)
 
 
 class PreprocessedSlicePartThreadsController(LogMessagesPoolConsumer):
     def __init__(
-        self,
-        stream_instance: YandexMetrikaStream,
-        stream_instance_kwargs: Mapping[str, Any],
-        preprocessed_slices_batch: List[Mapping[str, Any]],
-        raw_slice: Mapping[str, Any],
-        on_raw_record_processed: Callable,
-        timer: EventTimer,
-        completed_chunks_observer: 'YandexMetrikaRawSliceMissingChunksObserver',
-        multithreading_threads_count: int = 1,
+            self,
+            stream_instance: YandexMetrikaStream,
+            stream_instance_kwargs: Mapping[str, any],
+            preprocessed_slices_batch: list[Mapping[str, any]],
+            raw_slice: Mapping[str, any],
+            on_raw_record_processed: Callable,
+            timer: EventTimer,
+            completed_chunks_observer: 'YandexMetrikaRawSliceMissingChunksObserver',
+            multithreading_threads_count: int = 1,
+            replace_values: dict[str, str] | None = None,
     ):
         self.raw_slice = raw_slice
         self.current_stream_slices = CustomQueue()
         self.stream_instance: YandexMetrikaStream = stream_instance
         self.completed_chunks_observer = completed_chunks_observer
 
-        self.threads: List[Thread] = []
+        self.threads: list[Thread] = []
         self.lock = Lock()
         for slice in preprocessed_slices_batch:
-            thread_name = 'Thread-'+ self.stream_instance.name + '-' + str(slice)
+            thread_name = 'Thread-' + self.stream_instance.name + '-' + str(slice)
             self.threads.append(
                 PreprocessedSlicePartProcessorThread(
                     name=thread_name,
@@ -153,6 +155,7 @@ class PreprocessedSlicePartThreadsController(LogMessagesPoolConsumer):
                     stream_instance=self.stream_instance,
                     lock=self.lock,
                     completed_chunks_observer=self.completed_chunks_observer,
+                    replace_values=replace_values,
                 )
             )
 

@@ -5,7 +5,7 @@
 
 from abc import ABC
 from enum import Enum
-from typing import Any, Iterable, List, Mapping, MutableMapping, NamedTuple, Optional
+from typing import Iterable, Mapping, MutableMapping, NamedTuple
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
@@ -32,26 +32,26 @@ class DateRangeDay(Enum):
 
 class DateRange(NamedTuple):
     date_range_type: DateRangeType
-    date_from: Optional[str]
-    date_to: Optional[str]
-    last_days_count: Optional[int]
-    load_today: Optional[bool]
-    day: Optional[DateRangeDay]
+    date_from: str | None
+    date_to: str | None
+    last_days_count: int | None
+    load_today: bool | None
+    day: DateRangeDay | None
 
 
 class ReportConfig(NamedTuple):
     name: str
-    counter_id: Optional[int]
-    preset_name: Optional[str]
-    metrics: Optional[list[str]]
-    dimensions: Optional[list[str]]
-    filters: Optional[str]
-    direct_client_logins: Optional[list[str]]
-    goal_id: Optional[str | int]
-    date_group: Optional[str]
-    attribution: Optional[str]
-    currency: Optional[str]
-    experiment_ab_id: Optional[str]
+    counter_id: int | None
+    preset_name: str | None
+    metrics: list[str] | None
+    dimensions: list[str] | None
+    filters: str | None
+    direct_client_logins: list[str] | None
+    goal_id: str | int | None
+    date_group: str | None
+    attribution: str | None
+    currency: str | None
+    experiment_ab_id: str | None
 
 
 # Full refresh stream
@@ -60,7 +60,7 @@ class AggregateDataYandexMetrikaReport(HttpStream, ABC):
     primary_key = None
     transformer: TypeTransformer = TypeTransformer(config=TransformConfig.DefaultSchemaNormalization)
 
-    def __init__(self, authenticator: TokenAuthenticator, global_config: dict[str, Any], report_config: ReportConfig):
+    def __init__(self, authenticator: TokenAuthenticator, global_config: dict[str, any], report_config: ReportConfig):
         super().__init__()
         self._authenticator = authenticator
         self.global_config = global_config
@@ -75,13 +75,13 @@ class AggregateDataYandexMetrikaReport(HttpStream, ABC):
     def path(self, *args, **kwargs) -> str:
         return ""
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+    def next_page_token(self, response: requests.Response) -> Mapping[str, any] | None:
         data = response.json()
         if len(data["data"]) < self.limit:
             return None
         return {"next_offset": data["query"]["offset"] + self.limit}
 
-    def get_json_schema(self) -> Mapping[str, Any]:
+    def get_json_schema(self) -> Mapping[str, any]:
         schema = ResourceSchemaLoader(
             package_name_from_class(self.__class__),
         ).get_schema("yandex_metrika_agg_data_stream")
@@ -104,7 +104,7 @@ class AggregateDataYandexMetrikaReport(HttpStream, ABC):
         headers = self._authenticator.get_auth_header()
         return requests.get(self.url_base + self.path(), params=test_params, headers=headers)
 
-    def request_params(self, next_page_token: Mapping[str, Any] = {}, *args, **kwargs) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Mapping[str, any] = {}, *args, **kwargs) -> MutableMapping[str, any]:
         params = {
             "ids": self.global_config["counter_id"],
             "limit": self.limit,

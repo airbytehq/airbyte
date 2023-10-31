@@ -5,7 +5,7 @@
 import requests
 import logging
 from time import sleep
-from typing import Any, List, Mapping, Tuple
+from typing import Mapping
 from requests.adapters import HTTPAdapter, Retry
 from urllib3.util.retry import RequestHistory
 
@@ -43,11 +43,11 @@ class YandexMetrikaStreamPreprocessor:
         for proto in ['http://', 'https://']:
             self.session.mount(proto, HTTPAdapter(max_retries=self.retries))
 
-    def authorized_request_headers(self, stream_slice: Mapping[str, Any] = None):
+    def authorized_request_headers(self, stream_slice: Mapping[str, any] = None):
         return dict(**self.stream_instance.request_headers(stream_slice=stream_slice),
                     **self.stream_instance._authenticator.get_auth_header())
 
-    def request_params(self, stream_slice: Mapping[str, Any]):
+    def request_params(self, stream_slice: Mapping[str, any]):
         return self.stream_instance.request_params(stream_slice=stream_slice)
 
     @property
@@ -58,7 +58,7 @@ class YandexMetrikaStreamPreprocessor:
     def counter_id(self):
         return self.stream_instance.counter_id
 
-    def create_log_request(self, stream_slice: Mapping[str, Any]) -> int:
+    def create_log_request(self, stream_slice: Mapping[str, any]) -> int:
         url = self.url_base + f"counter/{self.counter_id}/logrequests"
         logger.info(f"Create log request for slice {stream_slice}: {url}")
         try:
@@ -80,7 +80,7 @@ class YandexMetrikaStreamPreprocessor:
                 f'API error on create_log_request_response["log_request"]["request_id"]. Response: {create_log_request_response_data}'
             )
 
-    def check_if_log_request_already_on_server(self, stream_slice: Mapping[str, Any], cached_available_log_requests: List[Mapping[str, Any]] = None,) -> Tuple[bool, int]:
+    def check_if_log_request_already_on_server(self, stream_slice: Mapping[str, any], cached_available_log_requests: list[Mapping[str, any]] = None,) -> tuple[bool, int]:
         # Return (True, <log_request_id>) if log request was found, otherwise return (False, None)
         available_log_requests = cached_available_log_requests or self.get_available_log_requests()
         params = self.request_params(stream_slice=stream_slice)
@@ -160,7 +160,7 @@ class YandexMetrikaStreamPreprocessor:
                     log_request["request_id"])
                 logger.info(f"Cleaned log request: {cleaned_log_request}")
 
-    def check_log_request_ability(self, stream_slice: Mapping[str, Any]) -> Tuple[bool, Any]:
+    def check_log_request_ability(self, stream_slice: Mapping[str, any]) -> tuple[bool, any]:
         print('check_log_request_ability')
         url = self.url_base + f"counter/{self.counter_id}/logrequests/evaluate"
         headers = self.authorized_request_headers(stream_slice=stream_slice)
@@ -187,7 +187,7 @@ class YandexMetrikaStreamPreprocessor:
                 )
                 sleep(10)
 
-    def check_stream_slices_ability(self) -> Tuple[bool, any]:
+    def check_stream_slices_ability(self) -> tuple[bool, any]:
         print('check_stream_slices_ability')
         available_log_requests = self.get_available_log_requests()
         for raw_stream_slice in self.stream_instance.stream_slices():
