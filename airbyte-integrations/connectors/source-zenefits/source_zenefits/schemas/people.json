@@ -158,12 +158,10 @@
     "status": {
       "type": ["string", "null"]
     },
-    "federal_filing_status":
-    {
+    "federal_filing_status": {
       "type": ["string", "null"]
     },
-    "gender":
-    {
+    "gender": {
       "type": ["string", "null"]
     },
     "personal_email": {

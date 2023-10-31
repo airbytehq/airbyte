@@ -53,5 +53,5 @@ You can replicate the following tables using the Zenefits connector:
 
 | Version | Date       | Pull Request                                             | Subject             |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------|
-| `1.0.0` | 2023-10-29 | [31946](https://github.com/airbytehq/airbyte/pull/31946) | Migrate to Low Code |
+| `0.2.0` | 2023-10-29 | [31946](https://github.com/airbytehq/airbyte/pull/31946) | Migrate to Low Code |
 | `0.1.0` | 2022-08-24 | [14809](https://github.com/airbytehq/airbyte/pull/14809) | Initial Release     |
