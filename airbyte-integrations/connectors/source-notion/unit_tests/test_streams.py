@@ -297,8 +297,7 @@ def test_403_error_handling(
 def test_request_throttle(initial_page_size, expected_page_size, mock_response, requests_mock):
     """
     Tests that the request page_size is halved when a 504 error is encountered.
-    Once a 200 success is encountered, the page_size is reset to 100 in parse_response,
-    for use in the next call.
+    Once a 200 success is encountered, the page_size is reset to 100, for use in the next call.
     """
     requests_mock.register_uri(
         "GET",
