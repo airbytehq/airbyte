@@ -9,12 +9,15 @@ import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocument
 import { ServiceFormValues } from "views/Connector/ServiceForm/types";
 import TestConnection from "views/Connector/TestConnection";
 
-import { RoutePaths } from "../../../routePaths";
 import DestinationCopy from "./components/DestinationCopy";
+import { RoutePaths } from "../../../routePaths";
 
 const ContainerPadding = styled.div`
   padding: 0px 0px 0px 70px;
   height: 100%;
+`;
+const Container = styled.div`
+  padding-top: 130px;
 `;
 
 const CopyDestinationPage: React.FC = () => {
@@ -40,16 +43,19 @@ const CopyDestinationPage: React.FC = () => {
       <ConnectorDocumentationWrapper>
         <ContainerPadding>
           {currentStep === CreateStepTypes.TEST_CONNECTION && (
-            <TestConnection
-              isLoading={loadingStatus}
-              type="destination"
-              onBack={() => {
-                setCurrentStep(CreateStepTypes.CREATE_DESTINATION);
-              }}
-              onFinish={() => {
-                goBack();
-              }}
-            />
+            <Container>
+              {" "}
+              <TestConnection
+                isLoading={loadingStatus}
+                type="destination"
+                onBack={() => {
+                  setCurrentStep(CreateStepTypes.CREATE_DESTINATION);
+                }}
+                onFinish={() => {
+                  goBack();
+                }}
+              />
+            </Container>
           )}
           {currentStep === CreateStepTypes.CREATE_DESTINATION && (
             <DestinationCopy
