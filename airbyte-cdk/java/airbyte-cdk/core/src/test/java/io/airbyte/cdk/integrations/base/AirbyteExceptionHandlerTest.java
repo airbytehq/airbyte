@@ -84,13 +84,13 @@ public class AirbyteExceptionHandlerTest {
     runTestWithMessage("Error happened in foobar");
 
     final AirbyteMessage traceMessage = findFirstTraceMessage();
-    // We shouldn't deinterpolate at all in this case, so we will get the default trace message behavior.
+    // We shouldn't deinterpolate at all in this case, so we will get the default trace message
+    // behavior.
     assertAll(
         () -> assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
         () -> assertEquals(
             "java.lang.RuntimeException: Error happened in foobar",
-            traceMessage.getTrace().getError().getInternalMessage())
-    );
+            traceMessage.getTrace().getError().getInternalMessage()));
   }
 
   /**
@@ -120,13 +120,13 @@ public class AirbyteExceptionHandlerTest {
     runTestWithMessage("Error happened in foo");
 
     final AirbyteMessage traceMessage = findFirstTraceMessage();
-    // We shouldn't deinterpolate at all in this case, so we will get the default trace message behavior.
+    // We shouldn't deinterpolate at all in this case, so we will get the default trace message
+    // behavior.
     assertAll(
         () -> assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
         () -> assertEquals(
             "java.lang.RuntimeException: Error happened in foo",
-            traceMessage.getTrace().getError().getInternalMessage())
-    );
+            traceMessage.getTrace().getError().getInternalMessage()));
   }
 
   private void runTestWithMessage(final String message) throws InterruptedException {

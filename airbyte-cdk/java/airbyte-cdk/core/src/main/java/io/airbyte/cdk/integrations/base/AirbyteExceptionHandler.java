@@ -71,7 +71,8 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
       mangledMessage = throwable.getMessage();
     }
 
-    // If we did not modify the message (either not a deinterpolatable class, or we tried to deinterpolate
+    // If we did not modify the message (either not a deinterpolatable class, or we tried to
+    // deinterpolate
     // but made no changes) then emit our default trace message
     if (mangledMessage.equals(throwable.getMessage())) {
       AirbyteTraceMessageUtility.emitSystemErrorTrace(throwable, logMessage);
