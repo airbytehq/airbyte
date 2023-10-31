@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import json
 from unittest.mock import patch
 
 import pytest
@@ -15,9 +14,14 @@ from source_bing_ads.streams import AccountPerformanceReportMonthly, Accounts, A
 @pytest.fixture(name="config")
 def config_fixture():
     """Generates streams settings from a config file"""
-    CONFIG_FILE = "secrets/config.json"
-    with open(CONFIG_FILE, "r") as f:
-        return json.loads(f.read())
+    return {
+        "tenant_id": "common",
+        "developer_token": "fake_developer_token",
+        "refresh_token": "fake_refresh_token",
+        "client_id": "fake_client_id",
+        "reports_start_date": "2020-01-01",
+        "lookback_window": 0,
+    }
 
 
 @pytest.fixture(name="logger_mock")
@@ -28,7 +32,7 @@ def logger_mock_fixture():
 @patch.object(source_bing_ads.source, "Client")
 def test_streams_config_based(mocked_client, config):
     streams = SourceBingAds().streams(config)
-    assert len(streams) == 45
+    assert len(streams) == 51
 
 
 @patch.object(source_bing_ads.source, "Client")
