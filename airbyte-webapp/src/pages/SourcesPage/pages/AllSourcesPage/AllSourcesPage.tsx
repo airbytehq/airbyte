@@ -139,11 +139,10 @@ const AllSourcesPage: React.FC = () => {
       }
     >
       <Separator height="10px" />
-      <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />
-      <Separator height="10px" />
       <SourcesTable sources={sources} />
       <Separator height="24px" />
       <Footer>
+        <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />
         <Pagination
           pages={total / pageSize}
           value={filters.pageCurrent}
