@@ -108,9 +108,9 @@ export const Pagination: React.FC<IProps> = React.memo(({ pages, value, onChange
 
   const onEnd = () => setCurrentPage(formPages(pages).at(-1) as number);
 
-  if (totalPage <= 1) {
-    return null;
-  }
+  // if (totalPage <= 1) {
+  //   return null;
+  // }
 
   const renderPageNumbers = () => {
     const pageNumbers = [];

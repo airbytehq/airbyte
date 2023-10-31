@@ -21,8 +21,8 @@ import { usePageConfig } from "hooks/services/usePageConfig";
 import useRouter from "hooks/useRouter";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
-import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";
+import { RoutePaths } from "../../../routePaths";
 
 const BtnInnerContainer = styled.div`
   width: 100%;
@@ -195,12 +195,12 @@ const AllConnectionsPage: React.FC = () => {
                 />
               </DDContainer>
             </DDsContainer>
-            <Separator height="10px" />
-            <PageSize currentPageSize={currentPageSize} totalPage={total / pageSize} onChange={onChangePageSize} />
+
             <Separator height="10px" />
             <ConnectionsTable connections={connections} onSetMessageId={onSetMessageId} />
             <Separator height="24px" />
             <Footer>
+              <PageSize currentPageSize={currentPageSize} totalPage={total / pageSize} onChange={onChangePageSize} />
               <Pagination
                 pages={total / pageSize}
                 value={filters.pageCurrent}

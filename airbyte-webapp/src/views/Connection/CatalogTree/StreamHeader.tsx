@@ -11,12 +11,12 @@ import { Path, SyncSchemaField, SyncSchemaStream } from "core/domain/catalog";
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
-import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 import { Arrow as ArrowBlock } from "./components/Arrow";
 import { IndexerType, PathPopout } from "./components/PathPopout";
 import { SyncSettingsDropdown } from "./components/SyncSettingsDropdown";
 import styles from "./StreamHeader.module.scss";
 import { ArrowCell, HeaderCell } from "./styles";
+import { ConnectionFormMode } from "../ConnectionForm/ConnectionForm";
 
 const EmptyField = styled.span`
   color: ${({ theme }) => theme.greyColor40};
@@ -128,21 +128,19 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             key={`stream-config-${stream.config?.selected}-${stream.id}`}
           />
         </HeaderCell>
-        <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
+        <HeaderCell title={stream.stream?.namespace || ""}>
           {stream.stream?.namespace || (
             <EmptyField>
               <FormattedMessage id="form.noNamespace" />
             </EmptyField>
           )}
         </HeaderCell>
-        <HeaderCell ellipsis title={stream.stream?.name || ""}>
-          {stream.stream?.name}
-        </HeaderCell>
+        <HeaderCell title={stream.stream?.name || ""}>{stream.stream?.name}</HeaderCell>
         <Cell flex={1.5} addWidth="250">
           {mode !== "readonly" ? (
             <SyncSettingsDropdown value={syncSchema} options={availableSyncModes} onChange={onSelectSyncMode} />
           ) : (
-            <HeaderCell ellipsis title={`${syncSchema.syncMode} | ${syncSchema.destinationSyncMode}`}>
+            <HeaderCell title={`${syncSchema.syncMode} | ${syncSchema.destinationSyncMode}`}>
               {syncSchema.syncMode} | {syncSchema.destinationSyncMode}
             </HeaderCell>
           )}
@@ -158,7 +156,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             />
           )}
         </HeaderCell>
-        <HeaderCell ellipsis>
+        <HeaderCell>
           {pkType && (
             <PathPopout
               pathType={pkType}
@@ -170,12 +168,8 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             />
           )}
         </HeaderCell>
-        <HeaderCell ellipsis title={destNamespace}>
-          {destNamespace}
-        </HeaderCell>
-        <HeaderCell ellipsis title={destName}>
-          {destName}
-        </HeaderCell>
+        <HeaderCell title={destNamespace}>{destNamespace}</HeaderCell>
+        <HeaderCell title={destName}>{destName}</HeaderCell>
       </div>
     </Row>
   );

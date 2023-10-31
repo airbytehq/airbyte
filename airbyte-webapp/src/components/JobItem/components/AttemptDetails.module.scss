@@ -5,6 +5,9 @@
   font-size: 12px;
   line-height: 15px;
   color: colors.$grey;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .details > *:not(:last-child)::after {
