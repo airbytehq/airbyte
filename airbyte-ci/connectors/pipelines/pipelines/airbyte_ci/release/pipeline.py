@@ -6,8 +6,8 @@ from pipelines import main_logger
 from pipelines.dagger.actions.remote_storage import upload_to_gcs
 
 PLATFORMS_TO_BUILD = {
-    "debian": "python:3.10-slim",
-    "macos": "arm64v8/python:3.10-slim",
+    "amd64": "python:3.10-slim",
+    "arm64": "arm64v8/python:3.10-slim",
 }
 
 DIRECTORIES_TO_MOUNT = [".git", "airbyte-ci"]
@@ -30,7 +30,7 @@ async def create_airbyte_ci_release(
         ci_gcs_credentials_secret (dagger.Secret): The GCS credentials to use for uploading the binary
         ci_artifact_bucket_name (str): The name of the bucket to upload the binary to
         image (str): The docker image to use for building the binary
-        platform_name (str): The name of the platform to build the binary for (e.g. debian, macos)
+        platform_name (str): The name of the platform to build the binary for (e.g. amd64, arm64)
     """
     artifact_name = f"airbyte-ci-{platform_name}"
     main_logger.info(f"Building {artifact_name} on {image}")
