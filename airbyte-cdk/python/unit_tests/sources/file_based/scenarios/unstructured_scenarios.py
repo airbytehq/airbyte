@@ -41,6 +41,11 @@ simple_markdown_scenario = (
                     "contents": bytes("Just some text", "UTF-8"),
                     "last_modified": "2023-06-05T03:54:07.000Z",
                 },
+                "c": {
+                    "contents": bytes("Detected via mime type", "UTF-8"),
+                    "last_modified": "2023-06-05T03:54:07.000Z",
+                    "mime_type": "text/markdown"
+                },
             }
         )
         .set_file_type("unstructured")
@@ -91,6 +96,15 @@ simple_markdown_scenario = (
                     "content": "Just some text",
                     "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
                     "_ab_source_file_url": "b.md",
+                },
+                "stream": "stream1",
+            },
+            {
+                "data": {
+                    "document_key": "c",
+                    "content": "Detected via mime type",
+                    "_ab_source_file_last_modified": "2023-06-05T03:54:07.000000Z",
+                    "_ab_source_file_url": "c",
                 },
                 "stream": "stream1",
             },
