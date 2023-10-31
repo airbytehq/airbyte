@@ -31,16 +31,6 @@ acceptance_tests:
           campaign_groups:
             - name: "lastModified"
               bypass_reason: "Volatile data"
-          ad_creative_analytics:
-            - name: "costInUsd"
-              bypass_reason: "Data changes too often"
-            - name: "costInLocalCurrency"
-              bypass_reason: "Data changes too often"
-          ad_campaign_analytics:
-            - name: "costInUsd"
-              bypass_reason: "Data changes too often"
-            - name: "costInLocalCurrency"
-              bypass_reason: "Data changes too often"
   incremental:
     tests:
       - config_path: "secrets/config_oauth.json"
