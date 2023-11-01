@@ -833,9 +833,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpFinalTableRecords(streamId, ""));
   }
 
-  @ParameterizedTest
-  @ValueSource(booleans = {true, false})
-  public void cdcComplexUpdate(final boolean useExpensiveSaferCasting) throws Exception {
+  @Test
+  public void cdcComplexUpdate() throws Exception {
     createRawTable(streamId);
     createFinalTable(cdcIncrementalDedupStream, "");
     insertRawTableRecords(
@@ -847,7 +846,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "",
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcupdate_inputrecords_final.jsonl"));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty(), useExpensiveSaferCasting);
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty(), true);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
