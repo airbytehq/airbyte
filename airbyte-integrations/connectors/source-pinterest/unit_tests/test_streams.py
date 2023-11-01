@@ -122,7 +122,7 @@ def test_non_json_response(requests_mock):
     requests_mock.get("https://api.pinterest.com/v5/boards", text="some response", status_code=200)
     response = requests.get(url)
     try:
-        result = stream.should_retry(response)
+        stream.should_retry(response)
         assert False
     except Exception as e:
         assert "Received unexpected response in non json format" in str(e)
