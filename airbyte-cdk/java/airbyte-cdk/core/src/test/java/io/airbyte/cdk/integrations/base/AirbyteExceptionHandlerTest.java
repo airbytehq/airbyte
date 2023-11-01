@@ -174,7 +174,7 @@ public class AirbyteExceptionHandlerTest {
   }
 
   private AirbyteMessage findFirstTraceMessage() {
-    final Optional<AirbyteMessage> maybeTraceMessage = Arrays.stream(outContent.toString().split("\n"))
+    final Optional<AirbyteMessage> maybeTraceMessage = Arrays.stream(outContent.toString(StandardCharsets.UTF_8).split("\n"))
         .map(line -> Jsons.deserialize(line, AirbyteMessage.class))
         .filter(message -> message.getType() == AirbyteMessage.Type.TRACE)
         .findFirst();
