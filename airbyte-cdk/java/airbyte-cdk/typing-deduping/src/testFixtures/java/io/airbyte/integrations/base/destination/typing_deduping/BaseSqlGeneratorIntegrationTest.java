@@ -592,7 +592,8 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                 }
                 """)));
 
-    final String sql = generator.updateTable(incrementalAppendStream, "", Optional.of(Instant.parse("2023-01-01T00:00:00Z")), useExpensiveSaferCasting);
+    final String sql =
+        generator.updateTable(incrementalAppendStream, "", Optional.of(Instant.parse("2023-01-01T00:00:00Z")), useExpensiveSaferCasting);
     destinationHandler.execute(sql);
 
     final List<JsonNode> rawRecords = dumpRawTableRecords(streamId);
@@ -1021,7 +1022,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "sqlgenerator/weirdcolumnnames_expectedrecords_final.jsonl",
         dumpFinalTableRecords(streamId, ""));
   }
-
 
   @ParameterizedTest
   @ValueSource(strings = {"$", "${", "${${", "${foo}", "\"", "'", "`", ".", "$$", "\\", "{", "}"})
