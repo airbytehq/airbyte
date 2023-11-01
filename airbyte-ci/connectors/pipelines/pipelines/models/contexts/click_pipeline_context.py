@@ -10,6 +10,7 @@ from pipelines.cli.click_decorators import LazyPassDecorator
 
 from ..singleton import Singleton
 
+import anyio
 
 
 class ClickPipelineContext(BaseModel, Singleton):
@@ -57,9 +58,7 @@ class ClickPipelineContext(BaseModel, Singleton):
             super().__init__(**data)
             Singleton._initialized[ClickPipelineContext] = True
 
-    import asyncio
-
-    _dagger_client_lock: asyncio.Lock = PrivateAttr(default_factory=asyncio.Lock)
+    _dagger_client_lock: anyio.Lock = PrivateAttr(default_factory=anyio.Lock)
 
     async def get_dagger_client(self, client: Optional[Client] = None, pipeline_name: Optional[str] = None) -> Client:
         if not self._dagger_client:

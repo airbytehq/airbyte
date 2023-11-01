@@ -23,8 +23,12 @@ def anyio_backend():
 
 
 @pytest.fixture(scope="module")
-async def dagger_client():
-    async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
+def dagger_connection():
+    return dagger.Connection(dagger.Config(log_output=sys.stderr))
+
+@pytest.fixture(scope="module")
+async def dagger_client(dagger_connection):
+    async with dagger_connection as client:
         yield client
 
 
