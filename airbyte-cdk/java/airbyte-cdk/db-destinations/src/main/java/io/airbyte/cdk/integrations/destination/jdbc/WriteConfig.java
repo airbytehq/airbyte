@@ -51,6 +51,11 @@ public class WriteConfig {
     return streamName;
   }
 
+  /**
+   * This is used in {@link JdbcBufferedConsumerFactory} to verify that record is from expected streams
+   *
+   * @return
+   */
   public String getNamespace() {
     return namespace;
   }
