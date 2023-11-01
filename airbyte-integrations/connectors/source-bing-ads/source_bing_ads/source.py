@@ -56,6 +56,7 @@ from source_bing_ads.streams import (  # noqa: F401
     KeywordPerformanceReportHourly,
     KeywordPerformanceReportMonthly,
     KeywordPerformanceReportWeekly,
+    Keywords,
     Labels,
     SearchQueryPerformanceReportDaily,
     SearchQueryPerformanceReportHourly,
@@ -97,6 +98,7 @@ class SourceBingAds(AbstractSource):
             BudgetSummaryReport(client, config),
             Labels(client, config),
             KeywordLabels(client, config),
+            Keywords(client, config),
             CampaignLabels(client, config),
         ]
 
