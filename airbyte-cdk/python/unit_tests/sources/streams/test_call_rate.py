@@ -4,12 +4,21 @@
 import os
 import tempfile
 import time
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Iterable, Mapping
 
 import pytest
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.call_rate import APIBudget, CallRateLimitHit, HttpRequestMatcher, MovingWindowCallRatePolicy, Rate
+from airbyte_cdk.sources.streams.call_rate import (
+    APIBudget,
+    CallRateLimitHit,
+    FixedWindowCallRatePolicy,
+    HttpRequestMatcher,
+    MovingWindowCallRatePolicy,
+    Rate,
+    TimeWindow,
+    UnlimitedCallRatePolicy,
+)
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from airbyte_cdk.utils.constants import ENV_REQUEST_CACHE_PATH
@@ -140,7 +149,60 @@ def test_http_request_matching(mocker):
     root_policy.try_acquire.assert_called_once_with(any_get_request, weight=1)
 
 
-class TestCallRatePolicy:
+class TestUnlimitedCallRatePolicy:
+    def test_try_acquire(self, mocker):
+        policy = UnlimitedCallRatePolicy(matchers=[])
+        assert policy.matches(mocker.Mock()), "should match anything"
+        policy.try_acquire(mocker.Mock(), weight=1)
+        policy.try_acquire(mocker.Mock(), weight=10)
+
+    def test_update(self):
+        policy = UnlimitedCallRatePolicy(matchers=[])
+        policy.update(available_calls=10, call_reset_ts=datetime.now())
+        policy.update(available_calls=None, call_reset_ts=datetime.now())
+        policy.update(available_calls=10, call_reset_ts=None)
+
+
+class TestFixedWindowCallRatePolicy:
+    def test_limit_rate(self, mocker):
+        start = datetime.now()
+        policy = FixedWindowCallRatePolicy(matchers=[], window=TimeWindow(start=start, end=start + timedelta(hours=1)), call_limit=100)
+        policy.try_acquire(mocker.Mock(), weight=1)
+        policy.try_acquire(mocker.Mock(), weight=20)
+        with pytest.raises(ValueError, match="Weight can not exceed the call limit"):
+            policy.try_acquire(mocker.Mock(), weight=101)
+
+        with pytest.raises(CallRateLimitHit) as exc:
+            policy.try_acquire(mocker.Mock(), weight=100 - 20 - 1 + 1)
+
+        assert exc.value.time_to_wait
+        assert exc.value.weight == 100 - 20 - 1 + 1
+        assert exc.value.item
+
+    def test_update_available_calls(self, mocker):
+        start = datetime.now()
+        policy = FixedWindowCallRatePolicy(matchers=[], window=TimeWindow(start=start, end=start + timedelta(hours=1)), call_limit=100)
+        # update to decrease number of calls available
+        policy.update(available_calls=2, call_reset_ts=None)
+        # hit the limit with weight=3
+        with pytest.raises(CallRateLimitHit):
+            policy.try_acquire(mocker.Mock(), weight=3)
+        # ok with less weight=1
+        policy.try_acquire(mocker.Mock(), weight=1)
+
+        # update to increase number of calls available, ignored
+        policy.update(available_calls=20, call_reset_ts=None)
+        # so we still hit the limit with weight=3
+        with pytest.raises(CallRateLimitHit):
+            policy.try_acquire(mocker.Mock(), weight=3)
+
+
+class TestMovingWindowCallRatePolicy:
+    def test_no_rates(self):
+        """should raise a ValueError when no rates provided"""
+        with pytest.raises(ValueError, match="The list of rates can not be empty"):
+            MovingWindowCallRatePolicy(rates=[], matchers=[])
+
     def test_limit_rate(self):
         """try_acquire must respect configured call rate and throw CallRateLimitHit when hit the limit."""
         policy = MovingWindowCallRatePolicy(rates=[Rate(10, timedelta(minutes=1))], matchers=[])

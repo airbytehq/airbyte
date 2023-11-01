@@ -8,6 +8,7 @@ import datetime
 import logging
 import time
 from datetime import timedelta
+from threading import RLock
 from typing import TYPE_CHECKING, Any, Mapping, Optional
 from urllib import parse
 
@@ -182,6 +183,36 @@ class BaseCallRatePolicy(AbstractCallRatePolicy, abc.ABC):
         return any(matcher(request) for matcher in self._matchers)
 
 
+class UnlimitedCallRatePolicy(BaseCallRatePolicy):
+    """
+    This policy is for explicit unlimited call rates.
+    It can be used when we want to match a specific group of requests and don't apply any limits.
+
+    Example:
+
+    APICallBudget(
+        [
+            UnlimitedCallRatePolicy(
+                matchers=[HttpRequestMatcher(url="/some/method", headers={"sandbox": true})],
+            ),
+            FixedWindowCallRatePolicy(
+                matchers=[HttpRequestMatcher(url="/some/method")],
+                window=FixedWindow(start, start + timedelta(hours=1),
+                call_limit=1000,
+            ),
+        ]
+    )
+
+    The code above will limit all calls to /some/method except calls that have header sandbox=True
+    """
+
+    def try_acquire(self, request: Any, weight: int) -> None:
+        """Do nothing"""
+
+    def update(self, available_calls: Optional[int], call_reset_ts: Optional[datetime.datetime]) -> None:
+        """Do nothing"""
+
+
 class FixedWindowCallRatePolicy(BaseCallRatePolicy):
     def __init__(self, window: TimeWindow, call_limit: int, **kwargs: Any):
         """A policy that allows {call_limit} calls within a {window} time interval
@@ -194,50 +225,58 @@ class FixedWindowCallRatePolicy(BaseCallRatePolicy):
         self._offset = window.end - window.start
         self._call_limit = call_limit
         self._calls_num = 0
+        self._lock = RLock()
         super().__init__(**kwargs)
 
     def try_acquire(self, request: Any, weight: int) -> None:
+        if weight > self._call_limit:
+            raise ValueError("Weight can not exceed the call limit")
         if not self.matches(request):
             raise ValueError("Request does not match the policy")
 
-        self._update_current_window()
+        with self._lock:
+            self._update_current_window()
 
-        if self._calls_num >= self._call_limit:
-            reset_in = self._current_window.end - datetime.datetime.now()
-            error_message = (
-                f"reached maximum number of allowed calls {self._call_limit} " f"per {self._offset} interval, next reset in {reset_in}."
-            )
-            raise CallRateLimitHit(
-                error=error_message,
-                item=request,
-                weight=weight,
-                rate=f"{self._call_limit} per {self._offset}",
-                time_to_wait=reset_in,
-            )
+            if self._calls_num + weight > self._call_limit:
+                reset_in = self._current_window.end - datetime.datetime.now()
+                error_message = (
+                    f"reached maximum number of allowed calls {self._call_limit} " f"per {self._offset} interval, next reset in {reset_in}."
+                )
+                raise CallRateLimitHit(
+                    error=error_message,
+                    item=request,
+                    weight=weight,
+                    rate=f"{self._call_limit} per {self._offset}",
+                    time_to_wait=reset_in,
+                )
 
-        self._calls_num += 1
+            self._calls_num += weight
 
     def update(self, available_calls: Optional[int], call_reset_ts: Optional[datetime.datetime]) -> None:
-        """Update call rate counters, by default only reacts to decreasing updates of available_calls and changes to call_reset_ts
+        """Update call rate counters, by default, only reacts to decreasing updates of available_calls and changes to call_reset_ts.
+        We ignore updates with available_calls > current_available_calls to support call rate limits that are lower than API limits.
 
         :param available_calls:
         :param call_reset_ts:
         """
-        self._update_current_window()
-        current_available_calls = self._call_limit - self._calls_num
+        with self._lock:
+            self._update_current_window()
+            current_available_calls = self._call_limit - self._calls_num
 
-        if available_calls is not None and current_available_calls > available_calls:
-            logger.info("got update from api, adjusting available calls from %s to %s", current_available_calls, available_calls)
-            self._calls_num = self._call_limit - available_calls
+            if available_calls is not None and current_available_calls > available_calls:
+                logger.info(
+                    "got rate limit update from api, adjusting available calls from %s to %s", current_available_calls, available_calls
+                )
+                self._calls_num = self._call_limit - available_calls
 
-        if call_reset_ts is not None and call_reset_ts != self._current_window.end:
-            logger.info("got update from api, adjusting reset time from %s to %s", self._current_window.end, call_reset_ts)
-            self._current_window.end = call_reset_ts
+            if call_reset_ts is not None and call_reset_ts != self._current_window.end:
+                logger.info("got rate limit update from api, adjusting reset time from %s to %s", self._current_window.end, call_reset_ts)
+                self._current_window.end = call_reset_ts
 
     def _update_current_window(self) -> None:
         now = datetime.datetime.now()
         if now > self._current_window.end:
-            logger.info("current window %s has being reset, %s calls available now", self._current_window, self._call_limit)
+            logger.debug("current window %s has being reset, %s calls available now", self._current_window, self._call_limit)
             self._current_window = TimeWindow(self._current_window.end, self._current_window.end + self._offset)
             self._calls_num = 0
 
@@ -245,6 +284,9 @@ class FixedWindowCallRatePolicy(BaseCallRatePolicy):
 class MovingWindowCallRatePolicy(BaseCallRatePolicy):
     """
     Policy to control requests rate implemented on top of PyRateLimiter lib.
+    The main difference between this policy and FixedWindowCallRatePolicy is that the rate-limiting window
+    is moving along requests that we made, and there is no moment when we reset an available number of calls.
+    This strategy requires saving of timestamps of all requests within a window.
     """
 
     def __init__(self, rates: list[Rate], **kwargs: Any):
@@ -252,6 +294,8 @@ class MovingWindowCallRatePolicy(BaseCallRatePolicy):
 
         :param rates: list of rates, the order is important and must be ascending
         """
+        if not rates:
+            raise ValueError("The list of rates can not be empty")
         pyrate_rates = [PyRateRate(limit=rate.limit, interval=int(rate.interval.total_seconds() * 1000)) for rate in rates]
         self._bucket = InMemoryBucket(pyrate_rates)
         # Limiter will create the background task that clears old requests in the bucket
