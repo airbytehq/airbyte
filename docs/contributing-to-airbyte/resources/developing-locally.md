@@ -68,7 +68,7 @@ A good rule of thumb is to set this to \(\# of cores - 1\).
 
 On Mac, if you run into an error while compiling openssl \(this happens when running pip install\), you may need to explicitly add these flags to your bash profile so that the C compiler can find the appropriate libraries.
 
-```text
+```bash
 export LDFLAGS="-L/usr/local/opt/openssl/lib"
 export CPPFLAGS="-I/usr/local/opt/openssl/include"
 ```
@@ -107,9 +107,11 @@ In your local `airbyte` repository, run the following command:
 ```
 
 - Then, build the connector image:
-```
-docker build ./airbyte-integrations/connectors/<connector-name> -t airbyte/<connector-name>:dev
-```
+  - Install our [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool to build your connector. 
+  - Running `airbyte-ci connectors --name source-<source-name> build` will build your connector image.
+  - Once the command is done, you will find your connector image in your local docker host: `airbyte/source-<source-name>:dev`.
+
+
 
 :::info
 
@@ -131,7 +133,7 @@ Now when you run a sync with that connector, it will use your local docker image
 In your local `airbyte-platform` repository, run the following commands to run acceptance \(end-to-end\) tests for the platform:
 
 
-
+```bash
 SUB_BUILD=PLATFORM ./gradlew clean build
 SUB_BUILD=PLATFORM ./gradlew :airbyte-tests:acceptanceTests
 ```

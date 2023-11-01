@@ -5,12 +5,10 @@
 
 import logging
 import re
-from itertools import islice
 from typing import Any, List, Mapping, Tuple
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
@@ -51,6 +49,22 @@ class SourceNotion(AbstractSource):
 
         return None
 
+    def _extract_error_message(self, response: requests.Response) -> str:
+        """
+        Return a human-readable error message from a Notion API response, for use in connection check.
+        """
+        error_json = response.json()
+        error_code = error_json.get("code", "unknown_error")
+        error_message = error_json.get(
+            "message", "An unspecified error occurred while connecting to Notion. Please check your credentials and try again."
+        )
+
+        if error_code == "unauthorized":
+            return "The provided API access token is invalid. Please double-check that you input the correct token and have granted the necessary permissions to your Notion integration."
+        if error_code == "restricted_resource":
+            return "The provided API access token does not have the correct permissions configured. Please double-check that you have granted all the necessary permissions to your Notion integration."
+        return f"Error: {error_message} (Error code: {error_code})"
+
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         # First confirm that if start_date is set by user, it is valid.
         validation_error = self._validate_start_date(config)
@@ -58,27 +72,20 @@ class SourceNotion(AbstractSource):
             return False, validation_error
         try:
             authenticator = self._get_authenticator(config)
-            stream = Pages(authenticator=authenticator, config=config)
-            records = stream.read_records(sync_mode=SyncMode.full_refresh)
-            next(islice(records, 5))  # Read the first 5 records to ensure that the connection is valid.
-            return True, None
+            # Notion doesn't have a dedicated ping endpoint, so we can use the users/me endpoint instead.
+            # Endpoint docs: https://developers.notion.com/reference/get-self
+            ping_endpoint = "https://api.notion.com/v1/users/me"
+            notion_version = {"Notion-Version": "2022-06-28"}
+            response = requests.get(ping_endpoint, auth=authenticator, headers=notion_version)
+
+            if response.status_code == 200:
+                return True, None
+            else:
+                error_message = self._extract_error_message(response)
+                return False, error_message
+
         except requests.exceptions.RequestException as e:
-            # The most likely user error will be incorrectly configured credentials. We can provide a specific error message for those cases. Otherwise, the stock Notion API message should suffice.
-            error_code = e.response.json().get("code")
-            if error_code == "unauthorized":
-                return (
-                    False,
-                    "The provided API access token is invalid. Please double-check that you input the correct token and have granted the necessary permissions to your Notion integration.",
-                )
-            if error_code == "restricted_resource":
-                return (
-                    False,
-                    "The provided API access token does not have the correct permissions configured. Please double-check that you have granted all the necessary permissions to your Notion integration.",
-                )
-            return (
-                False,
-                f"{e.response.json().get('message', 'An unexpected error occured while connecting to Notion. Please check your credentials and try again.')}",
-            )
+            return False, str(e)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
 

@@ -59,15 +59,38 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+
+      # IMPORTANT! This is nessesary to make sure that a status is reported on the PR
+      # even if the workflow is skipped. If we used github actions filters, the workflow
+      # would not be reported as skipped, but instead would be forever pending.
+      #
+      # I KNOW THIS SOUNDS CRAZY, BUT IT IS TRUE.
+      #
+      # Also it gets worse
+      #
+      # IMPORTANT! DO NOT CHANGE THE QUOTES AROUND THE GLOBS. THEY ARE REQUIRED.
+      # MAKE SURE TO TEST ANY SYNTAX CHANGES BEFORE MERGING.
+      - name: Get changed files
+        uses: tj-actions/changed-files@v39
+        id: changes
+        with:
+          files_yaml: |
+            gradlecheck:
+              - '**/*'
+              - '!**/*.md'
+
       - uses: actions/setup-java@v3
         with:
           distribution: "zulu"
           java-version: "17"
       - name: Install Pip
+        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         run: curl -fsSL https://bootstrap.pypa.io/get-pip.py | python3
       - name: Install Pyenv
+        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         run: python3 -m pip install virtualenv --user
       - name: Run Gradle Check
+        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         uses: burrunan/gradle-cache-action@v1
         env:
           CI: true

@@ -75,7 +75,7 @@ def run_test_read_incremental(
 
 def _verify_read_output(output: Dict[str, Any], scenario: TestScenario[AbstractSource]) -> None:
     records, logs = output["records"], output["logs"]
-    logs = [log for log in logs if log.get("level") in ("ERROR", "WARN", "WARNING")]
+    logs = [log for log in logs if log.get("level") in scenario.log_levels]
     expected_records = scenario.expected_records
     assert len(records) == len(expected_records)
     for actual, expected in zip(records, expected_records):

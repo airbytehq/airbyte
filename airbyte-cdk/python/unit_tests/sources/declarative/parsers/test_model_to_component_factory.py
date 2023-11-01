@@ -1362,7 +1362,7 @@ class TestCreateTransformations:
         expected = [RemoveFields(field_pointers=[["path", "to", "field1"], ["path2"]], parameters={})]
         assert stream.retriever.record_selector.transformations == expected
 
-    def test_add_fields(self):
+    def test_add_fields_no_value_type(self):
         content = f"""
         the_stream:
             type: DeclarativeStream
@@ -1374,6 +1374,134 @@ class TestCreateTransformations:
                         - path: ["field1"]
                           value: "static_value"
         """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="static_value", default="static_value", parameters={}),
+                        value_type=None,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_string(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "static_value"
+                          value_type: string
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="static_value", default="static_value", parameters={}),
+                        value_type=str,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_number(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "1"
+                          value_type: number
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="1", default="1", parameters={}),
+                        value_type=float,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_integer(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: "1"
+                          value_type: integer
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="1", default="1", parameters={}),
+                        value_type=int,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def test_add_fields_value_type_is_boolean(self):
+        content = f"""
+        the_stream:
+            type: DeclarativeStream
+            $parameters:
+                {self.base_parameters}
+                transformations:
+                    - type: AddFields
+                      fields:
+                        - path: ["field1"]
+                          value: False
+                          value_type: boolean
+        """
+        expected = [
+            AddFields(
+                fields=[
+                    AddedFieldDefinition(
+                        path=["field1"],
+                        value=InterpolatedString(string="False", default="False", parameters={}),
+                        value_type=bool,
+                        parameters={},
+                    )
+                ],
+                parameters={},
+            )
+        ]
+        self._test_add_fields(content, expected)
+
+    def _test_add_fields(self, content, expected):
         parsed_manifest = YamlDeclarativeSource._parse(content)
         resolved_manifest = resolver.preprocess_manifest(parsed_manifest)
         resolved_manifest["type"] = "DeclarativeSource"
@@ -1382,18 +1510,6 @@ class TestCreateTransformations:
         stream = factory.create_component(model_type=DeclarativeStreamModel, component_definition=stream_manifest, config=input_config)
 
         assert isinstance(stream, DeclarativeStream)
-        expected = [
-            AddFields(
-                fields=[
-                    AddedFieldDefinition(
-                        path=["field1"],
-                        value=InterpolatedString(string="static_value", default="static_value", parameters={}),
-                        parameters={},
-                    )
-                ],
-                parameters={},
-            )
-        ]
         assert stream.retriever.record_selector.transformations == expected
 
     def test_default_schema_loader(self):

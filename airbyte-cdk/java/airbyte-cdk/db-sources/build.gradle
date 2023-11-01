@@ -24,25 +24,6 @@ test {
     }
 }
 
-// These replace application entrypoints:
-task runPythonSourceAcceptanceTest(type: JavaExec) {
-    // From `standard-source-test`:
-    main = 'io.airbyte.cdk.integrations.standardtest.source.PythonSourceAcceptanceTest'
-    classpath = sourceSets.main.runtimeClasspath
-}
-task runStandardFilesTest(type: JavaExec) {
-    // From `base-standard-source-test-file`:
-    main = 'io.airbyte.cdk.integrations.standardtest.source.fs.TestSourceMain'
-    classpath = sourceSets.main.runtimeClasspath
-}
-// This doesn't seem to be used anywhere:
-// task runJdbcSource(type: JavaExec) {
-//     // From `source-jdbc`:
-//     main = 'io.airbyte.cdk.integrations.source.jdbc.JdbcSource'
-//     classpath = sourceSets.main.runtimeClasspath
-// }
-
-
 project.configurations {
     // From `base-debezium`:
     testFixturesImplementation.extendsFrom implementation
@@ -75,28 +56,23 @@ jsonSchema2Pojo {
 
 dependencies {
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
 
-    // First party main dependencies
-    // TODO: Bring these into the CDK or refactor them out.
-    compileOnly project(':airbyte-commons')
-    compileOnly project(':airbyte-commons-cli')
-    compileOnly project(':airbyte-config-oss:config-models-oss')
-    compileOnly project(':airbyte-config-oss:init-oss')
-    compileOnly project(':airbyte-json-validation')
-    testImplementation project(':airbyte-commons')
-    testImplementation project(':airbyte-config-oss:config-models-oss')
-    testImplementation project(':airbyte-test-utils')
-    testFixturesCompileOnly project(':airbyte-commons')
-    testFixturesCompileOnly project(':airbyte-api')
-    testFixturesCompileOnly project(':airbyte-connector-test-harnesses:acceptance-test-harness')
-    testFixturesCompileOnly project(':airbyte-config-oss:config-models-oss')
-    testFixturesCompileOnly project(':airbyte-config-oss:init-oss')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
 
-    implementation libs.airbyte.protocol
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+
+    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
+    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
+
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-
-    // TODO: Do we need this? And if yes, shouldn't it be a test dependency?
-    // compileOnly project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 
@@ -165,7 +141,6 @@ dependencies {
     // From source-jdbc
     implementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation libs.postgresql
-    // integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation libs.testcontainers.postgresql
     testFixturesImplementation libs.airbyte.protocol
     // todo (cgardens) - the java-test-fixtures plugin doesn't by default extend from test.
