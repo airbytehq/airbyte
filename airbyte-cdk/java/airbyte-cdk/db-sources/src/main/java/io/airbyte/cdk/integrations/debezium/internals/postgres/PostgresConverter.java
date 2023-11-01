@@ -17,11 +17,9 @@ import io.airbyte.cdk.db.jdbc.DateTimeConverter;
 import io.airbyte.cdk.integrations.debezium.internals.DebeziumConverterUtils;
 import io.debezium.spi.converter.CustomConverter;
 import io.debezium.spi.converter.RelationalColumn;
-import io.debezium.time.Conversions;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetTime;
 import java.time.format.DateTimeFormatter;
@@ -29,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -246,36 +243,18 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
 
     registration.register(SchemaBuilder.string().optional(), x -> {
       throw new RuntimeException();/*
-      if (x == null) {
-        return DebeziumConverterUtils.convertDefaultValue(field);
-      }
-      switch (fieldType.toUpperCase(Locale.ROOT)) {
-        case "TIMETZ":
-          return DateTimeConverter.convertToTimeWithTimezone(x);
-        case "TIMESTAMPTZ":
-          return DateTimeConverter.convertToTimestampWithTimezone(x);
-        case "TIMESTAMP":
-          if (x instanceof final Long l) {
-            if (getTimePrecision(field) <= 3) {
-              return convertToTimestamp(Conversions.toInstantFromMillis(l));
-            }
-            if (getTimePrecision(field) <= 6) {
-              return convertToTimestamp(Conversions.toInstantFromMicros(l));
-            }
-          }
-          return convertToTimestamp(x);
-        case "DATE":
-          if (x instanceof Integer) {
-            return convertToDate(LocalDate.ofEpochDay((Integer) x));
-          }
-          return convertToDate(x);
-        case "TIME":
-          return resolveTime(field, x);
-        case "INTERVAL":
-          return convertInterval((PGInterval) x);
-        default:
-          throw new IllegalArgumentException("Unknown field type  " + fieldType.toUpperCase(Locale.ROOT));
-      }*/
+                                    * if (x == null) { return DebeziumConverterUtils.convertDefaultValue(field); } switch
+                                    * (fieldType.toUpperCase(Locale.ROOT)) { case "TIMETZ": return
+                                    * DateTimeConverter.convertToTimeWithTimezone(x); case "TIMESTAMPTZ": return
+                                    * DateTimeConverter.convertToTimestampWithTimezone(x); case "TIMESTAMP": if (x instanceof final
+                                    * Long l) { if (getTimePrecision(field) <= 3) { return
+                                    * convertToTimestamp(Conversions.toInstantFromMillis(l)); } if (getTimePrecision(field) <= 6) {
+                                    * return convertToTimestamp(Conversions.toInstantFromMicros(l)); } } return convertToTimestamp(x);
+                                    * case "DATE": if (x instanceof Integer) { return convertToDate(LocalDate.ofEpochDay((Integer) x));
+                                    * } return convertToDate(x); case "TIME": return resolveTime(field, x); case "INTERVAL": return
+                                    * convertInterval((PGInterval) x); default: throw new
+                                    * IllegalArgumentException("Unknown field type  " + fieldType.toUpperCase(Locale.ROOT)); }
+                                    */
     });
   }
 

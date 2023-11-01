@@ -421,8 +421,9 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     String strValue = resultSet.getString(index);
 
-      //even though the super just does a toString, I find it a lot cleaner to call it anyways, in case that implementation changes
-      super.putDate(node, columnName, resultSet, index);
+    // even though the super just does a toString, I find it a lot cleaner to call it anyways, in case
+    // that implementation changes
+    super.putDate(node, columnName, resultSet, index);
 
   }
 
@@ -435,7 +436,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     String strValue = resultSet.getString(index);
 
-      node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
+    node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
 
   }
 
@@ -447,7 +448,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   @Override
   protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
-          throws SQLException {
+      throws SQLException {
     String strValue = resultSet.getString(index);
     if (INFINITY_STRING.equals(strValue)) {
       node.put(columnName, PLUS_INFINITY_STRING);

@@ -18,7 +18,6 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.Set;
 import org.jooq.DSLContext;
 import org.testcontainers.containers.JdbcDatabaseContainer;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
@@ -634,7 +633,6 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
               .build());
     }
   }
-
 
   private void addArraysTestData() {
     addDataTypeTestData(
