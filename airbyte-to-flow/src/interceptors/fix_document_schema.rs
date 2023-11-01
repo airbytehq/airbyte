@@ -188,7 +188,7 @@ pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
                 if f == "int32" || f == "int64" {
                     // Insert updates values
                     map.insert("format".to_string(), json!("integer"));
-                } else if let Err(_) = serde_json::from_str::<Format>(f) {
+                } else if let Err(_) = serde_json::from_value::<Format>(serde_json::Value::String(f.to_string())) {
                     // a non-standard format output by salesforce connector
                     map.remove("format");
                 }
@@ -535,7 +535,7 @@ mod test {
                             "items": {
                                 "group": "x",
                                 "type": "string",
-                                "format": "random"
+                                "format": "date-time"
                             }
                         },
                         "airbyte_type": {
@@ -568,7 +568,8 @@ mod test {
                             "group": {
                                 "type": "array",
                                 "items": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "format": "date-time"
                                 }
                             },
                             "airbyte_type": {
