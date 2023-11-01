@@ -223,6 +223,7 @@ public class TestDataHolder {
   void setDeclarationLocation(StackTraceElement[] declarationLocation) {
     this.declarationLocation = declarationLocation;
   }
+
   public String getDeclarationLocation() {
     return Arrays.asList(declarationLocation).subList(2, 3).toString();
   }

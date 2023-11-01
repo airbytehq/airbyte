@@ -141,6 +141,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
     }
 
     class UnexpectedRecord {
+
       public final String streamName;
       public final String unexpectedValue;
 
@@ -148,6 +149,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
         this.streamName = streamName;
         this.unexpectedValue = unexpectedValue;
       }
+
     }
 
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
@@ -185,7 +187,8 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
 
     assertTrue(unexpectedValues.isEmpty(),
         unexpectedValues.stream().map((entry) -> // stream each entry, map it to string value
-                "The stream '" + entry.streamName + "' checking type '" + testByName.get(entry.streamName).getSourceType() + "' initialized at " + testByName.get(entry.streamName).getDeclarationLocation() + " got unexpected values: " + entry.unexpectedValue)
+        "The stream '" + entry.streamName + "' checking type '" + testByName.get(entry.streamName).getSourceType() + "' initialized at "
+            + testByName.get(entry.streamName).getDeclarationLocation() + " got unexpected values: " + entry.unexpectedValue)
             .collect(Collectors.joining("\n"))); // and join them
 
     // Gather all the missing values, so we don't stop the test in the first missed one
@@ -197,7 +200,8 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
 
     assertTrue(missedValues.isEmpty(),
         missedValues.stream().map((entry) -> // stream each entry, map it to string value
-        "The stream '" + entry.streamName + "' checking type '" + testByName.get(entry.streamName).getSourceType() + "' initialized at " + testByName.get(entry.streamName).getDeclarationLocation() + " is missing values: " + entry.missedValues)
+        "The stream '" + entry.streamName + "' checking type '" + testByName.get(entry.streamName).getSourceType() + "' initialized at "
+            + testByName.get(entry.streamName).getDeclarationLocation() + " is missing values: " + entry.missedValues)
             .collect(Collectors.joining("\n"))); // and join them
   }
 
