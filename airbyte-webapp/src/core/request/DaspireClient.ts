@@ -31,6 +31,16 @@ export interface FilterDestinationRequestBody {
   pageSize: number;
   pageCurrent: number;
 }
+export interface FilterSourceItemRequestBody {
+  sourceId: string;
+  pageSize: number;
+  pageCurrent: number;
+}
+export interface FilterDestinationItemRequestBody {
+  destinationId: string;
+  pageSize: number;
+  pageCurrent: number;
+}
 export interface WebBackendFilteredConnectionReadList {
   connections: WebBackendConnectionRead[];
   total: number;

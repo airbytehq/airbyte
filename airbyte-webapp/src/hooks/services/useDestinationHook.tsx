@@ -77,14 +77,10 @@ const useGetDestination = <T extends string | undefined | null>(
   });
 };
 
-const useGetDestinationItem = <T extends string | undefined | null>(
-  destinationId: T
-): T extends string ? DestinationReadItem : DestinationReadItem | undefined => {
+const useGetDestinationItem = (filters: any): DestinationReadItem => {
   const service = useDestinationService();
 
-  return useSuspenseQuery(destinationsKeys.detail(destinationId ?? ""), () =>
-    service.getSingleDestination(destinationId ?? "")
-  );
+  return useSuspenseQuery(destinationsKeys.list(filters), () => service.getSingleDestination(filters));
 };
 const useCreateDestination = () => {
   const service = useDestinationService();

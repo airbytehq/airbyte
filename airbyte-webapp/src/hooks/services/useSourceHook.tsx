@@ -81,12 +81,10 @@ const useGetSource = <T extends string | undefined | null>(
     enabled: isDefined(sourceId),
   });
 };
-const useGetSourceItem = <T extends string | undefined | null>(
-  sourceId: T
-): T extends string ? SourceReadItem : SourceReadItem | undefined => {
+const useGetSourceItem = (filters: any): SourceReadItem => {
   const service = useSourceService();
 
-  return useSuspenseQuery(sourcesKeys.detail(sourceId ?? ""), () => service.getSingleSource(sourceId ?? ""));
+  return useSuspenseQuery(sourcesKeys.list(filters), () => service.getSingleSource(filters));
 };
 const useCreateSource = () => {
   const service = useSourceService();
