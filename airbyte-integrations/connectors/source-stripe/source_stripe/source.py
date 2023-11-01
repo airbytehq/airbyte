@@ -13,6 +13,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from source_stripe.streams import (
@@ -435,6 +436,12 @@ class SourceStripe(AbstractSource):
             # The limit can be removed or increased once we have proper rate limiting
             concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
             streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-            return [StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level) for stream in streams]
+
+            # The state is known to be empty because concurrent CDK is currently only used for full refresh
+            state = {}
+            cursor = NoopCursor()
+            return [
+                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, state, cursor) for stream in streams
+            ]
         else:
             return streams
