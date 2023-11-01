@@ -20,27 +20,27 @@ class PendoPythonStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         yield from response.json()
 
-    def get_valid_type(self, field_type) -> str:
+    # Method to get an Airbyte field schema for a given Pendo field type
+    def get_valid_field_info(self, field_type) -> dict:
+        output = {}
         if field_type == 'time':
-            return 'integer'
-        if field_type == 'list':
-            return 'array'
-        return field_type
+            output["type"] = ["null", "integer"]
+        elif field_type == 'list':
+            output["type"] = ["null", "array"]
+        elif field_type == '':
+            output['type'] = ["null", "array", "string", "integer", "boolean"]
+        else:
+            output["type"] = ["null", field_type]
+        return output
 
+    # Build the Airbyte stream schema from Pendo metadata
     def build_schema(self, full_schema, metadata):
         for key in metadata:
-            if not key.startswith("auto"):
+            if not key.startswith("auto"):  # Skipping for now while we understand Pendo schema and what auto_323232 is
                 fields = {}
                 for field in metadata[key]:
                     field_type = metadata[key][field]['Type']
-                    if field_type != '':
-                        fields[field] = {
-                            "type": ["null", self.get_valid_type(field_type)]
-                        }
-                    else:
-                        fields[field] = {
-                            "type": ["null", "array", "string", "integer", "boolean"]
-                        }
+                    fields[field] = self.get_valid_field_info(field_type)
 
                 full_schema['properties']['metadata']['properties'][key] = {
                     "type": ["null", "object"],
@@ -49,8 +49,9 @@ class PendoPythonStream(HttpStream, ABC):
         return full_schema
 
 
+# Airbyte Streams using the Pendo /aggregation endpoint (Currently only Account and Visitor)
 class PendoAggregationStream(PendoPythonStream):
-    json_schema = None
+    json_schema = None  # Field to store dynamically built Airbyte Stream Schema
     page_size = 10
 
     @property
@@ -81,6 +82,7 @@ class PendoAggregationStream(PendoPythonStream):
         """
         yield from response.json().get("results", [])
 
+    # Build /aggregation endpoint payload with pagination for a given source and requestId
     def build_request_body(self, requestId, source, next_page_token) -> Optional[Mapping[str, Any]]:
         request_body = {
             "response": {"mimeType": "application/json"},
@@ -184,9 +186,7 @@ class Visitors(PendoAggregationStream):
                     }
                 }
                 for key in body['auto']:
-                    auto_fields[key] = {
-                        "type": ["null", self.get_valid_type(body['auto'][key]['Type'])]
-                    }
+                    auto_fields[key] = self.get_valid_field_info(body['auto'][key]['Type'])
                 full_schema['properties']['metadata']['properties']['auto']['properties'] = auto_fields
                 full_schema['properties']['metadata']['properties']['auto__323232']['properties'] = auto_fields
 
@@ -238,9 +238,7 @@ class Accounts(PendoAggregationStream):
                     }
                 }
                 for key in body['auto']:
-                    auto_fields[key] = {
-                        "type": ["null", self.get_valid_type(body['auto'][key]['Type'])]
-                    }
+                    auto_fields[key] = self.get_valid_field_info(body['auto'][key]['Type'])
                 full_schema['properties']['metadata']['properties']['auto']['properties'] = auto_fields
                 full_schema['properties']['metadata']['properties']['auto__323232']['properties'] = auto_fields
 
