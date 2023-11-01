@@ -158,9 +158,14 @@ public class DestinationHandler {
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
-  public DestinationRead getDestinationRead(final DestinationIdRequestBody destinationIdRequestBody)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
-    return buildDestinationRead(destinationIdRequestBody.getDestinationId());
+  public DestinationRead getDestinationRead(final DestinationIdPageRequestBody destinationIdPageRequestBody)
+          throws JsonValidationException, IOException, ConfigNotFoundException {
+    return buildDestinationRead(destinationIdPageRequestBody.getDestinationId());
+  }
+
+  public Long getDestinationConnectionCount(final UUID workspaceId, final UUID sourceId)
+          throws IOException {
+    return configRepository.pageDestinationStandardSyncsCount(workspaceId, sourceId);
   }
 
   public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody)

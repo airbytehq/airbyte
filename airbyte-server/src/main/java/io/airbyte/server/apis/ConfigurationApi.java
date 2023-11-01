@@ -380,12 +380,15 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public SourceReadWithConnection getSourceWithConnection(final SourceIdRequestBody sourceIdRequestBody) {
+  public SourceReadWithConnectionPage getSourceWithConnection(final SourceIdPageRequestBody sourceIdPageRequestBody) {
     return execute(() -> {
-      SourceRead sourceRead = sourceHandler.getSourceRead(sourceIdRequestBody);
-      WebBackendConnectionReadList webBackendConnectionReadList = webBackendConnectionsHandler.listConnectionsWithoutOperation(
-          sourceRead.getWorkspaceId(), sourceIdRequestBody.getSourceId(), null, false);
-      return new SourceReadWithConnection().sourceRead(sourceRead).connectionReadList(webBackendConnectionReadList);
+      SourceRead sourceRead = sourceHandler.getSourceRead(new SourceIdRequestBody().sourceId(sourceIdPageRequestBody.getSourceId()));
+      WebBackendConnectionReadList webBackendConnectionReadList = webBackendConnectionsHandler.listConnectionsPageWithoutOperation(
+              sourceRead.getWorkspaceId(), sourceIdPageRequestBody.getSourceId(), null, false, sourceIdPageRequestBody.getPageSize(),
+              sourceIdPageRequestBody.getPageCurrent());
+      return new SourceReadWithConnectionPage().sourceRead(sourceRead).connectionReadList(webBackendConnectionReadList)
+              .total(sourceHandler.getSourceConnectionCount(sourceRead.getWorkspaceId(), sourceIdPageRequestBody.getSourceId()))
+              .pageCurrent(sourceIdPageRequestBody.getPageCurrent()).pageSize(sourceIdPageRequestBody.getPageSize());
     });
   }
 
@@ -573,13 +576,15 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   }
 
   @Override
-  public DestinationReadWithConnection getDestinationWithConnection(final DestinationIdRequestBody destinationIdRequestBody) {
+  public DestinationReadWithConnectionPage getDestinationWithConnection(final DestinationIdPageRequestBody destinationIdPageRequestBody) {
     return execute(() -> {
-      DestinationRead destinationRead = destinationHandler.getDestinationRead(destinationIdRequestBody);
-      WebBackendConnectionReadList webBackendConnectionReadList =
-          webBackendConnectionsHandler.listConnectionsWithoutOperation(destinationRead.getWorkspaceId(), null,
-              destinationIdRequestBody.getDestinationId(), false);
-      return new DestinationReadWithConnection().destinationRead(destinationRead).webBackendConnectionReadList(webBackendConnectionReadList);
+      DestinationRead destinationRead = destinationHandler.getDestinationRead(destinationIdPageRequestBody);
+      WebBackendConnectionReadList webBackendConnectionReadList = webBackendConnectionsHandler.listConnectionsPageWithoutOperation(
+              destinationRead.getWorkspaceId(), null, destinationIdPageRequestBody.getDestinationId(), false,
+              destinationIdPageRequestBody.getPageSize(), destinationIdPageRequestBody.getPageCurrent());
+      return new DestinationReadWithConnectionPage().destinationRead(destinationRead).webBackendConnectionReadList(webBackendConnectionReadList)
+              .total(destinationHandler.getDestinationConnectionCount(destinationRead.getWorkspaceId(), destinationIdPageRequestBody.getDestinationId()))
+              .pageCurrent(destinationIdPageRequestBody.getPageCurrent()).pageSize(destinationIdPageRequestBody.getPageSize());
     });
   }
 
