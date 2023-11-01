@@ -125,7 +125,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         return params
     
 
-class MailChimpListChildStream(IncrementalMailChimpStream):
+class MailChimpListSubStream(IncrementalMailChimpStream):
     """
     Base class for incremental Mailchimp streams that are children of the Lists stream.
     """
@@ -260,7 +260,7 @@ class EmailActivity(IncrementalMailChimpStream):
                 yield {**item, **activity_item}
 
 
-class ListMembers(MailChimpListChildStream):
+class ListMembers(MailChimpListSubStream):
     """
     Get information about members in a specific Mailchimp list.
     Docs link: https://mailchimp.com/developer/marketing/api/list-members/list-members-info/
@@ -277,7 +277,7 @@ class Reports(IncrementalMailChimpStream):
         return "reports"
 
 
-class Segments(MailChimpListChildStream):
+class Segments(MailChimpListSubStream):
     """
     Get information about all available segments for a specific list.
     Docs link: https://mailchimp.com/developer/marketing/api/list-segments/list-segments/

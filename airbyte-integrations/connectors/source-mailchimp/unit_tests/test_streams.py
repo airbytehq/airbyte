@@ -161,7 +161,7 @@ def test_stream_parse_json_error(auth, caplog):
 )
 def test_list_child_request_params(auth, stream_class, stream_slice, stream_state, next_page_token, expected_params):
     """
-    Tests the request_params method for the shared MailChimpListChildStream class.
+    Tests the request_params method for the shared MailChimpListSubStream class.
     """
     stream = stream_class(authenticator=auth)
     params = stream.request_params(stream_slice=stream_slice, stream_state=stream_state, next_page_token=next_page_token)
@@ -196,7 +196,7 @@ def test_list_child_request_params(auth, stream_class, stream_slice, stream_stat
 )
 def test_list_child_get_updated_state(auth, stream_class, current_stream_state, latest_record, expected_state):
     """
-    Tests that the get_updated_state method for the shared MailChimpListChildStream class
+    Tests that the get_updated_state method for the shared MailChimpListSubStream class
     correctly updates state only for its slice.
     """
     segments_stream = stream_class(authenticator=auth)
