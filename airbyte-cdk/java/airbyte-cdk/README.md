@@ -99,7 +99,7 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.1.0'   // The CDK version to pin to.
     features = ['db-destinations'] // An array of CDK features to depend on.
-    useLocalCdk = false            // Use 'true' to use a live reference to the 
+    useLocalCdk = false            // Use 'true' to use a live reference to the
                                    // local cdk project.
 }
 
@@ -156,6 +156,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.0   | 2023-11-01 | [\#31983](https://github.com/airbytehq/airbyte/pull/31983) | Add deinterpolation feature to AirbyteExceptionHandler.                                                                                                        |
 | 0.2.3   | 2023-10-31 | [\#32022](https://github.com/airbytehq/airbyte/pull/32022) | Update Debezium version from 2.20 -> 2.4.0.                                                                                                                    |
 | 0.2.2   | 2023-10-31 | [\#31976](https://github.com/airbytehq/airbyte/pull/31976) | Debezium tweaks to make tests run faster.                                                                                                                      |
 | 0.2.0   | 2023-10-30 | [\#31960](https://github.com/airbytehq/airbyte/pull/31960) | Hoist top-level gradle subprojects into CDK.                                                                                                                   |
