@@ -295,7 +295,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                     "type": "string",
                                                 }
                                             },
-                                            "description": "Extract text from document formats (.pdf, .docx, .md) and emit as one record per file.",
+                                            "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
                                         },
                                     ],
                                 },

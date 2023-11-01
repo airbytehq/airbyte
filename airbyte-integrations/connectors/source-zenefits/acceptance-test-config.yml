@@ -3,7 +3,7 @@
 connector_image: airbyte/source-zenefits:dev
 tests:
   spec:
-    - spec_path: "secrets/spec.json"
+    - spec_path: "source_zenefits/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
