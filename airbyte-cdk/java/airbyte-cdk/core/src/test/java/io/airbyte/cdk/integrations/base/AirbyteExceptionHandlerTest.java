@@ -138,7 +138,8 @@ public class AirbyteExceptionHandlerTest {
     runTestWithMessage(new Exception(new RuntimeException("Error happened in foo")));
 
     final AirbyteMessage traceMessage = findFirstTraceMessage();
-    // We shouldn't deinterpolate at all in this case, so we will get the default trace message behavior.
+    // We shouldn't deinterpolate at all in this case, so we will get the default trace message
+    // behavior.
     assertEquals("Error happened in ?", traceMessage.getTrace().getError().getInternalMessage());
   }
 

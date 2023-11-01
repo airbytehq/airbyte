@@ -63,7 +63,8 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
 
     // Attempt to deinterpolate the error message before emitting a trace message
     final String mangledMessage;
-    // If any exception in the chain is of a deinterpolatable type, find it and deinterpolate its message.
+    // If any exception in the chain is of a deinterpolatable type, find it and deinterpolate its
+    // message.
     // This assumes that any wrapping exceptions are just noise (e.g. runtime exception).
     final Optional<Throwable> deinterpolatableException = ExceptionUtils.getThrowableList(throwable).stream()
         .filter(t -> THROWABLES_TO_DEINTERPOLATE.stream().anyMatch(deinterpolatableClass -> deinterpolatableClass.isAssignableFrom(t.getClass())))
