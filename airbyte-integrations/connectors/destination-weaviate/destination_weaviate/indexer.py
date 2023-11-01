@@ -186,7 +186,8 @@ class WeaviateIndexer(Indexer):
             )
 
         if len(self.objects_with_error) > 0 and retries > 0:
-            time.sleep(2)
+            # Wait for Weaviate to recover
+            time.sleep(4)
             self._flush(retries - 1)
 
         self.buffered_objects.clear()
