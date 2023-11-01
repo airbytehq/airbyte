@@ -2,13 +2,14 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mssql;
+package io.airbyte.integrations.source.mssql_strict_encrypt;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
 import io.airbyte.cdk.integrations.base.spec_modification.SpecModifyingSource;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.integrations.source.mssql.MssqlSource;
 import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
