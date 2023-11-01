@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.52.8
+Concurrent CDK: incremental (missing state conversion)
+
 ## 0.52.7
 File CDK: Add pptx support
 
