@@ -9,7 +9,7 @@ explain bellow.
 
 ### Heartbeatign logic
 
-Everytime a `RECORD` or a `STATE` is emitted by the source, the airbyte platform emit a beat internal.
+The platform considers both `RECORD` and `STATE` messages emitted by the source as source heartbeats.
 The Airbyte platform has a process which monitors when the last beat was send and if it reaches a threshold,
 the synchronization attempt will be failed. It fails with a cause being the source an message saying 
 `The source is unresponsive`. Internal the error has a heartbeat timeout type, which is not display in the UI.
