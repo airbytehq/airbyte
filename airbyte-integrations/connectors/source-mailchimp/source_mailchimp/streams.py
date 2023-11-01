@@ -123,7 +123,7 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         default_params = {"sort_field": self.sort_field, "sort_dir": "ASC", **stream_slice}
         params.update(default_params)
         return params
-    
+
 
 class MailChimpListSubStream(IncrementalMailChimpStream):
     """
@@ -265,6 +265,7 @@ class ListMembers(MailChimpListSubStream):
     Get information about members in a specific Mailchimp list.
     Docs link: https://mailchimp.com/developer/marketing/api/list-members/list-members-info/
     """
+
     cursor_field = "last_changed"
     data_field = "members"
 
