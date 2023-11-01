@@ -58,7 +58,7 @@ const AllDestinationsPage: React.FC = () => {
   // const [pageConfig] = usePageConfig();
 
   // const [currentPageSize] = useState<number>(pageConfig.connection.pageSize);
-  const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig.connection.pageSize);
+  const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig?.destination?.pageSize);
   useTrackPage(PageTrackingCodes.DESTINATION_LIST);
   const workspace = useCurrentWorkspace();
   const initialFiltersState = {
@@ -106,7 +106,7 @@ const AllDestinationsPage: React.FC = () => {
   const onChangePageSize = useCallback(
     (size: number) => {
       setCurrentPageSize(size);
-      updatePageSize("connection", size);
+      updatePageSize("destination", size);
       onSelectFilter("pageSize", size);
     },
     [onSelectFilter]

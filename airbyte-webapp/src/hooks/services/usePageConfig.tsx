@@ -14,6 +14,8 @@ interface PageConfig {
   connection: Iprops;
   source: Iprops;
   destination: Iprops;
+  sourceItem: Iprops;
+  destinationItem: Iprops;
 }
 
 const defaultPageSize = {
@@ -24,6 +26,8 @@ const defaultConfig: PageConfig = {
   connection: defaultPageSize,
   source: defaultPageSize,
   destination: defaultPageSize,
+  sourceItem: defaultPageSize,
+  destinationItem: defaultPageSize,
 };
 
 export const usePageConfig = (): [
