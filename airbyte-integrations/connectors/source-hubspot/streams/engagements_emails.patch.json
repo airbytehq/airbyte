@@ -13,7 +13,8 @@
         "null"
       ],
       "items": {
-        "type": "integer"
+        "type": ["integer", "string", "null"],
+        "format": "integer"
       }
     },
     "companies": {
