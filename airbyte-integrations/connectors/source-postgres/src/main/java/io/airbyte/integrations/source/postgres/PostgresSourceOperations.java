@@ -92,6 +92,8 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
                              final PostgresType cursorFieldType,
                              final String value)
       throws SQLException {
+
+    LOGGER.warn("SGX setCursorField value=" + value + "cursorFieldType=" + cursorFieldType);
     switch (cursorFieldType) {
 
       case TIMESTAMP -> setTimestamp(preparedStatement, parameterIndex, value);
@@ -127,6 +129,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   private void setTimestampWithTimezone(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
+      LOGGER.warn("SGX setTimestampWithTimezone value=" + value + " parsedValue=" + OffsetDateTime.parse(value));
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     } catch (final DateTimeParseException e) {
       // attempt to parse the datetime w/o timezone. This can be caused by schema created with a different
@@ -138,6 +141,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   @Override
   protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
+      LOGGER.warn("SGX setTimestamp value=" + value + " parsedValue=" + LocalDateTime.parse(value));
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     } catch (final DateTimeParseException e) {
       // attempt to parse the datetime with timezone. This can be caused by schema created with an older
@@ -148,6 +152,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
 
   @Override
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
+    LOGGER.warn("SGX setDate value=" + value + " parsedValue=" + LocalDate.parse(value));
     preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
   }
 
@@ -415,14 +420,10 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   @Override
   protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
     String strValue = resultSet.getString(index);
-    if (INFINITY_STRING.equals(strValue)) {
-      node.put(columnName, PLUS_INFINITY_STRING);
-    } else if (MINUS_INFINITY_STRING.equals(strValue)) {
-      node.put(columnName, MINUS_INFINITY_STRING);
-    } else {
+
       //even though the super just does a toString, I find it a lot cleaner to call it anyways, in case that implementation changes
       super.putDate(node, columnName, resultSet, index);
-    }
+
   }
 
   @Override
@@ -433,13 +434,9 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     String strValue = resultSet.getString(index);
-    if (INFINITY_STRING.equals(strValue)) {
-      node.put(columnName, PLUS_INFINITY_STRING);
-    } else if (MINUS_INFINITY_STRING.equals(strValue)) {
-      node.put(columnName, MINUS_INFINITY_STRING);
-    } else {
+
       node.put(columnName, DateTimeConverter.convertToTimestamp(resultSet.getTimestamp(index)));
-    }
+
   }
 
   @Override

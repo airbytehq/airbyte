@@ -245,6 +245,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     final var fieldType = field.typeName();
 
     registration.register(SchemaBuilder.string().optional(), x -> {
+      throw new RuntimeException();/*
       if (x == null) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
@@ -274,7 +275,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
           return convertInterval((PGInterval) x);
         default:
           throw new IllegalArgumentException("Unknown field type  " + fieldType.toUpperCase(Locale.ROOT));
-      }
+      }*/
     });
   }
 
