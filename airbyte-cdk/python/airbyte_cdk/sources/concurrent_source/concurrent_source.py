@@ -32,7 +32,7 @@ class ConcurrentSource(AbstractSource, ABC):
         super().__init__(**kwargs)
         self._max_workers = max_workers
         self._timeout_seconds = timeout_in_seconds
-        self._threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
+        self._stream_read_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
 
     # FIXME: This probably deserves a nicer interface with an adapter
     def read(
@@ -75,7 +75,7 @@ class ConcurrentSource(AbstractSource, ABC):
                         continue
                     stream_instances_to_read_from.append(stream_instance)
             for stream in stream_instances_to_read_from:
-                print(f"submitting task for stream {stream.name}")
+                #print(f"submitting task for stream {stream.name}")
                 self._submit_task(futures, stream_reader.read_from_stream, stream)
 
             stop = False
@@ -85,13 +85,15 @@ class ConcurrentSource(AbstractSource, ABC):
                 if isinstance(airbyte_message_or_record_or_exception, Exception):
                     # An exception was raised while processing the stream
                     # Stop the threadpool and raise it
-                    self._threadpool.shutdown(wait=False, cancel_futures=True)
+                    #print(f"received exception {airbyte_message_or_record_or_exception}")
+                    #print(f"{stream_done_counter} out of {len(stream_instances_to_read_from)} left.")
+                    self._stream_read_threadpool.shutdown(wait=False, cancel_futures=True)
                     raise airbyte_message_or_record_or_exception
 
                 elif airbyte_message_or_record_or_exception == SENTINEL:
                     # Update the map of stream -> done
                     stream_done_counter += 1
-                    print(f"done with a stream. {stream_done_counter} out of {len(stream_instances_to_read_from)}")
+                    #print(f"done with a stream. {stream_done_counter} out of {len(stream_instances_to_read_from)}")
                     if stream_done_counter == len(stream_instances_to_read_from):
                         stop = True
                 else:
@@ -106,4 +108,4 @@ class ConcurrentSource(AbstractSource, ABC):
     def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
         # self._wait_while_too_many_pending_futures(futures)
-        futures.append(self._threadpool.submit(function, *args))
+        futures.append(self._stream_read_threadpool.submit(function, *args))

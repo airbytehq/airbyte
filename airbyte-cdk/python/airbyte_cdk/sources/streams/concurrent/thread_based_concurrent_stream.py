@@ -33,7 +33,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
     def __init__(
         self,
         partition_generator: PartitionGenerator,
-        max_workers: int,
+        threadpool,
         name: str,
         json_schema: Mapping[str, Any],
         availability_strategy: AbstractAvailabilityStrategy,
@@ -49,8 +49,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         namespace: Optional[str] = None,
     ):
         self._stream_partition_generator = partition_generator
-        self._max_workers = max_workers
-        self._threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
+        self._threadpool = threadpool
         self._name = name
         self._json_schema = json_schema
         self._availability_strategy = availability_strategy

@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import concurrent
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -37,7 +37,7 @@ _MAX_CONCURRENCY = 3
 
 class SourceStripe(ConcurrentSource):
     def __init__(self, catalog_path: Optional[str] = None, **kwargs):
-        super().__init__(2, 300, **kwargs)
+        super().__init__(10, 300, **kwargs)
         if catalog_path:
             catalog = self.read_catalog(catalog_path)
             # Only use concurrent cdk if all streams are running in full_refresh
@@ -436,12 +436,14 @@ class SourceStripe(ConcurrentSource):
             # The limit can be removed or increased once we have proper rate limiting
             concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
             streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
+            threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
 
             # The state is known to be empty because concurrent CDK is currently only used for full refresh
             state = {}
             cursor = NoopCursor()
             return [
-                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, state, cursor) for stream in streams
+                #FIXME: maybe need a better to access the threadpool?
+                StreamFacade.create_from_stream(stream, self, entrypoint_logger, threadpool, state, cursor) for stream in streams
             ]
         else:
             return streams

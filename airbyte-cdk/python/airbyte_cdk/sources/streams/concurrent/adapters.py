@@ -52,7 +52,7 @@ class StreamFacade(Stream):
         stream: Stream,
         source: AbstractSource,
         logger: logging.Logger,
-        max_workers: int,
+        threadpool,
         state: Optional[MutableMapping[str, Any]],
         cursor: Cursor,
     ) -> Stream:
@@ -81,7 +81,7 @@ class StreamFacade(Stream):
                     [cursor_field] if cursor_field is not None else None,
                     state,
                 ),
-                max_workers=max_workers,
+                threadpool=threadpool,
                 name=stream.name,
                 namespace=stream.namespace,
                 json_schema=stream.get_json_schema(),
