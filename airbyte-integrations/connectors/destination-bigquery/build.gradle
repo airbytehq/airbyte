@@ -5,7 +5,7 @@ plugins {
 
 airbyteJavaConnector {
     cdkVersionRequired = '0.2.0'
-    features = ['db-destinations', 'typing-deduping']
+    features = ['db-destinations']
     useLocalCdk = false
 }
 
@@ -45,6 +45,10 @@ dependencies {
     // implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-bigquery')
+
+    // TODO: declare typing-deduping as a CDK feature instead of importing from source.
+    implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
+    integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
 
     // TODO: remove these dependencies (what's S3 doing here???)
     implementation libs.aws.java.sdk.s3

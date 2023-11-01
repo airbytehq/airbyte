@@ -18,7 +18,7 @@ configurations.all {
 airbyteJavaConnector.addCdkDependencies()
 
 application {
-    mainClass = 'io.airbyte.integrations.source.mssql.MssqlSourceStrictEncrypt'
+    mainClass = 'io.airbyte.integrations.source.mssql_strict_encrypt.MssqlSourceStrictEncrypt'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
