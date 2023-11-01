@@ -1,15 +1,23 @@
 {
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "required": ["base", "date", "rates"],
   "properties": {
+    "success": {
+      "type": ["null", "boolean"]
+    },
+    "timestamp": {
+      "type": ["null", "integer"]
+    },
     "base": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "date": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "rates": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "AED": {
           "type": ["null", "number"]

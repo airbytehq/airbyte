@@ -4,7 +4,7 @@
 
 The exchange rates integration is a toy integration to demonstrate how Airbyte works with a very simple source.
 
-It pulls all its data from [https://exchangeratesapi.io](https://exchangeratesapi.io)
+It pulls all its data from [https://apilayer.com/marketplace/exchangerates_data-api](https://apilayer.com/marketplace/exchangerates_data-api)
 
 #### Output schema
 
@@ -35,9 +35,9 @@ Currencies are `number` and the date is a `string`.
 
 ### Setup guide
 
-In order to get an `API Access Key` please go to [this](https://manage.exchangeratesapi.io/signup/free) page and enter needed info. After registration and login you will see your `API Access Key`, also you may find it [here](https://manage.exchangeratesapi.io/dashboard).
+In order to get an `API Access Key` please go to [this](https://apilayer.com/signup) page and enter needed info. After registration and login you will see your `API Access Key`, also you may find it [here](https://apilayer.com/account). You will then need to subscribe your account to the [Exchange Rates Data API](https://apilayer.com/marketplace/exchangerates_data-api)
 
-If you have `free` subscription plan \(you may check it [here](https://manage.exchangeratesapi.io/plan)\) this means that you will have 2 limitations:
+If you have `free` subscription plan \(you may check it [here](https://apilayer.com/marketplace/exchangerates_data-api)\) this means that you will have 2 limitations:
 
 1. 1000 API calls per month.
 2. You won't be able to specify the `base` parameter, meaning that you will be dealing only with default base value which is EUR.
@@ -46,6 +46,8 @@ If you have `free` subscription plan \(you may check it [here](https://manage.ex
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| 1.3.0   | 2023-08-25 | [29299](https://github.com/airbytehq/airbyte/pull/29299) | Migrate to low-code |
+| 1.2.9   | 2023-08-15 | [23000](https://github.com/airbytehq/airbyte/pull/23000) | Fix schema and tests  |
 | 1.2.8   | 2023-02-14 | [23000](https://github.com/airbytehq/airbyte/pull/23000) | Specified date formatting in specification                                                                          |
 | 1.2.7   | 2022-10-31 | [18726](https://github.com/airbytehq/airbyte/pull/18726) | Fix handling error during check connection                                                                          |
 | 1.2.6   | 2022-08-23 | [15884](https://github.com/airbytehq/airbyte/pull/15884) | Migrated to new API Layer endpoint                                                                                  |

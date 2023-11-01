@@ -1,7 +1,5 @@
 {
-  "one_call": {
-    "current": {
-      "dt": 0
-    }
+  "todo-stream-name": {
+    "todo-field-name": "value"
   }
 }

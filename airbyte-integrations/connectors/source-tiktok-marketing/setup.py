@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "connector-acceptance-test", "requests-mock==1.9.3", "timeout-decorator==0.5.0"]
+TEST_REQUIREMENTS = ["pytest-mock~=3.6.1", "pytest~=6.1", "requests-mock==1.9.3", "timeout-decorator==0.5.0"]
 
 setup(
     name="source_tiktok_marketing",

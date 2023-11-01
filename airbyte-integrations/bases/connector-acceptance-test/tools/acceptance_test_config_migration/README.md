@@ -11,7 +11,7 @@ pip install -r requirements.txt
 brew install gh
 ```
 
-Then create a module to contain the information for your migration/issues etc.: 
+Then create a module to contain the information for your migration/issues etc.:
 ```
 mkdir migrations/<migration_name>
 touch migrations/<migraton_name>/__init__.py
@@ -19,7 +19,7 @@ touch migrations/<migration_name>/config.py
 ```
 
 Copy a config.py file from another migration and fill in the `MODULE_NAME` variable. The other variables
-can be filled in when you use certain scripts. 
+can be filled in when you use certain scripts.
 ```python
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
@@ -36,7 +36,7 @@ MODULE_NAME: str = "<migration_name>"
 
 ## Scripts
 
-The scripts perform operations on a set of connectors. 
+The scripts perform operations on a set of connectors.
 
 ### `run_tests.py`: Run CAT tests and save results by exit code
 
@@ -49,24 +49,24 @@ TODO: Replace this process with Dagger
 
 #### Before running
 
-1. The tests will run on the `latest` version of CAT by default. To run the `dev` version of CAT, and select a specific 
+1. The tests will run on the `latest` version of CAT by default. To run the `dev` version of CAT, and select a specific
 test, commit the hacky changes in [this commit](https://github.com/airbytehq/airbyte/pull/24377/commits/7d9fb1414911a512cd5d5ffafe2a384e8004fb1e).
 
 2. Give Docker a _lot_ of space to build all the connector images!
 
-3. Make sure you have the secrets downloaded from GSM for all of the connectors you want to run tests on. Please keep 
+3. Make sure you have the secrets downloaded from GSM for all of the connectors you want to run tests on. Please keep
 in mind that secrets need to be re-uploaded for connectors with single-use Oauth tokens.
 
-#### How to run 
+#### How to run
 
-Typical usage: 
+Typical usage:
 ```
 python run_tests.py
 ```
 
-Full options: 
+Full options:
 ```
-usage: run_tests.py [-h] --connectors [CONNECTORS ...] [--allow_alpha | --no-allow_alpha] [--allow_beta | --no-allow_beta] [--max_concurrency MAX_CONCURRENCY]
+usage: run_tests.py [-h] --connectors [CONNECTORS ...] [--allow_community | --no-allow_community] [--max_concurrency MAX_CONCURRENCY]
 
 Run connector acceptance tests for a list of connectors.
 
@@ -76,7 +76,7 @@ options:
                         A list of connectors (separated by spaces) to run a script on. (default: all connectors)
   --allow_alpha, --no-allow_alpha
                         Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
-  --allow_beta, --no-allow_beta
+  --allow_community, --no-allow_community
                         Whether to apply the change to bets connectors, if they are included in the list of connectors. (default: False)
   --max_concurrency MAX_CONCURRENCY
                         The maximum number of acceptance tests that should happen at once.
@@ -100,9 +100,9 @@ Issues get created with the title according to `ISSUE_TITLE`. Labels are added a
     #
     # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
     #
-    
+
     from typing import Optional, List
-    
+
     # SET THESE BEFORE USING THE SCRIPT
     MODULE_NAME: str = "<migration_name>"
     GITHUB_PROJECT_NAME: Optional[str] = "<project_name>"
@@ -116,12 +116,12 @@ Issues get created with the title according to `ISSUE_TITLE`. Labels are added a
     ```bash
     touch migrations/<migration_name>/issue.md.j2
     ```
-    
+
     If you need to fill more variables than are currently defined in the call to `template.render()`
     in `create_issues.py`, edit the script to allow filling of that variable and define how it should be
     filled. Please keep in mind the other migrations when you do this.
 
-3. Update the following line in the script so that it points to the config file from your migration: 
+3. Update the following line in the script so that it points to the config file from your migration:
 
     ```python
     ## Update this line before running the script
@@ -140,9 +140,9 @@ Typical usage (real execution):
 python create_issues.py --connectors <connectors> --no-dry
 ```
 
-Full options: 
+Full options:
 ```
-usage: create_issues.py [-h] [-d | --dry | --no-dry] --connectors [CONNECTORS ...] [--allow_beta | --no-allow_beta] [--allow_alpha | --no-allow_alpha]
+usage: create_issues.py [-h] [-d | --dry | --no-dry] --connectors [CONNECTORS ...] [--allow_community | --no-allow_community] [--allow_alpha | --no-allow_alpha]
 
 Create issues for a list of connectors from a template.
 
@@ -151,14 +151,14 @@ options:
   -d, --dry, --no-dry   Whether the action performed is a dry run. In the case of a dry run, no git actions will be pushed to the remote. (default: True)
   --connectors [CONNECTORS ...]
                         A list of connectors (separated by spaces) to run a script on. (default: all connectors)
-  --allow_beta, --no-allow_beta
+  --allow_community, --no-allow_community
                         Whether to apply the change to bets connectors, if they are included in the list of connectors. (default: False)
   --allow_alpha, --no-allow_alpha
                         Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
 ```
 
 
-### `config_migration.py`: Perform migrations on `acceptance-test-config.yml` files 
+### `config_migration.py`: Perform migrations on `acceptance-test-config.yml` files
 
 #### What it does:
 For each connector:
@@ -189,7 +189,7 @@ python config_migration.py --connectors <connectors>
 
 Full options:
 ```
-usage: config_migration.py [-h] --connectors [CONNECTORS ...] [--allow_alpha | --no-allow_alpha] [--allow_beta | --no-allow_beta] [--migrate_from_legacy | --no-migrate_from_legacy]
+usage: config_migration.py [-h] --connectors [CONNECTORS ...] [--allow_community | --no-allow_community] [--migrate_from_legacy | --no-migrate_from_legacy]
 
 Migrate acceptance-test-config.yml files for a list of connectors.
 
@@ -197,10 +197,8 @@ options:
   -h, --help            show this help message and exit
   --connectors [CONNECTORS ...]
                         A list of connectors (separated by spaces) to run a script on. (default: all connectors)
-  --allow_alpha, --no-allow_alpha
-                        Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
-  --allow_beta, --no-allow_beta
-                        Whether to apply the change to bets connectors, if they are included in the list of connectors. (default: False)
+  --allow_community, --no-allow_community
+                        Whether to apply the change to community connectors, if they are included in the list of connectors. (default: False)
   --migrate_from_legacy, --no-migrate_from_legacy
                         Whether to migrate config files from the legacy format before applying the migration. (default: False)
 ```
@@ -208,7 +206,7 @@ options:
 
 ### `create_prs.py`: Create a PR per connector that performs a config migration and pushes it
 
-## Create migration PRs for GA connectors (`create_prs.py`)
+## Create migration PRs for Certified connectors (`create_prs.py`)
 
 #### What it does:
 For each connector:
@@ -230,9 +228,9 @@ PRs get created with the title according to `ISSUE_TITLE`. Labels are added acco
     #
     # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
     #
-    
+
     from typing import Optional, List
-    
+
     # SET THESE BEFORE USING THE SCRIPT
     MODULE_NAME: str = "<migration_name>"
     GITHUB_PROJECT_NAME: Optional[str] = "<project_name>"
@@ -275,7 +273,7 @@ python create_prs.py --connectors <connectors> --no-dry
 
 Full options:
 ```
-usage: create_prs.py [-h] [-d | --dry | --no-dry] --connectors [CONNECTORS ...] [--allow_alpha | --no-allow_alpha] [--allow_beta | --no-allow_beta]
+usage: create_prs.py [-h] [-d | --dry | --no-dry] --connectors [CONNECTORS ...] [--allow_community | --no-allow_community]
 
 Create PRs for a list of connectors from a template.
 
@@ -286,8 +284,8 @@ options:
                         A list of connectors (separated by spaces) to run a script on. (default: all connectors)
   --allow_alpha, --no-allow_alpha
                         Whether to apply the change to alpha connectors, if they are included in the list of connectors. (default: False)
-  --allow_beta, --no-allow_beta
-                        Whether to apply the change to bets connectors, if they are included in the list of connectors. (default: False)
+  --allow_community, --no-allow_community
+                        Whether to apply the change to community connectors, if they are included in the list of connectors. (default: False)
 ```
 
 ## Existing migrations

@@ -32,25 +32,6 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
-        threshold_days: 30
-        cursor_paths:
-          accounting_transactions: ["b_dynamicsBusinessCentral", "dynamicsBusinessCentral", "postedDate"]
-          bank_transfers: ["b_xero", "xero", "date"]
-          bills: ["b_freshbooks", "freshbooks", "postedDate"]
-          bills_credit_notes: ["b_xero", "xero", "postedDate"]
-          bills_payments: ["b_dynamicsBusinessCentral", "dynamicsBusinessCentral", "date"]
-          commerce_disputes: ["b_square", "square", "createdDate"]
-          commerce_orders: ["b_square", "square", "createdDate"]
-          commerce_products: ["b_square", "square", "createdDate"]
-          commerce_transactions: ["b_square", "square", "createdDate"]
-          deposits: ["b_quickbooks", "quickbooks", "postedDate"]
-          estimates: ["b_xero", "xero", "postedDate"]
-          invoices: ["b_sageBusinessCloud", "sageBusinessCloud", "postedDate"]
-          invoices_credit_notes: ["b_freshbooks", "freshbooks", "postedDate"]
-          invoices_payments: ["b_freshbooks", "freshbooks", "date"]
-          journal_entries: ["b_freshbooks", "freshbooks", "postedDate"]
-          purchase_orders: ["b_oracleNetsuite", "oracleNetsuite", "postedDate"]
-          refunds: ["b_xero", "xero", "date"]
   full_refresh:
     tests:
       - config_path: "secrets/config.json"

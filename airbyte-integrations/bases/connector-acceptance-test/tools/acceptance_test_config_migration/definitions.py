@@ -22,15 +22,11 @@ def read_source_definitions():
     return download_and_parse_registry_json()["sources"]
 
 
-def find_by_release_stage(source_definitions, release_stage):
-    if release_stage == "other":
-        return [
-            definition
-            for definition in source_definitions
-            if definition.get("releaseStage", "") not in ["alpha", "beta", "generally_available"]
-        ]
+def find_by_support_level(source_definitions, support_level):
+    if support_level == "other":
+        return [definition for definition in source_definitions if definition.get("supportLevel", "") not in ["community", "certified"]]
     else:
-        return [definition for definition in source_definitions if definition.get("releaseStage") == release_stage]
+        return [definition for definition in source_definitions if definition.get("supportLevel") == support_level]
 
 
 def find_by_name(connector_names: List[str]):
@@ -51,7 +47,6 @@ def is_airbyte_connector(connector_definition):
 
 
 ALL_DEFINITIONS = read_source_definitions()
-GA_DEFINITIONS = find_by_release_stage(ALL_DEFINITIONS, "generally_available")
-BETA_DEFINITIONS = find_by_release_stage(ALL_DEFINITIONS, "beta")
-ALPHA_DEFINTIONS = find_by_release_stage(ALL_DEFINITIONS, "alpha")
-OTHER_DEFINITIONS = find_by_release_stage(ALL_DEFINITIONS, "other")
+CERTIFIED_DEFINITIONS = find_by_support_level(ALL_DEFINITIONS, "certified")
+COMMUNITY_DEFINITIONS = find_by_support_level(ALL_DEFINITIONS, "community")
+OTHER_DEFINITIONS = find_by_support_level(ALL_DEFINITIONS, "other")

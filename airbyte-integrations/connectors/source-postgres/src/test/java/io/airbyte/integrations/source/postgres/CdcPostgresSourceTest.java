@@ -4,10 +4,13 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
-import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_DURATION_PROPERTY;
+import static io.airbyte.cdk.integrations.debezium.DebeziumIteratorConstants.SYNC_CHECKPOINT_RECORDS_PROPERTY;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
+import static io.airbyte.cdk.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
 import static io.airbyte.integrations.source.postgres.ctid.CtidStateManager.STATE_TYPE_KEY;
+import static io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIteratorConstants.USE_TEST_CHUNK_SIZE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -21,25 +24,27 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Streams;
+import io.airbyte.cdk.db.Database;
+import io.airbyte.cdk.db.PgLsn;
+import io.airbyte.cdk.db.factory.DSLContextFactory;
+import io.airbyte.cdk.db.factory.DataSourceFactory;
+import io.airbyte.cdk.db.factory.DatabaseDriver;
+import io.airbyte.cdk.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.db.jdbc.JdbcUtils;
+import io.airbyte.cdk.integrations.base.Source;
+import io.airbyte.cdk.integrations.debezium.CdcSourceTest;
+import io.airbyte.cdk.integrations.debezium.CdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
+import io.airbyte.cdk.integrations.debezium.internals.postgres.PostgresReplicationConnection;
+import io.airbyte.cdk.integrations.util.ConnectorExceptionUtil;
+import io.airbyte.cdk.testutils.PostgreSQLContainerHelper;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
-import io.airbyte.db.Database;
-import io.airbyte.db.PgLsn;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.DatabaseDriver;
-import io.airbyte.db.jdbc.DefaultJdbcDatabase;
-import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.Source;
-import io.airbyte.integrations.debezium.CdcSourceTest;
-import io.airbyte.integrations.debezium.internals.postgres.PostgresCdcTargetPosition;
-import io.airbyte.integrations.debezium.internals.postgres.PostgresReplicationConnection;
-import io.airbyte.integrations.util.ConnectorExceptionUtil;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -56,7 +61,6 @@ import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.v0.StreamDescriptor;
 import io.airbyte.protocol.models.v0.SyncMode;
-import io.airbyte.test.utils.PostgreSQLContainerHelper;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -87,7 +91,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   protected static final String SLOT_NAME_BASE = "debezium_slot";
   protected static final String PUBLICATION = "publication";
-  protected static final int INITIAL_WAITING_SECONDS = 30;
+  protected static final int INITIAL_WAITING_SECONDS = 15;
   private PostgreSQLContainer<?> container;
 
   protected String dbName;
@@ -111,7 +115,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @BeforeEach
   protected void setup() throws SQLException {
-    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    final DockerImageName myImage = DockerImageName.parse(getServerImageName()).asCompatibleSubstituteFor("postgres");
     container = new PostgreSQLContainer<>(myImage)
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
@@ -150,7 +154,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
         .put(JdbcUtils.SSL_KEY, false)
         .put("is_test", true)
         .put("replication_method", replicationMethod)
-        .put("sync_checkpoint_records", 1)
+        .put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 1)
         .build());
   }
 
@@ -277,8 +281,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Override
   protected void assertStateMessagesForNewTableSnapshotTest(final List<AirbyteStateMessage> stateMessages,
-      final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
-    assertEquals(7, stateMessages.size());
+                                                            final AirbyteStateMessage stateMessageEmittedAfterFirstSyncCompletion) {
+    assertEquals(7, stateMessages.size(), stateMessages.toString());
     for (int i = 0; i <= 4; i++) {
       final AirbyteStateMessage stateMessage = stateMessages.get(i);
       assertEquals(AirbyteStateMessage.AirbyteStateType.GLOBAL, stateMessage.getType());
@@ -360,11 +364,11 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
     final ConfiguredAirbyteStream airbyteStream = new ConfiguredAirbyteStream()
         .withStream(CatalogHelpers.createAirbyteStream(
-                MODELS_STREAM_NAME + "_2",
-                MODELS_SCHEMA,
-                Field.of(COL_ID, JsonSchemaType.INTEGER),
-                Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
-                Field.of(COL_MODEL, JsonSchemaType.STRING))
+            MODELS_STREAM_NAME + "_2",
+            MODELS_SCHEMA,
+            Field.of(COL_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_MAKE_ID, JsonSchemaType.INTEGER),
+            Field.of(COL_MODEL, JsonSchemaType.STRING))
             .withSupportedSyncModes(
                 Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))));
@@ -432,7 +436,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final Set<String> names = new HashSet<>(STREAM_NAMES);
     names.add(MODELS_STREAM_NAME + "_2");
     assertExpectedRecords(Streams.concat(MODEL_RECORDS_2.stream(), MODEL_RECORDS.stream())
-            .collect(Collectors.toSet()),
+        .collect(Collectors.toSet()),
         recordMessages1,
         names,
         names,
@@ -458,7 +462,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
       if (i <= 3) {
         final StreamDescriptor finalFirstStreamInState = firstStreamInState;
         global.getStreamStates().forEach(c -> {
-          // First 4 state messages are ctid state for the stream that didn't complete ctid sync the first time
+          // First 4 state messages are ctid state for the stream that didn't complete ctid sync the first
+          // time
           if (c.getStreamDescriptor().equals(finalFirstStreamInState)) {
             assertFalse(c.getStreamState().has(STATE_TYPE_KEY));
           } else {
@@ -562,7 +567,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
 
   @Override
   protected JsonNode getConfig() {
-    return config;
+    // Clone it to guard against accidental mutations.
+    return Jsons.clone(config);
   }
 
   @Override
@@ -847,7 +853,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   protected void assertLsnPositionForSyncShouldIncrementLSN(final Long lsnPosition1,
-      final Long lsnPosition2, final int syncNumber) {
+                                                            final Long lsnPosition2,
+                                                            final int syncNumber) {
     if (syncNumber == 1) {
       assertEquals(1, lsnPosition2.compareTo(lsnPosition1));
     } else if (syncNumber == 2) {
@@ -858,9 +865,9 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   /**
-   * This test verifies that multiple states are sent during the CDC process based on number of records.
-   * We can ensure that more than one `STATE` type of message is sent, but we are not able to assert
-   * the exact number of messages sent as depends on Debezium.
+   * This test verifies that multiple states are sent during the CDC process based on number of
+   * records. We can ensure that more than one `STATE` type of message is sent, but we are not able to
+   * assert the exact number of messages sent as depends on Debezium.
    *
    * @throws Exception Exception happening in the test.
    */
@@ -908,7 +915,7 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
   @Test
   protected void verifyCheckpointStatesBySeconds() throws Exception {
     // We require a huge amount of records, otherwise Debezium will notify directly the last offset.
-    final int recordsToCreate = 20000;
+    final int recordsToCreate = 40000;
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
@@ -928,8 +935,8 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
       writeModelRecord(record);
     }
     final JsonNode config = getConfig();
-    ((ObjectNode) config).put("sync_checkpoint_seconds", 1);
-    ((ObjectNode) config).put("sync_checkpoint_records", 100_000);
+    ((ObjectNode) config).put(SYNC_CHECKPOINT_DURATION_PROPERTY, 1);
+    ((ObjectNode) config).put(SYNC_CHECKPOINT_RECORDS_PROPERTY, 100_000);
 
     final JsonNode stateAfterFirstSync = Jsons.jsonNode(Collections.singletonList(stateMessages.get(stateMessages.size() - 1)));
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
@@ -941,6 +948,68 @@ public class CdcPostgresSourceTest extends CdcSourceTest {
     final List<AirbyteStateMessage> stateMessagesCDC = extractStateMessages(dataFromSecondBatch);
     assertTrue(stateMessagesCDC.size() > 1, "Generated only the final state.");
     assertEquals(stateMessagesCDC.size(), stateMessagesCDC.stream().distinct().count(), "There are duplicated states.");
+  }
+
+  /**
+   * This test is setup to force
+   * {@link io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterator} create multiple
+   * pages
+   */
+  @Test
+  protected void ctidIteratorPageSizeTest() throws Exception {
+    final int recordsToCreate = 25_000;
+    final Set<Integer> expectedIds = new HashSet<>();
+    MODEL_RECORDS.forEach(c -> expectedIds.add(c.get(COL_ID).asInt()));
+
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final int id = 200 + recordsCreated;
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, id, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+      expectedIds.add(id);
+    }
+
+    /**
+     * Setting the property to make the
+     * {@link io.airbyte.integrations.source.postgres.ctid.InitialSyncCtidIterator} use smaller page
+     * size of 8KB instead of default 1GB This allows us to make sure that the iterator logic works with
+     * multiple pages (sub queries)
+     */
+    final JsonNode config = getConfig();
+    ((ObjectNode) config).put(USE_TEST_CHUNK_SIZE, true);
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(config, CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+
+    final Set<AirbyteRecordMessage> airbyteRecordMessages = extractRecordMessages(dataFromFirstBatch);
+    assertEquals(recordsToCreate + MODEL_RECORDS.size(), airbyteRecordMessages.size());
+
+    airbyteRecordMessages.forEach(c -> {
+      assertTrue(expectedIds.contains(c.getData().get(COL_ID).asInt()));
+      expectedIds.remove(c.getData().get(COL_ID).asInt());
+    });
+  }
+
+  @Override
+  protected void compareTargetPositionFromTheRecordsWithTargetPostionGeneratedBeforeSync(final CdcTargetPosition targetPosition,
+                                                                                         final AirbyteRecordMessage record) {
+    // The LSN from records should be either equal or grater than the position value before the sync
+    // started.
+    // The current Write-Ahead Log (WAL) position can move ahead even without any data modifications
+    // (INSERT, UPDATE, DELETE)
+    // The start and end of transactions, even read-only ones, are recorded in the WAL. So, simply
+    // starting and committing a transaction can cause the WAL location to move forward.
+    // Periodic checkpoints, which write dirty pages from memory to disk to ensure database consistency,
+    // generate WAL records. Checkpoints happen even if there are no active data modifications
+    assert targetPosition instanceof PostgresCdcTargetPosition;
+    assertTrue(extractPosition(record.getData()).targetLsn.compareTo(((PostgresCdcTargetPosition) targetPosition).targetLsn) >= 0);
+  }
+
+  protected String getServerImageName() {
+    return "debezium/postgres:15-alpine";
   }
 
 }

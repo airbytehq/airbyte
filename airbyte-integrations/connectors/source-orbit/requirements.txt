@@ -1,2 +1,2 @@
--e ../../bases/connector-acceptance-test
 -e .
+-e ../../bases/connector-acceptance-test

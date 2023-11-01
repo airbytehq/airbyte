@@ -29,6 +29,17 @@
     "test": {
       "type": ["null", "boolean"]
     },
+    "totalBudget": {
+      "type": ["null", "object"],
+      "properties": {
+        "amount": {
+          "type": ["null", "string"]
+        },
+        "currencyCode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
     "servingStatuses": {
       "type": ["null", "array"],
       "items": {
@@ -46,6 +57,12 @@
     },
     "status": {
       "type": ["null", "string"]
+    },
+    "allowedCampaignTypes": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

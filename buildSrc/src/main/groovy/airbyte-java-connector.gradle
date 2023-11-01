@@ -1,0 +1,112 @@
+/*
+Gradle plugin for Java-based Airbyte connectors.
+Also facilitates importing and working with the Java CDK.
+*/
+
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.tasks.testing.Test
+
+class AirbyteJavaConnectorExtension {
+
+    boolean useLocalCdk = true
+    String cdkVersionRequired
+    List<String> features = []  // e.g. 'db-sources', 'db-destinations'
+    Project project
+
+    AirbyteJavaConnectorExtension(Project project) {
+        this.project = project
+    }
+
+    void addCdkDependencies() {
+        // Create a list of CDK submodules to import
+        def submoduleNames = ['core']
+        features.each { feature ->
+            submoduleNames.add(feature)
+        }
+        if (useLocalCdk) {
+            project.dependencies {
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+                implementation project.project(':airbyte-cdk:java:airbyte-cdk:init-oss')
+                testImplementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+                testImplementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
+                testImplementation project.project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
+                testImplementation project.project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+                integrationTestJavaImplementation project.project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+                integrationTestJavaImplementation project.project(':airbyte-cdk:java:airbyte-cdk:init-oss')
+                integrationTestJavaImplementation project.project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
+                submoduleNames.each { submoduleName ->
+                    // Add the CDK module to the dependencies
+                    def cdkModule = project.project(":airbyte-cdk:java:airbyte-cdk:${submoduleName}")
+                    def testFixturesRef = testFixtures(project.project(":airbyte-cdk:java:airbyte-cdk:${submoduleName}"))
+                    implementation cdkModule
+                    testImplementation cdkModule
+                    testImplementation testFixturesRef
+                    integrationTestJavaImplementation cdkModule
+                    integrationTestJavaImplementation testFixturesRef
+                    performanceTestJavaImplementation cdkModule
+                    performanceTestJavaImplementation testFixturesRef
+                }
+            }
+        } else {
+            project.dependencies {
+                implementation "io.airbyte.cdk:airbyte-cdk-airbyte-commons:${cdkVersionRequired}"
+                implementation "io.airbyte.cdk:airbyte-cdk-airbyte-json-validation:${cdkVersionRequired}"
+                implementation "io.airbyte.cdk:airbyte-cdk-airbyte-commons-cli:${cdkVersionRequired}"
+                implementation "io.airbyte.cdk:airbyte-cdk-airbyte-api:${cdkVersionRequired}"
+                implementation "io.airbyte.cdk:airbyte-cdk-config-models-oss:${cdkVersionRequired}"
+                implementation "io.airbyte.cdk:airbyte-cdk-init-oss:${cdkVersionRequired}"
+                testImplementation "io.airbyte.cdk:airbyte-cdk-airbyte-commons:${cdkVersionRequired}"
+                testImplementation "io.airbyte.cdk:airbyte-cdk-airbyte-json-validation:${cdkVersionRequired}"
+                testImplementation "io.airbyte.cdk:airbyte-cdk-airbyte-api:${cdkVersionRequired}"
+                testImplementation "io.airbyte.cdk:airbyte-cdk-config-models-oss:${cdkVersionRequired}"
+                integrationTestJavaImplementation "io.airbyte.cdk:airbyte-cdk-config-models-oss:${cdkVersionRequired}"
+                integrationTestJavaImplementation "io.airbyte.cdk:airbyte-cdk-init-oss:${cdkVersionRequired}"
+                integrationTestJavaImplementation "io.airbyte.cdk:airbyte-cdk-acceptance-test-harness:${cdkVersionRequired}"
+                submoduleNames.each { submoduleName ->
+                    // Add the cdkModule to the dependencies
+                    def cdkModule = "io.airbyte.cdk:airbyte-cdk-${submoduleName}:${cdkVersionRequired}"
+                    def testFixturesRef = "io.airbyte.cdk:airbyte-cdk-${submoduleName}:${cdkVersionRequired}:test-fixtures"
+                    implementation cdkModule
+                    testImplementation cdkModule
+                    testImplementation testFixturesRef
+                    integrationTestJavaImplementation cdkModule
+                    integrationTestJavaImplementation testFixturesRef
+                    performanceTestJavaImplementation cdkModule
+                    performanceTestJavaImplementation testFixturesRef
+                }
+            }
+        }
+    }
+}
+
+
+class AirbyteJavaConnectorPlugin implements Plugin<Project> {
+
+    @Override
+    void apply(Project project) {
+        // def cdkTargetVersion = project.ext.getCdkTargetVersion(project)
+        def extension = project.extensions.create('airbyteJavaConnector', AirbyteJavaConnectorExtension, project)
+
+        project.plugins.apply(AirbyteIntegrationTestJavaPlugin)
+        project.plugins.apply(AirbytePerformanceTestJavaPlugin)
+
+        project.dependencies {
+            // Integration and performance tests should automatically
+            // have access to the project's own main source sets.
+            integrationTestJavaImplementation project
+            performanceTestJavaImplementation project
+        }
+
+        // TODO: figure out how to make this work.
+        // Currently fails with error:
+        //   "Cannot change dependencies of dependency configuration '...' after it has been included in dependency resolution."
+        // project.afterEvaluate(proj -> {
+        //     extension.addCdkDependencies();
+        // });
+    }
+}

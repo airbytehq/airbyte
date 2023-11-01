@@ -17,12 +17,12 @@ This connector maps an incoming data from a namespace and stream to a unique Kin
 
 ### Features
 
-| Feature                       | Support | Notes                                                                             |
-| :---------------------------- | :-----: | :-------------------------------------------------------------------------------- |
-| Full Refresh Sync             |   ❌    |                                                                                   |
-| Incremental - Append Sync     |   ✅    | Incoming messages are streamed/appended to a Kinesis stream as they are received. |
-| Incremental - Deduped History |   ❌    |                                                                                   |
-| Namespaces                    |   ✅    | Namespaces will be used to determine the Kinesis stream name.                     |
+| Feature                        | Support | Notes                                                                             |
+| :----------------------------- | :-----: | :-------------------------------------------------------------------------------- |
+| Full Refresh Sync              |   ❌    |                                                                                   |
+| Incremental - Append Sync      |   ✅    | Incoming messages are streamed/appended to a Kinesis stream as they are received. |
+| Incremental - Append + Deduped |   ❌    |                                                                                   |
+| Namespaces                     |   ✅    | Namespaces will be used to determine the Kinesis stream name.                     |
 
 ### Performance considerations
 

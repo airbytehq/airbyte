@@ -2,9 +2,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from pydantic import BaseModel
-from typing_extensions import Literal
+from pydantic import BaseModel, Field
 
 
 class JsonlFormat(BaseModel):
-    filetype: Literal["jsonl"] = "jsonl"
+    class Config:
+        title = "Jsonl Format"
+
+    filetype: str = Field(
+        "jsonl",
+        const=True,
+    )

@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.mongodb;
 
-import io.airbyte.integrations.base.ssh.SshTunnel;
-import io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel;
+import io.airbyte.cdk.integrations.base.ssh.SshTunnel.TunnelMethod;
 
 public class SshKeyMongoDbDestinationAcceptanceTest extends SshMongoDbDestinationAcceptanceTest {
 

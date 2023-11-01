@@ -1,67 +1,67 @@
 {
-  "$schema" : "http://json-schema.org/draft-04/schema#",
-  "type" : "object",
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
   "additionalProperties": true,
-  "properties" : {
-    "hash" : {
-      "type" : ["null", "string"]
+  "properties": {
+    "hash": {
+      "type": ["null", "string"]
     },
-    "height" : {
-      "type" : ["null", "integer"]
+    "height": {
+      "type": ["null", "integer"]
     },
-    "version" : {
-      "type" : ["null", "integer"]
+    "version": {
+      "type": ["null", "integer"]
     },
-    "versionHex" : {
-      "type" : ["null", "string"]
+    "versionHex": {
+      "type": ["null", "string"]
     },
-    "merkleroot" : {
-      "type" : ["null", "string"]
+    "merkleroot": {
+      "type": ["null", "string"]
     },
-    "time" : {
-      "type" : ["null", "integer"]
+    "time": {
+      "type": ["null", "integer"]
     },
-    "mediantime" : {
-      "type" : ["null", "integer"]
+    "mediantime": {
+      "type": ["null", "integer"]
     },
-    "nonce" : {
-      "type" : ["null", "integer"]
+    "nonce": {
+      "type": ["null", "integer"]
     },
-    "bits" : {
-      "type" : ["null", "string"]
+    "bits": {
+      "type": ["null", "string"]
     },
-    "difficulty" : {
-      "type" : ["null", "number"]
+    "difficulty": {
+      "type": ["null", "number"]
     },
-    "chainwork" : {
-      "type" : ["null", "string"]
+    "chainwork": {
+      "type": ["null", "string"]
     },
-    "nTx" : {
-      "type" : ["null", "integer"]
+    "nTx": {
+      "type": ["null", "integer"]
     },
-    "previousblockhash" : {
-      "type" : ["null", "string"]
+    "previousblockhash": {
+      "type": ["null", "string"]
     },
-    "nextblockhash" : {
-      "type" : ["null", "string"]
+    "nextblockhash": {
+      "type": ["null", "string"]
     },
-    "strippedsize" : {
-      "type" : ["null", "integer"]
+    "strippedsize": {
+      "type": ["null", "integer"]
     },
-    "size" : {
-      "type" : ["null", "integer"]
+    "size": {
+      "type": ["null", "integer"]
     },
-    "weight" : {
-      "type" : ["null", "integer"]
+    "weight": {
+      "type": ["null", "integer"]
     },
-    "tx" : {
-      "type" : ["null", "array"],
-      "items" : {
-        "$ref" : "bitcoin/transaction.json"
+    "tx": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "bitcoin/transaction.json"
       }
     }
   },
-  "required" : [
+  "required": [
     "hash",
     "height",
     "version",

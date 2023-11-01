@@ -1,11 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import pathlib
-import yaml
 
-from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
+import pathlib
+
+import yaml
 from metadata_service.models import transform
+from metadata_service.models.generated.ConnectorMetadataDefinitionV0 import ConnectorMetadataDefinitionV0
 
 
 def get_all_dict_key_paths(dict_to_traverse, key_path=""):
@@ -26,6 +27,7 @@ def get_all_dict_key_paths(dict_to_traverse, key_path=""):
         key_paths += get_all_dict_key_paths(value, new_key_path)
 
     return key_paths
+
 
 def have_same_keys(dict1, dict2):
     """Check if two dicts have the same keys.
@@ -55,5 +57,3 @@ def test_transform_to_json_does_not_mutate_keys(valid_metadata_upload_files, val
 
         # assert same keys in both dicts, deep compare, and that the values are the same
         assert have_same_keys(metadata_yaml_dict, new_yaml_dict)
-
-

@@ -5,47 +5,17 @@
 
 import logging
 from enum import Enum
-from typing import Any, Iterator, List, Mapping, MutableMapping
+from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping
 
 import backoff
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.utils import AirbyteTracedException
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v13.services.types.google_ads_service import GoogleAdsRow, SearchGoogleAdsResponse
-from google.api_core.exceptions import ServerError, TooManyRequests
+from google.api_core.exceptions import InternalServerError, ServerError, TooManyRequests
 from google.auth import exceptions
 from proto.marshal.collections import Repeated, RepeatedComposite
 
-REPORT_MAPPING = {
-    "accounts": "customer",
-    "account_labels": "customer_label",
-    "account_performance_report": "customer",
-    "ad_group_ads": "ad_group_ad",
-    "ad_group_ad_labels": "ad_group_ad_label",
-    "ad_group_ad_report": "ad_group_ad",
-    "ad_groups": "ad_group",
-    "ad_group_bidding_strategies": "ad_group",
-    "ad_group_criterions": "ad_group_criterion",
-    "ad_group_criterion_labels": "ad_group_criterion_label",
-    "ad_group_labels": "ad_group_label",
-    "ad_listing_group_criterions": "ad_group_criterion",
-    "audience": "audience",
-    "campaigns": "campaign",
-    "campaign_real_time_bidding_settings": "campaign",
-    "campaign_bidding_strategies": "campaign",
-    "campaign_budget": "campaign_budget",
-    "campaign_labels": "campaign_label",
-    "click_view": "click_view",
-    "display_keyword_performance_report": "display_keyword_view",
-    "display_topics_performance_report": "topic_view",
-    "geographic_report": "geographic_view",
-    "keyword_report": "keyword_view",
-    "labels": "label",
-    "service_accounts": "customer",
-    "shopping_performance_report": "shopping_performance_view",
-    "user_interest": "user_interest",
-    "user_location_report": "user_location_view",
-}
 API_VERSION = "v13"
 logger = logging.getLogger("airbyte")
 
@@ -70,7 +40,7 @@ class GoogleAds:
 
     @backoff.on_exception(
         backoff.expo,
-        (ServerError, TooManyRequests),
+        (InternalServerError, ServerError, TooManyRequests),
         on_backoff=lambda details: logger.info(
             f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
         ),
@@ -113,16 +83,36 @@ class GoogleAds:
 
     @staticmethod
     def convert_schema_into_query(
-        schema: Mapping[str, Any], report_name: str, from_date: str = None, to_date: str = None, cursor_field: str = None
+        fields: Iterable[str],
+        table_name: str,
+        conditions: List[str] = None,
+        order_field: str = None,
+        limit: int = None,
     ) -> str:
-        from_category = REPORT_MAPPING[report_name]
-        fields = GoogleAds.get_fields_from_schema(schema)
-        fields = ", ".join(fields)
+        """
+        Constructs a Google Ads query based on the provided parameters.
 
-        query_template = f"SELECT {fields} FROM {from_category}"
+        Args:
+        - fields (Iterable[str]): List of fields to be selected in the query.
+        - table_name (str): Name of the table from which data will be selected.
+        - conditions (List[str], optional): List of conditions to be applied in the WHERE clause. Defaults to None.
+        - order_field (str, optional): Field by which the results should be ordered. Defaults to None.
+        - limit (int, optional): Maximum number of results to be returned. Defaults to None.
 
-        if cursor_field:
-            query_template += f" WHERE {cursor_field} >= '{from_date}' AND {cursor_field} <= '{to_date}' ORDER BY {cursor_field} ASC"
+        Returns:
+        - str: Constructed Google Ads query.
+        """
+
+        query_template = f"SELECT {', '.join(fields)} FROM {table_name}"
+
+        if conditions:
+            query_template += " WHERE " + " AND ".join(conditions)
+
+        if order_field:
+            query_template += f" ORDER BY {order_field} ASC"
+
+        if limit:
+            query_template += f" LIMIT {limit}"
 
         return query_template
 
@@ -188,17 +178,8 @@ class GoogleAds:
         # For example:
         # 1. ad_group_ad.ad.responsive_display_ad.long_headline - type AdTextAsset (https://developers.google.com/google-ads/api/reference/rpc/v6/AdTextAsset?hl=en).
         # 2. ad_group_ad.ad.legacy_app_install_ad - type LegacyAppInstallAdInfo (https://developers.google.com/google-ads/api/reference/rpc/v7/LegacyAppInstallAdInfo?hl=en).
-        #
-        if not (isinstance(field_value, (list, int, float, str, bool, dict)) or field_value is None):
+        if not isinstance(field_value, (list, int, float, str, bool, dict)) and field_value is not None:
             field_value = str(field_value)
-        # In case of custom query field has MESSAGE type it represents protobuf
-        # message and could be anything, convert it to a string or array of
-        # string if it has "repeated" flag on metadata
-        if schema_type.get("protobuf_message"):
-            if "array" in schema_type.get("type"):
-                field_value = [str(field) for field in field_value]
-            else:
-                field_value = str(field_value)
 
         return field_value
 

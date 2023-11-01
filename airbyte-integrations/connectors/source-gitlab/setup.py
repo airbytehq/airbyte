@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["airbyte-cdk", "vcrpy==4.1.1"]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "connector-acceptance-test", "requests_mock", "pytest-mock"]
+TEST_REQUIREMENTS = ["requests-mock~=1.9.3", "pytest~=6.1", "requests_mock", "pytest-mock"]
 
 setup(
     name="source_gitlab",

@@ -36,6 +36,9 @@
     "created": {
       "type": ["null", "integer"]
     },
+    "updated": {
+      "type": ["null", "integer"]
+    },
     "statement_description": {
       "type": ["null", "string"]
     },
@@ -90,6 +93,9 @@
     },
     "amount_decimal": {
       "type": ["null", "string"]
+    },
+    "is_deleted": {
+      "type": ["null", "boolean"]
     }
   }
 }

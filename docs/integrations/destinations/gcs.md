@@ -10,12 +10,12 @@ The Airbyte GCS destination allows you to sync data to cloud storage buckets. Ea
 
 #### Features
 
-| Feature                       | Support | Notes                                                                                        |
-| :---------------------------- | :-----: | :------------------------------------------------------------------------------------------- |
-| Full Refresh Sync             |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.         |
-| Incremental - Append Sync     |   ✅    |                                                                                              |
-| Incremental - Deduped History |   ❌    | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces                    |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                  |
+| Feature                        | Support | Notes                                                                                                                                                                                               |
+| :----------------------------- | :-----: | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full Refresh Sync              |   ✅    | Warning: this mode deletes all previously synced data in the configured bucket path.                                                                                                                |
+| Incremental - Append Sync      |   ✅    | Warning: Airbyte provides at-least-once delivery. Depending on your source, you may see duplicated data. Learn more [here](/understanding-airbyte/connections/incremental-append#inclusive-cursors) |
+| Incremental - Append + Deduped |   ❌    |                                                                                                                                                                                                     |
+| Namespaces                     |   ❌    | Setting a specific bucket path is equivalent to having separate namespaces.                                                                                                                         |
 
 ## Configuration
 
@@ -237,7 +237,7 @@ Under the hood, an Airbyte data stream in Json schema is first converted to an A
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                    |
 | :------ | :--------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- |
-| 0.4.4   | 2023-07-14 | [#28345](https://github.com/airbytehq/airbyte/pull/28345) | Increment patch to trigger a rebuild                                                                                       |
+| 0.4.4   | 2023-07-14 | [#28345](https://github.com/airbytehq/airbyte/pull/28345)  | Increment patch to trigger a rebuild                                                                                       |
 | 0.4.3   | 2023-07-05 | [#27936](https://github.com/airbytehq/airbyte/pull/27936)  | Internal code update                                                                                                       |
 | 0.4.2   | 2023-06-30 | [#27891](https://github.com/airbytehq/airbyte/pull/27891)  | Internal code update                                                                                                       |
 | 0.4.1   | 2023-06-28 | [#27268](https://github.com/airbytehq/airbyte/pull/27268)  | Internal code update                                                                                                       |

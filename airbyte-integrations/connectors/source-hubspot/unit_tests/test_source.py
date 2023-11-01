@@ -85,7 +85,7 @@ def test_streams(requests_mock, config):
 
     streams = SourceHubspot().streams(config)
 
-    assert len(streams) == 29
+    assert len(streams) == 30
 
 
 def test_check_credential_title_exception(config):
@@ -181,6 +181,7 @@ def test_stream_forbidden(requests_mock, config, caplog):
 
     records = list(SourceHubspot().read(logger, config, catalog, {}))
     assert json["message"] in caplog.text
+    assert "The authenticated user does not have permissions to access the URL" in caplog.text
     records = [r for r in records if r.type == Type.RECORD]
     assert not records
 
@@ -221,6 +222,7 @@ def test_parent_stream_forbidden(requests_mock, config, caplog, fake_properties_
 
     records = list(SourceHubspot().read(logger, config, catalog, {}))
     assert json["message"] in caplog.text
+    assert "The authenticated user does not have permissions to access the URL" in caplog.text
     records = [r for r in records if r.type == Type.RECORD]
     assert not records
 
@@ -295,6 +297,8 @@ class TestSplittingPropertiesFunctionality:
         assert len(stream_records) == sum([len(ids) for ids in record_ids_paginated])
         for record in stream_records:
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
+            properties = [field for field in record if field.startswith("properties_")]
+            assert len(properties) == NUMBER_OF_PROPERTIES
 
     def test_stream_with_splitting_properties_with_pagination(self, requests_mock, common_params, api, fake_properties_list):
         """
@@ -327,6 +331,8 @@ class TestSplittingPropertiesFunctionality:
         assert len(stream_records) == 5
         for record in stream_records:
             assert len(record["properties"]) == NUMBER_OF_PROPERTIES
+            properties = [field for field in record if field.startswith("properties_")]
+            assert len(properties) == NUMBER_OF_PROPERTIES
 
     def test_stream_with_splitting_properties_with_new_record(self, requests_mock, common_params, api, fake_properties_list):
         """
@@ -551,7 +557,7 @@ def test_engagements_stream_since_old_date(requests_mock, common_params, fake_pr
                 "results": [{"engagement": {"id": f"{y}", "lastUpdated": old_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
-                "total": 100
+                "total": 100,
             },
             "status_code": 200,
         }
@@ -580,7 +586,7 @@ def test_engagements_stream_since_recent_date(requests_mock, common_params, fake
                 "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
-                "total": 100
+                "total": 100,
             },
             "status_code": 200,
         }
@@ -611,7 +617,7 @@ def test_engagements_stream_since_recent_date_more_than_10k(requests_mock, commo
                 "results": [{"engagement": {"id": f"{y}", "lastUpdated": recent_date}} for y in range(100)],
                 "hasMore": False,
                 "offset": 0,
-                "total": 10001
+                "total": 10001,
             },
             "status_code": 200,
         }

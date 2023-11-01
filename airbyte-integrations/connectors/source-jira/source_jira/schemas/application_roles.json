@@ -52,6 +52,23 @@
       "type": ["null", "array"],
       "description": "Group Details",
       "items": { "type": ["null", "object"] }
+    },
+    "defaultGroupsDetails": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "groupId": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "self": {
+            "type": ["null", "string"]
+          }
+        }
+      }
     }
   },
   "additionalProperties": true,

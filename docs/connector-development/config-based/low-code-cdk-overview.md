@@ -1,13 +1,14 @@
 # Low-code connector development
 
 Airbyte’s low-code framework enables you to build source connectors for REST APIs via a [connector builder UI](https://docs.airbyte.com/connector-development/connector-builder-ui/overview) or by modifying boilerplate YAML files via terminal or text editor.
+This page provides an overview of the low-code framework and how to use it to build connectors. You can find the full definition of the schema in the [CDK repository](../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml)
 
 :::info
 Developer updates will be announced via our #help-connector-development Slack channel. If you are using the CDK, please join to stay up to date on changes and issues.
 :::
 
 :::note
-The low-code framework is in [beta](https://docs.airbyte.com/project-overview/product-release-stages/#beta), which means that while it will be backwards compatible, it’s still in active development. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
+The low-code framework is in **beta**, which means that while it will be backwards compatible, it’s still in active development. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
 :::
 
 ## Why low-code?
@@ -138,7 +139,7 @@ For a deep dive into each of the components, refer to [Understanding the YAML fi
 
 ## Tutorial
 
-This section a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
+This section is a tutorial that will guide you through the end-to-end process of implementing a low-code connector.
 
 0. [Getting started](tutorial/0-getting-started.md)
 1. [Creating a source](tutorial/1-create-source.md)

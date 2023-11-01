@@ -55,7 +55,7 @@ def commit_push_migrated_config(config_path, connector_name, new_branch, dry_run
 def get_pr_content(definition):
     pr_title = f"Source {definition['name']}: {config.ISSUE_TITLE}"
 
-    pr_body = PR_TEMPLATE.render(connector_name=definition["name"], release_stage=definition["releaseStage"])
+    pr_body = PR_TEMPLATE.render(connector_name=definition["name"], support_level=definition["supportLevel"])
     file_definition, pr_body_path = tempfile.mkstemp()
 
     with os.fdopen(file_definition, "w") as tmp:

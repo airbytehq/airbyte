@@ -99,10 +99,12 @@ def test_media_insights_read_error(api, requests_mock):
             "is_transient": False,
             "error_user_title": "Media posted before business account conversion",
             "error_user_msg": "The media was posted before the most recent time that the user's account was converted to a business account from a personal account.",
-            "fbtrace_id": "fake_trace_id"
+            "fbtrace_id": "fake_trace_id",
         }
     }
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_2/insights",  json=error_response_oauth, status_code=400)
+    requests_mock.register_uri(
+        "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_2/insights", json=error_response_oauth, status_code=400
+    )
 
     error_response_wrong_permissions = {
         "error": {
@@ -113,10 +115,12 @@ def test_media_insights_read_error(api, requests_mock):
             "error_subcode": 33,
             "is_transient": False,
             "error_user_msg": "Unsupported get request. Object with ID 'test_id_3' does not exist, cannot be loaded due to missing permissions, or does not support this operation.",
-            "fbtrace_id": "fake_trace_id"
+            "fbtrace_id": "fake_trace_id",
         }
     }
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_3/insights", json=error_response_wrong_permissions, status_code=400)
+    requests_mock.register_uri(
+        "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_3/insights", json=error_response_wrong_permissions, status_code=400
+    )
 
     media_insights_response_test_id_4 = {
         "name": "impressions",
@@ -126,17 +130,15 @@ def test_media_insights_read_error(api, requests_mock):
         "description": "Total number of times the media object has been seen",
         "id": "test_id_3/insights/impressions/lifetime",
     }
-    requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_4/insights", json=media_insights_response_test_id_4)
+    requests_mock.register_uri(
+        "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_4/insights", json=media_insights_response_test_id_4
+    )
 
     records = read_full_refresh(stream)
-    expected_records = [{"business_account_id": "test_id",
-                         "id": "test_id",
-                         "impressions": 264,
-                         "page_id": "act_unknown_account"},
-                        {"business_account_id": "test_id",
-                         "id": "test_id_4",
-                         "impressions": 300,
-                         "page_id": "act_unknown_account"}]
+    expected_records = [
+        {"business_account_id": "test_id", "id": "test_id", "impressions": 264, "page_id": "act_unknown_account"},
+        {"business_account_id": "test_id", "id": "test_id_4", "impressions": 300, "page_id": "act_unknown_account"},
+    ]
     assert records == expected_records
 
 
@@ -201,7 +203,7 @@ def test_user_lifetime_insights_read(api, config, user_insight_data, requests_mo
         "no `end_time`, but `value` is present",
         "`end_time` is present, but no `value`",
         "no `end_time` and no `value`",
-    ]
+    ],
 )
 def test_user_lifetime_insights_read_with_missing_keys(api, user_lifetime_insights, values, expected):
     """
@@ -249,7 +251,7 @@ def test_user_lifetime_insights_read_with_missing_keys(api, user_lifetime_insigh
         "No `end_time` value in record",
         "No `value` in record",
         "No `end_time` and no `value` in record",
-    ]
+    ],
 )
 def test_user_insights_state(api, user_insights, values, slice_dates, expected):
     """
