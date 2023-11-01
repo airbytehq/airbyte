@@ -358,8 +358,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
   /**
    * Test that T+D supports streams whose name and namespace are the same.
    */
-  @Test
-  public void incrementalDedupSameNameNamespace() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void incrementalDedupSameNameNamespace(final boolean useExpensiveSaferCasting) throws Exception {
     final StreamId streamId = buildStreamId(namespace, namespace, namespace + "_raw");
     final StreamConfig stream = new StreamConfig(
         streamId,
@@ -382,7 +383,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
 
-    final String sql = generator.updateTable(stream, "", Optional.empty(), true);
+    final String sql = generator.updateTable(stream, "", Optional.empty(), useExpensiveSaferCasting);
     destinationHandler.execute(sql);
 
     final List<JsonNode> rawRecords = dumpRawTableRecords(streamId);
@@ -562,8 +563,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * Create two raw records, one with an old extracted_at. Verify that updatedTable only T+Ds the new
    * record, and doesn't set loaded_at on the old record.
    */
-  @Test
-  public void ignoreOldRawRecords() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void ignoreOldRawRecords(final boolean useExpensiveSaferCasting) throws Exception {
     createRawTable(streamId);
     createFinalTable(incrementalAppendStream, "");
     insertRawTableRecords(
@@ -590,7 +592,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                 }
                 """)));
 
-    final String sql = generator.updateTable(incrementalAppendStream, "", Optional.of(Instant.parse("2023-01-01T00:00:00Z")), true);
+    final String sql = generator.updateTable(incrementalAppendStream, "", Optional.of(Instant.parse("2023-01-01T00:00:00Z")), useExpensiveSaferCasting);
     destinationHandler.execute(sql);
 
     final List<JsonNode> rawRecords = dumpRawTableRecords(streamId);
@@ -608,14 +610,15 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    *
    * @throws Exception
    */
-  @Test
-  public void jsonStringifyTypes() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void jsonStringifyTypes(final boolean useExpensiveSaferCasting) throws Exception {
     createRawTable(streamId);
     createFinalTable(incrementalDedupStream, "_foo");
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/json_types_in_string_inputrecords.jsonl"));
-    final String sql = generator.updateTable(incrementalDedupStream, "_foo", Optional.empty(), true);
+    final String sql = generator.updateTable(incrementalDedupStream, "_foo", Optional.empty(), useExpensiveSaferCasting);
     destinationHandler.execute(sql);
     verifyRecords(
         "sqlgenerator/json_types_in_string_expectedrecords_raw.jsonl",
@@ -624,15 +627,16 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpFinalTableRecords(streamId, "_foo"));
   }
 
-  @Test
-  public void timestampFormats() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void timestampFormats(final boolean useExpensiveSaferCasting) throws Exception {
     createRawTable(streamId);
     createFinalTable(incrementalAppendStream, "");
     insertRawTableRecords(
         streamId,
         BaseTypingDedupingTest.readRecords("sqlgenerator/timestampformats_inputrecords.jsonl"));
 
-    final String sql = generator.updateTable(incrementalAppendStream, "", Optional.empty(), true);
+    final String sql = generator.updateTable(incrementalAppendStream, "", Optional.empty(), useExpensiveSaferCasting);
     destinationHandler.execute(sql);
 
     DIFFER.diffFinalTableRecords(
@@ -662,8 +666,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * We shouldn't crash on a sync with null cursor. Insert two records and verify that we keep the
    * record with higher extracted_at.
    */
-  @Test
-  public void incrementalDedupNoCursor() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void incrementalDedupNoCursor(final boolean useExpensiveSaferCasting) throws Exception {
     final StreamConfig streamConfig = new StreamConfig(
         streamId,
         SyncMode.INCREMENTAL,
@@ -759,8 +764,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     assertEquals(1, dumpFinalTableRecords(streamId, "").size());
   }
 
-  @Test
-  public void cdcImmediateDeletion() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void cdcImmediateDeletion(final boolean useExpensiveSaferCasting) throws Exception {
     createRawTable(streamId);
     createFinalTable(cdcIncrementalDedupStream, "");
     insertRawTableRecords(
@@ -779,7 +785,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty(), true);
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty(), useExpensiveSaferCasting);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
@@ -793,8 +799,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * Verify that running T+D twice is idempotent. Previously there was a bug where non-dedup syncs
    * with an _ab_cdc_deleted_at column would duplicate "deleted" records on each run.
    */
-  @Test
-  public void cdcIdempotent() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void cdcIdempotent(final boolean useExpensiveSaferCasting) throws Exception {
     createRawTable(streamId);
     createFinalTable(cdcIncrementalAppendStream, "");
     insertRawTableRecords(
@@ -813,7 +820,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
 
-    final String sql = generator.updateTable(cdcIncrementalAppendStream, "", Optional.empty(), true);
+    final String sql = generator.updateTable(cdcIncrementalAppendStream, "", Optional.empty(), useExpensiveSaferCasting);
     // Execute T+D twice
     destinationHandler.execute(sql);
     destinationHandler.execute(sql);
@@ -825,8 +832,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpFinalTableRecords(streamId, ""));
   }
 
-  @Test
-  public void cdcComplexUpdate() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void cdcComplexUpdate(final boolean useExpensiveSaferCasting) throws Exception {
     createRawTable(streamId);
     createFinalTable(cdcIncrementalDedupStream, "");
     insertRawTableRecords(
@@ -838,7 +846,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         "",
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcupdate_inputrecords_final.jsonl"));
 
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty(), true);
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", Optional.empty(), useExpensiveSaferCasting);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
@@ -861,8 +869,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * All records have the same emitted_at timestamp. This means that we live or die purely based on
    * our ability to use _ab_cdc_lsn.
    */
-  @Test
-  public void testCdcOrdering_updateAfterDelete() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testCdcOrdering_updateAfterDelete(final boolean useExpensiveSaferCasting) throws Exception {
     createRawTable(streamId);
     createFinalTable(cdcIncrementalDedupStream, "");
     insertRawTableRecords(
@@ -870,7 +879,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_updateafterdelete_inputrecords.jsonl"));
 
     final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(cdcIncrementalAppendStream.id());
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", minTimestampForSync, true);
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", minTimestampForSync, useExpensiveSaferCasting);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
@@ -894,8 +903,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * All records have the same emitted_at timestamp. This means that we live or die purely based on
    * our ability to use _ab_cdc_lsn.
    */
-  @Test
-  public void testCdcOrdering_insertAfterDelete() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testCdcOrdering_insertAfterDelete(final boolean useExpensiveSaferCasting) throws Exception {
     createRawTable(streamId);
     createFinalTable(cdcIncrementalDedupStream, "");
     insertRawTableRecords(
@@ -908,7 +918,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         BaseTypingDedupingTest.readRecords("sqlgenerator/cdcordering_insertafterdelete_inputrecords_final.jsonl"));
 
     final Optional<Instant> minTimestampForSync = destinationHandler.getMinTimestampForSync(cdcIncrementalAppendStream.id());
-    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", minTimestampForSync, true);
+    final String sql = generator.updateTable(cdcIncrementalDedupStream, "", minTimestampForSync, useExpensiveSaferCasting);
     destinationHandler.execute(sql);
 
     verifyRecordCounts(
@@ -970,8 +980,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             "_ab_cdc_deleted_at column was expected to be dropped. Actual final table had: " + actualFinalRecords));
   }
 
-  @Test
-  public void weirdColumnNames() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void weirdColumnNames(final boolean useExpensiveSaferCasting) throws Exception {
     createRawTable(streamId);
     insertRawTableRecords(
         streamId,
@@ -1001,7 +1012,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     final String createTable = generator.createTable(stream, "", false);
     destinationHandler.execute(createTable);
-    final String updateTable = generator.updateTable(stream, "", Optional.empty(), true);
+    final String updateTable = generator.updateTable(stream, "", Optional.empty(), useExpensiveSaferCasting);
     destinationHandler.execute(updateTable);
 
     verifyRecords(
@@ -1011,13 +1022,24 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
         dumpFinalTableRecords(streamId, ""));
   }
 
+
+  @ParameterizedTest
+  @ValueSource(strings = {"$", "${", "${${", "${foo}", "\"", "'", "`", ".", "$$", "\\", "{", "}"})
+  public void noCrashOnSpecialCharactersSafe(final String specialChars) throws Exception {
+    specialCharactersCheck(specialChars, true);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"$", "${", "${${", "${foo}", "\"", "'", "`", ".", "$$", "\\", "{", "}"})
+  public void noCrashOnSpecialCharactersUnsafe(final String specialChars) throws Exception {
+    specialCharactersCheck(specialChars, false);
+  }
+
   /**
    * Verify that we don't crash when there are special characters in the stream namespace, name,
    * primary key, or cursor.
    */
-  @ParameterizedTest
-  @ValueSource(strings = {"$", "${", "${${", "${foo}", "\"", "'", "`", ".", "$$", "\\", "{", "}"})
-  public void noCrashOnSpecialCharacters(final String specialChars) throws Exception {
+  private void specialCharactersCheck(final String specialChars, final boolean useExpensiveSaferCasting) throws Exception {
     final String str = specialChars + "_" + namespace + "_" + specialChars;
     final StreamId originalStreamId = generator.buildStreamId(str, str, "unused");
     final StreamId modifiedStreamId = buildStreamId(
@@ -1050,7 +1072,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
       final String createTable = generator.createTable(stream, "", false);
       destinationHandler.execute(createTable);
-      final String updateTable = generator.updateTable(stream, "", Optional.empty(), true);
+      final String updateTable = generator.updateTable(stream, "", Optional.empty(), useExpensiveSaferCasting);
       // Not verifying anything about the data; let's just make sure we don't crash.
       destinationHandler.execute(updateTable);
     } finally {
@@ -1062,8 +1084,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * Verify column names that are reserved keywords are handled successfully. Each destination should
    * always have at least 1 column in the record data that is a reserved keyword.
    */
-  @Test
-  public void testReservedKeywords() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void testReservedKeywords(final boolean useExpensiveSaferCasting) throws Exception {
     createRawTable(streamId);
     insertRawTableRecords(
         streamId,
@@ -1085,7 +1108,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     final String createTable = generator.createTable(stream, "", false);
     destinationHandler.execute(createTable);
-    final String updateTable = generator.updateTable(stream, "", Optional.empty(), true);
+    final String updateTable = generator.updateTable(stream, "", Optional.empty(), useExpensiveSaferCasting);
     destinationHandler.execute(updateTable);
 
     DIFFER.diffFinalTableRecords(
@@ -1137,8 +1160,9 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
    * A stream with no columns is weird, but we shouldn't treat it specially in any way. It should
    * create a final table as usual, and populate it with the relevant metadata columns.
    */
-  @Test
-  public void noColumns() throws Exception {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  public void noColumns(final boolean useExpensiveSaferCasting) throws Exception {
     createRawTable(streamId);
     insertRawTableRecords(
         streamId,
@@ -1160,7 +1184,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
 
     final String createTable = generator.createTable(stream, "", false);
     destinationHandler.execute(createTable);
-    final String updateTable = generator.updateTable(stream, "", Optional.empty(), true);
+    final String updateTable = generator.updateTable(stream, "", Optional.empty(), useExpensiveSaferCasting);
     destinationHandler.execute(updateTable);
 
     verifyRecords(
