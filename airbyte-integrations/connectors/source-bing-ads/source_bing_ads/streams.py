@@ -300,7 +300,7 @@ class KeywordLabels(BingAdsBulkStream):
 
 class Keywords(BingAdsBulkStream):
     """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13
+    https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13
     """
 
     data_scope = ["EntityData"]
