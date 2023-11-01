@@ -9,7 +9,7 @@ import stripe
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import FailureType, SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
@@ -35,9 +35,9 @@ from source_stripe.streams import (
 _MAX_CONCURRENCY = 3
 
 
-class SourceStripe(AbstractSource):
+class SourceStripe(ConcurrentSource):
     def __init__(self, catalog_path: Optional[str] = None, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(2, 300, **kwargs)
         if catalog_path:
             catalog = self.read_catalog(catalog_path)
             # Only use concurrent cdk if all streams are running in full_refresh
