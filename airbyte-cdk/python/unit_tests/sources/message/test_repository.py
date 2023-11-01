@@ -5,14 +5,7 @@
 from unittest.mock import Mock
 
 import pytest
-from airbyte_cdk.models import (
-    AirbyteControlConnectorConfigMessage,
-    AirbyteControlMessage,
-    AirbyteMessage,
-    Level,
-    OrchestratorType,
-    Type,
-)
+from airbyte_cdk.models import AirbyteControlConnectorConfigMessage, AirbyteControlMessage, AirbyteMessage, Level, OrchestratorType, Type
 from airbyte_cdk.sources.message import (
     InMemoryMessageRepository,
     LogAppenderMessageRepositoryDecorator,
