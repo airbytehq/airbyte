@@ -125,10 +125,15 @@ public class SourceHandler {
   }
 
   public SourceRead getSourceRead(final SourceIdRequestBody sourceIdRequestBody)
-      throws JsonValidationException, IOException, ConfigNotFoundException {
+          throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
+  public Long getSourceConnectionCount(final UUID workspaceId, final UUID sourceId)
+          throws IOException {
+    return configRepository.pageSourceStandardSyncsCount(workspaceId, sourceId);
+  }
+  
   public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // read source configuration from db

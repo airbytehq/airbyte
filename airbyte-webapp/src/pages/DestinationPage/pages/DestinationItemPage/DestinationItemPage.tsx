@@ -1,7 +1,7 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Box, Typography } from "@mui/material";
-import React, { useState, Suspense } from "react";
+import React, { useState, Suspense, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { Route, Routes, Navigate } from "react-router-dom";
 import styled from "styled-components";
@@ -14,12 +14,17 @@ import { CreateStepTypes } from "components/ConnectionStep";
 // import { TableItemTitle } from "components/ConnectorBlocks";
 // import { ConnectorIcon } from "components/ConnectorIcon";
 import DeleteBlock from "components/DeleteBlock";
+import { PageSize } from "components/PageSize";
+import { Pagination } from "components/Pagination";
+import { Separator } from "components/Separator";
 import { CategoryItem } from "components/TabMenu";
 
+import { FilterDestinationItemRequestBody } from "core/request/DaspireClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 // import { useConnectionList } from "hooks/services/useConnectionHook";
 import { useDeleteDestination, useGetDestinationItem } from "hooks/services/useDestinationHook";
 // import { useSourceList } from "hooks/services/useSourceHook";
+import { usePageConfig } from "hooks/services/usePageConfig";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
@@ -75,13 +80,28 @@ const BtnText = styled.div`
   font-size: 16px;
   color: #ffffff;
 `;
+const Footer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+`;
 
-const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
+const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConfigs }) => {
   useTrackPage(PageTrackingCodes.DESTINATION_ITEM);
-  const { params, push, pathname } = useRouter<unknown, { id: string; "*": string }>();
+  const { params, push, pathname, query } = useRouter();
   const [currentStep, setCurrentStep] = useState(StepsTypes.CREATE_ENTITY);
   const [loadingStatus, setLoadingStatus] = useState<boolean>(true);
   const [fetchingConnectorError, setFetchingConnectorError] = useState<JSX.Element | string | null>(null);
+  const [pageConfig, updatePageSize] = usePageConfig();
+  const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig?.connection?.pageSize);
+  const initialFiltersState = {
+    destinationId: params.id,
+    pageSize: pageCurrent,
+    pageCurrent: query.pageCurrent ? JSON.parse(query.pageCurrent) : 1,
+  };
+
+  const [filters, setFilters] = useState<FilterDestinationItemRequestBody>(initialFiltersState);
   const [destinationFormValues, setDestinationFormValues] = useState<ServiceFormValues | null>({
     name: "",
     serviceType: "",
@@ -91,9 +111,36 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   // const { sources } = useSourceList();
   // const { sourceDefinitions } = useSourceDefinitionList();
   // const destination = useGetDestination(params.id);
-  const destination = useGetDestinationItem(params.id);
 
-  const destinationDefinition = useDestinationDefinition(destination?.DestinationRead?.destinationDefinitionId);
+  const onSelectFilter = useCallback(
+    (
+      filterType: "pageCurrent" | "status" | "sourceDefinitionId" | "destinationDefinitionId" | "pageSize",
+      filterValue: number | string
+    ) => {
+      if (
+        filterType === "status" ||
+        filterType === "sourceDefinitionId" ||
+        filterType === "destinationDefinitionId" ||
+        filterType === "pageSize"
+      ) {
+        setFilters({ ...filters, [filterType]: filterValue, pageCurrent: 1 });
+      } else if (filterType === "pageCurrent") {
+        setFilters({ ...filters, [filterType]: filterValue as number });
+      }
+    },
+    [filters]
+  );
+  const onChangePageSize = useCallback(
+    (size: number) => {
+      setCurrentPageSize(size);
+      updatePageSize("connection", size);
+      onSelectFilter("pageSize", size);
+    },
+    [onSelectFilter]
+  );
+  const { DestinationRead, WebBackendConnectionReadList, total, pageSize } = useGetDestinationItem(filters);
+
+  const destinationDefinition = useDestinationDefinition(DestinationRead?.destinationDefinitionId);
 
   // const { connections } = useConnectionList();
   const { mutateAsync: deleteDestination } = useDeleteDestination();
@@ -103,7 +150,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
       name: <FormattedMessage id="tables.allDestinations" />,
       onClick: () => push(".."),
     },
-    { name: destination?.DestinationRead?.name },
+    { name: DestinationRead?.name },
   ];
 
   // const connectionsWithDestination = connections.filter(
@@ -145,12 +192,12 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
 
   const onDelete = async () => {
     await deleteDestination({
-      destination: destination?.DestinationRead,
-      connectionsWithDestination: destination?.WebBackendConnectionReadList?.connections,
+      destination: DestinationRead,
+      connectionsWithDestination: WebBackendConnectionReadList?.connections,
     });
   };
 
-  const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
+  const menuItems: CategoryItem[] = pageConfigs?.menuConfig || [
     {
       routes: [
         {
@@ -158,7 +205,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
           name: <FormattedMessage id="tables.overview" />,
           component: (
             <TableContainer>
-              {destination?.WebBackendConnectionReadList?.connections?.length === 0 ? (
+              {WebBackendConnectionReadList?.connections?.length === 0 ? (
                 <Typography
                   textAlign="left"
                   fontSize={{ lg: 24, md: 24, sm: 20, xs: 18 }}
@@ -175,7 +222,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                   onClick={() =>
                     push(`../${RoutePaths.SelectConnection}`, {
                       state: {
-                        destinationId: destination?.DestinationRead?.destinationId,
+                        destinationId: DestinationRead?.destinationId,
                         currentStep: CreateStepTypes.CREATE_SOURCE,
                       },
                     })
@@ -202,9 +249,19 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                 btnText={<FormattedMessage id="sources.newSourceTitle" />}
               /> */}
 
-              {destination?.WebBackendConnectionReadList?.connections?.length > 0 && (
+              {WebBackendConnectionReadList?.connections?.length > 0 && (
                 <Box pt={2}>
-                  <DestinationConnectionTable connections={destination?.WebBackendConnectionReadList?.connections} />
+                  <DestinationConnectionTable connections={WebBackendConnectionReadList?.connections} />
+                  <Separator height="24px" />
+                  <Footer>
+                    <PageSize currentPageSize={pageCurrent} totalPage={total / pageSize} onChange={onChangePageSize} />
+                    <Pagination
+                      pages={total / pageSize}
+                      value={filters.pageCurrent}
+                      onChange={(value: number) => onSelectFilter("pageCurrent", value)}
+                    />
+                  </Footer>
+                  <Separator height="24px" />
                 </Box>
               )}
             </TableContainer>
@@ -230,7 +287,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
               )}
               {currentStep === StepsTypes.CREATE_ENTITY && (
                 <DestinationSettings
-                  currentDestination={destination?.DestinationRead}
+                  currentDestination={DestinationRead}
                   errorMessage={fetchingConnectorError}
                   onBack={goBack}
                   formValues={destinationFormValues}

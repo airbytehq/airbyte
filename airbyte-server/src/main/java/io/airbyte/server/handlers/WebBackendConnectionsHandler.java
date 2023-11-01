@@ -131,17 +131,21 @@ public class WebBackendConnectionsHandler {
     return webBackendConnectionRead;
   }
 
-  public WebBackendConnectionReadList listConnectionsWithoutOperation(final UUID workspaceId,
-                                                                      UUID sourceId,
-                                                                      UUID destinationId,
-                                                                      final boolean includeDeleted)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
+  public WebBackendConnectionReadList listConnectionsPageWithoutOperation(final UUID workspaceId,
+                                                                          UUID sourceId,
+                                                                          UUID destinationId,
+                                                                          final boolean includeDeleted,
+                                                                          final Integer pageSize,
+                                                                          final Integer pageCurrent)
+          throws ConfigNotFoundException, IOException, JsonValidationException {
     ConnectionReadList connectionReadList = new ConnectionReadList();
     if (!ObjectUtils.isEmpty(sourceId)) {
-      connectionReadList = getConnectionReadList(configRepository.listSourceStandardSyncsWithoutOperations(workspaceId, sourceId), includeDeleted);
+      connectionReadList = getConnectionReadList(
+              configRepository.listSourceStandardSyncsWithoutOperations(workspaceId, sourceId, pageSize, pageCurrent), includeDeleted);
     } else if (!ObjectUtils.isEmpty(destinationId)) {
       connectionReadList =
-          getConnectionReadList(configRepository.listDestinationStandardSyncsWithoutOperations(workspaceId, destinationId), includeDeleted);
+              getConnectionReadList(configRepository.listDestinationStandardSyncsWithoutOperations(workspaceId, destinationId, pageSize, pageCurrent),
+                      includeDeleted);
     }
     final List<WebBackendConnectionRead> reads = Lists.newArrayList();
     for (final ConnectionRead connection : connectionReadList.getConnections()) {
