@@ -5,7 +5,15 @@
 from typing import Any, MutableMapping
 
 import pytest
-from airbyte_cdk.models import AirbyteStateBlob, AirbyteStateMessage, AirbyteStateType, AirbyteStream, AirbyteStreamState, StreamDescriptor
+from airbyte_cdk.models import (
+    AirbyteStateBlob,
+    AirbyteStateMessage,
+    AirbyteStateType,
+    AirbyteStream,
+    AirbyteStreamState,
+    StreamDescriptor,
+    SyncMode,
+)
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.streams.concurrent.state_converter import (
     ConcurrencyCompatibleStateType,
@@ -32,13 +40,13 @@ class MockConcurrentConnectorStateConverter(ConcurrentStreamStateConverter):
     "stream, input_state, expected_output_state",
     [
         pytest.param(
-            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=["incremental"]),
+            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             [],
             {"state_type": ConcurrencyCompatibleStateType.date_range.value},
             id="no-input-state",
         ),
         pytest.param(
-            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=["incremental"]),
+            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             [
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
@@ -52,7 +60,7 @@ class MockConcurrentConnectorStateConverter(ConcurrentStreamStateConverter):
             id="incompatible-input-state",
         ),
         pytest.param(
-            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=["incremental"]),
+            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             [
                 AirbyteStateMessage(
                     type=AirbyteStateType.STREAM,
@@ -173,13 +181,13 @@ def test_concurrent_stream_state_converter_merge_intervals(input_intervals, expe
     "stream, sequential_state, expected_output_state",
     [
         pytest.param(
-            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=["incremental"]),
+            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             {},
             {"slices": [], "state_type": ConcurrencyCompatibleStateType.date_range.value, "legacy": {}},
             id="empty-input-state",
         ),
         pytest.param(
-            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=["incremental"]),
+            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             {"created": 1617030403},
             {
                 "state_type": "date-range",
@@ -191,7 +199,7 @@ def test_concurrent_stream_state_converter_merge_intervals(input_intervals, expe
     ],
 )
 def test_epoch_state_converter_convert_from_sequential_state(stream, sequential_state, expected_output_state):
-    state_manager = EpochValueConcurrentStreamStateConverter()
+    state_manager = EpochValueConcurrentStreamStateConverter("created")
     assert state_manager.convert_from_sequential_state(sequential_state) == expected_output_state
 
 
@@ -199,13 +207,13 @@ def test_epoch_state_converter_convert_from_sequential_state(stream, sequential_
     "stream, concurrent_state, expected_output_state",
     [
         pytest.param(
-            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=["incremental"]),
+            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             {"state_type": ConcurrencyCompatibleStateType.date_range.value},
             {},
             id="empty-input-state",
         ),
         pytest.param(
-            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=["incremental"]),
+            AirbyteStream(name="stream1", json_schema={}, supported_sync_modes=[SyncMode.incremental]),
             {"state_type": "date-range", "slices": [{"start": 0, "end": 1617030403}]},
             {"created": 1617030403},
             id="with-input-state",
@@ -213,5 +221,5 @@ def test_epoch_state_converter_convert_from_sequential_state(stream, sequential_
     ],
 )
 def test_epoch_state_converter_convert_to_sequential_state(stream, concurrent_state, expected_output_state):
-    state_manager = EpochValueConcurrentStreamStateConverter()
+    state_manager = EpochValueConcurrentStreamStateConverter("created")
     assert state_manager.convert_to_sequential_state(concurrent_state) == expected_output_state

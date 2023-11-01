@@ -84,6 +84,9 @@ class ConcurrentStreamStateConverter(ABC):
 
 
 class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
+    def __init__(self, cursor_field: str):
+        self.cursor_field = cursor_field
+
     def convert_from_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
         e.g.
@@ -99,11 +102,11 @@ class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
         """
         if self.is_state_message_compatible(stream_state):
             return stream_state
-        if "created" in stream_state:
+        if self.cursor_field in stream_state:
             slices = [
                 {
                     self.START_KEY: 0,
-                    self.END_KEY: stream_state["created"],
+                    self.END_KEY: stream_state[self.cursor_field],
                 },
             ]
         else:
@@ -130,7 +133,7 @@ class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
         if self.is_state_message_compatible(stream_state):
             legacy_state = stream_state.get("legacy", {})
             if slices := stream_state.pop("slices", None):
-                legacy_state.update({"created": self._get_latest_complete_time(slices)})
+                legacy_state.update({self.cursor_field: self._get_latest_complete_time(slices)})
             return legacy_state
         else:
             return stream_state
