@@ -9,8 +9,6 @@ import java.util.Optional;
 
 public interface SqlGenerator<DialectTableDefinition> {
 
-  String SOFT_RESET_SUFFIX = "_ab_soft_reset";
-
   StreamId buildStreamId(String namespace, String name, String rawNamespaceOverride);
 
   default ColumnId buildColumnId(final String name) {
@@ -25,7 +23,7 @@ public interface SqlGenerator<DialectTableDefinition> {
    * The generated SQL should throw an exception if the table already exists and {@code force} is
    * false. Callers should use
    * {@link #existingSchemaMatchesStreamConfig(StreamConfig, java.lang.Object)} if the table is known
-   * to exist, and potentially {@link #softReset(StreamConfig)}.
+   * to exist, and potentially softReset
    *
    * @param suffix A suffix to add to the stream name. Useful for full refresh overwrite syncs, where
    *        we write the entire sync to a temp table.
@@ -43,15 +41,6 @@ public interface SqlGenerator<DialectTableDefinition> {
    * @return whether the existing table matches the expected schema
    */
   boolean existingSchemaMatchesStreamConfig(final StreamConfig stream, final DialectTableDefinition existingTable);
-
-  /**
-   * SQL Statement which will rebuild the final table using the raw table data. Should not cause data
-   * downtime. Typically this will resemble "create tmp_table; update raw_table set loaded_at=null;
-   * (t+d into tmp table); (overwrite final table from tmp table);"
-   *
-   * @param stream the stream to rebuild
-   */
-  String softReset(final StreamConfig stream);
 
   /**
    * Generate a SQL statement to copy new data from the raw table into the final table.
@@ -101,5 +90,12 @@ public interface SqlGenerator<DialectTableDefinition> {
    * @return a string containing the necessary sql to migrate
    */
   String migrateFromV1toV2(StreamId streamId, String namespace, String tableName);
+
+  /**
+   * Typically we need to create a soft reset temporary table and clear loaded at values
+   *
+   * @return
+   */
+  String prepareTablesForSoftReset(final StreamConfig stream);
 
 }

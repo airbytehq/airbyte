@@ -967,8 +967,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
 
-    final String sql = generator.softReset(incrementalAppendStream);
-    destinationHandler.execute(sql);
+    TypeAndDedupeTransaction.executeSoftReset(generator, destinationHandler, incrementalAppendStream);
 
     final List<JsonNode> actualRawRecords = dumpRawTableRecords(streamId);
     final List<JsonNode> actualFinalRecords = dumpFinalTableRecords(streamId, "");
@@ -1219,12 +1218,11 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
     // Create a soft reset table. Use incremental append mode, in case the destination connector uses
     // different
     // indexing/partitioning/etc.
-    final String createOldTempTable = generator.createTable(incrementalAppendStream, SqlGenerator.SOFT_RESET_SUFFIX, false);
+    final String createOldTempTable = generator.createTable(incrementalAppendStream, TypeAndDedupeTransaction.SOFT_RESET_SUFFIX, false);
     destinationHandler.execute(createOldTempTable);
 
     // Execute a soft reset. This should not crash.
-    final String softReset = generator.softReset(incrementalDedupStream);
-    destinationHandler.execute(softReset);
+    TypeAndDedupeTransaction.executeSoftReset(generator, destinationHandler, incrementalAppendStream);
   }
 
   protected void migrationAssertions(final List<JsonNode> v1RawRecords, final List<JsonNode> v2RawRecords) {

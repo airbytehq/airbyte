@@ -33,11 +33,6 @@ class MockSqlGenerator implements SqlGenerator<String> {
   }
 
   @Override
-  public String softReset(final StreamConfig stream) {
-    return "SOFT RESET " + stream.id().finalTableId("");
-  }
-
-  @Override
   public String updateTable(final StreamConfig stream,
                             final String finalSuffix,
                             final Optional<Instant> minRawTimestamp,
@@ -59,4 +54,8 @@ class MockSqlGenerator implements SqlGenerator<String> {
     return "MIGRATE TABLE " + String.join(".", namespace, tableName) + " TO " + streamId.rawTableId("");
   }
 
+  @Override
+  public String prepareTablesForSoftReset(final StreamConfig stream) {
+    return "PREPARE " + String.join(".", stream.id().originalNamespace(), stream.id().originalName()) + " FOR SOFT RESET";
+  }
 }

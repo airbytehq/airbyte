@@ -143,8 +143,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
 
           } else if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
             // We're loading data directly into the existing table. Make sure it has the right schema.
-            LOGGER.info("Existing schema for stream {} is different from expected schema. Executing soft reset.", stream.id().finalTableId(""));
-            destinationHandler.execute(sqlGenerator.softReset(stream));
+            TypeAndDedupeTransaction.executeSoftReset(sqlGenerator, destinationHandler, stream);
           }
         } else {
           LOGGER.info("Final Table does not exist for stream {}, creating.", stream.id().finalName());
@@ -218,7 +217,9 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
           final Lock externalLock = tdLocks.get(streamConfig.id()).writeLock();
           externalLock.lock();
           try {
-            typeAndDedupeTransactions(streamConfig);
+            TypeAndDedupeTransaction.executeTypeAndDedupe(sqlGenerator, destinationHandler, streamConfig,
+                                                          minExtractedAtByStream.get(streamConfig.id()),
+                                                          getFinalTableSuffix(streamConfig.id()));
           } finally {
             LOGGER.info("Allowing other threads to proceed for {}.{}", originalNamespace, originalName);
             externalLock.unlock();
@@ -236,28 +237,6 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
     }, this.executorService);
   }
 
-  /**
-   * It can be expensive to build the errors array in the airbyte_meta column, so we first attempt an
-   * 'unsafe' transaction which assumes everything is typed correctly. If that fails, we will run a
-   * more expensive query which handles casting errors
-   *
-   * @param streamConfig the stream to type and dedupe
-   * @throws Exception if the safe query fails
-   */
-  private void typeAndDedupeTransactions(final StreamConfig streamConfig) throws Exception {
-    final String suffix = getFinalTableSuffix(streamConfig.id());
-    try {
-      LOGGER.info("Attempting typing and deduping for {}.{}", streamConfig.id().originalNamespace(), streamConfig.id().originalName());
-      final String unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAtByStream.get(streamConfig.id()), false);
-      destinationHandler.execute(unsafeSql);
-      // TODO determine which Exceptions should not be retried even with safer sql
-    } catch (Exception e) {
-      LOGGER.error("Encountered Exception on unsafe SQL for stream {} {}, attempting with error handling",
-          streamConfig.id().originalNamespace(), streamConfig.id().originalName(), e);
-      final String saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAtByStream.get(streamConfig.id()), true);
-      destinationHandler.execute(saferSql);
-    }
-  }
 
   @Override
   public void typeAndDedupe() throws Exception {
