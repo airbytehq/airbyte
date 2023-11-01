@@ -8,14 +8,12 @@ from dataclasses import dataclass
 from typing import Any, List, Mapping, Optional, Union
 
 import requests
-from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
+from airbyte_cdk.sources.declarative.decoders.decoder import DECODED_RESPONSE_TYPE, Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy import PaginationStrategy
 from airbyte_cdk.sources.declarative.types import Config, Record
-
-DECODED_RESPONSE_TYPE = Union[Mapping[str, Any], List[dict[str, Any]]]
 
 
 @dataclass
@@ -35,10 +33,6 @@ class CursorPaginationStrategy(PaginationStrategy, ABC):
     def initial_token(self) -> Optional[Any]:
         return None
 
-    @property
-    def stop_condition(self) -> bool:
-        return True
-
     def next_page_token(self, response: requests.Response, last_records: List[Record]) -> Optional[Any]:
         decoded_response = self.decoder.decode(response)
 
@@ -47,10 +41,9 @@ class CursorPaginationStrategy(PaginationStrategy, ABC):
         headers = response.headers
         headers["link"] = response.links  # type: ignore[assignment]
 
-        if self.stop_condition:
-            should_stop = self.stop(response=decoded_response, headers=headers, last_records=last_records)
-            if should_stop:
-                return None
+        should_stop = self.stop(response=decoded_response, headers=headers, last_records=last_records)
+        if should_stop:
+            return None
         token = self.get_cursor_value(last_records=last_records, response=decoded_response, headers=headers)
         return token if token else None
 
@@ -112,21 +105,17 @@ class LowCodeCursorPaginationStrategy(CursorPaginationStrategy):
         self.cursor_value = (
             InterpolatedString.create(cursor_value, parameters=parameters) if isinstance(cursor_value, str) else cursor_value
         )
-        self._stop_condition = (
+        self.stop_condition = (
             InterpolatedBoolean(condition=stop_condition, parameters=parameters) if isinstance(stop_condition, str) else stop_condition
         )
         self.config = config
         super().__init__(page_size=page_size, decoder=decoder)
 
-    @property
-    def stop_condition(self) -> bool:
-        return self._stop_condition is not None
-
     def stop(self, response: DECODED_RESPONSE_TYPE, headers: Mapping[str, Any], last_records: List[Record]) -> bool:
-        if not self._stop_condition:
+        if not self.stop_condition:
             return False
 
-        stop_value: bool = self._stop_condition.eval(self.config, response=response, headers=headers, last_records=last_records)
+        stop_value: bool = self.stop_condition.eval(self.config, response=response, headers=headers, last_records=last_records)
         return stop_value
 
     def get_cursor_value(self, response: DECODED_RESPONSE_TYPE, headers: Mapping[str, Any], last_records: List[Record]) -> Optional[str]:

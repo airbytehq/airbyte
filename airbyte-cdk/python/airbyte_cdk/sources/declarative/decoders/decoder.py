@@ -8,6 +8,8 @@ from typing import Any, List, Mapping, Union
 
 import requests
 
+DECODED_RESPONSE_TYPE = Union[Mapping[str, Any], List[dict[str, Any]]]
+
 
 @dataclass
 class Decoder:
@@ -16,7 +18,7 @@ class Decoder:
     """
 
     @abstractmethod
-    def decode(self, response: requests.Response) -> Union[Mapping[str, Any], List]:
+    def decode(self, response: requests.Response) -> DECODED_RESPONSE_TYPE:
         """
         Decodes a requests.Response into a Mapping[str, Any] or an array
         :param response: the response to decode
