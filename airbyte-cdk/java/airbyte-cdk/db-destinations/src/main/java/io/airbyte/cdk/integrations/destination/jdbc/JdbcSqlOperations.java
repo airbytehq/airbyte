@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
@@ -77,13 +78,25 @@ public abstract class JdbcSqlOperations implements SqlOperations {
 
   @Override
   public String createTableQuery(final JdbcDatabase database, final String schemaName, final String tableName) {
-    return String.format(
-        "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
-            + "%s VARCHAR PRIMARY KEY,\n"
-            + "%s JSONB,\n"
-            + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
-            + ");\n",
-        schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      return String.format(
+          "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+              + "%s VARCHAR PRIMARY KEY,\n"
+              + "%s JSONB,\n"
+              + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
+              + "%s TIMESTAMP WITH TIME ZONE DEFAULT NULL\n"
+              + ");\n",
+          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_RAW_ID, JavaBaseConstants.COLUMN_NAME_DATA,
+          JavaBaseConstants.COLUMN_NAME_AB_EXTRACTED_AT, JavaBaseConstants.COLUMN_NAME_AB_LOADED_AT);
+    } else {
+      return String.format(
+          "CREATE TABLE IF NOT EXISTS %s.%s ( \n"
+              + "%s VARCHAR PRIMARY KEY,\n"
+              + "%s JSONB,\n"
+              + "%s TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP\n"
+              + ");\n",
+          schemaName, tableName, JavaBaseConstants.COLUMN_NAME_AB_ID, JavaBaseConstants.COLUMN_NAME_DATA, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    }
   }
 
   protected void writeBatchToFile(final File tmpFile, final List<AirbyteRecordMessage> records) throws Exception {
@@ -92,8 +105,12 @@ public abstract class JdbcSqlOperations implements SqlOperations {
       for (final AirbyteRecordMessage record : records) {
         final var uuid = UUID.randomUUID().toString();
         final var jsonData = Jsons.serialize(formatData(record.getData()));
-        final var emittedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
-        csvPrinter.printRecord(uuid, jsonData, emittedAt);
+        final var extractedAt = Timestamp.from(Instant.ofEpochMilli(record.getEmittedAt()));
+        if (TypingAndDedupingFlag.isDestinationV2()) {
+          csvPrinter.printRecord(uuid, jsonData, extractedAt, null);
+        } else {
+          csvPrinter.printRecord(uuid, jsonData, extractedAt);
+        }
       }
     }
   }

@@ -230,6 +230,18 @@
             }
           }
         ]
+      },
+      "use_1s1t_format": {
+        "type": "boolean",
+        "description": "(Early Access) Use <a href=\"https://docs.airbyte.com/understanding-airbyte/typing-deduping\" target=\"_blank\">Destinations V2</a>.",
+        "title": "Use Destinations V2 (Early Access)",
+        "order": 9
+      },
+      "raw_data_schema": {
+        "type": "string",
+        "description": "(Early Access) The schema to write raw tables into",
+        "title": "Destinations V2 Raw Table Schema (Early Access)",
+        "order": 10
       }
     },
     "groups": [
