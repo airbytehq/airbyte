@@ -25,7 +25,7 @@ If you are an Airbyte core member, you must follow the [instructions](https://do
 
 Build the connector image with Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:destination-starburst-galaxy:airbyteDocker
+./gradlew :airbyte-integrations:connectors:destination-starburst-galaxy:buildConnectorImage
 ```
 When building with Gradle, the Docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` labels in
 the Dockerfile.

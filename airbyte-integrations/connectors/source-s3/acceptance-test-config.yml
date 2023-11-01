@@ -100,6 +100,11 @@ acceptance_tests:
           path: integration_tests/expected_records/zip_parquet.jsonl
           exact_order: true
         timeout_seconds: 1800
+      - config_path: secrets/unstructured_config.json
+        expect_records:
+          path: integration_tests/expected_records/unstructured.jsonl
+          exact_order: true
+        timeout_seconds: 1800
 
   connection:
     tests:

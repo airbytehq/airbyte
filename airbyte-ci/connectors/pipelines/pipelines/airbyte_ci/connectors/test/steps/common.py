@@ -14,12 +14,13 @@ import requests
 import semver
 import yaml
 from connector_ops.utils import Connector
-from dagger import Container, Directory, File
+from dagger import Container, Directory
 from pipelines import hacks
 from pipelines.consts import CIContext
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.containers import internal_tools
 from pipelines.helpers.utils import METADATA_FILE_NAME
+from pipelines.models.contexts import PipelineContext
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
@@ -187,15 +188,31 @@ class AcceptanceTests(Step):
 
     @property
     def base_cat_command(self) -> List[str]:
-        return [
+        command = [
             "python",
             "-m",
             "pytest",
-            "-p",
+            "--disable-warnings",
+            "--durations=3",  # Show the 3 slowest tests in the report
+            "-ra",  # Show extra test summary info in the report for all but the passed tests
+            "-p",  # Load the connector_acceptance_test plugin
             "connector_acceptance_test.plugin",
             "--acceptance-test-config",
             self.CONTAINER_TEST_INPUT_DIRECTORY,
         ]
+        if self.concurrent_test_run:
+            command += ["--numprocesses=auto"]  # Using pytest-xdist to run tests in parallel, auto means using all available cores
+        return command
+
+    def __init__(self, context: PipelineContext, concurrent_test_run: Optional[bool] = False) -> None:
+        """Create a step to run acceptance tests for a connector if it has an acceptance test config file.
+
+        Args:
+            context (PipelineContext): The current test context, providing a connector object, a dagger client and a repository directory.
+            concurrent_test_run (Optional[bool], optional): Whether to run acceptance tests in parallel. Defaults to False.
+        """
+        super().__init__(context)
+        self.concurrent_test_run = concurrent_test_run
 
     async def get_cat_command(self, connector_dir: Directory) -> List[str]:
         """
@@ -209,19 +226,20 @@ class AcceptanceTests(Step):
                 cat_command += ["-p", "integration_tests.acceptance"]
         return cat_command
 
-    async def _run(self, connector_under_test_image_tar: File) -> StepResult:
+    async def _run(self, connector_under_test_container: Container) -> StepResult:
         """Run the acceptance test suite on a connector dev image. Build the connector acceptance test image if the tag is :dev.
 
         Args:
-            connector_under_test_image_tar (File): The file holding the tar archive of the connector image.
+            connector_under_test_container (Container): The container holding the connector under test image.
 
         Returns:
             StepResult: Failure or success of the acceptances tests with stdout and stderr.
         """
+
         if not self.context.connector.acceptance_test_config:
             return StepResult(self, StepStatus.SKIPPED)
         connector_dir = await self.context.get_connector_dir()
-        cat_container = await self._build_connector_acceptance_test(connector_under_test_image_tar, connector_dir)
+        cat_container = await self._build_connector_acceptance_test(connector_under_test_container, connector_dir)
         cat_command = await self.get_cat_command(connector_dir)
         cat_container = cat_container.with_(hacks.never_fail_exec(cat_command))
         step_result = await self.get_step_result(cat_container)
@@ -234,28 +252,22 @@ class AcceptanceTests(Step):
                     break
         return step_result
 
-    async def get_cache_buster(self, connector_under_test_image_tar: File) -> str:
+    async def get_cache_buster(self) -> str:
         """
         This bursts the CAT cached results everyday and on new version or image size change.
         It's cool because in case of a partially failing nightly build the connectors that already ran CAT won't re-run CAT.
         We keep the guarantee that a CAT runs everyday.
 
-        Args:
-            connector_under_test_image_tar (File): The file holding the tar archive of the connector image.
         Returns:
             str: A string representing the cachebuster value.
         """
-        return (
-            datetime.datetime.utcnow().strftime("%Y%m%d")
-            + self.context.connector.version
-            + str(await connector_under_test_image_tar.size())
-        )
+        return datetime.datetime.utcnow().strftime("%Y%m%d") + self.context.connector.version
 
-    async def _build_connector_acceptance_test(self, connector_under_test_image_tar: File, test_input: Directory) -> Container:
+    async def _build_connector_acceptance_test(self, connector_under_test_container: Container, test_input: Directory) -> Container:
         """Create a container to run connector acceptance tests.
 
         Args:
-            connector_under_test_image_tar (File): The file containing the tar archive of the image of the connector under test.
+            connector_under_test_container (Container): The container holding the connector under test image.
             test_input (Directory): The connector under test directory.
         Returns:
             Container: A container with connector acceptance tests installed.
@@ -266,12 +278,13 @@ class AcceptanceTests(Step):
         else:
             cat_container = self.dagger_client.container().from_(self.context.connector_acceptance_test_image)
 
+        connector_container_id = await connector_under_test_container.id()
+
         cat_container = (
             cat_container.with_env_variable("RUN_IN_AIRBYTE_CI", "1")
             .with_exec(["mkdir", "/dagger_share"], skip_entrypoint=True)
-            .with_env_variable("CACHEBUSTER", await self.get_cache_buster(connector_under_test_image_tar))
-            .with_mounted_file("/dagger_share/connector_under_test_image.tar", connector_under_test_image_tar)
-            .with_env_variable("CONNECTOR_UNDER_TEST_IMAGE_TAR_PATH", "/dagger_share/connector_under_test_image.tar")
+            .with_env_variable("CACHEBUSTER", await self.get_cache_buster())
+            .with_new_file("/tmp/container_id.txt", str(connector_container_id))
             .with_workdir("/test_input")
             .with_mounted_directory("/test_input", test_input)
             .with_(await secrets.mounted_connector_secrets(self.context, "/test_input/secrets"))

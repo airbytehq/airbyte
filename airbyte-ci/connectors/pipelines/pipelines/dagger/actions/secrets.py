@@ -6,9 +6,10 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, Callable, Optional
+from typing import TYPE_CHECKING, Callable
 
-from dagger import Container, Secret
+from anyio import Path
+from dagger import Secret
 from pipelines.helpers.utils import get_file_contents, get_secret_host_variable
 
 if TYPE_CHECKING:
@@ -39,7 +40,7 @@ async def download(context: ConnectorContext, gcp_gsm_env_variable_name: str = "
         gcp_gsm_env_variable_name (str, optional): The name of the environment variable holding credentials to connect to Google Secret Manager. Defaults to "GCP_GSM_CREDENTIALS".
 
     Returns:
-        Directory: A directory with the downloaded secrets.
+        dict[str, Secret]: A dict mapping the secret file name to the dagger Secret object.
     """
     # temp - fix circular import
     from pipelines.dagger.containers.internal_tools import with_ci_credentials
@@ -93,6 +94,29 @@ async def upload(context: ConnectorContext, gcp_gsm_env_variable_name: str = "GC
     )
 
 
+async def load_from_local(context: ConnectorContext) -> dict[str, Secret]:
+    """Load the secrets from the local secrets directory for a connector.
+
+    Args:
+        context (ConnectorContext): The context providing the connector directory.
+
+    Returns:
+        dict[str, Secret]: A dict mapping the secret file name to the dagger Secret object.
+    """
+    connector_secrets = {}
+    local_secrets_path = Path(context.connector.code_directory / "secrets")
+    if not await local_secrets_path.is_dir():
+        context.logger.warning(f"Local secrets directory {local_secrets_path} does not exist, no secrets will be loaded.")
+        return connector_secrets
+    async for secret_file in local_secrets_path.iterdir():
+        secret_plaintext = await secret_file.read_text()
+        unique_secret_name = f"{context.connector.technical_name}_{secret_file.name}"
+        connector_secrets[secret_file.name] = context.dagger_client.set_secret(unique_secret_name, secret_plaintext)
+    if not connector_secrets:
+        context.logger.warning(f"Local secrets directory {local_secrets_path} is empty, no secrets will be loaded.")
+    return connector_secrets
+
+
 async def get_connector_secrets(context: ConnectorContext) -> dict[str, Secret]:
     """Download the secrets from GSM or use the local secrets directory for a connector.
 
@@ -100,12 +124,12 @@ async def get_connector_secrets(context: ConnectorContext) -> dict[str, Secret]:
         context (ConnectorContext): The context providing the connector directory and the use_remote_secrets flag.
 
     Returns:
-        Directory: A directory with the downloaded connector secrets.
+        dict[str, Secret]: A dict mapping the secret file name to the dagger Secret object.
     """
     if context.use_remote_secrets:
         connector_secrets = await download(context)
     else:
-        raise NotImplementedError("Local secrets are not implemented yet. See https://github.com/airbytehq/airbyte/issues/25621")
+        connector_secrets = await load_from_local(context)
     return connector_secrets
 
 

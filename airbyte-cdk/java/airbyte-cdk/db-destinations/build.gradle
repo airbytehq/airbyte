@@ -1,32 +1,26 @@
 dependencies {
     // Depends on core CDK classes (OK 👍)
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
+    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
 
-    // First party main dependencies
-    // TODO: Bring these into the CDK or refactor them out.
-    compileOnly project(':airbyte-api')
-    compileOnly project(':airbyte-commons')
-    compileOnly project(':airbyte-commons-cli')
-    compileOnly project(':airbyte-config-oss:config-models-oss')
-    compileOnly project(':airbyte-config-oss:init-oss')
-    compileOnly project(':airbyte-json-validation')
-    testImplementation project(':airbyte-commons')
-    testImplementation project(':airbyte-integrations:bases:base-typing-deduping')
-    testFixturesCompileOnly project(':airbyte-commons')
-    testFixturesCompileOnly project(':airbyte-config-oss:config-models-oss')
-    testFixturesCompileOnly project(':airbyte-config-oss:init-oss')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
 
-    // TODO: Merge into the CDK when possible, to avoid potential of conflicting versions:
-    compileOnly project(':airbyte-integrations:bases:base-typing-deduping')
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
 
-    implementation libs.airbyte.protocol
+
+    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+    testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
+
+
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-
-    // First party test dependencies
-    testImplementation project(':airbyte-test-utils')
-    
-    // TODO: Do we need this? And if yes, shouldn't it be a test dependency?
-    testFixturesCompileOnly project(':airbyte-connector-test-harnesses:acceptance-test-harness')
 
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 
@@ -45,6 +39,8 @@ dependencies {
     testImplementation 'commons-lang:commons-lang:2.6'
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'org.apache.commons:commons-csv:1.4'
+
+    implementation libs.google.cloud.storage
 
     // Optional dependencies
     // TODO: Change these to 'compileOnly' or 'testCompileOnly'

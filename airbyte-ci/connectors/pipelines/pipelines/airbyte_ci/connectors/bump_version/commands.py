@@ -2,8 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import anyio
-import click
+import asyncclick as click
 from pipelines.airbyte_ci.connectors.bump_version.pipeline import run_connector_version_bump_pipeline
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
@@ -15,7 +14,7 @@ from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 @click.argument("pull-request-number", type=str)
 @click.argument("changelog-entry", type=str)
 @click.pass_context
-def bump_version(
+async def bump_version(
     ctx: click.Context,
     bump_type: str,
     pull_request_number: str,
@@ -47,8 +46,7 @@ def bump_version(
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
 
-    anyio.run(
-        run_connectors_pipelines,
+    await run_connectors_pipelines(
         connectors_contexts,
         run_connector_version_bump_pipeline,
         "Version bump pipeline pipeline",

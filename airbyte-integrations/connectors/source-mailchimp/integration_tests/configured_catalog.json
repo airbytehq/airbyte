@@ -58,6 +58,20 @@
     },
     {
       "stream": {
+        "name": "list_members",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["last_changed"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["last_changed"],
+      "primary_key": [["id"]],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "reports",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
@@ -68,6 +82,38 @@
       "sync_mode": "incremental",
       "cursor_field": ["send_time"],
       "primary_key": [["id"]],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "segments",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["updated_at"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updated_at"],
+      "primary_key": [["id"]],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "unsubscribes",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["timestamp"],
+        "source_defined_primary_key": [
+          ["campaign_id"],
+          ["email_id"],
+          ["timestamp"]
+        ]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["timestamp"],
+      "primary_key": [["campaign_id"], ["email_id"], ["timestamp"]],
       "destination_sync_mode": "append"
     }
   ]

@@ -57,6 +57,7 @@ class ConnectorContext(PipelineContext):
         docker_hub_password: Optional[str] = None,
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
+        concurrent_cat: Optional[bool] = False,
     ):
         """Initialize a connector context.
 
@@ -82,6 +83,7 @@ class ConnectorContext(PipelineContext):
             docker_hub_password (Optional[str], optional): Docker Hub password to use to read registries. Defaults to None.
             s3_build_cache_access_key_id (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
             s3_build_cache_secret_key (Optional[str], optional): Gradle S3 Build Cache credentials. Defaults to None.
+            concurrent_cat (bool, optional): Whether to run the CAT tests in parallel. Defaults to False.
         """
 
         self.pipeline_name = pipeline_name
@@ -101,6 +103,7 @@ class ConnectorContext(PipelineContext):
         self.docker_hub_password = docker_hub_password
         self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
         self.s3_build_cache_secret_key = s3_build_cache_secret_key
+        self.concurrent_cat = concurrent_cat
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -185,6 +188,18 @@ class ConnectorContext(PipelineContext):
     def docker_image(self) -> str:
         return f"{self.docker_repository}:{self.docker_image_tag}"
 
+    @property
+    def docker_hub_username_secret(self) -> Optional[Secret]:
+        if self.docker_hub_username is None:
+            return None
+        return self.dagger_client.set_secret("docker_hub_username", self.docker_hub_username)
+
+    @property
+    def docker_hub_password_secret(self) -> Optional[Secret]:
+        if self.docker_hub_password is None:
+            return None
+        return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
+
     async def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
 
@@ -230,9 +245,6 @@ class ConnectorContext(PipelineContext):
 
         if self.should_save_report:
             await self.report.save()
-
-        if self.report.should_be_commented_on_pr:
-            self.report.post_comment_on_pr()
 
         await asyncify(update_commit_status_check)(**self.github_commit_status)
 

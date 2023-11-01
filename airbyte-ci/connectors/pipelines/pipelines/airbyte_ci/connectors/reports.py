@@ -18,7 +18,6 @@ from rich.panel import Panel
 from rich.style import Style
 from rich.table import Table
 from rich.text import Text
-from tabulate import tabulate
 
 
 @dataclass(frozen=True)
@@ -40,15 +39,6 @@ class ConnectorReport(Report):
     @property
     def html_report_url(self) -> str:  # noqa D102
         return f"{GCS_PUBLIC_DOMAIN}/{self.pipeline_context.ci_report_bucket}/{self.html_report_remote_storage_key}"
-
-    @property
-    def should_be_commented_on_pr(self) -> bool:  # noqa D102
-        return (
-            self.pipeline_context.should_save_report
-            and self.pipeline_context.is_ci
-            and self.pipeline_context.pull_request
-            and self.pipeline_context.PRODUCTION
-        )
 
     def to_json(self) -> str:
         """Create a JSON representation of the connector test report.
@@ -78,28 +68,6 @@ class ConnectorReport(Report):
                 "dagger_cloud_url": self.pipeline_context.dagger_cloud_url,
             }
         )
-
-    def post_comment_on_pr(self) -> None:
-        icon_url = f"https://raw.githubusercontent.com/airbytehq/airbyte/{self.pipeline_context.git_revision}/{self.pipeline_context.connector.code_directory}/icon.svg"
-        global_status_emoji = "✅" if self.success else "❌"
-        commit_url = f"{self.pipeline_context.pull_request.html_url}/commits/{self.pipeline_context.git_revision}"
-        markdown_comment = f'## <img src="{icon_url}" width="40" height="40"> {self.pipeline_context.connector.technical_name} test report (commit [`{self.pipeline_context.git_revision[:10]}`]({commit_url})) - {global_status_emoji}\n\n'
-        markdown_comment += f"⏲️  Total pipeline duration: {format_duration(self.run_duration)} \n\n"
-        report_data = [
-            [step_result.step.title, step_result.status.get_emoji()]
-            for step_result in self.steps_results
-            if step_result.status is not StepStatus.SKIPPED
-        ]
-        markdown_comment += tabulate(report_data, headers=["Step", "Result"], tablefmt="pipe") + "\n\n"
-        markdown_comment += f"🔗 [View the logs here]({self.html_report_url})\n\n"
-
-        if self.pipeline_context.dagger_cloud_url:
-            markdown_comment += f"☁️ [View runs for commit in Dagger Cloud]({self.pipeline_context.dagger_cloud_url})\n\n"
-
-        markdown_comment += "*Please note that tests are only run on PR ready for review. Please set your PR to draft mode to not flood the CI engine and upstream service on following commits.*\n"
-        markdown_comment += "**You can run the same pipeline locally on this branch with the [airbyte-ci](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) tool with the following command**\n"
-        markdown_comment += f"```bash\nairbyte-ci connectors --name={self.pipeline_context.connector.technical_name} test\n```\n\n"
-        self.pipeline_context.pull_request.create_issue_comment(markdown_comment)
 
     async def to_html(self) -> str:
         env = Environment(
