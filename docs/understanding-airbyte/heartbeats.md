@@ -7,7 +7,7 @@ explain bellow.
 
 ## Source
 
-### Heartbeatign logic
+### Heartbeating logic
 
 Everytime a `RECORD` or a `STATE` is emitted by the source, the airbyte platform emit a beat internal.
 The Airbyte platform has a process which monitors when the last beat was send and if it reaches a threshold,
