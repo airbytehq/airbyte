@@ -79,10 +79,14 @@ public class MySQLDateTimeConverter implements CustomConverter<SchemaBuilder, Re
           return DateTimeConverter.convertToDate(x);
         case "TIME":
           if (x instanceof Long) {
-            long l = Math.multiplyExact((Long) x, TimeUnit.MICROSECONDS.toNanos(1));
+            final long l = Math.multiplyExact((Long) x, TimeUnit.MICROSECONDS.toNanos(1));
             return DateTimeConverter.convertToTime(LocalTime.ofNanoOfDay(l));
           }
-          return DateTimeConverter.convertToTime(x);
+          try {
+            return DateTimeConverter.convertToTime(x);
+          } catch (final Exception e) {
+            return x.toString();
+          }
         case "TIMESTAMP":
           return DateTimeConverter.convertToTimestampWithTimezone(x);
         default:
