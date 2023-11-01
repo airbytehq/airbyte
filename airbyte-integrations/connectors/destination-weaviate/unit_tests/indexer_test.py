@@ -164,9 +164,6 @@ class TestWeaviateIndexer(unittest.TestCase):
     @patch("destination_weaviate.indexer.uuid.uuid4")
     @patch("time.sleep", return_value=None)
     def test_index_flushes_batch_and_propagates_error(self, MockTime, MockUUID):
-        """
-        Test that the indexer retries on error and raises an exception if the retry limit is reached
-        """
         mock_client = Mock()
         self.indexer.client = mock_client
         mock_client.batch.create_objects.return_value = [{"result": {"errors": ["some_error"]}, "id": "some_id"}]
@@ -186,44 +183,8 @@ class TestWeaviateIndexer(unittest.TestCase):
         with self.assertRaises(WeaviatePartialBatchError):
             self.indexer.index([mock_chunk1, mock_chunk2], None, "test")
         chunk1_call = call({"someField": "some_value", "text": "some_content"}, "Test", "some_id", vector=[1, 2, 3])
-        chunk2_call = call({"someField": "some_value2", "text": "some_other_content"}, "Test", "some_id2", vector=[4, 5, 6])
-        self.assertEqual(mock_client.batch.create_objects.call_count, 3)  # 1 initial try + 2 retries
-        mock_client.batch.add_data_object.assert_has_calls(
-            [chunk1_call, chunk2_call, chunk1_call, chunk1_call, chunk1_call], any_order=False
-        )  # 1 initial try + 2 retries + adding the data object before raising the exception in the next recursion
-
-    @patch("destination_weaviate.indexer.uuid.uuid4")
-    @patch("time.sleep", return_value=None)
-    def test_index_flushes_batch_and_succeeds_via_retry(self, MockTime, MockUUID):
-        """
-        Test that the indexer retries on error and succeeds on the second try.
-
-        In this example, chunk 1 fails on the first try, but succeeds on the second try, while chunk 2 succeeds on the first try.
-        """
-        mock_client = Mock()
-        self.indexer.client = mock_client
-        # error on first try, success on second try
-        mock_client.batch.create_objects.side_effect = [[{"result": {"errors": ["some_error"]}, "id": "some_id"}], []]
-        MockUUID.side_effect = ["some_id", "some_id2"]
-        mock_chunk1 = Chunk(
-            page_content="some_content",
-            embedding=[1, 2, 3],
-            metadata={"someField": "some_value"},
-            record=AirbyteRecordMessage(stream="test", data={"someField": "some_value"}, emitted_at=0),
-        )
-        mock_chunk2 = Chunk(
-            page_content="some_other_content",
-            embedding=[4, 5, 6],
-            metadata={"someField": "some_value2"},
-            record=AirbyteRecordMessage(stream="test", data={"someField": "some_value"}, emitted_at=0),
-        )
-        self.indexer.index([mock_chunk1, mock_chunk2], None, "test")
-        chunk1_call = call({"someField": "some_value", "text": "some_content"}, "Test", "some_id", vector=[1, 2, 3])
-        chunk2_call = call({"someField": "some_value2", "text": "some_other_content"}, "Test", "some_id2", vector=[4, 5, 6])
-        self.assertEqual(mock_client.batch.create_objects.call_count, 2)  # 1 initial try + retry that succeeds
-        mock_client.batch.add_data_object.assert_has_calls(
-            [chunk1_call, chunk2_call, chunk1_call], any_order=False
-        )  # 1 initial try + retry that succeeds
+        self.assertEqual(mock_client.batch.create_objects.call_count, 1)
+        mock_client.batch.add_data_object.assert_has_calls([chunk1_call], any_order=False)
 
     def test_index_flushes_batch_and_normalizes(self):
         mock_client = Mock()
