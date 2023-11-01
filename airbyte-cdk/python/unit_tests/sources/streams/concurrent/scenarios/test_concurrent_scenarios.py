@@ -11,9 +11,9 @@ from pytest import LogCaptureFixture
 from unit_tests.sources.file_based.scenarios.scenario_builder import TestScenario
 from unit_tests.sources.file_based.test_scenarios import verify_discover, verify_read
 from unit_tests.sources.streams.concurrent.scenarios.stream_facade_scenarios import (
+    test_incremental_stream_with_many_slices_but_without_slice_boundaries,
     test_incremental_stream_with_slice_boundaries,
     test_incremental_stream_without_slice_boundaries,
-    test_incremental_stream_with_many_slices_but_without_slice_boundaries,
     test_stream_facade_multiple_streams,
     test_stream_facade_raises_exception,
     test_stream_facade_single_stream,
