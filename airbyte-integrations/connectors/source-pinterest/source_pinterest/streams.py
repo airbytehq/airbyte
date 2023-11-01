@@ -23,6 +23,7 @@ MAX_RATE_LIMIT_CODE = 8
 class NonJSONResponse(Exception):
     pass
 
+
 class PinterestStream(HttpStream, ABC):
     url_base = "https://api.pinterest.com/v5/"
     primary_key = "id"
