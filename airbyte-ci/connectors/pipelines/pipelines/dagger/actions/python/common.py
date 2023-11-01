@@ -7,8 +7,9 @@ from pathlib import Path
 from typing import List, Optional
 
 from dagger import Container, Directory
+from pipelines import hacks
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.dagger.containers.python import with_python_base, with_testing_dependencies
+from pipelines.dagger.containers.python import with_pip_cache, with_poetry_cache, with_python_base, with_testing_dependencies
 from pipelines.helpers.utils import check_path_in_workdir, get_file_contents
 
 
@@ -189,7 +190,6 @@ async def with_installed_python_package(
         Container: A python environment container with the python package installed.
     """
     container = with_python_package(context, python_environment, package_source_code_path, exclude=exclude, include=include)
-
     local_dependencies = await find_local_python_dependencies(context, package_source_code_path)
 
     for dependency_directory in local_dependencies:
@@ -200,10 +200,13 @@ async def with_installed_python_package(
     has_pyproject_toml = await check_path_in_workdir(container, "pyproject.toml")
 
     if has_pyproject_toml:
+        container = with_poetry_cache(container, context.dagger_client)
         container = _install_python_dependencies_from_poetry(container, additional_dependency_groups)
     elif has_setup_py:
+        container = with_pip_cache(container, context.dagger_client)
         container = _install_python_dependencies_from_setup_py(container, additional_dependency_groups)
     elif has_requirements_txt:
+        container = with_pip_cache(container, context.dagger_client)
         container = _install_python_dependencies_from_requirements_txt(container)
 
     return container
@@ -243,7 +246,7 @@ async def apply_python_development_overrides(context: ConnectorContext, connecto
 
 
 async def with_python_connector_installed(
-    context: PipelineContext,
+    context: ConnectorContext,
     python_container: Container,
     connector_source_path: str,
     additional_dependency_groups: Optional[List] = None,
@@ -251,6 +254,10 @@ async def with_python_connector_installed(
     include: Optional[List] = None,
 ) -> Container:
     """Install an airbyte python connectors  dependencies."""
+
+    # Download the latest CDK version to update the pip cache.
+    # This is a hack to ensure we always get the latest CDK version installed in connectors not pinning the CDK version.
+    await hacks.cache_latest_cdk(context)
     container = await with_installed_python_package(
         context,
         python_container,

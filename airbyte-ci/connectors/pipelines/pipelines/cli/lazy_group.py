@@ -3,7 +3,7 @@
 import importlib
 from typing import Dict, List, Optional
 
-import click
+import asyncclick as click
 
 
 class LazyGroup(click.Group):
@@ -39,5 +39,6 @@ class LazyGroup(click.Group):
         cmd_object = getattr(mod, cmd_object_name)
         # check the result to make debugging easier
         if not isinstance(cmd_object, click.BaseCommand):
+            print(f"{cmd_object} is of instance {type(cmd_object)}")
             raise ValueError(f"Lazy loading of {import_path} failed by returning " "a non-command object")
         return cmd_object

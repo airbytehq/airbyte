@@ -4,7 +4,7 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.1.0'
+    cdkVersionRequired = '0.2.0'
     features = ['db-sources']
     useLocalCdk = false
 }
@@ -18,7 +18,9 @@ application {
 
 dependencies {
     implementation project(':airbyte-integrations:connectors:source-mongodb-v2')
+    implementation project(':airbyte-integrations:connectors:destination-mongodb')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mongodb')
 
-    implementation libs.airbyte.protocol
+
     implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
 }

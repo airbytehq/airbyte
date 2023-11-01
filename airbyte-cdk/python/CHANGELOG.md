@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.52.7
+File CDK: Add pptx support
+
+## 0.52.6
+make  parameter as not required for default backoff handler
+
+## 0.52.5
+use in-memory cache if no file path is provided
+
+## 0.52.4
+File CDK: Add unstructured parser
+
+## 0.52.3
+Update source-declarative-manifest base image to update Linux alpine and Python
+
+## 0.52.2
+
+
+## 0.52.1
+Add max time for backoff handler
+
+## 0.52.0
+File CDK: Add CustomFileBasedException for custom errors
+
+## 0.51.44
+low-code: Allow connector developers to specify the type of an added field
+
 ## 0.51.43
 concurrent cdk: fail fast if a partition raises an exception
 
