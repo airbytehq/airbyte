@@ -96,7 +96,7 @@ As a general rule, features that introduce new behavior or prevent certain conte
 #### Jump to the relevant documentation section when specific Connector Builder inputs are focused with `<FieldAnchor>`
 In the documentation, the relevant section needs to be wrapped in a `<FieldAnchor field="path.to.field" />` component. These are rendered as regular divs in the documentation site, so they have no effect in places other than the in-app documentation panel—however, note that there must be blank lines between a custom tag like `FieldAnchor` the content it wraps for the documentation site to render markdown syntax inside the custom tag to html.
 
-To mark a section as highlighted after the user picks an option from a `oneOf`: use a `field` prop like `path.to.field[value-of-selection-key]`. It's also possible to highlight the same section for multiple fields by separating them with commas, like `<FieldAnchor path="path.to.field1,path.to.field.2">`.
+The `field` attribute must be a valid json path to one of the properties nested under `connectionSpecification.properties` in that connector's `spec.json` or `spec.yaml` file. To mark a section as highlighted after the user picks an option from a `oneOf`: use a `field` prop like `path.to.field[value-of-selection-key]`. It's also possible to highlight the same section for multiple fields by separating them with commas, like `<FieldAnchor path="path.to.field1,path.to.field.2">`.
 
 #### Prevent specific content from rendering in the UI with `<HideInUI>`
 Certain content is important to document, but unhelpful in the context of the Airbyte UI's inline documentation views: 
