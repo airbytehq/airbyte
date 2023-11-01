@@ -155,8 +155,8 @@ def test_stream_parse_json_error(auth, caplog):
         ),
     ],
     ids=[
-        "Segments stream, no next_page_token or state to add to request params",
-        "ListMembers stream, next_page_token and filter_field added to request params",
+        "Segments: no next_page_token or state to add to request params",
+        "ListMembers: next_page_token and state filter added to request params",
     ],
 )
 def test_list_child_request_params(auth, stream_class, stream_slice, stream_state, next_page_token, expected_params):
@@ -169,31 +169,37 @@ def test_list_child_request_params(auth, stream_class, stream_slice, stream_stat
 
 
 @pytest.mark.parametrize(
-    "current_stream_state,latest_record,expected_state",
+    "stream_class, current_stream_state,latest_record,expected_state",
     [
         # Test case 1: current_stream_state is empty
-        ({}, {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"}, {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}}),
+        (Segments, {}, {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"}, {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}}),
         # Test case 2: latest_record's cursor is higher than current_stream_state for list_1 and updates it
         (
+            Segments,
             {"list_1": {"updated_at": "2023-10-14T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
             {"list_id": "list_1", "updated_at": "2023-10-15T00:00:00Z"},
             {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
         ),
         # Test case 3: latest_record's cursor is lower than current_stream_state for list_2, no state update
         (
-            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
-            {"list_id": "list_2", "updated_at": "2023-10-14T00:00:00Z"},
-            {"list_1": {"updated_at": "2023-10-15T00:00:00Z"}, "list_2": {"updated_at": "2023-10-15T00:00:00Z"}},
+            ListMembers,
+            {"list_1": {"last_changed": "2023-10-15T00:00:00Z"}, "list_2": {"last_changed": "2023-10-15T00:00:00Z"}},
+            {"list_id": "list_2", "last_changed": "2023-10-14T00:00:00Z"},
+            {"list_1": {"last_changed": "2023-10-15T00:00:00Z"}, "list_2": {"last_changed": "2023-10-15T00:00:00Z"}},
         ),
     ],
     ids=[
-        "current_stream_state is empty",
-        "latest_record's cursor > than current_stream_state for list_1",
-        "latest_record's cursor < current_stream_state for list_2",
+        "Segments: no current_stream_state",
+        "Segments: latest_record's cursor > than current_stream_state for list_1",
+        "ListMembers: latest_record's cursor < current_stream_state for list_2",
     ],
 )
-def test_segments_get_updated_state(auth, current_stream_state, latest_record, expected_state):
-    segments_stream = Segments(authenticator=auth)
+def test_list_child_get_updated_state(auth, stream_class, current_stream_state, latest_record, expected_state):
+    """
+    Tests that the get_updated_state method for the shared MailChimpListChildStream class
+    correctly updates state only for its slice.
+    """
+    segments_stream = stream_class(authenticator=auth)
     updated_state = segments_stream.get_updated_state(current_stream_state, latest_record)
     assert updated_state == expected_state
 
