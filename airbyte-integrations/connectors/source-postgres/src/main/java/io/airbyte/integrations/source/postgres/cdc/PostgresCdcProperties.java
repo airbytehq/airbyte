@@ -28,7 +28,7 @@ public class PostgresCdcProperties {
   private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10L);
 
   // Test execution latency is lower when heartbeats are more frequent.
-  private static final Duration HEARTBEAT_INTERVAL_IN_TESTS = Duration.ofSeconds(1L);
+  private static final Duration HEARTBEAT_INTERVAL_IN_TESTS = Duration.ofMillis(1L);
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcProperties.class);
 
