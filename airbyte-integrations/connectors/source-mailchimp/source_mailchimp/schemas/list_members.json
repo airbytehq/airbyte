@@ -158,13 +158,16 @@
       "type": ["null", "integer"]
     },
     "tags": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "name": {
-          "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
         }
       }
     },

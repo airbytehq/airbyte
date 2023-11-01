@@ -32,7 +32,9 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "last_changed": "2231-09-26T05:42:10+00:00" },
+      "stream_state": {
+        "f59b426832": { "last_changed": "2230-02-26T05:42:10+00:00" }
+      },
       "stream_descriptor": { "name": "list_members" }
     }
   },
