@@ -7,7 +7,7 @@ explain bellow.
 
 ## Source
 
-### Heartbeatign logic
+### Heartbeating logic
 
 The platform considers both `RECORD` and `STATE` messages emitted by the source as source heartbeats.
 The Airbyte platform has a process which monitors when the last beat was send and if it reaches a threshold,
