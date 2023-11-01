@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Mapping, Type
+from typing import Mapping
 
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
@@ -56,7 +56,7 @@ from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUs
 """
 CLASS_TYPES_REGISTRY contains a mapping of developer-friendly string -> class to abstract the specific class referred to
 """
-CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
+CLASS_TYPES_REGISTRY: Mapping[str, type] = {
     "AddedFieldDefinition": AddedFieldDefinition,
     "AddFields": AddFields,
     "ApiKeyAuthenticator": ApiKeyAuthenticator,
