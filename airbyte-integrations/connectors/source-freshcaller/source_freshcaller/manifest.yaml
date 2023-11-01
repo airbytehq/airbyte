@@ -8,11 +8,10 @@ definitions:
       field_path: []
   requester:
     type: HttpRequester
-    url_base: "https://{{ config['domain']}}.freshcaller.com"
+    url_base: "https://{{ config['domain'] }}.freshcaller.com/api/v1"
     http_method: "GET"
-    request_options_provider:
-      request_headers:
-        accept: "application/json"
+    request_headers:
+      Accept: "application/json"
     authenticator:
       type: ApiKeyAuthenticator
       header: "X-Api-Auth"
@@ -25,10 +24,20 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
-    step: "P1D"
-    datetime_format: "%Y-%m-%d"
-    cursor_granularity: "P1D"
+    step: "P5D"
+    datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%f%z"
+    cursor_granularity: "PT0.000001S"
     cursor_field: "created_time"
+    start_time_option:
+      type: RequestOption
+      field_name: "by_time[from]"
+      inject_into: "request_parameter"
+    end_time_option:
+      type: RequestOption
+      field_name: "by_time[to]"
+      inject_into: "request_parameter"
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -40,8 +49,9 @@ definitions:
         inject_into: "request_parameter"
         field_name: "page_size"
       pagination_strategy:
-        type: "OffsetIncrement"
+        type: "PageIncrement"
         page_size: 1000
+        start_from_page: 1
       page_token_option:
         type: "RequestOption"
         field_name: "page"
@@ -58,12 +68,26 @@ definitions:
     primary_key: "id"
     $parameters:
       path: "/users"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["users"]
   teams_stream:
     $ref: "#/definitions/base_stream"
     name: "teams"
     primary_key: "id"
     $parameters:
       path: "/teams"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["teams"]
   calls_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -71,6 +95,13 @@ definitions:
     name: "calls"
     $parameters:
       path: "/calls"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["calls"]
   call_metrics_stream:
     $ref: "#/definitions/base_stream"
     incremental_sync:
@@ -78,6 +109,13 @@ definitions:
     name: "call_metrics"
     $parameters:
       path: "/call_metrics"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["call_metrics"]
 
 streams:
   - "#/definitions/users_stream"
