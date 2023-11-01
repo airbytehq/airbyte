@@ -125,9 +125,9 @@ class IncrementalMailChimpStream(MailChimpStream, ABC):
         return params
     
 
-class MailchimpListChildStream(IncrementalMailChimpStream):
+class MailChimpListChildStream(IncrementalMailChimpStream):
     """
-    Base class for Mailchimp streams that are children of the Lists stream.
+    Base class for incremental Mailchimp streams that are children of the Lists stream.
     """
 
     def stream_slices(self, stream_state: Mapping[str, Any] = None, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -140,13 +140,13 @@ class MailchimpListChildStream(IncrementalMailChimpStream):
         list_id = stream_slice.get("list_id")
         return f"lists/{list_id}/{self.data_field}"
 
-    def request_params(self, stream_state=None, stream_slice=None, **kwargs):
+    def request_params(self, stream_state=None, stream_slice=None, **kwargs) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, **kwargs)
 
         # Exclude the _links field, as it is not user-relevant data
         params["exclude_fields"] = f"{self.data_field}._links"
 
-        # Get the current state value for this list, if it exists
+        # Get the current state value for this list_id, if it exists
         # Then, use the value in state to filter the request
         current_slice = stream_slice.get("list_id")
         filter_date = stream_state.get(current_slice)
@@ -260,7 +260,7 @@ class EmailActivity(IncrementalMailChimpStream):
                 yield {**item, **activity_item}
 
 
-class ListMembers(MailchimpListChildStream):
+class ListMembers(MailChimpListChildStream):
     """
     Get information about members in a specific Mailchimp list.
     Docs link: https://mailchimp.com/developer/marketing/api/list-members/list-members-info/
@@ -277,7 +277,7 @@ class Reports(IncrementalMailChimpStream):
         return "reports"
 
 
-class Segments(MailchimpListChildStream):
+class Segments(MailChimpListChildStream):
     """
     Get information about all available segments for a specific list.
     Docs link: https://mailchimp.com/developer/marketing/api/list-segments/list-segments/
