@@ -7,6 +7,7 @@ package io.airbyte.cdk.integrations.destination.jdbc;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Iterables;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.PreparedStatement;
@@ -38,27 +39,6 @@ public class SqlOperationsUtils {
     insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, true);
   }
 
-  /**
-   * Inserts "raw" records in a single query. The purpose of helper to abstract away database-specific
-   * SQL syntax from this query.
-   *
-   * This version does not add a semicolon at the end of the INSERT statement.
-   *
-   * @param insertQueryComponent the first line of the query e.g. INSERT INTO public.users (ab_id,
-   *        data, emitted_at)
-   * @param recordQueryComponent query template for a full record e.g. (?, ?::jsonb ?)
-   * @param jdbcDatabase jdbc database
-   * @param records records to write
-   * @throws SQLException exception
-   */
-  public static void insertRawRecordsInSingleQueryNoSem(final String insertQueryComponent,
-                                                        final String recordQueryComponent,
-                                                        final JdbcDatabase jdbcDatabase,
-                                                        final List<AirbyteRecordMessage> records)
-      throws SQLException {
-    insertRawRecordsInSingleQuery(insertQueryComponent, recordQueryComponent, jdbcDatabase, records, UUID::randomUUID, false);
-  }
-
   @VisibleForTesting
   static void insertRawRecordsInSingleQuery(final String insertQueryComponent,
                                             final String recordQueryComponent,
@@ -83,7 +63,7 @@ public class SqlOperationsUtils {
       // how many records can be inserted at once
       // TODO(sherif) this should use a smarter, destination-aware partitioning scheme instead of 10k by
       // default
-      for (List<AirbyteRecordMessage> partition : Iterables.partition(records, 10_000)) {
+      for (final List<AirbyteRecordMessage> partition : Iterables.partition(records, 10_000)) {
         final StringBuilder sql = new StringBuilder(insertQueryComponent);
         partition.forEach(r -> sql.append(recordQueryComponent));
         final String s = sql.toString();
@@ -91,13 +71,20 @@ public class SqlOperationsUtils {
 
         try (final PreparedStatement statement = connection.prepareStatement(s1)) {
           // second loop: bind values to the SQL string.
+          // 1-indexed
           int i = 1;
           for (final AirbyteRecordMessage message : partition) {
-            // 1-indexed
+            // Airbyte Raw ID
             statement.setString(i, uuidSupplier.get().toString());
-            statement.setString(i + 1, Jsons.serialize(message.getData()));
-            statement.setTimestamp(i + 2, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
-            i += 3;
+            // Message Data
+            statement.setString(i++, Jsons.serialize(message.getData()));
+            // Extracted At
+            statement.setTimestamp(i++, Timestamp.from(Instant.ofEpochMilli(message.getEmittedAt())));
+            if (TypingAndDedupingFlag.isDestinationV2()) {
+              // Loaded At
+              statement.setTimestamp(i++, null);
+            }
+            i++;
           }
 
           statement.execute();

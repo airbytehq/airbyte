@@ -15,10 +15,20 @@ import io.airbyte.cdk.integrations.BaseConnector;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.cdk.integrations.base.Destination;
+import io.airbyte.cdk.integrations.base.JavaBaseConstants;
+import io.airbyte.cdk.integrations.base.TypingAndDedupingFlag;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcDestinationHandler;
+import io.airbyte.cdk.integrations.destination.jdbc.typing_deduping.JdbcSqlGenerator;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
+import io.airbyte.integrations.base.destination.typing_deduping.CatalogParser;
+import io.airbyte.integrations.base.destination.typing_deduping.DefaultTyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoOpDestinationV1V2Migrator;
+import io.airbyte.integrations.base.destination.typing_deduping.ParsedCatalog;
+import io.airbyte.integrations.base.destination.typing_deduping.TyperDeduper;
+import io.airbyte.integrations.base.destination.typing_deduping.NoopTyperDeduper;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
@@ -37,6 +47,8 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractJdbcDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJdbcDestination.class);
+
+  public static final String RAW_SCHEMA_OVERRIDE = "raw_data_schema";
 
   private final String driverClass;
   private final NamingConventionTransformer namingResolver;
@@ -65,7 +77,12 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = namingResolver.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText());
-      attemptSQLCreateAndDropTableOperations(outputSchema, database, namingResolver, sqlOperations);
+      attemptTableOperations(outputSchema, database, namingResolver, sqlOperations, false);
+      if (TypingAndDedupingFlag.isDestinationV2()) {
+        final var v2RawSchema = namingResolver.getIdentifier(TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
+            .orElse(JavaBaseConstants.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE));
+        attemptTableOperations(v2RawSchema, database, namingResolver, sqlOperations, false);
+      }
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     } catch (final ConnectionErrorException ex) {
       final String message = getErrorMessage(ex.getStateCode(), ex.getErrorCode(), ex.getExceptionMessage(), ex);
@@ -201,8 +218,21 @@ public abstract class AbstractJdbcDestination extends BaseConnector implements D
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
-    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(getDataSource(config)), sqlOperations, namingResolver, config,
-        catalog);
+    final DataSource dataSource = getDataSource(config);
+    if (TypingAndDedupingFlag.isDestinationV2()) {
+      final JdbcSqlGenerator sqlGenerator = new JdbcSqlGenerator(getNamingResolver(), sqlOperations, dataSource);
+      final ParsedCatalog parsedCatalog = TypingAndDedupingFlag.getRawNamespaceOverride(RAW_SCHEMA_OVERRIDE)
+          .map(override -> new CatalogParser(sqlGenerator, override))
+          .orElse(new CatalogParser(sqlGenerator))
+          .parseCatalog(catalog);
+      // TODO make a migrator
+      final var migrator = new NoOpDestinationV1V2Migrator<JdbcDatabase>();
+      final TyperDeduper typerDeduper = new DefaultTyperDeduper<JdbcDatabase>(sqlGenerator, new JdbcDestinationHandler(), parsedCatalog, migrator, 8);
+      return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(dataSource), sqlOperations, namingResolver, config,
+          catalog, typerDeduper);
+    }
+    return JdbcBufferedConsumerFactory.create(outputRecordCollector, getDatabase(dataSource), sqlOperations, namingResolver, config,
+        catalog, new NoopTyperDeduper());
   }
 
 }

@@ -28,9 +28,9 @@ public class TypeAndDedupeTransaction {
    */
   public static void executeTypeAndDedupe(final SqlGenerator sqlGenerator,
                                           final DestinationHandler destinationHandler,
-                                          StreamConfig streamConfig,
-                                          Optional<Instant> minExtractedAt,
-                                          String suffix)
+                                          final StreamConfig streamConfig,
+                                          final Optional<Instant> minExtractedAt,
+                                          final String suffix)
       throws Exception {
     try {
       LOGGER.info("Attempting typing and deduping for {}.{} with suffix", streamConfig.id().originalNamespace(), streamConfig.id().originalName(),
@@ -38,7 +38,7 @@ public class TypeAndDedupeTransaction {
       final String unsafeSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, false);
       destinationHandler.execute(unsafeSql);
       // TODO determine which Exceptions should not be retried even with safer sql
-    } catch (Exception e) {
+    } catch (final Exception e) {
       LOGGER.error("Encountered Exception on unsafe SQL for stream {} {} with suffix {}, attempting with error handling",
           streamConfig.id().originalNamespace(), streamConfig.id().originalName(), suffix, e);
       final String saferSql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAt, true);
@@ -56,7 +56,7 @@ public class TypeAndDedupeTransaction {
    * @param streamConfig which stream to operate on
    * @throws Exception if the safe query fails
    */
-  public static void executeSoftReset(final SqlGenerator sqlGenerator, final DestinationHandler destinationHandler, StreamConfig streamConfig)
+  public static void executeSoftReset(final SqlGenerator sqlGenerator, final DestinationHandler destinationHandler, final StreamConfig streamConfig)
       throws Exception {
     LOGGER.info("Attempting soft reset for stream {} {}", streamConfig.id().originalNamespace(), streamConfig.id().originalName());
     destinationHandler.execute(sqlGenerator.prepareTablesForSoftReset(streamConfig));
