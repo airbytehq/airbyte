@@ -37,6 +37,11 @@ FILE_URI = "path/to/file.xyz"
             False,
             id="docx file",
         ),
+        pytest.param(
+            FileType.PPTX,
+            False,
+            id="pptx file",
+        ),
     ],
 )
 @patch("airbyte_cdk.sources.file_based.file_types.unstructured_parser.detect_filetype")

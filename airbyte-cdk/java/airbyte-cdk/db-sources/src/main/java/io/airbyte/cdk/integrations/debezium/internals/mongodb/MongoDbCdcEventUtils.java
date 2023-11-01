@@ -67,7 +67,12 @@ public class MongoDbCdcEventUtils {
    *         key.
    */
   public static String generateObjectIdDocument(final JsonNode debeziumEventKey) {
-    return debeziumEventKey.get(ID_FIELD).asText().replaceAll(OBJECT_ID_FIELD_PATTERN, DOCUMENT_OBJECT_ID_FIELD);
+    final String idField = debeziumEventKey.get(ID_FIELD).asText();
+    if (StringUtils.contains(idField, OBJECT_ID_FIELD)) {
+      return idField.replaceAll(OBJECT_ID_FIELD_PATTERN, DOCUMENT_OBJECT_ID_FIELD);
+    } else {
+      return Jsons.serialize(debeziumEventKey).replaceAll(ID_FIELD, DOCUMENT_OBJECT_ID_FIELD);
+    }
   }
 
   /**

@@ -291,6 +291,8 @@ According to Postgres [documentation](https://www.postgresql.org/docs/14/datatyp
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.16 | 2023-10-31 | [31976](https://github.com/airbytehq/airbyte/pull/31976) | Speed up tests involving Debezium |
+| 3.2.15  | 2023-10-30 | [31960](https://github.com/airbytehq/airbyte/pull/31960) | Adopt java CDK version 0.2.0.                                                                                                                                              |
 | 3.2.14  | 2023-10-24 | [31792](https://github.com/airbytehq/airbyte/pull/31792) | Fix error message link on issue with standby                                                                                                                               |
 | 3.2.14  | 2023-10-24 | [31792](https://github.com/airbytehq/airbyte/pull/31792) | fail sync when debezeum fails to shutdown cleanly                                                                                                                          |
 | 3.2.13  | 2023-10-16 | [31029](https://github.com/airbytehq/airbyte/pull/31029) | Enforces encrypted traffic settings when env var DEPLOYMENT_MODE = CLOUD.                                                                                                  |

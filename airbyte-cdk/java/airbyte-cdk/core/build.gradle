@@ -13,26 +13,24 @@ dependencies {
     api libs.jooq
     api libs.jooq.meta
 
-    // First party main dependencies
-    // TODO: Bring these into the CDK or refactor them out.
-    compileOnly project(':airbyte-api')
-    compileOnly project(':airbyte-commons')
-    compileOnly project(':airbyte-commons-cli')
-    compileOnly project(':airbyte-config-oss:config-models-oss')
-    compileOnly project(':airbyte-config-oss:init-oss')
-    compileOnly project(':airbyte-json-validation')
-    testCompileOnly project(':airbyte-json-validation')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-api')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:init-oss')
+    compileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
+    testCompileOnly project(':airbyte-cdk:java:airbyte-cdk:airbyte-json-validation')
 
-    testImplementation project(':airbyte-commons-cli')
-    testImplementation project(':airbyte-config-oss:config-models-oss')
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons-cli')
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:config-models-oss')
+
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
 
     // SSH dependencies
     implementation 'net.i2p.crypto:eddsa:0.3.0'
 
     // First party test dependencies
-    testImplementation project(':airbyte-commons')
-    testImplementation project(':airbyte-test-utils')
+    testImplementation project(':airbyte-cdk:java:airbyte-cdk:airbyte-commons')
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:db-sources'))
 
     implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'

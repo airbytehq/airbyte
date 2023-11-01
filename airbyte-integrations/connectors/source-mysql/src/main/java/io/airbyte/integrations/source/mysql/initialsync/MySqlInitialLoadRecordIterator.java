@@ -7,8 +7,8 @@ package io.airbyte.integrations.source.mysql.initialsync;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
-import autovalue.shaded.com.google.common.collect.AbstractIterator;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.AbstractIterator;
 import com.mysql.cj.MysqlType;
 import io.airbyte.cdk.db.JdbcCompatibleSourceOperations;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;

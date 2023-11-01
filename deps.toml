@@ -23,7 +23,7 @@ reactor = "3.5.2"
 segment = "2.1.1"
 slf4j = "1.7.36"
 temporal = "1.17.0"
-debezium = "2.2.0.Final"
+debezium = "2.4.0.Final"
 
 [libraries]
 airbyte-protocol = { module = "io.airbyte.airbyte-protocol:protocol-models", version.ref = "airbyte-protocol" }
