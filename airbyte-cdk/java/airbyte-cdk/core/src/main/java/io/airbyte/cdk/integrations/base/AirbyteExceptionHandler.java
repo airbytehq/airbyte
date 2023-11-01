@@ -10,9 +10,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,12 +63,17 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
 
     // Attempt to deinterpolate the error message before emitting a trace message
     final String mangledMessage;
-    if (THROWABLES_TO_DEINTERPOLATE.contains(throwable.getClass())) {
+    // If any exception in the chain is of a deinterpolatable type, find it and deinterpolate its message.
+    // This assumes that any wrapping exceptions are just noise (e.g. runtime exception).
+    final Optional<Throwable> deinterpolatableException = ExceptionUtils.getThrowableList(throwable).stream()
+        .filter(t -> THROWABLES_TO_DEINTERPOLATE.stream().anyMatch(deinterpolatableClass -> deinterpolatableClass.isAssignableFrom(t.getClass())))
+        .findFirst();
+    if (deinterpolatableException.isPresent()) {
       mangledMessage = STRINGS_TO_DEINTERPOLATE.stream()
           // Sort the strings longest to shortest, in case any target string is a substring of another
           // e.g. "airbyte_internal" should be swapped out before "airbyte"
           .sorted(Comparator.comparing(String::length).reversed())
-          .reduce(throwable.getMessage(), AirbyteExceptionHandler::deinterpolate);
+          .reduce(deinterpolatableException.get().getMessage(), AirbyteExceptionHandler::deinterpolate);
     } else {
       mangledMessage = throwable.getMessage();
     }

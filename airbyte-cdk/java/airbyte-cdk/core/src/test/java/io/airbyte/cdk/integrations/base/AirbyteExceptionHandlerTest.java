@@ -16,6 +16,7 @@ import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -113,11 +114,9 @@ public class AirbyteExceptionHandlerTest {
    */
   @Test
   void testClassDeinterpolation() throws Exception {
-    AirbyteExceptionHandler.THROWABLES_TO_DEINTERPOLATE.clear();
-    AirbyteExceptionHandler.addThrowableForDeinterpolation(ArrayIndexOutOfBoundsException.class);
     AirbyteExceptionHandler.addStringForDeinterpolation("foo");
 
-    runTestWithMessage("Error happened in foo");
+    runTestWithMessage(new IOException("Error happened in foo"));
 
     final AirbyteMessage traceMessage = findFirstTraceMessage();
     // We shouldn't deinterpolate at all in this case, so we will get the default trace message
@@ -125,11 +124,29 @@ public class AirbyteExceptionHandlerTest {
     assertAll(
         () -> assertEquals(AirbyteExceptionHandler.logMessage, traceMessage.getTrace().getError().getMessage()),
         () -> assertEquals(
-            "java.lang.RuntimeException: Error happened in foo",
+            "java.io.IOException: Error happened in foo",
             traceMessage.getTrace().getError().getInternalMessage()));
   }
 
+  /**
+   * We should check the classes of the entire exception chain, not just the root exception.
+   */
+  @Test
+  void testNestedThrowableClassDeinterpolation() throws Exception {
+    AirbyteExceptionHandler.addStringForDeinterpolation("foo");
+
+    runTestWithMessage(new Exception(new RuntimeException("Error happened in foo")));
+
+    final AirbyteMessage traceMessage = findFirstTraceMessage();
+    // We shouldn't deinterpolate at all in this case, so we will get the default trace message behavior.
+    assertEquals("Error happened in ?", traceMessage.getTrace().getError().getInternalMessage());
+  }
+
   private void runTestWithMessage(final String message) throws InterruptedException {
+    runTestWithMessage(new RuntimeException(message));
+  }
+
+  private void runTestWithMessage(final Throwable throwable) throws InterruptedException {
     // have to spawn a new thread to test the uncaught exception handling,
     // because junit catches any exceptions in main thread, i.e. they're not 'uncaught'
     final Thread thread = new Thread() {
@@ -137,7 +154,7 @@ public class AirbyteExceptionHandlerTest {
       @SneakyThrows
       public void run() {
         final IntegrationRunner runner = Mockito.mock(IntegrationRunner.class);
-        doThrow(new RuntimeException(message)).when(runner).run(new String[] {"write"});
+        doThrow(throwable).when(runner).run(new String[] {"write"});
         runner.run(new String[] {"write"});
       }
 
@@ -152,6 +169,7 @@ public class AirbyteExceptionHandlerTest {
   public void teardown() {
     System.setOut(originalOut);
     AirbyteExceptionHandler.STRINGS_TO_DEINTERPOLATE.clear();
+    AirbyteExceptionHandler.THROWABLES_TO_DEINTERPOLATE.clear();
   }
 
   private AirbyteMessage findFirstTraceMessage() {
