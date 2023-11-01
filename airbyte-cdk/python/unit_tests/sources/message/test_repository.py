@@ -9,7 +9,6 @@ from airbyte_cdk.models import (
     AirbyteControlConnectorConfigMessage,
     AirbyteControlMessage,
     AirbyteMessage,
-    AirbyteStateMessage,
     Level,
     OrchestratorType,
     Type,

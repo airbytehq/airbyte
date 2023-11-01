@@ -5,7 +5,6 @@
 import unittest
 from unittest.mock import Mock, call
 
-import pytest
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
 from airbyte_cdk.sources.streams.concurrent.cursor import Cursor

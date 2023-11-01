@@ -5,7 +5,6 @@
 from abc import ABC, abstractmethod
 from typing import Iterable
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 
 

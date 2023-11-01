@@ -4,7 +4,6 @@
 
 from queue import Queue
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, QueueItem
 
