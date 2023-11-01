@@ -17,14 +17,14 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 @pass_pipeline_context
 @click_ignore_unused_kwargs
 async def test(
-    ctx: ClickPipelineContext,
+    pipeline_context: ClickPipelineContext,
     poetry_package_path: str,
     test_directory: str,
 ):
     """Runs the tests for the given airbyte-ci package.
 
     Args:
-        ctx (ClickPipelineContext): The context object.
+        pipeline_context (ClickPipelineContext): The context object.
         poetry_package_path (str): Path to the poetry package to test, relative to airbyte-ci directory.
         test_directory (str): The directory containing the tests to run.
     """
@@ -37,7 +37,7 @@ async def test(
     directories_to_mount = list(set([poetry_package_path, *directories_to_always_mount]))
 
     pipeline_name = f"Unit tests for {poetry_package_path}"
-    dagger_client = await ctx.get_dagger_client(pipeline_name=pipeline_name)
+    dagger_client = await pipeline_context.get_dagger_client(pipeline_name=pipeline_name)
     pytest_container = await (
         dagger_client.container()
         .from_("python:3.10.12")
