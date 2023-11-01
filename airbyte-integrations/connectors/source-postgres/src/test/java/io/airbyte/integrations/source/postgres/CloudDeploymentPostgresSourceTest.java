@@ -94,9 +94,10 @@ public class CloudDeploymentPostgresSourceTest {
 
         final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, sslmode, false);
         assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
-        // Disable this for now. This assertion is failing for SL_MODE : prefer with the debezium upgrade in CDK version 0.2.3
+        // Disable this for now. This assertion is failing for SL_MODE : prefer with the debezium upgrade in
+        // CDK version 0.2.3
         // The new error message here is State code : 08001 : Connection attempt failed
-        //assertTrue(connectionStatus.getMessage().contains("Connection is not available"));
+        // assertTrue(connectionStatus.getMessage().contains("Connection is not available"));
       }
     } finally {
       bastion.stopAndClose();
