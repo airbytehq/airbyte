@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.connector_state_manager import ConcurrencyCompatibleStateType, ConcurrentConnectorStateManager
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
@@ -17,62 +17,8 @@ from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuild
 _NO_STATE = None
 
 
-class StreamFacadeConcurrentConnectorStateManager(ConcurrentConnectorStateManager):
-    def convert_from_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        e.g.
-        { "created": 1617030403 }
-        =>
-        {
-            "state_type": "date-range",
-            "metadata": { … },
-            "slices": [
-                {starts: 0, end: 1617030403, finished_processing: true}
-            ],
-            "legacy":
-        }
-        """
-        if self.is_state_message_compatible(stream_state):
-            return stream_state
-        if "created" in stream_state:
-            slices = [
-                {
-                    ConcurrentConnectorStateManager.START_KEY: 0,
-                    ConcurrentConnectorStateManager.END_KEY: stream_state["created"],
-                },
-            ]
-        else:
-            slices = []
-        return {
-            "state_type": ConcurrencyCompatibleStateType.date_range.value,
-            "slices": slices,
-            "legacy": stream_state,
-        }
-
-    def convert_to_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        """
-        e.g.
-        {
-            "state_type": "date-range",
-            "metadata": { … },
-            "slices": [
-                {starts: 0, end: 1617030403, finished_processing: true}
-            ]
-        }
-        =>
-        { "created": 1617030403 }
-        """
-        if self.is_state_message_compatible(stream_state):
-            legacy_state = stream_state.get("legacy", {})
-            if slices := stream_state.pop("slices", None):
-                legacy_state.update({"created": self._get_latest_complete_time(slices)})
-            return legacy_state
-        else:
-            return stream_state
-
-    @staticmethod
-    def increment(timestamp: Any) -> Any:
-        return timestamp + 1
+class StreamFacadeConcurrentConnectorStateConverter(EpochValueConcurrentStreamStateConverter):
+    pass
 
 
 class StreamFacadeSource(AbstractSource):
@@ -95,21 +41,22 @@ class StreamFacadeSource(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        state_manager = StreamFacadeConcurrentConnectorStateManager(
-            stream_instance_map={s.name: s for s in self._streams}, state=self._state
-        )
+        state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in self._streams}, state=self._state)
+        state_converter = StreamFacadeConcurrentConnectorStateConverter()
         return [
             StreamFacade.create_from_stream(
                 stream,
                 self,
                 stream.logger,
                 self._max_workers,
-                state_manager.get_stream_state(stream.name, stream.namespace),
+                state_converter.get_concurrent_stream_state(state_manager.get_stream_state(stream.name, stream.namespace)),
                 ConcurrentCursor(
                     stream.name,
                     stream.namespace,
+                    state_converter.get_concurrent_stream_state(state_manager.get_stream_state(stream.name, stream.namespace)),
                     self.message_repository,  # type: ignore  # for this source specifically, we always return `InMemoryMessageRepository`
                     state_manager,
+                    state_converter,
                     self._cursor_field,
                     self._cursor_boundaries,
                 )

@@ -10,13 +10,14 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, EpochValueStateConverter
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
-from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
 from source_stripe.streams import (
     CheckoutSessionsLineItems,
     CreatedCursorIncrementalStripeStream,
@@ -433,19 +434,22 @@ class SourceStripe(AbstractSource):
             # The limit can be removed or increased once we have proper rate limiting
             concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
             streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-            state_manager = EpochValueStateConverter(stream_instance_map={s.name: s for s in streams}, state=self._state)
+            state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in streams}, state=self._state)
+            state_converter = EpochValueConcurrentStreamStateConverter()
             return [
                 StreamFacade.create_from_stream(
                     stream,
                     self,
                     entrypoint_logger,
                     concurrency_level,
-                    state_manager.get_stream_state(stream.name, stream.namespace),
+                    state_converter.get_concurrent_stream_state(state_manager.get_stream_state(stream.name, stream.namespace)),
                     ConcurrentCursor(
                         stream.name,
                         stream.namespace,
+                        state_converter.get_concurrent_stream_state(state_manager.get_stream_state(stream.name, stream.namespace)),
                         self.message_repository,
                         state_manager,
+                        EpochValueConcurrentStreamStateConverter(),
                         CursorField(stream.cursor_field if type(stream.cursor_field) == list else [stream.cursor_field]),
                         self._get_slice_boundary_fields(stream, state_manager),
                     )

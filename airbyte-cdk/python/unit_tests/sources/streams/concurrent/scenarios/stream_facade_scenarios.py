@@ -423,7 +423,7 @@ test_incremental_stream_with_many_slices_but_without_slice_boundaries = (
         StreamFacadeSourceBuilder()
         .set_streams(
             [
-                _MockStream(
+                MockStream(
                     [
                         ({"parent_id": 1}, [{"id": "1", "cursor_field": 0}]),
                         ({"parent_id": 309}, [{"id": "3", "cursor_field": 0}]),
