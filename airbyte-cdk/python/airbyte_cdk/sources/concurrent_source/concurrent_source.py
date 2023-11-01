@@ -67,6 +67,12 @@ class ConcurrentSource(AbstractSource, ABC):
                         f"Refresh the schema in replication settings and remove this stream from future sync attempts."
                     )
                 else:
+                    self._apply_log_level_to_stream_logger(logger, stream_instance)
+                    timer.start_event(f"Syncing stream {configured_stream.stream.name}")
+                    stream_is_available, reason = stream_instance.check_availability(logger, self)
+                    if not stream_is_available:
+                        logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
+                        continue
                     stream_instances_to_read_from.append(stream_instance)
             for stream in stream_instances_to_read_from:
                 print(f"submitting task for stream {stream.name}")
@@ -79,11 +85,13 @@ class ConcurrentSource(AbstractSource, ABC):
                 if isinstance(airbyte_message_or_record_or_exception, Exception):
                     # An exception was raised while processing the stream
                     # Stop the threadpool and raise it
-                    pass
+                    self._threadpool.shutdown(wait=False, cancel_futures=True)
+                    raise airbyte_message_or_record_or_exception
 
                 elif airbyte_message_or_record_or_exception == SENTINEL:
                     # Update the map of stream -> done
                     stream_done_counter += 1
+                    print(f"done with a stream. {stream_done_counter} out of {len(stream_instances_to_read_from)}")
                     if stream_done_counter == len(stream_instances_to_read_from):
                         stop = True
                 else:
