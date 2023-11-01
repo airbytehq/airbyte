@@ -11,63 +11,28 @@
     },
     "Date": {
       "type": "string",
-      "oneOf": [
-        {
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}( BC)?$"
-        },
-        {
-          "enum": ["+infinity", "-infinity"]
-        }
-      ],
-      "description": "RFC 3339\u00a75.6's full-date format, extended with BC era support and +/-infinity"
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}( BC)?$",
+      "description": "RFC 3339\u00a75.6's full-date format, extended with BC era support"
     },
     "TimestampWithTimezone": {
       "type": "string",
-      "oneOf": [
-        {
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})( BC)?$"
-        },
-        {
-          "enum": ["+infinity", "-infinity"]
-        }
-      ],
-      "description": "An instant in time. Frequently simply referred to as just a timestamp, or timestamptz. Uses RFC 3339\u00a75.6's date-time format, requiring a \"T\" separator, and extended with BC era support and +/-infinity. Note that we do _not_ accept Unix epochs here.\n"
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})( BC)?$",
+      "description": "An instant in time. Frequently simply referred to as just a timestamp, or timestamptz. Uses RFC 3339\u00a75.6's date-time format, requiring a \"T\" separator, and extended with BC era support. Note that we do _not_ accept Unix epochs here.\n"
     },
     "TimestampWithoutTimezone": {
       "type": "string",
-      "oneOf": [
-        {
-          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?( BC)?$"
-        },
-        {
-          "enum": ["+infinity", "-infinity"]
-        }
-      ],
-      "description": "Also known as a localdatetime, or just datetime. Under RFC 3339\u00a75.6, this would be represented as `full-date \"T\" partial-time`, extended with BC era support and +/-infinity.\n"
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?( BC)?$",
+      "description": "Also known as a localdatetime, or just datetime. Under RFC 3339\u00a75.6, this would be represented as `full-date \"T\" partial-time`, extended with BC era support.\n"
     },
     "TimeWithTimezone": {
       "type": "string",
-      "oneOf": [
-        {
-          "pattern": "^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})$"
-        },
-        {
-          "enum": ["+infinity", "-infinity"]
-        }
-      ],
-      "description": "An RFC 3339\u00a75.6 full-time, extended with +/-infinity"
+      "pattern": "^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})$",
+      "description": "An RFC 3339\u00a75.6 full-time"
     },
     "TimeWithoutTimezone": {
       "type": "string",
-      "oneOf": [
-        {
-          "pattern": "^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$"
-        },
-        {
-          "enum": ["+infinity", "-infinity"]
-        }
-      ],
-      "description": "An RFC 3339\u00a75.6 partial-time, extended with +/-infinity"
+      "pattern": "^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$",
+      "description": "An RFC 3339\u00a75.6 partial-time"
     },
     "Number": {
       "type": "string",
