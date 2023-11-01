@@ -24,7 +24,7 @@ Change Management:
 
  * OpenAPI spec version: 1.0.0
  */
-import { FilterDestinationRequestBody, FilterSourceRequestBody } from "./DaspireClient";
+import { FilterDestinationRequestBody, FilterSourceItemRequestBody, FilterSourceRequestBody } from "./DaspireClient";
 import { apiOverride } from "./apiOverride";
 /**
  * Input failed validation
@@ -1170,6 +1170,8 @@ export interface DestinationRead {
 export interface DestinationReadItem {
   DestinationRead: DestinationRead;
   WebBackendConnectionReadList: any;
+  total: number;
+  pageSize: number;
 }
 
 export interface DestinationReadList {
@@ -1389,8 +1391,10 @@ export interface SourceRead {
   sourceName: string;
 }
 export interface SourceReadItem {
-  SourceRead: any;
+  SourceRead: SourceRead;
   ConnectionReadList: any;
+  total: number;
+  pageSize: number;
 }
 
 export interface SourceUpdate {
@@ -2111,7 +2115,7 @@ export const getSource = (sourceIdRequestBody: SourceIdRequestBody, options?: Se
  * @summary Get single source
  */
 export const getSingleSourceItem = (
-  sourceIdRequestBody: SourceIdRequestBody,
+  filterSourceItemRequestBody: FilterSourceItemRequestBody,
   options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<SourceRead>(
@@ -2119,7 +2123,7 @@ export const getSingleSourceItem = (
       url: `/etl/sources/connection/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
-      data: sourceIdRequestBody,
+      data: filterSourceItemRequestBody,
     },
     options
   );
@@ -2572,7 +2576,7 @@ export const getDestination = (
  * @summary Get configured destination
  */
 export const getSingleDestinationItem = (
-  destinationIdRequestBody: DestinationIdRequestBody,
+  filterDestinationRequestBody: FilterDestinationRequestBody,
   options?: SecondParameter<typeof apiOverride>
 ) => {
   return apiOverride<DestinationRead>(
@@ -2580,7 +2584,7 @@ export const getSingleDestinationItem = (
       url: `/etl/destinations/connection/get`,
       method: "post",
       headers: { "Content-Type": "application/json" },
-      data: destinationIdRequestBody,
+      data: filterDestinationRequestBody,
     },
     options
   );
