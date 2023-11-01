@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.auth.token import (
     ApiKeyAuthenticator,
     BasicHttpAuthenticator,
     BearerAuthenticator,
-    SessionTokenAuthenticator,
+    LegacySessionTokenAuthenticator,
 )
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
@@ -96,7 +96,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "SimpleRetriever": SimpleRetriever,
     "Spec": Spec,
     "SubstreamPartitionRouter": SubstreamPartitionRouter,
-    "SessionTokenAuthenticator": SessionTokenAuthenticator,
+    "SessionTokenAuthenticator": LegacySessionTokenAuthenticator,
     "WaitUntilTimeFromHeader": WaitUntilTimeFromHeaderBackoffStrategy,
     "WaitTimeFromHeader": WaitTimeFromHeaderBackoffStrategy,
 }
