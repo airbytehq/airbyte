@@ -3,7 +3,7 @@
 During a data synchronization, many things can go wrong and sometimes the fix is just to restart the synchronization.
 Airbyte aims to make this restart as automated as possible and uses heartbeating mechanism in order to do that.
 This performed on 2 differents component: the source and the destination. They have different logics which will be
-explain bellow.
+explained bellow.
 
 ## Source
 
