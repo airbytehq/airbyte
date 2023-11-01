@@ -7,9 +7,11 @@ import json
 import logging
 import os
 import re
+import time
 import uuid
 from collections import defaultdict
-from typing import Optional
+from dataclasses import dataclass
+from typing import Any, List, Mapping, MutableMapping, Optional
 
 import weaviate
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD
@@ -27,11 +29,22 @@ class WeaviatePartialBatchError(Exception):
 CLOUD_DEPLOYMENT_MODE = "cloud"
 
 
+@dataclass
+class BufferedObject:
+    id: str
+    properties: Mapping[str, Any]
+    vector: Optional[List[Any]]
+    class_name: str
+
+
 class WeaviateIndexer(Indexer):
     config: WeaviateIndexingConfigModel
 
     def __init__(self, config: WeaviateIndexingConfigModel):
         super().__init__(config)
+        self.buffered_objects: MutableMapping[str, BufferedObject] = {}
+        self.objects_with_error: MutableMapping[str, BufferedObject] = {}
+        self.last_errors: List[str] = []
 
     def _create_client(self):
         headers = {
@@ -121,6 +134,7 @@ class WeaviateIndexer(Indexer):
                 object_id = str(uuid.uuid4())
                 class_name = self.stream_to_class_name(chunk.record.stream)
                 self.client.batch.add_data_object(weaviate_object, class_name, object_id, vector=chunk.embedding)
+                self.buffered_objects[object_id] = BufferedObject(object_id, weaviate_object, chunk.embedding, class_name)
             self._flush()
 
     def stream_to_class_name(self, stream_name: str) -> str:
@@ -150,14 +164,29 @@ class WeaviateIndexer(Indexer):
         return result
 
     def _flush(self, retries: int = 3):
+        if len(self.objects_with_error) > 0 and retries == 0:
+            error_msg = f"Objects had errors and retries failed as well. Errors: {self.last_errors}"
+            raise WeaviatePartialBatchError(error_msg)
+
         results = self.client.batch.create_objects()
-        all_errors = []
+        self.objects_with_error.clear()
+
+        self.last_errors = []
 
         for result in results:
             errors = result.get("result", {}).get("errors", [])
             if errors:
-                all_errors.extend(errors)
+                obj_id = result.get("id")
+                self.objects_with_error[obj_id] = self.buffered_objects.get(obj_id)
+                self.last_errors.append(errors)
 
-        if len(all_errors) > 0:
-            error_msg = "Errors while loading: " + ", ".join([str(error) for error in all_errors])
-            raise WeaviatePartialBatchError(error_msg)
+        for buffered_object in self.objects_with_error.values():
+            self.client.batch.add_data_object(
+                buffered_object.properties, buffered_object.class_name, buffered_object.id, vector=buffered_object.vector
+            )
+
+        if len(self.objects_with_error) > 0 and retries > 0:
+            time.sleep(2)
+            self._flush(retries - 1)
+
+        self.buffered_objects.clear()
