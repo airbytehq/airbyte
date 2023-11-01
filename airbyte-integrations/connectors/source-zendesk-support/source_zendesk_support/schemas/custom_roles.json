@@ -142,6 +142,12 @@
     "updated_at": {
       "type": ["null", "string"],
       "format": "date-time"
+    },
+    "manage_macro_content_suggestions": {
+      "type": ["null", "boolean"]
+    },
+    "read_macro_content_suggestions": {
+      "type": ["null", "boolean"]
     }
   }
 }
