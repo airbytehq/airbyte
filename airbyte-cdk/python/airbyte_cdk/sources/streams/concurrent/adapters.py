@@ -308,11 +308,6 @@ class StreamPartition(Partition):
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         return self._slice
 
-    def identifier(self) -> Optional[Mapping[str, Any]]:
-        # TODO in order to support per partition state, this will need to be implemented. As this is not needed for Stripe, we will punt on
-        #  that
-        return None
-
     def __hash__(self) -> int:
         if self._slice:
             # Convert the slice to a string so that it can be hashed

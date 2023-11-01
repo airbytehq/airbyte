@@ -93,9 +93,6 @@ class InMemoryPartition(Partition):
     def to_slice(self) -> Optional[Mapping[str, Any]]:
         return self._slice
 
-    def identifier(self) -> Optional[Mapping[str, Any]]:
-        return None
-
     def __hash__(self) -> int:
         if self._slice:
             # Convert the slice to a string so that it can be hashed
