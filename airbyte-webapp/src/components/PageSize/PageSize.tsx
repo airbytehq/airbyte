@@ -58,6 +58,7 @@ export const PageSize: React.FC<IProps> = ({ totalPage, onChange, currentPageSiz
           $background="white"
           value={currentPageSize}
           options={pageSizeOptons}
+          menuPlacement="top"
           onChange={(option: DropDownRow.IDataItem) => onChange(option.value)}
         />
       </DropDownContainer>

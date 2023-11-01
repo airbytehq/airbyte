@@ -21,6 +21,7 @@ export interface DropdownProps<T = unknown> extends Props<OptionType> {
   fullText?: boolean;
   error?: boolean;
   selectProps?: T;
+  menuPlacement?: "bottom" | "top";
 }
 
 // eslint-disable-next-line react/function-component-definition
@@ -63,7 +64,7 @@ function DropDownInner<T = unknown>(
       zIndex: 10004,
     }),
   };
-
+  const placement = props.menuPlacement || "bottom";
   return (
     <CustomSelect
       ref={ref}
@@ -74,6 +75,7 @@ function DropDownInner<T = unknown>(
       menuPortalTarget={document.body}
       placeholder="..."
       isSearchable={false}
+      menuPlacement={placement}
       closeMenuOnSelect={!props.isMulti}
       hideSelectedOptions={false}
       {...props}
