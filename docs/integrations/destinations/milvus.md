@@ -65,7 +65,7 @@ If the record contains a field with the same name as the primary key, it will be
 
 ### Setting up a collection
 
-When using the Zilliz cloud, this can be done using the UI - in this case only the colleciton name and the vector dimensionality needs to be configured, the vector field with index will be automatically created under the name `vector`. Using the REST API, the following command will create the index:
+When using the Zilliz cloud, this can be done using the UI - in this case only the collection name and the vector dimensionality needs to be configured, the vector field with index will be automatically created under the name `vector`. Using the REST API, the following command will create the index:
 ```
 POST /v1/vector/collections/create
 {
