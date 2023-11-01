@@ -621,6 +621,42 @@ class CampaignPerformanceReportMonthly(CampaignPerformanceReport):
     ]
 
 
+class CampaignImpressionPerformanceReport(PerformanceReportsMixin, BingAdsStream, ABC):
+    """
+    https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
+    Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
+    see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
+    """
+
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "CampaignPerformanceReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "campaign_impression_performance_report"
+
+    @property
+    def report_columns(self) -> Iterable[str]:
+        return list(self.get_json_schema().get("properties", {}).keys())
+
+
+class CampaignImpressionPerformanceReportHourly(CampaignImpressionPerformanceReport):
+    report_aggregation = "Hourly"
+
+
+class CampaignImpressionPerformanceReportDaily(CampaignImpressionPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class CampaignImpressionPerformanceReportWeekly(CampaignImpressionPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class CampaignImpressionPerformanceReportMonthly(CampaignImpressionPerformanceReport):
+    report_aggregation = "Monthly"
+
+
 class AdPerformanceReport(PerformanceReportsMixin, BingAdsStream):
     data_field: str = ""
     service_name: str = "ReportingService"
