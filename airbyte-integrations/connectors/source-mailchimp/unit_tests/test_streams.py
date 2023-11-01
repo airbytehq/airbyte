@@ -10,7 +10,7 @@ import requests
 import responses
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
-from source_mailchimp.streams import Campaigns, EmailActivity, Lists, ListMembers, Segments
+from source_mailchimp.streams import Campaigns, EmailActivity, ListMembers, Lists, Segments
 from utils import read_full_refresh, read_incremental
 
 
@@ -130,12 +130,7 @@ def test_stream_parse_json_error(auth, caplog):
             {"list_id": "123"},
             {},
             None,
-            {
-                "count": 1000, 
-                "sort_dir": "ASC", 
-                "sort_field": "updated_at", 
-                "list_id": "123", 
-                "exclude_fields": "segments._links"},
+            {"count": 1000, "sort_dir": "ASC", "sort_field": "updated_at", "list_id": "123", "exclude_fields": "segments._links"},
         ),
         # Test case 2: state and next_page_token
         (

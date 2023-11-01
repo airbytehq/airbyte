@@ -22,7 +22,7 @@
       "type": ["null", "integer"]
     },
     "email_type": {
-      "type" : ["null", "string"]
+      "type": ["null", "string"]
     },
     "status": {
       "type": ["null", "string"]
