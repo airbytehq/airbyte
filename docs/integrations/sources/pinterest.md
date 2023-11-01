@@ -74,7 +74,7 @@ The connector is restricted by the Pinterest [requests limitation](https://devel
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                       |
 |:--------|:-----------| :------------------------------------------------------- |:--------------------------------------------------------------------------------------------------------------|
-| 0.7.1   | 2023-11-01 | [31876](https://github.com/airbytehq/airbyte/pull/31876) | handle non json response                                                                                      |
+| 0.7.1   | 2023-11-01 | [32078](https://github.com/airbytehq/airbyte/pull/32078) | handle non json response                                                                                      |
 | 0.7.0   | 2023-10-25 | [31876](https://github.com/airbytehq/airbyte/pull/31876) | Migrated to base image, removed token based authentication mthod becuase access_token is valid for 1 day only |
 | 0.6.0   | 2023-07-25 | [28672](https://github.com/airbytehq/airbyte/pull/28672) | Add report stream for `CAMPAIGN` level                                                                        |
 | 0.5.3   | 2023-07-05 | [27964](https://github.com/airbytehq/airbyte/pull/27964) | Add `id` field to `owner` field in `ad_accounts` stream                                                       |
