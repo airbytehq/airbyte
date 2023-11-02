@@ -37,7 +37,7 @@ _MAX_CONCURRENCY = 3
 
 class SourceStripe(ConcurrentSource):
     def __init__(self, catalog_path: Optional[str] = None, **kwargs):
-        super().__init__(10, 300, **kwargs)
+        super().__init__(2, 300, **kwargs)
         if catalog_path:
             catalog = self.read_catalog(catalog_path)
             # Only use concurrent cdk if all streams are running in full_refresh
