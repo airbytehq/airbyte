@@ -422,7 +422,7 @@ class IncrementalTiktokStream(FullRefreshTiktokStream, ABC):
             updated = self.select_cursor_field_value(record, stream_slice)
             if updated is None:
                 yield record
-            elif updated <= state:
+            elif updated < state:
                 continue
             else:
                 if not self.max_cursor_date or self.max_cursor_date < updated:
