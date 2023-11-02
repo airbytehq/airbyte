@@ -111,7 +111,7 @@ class UnstructuredParser(FileTypeParser):
             return decoded_content
         if filetype not in self._supported_file_types():
             self._handle_unprocessable_file(remote_file, format, logger)
-            return
+            return None
 
         file: Any = file_handle
         if filetype == FileType.PDF:
