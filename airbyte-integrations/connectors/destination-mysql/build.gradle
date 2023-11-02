@@ -21,11 +21,3 @@ dependencies {
     implementation 'mysql:mysql-connector-java:8.0.22'
     integrationTestJavaImplementation libs.testcontainers.mysql
 }
-
-//This is only needed because we're using some pre 0.3 version of the CDK
-java {
-     compileJava {
-        options.compilerArgs.remove("-Werror")
-     }
-}
-

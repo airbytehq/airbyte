@@ -28,11 +28,3 @@ dependencies {
     integrationTestJavaImplementation 'com.exasol:exasol-testcontainers:6.5.0'
     integrationTestJavaImplementation 'org.testcontainers:testcontainers:1.17.6'
 }
-
-//This is only needed because we're using some pre 0.3 version of the CDK
-java {
-     compileJava {
-        options.compilerArgs.remove("-Werror")
-     }
-}
-

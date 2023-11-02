@@ -36,11 +36,3 @@ dependencies {
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     testImplementation "org.testcontainers:localstack:${testContainersVersion}"
 }
-
-//This is only needed because we're using some pre 0.3 version of the CDK
-java {
-     compileJava {
-        options.compilerArgs.remove("-Werror")
-     }
-}
-
