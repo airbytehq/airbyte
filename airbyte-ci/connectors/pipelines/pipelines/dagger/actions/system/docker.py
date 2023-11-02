@@ -9,7 +9,7 @@ from typing import Callable, Optional
 from dagger import Client, Container, File, Secret
 from pipelines import consts
 from pipelines.airbyte_ci.connectors.context import ConnectorContext, PipelineContext
-from pipelines.consts import DOCKER_HOST_NAME, DOCKER_HOST_PORT, DOCKER_TMP_VOLUME_NAME
+from pipelines.consts import DOCKER_HOST_NAME, DOCKER_HOST_PORT, DOCKER_TMP_VOLUME_NAME, DOCKER_VAR_LIB_VOLUME_NAME
 from pipelines.helpers.utils import sh_dash_c
 
 
@@ -26,7 +26,8 @@ def with_global_dockerd_service(
         Container: The container running dockerd as a service
     """
     dockerd_container = (
-        dagger_client.container().from_(consts.DOCKER_DIND_IMAGE)
+        dagger_client.container()
+        .from_(consts.DOCKER_DIND_IMAGE)
         # We set this env var because we need to use a non-default zombie reaper setting.
         # The reason for this is that by default it will want to set its parent process ID to 1 when reaping.
         # This won't be possible because of container-ception: dind is running inside the dagger engine.
@@ -49,6 +50,7 @@ def with_global_dockerd_service(
         # Expose the docker host port.
         .with_exposed_port(DOCKER_HOST_PORT)
         # Mount the docker cache volumes.
+        .with_mounted_cache("/var/lib/docker", dagger_client.cache_volume(DOCKER_VAR_LIB_VOLUME_NAME))
         .with_mounted_cache("/tmp", dagger_client.cache_volume(DOCKER_TMP_VOLUME_NAME))
     )
     if docker_hub_username_secret and docker_hub_password_secret:
