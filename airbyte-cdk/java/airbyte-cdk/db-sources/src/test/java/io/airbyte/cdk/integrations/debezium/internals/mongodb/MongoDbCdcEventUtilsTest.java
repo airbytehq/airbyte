@@ -23,6 +23,7 @@ import io.airbyte.commons.json.Jsons;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import org.bson.BsonBinary;
 import org.bson.BsonBoolean;
 import org.bson.BsonDateTime;
@@ -99,7 +100,8 @@ class MongoDbCdcEventUtilsTest {
         .append("field13", new BsonJavaScriptWithScope("code2", new BsonDocument("scope", new BsonString("scope"))))
         .append("field14", new BsonRegularExpression("pattern"))
         .append("field15", new BsonNull())
-        .append("field16", new Document("key", "value"));
+        .append("field16", new Document("key", "value"))
+        .append("field17", new Document("uuid", UUID.randomUUID()));
 
     final String documentAsJson = document.toJson();
     final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet());
