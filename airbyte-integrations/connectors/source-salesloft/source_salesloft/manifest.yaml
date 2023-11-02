@@ -28,7 +28,7 @@ definitions:
   
   requester:
     type: HttpRequester
-    url_base: "http://localhost:3000"
+    url_base: "https://api.salesloft.com/v2/"
     http_method: "GET"
     authenticator:
       $ref: "#/definitions/custom_authenticator"
