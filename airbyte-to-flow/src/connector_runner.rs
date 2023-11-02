@@ -274,6 +274,7 @@ async fn streaming_all(
                 Err(e) => Err::<(), std::io::Error>(e.into())?,
             }
         }
+        writer.flush().await?;
 
         response_finished_sender
             .send(true)
