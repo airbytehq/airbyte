@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 import functools
 from abc import ABC, abstractmethod
 from typing import Any, List, Mapping, Optional, Protocol, Tuple
@@ -6,6 +9,7 @@ from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.concurrent.state_converter import ConcurrentStreamStateConverter
 
 
 def _extract_value(mapping: Mapping[str, Any], path: List[str]) -> Any:
@@ -66,24 +70,21 @@ class ConcurrentCursor(Cursor):
         stream_state: Any,
         message_repository: MessageRepository,
         connector_state_manager: ConnectorStateManager,
+        connector_state_converter: ConcurrentStreamStateConverter,
         cursor_field: CursorField,
         slice_boundary_fields: Optional[Tuple[str, str]],
     ) -> None:
         self._stream_name = stream_name
         self._stream_namespace = stream_namespace
         self._message_repository = message_repository
+        self._connector_state_converter = connector_state_converter
         self._connector_state_manager = connector_state_manager
         self._cursor_field = cursor_field
         # To see some example where the slice boundaries might not be defined, check https://github.com/airbytehq/airbyte/blob/1ce84d6396e446e1ac2377362446e3fb94509461/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L363-L379
         self._slice_boundary_fields = slice_boundary_fields if slice_boundary_fields else tuple()
         self._most_recent_record: Optional[Record] = None
         self._has_closed_at_least_one_slice = False
-
-        # TODO to migrate state. The migration should probably be outside of this class. Impact of not having this:
-        #  * Given a sync that emits no records, the emitted state message will be empty
-        self._state = {  # type: ignore  # waiting for when we implement the state migration
-            "slices": []  # empty for now but should look like `{start: 1, end: 10, parent_id: "id1"}`
-        }
+        self._state = connector_state_converter.get_concurrent_stream_state(stream_state)
 
     def observe(self, record: Record) -> None:
         if self._slice_boundary_fields:
@@ -108,6 +109,8 @@ class ConcurrentCursor(Cursor):
 
     def _add_slice_to_state(self, partition: Partition) -> None:
         if self._slice_boundary_fields:
+            if "slices" not in self._state:
+                self._state["slices"] = []
             self._state["slices"].append(
                 {
                     "start": self._extract_from_slice(partition, self._slice_boundary_fields[self._START_BOUNDARY]),
@@ -136,7 +139,7 @@ class ConcurrentCursor(Cursor):
         self._message_repository.emit_message(state_message)
 
     def _merge_partitions(self) -> None:
-        pass  # TODO eventually
+        self._state["slices"] = self._connector_state_converter.merge_intervals(self._state["slices"])
 
     def _extract_from_slice(self, partition: Partition, key: str) -> Comparable:
         try:
