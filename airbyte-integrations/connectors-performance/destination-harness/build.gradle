@@ -20,3 +20,10 @@ dependencies {
     implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
 
 }
+
+//This is only needed because we're using some very old libraries from airbyte-commons that were not packaged correctly
+java {
+    compileJava {
+       options.compilerArgs.remove("-Werror")
+   }
+}
