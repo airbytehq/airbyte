@@ -4,9 +4,9 @@
 import logging
 from io import BytesIO, IOBase
 from typing import Any, Dict, Iterable, List, Mapping, Optional
-from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
 
 from airbyte_cdk.sources.file_based.config.file_based_stream_config import FileBasedStreamConfig
+from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
 from airbyte_cdk.sources.file_based.exceptions import FileBasedSourceError, RecordParseError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.file_types.file_type_parser import FileTypeParser
@@ -126,9 +126,9 @@ class UnstructuredParser(FileTypeParser):
             elements = unstructured_partition_pptx(file=file)
 
         return self._render_markdown(elements)
-    
+
     def _handle_unprocessable_file(self, remote_file: RemoteFile, format: UnstructuredFormat, logger: logging.Logger) -> None:
-        if (format.skip_unprocessable_file_types):
+        if format.skip_unprocessable_file_types:
             logger.warn(f"File {remote_file.uri} cannot be parsed. Skipping it.")
         else:
             raise RecordParseError(FileBasedSourceError.ERROR_PARSING_RECORD, filename=remote_file.uri)
@@ -185,6 +185,7 @@ class UnstructuredParser(FileTypeParser):
     @property
     def file_read_mode(self) -> FileReadMode:
         return FileReadMode.READ_BINARY
+
 
 def _extract_format(config: FileBasedStreamConfig) -> UnstructuredFormat:
     config_format = config.format

@@ -5,9 +5,9 @@
 import asyncio
 from datetime import datetime
 from unittest.mock import MagicMock, mock_open, patch
-from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
 
 import pytest
+from airbyte_cdk.sources.file_based.config.unstructured_format import UnstructuredFormat
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError
 from airbyte_cdk.sources.file_based.file_types import UnstructuredParser
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
