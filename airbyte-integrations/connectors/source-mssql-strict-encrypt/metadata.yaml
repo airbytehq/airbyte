@@ -25,7 +25,7 @@ data:
     breakingChanges:
       3.0.0:
         message: "Remapped columns of types: date, datetime, datetime2, datetimeoffset, smalldatetime, and time from `String` to their appropriate Airbyte types. Customers whose streams have columns with the affected datatype must refresh their schema and reset their data."
-        upgradeDeadline: "2023-11-13"
+        upgradeDeadline: "2023-12-07"
       2.0.0:
         message: "Add default cursor for cdc"
         upgradeDeadline: "2023-08-23"
