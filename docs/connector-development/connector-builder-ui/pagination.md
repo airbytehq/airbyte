@@ -276,7 +276,7 @@ Using the "Inject page size / limit / offset into outgoing HTTP request" option 
 * The value needs to be injected into the URL path
 * Some conditional logic needs to be applied
 
-To handle these cases, disable injection in the pagination form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L2073). You can also use these variables as part of the URL path.
+To handle these cases, disable injection in the pagination form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables as part of the URL path.
 
 For example the [Prestashop API](https://devdocs.prestashop-project.org/8/webservice/cheat-sheet/#list-options) requires to set offset and limit separated by a comma into a single query parameter (`?limit=<offset>,<limit>`)
 For this case, you can use the `next_page_token` variable to configure a query parameter with key `limit` and value `{{ next_page_token['next_page_token'] or '0' }},50` to inject the offset from the pagination strategy and a hardcoded limit of 50 into the same parameter.
