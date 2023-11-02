@@ -1,0 +1,10 @@
+{
+  "base_url": "https://api.spotify.com",
+  "credentials": {
+    "auth_type": "oauth2_confidential_application",
+    "client_secret": "top_secret",
+    "client_id": "go_to_application_page",
+    "access_token_url": "https://accounts.spotify.com/api/token"
+  },
+  "start_date": "2023-08-05T00:43:59.244Z"
+}

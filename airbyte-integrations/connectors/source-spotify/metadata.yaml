@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - TODO # Please change to the hostname of the source.
+      - api.spotify.com
   registries:
     oss:
       enabled: false
@@ -16,7 +16,7 @@ data:
   icon: spotify.svg
   license: MIT
   name: Spotify
-  releaseDate: TODO
+  releaseDate: 2023-11-20
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/spotify

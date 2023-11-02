@@ -6,13 +6,41 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path: []
+
+  oauth_authenticator:
+    type: OAuthAuthenticator
+    token_refresh_endpoint: "{{ config['base_url'] }}/api/token"
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: ""
+
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['access_token'] }}"
+
   requester:
     type: HttpRequester
-    url_base: "https://example.com"
+    url_base: "{{ config['base_url'] }}"
     http_method: "GET"
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config['api_key'] }}"
+      class_name: source_spotify.components.AuthenticatorSpotify
+      bearer: "#/definitions/bearer_authenticator"
+      oauth: "#/definitions/oauth_authenticator"
+
+  base_paginator:
+    type: "DefaultPaginator"
+    page_size_option:
+      type: "RequestOption"
+      inject_into: "request_parameter"
+      field_name: "limit"
+    pagination_strategy:
+      type: "OffsetIncrement"
+      page_size: 5
+    page_token_option:
+      type: "RequestOption"
+      field_name: "offset"
+      inject_into: "request_parameter"
+
   retriever:
     type: SimpleRetriever
     record_selector:
@@ -21,36 +49,132 @@ definitions:
       type: NoPagination
     requester:
       $ref: "#/definitions/requester"
+
   base_stream:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/retriever"
-  customers_stream:
+
+  user_saved_tracks_stream:
     $ref: "#/definitions/base_stream"
-    name: "customers"
-    primary_key: "id"
     $parameters:
-      path: "/example"
+      name: "user_saved_tracks"
+      primary_key: "id"
+      path: "/v1/me/tracks"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: ["items", "track"]
+      paginator:
+        $ref: "#/definitions/base_paginator"
+
+  current_user_profile_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "current_user_profile"
+      primary_key: "id"
+      path: "/v1/me"
+
+  new_releases_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "new_releases"
+      primary_key: "id"
+      path: "/v1/browse/new-releases"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: ["albums", "items"]
+      paginator:
+        $ref: "#/definitions/base_paginator"
+
+  tracks_recommendations_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "tracks_recommendations"
+      primary_key: "id"
+      path: "/v1/recommendations"
+    retriever:
+      $ref: "#/definitions/retriever"
+      record_selector:
+        $ref: "#/definitions/selector"
+        extractor:
+          type: DpathExtractor
+          field_path: ["tracks"]
+      paginator:
+        $ref: "#/definitions/base_paginator"
+
+  # organizations_stream:
+  #   $ref: "#/definitions/base_stream"
+  #   name: "organizations"
+  #   primary_key: "id"
+  #   $parameters:
+  #     path: "organizations"
+  #   incremental_sync:
+  #     type: DatetimeBasedCursor
+  #     cursor_field: "updated_at"
+  #     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+  #     cursor_granularity: "PT0.000001S"
+  #     start_datetime:
+  #       datetime: "{{ config['start_date'] }}"
+  #       datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+  #     end_datetime:
+  #       datetime: "{{ today_utc() }}"
+  #       datetime_format: "%Y-%m-%d"
+  #     step: "P1M"
+
+  # organization_members_partition_router:
+  #   type: SubstreamPartitionRouter
+  #   parent_stream_configs:
+  #     - stream: "#/definitions/organizations_stream"
+  #       parent_key: "id"
+  #       partition_field: "parent_id"
+
+  # organization_members_stream:
+  #   $ref: "#/definitions/base_stream"
+  #   $parameters:
+  #     name: "organization_members"
+  #     primary_key: "user_id"
+  #     path: "organizations/{{ stream_partition.parent_id }}/members"
+  #   retriever:
+  #     $ref: "#/definitions/retriever"
+  #     partition_router:
+  #       $ref: "#/definitions/organization_members_partition_router"
+
+  # organization_member_roles_partition_router:
+  #   type: SubstreamPartitionRouter
+  #   parent_stream_configs:
+  #     - stream: "#/definitions/organization_members_stream"
+  #       parent_key: "user_id"
+  #       partition_field: "parent_user_id"
+
+  # organization_member_roles_stream:
+  #   $ref: "#/definitions/base_stream"
+  #   $parameters:
+  #     name: "organization_member_roles"
+  #     primary_key: "id"
+  #     path: "organizations/{{ stream_partition.parent_slice.parent_id }}/members/{{ stream_partition.parent_user_id }}/roles"
+  #   retriever:
+  #     $ref: "#/definitions/retriever"
+  #     partition_router:
+  #       $ref: "#/definitions/organization_member_roles_partition_router"
 
 streams:
-  - "#/definitions/customers_stream"
+  - "#/definitions/user_saved_tracks_stream"
+  - "#/definitions/current_user_profile_stream"
+  - "#/definitions/new_releases_stream"
+  - "#/definitions/tracks_recommendations_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "customers"
-
-spec:
-  type: Spec
-  documentation_url: https://docs.airbyte.com/integrations/sources/spotify
-  connection_specification:
-    title: Spotify Spec
-    type: object
-    required:
-      - api_key
-    additionalProperties: true
-    properties:
-      # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-      api_key:
-        type: string
-        description: API Key
+    - "user_saved_tracks"
+    - "current_user_profile"
+    - "new_releases"
+    - "tracks_recommendations_stream"

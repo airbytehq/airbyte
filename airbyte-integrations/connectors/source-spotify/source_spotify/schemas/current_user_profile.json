@@ -1,0 +1,68 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Current User profile schema",
+    "additionalProperties": true,
+    "type": ["null", "object"],
+    "properties": {
+      "country": {
+        "type": ["null", "string"]
+      },
+      "display_name": {
+        "type": ["null", "string"]
+      },
+      "email": {
+        "type": ["null", "string"]
+      },
+      "explicit_content": {
+        "type": ["null", "object"],
+        "properties": {
+          "filter_enabled": {
+            "type": ["null", "boolean"]
+          },
+          "filter_locked": {
+            "type": ["null", "boolean"]
+          }
+        }
+      },
+      "external_urls": {
+        "type": ["null", "object"],
+        "properties": {
+          "spotify": {
+            "type": ["null", "string"]
+          }
+        }
+      },
+      "followers": {
+        "type": ["null", "object"],
+        "properties": {
+          "href": {
+            "type": ["null", "string"]
+          },
+          "total": {
+            "type": ["null", "number"]
+          }
+        }
+      },
+      "href": {
+        "type": ["null", "string"]
+      },
+      "id": {
+        "type": ["null", "string"]
+      },
+      "images": {
+        "type": ["null", "array"],
+        "items": {
+            "type": ["null", "string", "boolean", "number"]
+        }
+      },
+      "product": {
+        "type": ["null", "string"]
+      },
+      "type": {
+        "type": ["null", "string"]
+      },
+      "uri": {
+        "type": ["null", "string"]
+      }
+    }
+  }

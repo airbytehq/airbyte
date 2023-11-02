@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tracks Recommendations Schema",
+  "additionalProperties": true,
+  "type": ["null", "object"],
+  "properties": {
+    "album": {
+      "type": ["null", "object"],
+      "properties": {
+        "album_type": {
+          "type": ["null", "string"]
+        },
+        "total_tracks": {
+          "type": ["null", "number"]
+        },
+        "available_markets": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "string"]
+          }
+        },
+        "external_urls": {
+          "type": ["null", "object"],
+          "properties": {
+            "spotify": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "href": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        },
+        "images": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "url": {
+                "type": ["null", "string"]
+              },
+              "height": {
+                "type": ["null", "number"]
+              },
+              "width": {
+                "type": ["null", "number"]
+              }
+            }
+          }
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "release_date": {
+          "type": ["null", "string"]
+        },
+        "release_date_precision": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "uri": {
+          "type": ["null", "string"]
+        },
+        "artists": {
+          "type": ["null", "array"],
+          "items": {
+            "type": ["null", "object"],
+            "properties": {
+              "external_urls": {
+                "type": ["null", "object"],
+                "properties": {
+                  "spotify": {
+                    "type": ["null", "string"]
+                  }
+                }
+              },
+              "href": {
+                "type": ["null", "string"]
+              },
+              "id": {
+                "type": ["null", "string"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "type": {
+                "type": ["null", "string"]
+              },
+              "uri": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "artists": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "external_urls": {
+            "type": ["null", "object"],
+            "properties": {
+              "spotify": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "href": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "type": {
+            "type": ["null", "string"]
+          },
+          "uri": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "available_markets": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "disc_number": {
+      "type": ["null", "number"]
+    },
+    "duration_ms": {
+      "type": ["null", "number"]
+    },
+    "explicit": {
+      "type":["null",  "boolean"]
+    },
+    "external_ids": {
+      "type": ["null", "object"],
+      "properties": {
+        "isrc": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "external_urls": {
+      "type": ["null", "object"],
+      "properties": {
+        "spotify": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "href": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "popularity": {
+      "type": ["null", "number"]
+    },
+    "preview_url": {},
+    "track_number": {
+      "type": ["null", "number"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "uri": {
+      "type": ["null", "string"]
+    },
+    "is_local": {
+      "type":["null",  "boolean"]
+    }
+  }
+}

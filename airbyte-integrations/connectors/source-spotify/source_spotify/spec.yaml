@@ -12,7 +12,7 @@ connectionSpecification:
       type: string
       title: Base URL
       examples:
-        - "https://dev-yourOrg.us.Spotify.com/"
+        - "https://api.spotify.com"
       description: The Authentication API is served over HTTPS. All URLs referenced in the documentation have the following base `https://YOUR_DOMAIN`
     credentials:
       title: Authentication Method
@@ -24,7 +24,6 @@ connectionSpecification:
             - auth_type
             - client_id
             - client_secret
-            - audience
           properties:
             auth_type:
               type: string
@@ -34,8 +33,7 @@ connectionSpecification:
             client_id:
               title: Client ID
               description: >-
-                Your application's Client ID. You can find this value on the <a
-                href="https://manage.Spotify.com/#/applications">application's settings tab</a>
+                Your application's Client ID. You can find this value on the application's settings tab
                 after you login the admin portal.
               type: string
               examples:
@@ -43,21 +41,12 @@ connectionSpecification:
             client_secret:
               title: Client Secret
               description: >-
-                Your application's Client Secret. You can find this value on the <a
-                href="https://manage.Spotify.com/#/applications">application's settings tab</a>
+                Your application's Client Secret. You can find this value on the application's settings tab
                 after you login the admin portal.
               type: string
               examples:
                 - "Client_Secret"
               airbyte_secret: true
-            audience:
-              title: Audience
-              description: >-
-                The audience for the token, which is your API. You can find this in the Identifier field on your  <a
-                href="https://manage.Spotify.com/#/apis">API's settings tab</a>
-              type: string
-              examples:
-                - https://dev-yourOrg.us.Spotify.com/api/v2/
         - type: object
           title: OAuth2 Access Token
           required:
@@ -74,8 +63,6 @@ connectionSpecification:
             access_token:
               title: OAuth2 Access Token
               description: >-
-                Also called <a
-                href="https://Spotify.com/docs/secure/tokens/access-tokens/get-management-api-access-tokens-for-testing">API Access Token </a>
                 The access token used to call the Spotify Management API Token. It's a JWT that contains specific grant permissions knowns as scopes.
               type: string
               airbyte_secret: true

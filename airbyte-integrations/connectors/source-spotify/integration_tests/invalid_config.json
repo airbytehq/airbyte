@@ -1,3 +1,8 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "base_url": "https://api.spotify.com",
+  "credentials": {
+    "auth_type": "wrong_access_token",
+    "access_token": "api-key-just-for-testing"
+  },
+  "start_date": "2023-08-05T00:43:59.244Z"
 }
