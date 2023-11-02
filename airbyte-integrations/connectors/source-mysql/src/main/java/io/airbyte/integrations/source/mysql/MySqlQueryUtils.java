@@ -36,15 +36,16 @@ public class MySqlQueryUtils {
 
   public record TableSizeInfo(Long tableSize, Long avgRowLength) {}
 
-  public static final String TABLE_ESTIMATE_QUERY = """
-                                                     SELECT
-                                                       (data_length + index_length) as %s,
-                                                       AVG_ROW_LENGTH as %s
-                                                    FROM
-                                                       information_schema.tables
-                                                    WHERE
-                                                       table_schema = '%s' AND table_name = '%s';
-                                                    """;
+  public static final String TABLE_ESTIMATE_QUERY =
+      """
+       SELECT
+         (data_length + index_length) as %s,
+         AVG_ROW_LENGTH as %s
+      FROM
+         information_schema.tables
+      WHERE
+         table_schema = '%s' AND table_name = '%s';
+       """;
 
   public static final String MAX_PK_VALUE_QUERY =
       """
@@ -83,7 +84,7 @@ public class MySqlQueryUtils {
       return storageEngines;
     } catch (final Exception e) {
       LOGGER.info("Storage engines could not be determined");
-      return Collections.emptySet();
+      return Collections.EMPTY_SET;
     }
   }
 

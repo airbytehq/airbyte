@@ -20,7 +20,6 @@ import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@SuppressWarnings("try")
 public class BigQueryRecordStandardConsumer extends AsyncStreamConsumer {
 
   public BigQueryRecordStandardConsumer(Consumer<AirbyteMessage> outputRecordCollector,

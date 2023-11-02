@@ -25,11 +25,3 @@ dependencies {
     integrationTestJavaImplementation 'org.apache.commons:commons-lang3:3.11'
 }
 
-
-//This is only needed because we're using some pre 0.3 version of the CDK
-java {
-     compileJava {
-        options.compilerArgs.remove("-Werror")
-     }
-}
-
