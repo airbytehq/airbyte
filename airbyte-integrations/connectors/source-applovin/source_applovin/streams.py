@@ -85,6 +85,7 @@ class Creatives(HttpSubStream, ApplovinStream):
             parent=Campaigns(authenticator=authenticator),
         )
 
+    # as of now Applovin's rate limit is arount 2000 request per *hour*
     def max_retries(self) -> Union[int, None]:
         return 15
 
