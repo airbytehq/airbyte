@@ -201,7 +201,7 @@ class AbstractSource(Source, ABC):
                 if record_counter == 1:
                     logger.info(f"Marking stream {stream_name} as RUNNING")
                     # If we just read the first record of the stream, emit the transition to the RUNNING state
-                    # yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.RUNNING)
+                    yield stream_status_as_airbyte_message(configured_stream.stream.name, configured_stream.stream.namespace, AirbyteStreamStatus.RUNNING)
             yield from self._emit_queued_messages()
             yield record
 

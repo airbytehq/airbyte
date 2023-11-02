@@ -170,18 +170,18 @@ def test_source_read_no_state_single_stream_single_partition_full_refresh():
             ),
         ),
         # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "1"}')),
-        # AirbyteMessage(
-        #     type=MessageType.TRACE,
-        #     trace=AirbyteTraceMessage(
-        #         type=TraceType.STREAM_STATUS,
-        #         emitted_at=1577836800000.0,
-        #         error=None,
-        #         estimate=None,
-        #         stream_status=AirbyteStreamStatusTraceMessage(
-        #             stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
-        #         ),
-        #     ),
-        # ),
+        AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
+                ),
+            ),
+        ),
         AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(
@@ -236,6 +236,18 @@ def test_source_read_no_state_single_stream_single_partition_full_refresh():
                 estimate=None,
                 stream_status=AirbyteStreamStatusTraceMessage(
                     stream_descriptor=StreamDescriptor(name="stream2"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
+                ),
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream2"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
                 ),
             ),
         ),

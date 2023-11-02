@@ -21,8 +21,14 @@ class StreamReader:
             self._message_repository.emit_message(
                 stream_status_as_airbyte_message(airbyte_stream.name, airbyte_stream.namespace, AirbyteStreamStatus.STARTED)
             )
+            is_first_record = True
             for record in stream.read():
                 # print(f"adding record to queue {record}")
+                if is_first_record:
+                    is_first_record = False
+                    self._message_repository.emit_message(
+                        stream_status_as_airbyte_message(airbyte_stream.name, airbyte_stream.namespace, AirbyteStreamStatus.RUNNING)
+                    )
                 self._queue.put(record)
             self._message_repository.emit_message(
                 stream_status_as_airbyte_message(airbyte_stream.name, airbyte_stream.namespace, AirbyteStreamStatus.COMPLETE)
