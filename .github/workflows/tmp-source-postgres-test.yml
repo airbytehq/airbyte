@@ -8,8 +8,8 @@ name: source-postgres ci - for testing only
 
 on:
   schedule:
-    # Runs every hour to observe variance
-    - cron: "0 * * * *"
+    # Runs four times a day to observe variance
+    - cron: "0 6,12,16,20 * * *"
   workflow_dispatch:
     inputs:
       runner:
