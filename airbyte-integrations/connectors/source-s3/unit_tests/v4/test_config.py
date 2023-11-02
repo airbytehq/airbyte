@@ -21,14 +21,15 @@ logger = logging.Logger("")
             None,
             id="config-created-with-aws-info",
         ),
-        pytest.param({"bucket": "test", "streams": [], "endpoint": "http://test.com"}, None, id="config-created-with-endpoint"),
+        pytest.param({"bucket": "test", "streams": [], "endpoint": "https://test.com"}, None, id="config-created-with-endpoint"),
+        pytest.param({"bucket": "test", "streams": [], "endpoint": "http://test.com"}, ValidationError, id="http-endpoint-error"),
         pytest.param(
             {
                 "bucket": "test",
                 "streams": [],
                 "aws_access_key_id": "access_key",
                 "aws_secret_access_key": "secret_access_key",
-                "endpoint": "http://test.com",
+                "endpoint": "https://test.com",
             },
             None,
             id="config-created-with-endpoint-and-aws-info",

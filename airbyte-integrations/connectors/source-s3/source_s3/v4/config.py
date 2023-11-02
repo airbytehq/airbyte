@@ -50,4 +50,10 @@ class Config(AbstractFileBasedSpec):
             raise ValidationError(
                 "`aws_access_key_id` and `aws_secret_access_key` are both required to authenticate with AWS.", model=Config
             )
+
+        endpoint = values.get("endpoint")
+        if endpoint:
+            if endpoint.startswith("http://"):
+                raise ValidationError("The endpoint must be a secure HTTPS endpoint.", model=Config)
+
         return values
