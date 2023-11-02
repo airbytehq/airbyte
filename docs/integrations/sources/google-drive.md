@@ -13,7 +13,7 @@ The Google Drive source connector pulls data from a single folder in Google Driv
 - **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet  
 <!-- /env:cloud -->
 <!-- env:oss -->
--  **For Airbyte Open Source:** 
+- **For Airbyte Open Source:** 
   - A GCP project
   - Enable the Google Drive API in your GCP project
   - Service Account Key with access to the Spreadsheet you want to replicate
@@ -116,12 +116,12 @@ The Google Drive source connector supports the following [sync modes](https://do
 
 This connector can sync multiple files by using glob-style patterns, rather than requiring a specific path for every file. This enables:
 
-- Referencing many files with just one pattern, e.g. `**` would indicate every file in the bucket.
+- Referencing many files with just one pattern, e.g. `**` would indicate every file in the folder.
 - Referencing future files that don't exist yet \(and therefore don't have a specific path\).
 
 You must provide a path pattern. You can also provide many patterns split with \| for more complex directory layouts.
 
-Each path pattern is a reference from the _root_ of the bucket, so don't include the bucket name in the pattern\(s\).
+Each path pattern is a reference from the _root_ of the folder, so don't include the root folder name itself in the pattern\(s\).
 
 Some example patterns:
 
@@ -131,7 +131,7 @@ Some example patterns:
 - `*/**` : match everything at least one folder deep.
 - `*/*/*/**` : match everything at least three folders deep.
 - `**/file.*|**/file` : match every file called "file" with any extension \(or no extension\).
-- `x/*/y/*` : match all files that sit in folder x -&gt; any folder -&gt; folder y.
+- `x/*/y/*` : match all files that sit in sub-folder x -&gt; any folder -&gt; folder y.
 - `**/prefix*.csv` : match all csv files with specific prefix.
 - `**/prefix*.parquet` : match all parquet files with specific prefix.
 
@@ -161,6 +161,8 @@ We want to pick up part1.csv, part2.csv and part3.csv \(excluding another_part1.
 As you can probably tell, there are many ways to achieve the same goal with path patterns. We recommend using a pattern that ensures clarity and is robust against future additions to the directory structure.
 
 ## User Schema
+
+When using the Avro, Jsonl, CSV or Parquet format, you can provide a schema to use for the output stream. **Note that this doesn't apply to the experimental Document file type format.**
 
 Providing a schema allows for more control over the output of this stream. Without a provided schema, columns and datatypes will be inferred from the first created file in the bucket matching your path pattern and suffix. This will probably be fine in most cases but there may be situations you want to enforce a schema instead, e.g.:
 
@@ -239,11 +241,11 @@ The Document file type format is a special format that allows you to extract tex
 
 One record will be emitted for each document. Keep in mind that large files can emit large records that might not fit into every destination as each destination has different limitations for string fields.
 
-Google documents are exported as Docx files while spreadsheets, presentations and drawings are exported as PDF files.
+Before parsing each document, the connector exports Google Document files to Docx format internally. Google Sheets, Google Slides, and drawings are internally exported and parsed by the connector as PDFs.
 
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                           |
 |---------|------------|----------------------------------------------------------|-----------------------------------------------------------------------------------|
-| 0.0.1   | 2023-11-30 | [31458](https://github.com/airbytehq/airbyte/pull/31458)   | Initial Google Drive source                                           |
+| 0.0.1   | 2023-11-02 | [31458](https://github.com/airbytehq/airbyte/pull/31458)   | Initial Google Drive source                                           |
 
