@@ -91,8 +91,7 @@ public class SnowflakeV1V2Migrator extends BaseDestinationV1V2Migrator<Snowflake
     String tableName = this.namingConventionTransformer.getRawTableName(streamConfig.id().originalName());
     return new NamespacedTableName(
         this.namingConventionTransformer.getIdentifier(streamConfig.id().originalNamespace()),
-        tableName
-        );
+        tableName);
   }
 
   @Override

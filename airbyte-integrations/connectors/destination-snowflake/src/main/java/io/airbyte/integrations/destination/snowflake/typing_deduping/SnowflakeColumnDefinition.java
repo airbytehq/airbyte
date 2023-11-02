@@ -10,8 +10,10 @@ package io.airbyte.integrations.destination.snowflake.typing_deduping;
  * because many sources emit null PKs. We may want to remove this field eventually.
  */
 public record SnowflakeColumnDefinition(String type, boolean isNullable) {
+
   @Deprecated
   public boolean isNullable() {
     return isNullable;
   }
+
 }
