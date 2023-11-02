@@ -19,6 +19,7 @@ from airbyte_cdk.sources.declarative.requesters.request_options import Interpola
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamAvailabilityStrategy, StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
@@ -170,7 +171,9 @@ class SourceStripe(AbstractSource):
                 slice_logger=self._slice_logger,
                 logger=base_stream.logger,
                 message_repository=self.message_repository,
-            )
+            ),
+            base_stream,
+            NoopCursor(),
         )
         return concurrent_stream
 
@@ -519,6 +522,9 @@ class SourceStripe(AbstractSource):
             main_streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
             main_streams = [self._create_concurrent_stream(base_stream, concurrency_level) for base_stream in main_streams]
-            substreams = [StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level) for stream in substreams]
+            substreams = [
+                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, {}, NoopCursor())
+                for stream in substreams
+            ]
 
         return main_streams + substreams

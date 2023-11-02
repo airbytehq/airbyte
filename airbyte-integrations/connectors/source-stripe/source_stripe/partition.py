@@ -86,8 +86,8 @@ class SourcePartitionGenerator(PartitionGenerator):
         self._request_body_data = request_body_data
         self._request_body_json = request_body_json
 
-    def generate(self, sync_mode: SyncMode) -> Iterable[Partition]:
-        for s in self._stream.stream_slices(sync_mode=sync_mode):
+    def generate(self) -> Iterable[Partition]:
+        for s in self._stream.stream_slices(sync_mode=SyncMode.full_refresh):
             yield SourcePartition(
                 copy.deepcopy(s),
                 transformer=self._stream.transformer,
