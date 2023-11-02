@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 from enum import Enum
-from typing import Any, Dict, List, MutableMapping, Optional
+from typing import Any, List, MutableMapping, Optional
 
 
 class ConcurrencyCompatibleStateType(Enum):
@@ -49,7 +49,7 @@ class ConcurrentStreamStateConverter(ABC):
         """
         ...
 
-    def _get_latest_complete_time(self, slices: MutableMapping[str, Any]) -> Optional[Any]:
+    def _get_latest_complete_time(self, slices: List[MutableMapping[str, Any]]) -> Optional[Any]:
         """
         Get the latest time before which all records have been processed.
         """
@@ -68,7 +68,7 @@ class ConcurrentStreamStateConverter(ABC):
         ...
 
     @classmethod
-    def merge_intervals(cls, intervals: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def merge_intervals(cls, intervals: List[MutableMapping[str, Any]]) -> List[MutableMapping[str, Any]]:
         sorted_intervals = sorted(intervals, key=lambda x: (x[cls.START_KEY], x[cls.END_KEY]))
         if len(sorted_intervals) > 0:
             merged_intervals = [sorted_intervals[0]]
@@ -117,7 +117,7 @@ class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
             "legacy": stream_state,
         }
 
-    def convert_to_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+    def convert_to_sequential_state(self, stream_state: MutableMapping[str, Any]) -> Any:
         """
         e.g.
         {
