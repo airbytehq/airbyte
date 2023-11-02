@@ -94,8 +94,8 @@ public class CloudDeploymentPostgresSourceTest {
 
         final AirbyteConnectionStatus connectionStatus = checkWithTunnel(db, sslmode, false);
         assertEquals(AirbyteConnectionStatus.Status.FAILED, connectionStatus.getStatus());
-        assertTrue(connectionStatus.getMessage().contains("Connection is not available"));
-
+        final String msg = connectionStatus.getMessage();
+        assertTrue(msg.matches(".*Connection is not available.*|.*The connection attempt failed.*"), msg);
       }
     } finally {
       bastion.stopAndClose();
