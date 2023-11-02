@@ -667,11 +667,12 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
             yield record
 
     def _update_state(self, stream_slice: MutableMapping[str, Any]):
+        customer_id = stream_slice.get("customer_id")
+
         # if parent stream was used - copy state from it, otherwise set default state
-        if self.parent_stream.state:
-            self._state[self.parent_stream_name].update(self.parent_stream.state)
+        if isinstance(self.parent_stream.state, dict) and self.parent_stream.state.get(customer_id):
+            self._state[self.parent_stream_name][customer_id] = self.parent_stream.state[customer_id]
         else:
-            customer_id = stream_slice.get("customer_id")
             parent_state = {self.parent_cursor_field: pendulum.today().start_of("day").format(self.parent_stream.cursor_time_format)}
             # full refresh sync without parent stream
             self._state[self.parent_stream_name].update({customer_id: parent_state})
