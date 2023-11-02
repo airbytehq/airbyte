@@ -2,14 +2,15 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 import source_bing_ads
 from airbyte_cdk.models import SyncMode
 from source_bing_ads.source import SourceBingAds
-from source_bing_ads.streams import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, Campaigns, AppInstallAds
-from pathlib import Path
+from source_bing_ads.streams import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, AppInstallAds, Campaigns
+
 
 @pytest.fixture(name="config")
 def config_fixture():
@@ -53,7 +54,11 @@ def test_source_check_connection_failed_invalid_creds(config, logger_mock):
     with patch.object(Accounts, "read_records", return_value=[]):
         connected, reason = SourceBingAds().check_connection(logger_mock, config=config)
         assert connected is False
-        assert reason.internal_message == "Failed to get OAuth access token by refresh token. The user could not be authenticated as the grant is expired. The user must sign in again."
+        assert (
+            reason.internal_message
+            == "Failed to get OAuth access token by refresh token. The user could not be authenticated as the grant is expired. The user must sign in again."
+        )
+
 
 @patch.object(source_bing_ads.source, "Client")
 def test_campaigns_request_params(mocked_client, config):
@@ -154,11 +159,13 @@ def test_accounts(mocked_client, config):
     _ = list(accounts.read_records(SyncMode.full_refresh))
     mocked_client.request.assert_called_once()
 
+
 @patch.object(source_bing_ads.source, "Client")
 def test_ad_groups(mocked_client, config):
     ad_groups = AdGroups(mocked_client, config)
     _ = list(ad_groups.read_records(SyncMode.full_refresh, {"campaign_id": "campaign_id"}))
     mocked_client.request.assert_called_once()
+
 
 @patch.object(source_bing_ads.source, "Client")
 def test_ads(mocked_client, config):
@@ -166,11 +173,13 @@ def test_ads(mocked_client, config):
     _ = list(ads.read_records(SyncMode.full_refresh, {"ad_group_id": "ad_group_id"}))
     mocked_client.request.assert_called_once()
 
+
 @patch.object(source_bing_ads.source, "Client")
 def test_campaigns(mocked_client, config):
     campaigns = Campaigns(mocked_client, config)
     _ = list(campaigns.read_records(SyncMode.full_refresh, {"account_id": "account_id"}))
     mocked_client.request.assert_called_once()
+
 
 @patch.object(source_bing_ads.source, "Client")
 def test_bulk_stream_stream_slices(mocked_client, config):
@@ -186,40 +195,50 @@ def test_bulk_stream_stream_slices(mocked_client, config):
 
 @patch.object(source_bing_ads.source, "Client")
 def test_bulk_stream_transfrom(mocked_client, config):
-    record = {"Ad Group": "Ad Group", "App Id": "App Id",  "Campaign": "Campaign",  "Custom Parameter":  "Custom Parameter"}
-    transformed_record = AppInstallAds(mocked_client, config).transform(record=record, stream_slice={"account_id": 180519267, "customer_id": 100})
-    assert transformed_record == {"Account Id": 180519267, "Ad Group": "Ad Group","App Id": "App Id","Campaign": "Campaign","Custom Parameter": "Custom Parameter"}
+    record = {"Ad Group": "Ad Group", "App Id": "App Id", "Campaign": "Campaign", "Custom Parameter": "Custom Parameter"}
+    transformed_record = AppInstallAds(mocked_client, config).transform(
+        record=record, stream_slice={"account_id": 180519267, "customer_id": 100}
+    )
+    assert transformed_record == {
+        "Account Id": 180519267,
+        "Ad Group": "Ad Group",
+        "App Id": "App Id",
+        "Campaign": "Campaign",
+        "Custom Parameter": "Custom Parameter",
+    }
+
 
 @patch.object(source_bing_ads.source, "Client")
 def test_bulk_stream_read_with_chunks(mocked_client, config):
     path_to_file = Path(__file__).parent / "app_install_ads.csv"
     path_to_file_base = Path(__file__).parent / "app_install_ads_base.csv"
-    with open(path_to_file_base, 'r') as f1, open(path_to_file, 'a') as f2:
+    with open(path_to_file_base, "r") as f1, open(path_to_file, "a") as f2:
         for line in f1:
             f2.write(line)
 
     app_install_ads = AppInstallAds(mocked_client, config)
     result = app_install_ads.read_with_chunks(path=path_to_file)
-    assert next(result) == {'Ad Group': 'AdGroupNameGoesHere',
-                            'App Id': 'AppStoreIdGoesHere',
-                            'App Platform': 'Android',
-                            'Campaign': 'ParentCampaignNameGoesHere',
-                            'Client Id': 'ClientIdGoesHere',
-                            'Custom Parameter': '{_promoCode}=PROMO1; {_season}=summer',
-                            'Destination Url': None,
-                            'Device Preference': 'All',
-                            'Display Url': None,
-                            'Final Url': 'FinalUrlGoesHere',
-                            'Final Url Suffix': None,
-                            'Id': None,
-                            'Mobile Final Url': None,
-                            'Modified Time': None,
-                            'Name': None,
-                            'Parent Id': '-1111',
-                            'Promotion': None,
-                            'Status': 'Active',
-                            'Text': 'Find New Customers & Increase Sales!',
-                            'Title': 'Contoso Quick Setup',
-                            'Tracking Template': None,
-                            'Type': 'App Install Ad',
-                            }
+    assert next(result) == {
+        "Ad Group": "AdGroupNameGoesHere",
+        "App Id": "AppStoreIdGoesHere",
+        "App Platform": "Android",
+        "Campaign": "ParentCampaignNameGoesHere",
+        "Client Id": "ClientIdGoesHere",
+        "Custom Parameter": "{_promoCode}=PROMO1; {_season}=summer",
+        "Destination Url": None,
+        "Device Preference": "All",
+        "Display Url": None,
+        "Final Url": "FinalUrlGoesHere",
+        "Final Url Suffix": None,
+        "Id": None,
+        "Mobile Final Url": None,
+        "Modified Time": None,
+        "Name": None,
+        "Parent Id": "-1111",
+        "Promotion": None,
+        "Status": "Active",
+        "Text": "Find New Customers & Increase Sales!",
+        "Title": "Contoso Quick Setup",
+        "Tracking Template": None,
+        "Type": "App Install Ad",
+    }

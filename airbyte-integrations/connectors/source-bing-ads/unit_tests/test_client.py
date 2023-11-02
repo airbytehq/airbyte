@@ -2,18 +2,19 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+import socket
 from datetime import datetime, timedelta
 from unittest import mock
 from unittest.mock import patch
+from urllib.error import URLError
 
 import pytest
 import source_bing_ads.client
 from airbyte_cdk.utils import AirbyteTracedException
-from bingads.authorization import OAuthTokens, AuthorizationData
+from bingads.authorization import AuthorizationData, OAuthTokens
 from bingads.v13.reporting.exceptions import ReportingDownloadException
 from suds import sudsobject
-from urllib.error import URLError
-import socket
+
 
 def test_sudsobject_todict_primitive_types():
     test_arr = ["1", "test", 1, [0, 0]]
@@ -139,11 +140,7 @@ def test_get_access_token_success(requests_mock):
     requests_mock.post(
         "https://login.microsoftonline.com/tenant_id/oauth2/v2.0/token",
         status_code=200,
-        json={
-            "access_token": "test",
-            "expires_in": "900",
-            "refresh_token": "test"
-        },
+        json={"access_token": "test", "expires_in": "900", "refresh_token": "test"},
     )
     source_bing_ads.client.Client("tenant_id", "2020-01-01", client_id="client_id", refresh_token="refresh_token")
     assert requests_mock.call_count == 1

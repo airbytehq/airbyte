@@ -4,14 +4,11 @@
 from itertools import product
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.models import FailureType
-from airbyte_cdk.utils import AirbyteTracedException
-
-
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils import AirbyteTracedException
 from source_bing_ads.client import Client
 from source_bing_ads.streams import (  # noqa: F401
     AccountImpressionPerformanceReportDaily,
