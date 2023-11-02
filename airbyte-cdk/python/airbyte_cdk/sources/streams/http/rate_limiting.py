@@ -27,7 +27,7 @@ SendRequestCallableType = Callable[[PreparedRequest, Mapping[str, Any]], Respons
 
 
 def default_backoff_handler(
-    max_tries: Optional[int], factor: float, max_time: Optional[int], **kwargs: Any
+    max_tries: Optional[int], factor: float, max_time: Optional[int] = None, **kwargs: Any
 ) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
     def log_retry_attempt(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()
@@ -63,7 +63,7 @@ def default_backoff_handler(
 
 
 def user_defined_backoff_handler(
-    max_tries: Optional[int], max_time: Optional[int], **kwargs: Any
+    max_tries: Optional[int], max_time: Optional[int] = None, **kwargs: Any
 ) -> Callable[[SendRequestCallableType], SendRequestCallableType]:
     def sleep_on_ratelimit(details: Mapping[str, Any]) -> None:
         _, exc, _ = sys.exc_info()

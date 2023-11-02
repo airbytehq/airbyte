@@ -9,7 +9,7 @@ from typing import Optional
 
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from airbyte_cdk.destinations.vector_db_based.utils import format_exception
+from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier, format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_milvus.config import MilvusIndexingConfigModel
@@ -83,7 +83,7 @@ class MilvusIndexer(Indexer):
         self._create_client()
         for stream in catalog.streams:
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                self._delete_for_filter(f'{METADATA_STREAM_FIELD} == "{stream.stream.name}"')
+                self._delete_for_filter(f'{METADATA_STREAM_FIELD} == "{create_stream_identifier(stream.stream)}"')
 
     def _delete_for_filter(self, expr: str) -> None:
         iterator = self._collection.query_iterator(expr=expr)

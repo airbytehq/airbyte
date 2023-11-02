@@ -2,9 +2,17 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from dagger import CacheVolume, Container
+from dagger import CacheSharingMode, CacheVolume, Client, Container
 from pipelines.airbyte_ci.connectors.context import PipelineContext
-from pipelines.consts import CONNECTOR_TESTING_REQUIREMENTS, LICENSE_SHORT_FILE_PATH, PYPROJECT_TOML_FILE_PATH
+from pipelines.consts import (
+    CONNECTOR_TESTING_REQUIREMENTS,
+    LICENSE_SHORT_FILE_PATH,
+    PIP_CACHE_PATH,
+    PIP_CACHE_VOLUME_NAME,
+    POETRY_CACHE_PATH,
+    POETRY_CACHE_VOLUME_NAME,
+    PYPROJECT_TOML_FILE_PATH,
+)
 from pipelines.helpers.utils import sh_dash_c
 
 
@@ -60,3 +68,27 @@ def with_testing_dependencies(context: PipelineContext) -> Container:
         .with_file(f"/{PYPROJECT_TOML_FILE_PATH}", pyproject_toml_file)
         .with_file(f"/{LICENSE_SHORT_FILE_PATH}", license_short_file)
     )
+
+
+def with_pip_cache(container: Container, dagger_client: Client) -> Container:
+    """Mounts the pip cache in the container.
+    Args:
+        container (Container): A container with python installed
+
+    Returns:
+        Container: A container with the pip cache mounted.
+    """
+    pip_cache_volume = dagger_client.cache_volume(PIP_CACHE_VOLUME_NAME)
+    return container.with_mounted_cache(PIP_CACHE_PATH, pip_cache_volume, sharing=CacheSharingMode.SHARED)
+
+
+def with_poetry_cache(container: Container, dagger_client: Client) -> Container:
+    """Mounts the poetry cache in the container.
+    Args:
+        container (Container): A container with python installed
+
+    Returns:
+        Container: A container with the poetry cache mounted.
+    """
+    poetry_cache_volume = dagger_client.cache_volume(POETRY_CACHE_VOLUME_NAME)
+    return container.with_mounted_cache(POETRY_CACHE_PATH, poetry_cache_volume, sharing=CacheSharingMode.SHARED)

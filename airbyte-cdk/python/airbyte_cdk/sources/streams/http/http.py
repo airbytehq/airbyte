@@ -54,6 +54,7 @@ class HttpStream(Stream, ABC):
     def cache_filename(self) -> str:
         """
         Override if needed. Return the name of cache file
+        Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
         """
         return f"{self.name}.sqlite"
 
@@ -61,19 +62,26 @@ class HttpStream(Stream, ABC):
     def use_cache(self) -> bool:
         """
         Override if needed. If True, all records will be cached.
+        Note that if the environment variable REQUEST_CACHE_PATH is not set, the cache will be in-memory only.
         """
         return False
 
     def request_cache(self) -> requests.Session:
-        cache_dir = Path(os.getenv(ENV_REQUEST_CACHE_PATH))
-        return requests_cache.CachedSession(str(cache_dir / self.cache_filename), backend="sqlite")
+        cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
+        # Use in-memory cache if cache_dir is not set
+        # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
+        if cache_dir:
+            sqlite_path = str(Path(cache_dir) / self.cache_filename)
+        else:
+            sqlite_path = "file::memory:?cache=shared"
+        return requests_cache.CachedSession(sqlite_path, backend="sqlite")  # type: ignore # there are no typeshed stubs for requests_cache
 
     def clear_cache(self) -> None:
         """
         clear cached requests for current session, can be called any time
         """
         if isinstance(self._session, requests_cache.CachedSession):
-            self._session.cache.clear()
+            self._session.cache.clear()  # type: ignore # cache.clear is not typed
 
     @property
     @abstractmethod
@@ -449,7 +457,7 @@ class HttpStream(Stream, ABC):
         :param exception: The exception that was raised
         :return: A user-friendly message that indicates the cause of the error
         """
-        if isinstance(exception, requests.HTTPError):
+        if isinstance(exception, requests.HTTPError) and exception.response is not None:
             return self.parse_response_error_message(exception.response)
         return None
 

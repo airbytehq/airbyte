@@ -103,7 +103,6 @@ class UnstructuredParser(FileTypeParser):
         return self._render_markdown(elements)
 
     def _get_filetype(self, file: IOBase, file_name: str) -> Any:
-
         # set name to none, otherwise unstructured will try to get the modified date from the local file system
         if hasattr(file, "name"):
             file.name = None
@@ -114,7 +113,7 @@ class UnstructuredParser(FileTypeParser):
         )
 
     def _supported_file_types(self) -> List[Any]:
-        return [FileType.MD, FileType.PDF, FileType.DOCX]
+        return [FileType.MD, FileType.PDF, FileType.DOCX, FileType.PPTX]
 
     def _render_markdown(self, elements: List[Any]) -> str:
         return "\n\n".join((self._convert_to_markdown(el) for el in elements))

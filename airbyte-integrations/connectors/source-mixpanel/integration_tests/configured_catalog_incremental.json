@@ -44,20 +44,6 @@
     },
     {
       "stream": {
-        "name": "cohort_members",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": false,
-        "default_cursor_field": ["last_seen"],
-        "source_defined_primary_key": [["distinct_id"]]
-      },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append",
-      "cursor_field": ["last_seen"],
-      "primary_key": [["distinct_id"]]
-    },
-    {
-      "stream": {
         "name": "revenue",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
