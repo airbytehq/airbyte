@@ -89,6 +89,10 @@ jobs:
       - name: Install Pyenv
         if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         run: python3 -m pip install virtualenv --user
+      - name: Login to DockerHub
+        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
+        # Some tests use testcontainers which pull images from DockerHub.
+        run: docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Run Gradle Check
         if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         uses: burrunan/gradle-cache-action@v1
@@ -98,7 +102,6 @@ jobs:
           read-only: ${{ github.ref != 'refs/heads/master' }}
           # TODO: be able to remove the skipSlowTests property
           # TODO: remove the format task ASAP
-          # TODO: roll the CDK tasks into check
           arguments: --scan --no-daemon --no-watch-fs format check -DskipSlowTests=true
 
   # In case of self-hosted EC2 errors, remove this block.
