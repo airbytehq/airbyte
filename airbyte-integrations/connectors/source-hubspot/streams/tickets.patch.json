@@ -1,10 +1,14 @@
 {
     "properties":  {
         "companies": {
-            "type": ["null", "array"],
             "items": {
-                "type": ["null", "integer"]
-            }
+                "format": "integer",
+                "type": [
+                  "integer",
+                  "string",
+                  "null"
+                ]
+              }
         }
     }
 }
