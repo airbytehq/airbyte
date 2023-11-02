@@ -28,6 +28,7 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
             classpath += project.sourceSets.integrationTestJava.runtimeClasspath
 
+            useJUnitPlatform()
             testLogging() {
                 events 'skipped', 'started', 'passed', 'failed'
                 exceptionFormat 'full'
