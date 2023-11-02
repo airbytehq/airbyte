@@ -14,14 +14,25 @@ async def test_click_append_to_context_object():
         return "async_got"
 
     @click.command(name='test-command')
+    @click_append_to_context_object('get', get_value)
+    @click_append_to_context_object('async_get', get_async_value)
     @click_append_to_context_object('foo', 'bar')
     @click_append_to_context_object('baz', lambda _ctx: "qux")
     @click_append_to_context_object('foo2', lambda ctx: ctx.obj.get('foo') + "2")
+    def test_command(ctx):
+        assert ctx.obj['foo'] == 'bar'
+        assert ctx.obj['baz'] == 'qux'
+        assert ctx.obj['foo2'] == 'bar2'
+        assert ctx.obj['get'] == 'got'
+        assert ctx.obj['async_get'] == 'async_got'
+
+    @click.command(name='test-command')
     @click_append_to_context_object('get', get_value)
     @click_append_to_context_object('async_get', get_async_value)
-
-    def test_command():
-        ctx = click.get_current_context()
+    @click_append_to_context_object('foo', 'bar')
+    @click_append_to_context_object('baz', lambda _ctx: "qux")
+    @click_append_to_context_object('foo2', lambda ctx: ctx.obj.get('foo') + "2")
+    async def test_command_async(ctx):
         assert ctx.obj['foo'] == 'bar'
         assert ctx.obj['baz'] == 'qux'
         assert ctx.obj['foo2'] == 'bar2'
@@ -31,6 +42,9 @@ async def test_click_append_to_context_object():
 
     result = await runner.invoke(test_command)
     assert result.exit_code == 0
+
+    result_async = await runner.invoke(test_command_async)
+    assert result_async.exit_code == 0
 
 @pytest.mark.anyio
 async def test_click_ignore_unused_kwargs():

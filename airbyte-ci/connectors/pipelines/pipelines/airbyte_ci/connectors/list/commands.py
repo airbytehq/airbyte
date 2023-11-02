@@ -14,7 +14,6 @@ from rich.text import Text
 async def list(
     ctx: click.Context,
 ):
-    import pdb; pdb.set_trace()
     selected_connectors = sorted(ctx.obj["selected_connectors_with_modified_files"], key=lambda x: x.technical_name)
     table = Table(title=f"{len(selected_connectors)} selected connectors")
     table.add_column("Modified")

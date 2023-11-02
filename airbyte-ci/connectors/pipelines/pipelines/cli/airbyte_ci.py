@@ -262,7 +262,7 @@ async def get_modified_files_str(ctx: click.Context):
 @click_append_to_context_object("is_ci", lambda ctx: not ctx.obj["is_local"])
 @click_append_to_context_object("gha_workflow_run_url", _get_gha_workflow_run_url)
 @click_append_to_context_object("pull_request", _get_pull_request)
-@click_append_to_context_object("testme", "OUTTT")
+@click_append_to_context_object("modified_files", get_modified_files_str)
 @click_ignore_unused_kwargs
 async def airbyte_ci(
     ctx: click.Context,
@@ -275,7 +275,7 @@ async def airbyte_ci(
 
     check_up_to_date()
 
-    ctx.obj["modified_files"] = await get_modified_files_str(ctx)
+    # ctx.obj["modified_files"] = await get_modified_files_str(ctx)
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)

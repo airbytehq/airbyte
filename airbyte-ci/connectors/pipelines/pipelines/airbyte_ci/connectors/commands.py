@@ -234,7 +234,7 @@ async def connectors(
 ):
     """Group all the connectors-ci command."""
     validate_environment(ctx.obj["is_local"])
-    import pdb; pdb.set_trace()
+
     ctx.obj["selected_connectors_with_modified_files"] = get_selected_connectors_with_modified_files(
         ctx.obj["names"],
         ctx.obj["support_levels"],
