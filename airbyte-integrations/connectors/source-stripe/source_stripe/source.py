@@ -442,8 +442,9 @@ class SourceStripe(ConcurrentSource):
             state = {}
             cursor = NoopCursor()
             return [
-                #FIXME: maybe need a better to access the threadpool?
-                StreamFacade.create_from_stream(stream, self, entrypoint_logger, threadpool, state, cursor) for stream in streams
+                # FIXME: maybe need a better to access the threadpool?
+                StreamFacade.create_from_stream(stream, self, entrypoint_logger, threadpool, state, cursor)
+                for stream in streams
             ]
         else:
             return streams

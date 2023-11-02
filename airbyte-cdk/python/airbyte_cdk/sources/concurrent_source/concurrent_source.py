@@ -75,7 +75,7 @@ class ConcurrentSource(AbstractSource, ABC):
                         continue
                     stream_instances_to_read_from.append(stream_instance)
             for stream in stream_instances_to_read_from:
-                #print(f"submitting task for stream {stream.name}")
+                # print(f"submitting task for stream {stream.name}")
                 self._submit_task(futures, stream_reader.read_from_stream, stream)
 
             stop = False
@@ -85,15 +85,15 @@ class ConcurrentSource(AbstractSource, ABC):
                 if isinstance(airbyte_message_or_record_or_exception, Exception):
                     # An exception was raised while processing the stream
                     # Stop the threadpool and raise it
-                    #print(f"received exception {airbyte_message_or_record_or_exception}")
-                    #print(f"{stream_done_counter} out of {len(stream_instances_to_read_from)} left.")
+                    # print(f"received exception {airbyte_message_or_record_or_exception}")
+                    # print(f"{stream_done_counter} out of {len(stream_instances_to_read_from)} left.")
                     self._stream_read_threadpool.shutdown(wait=False, cancel_futures=True)
                     raise airbyte_message_or_record_or_exception
 
                 elif airbyte_message_or_record_or_exception == SENTINEL:
                     # Update the map of stream -> done
                     stream_done_counter += 1
-                    #print(f"done with a stream. {stream_done_counter} out of {len(stream_instances_to_read_from)}")
+                    # print(f"done with a stream. {stream_done_counter} out of {len(stream_instances_to_read_from)}")
                     if stream_done_counter == len(stream_instances_to_read_from):
                         stop = True
                 else:
