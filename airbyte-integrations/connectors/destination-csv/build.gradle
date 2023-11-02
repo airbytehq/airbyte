@@ -3,6 +3,12 @@ plugins {
     id 'airbyte-java-connector'
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try"
+    }
+}
+
 airbyteJavaConnector {
     cdkVersionRequired = '0.2.0'
     features = ['db-destinations']

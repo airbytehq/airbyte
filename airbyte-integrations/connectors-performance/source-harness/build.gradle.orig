@@ -4,7 +4,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination_performance.Main'
+    mainClass = 'io.airbyte.integrations.source_performance.Main'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
@@ -15,10 +15,7 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation 'io.airbyte:airbyte-commons-worker:0.42.0'
     implementation 'io.airbyte.airbyte-config:config-models:0.42.0'
-    implementation 'junit:junit:4.13.1'
-    implementation 'org.testng:testng:7.1.0'
-    implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
-
+    implementation 'com.datadoghq:datadog-api-client:2.16.0'
 }
 
 //This is only needed because we're using some very old libraries from airbyte-commons that were not packaged correctly
@@ -26,4 +23,8 @@ java {
     compileJava {
        options.compilerArgs.remove("-Werror")
    }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 8f455fc9b5 (have more stringent javac options)

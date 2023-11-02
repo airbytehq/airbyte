@@ -26,4 +26,8 @@ java {
     compileJava {
        options.compilerArgs.remove("-Werror")
    }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 8f455fc9b5 (have more stringent javac options)

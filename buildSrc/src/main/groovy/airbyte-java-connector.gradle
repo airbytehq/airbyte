@@ -53,6 +53,19 @@ class AirbyteJavaConnectorExtension {
                 }
             }
         } else {
+            def versionNumbers = cdkVersionRequired.split("\\.")
+            def majorVersion = Integer.valueOf(versionNumbers[0])
+            def minorVersion = Integer.valueOf(versionNumbers[1])
+            def hasKnownWarnings = false
+            if (majorVersion = 0 || majorVersion < 3) {
+                hasKnownWarnings = true;
+            }
+            if (hasKnownWarnings) {
+                project.tasks.withType(JavaCompile).configureEach {
+                    options.compilerArgs.remove("-Werror")
+                }
+            }
+
             project.dependencies {
                 implementation "io.airbyte.cdk:airbyte-cdk-airbyte-commons:${cdkVersionRequired}"
                 implementation "io.airbyte.cdk:airbyte-cdk-airbyte-json-validation:${cdkVersionRequired}"
