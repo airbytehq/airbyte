@@ -28,8 +28,6 @@
 </a>
 </p>
 
-Test stephane
-
 We believe that only an **open-source solution to data movement** can cover the long tail of data sources while empowering data engineers to customize existing connectors. Our ultimate vision is to help you move data from any source to any destination. Airbyte already provides the largest [catalog](https://docs.airbyte.com/integrations/) of 300+ connectors for APIs, databases, data warehouses, and data lakes.
 
 ![Airbyte OSS Connections UI](https://github.com/airbytehq/airbyte/assets/10663571/870d0479-2765-4ecb-abd5-a5bb877dae37)
