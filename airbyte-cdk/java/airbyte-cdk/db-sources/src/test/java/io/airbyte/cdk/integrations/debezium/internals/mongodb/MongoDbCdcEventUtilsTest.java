@@ -101,7 +101,7 @@ class MongoDbCdcEventUtilsTest {
         .append("field14", new BsonRegularExpression("pattern"))
         .append("field15", new BsonNull())
         .append("field16", new Document("key", "value"))
-        .append("field17", new Document("uuid", UUID.randomUUID()));
+        .append("field17", new BsonString(UUID.randomUUID().toString()));
 
     final String documentAsJson = document.toJson();
     final ObjectNode transformed = MongoDbCdcEventUtils.transformDataTypes(documentAsJson, document.keySet());
