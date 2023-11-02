@@ -2,7 +2,7 @@
  * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.integrations.source.mssql;
+package io.airbyte.integrations.source.mssql_strict_encrypt;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -29,7 +29,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
 import org.testcontainers.containers.MSSQLServerContainer;
-import org.testcontainers.utility.DockerImageName;
 
 public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -49,10 +48,7 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     if (db == null) {
-      db = new MSSQLServerContainer<>(DockerImageName
-          .parse("airbyte/mssql_ssltest:dev")
-          .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-              .acceptLicense().withUrlParam("trustServerCertificate", "true");
+      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04").acceptLicense();
       db.start();
     }
 
@@ -68,7 +64,7 @@ public class MssqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
         configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
         configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
-        String.format("jdbc:sqlserver://%s:%s;encrypt=true;trustServerCertificate=true;",
+        String.format("jdbc:sqlserver://%s:%d;encrypt=true;trustServerCertificate=true;",
             db.getHost(),
             db.getFirstMappedPort()),
         null)) {

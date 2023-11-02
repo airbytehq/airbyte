@@ -49,6 +49,11 @@ acceptance_tests:
           product_variants:
             - name: updated_at
               bypass_reason: Value can change as the account data is not frozen
+          product_images:
+            - name: src
+              bypass_reason: May contain dynamically changed URL params
+            - name: updated_at
+              bypass_reason: Value can change as the account data is not frozen
   incremental:
     tests:
       - config_path: "secrets/config.json"
@@ -69,5 +74,10 @@ acceptance_tests:
             - name: onlineStorePreviewUrl
               bypass_reason: Floating URL values
           product_variants:
+            - name: updated_at
+              bypass_reason: Value can change as the account data is not frozen
+          product_images:
+            - name: src
+              bypass_reason: May contain dynamically changed URL params
             - name: updated_at
               bypass_reason: Value can change as the account data is not frozen

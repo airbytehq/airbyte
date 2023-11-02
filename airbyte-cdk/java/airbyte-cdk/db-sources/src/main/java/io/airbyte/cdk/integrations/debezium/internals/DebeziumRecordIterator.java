@@ -149,7 +149,7 @@ public class DebeziumRecordIterator<T> extends AbstractIterator<ChangeEventWithM
     while (!debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().isEmpty()) {
       final ChangeEvent<String, String> event;
       try {
-        event = debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().poll(10, TimeUnit.SECONDS);
+        event = debeziumShutdownProcedure.getRecordsRemainingAfterShutdown().poll(100, TimeUnit.MILLISECONDS);
       } catch (InterruptedException e) {
         throw new RuntimeException(e);
       }

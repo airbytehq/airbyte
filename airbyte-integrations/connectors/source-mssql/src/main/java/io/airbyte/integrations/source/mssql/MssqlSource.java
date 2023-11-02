@@ -78,7 +78,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       """
         SELECT CAST(IIF(EXISTS(SELECT TOP 1 1 FROM "%s"."%s" WHERE "%s" IS NULL), 1, 0) AS BIT) AS %s
       """;
-  static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
+  public static final String DRIVER_CLASS = DatabaseDriver.MSSQLSERVER.getDriverClassName();
   public static final String MSSQL_CDC_OFFSET = "mssql_cdc_offset";
   public static final String MSSQL_DB_HISTORY = "mssql_db_history";
   public static final String CDC_LSN = "_ab_cdc_lsn";
@@ -92,7 +92,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     return new SshWrappedSource(new MssqlSource(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
-  MssqlSource() {
+  public MssqlSource() {
     super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new MssqlSourceOperations());
   }
 
