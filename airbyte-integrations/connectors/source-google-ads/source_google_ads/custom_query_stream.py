@@ -106,7 +106,10 @@ class IncrementalCustomQuery(CustomQueryMixin, IncrementalGoogleAdsStream):
             query = query.append_field("segments.date")
         condition = f"segments.date BETWEEN '{start_date}' AND '{end_date}'"
         if query.where:
-            return query.set_where(query.where + " AND " + condition)
+            if "segments.date" not in query.where:
+                return query.set_where(query.where + " AND " + condition)
+            else:
+                return query.set_where(query.where)
         return query.set_where(condition)
 
 
