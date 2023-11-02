@@ -644,6 +644,8 @@ class CampaignImpressionPerformanceReport(PerformanceReportsMixin, BingAdsStream
 class CampaignImpressionPerformanceReportHourly(CampaignImpressionPerformanceReport):
     report_aggregation = "Hourly"
 
+    report_schema_name = "campaign_impression_performance_report_hourly"
+
 
 class CampaignImpressionPerformanceReportDaily(CampaignImpressionPerformanceReport):
     report_aggregation = "Daily"

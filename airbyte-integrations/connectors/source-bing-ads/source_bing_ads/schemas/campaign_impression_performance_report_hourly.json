@@ -77,15 +77,6 @@
     "DeviceType": {
       "type": ["null", "string"]
     },
-    "ImpressionSharePercent": {
-      "type": ["null", "number"]
-    },
-    "ImpressionLostToBudgetPercent": {
-      "type": ["null", "number"]
-    },
-    "ImpressionLostToRankAggPercent": {
-      "type": ["null", "number"]
-    },
     "QualityScore": {
       "type": ["null", "number"]
     },
@@ -97,18 +88,6 @@
     },
     "LandingPageExperience": {
       "type": ["null", "number"]
-    },
-    "HistoricalQualityScore": {
-      "type": ["null", "integer"]
-    },
-    "HistoricalExpectedCtr": {
-      "type": ["null", "integer"]
-    },
-    "HistoricalAdRelevance": {
-      "type": ["null", "integer"]
-    },
-    "HistoricalLandingPageExperience": {
-      "type": ["null", "integer"]
     },
     "PhoneImpressions": {
       "type": ["null", "integer"]
@@ -158,35 +137,11 @@
     "CampaignLabels": {
       "type": ["null", "string"]
     },
-    "ExactMatchImpressionSharePercent": {
-      "type": ["null", "number"]
-    },
-    "ClickSharePercent": {
-      "type": ["null", "number"]
-    },
-    "AbsoluteTopImpressionSharePercent": {
-      "type": ["null", "number"]
-    },
     "FinalUrlSuffix": {
       "type": ["null", "string"]
     },
     "CampaignType": {
       "type": ["null", "string"]
-    },
-    "TopImpressionShareLostToRankPercent": {
-      "type": ["null", "number"]
-    },
-    "TopImpressionShareLostToBudgetPercent": {
-      "type": ["null", "number"]
-    },
-    "AbsoluteTopImpressionShareLostToRankPercent": {
-      "type": ["null", "number"]
-    },
-    "AbsoluteTopImpressionShareLostToBudgetPercent": {
-      "type": ["null", "number"]
-    },
-    "TopImpressionSharePercent": {
-      "type": ["null", "number"]
     },
     "AbsoluteTopImpressionRatePercent": {
       "type": ["null", "number"]
@@ -217,18 +172,6 @@
     },
     "ViewThroughConversions": {
       "type": ["null", "integer"]
-    },
-    "AudienceImpressionSharePercent": {
-      "type": ["null", "number"]
-    },
-    "AudienceImpressionLostToRankPercent": {
-      "type": ["null", "number"]
-    },
-    "AudienceImpressionLostToBudgetPercent": {
-      "type": ["null", "number"]
-    },
-    "RelativeCtr": {
-      "type": ["null", "number"]
     },
     "AverageCpm": {
       "type": ["null", "number"]
