@@ -518,6 +518,7 @@ subprojects { subproj ->
 
         // Enable parallel test execution in JUnit by default.
         // This is to support @Execution(ExecutionMode.CONCURRENT) annotations
+        // See https://junit.org/junit5/docs/current/user-guide/#writing-tests-parallel-execution for details.
         systemProperty 'junit.jupiter.execution.parallel.enabled', 'true'
         // Concurrency takes place at the class level.
         systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'concurrent'
