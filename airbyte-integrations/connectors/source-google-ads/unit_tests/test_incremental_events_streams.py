@@ -429,7 +429,7 @@ def test_read_records_with_slice_splitting(mocker, config):
         "updated_ids": set(range(15000)),
         "record_changed_time_map": {i: f"time_{i}" for i in range(15000)},
         "customer_id": "sample_customer_id",
-        "deleted_ids": set()
+        "deleted_ids": set(),
     }
 
     # Create a mock instance of the CampaignCriterion stream
@@ -453,13 +453,13 @@ def test_read_records_with_slice_splitting(mocker, config):
         "updated_ids": set(range(10000)),
         "record_changed_time_map": {i: f"time_{i}" for i in range(10000)},
         "customer_id": "sample_customer_id",
-        "deleted_ids": set()
+        "deleted_ids": set(),
     }
     expected_second_slice = {
         "updated_ids": set(range(10000, 15000)),
         "record_changed_time_map": {i: f"time_{i}" for i in range(10000, 15000)},
         "customer_id": "sample_customer_id",
-        "deleted_ids": set()
+        "deleted_ids": set(),
     }
 
     # Verify the arguments passed to the parent's read_records method for both calls
@@ -490,13 +490,7 @@ def test_update_state_with_parent_state(mocker):
     stream._update_state(stream_slice_first)
 
     # Assert the state after the first call
-    expected_state_first_call = {
-        "change_status": {
-            "customer_id_1": {
-                "change_status.last_change_date_time": "2023-10-20 00:00:00.000000"
-            }
-        }
-    }
+    expected_state_first_call = {"change_status": {"customer_id_1": {"change_status.last_change_date_time": "2023-10-20 00:00:00.000000"}}}
     assert stream._state == expected_state_first_call
 
     # Update the parent_stream state for the second call
@@ -509,12 +503,8 @@ def test_update_state_with_parent_state(mocker):
     # Assert the state after the second call
     expected_state_second_call = {
         "change_status": {
-            "customer_id_1": {
-                "change_status.last_change_date_time": "2023-10-20 00:00:00.000000"
-            },
-            "customer_id_2": {
-                "change_status.last_change_date_time": "2023-10-21 00:00:00.000000"
-            }
+            "customer_id_1": {"change_status.last_change_date_time": "2023-10-20 00:00:00.000000"},
+            "customer_id_2": {"change_status.last_change_date_time": "2023-10-21 00:00:00.000000"},
         }
     }
     assert stream._state == expected_state_second_call
@@ -530,15 +520,9 @@ def test_update_state_with_parent_state(mocker):
     # Assert the state after the third call
     expected_state_third_call = {
         "change_status": {
-            "customer_id_1": {
-                "change_status.last_change_date_time": "2023-10-20 00:00:00.000000"
-            },
-            "customer_id_2": {
-                "change_status.last_change_date_time": "2023-10-21 00:00:00.000000"
-            },
-            "customer_id_3": {
-                "change_status.last_change_date_time": "2023-11-02 00:00:00.000000"
-            }
+            "customer_id_1": {"change_status.last_change_date_time": "2023-10-20 00:00:00.000000"},
+            "customer_id_2": {"change_status.last_change_date_time": "2023-10-21 00:00:00.000000"},
+            "customer_id_3": {"change_status.last_change_date_time": "2023-11-02 00:00:00.000000"},
         }
     }
     assert stream._state == expected_state_third_call
@@ -566,13 +550,7 @@ def test_update_state_without_parent_state(mocker):
     stream._update_state(stream_slice_first)
 
     # Assert the state after the first call
-    expected_state_first_call = {
-        "change_status": {
-            "customer_id_1": {
-                "change_status.last_change_date_time": "2023-11-02 00:00:00.000000"
-            }
-        }
-    }
+    expected_state_first_call = {"change_status": {"customer_id_1": {"change_status.last_change_date_time": "2023-11-02 00:00:00.000000"}}}
     assert stream._state == expected_state_first_call
 
     # Call the _update_state method with the second stream_slice
@@ -582,12 +560,8 @@ def test_update_state_without_parent_state(mocker):
     # Assert the state after the second call
     expected_state_second_call = {
         "change_status": {
-            "customer_id_1": {
-                "change_status.last_change_date_time": "2023-11-02 00:00:00.000000"
-            },
-            "customer_id_2": {
-                "change_status.last_change_date_time": "2023-11-02 00:00:00.000000"
-            }
+            "customer_id_1": {"change_status.last_change_date_time": "2023-11-02 00:00:00.000000"},
+            "customer_id_2": {"change_status.last_change_date_time": "2023-11-02 00:00:00.000000"},
         }
     }
     assert stream._state == expected_state_second_call
