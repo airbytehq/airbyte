@@ -35,6 +35,7 @@ from suds import sudsobject
 
 class BingAdsBaseStream(Stream, ABC):
     primary_key: Optional[Union[str, List[str], List[List[str]]]] = None
+    need_transform = False
 
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
         super().__init__()
@@ -142,7 +143,10 @@ class BingAdsStream(BingAdsBaseStream, ABC):
             )
             response = self.send_request(params, customer_id=customer_id, account_id=account_id)
             for record in self.parse_response(response):
-                yield record
+                if self.need_transform:
+                    yield self.transform(record, stream_slice)
+                else:
+                    yield record
 
             next_page_token = self.next_page_token(response, current_page_token=next_page_token)
             if not next_page_token:
@@ -408,6 +412,7 @@ class Campaigns(BingAdsStream):
         "VerifiedTrackingSetting",
     ]
     campaign_types: Iterable[str] = ["Audience", "DynamicSearchAds", "Search", "Shopping"]
+    need_transform = True
 
     def request_params(
         self,
@@ -429,6 +434,11 @@ class Campaigns(BingAdsStream):
 
         yield from []
 
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["AccountId"] = stream_slice.get("account_id")
+        record["CustomerId"] = stream_slice.get("customer_id")
+        return record
+
 
 class AdGroups(BingAdsStream):
     """
@@ -445,6 +455,7 @@ class AdGroups(BingAdsStream):
     service_name: str = "CampaignManagement"
     operation_name: str = "GetAdGroupsByCampaignId"
     additional_fields: str = "AdGroupType AdScheduleUseSearcherTimeZone CpmBid CpvBid MultimediaAdsBidAdjustment"
+    need_transform = True
 
     def request_params(
         self,
@@ -465,6 +476,12 @@ class AdGroups(BingAdsStream):
                 yield {"campaign_id": campaign["Id"], "account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
 
         yield from []
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["CampaignId"] = stream_slice.get("campaign_id")
+        record["AccountId"] = stream_slice.get("account_id")
+        record["CustomerId"] = stream_slice.get("customer_id")
+        return record
 
 
 class Ads(BingAdsStream):
@@ -489,6 +506,7 @@ class Ads(BingAdsStream):
         "ResponsiveAd",
         "ResponsiveSearch",
     ]
+    need_transform = True
 
     def request_params(
         self,
@@ -510,6 +528,12 @@ class Ads(BingAdsStream):
             for ad_group in ad_groups.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
                 yield {"ad_group_id": ad_group["Id"], "account_id": slice["account_id"], "customer_id": slice["customer_id"]}
         yield from []
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["AdGroupId"] = stream_slice.get("ad_group_id")
+        record["AccountId"] = stream_slice.get("account_id")
+        record["CustomerId"] = stream_slice.get("customer_id")
+        return record
 
 
 class BudgetSummaryReport(ReportsMixin, BingAdsStream):
