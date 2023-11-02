@@ -1,0 +1,16 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "my_file_stream"
+      },
+      "stream_state": {
+        "history": {
+          "https://drive.google.com/file/d/1kbXDc8UFkQcWCRfKKtSjCtlgD7EUXzuM": "2023-10-16T14:51:33.000000Z"
+        },
+        "_ab_source_file_last_modified": "2023-10-16T14:51:33.000000Z_https://drive.google.com/file/d/1kbXDc8UFkQcWCRfKKtSjCtlgD7EUXzuM"
+      }
+    }
+  }
+]
