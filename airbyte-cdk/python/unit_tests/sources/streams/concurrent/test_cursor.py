@@ -1,3 +1,6 @@
+#
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+#
 from typing import Any, Mapping, Optional
 from unittest import TestCase
 from unittest.mock import Mock
@@ -8,10 +11,11 @@ from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.cursor import Comparable, ConcurrentCursor, CursorField
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
+from airbyte_cdk.sources.streams.concurrent.state_converter import ConcurrencyCompatibleStateType, EpochValueConcurrentStreamStateConverter
 
 _A_STREAM_NAME = "a stream name"
 _A_STREAM_NAMESPACE = "a stream namespace"
-_ANY_STATE = None
+_ANY_STATE = {}
 _A_CURSOR_FIELD_KEY = "a_cursor_field_key"
 _NO_PARTITION_IDENTIFIER = None
 _NO_SLICE = None
@@ -36,14 +40,16 @@ class ConcurrentCursorTest(TestCase):
     def setUp(self) -> None:
         self._message_repository = Mock(spec=MessageRepository)
         self._state_manager = Mock(spec=ConnectorStateManager)
+        self._state_converter = EpochValueConcurrentStreamStateConverter("created")
 
     def _cursor_with_slice_boundary_fields(self) -> ConcurrentCursor:
         return ConcurrentCursor(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
-            _ANY_STATE,
+            self._state_converter.get_concurrent_stream_state(_ANY_STATE),
             self._message_repository,
             self._state_manager,
+            self._state_converter,
             CursorField(_A_CURSOR_FIELD_KEY),
             _SLICE_BOUNDARY_FIELDS,
         )
@@ -52,9 +58,10 @@ class ConcurrentCursorTest(TestCase):
         return ConcurrentCursor(
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
-            _ANY_STATE,
+            self._state_converter.get_concurrent_stream_state(_ANY_STATE),
             self._message_repository,
             self._state_manager,
+            self._state_converter,
             CursorField(_A_CURSOR_FIELD_KEY),
             None,
         )
@@ -71,12 +78,14 @@ class ConcurrentCursorTest(TestCase):
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
             {
+                "state_type": ConcurrencyCompatibleStateType.date_range.value,
+                "legacy": _ANY_STATE,
                 "slices": [
                     {
                         "start": 12,
                         "end": 30,
                     },
-                ]
+                ],
             },
         )
 
@@ -97,12 +106,14 @@ class ConcurrentCursorTest(TestCase):
             _A_STREAM_NAME,
             _A_STREAM_NAMESPACE,
             {
+                "state_type": ConcurrencyCompatibleStateType.date_range.value,
+                "legacy": {},
                 "slices": [
                     {
                         "start": 0,
                         "end": 10,
                     },
-                ]
+                ],
             },
         )
 
