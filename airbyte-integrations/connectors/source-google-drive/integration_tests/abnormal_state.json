@@ -23,11 +23,11 @@
       "stream_state": {
         "_ab_source_file_last_modified": "2023-10-27T10:26:09.076000Z_testdoc_presentation.pdf",
         "history": {
-          "testdoc_google.docx": "2023-10-27T09:27:54.134000Z",
+          "testdoc_google": "2023-10-27T09:27:54.134000Z",
           "testdoc_docx.docx": "2023-10-27T09:45:54.919000Z",
           "testdoc_pdf.pdf": "2023-10-27T09:45:59.945000Z",
           "testdoc_ocr_pdf.pdf": "2023-10-27T09:46:05.349000Z",
-          "testdoc_presentation.pdf": "2023-10-27T10:26:09.076000Z"
+          "testdoc_presentation": "2023-10-27T10:26:09.076000Z"
         }
       }
     }

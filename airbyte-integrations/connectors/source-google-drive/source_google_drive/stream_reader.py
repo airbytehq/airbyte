@@ -8,7 +8,7 @@ import logging
 import re
 from datetime import datetime
 from io import IOBase
-from typing import Any, Dict, Iterable, List, Optional, Set
+from typing import Iterable, List, Optional, Set
 
 from airbyte_cdk.sources.file_based.file_based_stream_reader import AbstractFileBasedStreamReader, FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
