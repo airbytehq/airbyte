@@ -183,7 +183,9 @@ public class SnowflakeBulkLoadDestination extends AbstractJdbcDestination {
     return new StagingConsumerFactory().createAsync(
         outputRecordCollector,
         database,
-        new SnowflakeInternalStagingSqlOperations(getNamingResolver()),
+        new SnowflakeBulkLoadSqlOperations(getNamingResolver(),
+                                           config.get(BULK_LOAD_FILE_FORMAT).asText(),
+                                           config.get(BULK_LOAD_S3_STAGES).asText()),
         getNamingResolver(),
         config,
         catalog,
