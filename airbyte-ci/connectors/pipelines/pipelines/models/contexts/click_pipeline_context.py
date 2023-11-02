@@ -27,6 +27,11 @@ class ClickPipelineContext(BaseModel, Singleton):
 
     @property
     def params(self):
+        """
+        Returns a combination of the click context object and the click context params.
+
+        This means that any arguments or options defined in the parent command will be available to the child command.
+        """
         ctx = self._click_context()
         click_obj = ctx.obj
         click_params = ctx.params
