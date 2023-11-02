@@ -43,7 +43,7 @@ public class SnowflakeBulkLoadSqlOperations extends SnowflakeInternalStagingSqlO
   private String bulkLoadFilePropertyNameInRecord;
   private List<String> bulkLoadFilesList = new ArrayList<>();
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSqlOperations.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeBulkLoadSqlOperations.class);
 
   public SnowflakeBulkLoadSqlOperations(
                                         final NamingConventionTransformer nameTransformer,
