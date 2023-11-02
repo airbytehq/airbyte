@@ -85,6 +85,12 @@ class Creatives(HttpSubStream, ApplovinStream):
             parent=Campaigns(authenticator=authenticator),
         )
 
+    def max_retries(self) -> Union[int, None]:
+        return 15
+
+    def retry_factor(self) -> float:
+        return 10.0
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice["campaign_id"]
         return f"creative_sets/{campaign_id}"
