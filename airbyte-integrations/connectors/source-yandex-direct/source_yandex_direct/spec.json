@@ -4,7 +4,11 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Yandex Direct Spec",
     "type": "object",
-    "required": ["credentials", "client_login", "date_range"],
+    "required": [
+      "credentials",
+      "client_login",
+      "date_range"
+    ],
     "additionalProperties": false,
     "properties": {
       "credentials": {
@@ -30,7 +34,9 @@
                 "type": "string"
               }
             },
-            "required": ["access_token"]
+            "required": [
+              "access_token"
+            ]
           },
           {
             "title": "CredentialsCraft",
@@ -45,7 +51,9 @@
               "credentials_craft_host": {
                 "title": "CredentialsCraft Host",
                 "description": "По какому адресу находится сервис CredentialsCraft?",
-                "examples": ["https://credentialscraft.mysite.com"],
+                "examples": [
+                  "https://credentialscraft.mysite.com"
+                ],
                 "type": "string"
               },
               "credentials_craft_token": {
@@ -57,7 +65,9 @@
               "credentials_craft_token_id": {
                 "title": "ID авторизации в CredentialsCraft",
                 "desctiption": "ID авторизации Yandex внутри CredentialsCraft",
-                "examples": [3345435],
+                "examples": [
+                  3345435
+                ],
                 "type": "integer"
               }
             },
@@ -86,7 +96,10 @@
         "items": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["name", "fields"],
+          "required": [
+            "name",
+            "fields"
+          ],
           "properties": {
             "name": {
               "type": "string",
@@ -130,11 +143,14 @@
           {
             "type": "object",
             "title": "Пользовательский период",
-            "required": ["date_from", "date_to"],
+            "required": [
+              "date_from",
+              "date_to"
+            ],
             "properties": {
               "date_range_type": {
                 "type": "string",
-                "const": "date_range",
+                "const": "custom_date",
                 "order": 0
               },
               "date_from": {
@@ -142,7 +158,9 @@
                 "description": "Начало периода в формате YYYY-MM-DD",
                 "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
                 "pattern_descriptor": "YYYY-MM-DD",
-                "examples": ["2023-05-01"],
+                "examples": [
+                  "2023-05-01"
+                ],
                 "order": 1,
                 "type": "string"
               },
@@ -152,7 +170,9 @@
                 "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
                 "pattern_descriptor": "YYYY-MM-DD",
                 "order": 2,
-                "examples": ["2023-05-01"],
+                "examples": [
+                  "2023-05-01"
+                ],
                 "type": "string"
               }
             }
@@ -160,7 +180,9 @@
           {
             "type": "object",
             "title": "Последние несколько дней",
-            "required": ["last_days_count"],
+            "required": [
+              "last_days_count"
+            ],
             "properties": {
               "date_range_type": {
                 "type": "string",
@@ -170,7 +192,10 @@
               "last_days_count": {
                 "title": "Количество дней",
                 "description": "Количество дней",
-                "examples": [6, 30],
+                "examples": [
+                  6,
+                  30
+                ],
                 "type": "integer",
                 "order": 1,
                 "minimum": 0,

@@ -1,7 +1,7 @@
 data:
   connectorSubtype: api
   connectorType: source
-  dockerImageTag: 0.3.4
+  dockerImageTag: 1.0.6
   dockerRepository: adventum/source-yandex-direct
   githubIssueLabel: source-yandex-direct
   icon: icon.svg
