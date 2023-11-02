@@ -152,32 +152,19 @@ def test_AccountPerformanceReportMonthly_request_params(mocked_client, config):
         "timeout_in_milliseconds": 300000,
     }
 
-
+@pytest.mark.parametrize(
+    ("stream", "stream_slice"),
+    (
+        (Accounts, {}),
+        (AdGroups, {"campaign_id": "campaign_id"}),
+        (Ads, {"ad_group_id": "ad_group_id"}),
+        (Campaigns, {"account_id": "account_id"}),
+    ),
+)
 @patch.object(source_bing_ads.source, "Client")
-def test_accounts(mocked_client, config):
-    accounts = Accounts(mocked_client, config)
-    _ = list(accounts.read_records(SyncMode.full_refresh))
-    mocked_client.request.assert_called_once()
-
-
-@patch.object(source_bing_ads.source, "Client")
-def test_ad_groups(mocked_client, config):
-    ad_groups = AdGroups(mocked_client, config)
-    _ = list(ad_groups.read_records(SyncMode.full_refresh, {"campaign_id": "campaign_id"}))
-    mocked_client.request.assert_called_once()
-
-
-@patch.object(source_bing_ads.source, "Client")
-def test_ads(mocked_client, config):
-    ads = Ads(mocked_client, config)
-    _ = list(ads.read_records(SyncMode.full_refresh, {"ad_group_id": "ad_group_id"}))
-    mocked_client.request.assert_called_once()
-
-
-@patch.object(source_bing_ads.source, "Client")
-def test_campaigns(mocked_client, config):
-    campaigns = Campaigns(mocked_client, config)
-    _ = list(campaigns.read_records(SyncMode.full_refresh, {"account_id": "account_id"}))
+def test_streams_full_refresh(mocked_client, config, stream, stream_slice):
+    stream_instance = stream(mocked_client, config)
+    _ = list(stream_instance.read_records(SyncMode.full_refresh, stream_slice))
     mocked_client.request.assert_called_once()
 
 
