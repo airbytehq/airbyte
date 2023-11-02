@@ -94,7 +94,7 @@ jobs:
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
-          password: ${{ secrets.$DOCKER_HUB_PASSWORD }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Run Gradle Check
         if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         uses: burrunan/gradle-cache-action@v1
