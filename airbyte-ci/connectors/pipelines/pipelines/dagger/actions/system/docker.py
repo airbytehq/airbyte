@@ -53,7 +53,10 @@ def with_global_dockerd_service(
     )
     if docker_hub_username_secret and docker_hub_password_secret:
         dockerd_container = (
-            dockerd_container.with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
+            dockerd_container
+            # We use a cache buster here to guarantee the docker login is always executed.
+            .with_env_variable("CACHEBUSTER", str(uuid.uuid4()))
+            .with_secret_variable("DOCKER_HUB_USERNAME", docker_hub_username_secret)
             .with_secret_variable("DOCKER_HUB_PASSWORD", docker_hub_password_secret)
             .with_exec(sh_dash_c(["docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD"]), skip_entrypoint=True)
         )
