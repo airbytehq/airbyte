@@ -85,6 +85,7 @@ class ProcessingConfigModel(BaseModel):
         ...,
         title="Chunk size",
         maximum=8191,
+        minimum=1,
         description="Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
     )
     chunk_overlap: int = Field(
