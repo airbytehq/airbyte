@@ -65,12 +65,14 @@ def click_append_to_context_object(key: str, value: Callable | Any) -> Callable:
     """
 
     def decorator(f):
-        def wrapper(*args, **kwargs):
+        async def wrapper(*args, **kwargs):
             ctx = click.get_current_context()
             ctx.ensure_object(dict)
 
             if callable(value):
                 ctx.obj[key] = value(ctx)
+            elif inspect.iscoroutinefunction(value):
+                ctx.obj[key] = await value(ctx)
             else:
                 ctx.obj[key] = value
             return f(*args, **kwargs)

@@ -206,6 +206,17 @@ def check_local_docker_configuration():
         )
 
 
+async def get_modified_files_str(ctx: click.Context):
+    modified_files = await get_modified_files(
+        ctx.obj["git_branch"],
+        ctx.obj["git_revision"],
+        ctx.obj["diffed_branch"],
+        ctx.obj["is_local"],
+        ctx.obj["ci_context"],
+        ctx.obj["pull_request"],
+    )
+    return transform_strs_to_paths(modified_files)
+
 # COMMANDS
 
 
@@ -251,6 +262,7 @@ def check_local_docker_configuration():
 @click_append_to_context_object("is_ci", lambda ctx: not ctx.obj["is_local"])
 @click_append_to_context_object("gha_workflow_run_url", _get_gha_workflow_run_url)
 @click_append_to_context_object("pull_request", _get_pull_request)
+@click_append_to_context_object("modified_files", get_modified_files_str)
 @click_ignore_unused_kwargs
 async def airbyte_ci(
     ctx: click.Context,
@@ -262,16 +274,6 @@ async def airbyte_ci(
         check_local_docker_configuration()
 
     check_up_to_date()
-
-    modified_files = await get_modified_files(
-        ctx.obj["git_branch"],
-        ctx.obj["git_revision"],
-        ctx.obj["diffed_branch"],
-        ctx.obj["is_local"],
-        ctx.obj["ci_context"],
-        ctx.obj["pull_request"],
-    )
-    ctx.obj["modified_files"] = transform_strs_to_paths(modified_files)
 
     if not ctx.obj["is_local"]:
         log_git_info(ctx)
