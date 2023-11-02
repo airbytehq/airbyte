@@ -6,7 +6,13 @@ definitions:
     extractor:
       type: DpathExtractor
       field_path:
-        - data
+      - data
+      
+  query_param_value: >-
+    {{ format_datetime(
+      config.get('start_date'), 
+      '%Y-%m-%dT%H:%M:%S.%fZ'
+    ) }}
 
   custom_authenticator:
     class_name: source_salesloft.components.SalesloftAuthenticator
@@ -19,7 +25,7 @@ definitions:
       client_id: "{{ config['credentials']['client_id'] }}"
       client_secret: "{{ config['credentials']['client_secret'] }}"
       refresh_token: "{{ config['credentials']['refresh_token'] }}"
-
+  
   requester:
     type: HttpRequester
     url_base: "http://localhost:3000"
@@ -59,19 +65,250 @@ definitions:
     retriever:
       $ref: "#/definitions/retriever"
 
-  customers_stream:
+  incremental_stream:
     $ref: "#/definitions/base_stream"
-    name: "customers"
-    $parameters:
-      path: "/example"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: updated_at
+      cursor_datetime_formats:
+        - '%Y-%m-%dT%H:%M:%S.%fZ'
+      datetime_format: '%Y-%m-%dT%H:%M:%S.%fZ'
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: '{{ config[''start_date''] }}'
+        datetime_format: '%Y-%m-%dT%H:%M:%SZ'
+      start_time_option:
+        inject_into: request_parameter
+        field_name: updated_at[gt]
+        type: RequestOption
 
+  # Full streams / Non incremental streams
+  users_stream:
+    $ref: "#/definitions/base_stream"
+    name: users
+    $parameters:
+      path: "/users"
+  account_tiers_stream:
+    $ref: "#/definitions/base_stream"
+    name: account_tiers
+    $parameters:
+      path: "/account_tiers"
+  imports_stream:
+    $ref: "#/definitions/base_stream"
+    name: import
+    $parameters:
+      path: "/imports"
+  person_stages_stream:
+    $ref: "#/definitions/base_stream"
+    name: person_stages
+    $parameters:
+      path: "/person_stages"
+  phone_number_assignments_stream:
+    $ref: "#/definitions/base_stream"
+    name: phone_number_assignments
+    $parameters:
+      path: "/phone_number_assignments"
+  steps_stream:
+    $ref: "#/definitions/base_stream"
+    name: steps
+    $parameters:
+      path: "/steps"
+  team_template_attachments_stream:
+    $ref: "#/definitions/base_stream"
+    name: team_template_attachments
+    $parameters:
+      path: "/team_template_attachments"
+  email_template_attachments_stream:
+    $ref: "#/definitions/base_stream"
+    name: email_template_attachments
+    $parameters:
+      path: "/email_template_attachments"
+  crm_users_stream:
+    $ref: "#/definitions/base_stream"
+    name: crm_users
+    $parameters:
+      path: "/crm_users"
+  groups_stream:
+    $ref: "#/definitions/base_stream"
+    name: groups
+    $parameters:
+      path: "/groups"
+  custom_fields_stream:
+    $ref: "#/definitions/base_stream"
+    name: custom_fields
+    $parameters:
+      path: "/custom_fields"
+  call_dispositions_stream:
+    $ref: "#/definitions/base_stream"
+    name: call_dispositions
+    $parameters:
+      path: "/call_dispositions"
+  call_sentiments_stream:
+    $ref: "#/definitions/base_stream"
+    name: call_sentiments
+    $parameters:
+      path: "/call_sentiments"
+  meetings_stream:
+    $ref: "#/definitions/base_stream"
+    name: meetings
+    $parameters:
+      path: "/meetings"
+      request_parameters:
+        created_at[gt]: "#/definitions/query_param_value"
+
+  # Incremental streams
+  peoples_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: people
+    $parameters:
+      path: "/people"
+      http_method: "POST"
+      request_parameters:
+        created_at[gt]: "#/definitions/query_param_value"
+  cadences_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: cadences
+    $parameters:
+      path: "/cadences"
+      request_parameters:
+        updated_at[gt]: "#/definitions/query_param_value"
+  cadences_memberships_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: cadence_memberships
+    $parameters:
+      path: "/cadence_memberships"
+      request_parameters:
+        updated_at[gt]: "#/definitions/query_param_value"
+  emails_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: emails
+    $parameters:
+      path: "/activities/emails"
+      request_parameters:
+        sent_at[gt]: "#/definitions/query_param_value"
+  calls_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: calls
+    $parameters:
+      path: "/activities/calls"
+      request_parameters:
+        created_at[gt]: "#/definitions/query_param_value"
+  accounts_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: accounts
+    $parameters:
+      path: "/accounts"
+      request_parameters:
+        created_at[gt]: "#/definitions/query_param_value"
+  account_stages_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: account_stages
+    $parameters:
+      path: "/account_stages"
+      request_parameters:
+        updated_at[gt]: "#/definitions/query_param_value"
+  actions_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: actions
+    $parameters:
+      path: "/actions"
+      request_parameters:
+        updated_at[gt]: "#/definitions/query_param_value"
+
+  email_templates_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: email_templates
+    $parameters:
+      path: "/email_templates"
+      request_parameters:
+        updated_at[gt]: "#/definitions/query_param_value"
+  notes_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: notes
+    $parameters:
+      path: "/notes"
+      request_parameters:
+        updated_at[gt]: "#/definitions/query_param_value"
+  team_templates_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: team_templates
+    $parameters:
+      path: "/team_templates"
+      request_parameters:
+        updated_at[gt]: "#/definitions/query_param_value"
+  crm_activities_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: crm_activities
+    $parameters:
+      path: "/crm_activities"
+      request_parameters:
+        updated_at[gt]: "#/definitions/query_param_value"
+  successes_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: successes
+    $parameters:
+      path: "/successes"
+      request_parameters:
+        updated_at[gt]: "#/definitions/query_param_value"
+  call_data_records_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: call_data_records
+    $parameters:
+      path: "/call_data_records"
+      request_parameters:
+        updated_at[gt]: "#/definitions/query_param_value"
+
+  searches_stream:
+    $ref: "#/definitions/incremental_stream"
+    name: searches
+    retriever:
+      $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        http_method: POST
+    $parameters:
+      path: "/meetings/settings/searches"
+      request_parameters:
+        updated_at[gt]: "#/definitions/query_param_value"
+      
 streams:
-  - "#/definitions/customers_stream"
+  # Full refresh
+  - "#/definitions/users_stream"
+  - "#/definitions/account_tiers_stream"
+  - "#/definitions/imports_stream"
+  - "#/definitions/person_stages_stream"
+  - "#/definitions/phone_number_assignments_stream"
+  - "#/definitions/steps_stream"
+  - "#/definitions/team_template_attachments_stream"
+  - "#/definitions/email_template_attachments_stream"
+  - "#/definitions/crm_users_stream"
+  - "#/definitions/groups_stream"
+  - "#/definitions/custom_fields_stream"
+  - "#/definitions/call_dispositions_stream"
+  - "#/definitions/call_sentiments_stream"
+  - "#/definitions/meetings_stream"
+
+  # incremental streams
+  - "#/definitions/peoples_stream"
+  - "#/definitions/cadences_stream"
+  - "#/definitions/cadences_memberships_stream"
+  - "#/definitions/emails_stream"
+  - "#/definitions/calls_stream"
+  - "#/definitions/accounts_stream"
+  - "#/definitions/account_stages_stream"
+  - "#/definitions/actions_stream"
+  - "#/definitions/email_templates_stream"
+  - "#/definitions/notes_stream"
+  - "#/definitions/team_templates_stream"
+  - "#/definitions/crm_activities_stream"
+  - "#/definitions/successes_stream"
+  - "#/definitions/call_data_records_stream"
+  - "#/definitions/searches_stream"
 
 check:
   type: CheckStream
   stream_names:
-    - "customers"
+    - "peoples"
 
 spec:
   documentation_url: https://docs.airbyte.com/integrations/sources/salesloft
@@ -80,8 +317,8 @@ spec:
     title: Source Salesloft Spec
     type: object
     required:
-      - credentials
-      - start_date
+    - credentials
+    - start_date
     additionalProperties: true
     properties:
       credentials:
@@ -89,66 +326,64 @@ spec:
         type: object
         title: Credentials
         oneOf:
-          - title: Authenticate via OAuth
-            type: object
-            required:
-              - client_id
-              - client_secret
-              - refresh_token
-              - access_token
-              - token_expiry_date
-              - auth_type
-            properties:
-              auth_type:
-                type: string
-                const: oauth2.0
-              client_id:
-                type: string
-                title: Client ID
-                description: The Client ID of your Salesloft developer application.
-              client_secret:
-                type: string
-                title: Client Secret
-                description: The Client Secret of your Salesloft developer application.
-                airbyte_secret: true
-              access_token:
-                type: string
-                description: Access Token for making authenticated requests.
-                airbyte_secret: true
-              token_expiry_date:
-                type: string
-                description: The date-time when the access token should be refreshed.
-                format: date-time
-              refresh_token:
-                type: string
-                title: Refresh Token
-                description: The token for obtaining a new access token.
-                airbyte_secret: true
-          - title: Authenticate via API Key
-            type: object
-            required:
-              - api_key
-              - auth_type
-            properties:
-              auth_type:
-                type: string
-                const: api_key
-              api_key:
-                type: string
-                airbyte_secret: true
-                title: API Key
-                description:
-                  API Key for making authenticated requests. More instruction
-                  on how to find this value in our <a href="https://docs.airbyte.com/integrations/sources/salesloft#setup-guide">docs</a>
+        - title: Authenticate via OAuth
+          type: object
+          required:
+          - client_id
+          - client_secret
+          - refresh_token
+          - access_token
+          - token_expiry_date
+          - auth_type
+          properties:
+            auth_type:
+              type: string
+              const: oauth2.0
+            client_id:
+              type: string
+              title: Client ID
+              description: The Client ID of your Salesloft developer application.
+            client_secret:
+              type: string
+              title: Client Secret
+              description: The Client Secret of your Salesloft developer application.
+              airbyte_secret: true
+            access_token:
+              type: string
+              description: Access Token for making authenticated requests.
+              airbyte_secret: true
+            token_expiry_date:
+              type: string
+              description: The date-time when the access token should be refreshed.
+              format: date-time
+            refresh_token:
+              type: string
+              title: Refresh Token
+              description: The token for obtaining a new access token.
+              airbyte_secret: true
+        - title: Authenticate via API Key
+          type: object
+          required:
+          - api_key
+          - auth_type
+          properties:
+            auth_type:
+              type: string
+              const: api_key
+            api_key:
+              type: string
+              airbyte_secret: true
+              title: API Key
+              description: API Key for making authenticated requests. More instruction
+                on how to find this value in our <a href="https://docs.airbyte.com/integrations/sources/salesloft#setup-guide">docs</a>
       start_date:
         order: 1
         type: string
         title: Start Date
-        description:
-          The date from which you'd like to replicate data for Salesloft
+        description: The date from which you'd like to replicate data for Salesloft
           API, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date
           will be replicated.
         examples:
-          - "2020-11-16T00:00:00Z"
+        - '2020-11-16T00:00:00Z'
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         format: date-time
