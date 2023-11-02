@@ -15,15 +15,15 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def java(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None):
+async def java(ctx: ClickPipelineContext):
     """Format java, groovy, and sql code via spotless."""
 
-    success = await format_java(ctx, dagger_client)
+    success = await format_java(ctx)
     if not success:
         click.Abort()
 
 
-async def format_java(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None) -> bool:
+async def format_java(ctx: ClickPipelineContext) -> bool:
     logger = logging.getLogger("format")
 
     dagger_client = ctx.params["dagger_client"]

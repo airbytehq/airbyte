@@ -15,14 +15,14 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def python(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None):
+async def python(ctx: ClickPipelineContext):
     """Format python code via black and isort."""
-    success = await format_python(ctx, dagger_client)
+    success = await format_python(ctx)
     if not success:
         click.Abort()
 
 
-async def format_python(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None) -> bool:
+async def format_python(ctx: ClickPipelineContext) -> bool:
     """Checks whether the repository is formatted correctly.
     Args:
         fix (bool): Whether to automatically fix any formatting issues detected.

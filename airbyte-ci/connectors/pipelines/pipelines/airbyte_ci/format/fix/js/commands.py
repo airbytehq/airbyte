@@ -15,15 +15,15 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def js(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None):
+async def js(ctx: ClickPipelineContext):
     """Format yaml and json code via prettier."""
 
-    success = await format_js(ctx, dagger_client)
+    success = await format_js(ctx)
     if not success:
         click.Abort()
 
 
-async def format_js(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client]) -> bool:
+async def format_js(ctx: ClickPipelineContext) -> bool:
     """Checks whether the repository is formatted correctly.
     Args:
         fix (bool): Whether to automatically fix any formatting issues detected.

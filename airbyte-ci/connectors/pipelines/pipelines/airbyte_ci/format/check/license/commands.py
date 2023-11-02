@@ -17,14 +17,14 @@ pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContex
 @click.command()
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def license(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None):
+async def license(ctx: ClickPipelineContext):
     """Add license to python and java code via addlicense."""
-    success = await format_license(ctx, dagger_client)
+    success = await format_license(ctx)
     if not success:
         click.Abort()
 
 
-async def format_license(ctx: ClickPipelineContext, dagger_client: Optional[dagger.Client] = None) -> bool:
+async def format_license(ctx: ClickPipelineContext) -> bool:
     license_text = "LICENSE_SHORT"
     logger = logging.getLogger(f"format")
 
