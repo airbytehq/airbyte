@@ -37,7 +37,6 @@ The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-js
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
 | 0.2.0   | 2023-10-02 | [30969](https://github.com/airbytehq/airbyte/pull/30969)   | Migrated to Low code
-                                   |
 | 0.1.5   | 2022-05-18 | [12942](https://github.com/airbytehq/airbyte/pull/12942) | Fix example inputs                              |
 | 0.1.4   | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582)   | Update connector fields title/description       |
 | 0.1.3   | 2021-12-03 | [8432](https://github.com/airbytehq/airbyte/pull/8432)   | Migrate from base_python to CDK, add SAT tests. |

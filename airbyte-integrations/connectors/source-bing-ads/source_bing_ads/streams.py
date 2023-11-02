@@ -300,7 +300,7 @@ class KeywordLabels(BingAdsBulkStream):
 
 class Keywords(BingAdsBulkStream):
     """
-    https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13
+    https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13
     """
 
     data_scope = ["EntityData"]
@@ -778,6 +778,43 @@ class AdGroupPerformanceReportMonthly(AdGroupPerformanceReport):
         *AdGroupPerformanceReport.report_columns,
         *HISTORICAL_FIELDS,
     ]
+
+
+class AdGroupImpressionPerformanceReport(PerformanceReportsMixin, BingAdsStream, ABC):
+    """
+    https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
+    Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
+    see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
+    """
+
+    data_field: str = ""
+    service_name: str = "ReportingService"
+    report_name: str = "AdGroupPerformanceReport"
+    operation_name: str = "download_report"
+    additional_fields: str = ""
+    cursor_field = "TimePeriod"
+    report_schema_name = "ad_group_impression_performance_report"
+
+    @property
+    def report_columns(self) -> Iterable[str]:
+        return list(self.get_json_schema().get("properties", {}).keys())
+
+
+class AdGroupImpressionPerformanceReportHourly(AdGroupImpressionPerformanceReport):
+    report_aggregation = "Hourly"
+    report_schema_name = "ad_group_impression_performance_report_hourly"
+
+
+class AdGroupImpressionPerformanceReportDaily(AdGroupImpressionPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class AdGroupImpressionPerformanceReportWeekly(AdGroupImpressionPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class AdGroupImpressionPerformanceReportMonthly(AdGroupImpressionPerformanceReport):
+    report_aggregation = "Monthly"
 
 
 class KeywordPerformanceReport(PerformanceReportsMixin, BingAdsStream):
