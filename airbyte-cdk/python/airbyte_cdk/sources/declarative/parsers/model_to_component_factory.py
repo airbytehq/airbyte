@@ -94,7 +94,12 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
-from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination, PaginatorTestReadDecorator
+from airbyte_cdk.sources.declarative.requesters.paginators import (
+    DefaultPaginator,
+    LowCodePaginator,
+    NoPagination,
+    PaginatorTestReadDecorator,
+)
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     CursorPaginationStrategy,
     CursorStopCondition,
@@ -663,7 +668,7 @@ class ModelToComponentFactory:
                 pagination_strategy, CursorStopCondition(cursor_used_for_stop_condition)
             )
 
-        paginator = DefaultPaginator(
+        paginator = LowCodePaginator(
             decoder=decoder,
             page_size_option=page_size_option,
             page_token_option=page_token_option,

@@ -50,7 +50,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
     WaitUntilTimeFromHeaderBackoffStrategy,
 )
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
-from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, LowCodePaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import (
     CursorPaginationStrategy,
     OffsetIncrement,
@@ -1165,7 +1165,7 @@ def test_create_default_paginator():
                 },
             },
             "paginator",
-            DefaultPaginator(
+            LowCodePaginator(
                 pagination_strategy=OffsetIncrement(
                     page_size=10, config={"apikey": "verysecrettoken", "repos": ["airbyte", "airbyte-cloud"]}, parameters={}
                 ),

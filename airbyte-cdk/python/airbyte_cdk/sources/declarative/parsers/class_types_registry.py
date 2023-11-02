@@ -38,12 +38,9 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategie
 from airbyte_cdk.sources.declarative.requesters.error_handlers.composite_error_handler import CompositeErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator import DefaultPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator import LowCodePaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.no_pagination import NoPagination
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import (
-    CursorPaginationStrategy,
-    LowCodeCursorPaginationStrategy,
-)
+from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import LowCodeCursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
@@ -73,7 +70,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, type] = {
     "DatetimeBasedCursor": DatetimeBasedCursor,
     "DeclarativeStream": DeclarativeStream,
     "DefaultErrorHandler": DefaultErrorHandler,
-    "DefaultPaginator": DefaultPaginator,
+    "DefaultPaginator": LowCodePaginator,
     "DpathExtractor": DpathExtractor,
     "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
     "HttpRequester": HttpRequester,
