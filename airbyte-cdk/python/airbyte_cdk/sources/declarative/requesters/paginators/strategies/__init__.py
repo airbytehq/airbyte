@@ -3,6 +3,7 @@
 #
 
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pagination_strategy import (
+    DECODED_RESPONSE_TYPE,
     CursorPaginationStrategy,
     LowCodeCursorPaginationStrategy,
 )
@@ -20,4 +21,5 @@ __all__ = [
     "OffsetIncrement",
     "PageIncrement",
     "StopConditionPaginationStrategyDecorator",
+    "DECODED_RESPONSE_TYPE",
 ]
