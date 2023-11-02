@@ -271,11 +271,11 @@ Please keep these data directories on S3/Azure. Otherwise, the corresponding tab
 
 Each table will have the following columns:
 
-| Column                             |   Type    | Notes                                                          |
-| :--------------------------------- | :-------: | :------------------------------------------------------------- |
-| `_airbyte_ab_id`                   |  string   | UUID.                                                          |
-| `_airbyte_emitted_at`              | timestamp | Data emission timestamp.                                       |
-| Data fields from the source stream |  various  | All fields in the staging files will be expanded in the table. |
+| Column                |   Type    | Notes                                            |
+| :-------------------- | :-------: | :----------------------------------------------- |
+| `_airbyte_ab_id`      |  string   | UUID.                                            |
+| `_airbyte_emitted_at` | timestamp | Data emission timestamp.                         |
+| `_airbyte_data`       |   JSON    | The data from your source will be in this column |
 
 Under the hood, an Airbyte data stream in Json schema is first converted to an Avro schema, then the Json object is converted to an Avro record, and finally the Avro record is outputted to the Parquet format. Because the data stream can come from any data source, the Json to Avro conversion process has arbitrary rules and limitations. Learn more about how source data is converted to Avro and the current limitations [here](https://docs.airbyte.com/understanding-airbyte/json-avro-conversion).
 

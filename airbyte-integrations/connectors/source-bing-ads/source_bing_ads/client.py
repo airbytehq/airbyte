@@ -1,13 +1,14 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import os
 import socket
 import ssl
 import sys
+import uuid
 from datetime import datetime, timedelta, timezone
 from functools import lru_cache
-from typing import Any, Iterator, Mapping, Optional, Union
+from typing import Any, Iterator, List, Mapping, Optional, Union
 from urllib.error import URLError
 
 import backoff
@@ -19,9 +20,13 @@ from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCo
 from bingads.exceptions import OAuthTokenRequestException
 from bingads.service_client import ServiceClient
 from bingads.util import errorcode_of_exception
+from bingads.v13.bulk import BulkServiceManager, DownloadParameters
 from bingads.v13.reporting.exceptions import ReportingDownloadException
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
 from suds import WebFault, sudsobject
+
+FILE_TYPE = "Csv"
+TIMEOUT_IN_MILLISECONDS = 3_600_000
 
 
 class Client:
@@ -54,7 +59,6 @@ class Client:
         refresh_token: str = None,
         **kwargs: Mapping[str, Any],
     ) -> None:
-        self.authorization_data: Mapping[str, AuthorizationData] = {}
         self.refresh_token = refresh_token
         self.developer_token = developer_token
 
@@ -236,3 +240,35 @@ class Client:
             else:
                 result[field] = val
         return result
+
+    def _bulk_service_manager(self, customer_id: Optional[str] = None, account_id: Optional[str] = None):
+        return BulkServiceManager(
+            authorization_data=self._get_auth_data(customer_id, account_id),
+            poll_interval_in_milliseconds=5000,
+            environment=self.environment,
+        )
+
+    def get_bulk_entity(
+        self,
+        download_entities: List[str],
+        data_scope: List[str],
+        customer_id: Optional[str] = None,
+        account_id: Optional[str] = None,
+        start_date: Optional[str] = None,
+    ) -> str:
+        """
+        Return path with zipped csv archive
+        """
+        download_parameters = DownloadParameters(
+            # campaign_ids=None,
+            data_scope=data_scope,
+            download_entities=download_entities,
+            file_type=FILE_TYPE,
+            last_sync_time_in_utc=start_date,
+            result_file_directory=os.getcwd(),
+            result_file_name=str(uuid.uuid4()),
+            overwrite_result_file=True,  # Set this value true if you want to overwrite the same file.
+            timeout_in_milliseconds=TIMEOUT_IN_MILLISECONDS,  # You may optionally cancel the download after a specified time interval.
+        )
+        bulk_service_manager = self._bulk_service_manager(customer_id=customer_id, account_id=account_id)
+        return bulk_service_manager.download_file(download_parameters)
