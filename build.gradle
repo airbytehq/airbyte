@@ -2,7 +2,6 @@ import com.github.spotbugs.snom.SpotBugsTask
 import ru.vyarus.gradle.plugin.python.task.PythonTask
 import com.hierynomus.gradle.license.tasks.LicenseCheck
 import com.hierynomus.gradle.license.tasks.LicenseFormat
-import org.yaml.snakeyaml.Yaml
 
 // The buildscript block defines dependencies in order for .gradle file evaluation.
 // This is separate from application dependencies.
@@ -11,7 +10,6 @@ buildscript {
     dependencies {
         classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.20.0'
         classpath 'gradle.plugin.com.hierynomus.gradle.plugins:license-gradle-plugin:0.16.1'
-        classpath 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.13.0'
     }
 }
 
