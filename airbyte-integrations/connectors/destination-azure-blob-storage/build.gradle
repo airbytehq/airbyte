@@ -24,3 +24,11 @@ dependencies {
     testImplementation 'org.apache.commons:commons-lang3:3.11'
     testImplementation "org.testcontainers:junit-jupiter:1.17.5"
 }
+
+//This is only needed because we're using some pre 0.3 version of the CDK
+java {
+     compileJava {
+        options.compilerArgs.remove("-Werror")
+     }
+}
+

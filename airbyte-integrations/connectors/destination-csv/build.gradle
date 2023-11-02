@@ -3,6 +3,12 @@ plugins {
     id 'airbyte-java-connector'
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try"
+    }
+}
+
 airbyteJavaConnector {
     cdkVersionRequired = '0.2.0'
     features = ['db-destinations']
@@ -19,3 +25,11 @@ application {
 dependencies {
     implementation 'org.apache.commons:commons-csv:1.4'
 }
+
+//This is only needed because we're using some pre 0.3 version of the CDK
+java {
+     compileJava {
+        options.compilerArgs.remove("-Werror")
+     }
+}
+

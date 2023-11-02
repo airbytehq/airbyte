@@ -40,3 +40,11 @@ dependencies {
     testImplementation 'org.xerial.snappy:snappy-java:1.1.8.4'
     testImplementation "org.mockito:mockito-inline:4.1.0"
 }
+
+//This is only needed because we're using some pre 0.3 version of the CDK
+java {
+     compileJava {
+        options.compilerArgs.remove("-Werror")
+     }
+}
+

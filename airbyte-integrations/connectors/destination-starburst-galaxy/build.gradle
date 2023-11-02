@@ -39,3 +39,11 @@ dependencies {
 
     implementation ('org.apache.parquet:parquet-avro:1.12.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
 }
+
+//This is only needed because we're using some pre 0.3 version of the CDK
+java {
+     compileJava {
+        options.compilerArgs.remove("-Werror")
+     }
+}
+
