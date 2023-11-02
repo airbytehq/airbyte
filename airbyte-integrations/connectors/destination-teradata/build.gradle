@@ -19,11 +19,3 @@ application {
 dependencies {
 	implementation 'com.teradata.jdbc:terajdbc4:17.20.00.12'
 }
-
-//This is only needed because we're using some pre 0.3 version of the CDK
-java {
-     compileJava {
-        options.compilerArgs.remove("-Werror")
-     }
-}
-

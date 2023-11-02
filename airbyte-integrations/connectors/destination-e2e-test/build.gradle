@@ -17,11 +17,3 @@ application {
 
 dependencies {
 }
-
-//This is only needed because we're using some pre 0.3 version of the CDK
-java {
-     compileJava {
-        options.compilerArgs.remove("-Werror")
-     }
-}
-

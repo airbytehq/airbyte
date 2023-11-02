@@ -160,7 +160,6 @@ public class BigQueryGcsOperations implements BigQueryStagingOperations {
   }
 
   @Override
-  @Deprecated
   public void cleanUpStage(final String datasetId, final String stream, final List<String> stagedFiles) {
     if (keepStagingFiles) {
       return;

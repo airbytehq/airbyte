@@ -30,8 +30,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Record Consumer used for STANDARD INSERTS
  */
-@SuppressWarnings("try")
-class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
+public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsumer implements AirbyteMessageConsumer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordConsumer.class);
 
