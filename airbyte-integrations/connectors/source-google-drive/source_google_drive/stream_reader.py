@@ -30,7 +30,9 @@ EXPORTABLE_DOCUMENTS_MIME_TYPES = [
 
 class GoogleDriveRemoteFile(RemoteFile):
     id: str
-    mimeType: str
+    # The mime type of the file as returned by the Google Drive API
+    # This is not the same as the mime type when opened by the parser (e.g. google docs is exported as docx)
+    original_mime_type: str
 
 
 class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
@@ -104,7 +106,7 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                     if new_file["id"] in seen:
                         continue
                     seen.add(new_file["id"])
-                    file_name = path + self._get_file_name(new_file)
+                    file_name = path + new_file["name"]
                     if new_file["mimeType"] == FOLDER_MIME_TYPE:
                         folder_name = f"{file_name}/"
                         # check prefix matching in both directions to handle
@@ -115,8 +117,18 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
                         continue
                     else:
                         last_modified = datetime.strptime(new_file["modifiedTime"], "%Y-%m-%dT%H:%M:%S.%fZ")
+                        original_mime_type = new_file["mimeType"]
+                        mime_type = (
+                            self._get_export_mime_type(original_mime_type)
+                            if self._is_exportable_document(original_mime_type)
+                            else original_mime_type
+                        )
                         remote_file = GoogleDriveRemoteFile(
-                            uri=file_name, last_modified=last_modified, id=new_file["id"], mimeType=new_file["mimeType"]
+                            uri=file_name,
+                            last_modified=last_modified,
+                            id=new_file["id"],
+                            original_mime_type=original_mime_type,
+                            mime_type=mime_type,
                         )
                         if self.file_matches_globs(remote_file, globs):
                             yield remote_file
@@ -145,27 +157,13 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
         """
         return mime_type in EXPORTABLE_DOCUMENTS_MIME_TYPES
 
-    def _get_file_name(self, file: Dict[str, Any]):
-        """
-        Returns the file name for the given file.
-
-        Google Docs are exported as Docx to preserve as much formatting as possible, other google app documents are exported as PDFs.
-        For all other files, the file name is returned as is.
-        """
-        if file["mimeType"] == GOOGLE_DOC_MIME_TYPE:
-            return f"{file['name']}.docx"
-        elif self._is_exportable_document(file["mimeType"]):
-            return f"{file['name']}.pdf"
-        else:
-            return file["name"]
-
     def open_file(self, file: GoogleDriveRemoteFile, mode: FileReadMode, encoding: Optional[str], logger: logging.Logger) -> IOBase:
-        if self._is_exportable_document(file.mimeType):
+        if self._is_exportable_document(file.original_mime_type):
             if mode == FileReadMode.READ:
                 raise ValueError(
                     "Google Docs/Drawings/Presentations can only be processed using the document file type format. Please set the format accordingly or adjust the glob pattern."
                 )
-            request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=self._get_export_mime_type(file))
+            request = self.google_drive_service.files().export_media(fileId=file.id, mimeType=file.mime_type)
         else:
             request = self.google_drive_service.files().get_media(fileId=file.id)
         handle = io.BytesIO()
@@ -184,13 +182,13 @@ class SourceGoogleDriveStreamReader(AbstractFileBasedStreamReader):
             handle.close()
             return text_handle
 
-    def _get_export_mime_type(self, file: GoogleDriveRemoteFile):
+    def _get_export_mime_type(self, original_mime_type: str):
         """
         Returns the mime type to export Google App documents as.
 
         Google Docs are exported as Docx to preserve as much formatting as possible, everything else goes through PDF.
         """
-        if file.mimeType.startswith(GOOGLE_DOC_MIME_TYPE):
+        if original_mime_type.startswith(GOOGLE_DOC_MIME_TYPE):
             return "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         else:
             return "application/pdf"

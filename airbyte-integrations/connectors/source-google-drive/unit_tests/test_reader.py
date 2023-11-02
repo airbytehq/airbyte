@@ -36,7 +36,15 @@ def flatten_list(list_of_lists):
         pytest.param(
             "*",
             [[{"files": [{"id": "abc", "mimeType": "text/csv", "name": "test.csv", "modifiedTime": "2021-01-01T00:00:00.000Z"}]}]],
-            [GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1))],
+            [
+                GoogleDriveRemoteFile(
+                    uri="test.csv",
+                    id="abc",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                )
+            ],
             id="Single file",
         ),
         pytest.param(
@@ -52,11 +60,18 @@ def flatten_list(list_of_lists):
                 ]
             ],
             [
-                GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
+                GoogleDriveRemoteFile(
+                    uri="test.csv",
+                    id="abc",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
                 GoogleDriveRemoteFile(
                     uri="another_file.csv",
                     id="def",
-                    mimeType="text/csv",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
             ],
@@ -75,11 +90,18 @@ def flatten_list(list_of_lists):
                 ]
             ],
             [
-                GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
+                GoogleDriveRemoteFile(
+                    uri="test.csv",
+                    id="abc",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
                 GoogleDriveRemoteFile(
                     uri="another_file.csv",
                     id="def",
-                    mimeType="text/csv",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
             ],
@@ -140,17 +162,25 @@ def flatten_list(list_of_lists):
                 ],
             ],
             [
-                GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
+                GoogleDriveRemoteFile(
+                    uri="test.csv",
+                    id="abc",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
                 GoogleDriveRemoteFile(
                     uri="subfolder/another_file.csv",
                     id="def",
-                    mimeType="text/csv",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
                 GoogleDriveRemoteFile(
                     uri="subfolder/subsubfolder/yet_another_file.csv",
                     id="ghi",
-                    mimeType="text/csv",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
             ],
@@ -202,7 +232,13 @@ def flatten_list(list_of_lists):
                 ],
             ],
             [
-                GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
+                GoogleDriveRemoteFile(
+                    uri="test.csv",
+                    id="abc",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
+                    last_modified=datetime.datetime(2021, 1, 1),
+                ),
             ],
             id="Duplicates",
         ),
@@ -241,7 +277,8 @@ def flatten_list(list_of_lists):
                 GoogleDriveRemoteFile(
                     uri="subfolder/another_file.csv",
                     id="def",
-                    mimeType="text/csv",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
             ],
@@ -303,7 +340,8 @@ def flatten_list(list_of_lists):
                 GoogleDriveRemoteFile(
                     uri="subfolder/another_file.csv",
                     id="def",
-                    mimeType="text/csv",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
             ],
@@ -366,7 +404,8 @@ def flatten_list(list_of_lists):
                 GoogleDriveRemoteFile(
                     uri="subfolder/subsubfolder/yet_another_file.csv",
                     id="ghi",
-                    mimeType="text/csv",
+                    mime_type="text/csv",
+                    original_mime_type="text/csv",
                     last_modified=datetime.datetime(2021, 1, 1),
                 ),
             ],
@@ -390,7 +429,11 @@ def flatten_list(list_of_lists):
             ],
             [
                 GoogleDriveRemoteFile(
-                    uri="MyDoc.docx", id="abc", mimeType="application/vnd.google-apps.document", last_modified=datetime.datetime(2021, 1, 1)
+                    uri="MyDoc",
+                    id="abc",
+                    original_mime_type="application/vnd.google-apps.document",
+                    mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    last_modified=datetime.datetime(2021, 1, 1),
                 )
             ],
             id="Google Doc as docx",
@@ -413,9 +456,10 @@ def flatten_list(list_of_lists):
             ],
             [
                 GoogleDriveRemoteFile(
-                    uri="MySlides.pdf",
+                    uri="MySlides",
                     id="abc",
-                    mimeType="application/vnd.google-apps.presentation",
+                    original_mime_type="application/vnd.google-apps.presentation",
+                    mime_type="application/pdf",
                     last_modified=datetime.datetime(2021, 1, 1),
                 )
             ],
@@ -439,9 +483,10 @@ def flatten_list(list_of_lists):
             ],
             [
                 GoogleDriveRemoteFile(
-                    uri="MyDrawing.pdf",
+                    uri="MyDrawing",
                     id="abc",
-                    mimeType="application/vnd.google-apps.drawing",
+                    original_mime_type="application/vnd.google-apps.drawing",
+                    mime_type="application/pdf",
                     last_modified=datetime.datetime(2021, 1, 1),
                 )
             ],
@@ -465,7 +510,11 @@ def flatten_list(list_of_lists):
             ],
             [
                 GoogleDriveRemoteFile(
-                    uri="MyVideo", id="abc", mimeType="application/vnd.google-apps.video", last_modified=datetime.datetime(2021, 1, 1)
+                    uri="MyVideo",
+                    id="abc",
+                    original_mime_type="application/vnd.google-apps.video",
+                    mime_type="application/vnd.google-apps.video",
+                    last_modified=datetime.datetime(2021, 1, 1),
                 )
             ],
             id="Other google file types as is",
@@ -502,7 +551,9 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
     "file, file_content, mode, expect_export, expected_mime_type, expected_read, expect_raise",
     [
         pytest.param(
-            GoogleDriveRemoteFile(uri="avro_file", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
+            GoogleDriveRemoteFile(
+                uri="avro_file", id="abc", mime_type="text/csv", original_mime_type="text/csv", last_modified=datetime.datetime(2021, 1, 1)
+            ),
             b"test",
             FileReadMode.READ_BINARY,
             False,
@@ -512,7 +563,9 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
             id="Read binary file",
         ),
         pytest.param(
-            GoogleDriveRemoteFile(uri="test.csv", id="abc", mimeType="text/csv", last_modified=datetime.datetime(2021, 1, 1)),
+            GoogleDriveRemoteFile(
+                uri="test.csv", id="abc", mime_type="text/csv", original_mime_type="text/csv", last_modified=datetime.datetime(2021, 1, 1)
+            ),
             b"test",
             FileReadMode.READ,
             False,
@@ -525,7 +578,8 @@ def test_matching_files(mock_build_service, mock_service_account, glob, listing_
             GoogleDriveRemoteFile(
                 uri="abc",
                 id="abc",
-                mimeType="application/vnd.google-apps.document",
+                mime_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                original_mime_type="application/vnd.google-apps.document",
                 last_modified=datetime.datetime(2021, 1, 1),
             ),
             b"test",
