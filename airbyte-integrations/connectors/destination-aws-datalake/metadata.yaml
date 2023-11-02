@@ -2,7 +2,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 99878c90-0fbd-46d3-9d98-ffde879d17fc
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   dockerRepository: airbyte/destination-aws-datalake
   githubIssueLabel: destination-aws-datalake
   icon: awsdatalake.svg

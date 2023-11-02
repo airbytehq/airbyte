@@ -4,11 +4,14 @@
 
 
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional, Type
+from itertools import islice
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Type, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
+from requests.auth import AuthBase
 
 ASANA_ERRORS_MAPPING = {
     402: "This stream is available to premium organizations and workspaces only",
@@ -24,10 +27,15 @@ class AsanaStream(HttpStream, ABC):
     # Asana pagination could be from 1 to 100.
     page_size = 100
     raise_on_http_errors = True
+    test_mode = False
 
     @property
     def AsanaStreamType(self) -> Type:
         return self.__class__
+
+    def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None, test_mode: bool = False):
+        super().__init__(authenticator=authenticator)
+        self.test_mode = test_mode
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code in ASANA_ERRORS_MAPPING.keys():
@@ -101,6 +109,7 @@ class AsanaStream(HttpStream, ABC):
         """
         stream = stream_class(authenticator=self.authenticator)
         stream_slices = stream.stream_slices(sync_mode=SyncMode.full_refresh)
+
         for stream_slice in stream_slices:
             for record in stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice):
                 yield {slice_field: record["gid"]}
@@ -186,8 +195,47 @@ class CustomFields(WorkspaceRelatedStream):
 
 
 class Events(AsanaStream):
+    primary_key = "created_at"
+    sync_token = None
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "events"
+
+    def read_records(self, *args, **kwargs):
+        # Check if sync token is available
+        if self.sync_token is not None:
+            # Pass the sync token as a request parameter
+            kwargs["next_page_token"] = {"sync": self.sync_token}
+
+        yield from super().read_records(*args, **kwargs)
+
+        # After reading records, update the sync token
+        self.sync_token = self.get_latest_sync_token()
+
+    def get_latest_sync_token(self) -> str:
+        latest_sync_token = self.state.get("last_sync_token")  # Get the previous sync token
+
+        if latest_sync_token is None:
+            return None
+
+        return latest_sync_token["sync"]  # Extract the sync token value
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code == 412:  # Check if response is a 412 error
+            response_json = response.json()
+            if "sync" in response_json:  # Check if new sync token is available
+                self.sync_token = response_json["sync"]
+            else:
+                self.sync_token = None
+            self.logger.warning("Sync token expired. Fetch the full dataset for this query now.")
+        else:
+            response_json = response.json()
+
+            # Check if response has new sync token
+            if "sync" in response_json:
+                self.sync_token = response_json["sync"]
+
+            yield from response_json.get("data", [])
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         decoded_response = response.json()
@@ -226,6 +274,8 @@ class Projects(WorkspaceRequestParamsRelatedStream):
 
 
 class SectionsCompact(ProjectRelatedStream):
+    use_cache = True
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         project_gid = stream_slice["project_gid"]
         return f"projects/{project_gid}/sections"
@@ -248,13 +298,40 @@ class Sections(AsanaStream):
             yield from section_data
 
 
-class Stories(AsanaStream):
+class StoriesCompact(AsanaStream):
+    use_cache = True
+
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         task_gid = stream_slice["task_gid"]
         return f"tasks/{task_gid}/stories"
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from self.read_slices_from_records(stream_class=Tasks, slice_field="task_gid")
+        # This streams causes tests to timeout (> 2hrs), so we limit stream slices to 100 to make tests less noisy
+        if self.test_mode:
+            yield from islice(self.read_slices_from_records(stream_class=Tasks, slice_field="task_gid"), 100)
+        else:
+            yield from self.read_slices_from_records(stream_class=Tasks, slice_field="task_gid")
+
+
+class Stories(AsanaStream):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        story_gid = stream_slice["story_gid"]
+        return f"stories/{story_gid}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        # This streams causes tests to timeout (> 2hrs), so we limit stream slices to 100 to make tests less noisy
+        if self.test_mode:
+            yield from islice(self.read_slices_from_records(stream_class=StoriesCompact, slice_field="story_gid"), 100)
+        else:
+            yield from self.read_slices_from_records(stream_class=StoriesCompact, slice_field="story_gid")
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        section_data = response_json.get("data", {})
+        if isinstance(section_data, dict):  # Check if section_data is a dictionary
+            yield section_data
+        elif isinstance(section_data, list):  # Check if section_data is a list
+            yield from section_data
 
 
 class Tags(WorkspaceRequestParamsRelatedStream):

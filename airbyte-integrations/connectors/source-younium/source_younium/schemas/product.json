@@ -12,6 +12,12 @@
     "name": {
       "type": ["null", "string"]
     },
+    "created": {
+      "type": ["null", "string"]
+    },
+    "modified": {
+      "type": ["null", "string"]
+    },
     "productType": {
       "type": ["null", "string"]
     },

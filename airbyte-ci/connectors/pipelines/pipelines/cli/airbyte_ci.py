@@ -6,11 +6,13 @@
 
 import importlib
 import logging
+import multiprocessing
 import os
 from pathlib import Path
 from typing import List
 
 import asyncclick as click
+import docker
 import git
 from github import PullRequest
 from pipelines import main_logger
@@ -136,6 +138,20 @@ async def get_modified_files(
     return await get_modified_files_in_branch(git_branch, git_revision, diffed_branch, is_local)
 
 
+def check_local_docker_configuration():
+    try:
+        docker_client = docker.from_env()
+    except Exception as e:
+        raise click.UsageError(f"Could not connect to docker daemon: {e}")
+    daemon_info = docker_client.info()
+    docker_cpus_count = daemon_info["NCPU"]
+    local_cpus_count = multiprocessing.cpu_count()
+    if docker_cpus_count < local_cpus_count:
+        logging.warning(
+            f"Your docker daemon is configured with less CPUs than your local machine ({docker_cpus_count} vs. {local_cpus_count}). This may slow down the airbyte-ci execution. Please consider increasing the number of CPUs allocated to your docker daemon in the Resource Allocation settings of Docker."
+        )
+
+
 # COMMANDS
 
 
@@ -198,6 +214,10 @@ async def airbyte_ci(
     show_dagger_logs: bool,
 ):  # noqa D103
     ctx.ensure_object(dict)
+    if is_local:
+        # This check is meaningful only when running locally
+        # In our CI the docker host used by the Dagger Engine is different from the one used by the runner.
+        check_local_docker_configuration()
     check_up_to_date()
     ctx.obj["is_local"] = is_local
     ctx.obj["is_ci"] = not is_local

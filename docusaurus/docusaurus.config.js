@@ -27,6 +27,18 @@ const config = {
   organizationName: "airbytehq", // Usually your GitHub org/user name.
   projectName: "airbyte", // Usually your repo name.
 
+  // Adds one off script tags to the head of each page
+  // .e.g <script async data-api-key="..." id="unifytag" src="..."></script>
+  scripts: [
+    {
+      src: "https://cdn.unifygtm.com/tag/v1/unify-tag-script.js",
+      async: true,
+      type: "module",
+      id: "unifytag",
+      "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
+    }
+  ],
+
   plugins: [
     [
       "@docusaurus/plugin-client-redirects",

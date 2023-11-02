@@ -63,6 +63,12 @@
           }
         ]
       },
+      "test_mode": {
+        "type": "boolean",
+        "title": "Test Mode",
+        "description": "This flag is used for testing purposes for certain streams that return a lot of data. This flag is not meant to be enabled for prod.",
+        "airbyte_hidden": true
+      },
       "organization_export_ids": {
         "title": "Organization Export IDs",
         "description": "Globally unique identifiers for the organization exports",
