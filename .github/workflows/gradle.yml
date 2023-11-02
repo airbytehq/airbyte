@@ -7,8 +7,6 @@ concurrency:
 env:
   S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
   S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-  DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
-  DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
 
 on:
   workflow_dispatch:
@@ -91,10 +89,12 @@ jobs:
       - name: Install Pyenv
         if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         run: python3 -m pip install virtualenv --user
-      - name: Login to DockerHub
-        if: steps.changes.outputs.gradlecheck_any_changed == 'true'
+      - name: Docker login
         # Some tests use testcontainers which pull images from DockerHub.
-        run: echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.$DOCKER_HUB_PASSWORD }}
       - name: Run Gradle Check
         if: steps.changes.outputs.gradlecheck_any_changed == 'true'
         uses: burrunan/gradle-cache-action@v1
