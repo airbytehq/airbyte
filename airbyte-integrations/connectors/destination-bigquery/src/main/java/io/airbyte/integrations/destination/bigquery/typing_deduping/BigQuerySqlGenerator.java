@@ -365,16 +365,15 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   @Override
   public String prepareTablesForSoftReset(final StreamConfig stream) {
     return String.join("\n", List.of(
-      // If a previous sync failed to delete the soft reset temp table (unclear why this happens),
-      // AND this sync is trying to change the clustering config, then we need to manually drop the soft
-      // reset temp table.
-      // Even though we're using CREATE OR REPLACE TABLE, bigquery will still complain about the
-      // clustering config being changed.
-      // So we explicitly drop the soft reset temp table first.
-      dropTableIfExists(stream, SOFT_RESET_SUFFIX),
-      createTable(stream, SOFT_RESET_SUFFIX, true),
-      clearLoadedAt(stream.id())
-      ));
+        // If a previous sync failed to delete the soft reset temp table (unclear why this happens),
+        // AND this sync is trying to change the clustering config, then we need to manually drop the soft
+        // reset temp table.
+        // Even though we're using CREATE OR REPLACE TABLE, bigquery will still complain about the
+        // clustering config being changed.
+        // So we explicitly drop the soft reset temp table first.
+        dropTableIfExists(stream, SOFT_RESET_SUFFIX),
+        createTable(stream, SOFT_RESET_SUFFIX, true),
+        clearLoadedAt(stream.id())));
   }
 
   public String dropTableIfExists(final StreamConfig stream, final String suffix) {

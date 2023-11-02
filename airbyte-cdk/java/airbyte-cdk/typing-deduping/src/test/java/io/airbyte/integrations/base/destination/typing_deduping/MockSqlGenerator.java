@@ -58,4 +58,5 @@ class MockSqlGenerator implements SqlGenerator<String> {
   public String prepareTablesForSoftReset(final StreamConfig stream) {
     return "PREPARE " + String.join(".", stream.id().originalNamespace(), stream.id().originalName()) + " FOR SOFT RESET";
   }
+
 }

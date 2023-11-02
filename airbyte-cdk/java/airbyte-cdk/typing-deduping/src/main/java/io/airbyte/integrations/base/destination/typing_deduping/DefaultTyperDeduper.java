@@ -218,8 +218,8 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
           externalLock.lock();
           try {
             TypeAndDedupeTransaction.executeTypeAndDedupe(sqlGenerator, destinationHandler, streamConfig,
-                                                          minExtractedAtByStream.get(streamConfig.id()),
-                                                          getFinalTableSuffix(streamConfig.id()));
+                minExtractedAtByStream.get(streamConfig.id()),
+                getFinalTableSuffix(streamConfig.id()));
           } finally {
             LOGGER.info("Allowing other threads to proceed for {}.{}", originalNamespace, originalName);
             externalLock.unlock();
@@ -236,7 +236,6 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
       }
     }, this.executorService);
   }
-
 
   @Override
   public void typeAndDedupe() throws Exception {

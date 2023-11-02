@@ -562,8 +562,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
   public String prepareTablesForSoftReset(final StreamConfig stream) {
     return String.join("\n", List.of(
         createTable(stream, SOFT_RESET_SUFFIX.toUpperCase(), true),
-        clearLoadedAt(stream.id())
-    ));
+        clearLoadedAt(stream.id())));
   }
 
   private String clearLoadedAt(final StreamId streamId) {
