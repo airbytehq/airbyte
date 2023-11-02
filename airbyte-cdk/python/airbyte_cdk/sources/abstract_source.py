@@ -141,8 +141,11 @@ class AbstractSource(Source, ABC):
                     yield from self._emit_queued_messages()
                     logger.exception(f"Encountered an exception while reading stream {configured_stream.stream.name}")
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
-                    # yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.INCOMPLETE)
+                    yield stream_status_as_airbyte_message(
+                        configured_stream.stream.name, configured_stream.stream.namespace, AirbyteStreamStatus.INCOMPLETE
+                    )
                     display_message = stream_instance.get_error_display_message(e)
+                    # FIXME need to implement this in concurrent source too?
                     if display_message:
                         raise AirbyteTracedException.from_exception(e, message=display_message) from e
                     raise e

@@ -409,6 +409,110 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_a_tr
     assert _compare(messages_from_abstract_source, messages_from_concurrent_source)
 
 
+@freezegun.freeze_time("2020-01-01T00:00:00")
+def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_exception_is_raised():
+    records = [{"id": 1, "partition": "1"}, RuntimeError()]
+    stream_slice_to_partition = {"1": records}
+    logger = Mock()
+    logger.level = logging.INFO
+    logger.isEnabledFor.return_value = False
+
+    source = _MockSource()
+    concurrent_source = _MockConcurrentSource()
+
+    state = None
+    cursor = NoopCursor()
+    threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    streams = [
+        StreamFacade.create_from_stream(_MockStream(stream_slice_to_partition, "stream"), source, logger, threadpool, state, cursor),
+    ]
+    # Need to create a new threadpool because it'll be shutdown by the source
+    concurrent_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    streams_concurrent = [
+        StreamFacade.create_from_stream(
+            _MockStream(stream_slice_to_partition, "stream"), source, logger, concurrent_threadpool, state, cursor
+        ),
+    ]
+    source.set_streams(streams)
+    concurrent_source.set_streams(streams_concurrent)
+    config = {}
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=s.name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                cursor_field=None,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+            for s in streams
+        ]
+    )
+    messages_from_abstract_source = []
+    try:
+        for m in source.read(logger, config, catalog, state):
+            messages_from_abstract_source.append(m)
+    except RuntimeError as e:
+        # FIXME need to verify it
+        pass
+    messages_from_concurrent_source = []
+    try:
+        for m in concurrent_source.read(logger, config, catalog, state):
+            messages_from_concurrent_source.append(m)
+    except RuntimeError as e:
+        # FIXME need to verify it
+        pass
+
+    expected_messages = [
+        AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
+                ),
+            ),
+        ),
+        # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "1"}')),
+        AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
+                ),
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.RECORD,
+            record=AirbyteRecordMessage(
+                stream="stream",
+                data=records[0],
+                emitted_at=1577836800000,
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream"), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
+                ),
+            ),
+        ),
+    ]
+    assert expected_messages == messages_from_abstract_source
+    assert _compare(messages_from_abstract_source, messages_from_concurrent_source)
+
+
 def _compare(s, t):
     t = list(t)
     try:
