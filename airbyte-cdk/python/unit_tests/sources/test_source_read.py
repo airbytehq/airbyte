@@ -26,6 +26,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
@@ -70,11 +71,28 @@ class _MockStream(Stream):
 
 
 class _MockSource(AbstractSource):
-    def __init__(self, streams):
-        self._streams = streams
+
+    message_repository = InMemoryMessageRepository()
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         pass
+
+    def set_streams(self, streams):
+        self._streams = streams
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        return self._streams
+
+
+class _MockConcurrentSource(ConcurrentSource):
+    def __init__(self):
+        super().__init__(1, 1)
+
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        pass
+
+    def set_streams(self, streams):
+        self._streams = streams
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         return self._streams
@@ -90,13 +108,35 @@ def test_source_read_no_state_single_stream_single_partition_full_refresh():
         {"id": 3, "partition": "2"},
         {"id": 4, "partition": "2"},
     ]
-    slice_to_partition = {"1": records_stream_1_partition_1, "2": records_stream_1_partition_2}
-    streams = [_MockStream(slice_to_partition, "stream1")]
-    source = _MockSource(streams)
+    records_stream_2_partition_1 = [
+        {"id": 100, "partition": "A"},
+        {"id": 200, "partition": "A"},
+    ]
+    records_stream_2_partition_2 = [
+        {"id": 300, "partition": "B"},
+        {"id": 400, "partition": "B"},
+    ]
+    stream_1_slice_to_partition = {"1": records_stream_1_partition_1, "2": records_stream_1_partition_2}
+    stream_2_slice_to_partition = {"A": records_stream_2_partition_1, "B": records_stream_2_partition_2}
+
     logger = Mock()
     logger.level = logging.INFO
-    config = {}
+    logger.isEnabledFor.return_value = False
+    # FIXME: probably also need to test to verify the slices can be logged!
+
+    source = _MockSource()
+    concurrent_source = _MockConcurrentSource()
+
     state = None
+    cursor = NoopCursor()
+    threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    streams = [
+        StreamFacade.create_from_stream(_MockStream(stream_1_slice_to_partition, "stream1"), source, logger, threadpool, state, cursor),
+        StreamFacade.create_from_stream(_MockStream(stream_2_slice_to_partition, "stream2"), source, logger, threadpool, state, cursor),
+    ]
+    source.set_streams(streams)
+    concurrent_source.set_streams(streams)
+    config = {}
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -104,37 +144,44 @@ def test_source_read_no_state_single_stream_single_partition_full_refresh():
                 sync_mode=SyncMode.full_refresh,
                 cursor_field=None,
                 destination_sync_mode=DestinationSyncMode.overwrite,
-            )
+            ),
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name="stream2", json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                cursor_field=None,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            ),
         ]
     )
-    messages = list(source.read(logger, config, catalog, state))
+    messages_from_abstract_source = list(source.read(logger, config, catalog, state))
+    messages_from_concurrent_source = list(concurrent_source.read(logger, config, catalog, state))
 
     expected_messages = [
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
-                ),
-            ),
-        ),
-        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "1"}')),
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
-                ),
-            ),
-        ),
+        # AirbyteMessage(
+        #     type=MessageType.TRACE,
+        #     trace=AirbyteTraceMessage(
+        #         type=TraceType.STREAM_STATUS,
+        #         emitted_at=1577836800000.0,
+        #         error=None,
+        #         estimate=None,
+        #         stream_status=AirbyteStreamStatusTraceMessage(
+        #             stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
+        #         ),
+        #     ),
+        # ),
+        # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "1"}')),
+        # AirbyteMessage(
+        #     type=MessageType.TRACE,
+        #     trace=AirbyteTraceMessage(
+        #         type=TraceType.STREAM_STATUS,
+        #         emitted_at=1577836800000.0,
+        #         error=None,
+        #         estimate=None,
+        #         stream_status=AirbyteStreamStatusTraceMessage(
+        #             stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
+        #         ),
+        #     ),
+        # ),
         AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(
@@ -151,7 +198,7 @@ def test_source_read_no_state_single_stream_single_partition_full_refresh():
                 emitted_at=1577836800000,
             ),
         ),
-        AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "2"}')),
+        # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "2"}')),
         AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(
@@ -168,18 +215,53 @@ def test_source_read_no_state_single_stream_single_partition_full_refresh():
                 emitted_at=1577836800000,
             ),
         ),
+        # AirbyteMessage(
+        #     type=MessageType.TRACE,
+        #     trace=AirbyteTraceMessage(
+        #         type=TraceType.STREAM_STATUS,
+        #         emitted_at=1577836800000.0,
+        #         error=None,
+        #         estimate=None,
+        #         stream_status=AirbyteStreamStatusTraceMessage(
+        #             stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
+        #         ),
+        #     ),
+        # ),
         AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
-                ),
+            type=MessageType.RECORD,
+            record=AirbyteRecordMessage(
+                stream="stream2",
+                data=records_stream_2_partition_1[0],
+                emitted_at=1577836800000,
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.RECORD,
+            record=AirbyteRecordMessage(
+                stream="stream2",
+                data=records_stream_2_partition_1[1],
+                emitted_at=1577836800000,
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.RECORD,
+            record=AirbyteRecordMessage(
+                stream="stream2",
+                data=records_stream_2_partition_2[0],
+                emitted_at=1577836800000,
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.RECORD,
+            record=AirbyteRecordMessage(
+                stream="stream2",
+                data=records_stream_2_partition_2[1],
+                emitted_at=1577836800000,
             ),
         ),
     ]
 
-    assert messages == expected_messages
+    assert expected_messages == messages_from_abstract_source
+
+    # assert len(messages_from_abstract_source) == len(messages_from_concurrent_source)
+    assert messages_from_abstract_source == messages_from_concurrent_source

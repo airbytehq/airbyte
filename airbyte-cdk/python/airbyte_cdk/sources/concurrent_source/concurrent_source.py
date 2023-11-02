@@ -23,6 +23,9 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.stream_reader import StreamReader
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
 
@@ -51,7 +54,7 @@ class ConcurrentSource(AbstractSource, ABC):
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
-        stream_instances = {s.name: s for s in self.streams(config)}
+        stream_instances: Mapping[str, AbstractStream] = {s.name: s for s in self._streams_as_abstract_streams(config)}
         state_manager = ConnectorStateManager(stream_instance_map=stream_instances, state=state)
         self._stream_to_instance_map = stream_instances
 
@@ -67,11 +70,13 @@ class ConcurrentSource(AbstractSource, ABC):
                         f"Refresh the schema in replication settings and remove this stream from future sync attempts."
                     )
                 else:
-                    self._apply_log_level_to_stream_logger(logger, stream_instance)
+                    # self._apply_log_level_to_stream_logger(logger, stream_instance)
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
-                    stream_is_available, reason = stream_instance.check_availability(logger, self)
-                    if not stream_is_available:
-                        logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
+                    stream_availability = stream_instance.check_availability()
+                    if not stream_availability.is_available():
+                        logger.warning(
+                            f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {stream_availability.message()}"
+                        )
                         continue
                     stream_instances_to_read_from.append(stream_instance)
             for stream in stream_instances_to_read_from:
@@ -97,7 +102,12 @@ class ConcurrentSource(AbstractSource, ABC):
                     if stream_done_counter == len(stream_instances_to_read_from):
                         stop = True
                 else:
-                    message = self._get_message(airbyte_message_or_record_or_exception.data, stream_instance)
+                    # Do not pass a transformer or a schema
+                    # AbstractStreams are expected to return data as they are expected.
+                    # Any transformation on the data should be done before reaching this point
+                    message = stream_data_to_airbyte_message(
+                        airbyte_message_or_record_or_exception.stream_name, airbyte_message_or_record_or_exception.data
+                    )
                     yield message
                     if message.type == MessageType.RECORD:
                         total_records_counter += 1
@@ -109,3 +119,13 @@ class ConcurrentSource(AbstractSource, ABC):
         # Submit a task to the threadpool, waiting if there are too many pending tasks
         # self._wait_while_too_many_pending_futures(futures)
         futures.append(self._stream_read_threadpool.submit(function, *args))
+
+    def _streams_as_abstract_streams(self, config) -> List[AbstractStream]:
+        streams = self.streams(config)
+        streams_as_abstract_streams = []
+        for stream in streams:
+            if isinstance(stream, StreamFacade):
+                streams_as_abstract_streams.append(stream._abstract_stream)
+            else:
+                raise ValueError(f"Only StreamFacade is supported by ConcurrentSource. Got {stream}")
+        return streams_as_abstract_streams

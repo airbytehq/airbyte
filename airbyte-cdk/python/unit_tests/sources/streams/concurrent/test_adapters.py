@@ -26,6 +26,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 _ANY_SYNC_MODE = SyncMode.full_refresh
 _ANY_STATE = {"state_key": "state_value"}
 _ANY_CURSOR_FIELD = ["a", "cursor", "key"]
+_STREAM_NAME = "stream"
 
 
 @pytest.mark.parametrize(
@@ -88,10 +89,14 @@ def test_stream_partition_generator(sync_mode):
 @pytest.mark.parametrize(
     "transformer, expected_records",
     [
-        pytest.param(TypeTransformer(TransformConfig.NoTransform), [Record({"data": "1"}), Record({"data": "2"})], id="test_no_transform"),
+        pytest.param(
+            TypeTransformer(TransformConfig.NoTransform),
+            [Record({"data": "1"}, _STREAM_NAME), Record({"data": "2"}, _STREAM_NAME)],
+            id="test_no_transform",
+        ),
         pytest.param(
             TypeTransformer(TransformConfig.DefaultSchemaNormalization),
-            [Record({"data": 1}), Record({"data": 2})],
+            [Record({"data": 1}, _STREAM_NAME), Record({"data": 2}, _STREAM_NAME)],
             id="test_default_transform",
         ),
     ],

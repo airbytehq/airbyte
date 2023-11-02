@@ -13,7 +13,7 @@ class StreamReader:
     def read_from_stream(self, stream: AbstractStream) -> None:
         # print(f"reading from stream: {stream.name}")
         try:
-            for record in stream._abstract_stream.read():
+            for record in stream.read():
                 # print(f"adding record to queue {record}")
                 self._queue.put(record)
             self._queue.put(self._sentinel)
