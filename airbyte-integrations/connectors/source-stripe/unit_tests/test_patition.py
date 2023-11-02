@@ -11,10 +11,9 @@ from unittest.mock import MagicMock
 import pytest
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
-from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
+from airbyte_cdk.sources.declarative.requesters.paginators import LowCodePaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import LowCodeCursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_protocol.models import SyncMode
 from source_stripe.partition import PaginatedRequester, SourcePartitionGenerator
 
 URL_BASE = "http://test_source"
@@ -33,7 +32,7 @@ def paginated_requester(url_base: str = URL_BASE, stream: str = "accounts") -> P
         message_repository=MagicMock(),
     )
 
-    paginator = DefaultPaginator(
+    paginator = LowCodePaginator(
         LowCodeCursorPaginationStrategy(
             cursor_value="{{ last_records[-1]['id'] if last_records else None }}",
             config={},
@@ -129,7 +128,7 @@ def test_partition(
     stream_data = generate_stream_data(number_of_records=expected_records_len)
 
     response_data = []
-    for partition in partition_generator.generate(SyncMode.full_refresh):
+    for partition in partition_generator.generate():
         partition_parameters = partition._parse_request_arguments(request_params)
         if partition_parameters:
             path = f"{path}&" + "&".join(f"{k}={v}" for k, v in partition_parameters.items())

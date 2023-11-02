@@ -16,6 +16,7 @@ from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginat
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
+from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamAvailabilityStrategy, StreamFacade
@@ -43,6 +44,14 @@ from source_stripe.streams import (
 
 _MAX_CONCURRENCY = 3
 _PAGE_SIZE = 100
+
+
+class StripePaginator(DefaultPaginator):
+    def path(self) -> Optional[str]:
+        if self._token and self.page_token_option and isinstance(self.page_token_option, RequestPath):
+            return str(self._token)
+        else:
+            return None
 
 
 class StripePaginationStrategy(CursorPaginationStrategy):
@@ -134,11 +143,8 @@ class SourceStripe(AbstractSource):
             message_repository=self.message_repository,
         )
 
-        paginator = DefaultPaginator(
+        paginator = StripePaginator(
             StripePaginationStrategy(page_size=_PAGE_SIZE),
-            config={},
-            url_base="",
-            parameters={},
             page_size_option=RequestOption(field_name="limit", inject_into=RequestOptionType.request_parameter, parameters={}),
             page_token_option=RequestOption(field_name="starting_after", inject_into=RequestOptionType.request_parameter, parameters={}),
         )
@@ -527,8 +533,7 @@ class SourceStripe(AbstractSource):
 
             main_streams = [self._create_concurrent_stream(base_stream, concurrency_level) for base_stream in main_streams]
             substreams = [
-                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, state, cursor)
-                for stream in substreams
+                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, state, cursor) for stream in substreams
             ]
 
         return main_streams + substreams
