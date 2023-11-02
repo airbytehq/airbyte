@@ -22,6 +22,11 @@ LANGUAGE_MAPPING = {
         ConnectorLanguage.LOW_CODE: python_connectors.run_all_tests,
         ConnectorLanguage.JAVA: java_connectors.run_all_tests,
     },
+    "get_test_steps": {
+        ConnectorLanguage.PYTHON: python_connectors.get_test_steps,
+        ConnectorLanguage.LOW_CODE: python_connectors.get_test_steps,
+        ConnectorLanguage.JAVA: java_connectors.get_test_steps,
+    },
 }
 
 
@@ -76,6 +81,10 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
         return []
 
 
+async def get_test_steps(context: ConnectorContext) -> List[Step]:
+    pass
+
+
 # async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyio.Semaphore) -> ConnectorReport:
 #     """Run a test pipeline for a single connector.
 
@@ -106,12 +115,16 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
 
 def compute_connector_test_steps(context: ConnectorContext):
-    """Compute the steps to run for a connector test pipeline.
     """
+    Compute the steps to run for a connector test pipeline.
+    """
+
+    language_specific_steps = get_test_steps()
 
     steps = [
         run_all_tests,
     ]
+
     if not context.code_tests_only:
         steps += [
             run_metadata_validation,

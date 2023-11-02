@@ -44,6 +44,9 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     type=bool,
     is_flag=True,
 )
+@click.option(
+    "--skip-step",
+)
 @click.pass_context
 async def test(
     ctx: click.Context,
@@ -52,6 +55,7 @@ async def test(
     fail_fast: bool,
     fast_tests_only: bool,
     concurrent_cat: bool,
+    skip_step: str,
 ) -> bool:
     # TODO bring back the fail fast option
     """Runs a test pipeline for the selected connectors.
