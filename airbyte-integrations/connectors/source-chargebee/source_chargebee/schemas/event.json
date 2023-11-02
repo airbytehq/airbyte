@@ -4,56 +4,110 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 40
     },
     "occurred_at": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "source": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "user": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 150
     },
     "event_type": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "api_version": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "webhook_status": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "content": {
-      "type": ["object", "null"]
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "object": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "webhooks": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
-        "type": ["object", "null"],
+        "type": [
+          "object",
+          "null"
+        ],
         "properties": {
           "id": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "maxLength": 40
           },
           "webhook_status": {
-            "type": ["string", "null"]
+            "type": [
+              "string",
+              "null"
+            ]
           }
         }
       }
     },
     "custom_fields": {
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
-        "type": ["null", "object"],
+        "type": [
+          "null",
+          "object"
+        ],
         "properties": {
           "name": {
-            "type": ["null", "string"]
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "value": {
-            "type": ["null", "string"]
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       }

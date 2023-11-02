@@ -4,104 +4,201 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 100
     },
     "name": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 50
     },
     "description": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 500
     },
     "status": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "resource_version": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "updated_at": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "item_family_id": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 100
     },
     "type": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "is_shippable": {
-      "type": ["boolean", "null"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "is_giftable": {
-      "type": ["boolean", "null"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "redirect_url": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 500
     },
     "enabled_for_checkout": {
-      "type": ["boolean", "null"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "enabled_in_portal": {
-      "type": ["boolean", "null"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "included_in_mrr": {
-      "type": ["boolean", "null"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "item_applicability": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "gift_claim_redirect_url": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 500
     },
     "unit": {
-      "type": ["string", "null"],
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 30
     },
     "metered": {
-      "type": ["boolean", "null"]
+      "type": [
+        "boolean",
+        "null"
+      ]
     },
     "usage_calculation": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "archived_at": {
-      "type": ["integer", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "metadata": {
-      "type": ["object", "null"],
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {}
     },
+    "external_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 100
+    },
     "applicable_items": {
-      "type": ["array", "null"],
+      "type": [
+        "array",
+        "null"
+      ],
       "items": {
-        "type": ["object", "null"],
+        "type": [
+          "object",
+          "null"
+        ],
         "properties": {
           "id": {
-            "type": ["string", "null"],
+            "type": [
+              "string",
+              "null"
+            ],
             "maxLength": 100
           }
         }
       }
     },
     "channel": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "object": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "custom_fields": {
-      "type": ["null", "array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
-        "type": ["null", "object"],
+        "type": [
+          "null",
+          "object"
+        ],
         "properties": {
           "name": {
-            "type": ["null", "string"]
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "value": {
-            "type": ["null", "string"]
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       }

@@ -281,6 +281,25 @@
         "null"
       ]
     },
+    "base_currency_code": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 3
+    },
+    "channel": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "object": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "vat_number_prefix": {
       "type": [
         "string",
