@@ -10,7 +10,7 @@ import requests
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 from airbyte_cdk.sources.declarative.interpolation.interpolated_boolean import InterpolatedBoolean
 from airbyte_cdk.sources.declarative.requesters.paginators.default_paginator import (
-    DefaultPaginator,
+    LowCodePaginator,
     PaginatorTestReadDecorator,
     RequestOption,
     RequestOptionType,
@@ -129,7 +129,7 @@ def test_default_paginator_with_cursor(
         config=config,
         parameters=parameters,
     )
-    paginator = DefaultPaginator(
+    paginator = LowCodePaginator(
         page_size_option=page_size_request_option,
         page_token_option=page_token_request_option,
         pagination_strategy=strategy,
@@ -166,7 +166,7 @@ def test_page_size_option_cannot_be_set_if_strategy_has_no_limit():
     parameters = {}
     strategy = LowCodeCursorPaginationStrategy(page_size=None, cursor_value=cursor_value, config=config, parameters=parameters)
     try:
-        DefaultPaginator(
+        LowCodePaginator(
             page_size_option=page_size_request_option,
             page_token_option=page_token_request_option,
             pagination_strategy=strategy,
@@ -185,7 +185,7 @@ def test_reset():
     url_base = "https://airbyte.io"
     config = {}
     strategy = OffsetIncrement(config={}, page_size=2, parameters={})
-    paginator = DefaultPaginator(
+    paginator = LowCodePaginator(
         strategy, config, url_base, parameters={}, page_size_option=page_size_request_option, page_token_option=page_token_request_option
     )
     initial_request_parameters = paginator.get_request_params()
@@ -203,7 +203,7 @@ def test_initial_token_with_offset_pagination():
     url_base = "https://airbyte.io"
     config = {}
     strategy = OffsetIncrement(config={}, page_size=2, parameters={}, inject_on_first_request=True)
-    paginator = DefaultPaginator(
+    paginator = LowCodePaginator(
         strategy, config, url_base, parameters={}, page_size_option=page_size_request_option, page_token_option=page_token_request_option
     )
     initial_request_parameters = paginator.get_request_params()
@@ -215,7 +215,7 @@ def test_limit_page_fetched():
     maximum_number_of_pages = 5
     number_of_next_performed = maximum_number_of_pages - 1
     paginator = PaginatorTestReadDecorator(
-        DefaultPaginator(
+        LowCodePaginator(
             page_size_option=MagicMock(),
             page_token_option=MagicMock(),
             pagination_strategy=MagicMock(),
@@ -237,7 +237,7 @@ def test_paginator_with_page_option_no_page_size():
     pagination_strategy = OffsetIncrement(config={}, page_size=None, parameters={})
 
     with pytest.raises(ValueError):
-        DefaultPaginator(
+        LowCodePaginator(
             page_size_option=MagicMock(),
             page_token_option=RequestOption("limit", RequestOptionType.request_parameter, parameters={}),
             pagination_strategy=pagination_strategy,

@@ -521,9 +521,13 @@ class SourceStripe(AbstractSource):
             concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
             main_streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
+            # The state is known to be empty because concurrent CDK is currently only used for full refresh
+            state = {}
+            cursor = NoopCursor()
+
             main_streams = [self._create_concurrent_stream(base_stream, concurrency_level) for base_stream in main_streams]
             substreams = [
-                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, {}, NoopCursor())
+                StreamFacade.create_from_stream(stream, self, entrypoint_logger, concurrency_level, state, cursor)
                 for stream in substreams
             ]
 
