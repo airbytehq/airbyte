@@ -23,3 +23,11 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-scaffold-java-jdbc')
 }
+
+//This is only needed because we're using some pre 0.3 version of the CDK
+java {
+     compileJava {
+        options.compilerArgs.remove("-Werror")
+     }
+}
+

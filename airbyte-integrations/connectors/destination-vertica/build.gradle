@@ -19,3 +19,11 @@ dependencies {
     implementation group: 'com.vertica.jdbc', name: 'vertica-jdbc', version: '12.0.3-0'
     implementation group: 'org.testcontainers', name: 'jdbc', version: '1.18.0'
 }
+
+//This is only needed because we're using some pre 0.3 version of the CDK
+java {
+     compileJava {
+        options.compilerArgs.remove("-Werror")
+     }
+}
+

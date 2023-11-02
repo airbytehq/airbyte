@@ -6,6 +6,12 @@ plugins {
     id "org.jsonschema2pojo" version "1.2.1"
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes,-unchecked"
+    }
+}
+
 airbyteJavaConnector {
     cdkVersionRequired = '0.4.1'
     features = ['db-sources']
