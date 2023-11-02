@@ -173,6 +173,14 @@ class AirbytePythonPlugin implements Plugin<Project> {
         }
 
         Helpers.addTestTaskIfTestFilesFound(project, 'integration_tests', 'integrationTestPython', installTestReqs)
+        def integrationTestTasks = project.tasks.matching { it.name == 'integrationTestPython' }
+        integrationTestTasks.configureEach {
+            dependsOn project.tasks.named('assemble')
+            mustRunAfter project.tasks.named('check')
+        }
+        project.tasks.named('build').configure {
+            dependsOn integrationTestTasks
+        }
     }
 }
 
