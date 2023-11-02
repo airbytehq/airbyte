@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.52.9
+File CDK: Improve file type detection in document file type parser
+
 ## 0.52.8
 Concurrent CDK: incremental (missing state conversion). Outside of concurrent specific work, this includes the following changes:
 * Checkpointing state was acting on the number of records per slice. This has been changed to consider the number of records per syncs

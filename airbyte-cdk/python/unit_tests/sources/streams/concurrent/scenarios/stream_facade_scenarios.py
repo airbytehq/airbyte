@@ -1,64 +1,12 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
-
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.cursor import CursorField
-from airbyte_cdk.sources.streams.core import StreamData
 from unit_tests.sources.file_based.scenarios.scenario_builder import IncrementalScenarioConfig, TestScenarioBuilder
 from unit_tests.sources.streams.concurrent.scenarios.stream_facade_builder import StreamFacadeSourceBuilder
+from unit_tests.sources.streams.concurrent.scenarios.utils import MockStream
 
-
-class _MockStream(Stream):
-    def __init__(
-        self,
-        slices_and_records_or_exception: Iterable[Tuple[Optional[Mapping[str, Any]], Iterable[Union[Exception, Mapping[str, Any]]]]],
-        name,
-        json_schema,
-        primary_key=None,
-    ):
-        self._slices_and_records_or_exception = slices_and_records_or_exception
-        self._name = name
-        self._json_schema = json_schema
-        self._primary_key = primary_key
-
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
-    ) -> Iterable[StreamData]:
-        for _slice, records_or_exception in self._slices_and_records_or_exception:
-            if stream_slice == _slice:
-                for item in records_or_exception:
-                    if isinstance(item, Exception):
-                        raise item
-                    yield item
-
-    @property
-    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
-        return self._primary_key
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    def get_json_schema(self) -> Mapping[str, Any]:
-        return self._json_schema
-
-    def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
-    ) -> Iterable[Optional[Mapping[str, Any]]]:
-        if self._slices_and_records_or_exception:
-            yield from [_slice for _slice, records_or_exception in self._slices_and_records_or_exception]
-        else:
-            yield None
-
-
-_stream1 = _MockStream(
+_stream1 = MockStream(
     [
         (None, [{"id": "1"}, {"id": "2"}]),
     ],
@@ -71,7 +19,7 @@ _stream1 = _MockStream(
     },
 )
 
-_stream_raising_exception = _MockStream(
+_stream_raising_exception = MockStream(
     [
         (None, [{"id": "1"}, ValueError("test exception")]),
     ],
@@ -84,7 +32,7 @@ _stream_raising_exception = _MockStream(
     },
 )
 
-_stream_with_primary_key = _MockStream(
+_stream_with_primary_key = MockStream(
     [
         (None, [{"id": "1"}, {"id": "2"}]),
     ],
@@ -98,7 +46,7 @@ _stream_with_primary_key = _MockStream(
     primary_key="id",
 )
 
-_stream2 = _MockStream(
+_stream2 = MockStream(
     [
         (None, [{"id": "A"}, {"id": "B"}]),
     ],
@@ -111,7 +59,7 @@ _stream2 = _MockStream(
     },
 )
 
-_stream_with_single_slice = _MockStream(
+_stream_with_single_slice = MockStream(
     [
         ({"slice_key": "s1"}, [{"id": "1"}, {"id": "2"}]),
     ],
@@ -124,7 +72,7 @@ _stream_with_single_slice = _MockStream(
     },
 )
 
-_stream_with_multiple_slices = _MockStream(
+_stream_with_multiple_slices = MockStream(
     [
         ({"slice_key": "s1"}, [{"id": "1"}, {"id": "2"}]),
         ({"slice_key": "s2"}, [{"id": "3"}, {"id": "4"}]),
@@ -389,7 +337,7 @@ test_incremental_stream_with_slice_boundaries = (
         StreamFacadeSourceBuilder()
         .set_streams(
             [
-                _MockStream(
+                MockStream(
                     [
                         ({"from": 0, "to": 1}, [{"id": "1", "cursor_field": 0}, {"id": "2", "cursor_field": 1}]),
                         ({"from": 1, "to": 2}, [{"id": "3", "cursor_field": 2}, {"id": "4", "cursor_field": 3}]),
@@ -410,10 +358,10 @@ test_incremental_stream_with_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 1}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 1}]}},
+            {"stream1": {"slices": [{"start": 0, "end": 1}], "state_type": "date-range", "legacy": {}}},
             {"data": {"id": "3", "cursor_field": 2}, "stream": "stream1"},
             {"data": {"id": "4", "cursor_field": 3}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 1}, {"start": 1, "end": 2}]}},
+            {"stream1": {"slices": [{"start": 0, "end": 2}], "state_type": "date-range", "legacy": {}}},
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -435,7 +383,7 @@ test_incremental_stream_without_slice_boundaries = (
         StreamFacadeSourceBuilder()
         .set_streams(
             [
-                _MockStream(
+                MockStream(
                     [
                         (None, [{"id": "1", "cursor_field": 0}, {"id": "2", "cursor_field": 3}]),
                     ],
@@ -455,7 +403,7 @@ test_incremental_stream_without_slice_boundaries = (
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
             {"data": {"id": "2", "cursor_field": 3}, "stream": "stream1"},
-            {"stream1": {"slices": [{"start": 0, "end": 3}]}},
+            {"stream1": {"slices": [{"start": 0, "end": 3}], "state_type": "date-range", "legacy": {}}},
         ]
     )
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
@@ -475,7 +423,7 @@ test_incremental_stream_with_many_slices_but_without_slice_boundaries = (
         StreamFacadeSourceBuilder()
         .set_streams(
             [
-                _MockStream(
+                MockStream(
                     [
                         ({"parent_id": 1}, [{"id": "1", "cursor_field": 0}]),
                         ({"parent_id": 309}, [{"id": "3", "cursor_field": 0}]),
