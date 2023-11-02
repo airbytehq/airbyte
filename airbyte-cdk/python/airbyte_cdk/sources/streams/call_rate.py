@@ -100,7 +100,7 @@ class RequestMatcher(abc.ABC):
         """
 
         :param request:
-        :return: True if pattern matches the provided request object, False - otherwise
+        :return: True if matches the provided request object, False - otherwise
         """
 
 
@@ -140,7 +140,7 @@ class HttpRequestMatcher(RequestMatcher):
         """
 
         :param request:
-        :return: True if pattern matches the provided request object, False - otherwise
+        :return: True if matches the provided request object, False - otherwise
         """
         if isinstance(request, requests.Request):
             prepared_request = request.prepare()
@@ -214,11 +214,12 @@ class UnlimitedCallRatePolicy(BaseCallRatePolicy):
 
 
 class FixedWindowCallRatePolicy(BaseCallRatePolicy):
-    def __init__(self, window: TimeWindow, call_limit: int, **kwargs: Any):
+    def __init__(self, window: TimeWindow, call_limit: int, matchers: list[RequestMatcher]):
         """A policy that allows {call_limit} calls within a {window} time interval
 
         :param window:
         :param call_limit:
+        :param matchers:
         """
 
         self._current_window = TimeWindow(window.start, window.end)
@@ -226,7 +227,7 @@ class FixedWindowCallRatePolicy(BaseCallRatePolicy):
         self._call_limit = call_limit
         self._calls_num = 0
         self._lock = RLock()
-        super().__init__(**kwargs)
+        super().__init__(matchers=matchers)
 
     def try_acquire(self, request: Any, weight: int) -> None:
         if weight > self._call_limit:
@@ -289,10 +290,11 @@ class MovingWindowCallRatePolicy(BaseCallRatePolicy):
     This strategy requires saving of timestamps of all requests within a window.
     """
 
-    def __init__(self, rates: list[Rate], **kwargs: Any):
+    def __init__(self, rates: list[Rate], matchers: list[RequestMatcher]):
         """Constructor
 
         :param rates: list of rates, the order is important and must be ascending
+        :param matchers:
         """
         if not rates:
             raise ValueError("The list of rates can not be empty")
@@ -300,7 +302,7 @@ class MovingWindowCallRatePolicy(BaseCallRatePolicy):
         self._bucket = InMemoryBucket(pyrate_rates)
         # Limiter will create the background task that clears old requests in the bucket
         self._limiter = Limiter(self._bucket)
-        super().__init__(**kwargs)
+        super().__init__(matchers=matchers)
 
     def try_acquire(self, request: Any, weight: int) -> None:
         if not self.matches(request):
