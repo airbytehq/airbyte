@@ -70,9 +70,9 @@ class ConcurrentStreamStateConverter(ABC):
     @classmethod
     def merge_intervals(cls, intervals: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         sorted_intervals = sorted(intervals, key=lambda x: (x[cls.START_KEY], x[cls.END_KEY]))
-        try:
+        if len(sorted_intervals) > 0:
             merged_intervals = [sorted_intervals[0]]
-        except IndexError:
+        else:
             return []
         for interval in sorted_intervals[1:]:
             if interval[cls.START_KEY] <= cls.increment(merged_intervals[-1][cls.END_KEY]):
@@ -85,7 +85,7 @@ class ConcurrentStreamStateConverter(ABC):
 
 class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
     def __init__(self, cursor_field: str):
-        self.cursor_field = cursor_field
+        self._cursor_field = cursor_field
 
     def convert_from_sequential_state(self, stream_state: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         """
@@ -102,11 +102,11 @@ class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
         """
         if self.is_state_message_compatible(stream_state):
             return stream_state
-        if self.cursor_field in stream_state:
+        if self._cursor_field in stream_state:
             slices = [
                 {
                     self.START_KEY: 0,
-                    self.END_KEY: stream_state[self.cursor_field],
+                    self.END_KEY: stream_state[self._cursor_field],
                 },
             ]
         else:
@@ -133,7 +133,7 @@ class EpochValueConcurrentStreamStateConverter(ConcurrentStreamStateConverter):
         if self.is_state_message_compatible(stream_state):
             legacy_state = stream_state.get("legacy", {})
             if slices := stream_state.pop("slices", None):
-                legacy_state.update({self.cursor_field: self._get_latest_complete_time(slices)})
+                legacy_state.update({self._cursor_field: self._get_latest_complete_time(slices)})
             return legacy_state
         else:
             return stream_state
