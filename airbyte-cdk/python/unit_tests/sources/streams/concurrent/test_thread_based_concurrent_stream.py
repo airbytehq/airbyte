@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import concurrent
 import unittest
 from unittest.mock import Mock, call
 
@@ -16,7 +16,7 @@ from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream impor
 class ThreadBasedConcurrentStreamTest(unittest.TestCase):
     def setUp(self):
         self._partition_generator = Mock()
-        self._max_workers = 1
+        self._threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="workerpool")
         self._name = "name"
         self._json_schema = {}
         self._availability_strategy = Mock()
@@ -28,7 +28,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._cursor = Mock(spec=Cursor)
         self._stream = ThreadBasedConcurrentStream(
             self._partition_generator,
-            self._max_workers,
+            self._threadpool,
             self._name,
             self._json_schema,
             self._availability_strategy,
@@ -158,7 +158,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         }
         stream = ThreadBasedConcurrentStream(
             self._partition_generator,
-            self._max_workers,
+            self._threadpool,
             self._name,
             json_schema,
             self._availability_strategy,
@@ -195,7 +195,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         }
         stream = ThreadBasedConcurrentStream(
             self._partition_generator,
-            self._max_workers,
+            self._threadpool,
             self._name,
             json_schema,
             self._availability_strategy,
@@ -232,7 +232,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         }
         stream = ThreadBasedConcurrentStream(
             self._partition_generator,
-            self._max_workers,
+            self._threadpool,
             self._name,
             json_schema,
             self._availability_strategy,
@@ -262,7 +262,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
     def test_as_airbyte_stream_with_namespace(self):
         stream = ThreadBasedConcurrentStream(
             self._partition_generator,
-            self._max_workers,
+            self._threadpool,
             self._name,
             self._json_schema,
             self._availability_strategy,

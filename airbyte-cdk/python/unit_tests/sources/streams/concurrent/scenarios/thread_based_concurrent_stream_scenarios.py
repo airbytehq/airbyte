@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
+import concurrent
 import logging
 
 from airbyte_cdk.sources.message import InMemoryMessageRepository
@@ -17,9 +17,11 @@ from unit_tests.sources.streams.concurrent.scenarios.thread_based_concurrent_str
     NeverLogSliceLogger,
 )
 
+_single_worker_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="workerpool")
+_two_workers_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=2, thread_name_prefix="workerpool")
 _id_only_stream = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator([InMemoryPartition("partition1", None, [Record({"id": "1"}), Record({"id": "2"})])]),
-    max_workers=1,
+    threadpool=_single_worker_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -38,7 +40,7 @@ _id_only_stream = ThreadBasedConcurrentStream(
 
 _id_only_stream_with_slice_logger = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator([InMemoryPartition("partition1", None, [Record({"id": "1"}), Record({"id": "2"})])]),
-    max_workers=1,
+    threadpool=_single_worker_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -57,7 +59,7 @@ _id_only_stream_with_slice_logger = ThreadBasedConcurrentStream(
 
 _id_only_stream_with_primary_key = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator([InMemoryPartition("partition1", None, [Record({"id": "1"}), Record({"id": "2"})])]),
-    max_workers=1,
+    threadpool=_single_worker_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -81,7 +83,7 @@ _id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
             InMemoryPartition("partition2", {"p": "2"}, [Record({"id": "3"}), Record({"id": "4"})]),
         ]
     ),
-    max_workers=1,
+    threadpool=_single_worker_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -105,7 +107,7 @@ _id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurren
             InMemoryPartition("partition2", {"p": "2"}, [Record({"id": "3"}), Record({"id": "4"})]),
         ]
     ),
-    max_workers=2,
+    threadpool=_two_workers_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -126,7 +128,7 @@ _stream_raising_exception = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
         [InMemoryPartition("partition1", None, [Record({"id": "1"}), ValueError("test exception")])]
     ),
-    max_workers=1,
+    threadpool=_two_workers_threadpool,
     name="stream1",
     json_schema={
         "type": "object",
@@ -246,7 +248,7 @@ test_concurrent_cdk_multiple_streams = (
                     partition_generator=InMemoryPartitionGenerator(
                         [InMemoryPartition("partition1", None, [Record({"id": "10", "key": "v1"}), Record({"id": "20", "key": "v2"})])]
                     ),
-                    max_workers=1,
+                    threadpool=_single_worker_threadpool,
                     name="stream2",
                     json_schema={
                         "type": "object",

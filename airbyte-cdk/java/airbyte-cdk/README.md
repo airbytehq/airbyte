@@ -2,21 +2,21 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-- [Developing with the Java CDK](#developing-with-the-java-cdk)
-  - [Intro to the Java CDK](#intro-to-the-java-cdk)
-    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-    - [How is the CDK published?](#how-is-the-cdk-published)
-  - [Using the Java CDK](#using-the-java-cdk)
-    - [Building the CDK](#building-the-cdk)
-    - [Bumping the CDK version](#bumping-the-cdk-version)
-    - [Publishing the CDK](#publishing-the-cdk)
-  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-  - [Common Debugging Tips](#common-debugging-tips)
-  - [Changelog](#changelog)
-    - [Java CDK](#java-cdk)
+* [Developing with the Java CDK](#developing-with-the-java-cdk)
+   * [Intro to the Java CDK](#intro-to-the-java-cdk)
+      * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+      * [How is the CDK published?](#how-is-the-cdk-published)
+   * [Using the Java CDK](#using-the-java-cdk)
+      * [Building the CDK](#building-the-cdk)
+      * [Bumping the CDK version](#bumping-the-cdk-version)
+      * [Publishing the CDK](#publishing-the-cdk)
+   * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+      * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+      * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+      * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+   * [Common Debugging Tips](#common-debugging-tips)
+   * [Changelog](#changelog)
+      * [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -99,7 +99,7 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.1.0'   // The CDK version to pin to.
     features = ['db-destinations'] // An array of CDK features to depend on.
-    useLocalCdk = false            // Use 'true' to use a live reference to the 
+    useLocalCdk = false            // Use 'true' to use a live reference to the
                                    // local cdk project.
 }
 
@@ -156,6 +156,7 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.0   | 2023-11-02 | [\#31983](https://github.com/airbytehq/airbyte/pull/31983) | Add deinterpolation feature to AirbyteExceptionHandler.                                                                                                        |
 | 0.2.4   | 2023-10-31 | [\#31807](https://github.com/airbytehq/airbyte/pull/31807) | Handle case of debezium update and delete of records in mongodb.                                                                                               |
 | 0.2.3   | 2023-10-31 | [\#32022](https://github.com/airbytehq/airbyte/pull/32022) | Update Debezium version from 2.20 -> 2.4.0.                                                                                                                    |
 | 0.2.2   | 2023-10-31 | [\#31976](https://github.com/airbytehq/airbyte/pull/31976) | Debezium tweaks to make tests run faster.                                                                                                                      |

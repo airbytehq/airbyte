@@ -436,11 +436,11 @@ class SourceStripe(ConcurrentSource):
             # The limit can be removed or increased once we have proper rate limiting
             concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
             streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
-            threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
 
             # The state is known to be empty because concurrent CDK is currently only used for full refresh
             state = {}
             cursor = NoopCursor()
+            threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
             return [
                 # FIXME: maybe need a better to access the threadpool?
                 StreamFacade.create_from_stream(stream, self, entrypoint_logger, threadpool, state, cursor)
