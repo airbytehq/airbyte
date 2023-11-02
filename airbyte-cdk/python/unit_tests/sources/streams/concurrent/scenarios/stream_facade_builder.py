@@ -6,11 +6,12 @@ from typing import Any, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager, EpochValueConcurrentStreamStateConverter
+from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.streams.concurrent.cursor import ConcurrentCursor, CursorField, NoopCursor
+from airbyte_cdk.sources.streams.concurrent.state_converter import EpochValueConcurrentStreamStateConverter
 from airbyte_protocol.models import ConfiguredAirbyteStream
 from unit_tests.sources.file_based.scenarios.scenario_builder import SourceBuilder
 
@@ -42,7 +43,7 @@ class StreamFacadeSource(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         state_manager = ConnectorStateManager(stream_instance_map={s.name: s for s in self._streams}, state=self._state)
-        state_converter = StreamFacadeConcurrentConnectorStateConverter()
+        state_converter = StreamFacadeConcurrentConnectorStateConverter("created")
         return [
             StreamFacade.create_from_stream(
                 stream,
