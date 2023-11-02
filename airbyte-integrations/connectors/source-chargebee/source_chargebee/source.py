@@ -2,7 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
+from typing import Any, List, Mapping
+
+from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
+from airbyte_cdk.sources.streams.concurrent.cursor import NoopCursor
+from airbyte_cdk.sources.streams.core import Stream
 
 """
 This file provides the necessary constructs to interpret a provided declarative YAML configuration file into
@@ -16,3 +22,9 @@ WARNING: Do not modify this file.
 class SourceChargebee(YamlDeclarativeSource):
     def __init__(self):
         super().__init__(**{"path_to_yaml": "manifest.yaml"})
+
+    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        streams = super().streams(config)
+        return [
+            StreamFacade.create_from_stream(stream, self, entrypoint_logger, 5, {}, NoopCursor()) for stream in streams
+        ]
