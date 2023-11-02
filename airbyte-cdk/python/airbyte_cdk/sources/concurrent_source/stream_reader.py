@@ -36,4 +36,7 @@ class StreamReader:
             self._queue.put(self._sentinel)
         except Exception as e:
             # print(f"exception: {e}")
+            self._message_repository.emit_message(
+                stream_status_as_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.INCOMPLETE)
+            )
             self._queue.put(e)

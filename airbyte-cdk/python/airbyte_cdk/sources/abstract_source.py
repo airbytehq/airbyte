@@ -133,7 +133,9 @@ class AbstractSource(Source, ABC):
                         configured_stream.stream.name, configured_stream.stream.namespace, AirbyteStreamStatus.COMPLETE
                     )
                 except AirbyteTracedException as e:
-                    # yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.INCOMPLETE)
+                    yield stream_status_as_airbyte_message(
+                        configured_stream.stream.name, configured_stream.stream.namespace, AirbyteStreamStatus.INCOMPLETE
+                    )
                     raise e
                 except Exception as e:
                     yield from self._emit_queued_messages()
@@ -201,7 +203,9 @@ class AbstractSource(Source, ABC):
                 if record_counter == 1:
                     logger.info(f"Marking stream {stream_name} as RUNNING")
                     # If we just read the first record of the stream, emit the transition to the RUNNING state
-                    yield stream_status_as_airbyte_message(configured_stream.stream.name, configured_stream.stream.namespace, AirbyteStreamStatus.RUNNING)
+                    yield stream_status_as_airbyte_message(
+                        configured_stream.stream.name, configured_stream.stream.namespace, AirbyteStreamStatus.RUNNING
+                    )
             yield from self._emit_queued_messages()
             yield record
 
