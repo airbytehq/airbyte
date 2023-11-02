@@ -229,7 +229,7 @@ public class MongoDbCdcEventUtils {
               new JsonObjectCodecProvider(),
               new BsonCodecProvider(),
               new DBRefCodecProvider(),
-              new UuidCodecProvider(UuidRepresentation.STANDARD)));
+              new UuidCodecProvider(UuidRepresentation.JAVA_LEGACY)));
 
       // Override the default codec registry
       return document.toBsonDocument(BsonDocument.class, customCodecRegistry);
