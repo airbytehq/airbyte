@@ -165,7 +165,8 @@ public class DefaultTyperDeduperTest {
 
     typerDeduper.typeAndDedupe("overwrite_ns", "overwrite_stream", false);
     // NB: no airbyte_tmp suffix on the non-overwrite streams
-    verify(destinationHandler).execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z");
+    verify(destinationHandler)
+        .execute("UPDATE TABLE overwrite_ns.overwrite_stream_airbyte_tmp WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z");
     typerDeduper.typeAndDedupe("append_ns", "append_stream", false);
     verify(destinationHandler).execute("UPDATE TABLE append_ns.append_stream WITHOUT SAFER CASTING WHERE extracted_at > 2023-01-01T12:34:56Z");
     typerDeduper.typeAndDedupe("dedup_ns", "dedup_stream", false);
