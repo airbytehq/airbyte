@@ -93,6 +93,23 @@ export function useDefaultTransformation(): OperationCreate {
       .nullable()
       .defined("form.empty.error")
 
+
+
+
+
+          scheduleData: yup
+      .object({
+        basicSchedule: yup
+          .object({
+            units: yup.number().required("form.empty.error"),
+            timeUnit: yup.string().required("form.empty.error"),
+          })
+          .nullable()
+          .defined("form.empty.error"),
+      })
+      .nullable()
+      .defined("form.empty.error"),
+
 */
 }
 export const connectionValidationSchema = yup
@@ -100,11 +117,19 @@ export const connectionValidationSchema = yup
     name: yup.string().required("form.empty.error"),
     scheduleType: yup.string().oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic]),
     scheduleData: yup
-      .object({
-        basicSchedule: yup
+      .object()
+      .when("basicSchedule", {
+        is: (value: any) => value === "manual",
+        then: yup.object().notRequired(),
+        otherwise: yup
           .object({
-            units: yup.number().required("form.empty.error"),
-            timeUnit: yup.string().required("form.empty.error"),
+            basicSchedule: yup
+              .object({
+                units: yup.number().required("form.empty.error"),
+                timeUnit: yup.string().required("form.empty.error"),
+              })
+              .nullable()
+              .defined("form.empty.error"),
           })
           .nullable()
           .defined("form.empty.error"),

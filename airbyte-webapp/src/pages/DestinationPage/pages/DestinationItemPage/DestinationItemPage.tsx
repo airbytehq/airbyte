@@ -94,7 +94,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConf
   const [loadingStatus, setLoadingStatus] = useState<boolean>(true);
   const [fetchingConnectorError, setFetchingConnectorError] = useState<JSX.Element | string | null>(null);
   const [pageConfig, updatePageSize] = usePageConfig();
-  const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig?.connection?.pageSize);
+  const [pageCurrent, setCurrentPageSize] = useState<number>(pageConfig?.destinationItem?.pageSize);
   const initialFiltersState = {
     destinationId: params.id,
     pageSize: pageCurrent,
@@ -133,7 +133,7 @@ const DestinationItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConf
   const onChangePageSize = useCallback(
     (size: number) => {
       setCurrentPageSize(size);
-      updatePageSize("connection", size);
+      updatePageSize("destinationItem", size);
       onSelectFilter("pageSize", size);
     },
     [onSelectFilter]
