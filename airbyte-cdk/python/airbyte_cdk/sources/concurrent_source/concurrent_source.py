@@ -23,6 +23,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.stream_reader import StreamReader
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
+from airbyte_cdk.sources.message import InMemoryMessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
@@ -31,11 +32,16 @@ from airbyte_cdk.utils.event_timing import create_timer
 
 
 class ConcurrentSource(AbstractSource, ABC):
-    def __init__(self, max_workers, timeout_in_seconds, **kwargs):
+    def __init__(self, max_workers, timeout_in_seconds, message_repository=InMemoryMessageRepository(), **kwargs):
         super().__init__(**kwargs)
         self._max_workers = max_workers
         self._timeout_seconds = timeout_in_seconds
         self._stream_read_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
+        self._message_repository = message_repository
+
+    @property
+    def message_repository(self):
+        return self._message_repository
 
     # FIXME: This probably deserves a nicer interface with an adapter
     def read(
@@ -49,7 +55,7 @@ class ConcurrentSource(AbstractSource, ABC):
         futures: List[Future[Any]] = []
         queue: Queue = Queue()
         SENTINEL = object
-        stream_reader = StreamReader(queue, SENTINEL)
+        stream_reader = StreamReader(queue, SENTINEL, self.message_repository)
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
@@ -108,6 +114,7 @@ class ConcurrentSource(AbstractSource, ABC):
                     message = stream_data_to_airbyte_message(
                         airbyte_message_or_record_or_exception.stream_name, airbyte_message_or_record_or_exception.data
                     )
+                    yield from self._emit_queued_messages()
                     yield message
                     if message.type == MessageType.RECORD:
                         total_records_counter += 1

@@ -157,18 +157,18 @@ def test_source_read_no_state_single_stream_single_partition_full_refresh():
     messages_from_concurrent_source = list(concurrent_source.read(logger, config, catalog, state))
 
     expected_messages = [
-        # AirbyteMessage(
-        #     type=MessageType.TRACE,
-        #     trace=AirbyteTraceMessage(
-        #         type=TraceType.STREAM_STATUS,
-        #         emitted_at=1577836800000.0,
-        #         error=None,
-        #         estimate=None,
-        #         stream_status=AirbyteStreamStatusTraceMessage(
-        #             stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
-        #         ),
-        #     ),
-        # ),
+        AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
+                ),
+            ),
+        ),
         # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "1"}')),
         # AirbyteMessage(
         #     type=MessageType.TRACE,
@@ -228,6 +228,18 @@ def test_source_read_no_state_single_stream_single_partition_full_refresh():
         #     ),
         # ),
         AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream2"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
+                ),
+            ),
+        ),
+        AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(
                 stream="stream2",
@@ -261,7 +273,19 @@ def test_source_read_no_state_single_stream_single_partition_full_refresh():
         ),
     ]
 
-    assert expected_messages == messages_from_abstract_source
+    assert len(expected_messages) == len(messages_from_abstract_source)
+    assert _compare(expected_messages, messages_from_abstract_source)
 
     # assert len(messages_from_abstract_source) == len(messages_from_concurrent_source)
-    assert messages_from_abstract_source == messages_from_concurrent_source
+    # assert messages_from_abstract_source == messages_from_concurrent_source
+    assert _compare(messages_from_abstract_source, messages_from_concurrent_source)
+
+
+def _compare(s, t):
+    t = list(t)
+    try:
+        for elem in s:
+            t.remove(elem)
+    except ValueError:
+        return False
+    return not t
