@@ -28,7 +28,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 public class DetectStreamToFlush {
 
   private static final double EAGER_FLUSH_THRESHOLD = 0.90;
-  private static final long QUEUE_FLUSH_THRESHOLD_BYTES = 80 * 1024 * 1024; // 10MB
+  private static final long QUEUE_FLUSH_THRESHOLD_BYTES = 200 * 1024 * 1024; // 200MB
   private static final long MAX_TIME_BETWEEN_FLUSH_MS = 5 * 60 * 1000;
   private final BufferDequeue bufferDequeue;
   private final RunningFlushWorkers runningFlushWorkers;
