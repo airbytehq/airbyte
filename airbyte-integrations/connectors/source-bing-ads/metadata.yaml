@@ -41,11 +41,11 @@ data:
         upgradeDeadline: "2023-10-25"
       2.0.0:
         message:
-          Version 2.0.0 updates schemes for Accounts, Campaigns and Search Query Performance Report streams.
+          Version 2.0.0 updates schemas for Accounts, Campaigns and Search Query Performance Report streams.
           LinkedAgencies was changed from string to object in Accounts stream. BiddingScheme.MaxCpc.Amount
           was changed from string to number in Campaigns stream. And CostPerConversion was changed from integer
           to number. Users will need to refresh the source schema and reset affected streams after upgrading.
-        upgradeDeadline: "2023-11-16"
+        upgradeDeadline: "2023-11-17"
   supportLevel: certified
   tags:
     - language:python
