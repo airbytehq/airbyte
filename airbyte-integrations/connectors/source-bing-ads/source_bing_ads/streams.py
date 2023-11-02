@@ -636,6 +636,8 @@ class CampaignImpressionPerformanceReport(PerformanceReportsMixin, BingAdsStream
     cursor_field = "TimePeriod"
     report_schema_name = "campaign_impression_performance_report"
 
+    primary_key = None
+
     @property
     def report_columns(self) -> Iterable[str]:
         return list(self.get_json_schema().get("properties", {}).keys())
