@@ -152,6 +152,7 @@ def test_AccountPerformanceReportMonthly_request_params(mocked_client, config):
         "timeout_in_milliseconds": 300000,
     }
 
+
 @pytest.mark.parametrize(
     ("stream", "stream_slice"),
     (
