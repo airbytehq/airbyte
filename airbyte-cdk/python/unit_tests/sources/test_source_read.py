@@ -215,18 +215,18 @@ def test_source_read_no_state_single_stream_single_partition_full_refresh():
                 emitted_at=1577836800000,
             ),
         ),
-        # AirbyteMessage(
-        #     type=MessageType.TRACE,
-        #     trace=AirbyteTraceMessage(
-        #         type=TraceType.STREAM_STATUS,
-        #         emitted_at=1577836800000.0,
-        #         error=None,
-        #         estimate=None,
-        #         stream_status=AirbyteStreamStatusTraceMessage(
-        #             stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
-        #         ),
-        #     ),
-        # ),
+        AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
+                ),
+            ),
+        ),
         AirbyteMessage(
             type=MessageType.TRACE,
             trace=AirbyteTraceMessage(
@@ -269,6 +269,18 @@ def test_source_read_no_state_single_stream_single_partition_full_refresh():
                 stream="stream2",
                 data=records_stream_2_partition_2[1],
                 emitted_at=1577836800000,
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream2"), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
+                ),
             ),
         ),
     ]

@@ -24,6 +24,9 @@ class StreamReader:
             for record in stream.read():
                 # print(f"adding record to queue {record}")
                 self._queue.put(record)
+            self._message_repository.emit_message(
+                stream_status_as_airbyte_message(airbyte_stream.name, airbyte_stream.namespace, AirbyteStreamStatus.COMPLETE)
+            )
             self._queue.put(self._sentinel)
         except Exception as e:
             # print(f"exception: {e}")

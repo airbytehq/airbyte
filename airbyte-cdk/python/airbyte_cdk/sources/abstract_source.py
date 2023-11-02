@@ -129,7 +129,9 @@ class AbstractSource(Source, ABC):
                         internal_config=internal_config,
                     )
                     logger.info(f"Marking stream {configured_stream.stream.name} as STOPPED")
-                    # yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.COMPLETE)
+                    yield stream_status_as_airbyte_message(
+                        configured_stream.stream.name, configured_stream.stream.namespace, AirbyteStreamStatus.COMPLETE
+                    )
                 except AirbyteTracedException as e:
                     # yield stream_status_as_airbyte_message(configured_stream, AirbyteStreamStatus.INCOMPLETE)
                     raise e
