@@ -63,11 +63,11 @@ def click_append_to_context_object(key: str, value: Callable | Any) -> Callable:
     """
     Decorator to append a value to the click context object.
     """
+
     def decorator(f):
         async def wrapper(*args, **kwargs):
             ctx = click.get_current_context()
             ctx.ensure_object(dict)
-
 
             # if async, get the value, cannot use await
             if inspect.iscoroutinefunction(value):

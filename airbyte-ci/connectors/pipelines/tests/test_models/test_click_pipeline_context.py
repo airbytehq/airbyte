@@ -1,8 +1,10 @@
+from unittest.mock import patch
+
 import asyncclick as click
 import dagger
 import pytest
-from unittest.mock import patch
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext
+
 
 @pytest.mark.anyio
 async def test_get_dagger_client_singleton(dagger_connection):
@@ -14,7 +16,7 @@ async def test_get_dagger_client_singleton(dagger_connection):
 
     async with ctx.scope():
         click_pipeline_context = ClickPipelineContext()
-        with patch('pipelines.models.contexts.click_pipeline_context.dagger.Connection', lambda _x: dagger_connection):
+        with patch("pipelines.models.contexts.click_pipeline_context.dagger.Connection", lambda _x: dagger_connection):
             client1 = await click_pipeline_context.get_dagger_client()
             client2 = await click_pipeline_context.get_dagger_client()
             client3 = await click_pipeline_context.get_dagger_client(pipeline_name="pipeline_name")
@@ -24,6 +26,7 @@ async def test_get_dagger_client_singleton(dagger_connection):
 
             assert client1 == client2
             assert client1 != client3
+
 
 @pytest.mark.anyio
 async def test_get_dagger_client_click_params(dagger_connection):
@@ -39,9 +42,10 @@ async def test_get_dagger_client_click_params(dagger_connection):
 
     async with ctx.scope():
         click_pipeline_context = ClickPipelineContext()
-        with patch('pipelines.models.contexts.click_pipeline_context.dagger.Connection', lambda _x: dagger_connection):
+        with patch("pipelines.models.contexts.click_pipeline_context.dagger.Connection", lambda _x: dagger_connection):
             pipeline_context_params = click_pipeline_context.params
             assert pipeline_context_params == {**given_click_obj, **given_click_params}
+
 
 @pytest.mark.anyio
 async def test_get_dagger_client_click_params_duplicate(dagger_connection):
@@ -58,7 +62,6 @@ async def test_get_dagger_client_click_params_duplicate(dagger_connection):
 
     async with ctx.scope():
         click_pipeline_context = ClickPipelineContext()
-        with patch('pipelines.models.contexts.click_pipeline_context.dagger.Connection', lambda _x: dagger_connection):
+        with patch("pipelines.models.contexts.click_pipeline_context.dagger.Connection", lambda _x: dagger_connection):
             with pytest.raises(ValueError):
                 click_pipeline_context.params
-

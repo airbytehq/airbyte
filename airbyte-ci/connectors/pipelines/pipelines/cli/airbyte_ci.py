@@ -217,6 +217,7 @@ async def get_modified_files_str(ctx: click.Context):
     )
     return transform_strs_to_paths(modified_files)
 
+
 # COMMANDS
 
 
