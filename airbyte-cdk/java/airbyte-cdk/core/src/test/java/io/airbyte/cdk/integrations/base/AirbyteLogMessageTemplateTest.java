@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.appender.OutputStreamAppender;
 import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,6 +44,7 @@ public class AirbyteLogMessageTemplateTest {
   public static final String CONSOLE_JSON_APPENDER = "ConsoleJSONAppender";
   private static OutputStreamAppender outputStreamAppender;
   private static LoggerConfig rootLoggerConfig;
+  private static LoggerContext loggerContext;
 
   @BeforeAll
   static void init() {
@@ -50,7 +52,7 @@ public class AirbyteLogMessageTemplateTest {
     // as the console json appender defined in this project's log4j2.xml file.
     // We then attach this log appender with the LOGGER instance so that we can validate the logs
     // produced by code and assert that it matches the expected format.
-    final LoggerContext loggerContext = (LoggerContext) LogManager.getContext(false);
+    loggerContext = Configurator.initialize(null, "log4j2.xml");
     final Configuration configuration = loggerContext.getConfiguration();
     rootLoggerConfig = configuration.getLoggerConfig("");
 
@@ -71,6 +73,7 @@ public class AirbyteLogMessageTemplateTest {
   static void cleanUp() {
     outputStreamAppender.stop();
     rootLoggerConfig.removeAppender(OUTPUT_STREAM_APPENDER);
+    loggerContext.close();
   }
 
   @Test

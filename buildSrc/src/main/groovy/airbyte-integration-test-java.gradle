@@ -37,7 +37,7 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
 
             systemProperties = project.test.systemProperties
             maxParallelForks = project.test.maxParallelForks
-            maxHeapSize = project.test.maxParallelForks
+            maxHeapSize = project.test.maxHeapSize
 
             // Always re-run integration tests no matter what.
             outputs.upToDateWhen { false }
