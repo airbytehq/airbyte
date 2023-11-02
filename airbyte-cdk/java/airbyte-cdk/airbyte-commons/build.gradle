@@ -3,6 +3,12 @@ plugins {
     id 'de.undercouch.download' version "5.4.0"
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-varargs,-try,-deprecation"
+    }
+}
+
 dependencies {
     // Dependencies for this module should be specified in the top-level build.gradle. See readme for more explanation.
 
