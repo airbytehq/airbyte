@@ -260,7 +260,12 @@ const useDiscoverSchema = (
     if (sourceId) {
       onDiscoverSchema();
     }
-  }, [onDiscoverSchema, sourceId]);
+  }, [sourceId]);
+  // useEffect(() => {
+  //   if (sourceId) {
+  //     onDiscoverSchema();
+  //   }
+  // }, [onDiscoverSchema, sourceId]);
 
   return { schemaErrorStatus, isLoading, schema, catalogId, onDiscoverSchema };
 };

@@ -178,7 +178,6 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
 
   const isEditMode: boolean = mode !== "create";
   const initialValues = useInitialValues(connection, destDefinition, isEditMode);
-  console.log(initialValues);
   const workspace = useCurrentWorkspace();
 
   const onFormSubmit = useCallback(
