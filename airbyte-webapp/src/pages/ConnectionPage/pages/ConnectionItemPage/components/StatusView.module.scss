@@ -35,6 +35,7 @@
         font-size: 15px;
         border: 1px solid colors.$borderColor;
         border-radius: 6px;
+        padding: 15px;
       }
 
       .cancelButton {
@@ -45,6 +46,7 @@
         height: 40px;
         font-size: 15px;
         border-radius: 6px;
+        padding: 15px;
 
         .iconXmark {
           margin-right: 12px;
@@ -75,13 +77,28 @@
     }
   }
 }
-@media screen and (max-width: 468px) {
+@media (max-width: 468px) {
   .statusView {
     .title {
       .titleText {
         font-size: 16px;
         font-weight: 400;
         line-height: 15px;
+      }
+    }
+
+    .actions {
+      .resetButton {
+        padding: 0 !important;
+      }
+
+      .cancelButton {
+        padding: 0 !important;
+
+        .iconXmark {
+          margin-right: 12px;
+          font-size: 18px;
+        }
       }
     }
   }
