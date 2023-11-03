@@ -70,6 +70,7 @@ class ConcurrentSource(AbstractSource, ABC):
                     f"Refresh the schema in replication settings and remove this stream from future sync attempts."
                 )
             else:
+                # FIXME: need to enable debug logging somehow
                 # self._apply_log_level_to_stream_logger(logger, stream_instance)
                 stream_availability = stream_instance.check_availability()
                 if not stream_availability.is_available():
@@ -79,8 +80,6 @@ class ConcurrentSource(AbstractSource, ABC):
                     continue
                 timer.start_event(configured_stream.stream.name, f"Syncing stream {configured_stream.stream.name}")
                 stream_instances_to_read_from.append(stream_instance)
-        # for stream in stream_instances_to_read_from:
-        #     self._submit_task(futures, stream_reader.read_from_stream, stream)
 
         partition_generator_running = []
         partition_generators = [stream._stream_partition_generator for stream in stream_instances_to_read_from]
@@ -103,9 +102,6 @@ class ConcurrentSource(AbstractSource, ABC):
                 None,
                 AirbyteStreamStatus.STARTED,
             )
-            # FIXME hack
-            # self._logger.info(f"Marking stream {stream.name} as STARTED")
-            # self._logger.info(f"Syncing stream: {stream.name}")
 
         # FIXME: I added this for one of the scenarios, but I'm not sure what the issue is...
         # time.sleep(0.5)
@@ -119,7 +115,7 @@ class ConcurrentSource(AbstractSource, ABC):
                 raise airbyte_message_or_record_or_exception
 
             elif isinstance(airbyte_message_or_record_or_exception, PartitionGenerationCompletedSentinel):
-                status_message = self._handle_partition_generation_completed(
+                yield from self._handle_partition_generation_completed(
                     airbyte_message_or_record_or_exception,
                     partition_generator_running,
                     partition_generators,
@@ -127,9 +123,11 @@ class ConcurrentSource(AbstractSource, ABC):
                     partition_generator,
                     futures,
                     logger,
+                    streams_to_partitions_to_done,
+                    stream_instances,
+                    record_counter,
+                    timer,
                 )
-                if status_message:
-                    yield status_message
 
             elif isinstance(airbyte_message_or_record_or_exception, Partition):
                 # A new partition was generated and must be processed
@@ -163,7 +161,7 @@ class ConcurrentSource(AbstractSource, ABC):
                 and all([all(partition_to_done.values()) for partition_to_done in streams_to_partitions_to_done.values()])
             ):
                 # All partitions were generated and process. We're done here
-                if all([f.done() for f in futures]):
+                if all([f.done() for f in futures]) and queue.empty():
                     break
         # TODO Some sort of error handling
         self._stream_read_threadpool.shutdown(wait=False, cancel_futures=True)
@@ -184,12 +182,10 @@ class ConcurrentSource(AbstractSource, ABC):
                 stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.RUNNING
             )
         record_counter[stream.name] += 1
-        # yield message
         if message.type == MessageType.RECORD:
             total_records_counter += 1
         # fixme hacky
         self._stream_to_instance_map[record.stream_name]._cursor.observe(record)
-        # yield from self._message_repository.consume_queue()
         if status_message:
             return [status_message, message] + list(self._message_repository.consume_queue())
         else:
@@ -203,24 +199,41 @@ class ConcurrentSource(AbstractSource, ABC):
         self._submit_task(futures, partition_reader.process_partition, partition)
 
     def _handle_partition_generation_completed(
-        self, sentinel, partition_generator_running, partition_generators, streams_in_progress, partition_generator, futures, logger
+        self,
+        sentinel,
+        partition_generator_running,
+        partition_generators,
+        streams_in_progress,
+        partition_generator,
+        futures,
+        logger,
+        streams_to_partitions_to_done,
+        stream_instances,
+        record_counter,
+        timer,
     ):
+        stream_name = sentinel.partition_generator.stream_name()
         partition_generator_running.remove(sentinel.partition_generator.stream_name())
+        ret = []
+        if self._is_stream_done(stream_name, streams_to_partitions_to_done, partition_generator_running):
+            ret.append(self._handle_stream_is_done(stream_name, stream_instances, streams_in_progress, record_counter, timer, logger))
         if partition_generators:
             stream_partition_generator = partition_generators.pop(0)
             streams_in_progress.add(stream_partition_generator.stream_name())
             self._submit_task(futures, partition_generator.generate_partitions, stream_partition_generator)
             partition_generator_running.append(stream_partition_generator.stream_name())
+            # FIXME: this might not be the right place since it's possible to start processing the first partitions before they're all generated
             logger.info(f"Marking stream {stream_partition_generator.stream_name()} as STARTED")
             logger.info(f"Syncing stream: {stream_partition_generator.stream_name()} ")
-            return stream_status_as_airbyte_message(
-                # FIXME pass namespace
-                stream_partition_generator.stream_name(),
-                None,
-                AirbyteStreamStatus.STARTED,
+            ret.append(
+                stream_status_as_airbyte_message(
+                    # FIXME pass namespace
+                    stream_partition_generator.stream_name(),
+                    None,
+                    AirbyteStreamStatus.STARTED,
+                )
             )
-        else:
-            return None
+        return ret
 
     def _handle_partition_completed(
         self,
@@ -237,16 +250,22 @@ class ConcurrentSource(AbstractSource, ABC):
         streams_to_partitions_to_done[stream_name][partition] = True
         # Fixme hacky
         self._stream_to_instance_map[stream_name]._cursor.close_partition(partition)
-        if all(streams_to_partitions_to_done[stream_name].values()) and stream_name not in partition_generator_running:
+        if self._is_stream_done(stream_name, streams_to_partitions_to_done, partition_generator_running):
             # stream is done!
-            streams_in_progress.remove(stream_name)
-            logger.info(f"Read {record_counter[stream_name]} records from {stream_name} stream")
-            logger.info(f"Marking stream {stream_name} as STOPPED")
-            stream = stream_instances[stream_name]
-            self._update_timer(stream, timer, logger)
-            return stream_status_as_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.COMPLETE)
+            return self._handle_stream_is_done(stream_name, stream_instances, streams_in_progress, record_counter, timer, logger)
         else:
             return None
+
+    def _is_stream_done(self, stream_name, streams_to_partitions_to_done, partition_generator_running):
+        return all(streams_to_partitions_to_done[stream_name].values()) and stream_name not in partition_generator_running
+
+    def _handle_stream_is_done(self, stream_name, stream_instances, streams_in_progress, record_counter, timer, logger):
+        streams_in_progress.remove(stream_name)
+        logger.info(f"Read {record_counter[stream_name]} records from {stream_name} stream")
+        logger.info(f"Marking stream {stream_name} as STOPPED")
+        stream = stream_instances[stream_name]
+        self._update_timer(stream, timer, logger)
+        return stream_status_as_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.COMPLETE)
 
     def _stop_streams(self, streams_in_progress, stream_instances, timer, logger):
         self._stream_read_threadpool.shutdown(wait=False, cancel_futures=True)
