@@ -183,8 +183,8 @@ definitions:
       requester:
         $ref: "#/definitions/requester"
         request_parameters:
-          include_variant_breakdown: true
-          include_step_breakdown: true
+          include_variant_breakdown: "true"
+          include_step_breakdown: "true"
       record_selector:
         extractor:
           field_path: ["data", "stats"]
