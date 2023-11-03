@@ -92,7 +92,7 @@ class Creatives(HttpSubStream, ApplovinStream):
 
     @property
     def retry_factor(self) -> float:
-        return 10.0
+        return 120.0
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice["campaign_id"]
