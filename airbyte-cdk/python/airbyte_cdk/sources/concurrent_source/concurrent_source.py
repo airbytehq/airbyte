@@ -132,8 +132,8 @@ class ConcurrentSource(AbstractSource, ABC):
                 message = stream_data_to_airbyte_message(
                     airbyte_message_or_record_or_exception.stream_name, airbyte_message_or_record_or_exception.data
                 )
-                yield from self._emit_queued_messages()
                 yield message
+                yield from self._message_repository.consume_queue()
                 if message.type == MessageType.RECORD:
                     total_records_counter += 1
         self._stream_read_threadpool.shutdown(wait=False, cancel_futures=True)

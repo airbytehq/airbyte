@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import AirbyteStateMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.message import InMemoryMessageRepository, MessageRepository
 from airbyte_cdk.sources.streams import Stream
@@ -23,7 +24,7 @@ class StreamFacadeConcurrentConnectorStateConverter(EpochValueConcurrentStreamSt
     pass
 
 
-class StreamFacadeSource(AbstractSource):
+class StreamFacadeSource(ConcurrentSource):
     def __init__(
         self,
         streams: List[Stream],
@@ -32,9 +33,10 @@ class StreamFacadeSource(AbstractSource):
         cursor_boundaries: Optional[Tuple[str, str]] = None,
         input_state: Optional[List[Mapping[str, Any]]] = _NO_STATE,
     ):
+        self._message_repository = InMemoryMessageRepository()
+        super().__init__(1, 1, self._message_repository)
         self._streams = streams
         self._threadpool = threadpool
-        self._message_repository = InMemoryMessageRepository()
         self._cursor_field = cursor_field
         self._cursor_boundaries = cursor_boundaries
         self._state = [AirbyteStateMessage.parse_obj(s) for s in input_state] if input_state else None
