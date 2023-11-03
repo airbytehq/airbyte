@@ -55,6 +55,8 @@ class MetadataDescriptor:
     def __get__(self, instance, owner):
         if not self._metadata:
             stream = GoogleAnalyticsDataApiMetadataStream(config=instance.config, authenticator=instance.config["authenticator"])
+
+            metadata = None
             try:
                 metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
             except HTTPError as e:
