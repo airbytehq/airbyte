@@ -175,6 +175,7 @@ const buildAConnector = {
             "connector-development/config-based/understanding-the-yaml-file/pagination",
             "connector-development/config-based/understanding-the-yaml-file/partition-router",
             "connector-development/config-based/understanding-the-yaml-file/record-selector",
+            "connector-development/config-based/understanding-the-yaml-file/reference",
           ],
         },
         "connector-development/config-based/advanced-topics",

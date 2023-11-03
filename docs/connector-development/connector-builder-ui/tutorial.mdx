@@ -120,7 +120,7 @@ To do so, follow these steps:
 * Set the name to "Base"
 * Click "Create"
 
-The value input is now set to `{{ config['base'] }}`. When making requests, the connector will replace this placeholder by the user supplied value. This syntax can be used in all fields that have a user icon on the right side, see the full reference [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L2072).
+The value input is now set to `{{ config['base'] }}`. When making requests, the connector will replace this placeholder by the user supplied value. This syntax can be used in all fields that have a user icon on the right side, see the full reference [here](/connector-development/config-based/understanding-the-yaml-file/reference#variables).
 
 
 Now your connector has a second configuration input. To test it, click the "Testing values" button again, set the "Base" to `USD`. Then, click the "Test" button again to issue a new test read.
@@ -150,7 +150,7 @@ In this section, we'll update the source to read historical data instead of only
 According to the API documentation, we can read the exchange rate for a specific date range by querying the `"/exchangerates_data/{date}"` endpoint instead of `"/exchangerates_data/latest"`.
 
 To configure your connector to request every day individually, follow these steps:
-* On top of the form, change the "URL Path" input to `/exchangerates_data/{{ stream_interval.start_time }}` to [inject](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L2131-L2136) the date to fetch data for into the path of the request
+* On top of the form, change the "URL Path" input to `/exchangerates_data/{{ stream_interval.start_time }}` to [inject](/connector-development/config-based/understanding-the-yaml-file/reference#variables) the date to fetch data for into the path of the request
 * Enable "Incremental sync" for the Rates stream
 * Set the "Cursor Field" to `date` - this is the property in our records to check what date got synced last
 * Set the "Cursor Field Datetime Format" to `%Y-%m-%d` to match the format of the date in the record returned from the API
