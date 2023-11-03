@@ -111,10 +111,12 @@ rootProject.tasks.named('clean').configure {
 allprojects {
 
     def createFormatTarget = { pattern ->
-        // Ignore new build files as well as the ones ignored when running this through airbyte-ci
-        ArrayList<String> excludes = ['**/build']
+        ArrayList<String> excludes = [
+            '**/build', // Ignore new build files as well as the ones ignored when running this through airbyte-ci
+            '.gradle' // Ignore the gradle version that is downloaded in the container
+        ]
         // Build the FileTree.
-        return fileTree(dir: projectDir, include: pattern, exclude: ['**/build'])
+        return fileTree(dir: projectDir, include: pattern, exclude: excludes)
     }
 
     // Apply spotless formatting.
