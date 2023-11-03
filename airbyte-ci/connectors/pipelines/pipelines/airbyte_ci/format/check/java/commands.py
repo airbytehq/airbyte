@@ -66,7 +66,6 @@ async def check_java(ctx: ClickPipelineContext) -> bool:
         await format_container
         return True
 
-
     except dagger.ExecError as e:
         logger.error("Format check failed")
         logger.error(e.stderr)

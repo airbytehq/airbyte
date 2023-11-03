@@ -36,9 +36,7 @@ async def python(ctx: ClickPipelineContext):
         )
         .with_mounted_directory(
             "/src",
-            dagger_client.host().directory(
-                ".", include=["**/*.py", "pyproject.toml", "poetry.lock"], exclude=DEFAULT_FORMAT_IGNORE_LIST
-            ),
+            dagger_client.host().directory(".", include=["**/*.py", "pyproject.toml", "poetry.lock"], exclude=DEFAULT_FORMAT_IGNORE_LIST),
         )
         .with_workdir(f"/src")
         .with_exec(["poetry", "install"])
