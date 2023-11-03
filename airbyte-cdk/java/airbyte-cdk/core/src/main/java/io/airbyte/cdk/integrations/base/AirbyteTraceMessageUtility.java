@@ -26,6 +26,15 @@ public final class AirbyteTraceMessageUtility {
     emitErrorTrace(e, displayMessage, FailureType.CONFIG_ERROR);
   }
 
+  public static void emitCustomErrorTrace(final String displayMessage, final String internalMessage) {
+    emitMessage(makeAirbyteMessageFromTraceMessage(
+        makeAirbyteTraceMessage(AirbyteTraceMessage.Type.ERROR)
+            .withError(new AirbyteErrorTraceMessage()
+                .withFailureType(FailureType.SYSTEM_ERROR)
+                .withMessage(displayMessage)
+                .withInternalMessage(internalMessage))));
+  }
+
   public static void emitEstimateTrace(final long byteEstimate,
                                        final AirbyteEstimateTraceMessage.Type type,
                                        final long rowEstimate,

@@ -8,6 +8,11 @@ definitions:
   list_selector:
     extractor:
       field_path: ["{{ parameters['name'] }}"]
+  event_selector:
+    extractor:
+      class_name: source_braze.components.EventsRecordExtractor
+      field_path:
+        - events
 
   # ----- Requester -----
   requester:
@@ -34,6 +39,21 @@ definitions:
       $ref: "#/definitions/requester"
       request_parameters:
         last_edit.time[gt]: "{{ config['start_date'] }}"
+
+  event_retriever:
+    record_selector:
+      $ref: "#/definitions/event_selector"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: PageIncrement
+        page_size: 2
+      page_token_option:
+        type: RequestOption
+        inject_into: "request_parameter"
+        field_name: "page"
+    requester:
+      $ref: "#/definitions/requester"
 
   # ----- Stream bases -----
   list_stream:
@@ -66,12 +86,8 @@ definitions:
       primary_key: "id"
       path: "/segments/list"
   custom_events_stream:
-    $ref: "#/definitions/list_stream"
-    transformations:
-      - class_name: "source_braze.TransformToRecordComponent"
-        fields:
-          - path: ["event_name"]
-            value: "{{ record }}"
+    retriever:
+      $ref: "#/definitions/event_retriever"
     $parameters:
       name: "events"
       path: "/events/list"

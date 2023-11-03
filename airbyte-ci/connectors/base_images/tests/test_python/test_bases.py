@@ -21,7 +21,7 @@ class TestAirbytePythonConnectorBaseImage:
         """Spot any regression in the class attributes."""
         assert bases.AirbytePythonConnectorBaseImage.root_image == root_images.PYTHON_3_9_18
         assert bases.AirbytePythonConnectorBaseImage.repository == "airbyte/python-connector-base"
-        assert bases.AirbytePythonConnectorBaseImage.pip_cache_name == "pip-cache"
+        assert bases.AirbytePythonConnectorBaseImage.pip_cache_name == "pip_cache"
 
     async def test_run_sanity_checks(self, dagger_client, current_platform, dummy_version):
         base_image_version = bases.AirbytePythonConnectorBaseImage(dagger_client, dummy_version)
