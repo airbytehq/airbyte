@@ -1,0 +1,14 @@
+documentationUrl: https://docsurl.com
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Planhat Spec
+  type: object
+  required:
+    - api_token
+  properties:
+    api_token:
+      title: API Token
+      description: Your Planhat <a
+        href="https://docs.planhat.com/#authentication">API Access Token</a>
+      type: string
+      airbyte_secret: true

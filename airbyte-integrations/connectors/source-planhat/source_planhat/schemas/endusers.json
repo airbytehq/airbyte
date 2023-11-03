@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "externalId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "companyId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sourceId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "firstName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lastName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "email": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "phone": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createDate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "companyName": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "createdAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updatedAt": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "beatTrend": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "convs14": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "convsTotal": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "relevance": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "usage": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  }
+}

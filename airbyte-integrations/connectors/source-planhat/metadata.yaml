@@ -1,0 +1,19 @@
+data:
+  allowedHosts:
+    hosts:
+      - "*" # Please change to the hostname of the source.
+  registries:
+    oss:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 45b4c952-75cf-4a69-836b-297b300528b3
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-planhat
+  githubIssueLabel: source-planhat
+  icon: planhat.svg
+  license: MIT
+  name: Planhat
+  releaseStage: alpha
+  supportUrl: https://docs.airbyte.com/integrations/sources/planhat
+metadataSpecVersion: "1.0"

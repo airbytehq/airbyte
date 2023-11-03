@@ -1,0 +1,283 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": true,
+    "properties": {
+        "_id": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "name": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "sourceId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "country": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "externalId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mrr": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "status": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "slug": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "sunits": {
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "createDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "createdAt": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "updatedAt": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "h": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "hDiff": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "hDiffDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "hProfile": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "lastUpdated": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "mr": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "mrTotal": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "mrrTotal": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "nrr30": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "nrrTotal": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "renewalMrr": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "lastTouch": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "lastTouchByType": {
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "lastTouchType": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "custom": {
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "web": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "usage": {
+            "type": [
+                "object",
+                "null"
+            ]
+        },
+        "daysInPhase": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "phase": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "phaseSince": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "owner": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "domains": {
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "csmScore": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "csmScoreLog": {
+            "type": [
+                "array",
+                "null"
+            ]
+        },
+        "renewalDate": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "address": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "customerFrom": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "customerTo": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "headId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "renewalDaysFromNow": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "lastRenewal": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "arr": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "arrTotal": {
+            "type": [
+                "number",
+                "null"
+            ]
+        },
+        "renewalArr": {
+            "type": [
+                "number",
+                "null"
+            ]
+        }
+    }
+}
