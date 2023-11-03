@@ -103,6 +103,7 @@ def test_stream_partition_generator(sync_mode):
 )
 def test_stream_partition(transformer, expected_records):
     stream = Mock()
+    stream.name = _STREAM_NAME
     stream.get_json_schema.return_value = {"type": "object", "properties": {"data": {"type": ["integer"]}}}
     stream.transformer = transformer
     message_repository = InMemoryMessageRepository()
@@ -226,7 +227,7 @@ class StreamFacadeTest(unittest.TestCase):
 
     def test_full_refresh(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
-        records = [Record(data) for data in expected_stream_data]
+        records = [Record(data, "stream") for data in expected_stream_data]
         self._abstract_stream.read.return_value = records
 
         actual_stream_data = list(self._facade.read_records(SyncMode.full_refresh, None, None, None))
@@ -235,7 +236,7 @@ class StreamFacadeTest(unittest.TestCase):
 
     def test_read_records_full_refresh(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
-        records = [Record(data) for data in expected_stream_data]
+        records = [Record(data, "stream") for data in expected_stream_data]
         self._abstract_stream.read.return_value = records
 
         actual_stream_data = list(self._facade.read_full_refresh(None, None, None))
@@ -244,7 +245,7 @@ class StreamFacadeTest(unittest.TestCase):
 
     def test_read_records_incremental(self):
         expected_stream_data = [{"data": 1}, {"data": 2}]
-        records = [Record(data) for data in expected_stream_data]
+        records = [Record(data, "stream") for data in expected_stream_data]
         self._abstract_stream.read.return_value = records
 
         actual_stream_data = list(self._facade.read_incremental(None, None, None, None, None, None, None))

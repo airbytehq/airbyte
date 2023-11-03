@@ -80,7 +80,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
 
     def test_read_observe_records_and_close_partition(self):
         partition = Mock(spec=Partition)
-        expected_records = [Record({"id": 1}), Record({"id": "2"})]
+        expected_records = [Record({"id": 1}, self._name), Record({"id": "2"}, self._name)]
         partition.read.return_value = expected_records
         partition.to_slice.return_value = {"slice": "slice"}
         self._slice_logger.should_log_slice_message.return_value = False
@@ -95,7 +95,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
 
     def test_read_no_slice_message(self):
         partition = Mock(spec=Partition)
-        expected_records = [Record({"id": 1}), Record({"id": "2"})]
+        expected_records = [Record({"id": 1}, self._name), Record({"id": "2"}, self._name)]
         partition.read.return_value = expected_records
         partition.to_slice.return_value = {"slice": "slice"}
         self._slice_logger.should_log_slice_message.return_value = False
@@ -109,7 +109,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
 
     def test_read_log_slice_message(self):
         partition = Mock(spec=Partition)
-        expected_records = [Record({"id": 1}), Record({"id": "2"})]
+        expected_records = [Record({"id": 1}, self._name), Record({"id": "2"}, self._name)]
         partition.read.return_value = expected_records
         partition.to_slice.return_value = {"slice": "slice"}
         self._slice_logger.should_log_slice_message.return_value = True

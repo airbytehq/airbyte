@@ -22,7 +22,7 @@ configured_stream = ConfiguredAirbyteStream(
 
 def test_started_as_message():
     stream_status = AirbyteStreamStatus.STARTED
-    airbyte_message = stream_status_as_airbyte_message(configured_stream, stream_status)
+    airbyte_message = stream_status_as_airbyte_message(configured_stream.stream.name, configured_stream.stream.namespace, stream_status)
 
     assert type(airbyte_message) == AirbyteMessage
     assert airbyte_message.type == MessageType.TRACE
@@ -35,7 +35,7 @@ def test_started_as_message():
 
 def test_running_as_message():
     stream_status = AirbyteStreamStatus.RUNNING
-    airbyte_message = stream_status_as_airbyte_message(configured_stream, stream_status)
+    airbyte_message = stream_status_as_airbyte_message(configured_stream.stream.name, configured_stream.stream.namespace, stream_status)
 
     assert type(airbyte_message) == AirbyteMessage
     assert airbyte_message.type == MessageType.TRACE
@@ -48,7 +48,7 @@ def test_running_as_message():
 
 def test_complete_as_message():
     stream_status = AirbyteStreamStatus.COMPLETE
-    airbyte_message = stream_status_as_airbyte_message(configured_stream, stream_status)
+    airbyte_message = stream_status_as_airbyte_message(configured_stream.stream.name, configured_stream.stream.namespace, stream_status)
 
     assert type(airbyte_message) == AirbyteMessage
     assert airbyte_message.type == MessageType.TRACE
@@ -61,7 +61,7 @@ def test_complete_as_message():
 
 def test_incomplete_failed_as_message():
     stream_status = AirbyteStreamStatus.INCOMPLETE
-    airbyte_message = stream_status_as_airbyte_message(configured_stream, stream_status)
+    airbyte_message = stream_status_as_airbyte_message(configured_stream.stream.name, configured_stream.stream.namespace, stream_status)
 
     assert type(airbyte_message) == AirbyteMessage
     assert airbyte_message.type == MessageType.TRACE

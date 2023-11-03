@@ -20,4 +20,4 @@ class Record:
         return self.data == other.data and self.stream_name == other.stream_name
 
     def __repr__(self) -> str:
-        return f"Record(data={self.data})"
+        return f"Record(data={self.data}, stream_name={self.stream_name})"
