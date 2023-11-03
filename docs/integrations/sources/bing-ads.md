@@ -9,19 +9,25 @@ This page contains the setup guide and reference information for the Bing Ads so
 
 ## Setup guide
 
-### Step 1: Set up Bing Ads
+<!-- env:oss -->
+
+For Airbyte Open Source set up your application to get **Client ID**, **Client Secret**, **Refresh Token** 
 
 1. [Register your application](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in the Azure portal.
 2. [Request user consent](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get the authorization code.
 3. Use the authorization code to [get a refresh token](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13).
 
-:::note
+4. :::note
 
 The refresh token expires in 90 days. Repeat the authorization process to get a new refresh token. The full authentication process described [here](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token).
 Please be sure to authenticate with the email (personal or work) that you used to sign in to the Bing ads/Microsoft ads platform.
 :::
 
-4. Get your [Microsoft developer token](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token).
+<!-- /env:oss -->
+
+### Step 1: Set up Bing Ads
+
+1. Get your [Microsoft developer token](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token).
 
 :::info
 
@@ -33,7 +39,7 @@ See [Microsoft Advertising docs](https://docs.microsoft.com/en-us/advertising/gu
 
 :::
 
-5. If your OAuth app has a custom tenant, and you cannot use Microsoft’s recommended common tenant, use the custom tenant in the **Tenant ID** field when you set up the connector.
+2. If your OAuth app has a custom tenant, and you cannot use Microsoft’s recommended common tenant, use the custom tenant in the **Tenant ID** field when you set up the connector.
 
 :::info
 
