@@ -115,18 +115,10 @@ class ConcurrentSource(AbstractSource, ABC):
             if isinstance(airbyte_message_or_record_or_exception, Exception):
                 # An exception was raised while processing the stream
                 # Stop the threadpool and raise it
-                self._stream_read_threadpool.shutdown(wait=False, cancel_futures=True)
-                for stream_name in streams_in_progress:
-                    stream = stream_instances[stream_name]
-                    logger.info(f"Marking stream {stream.name} as STOPPED")
-                    self._update_timer(stream, timer, logger)
-                    yield stream_status_as_airbyte_message(
-                        stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.INCOMPLETE
-                    )
+                yield from self._stop_streams(streams_in_progress, stream_instances, timer, logger)
                 raise airbyte_message_or_record_or_exception
 
             elif isinstance(airbyte_message_or_record_or_exception, PartitionGenerationCompletedSentinel):
-                # this path is impossible?
                 status_message = self._handle_partition_generation_completed(
                     airbyte_message_or_record_or_exception,
                     partition_generator_running,
@@ -228,6 +220,14 @@ class ConcurrentSource(AbstractSource, ABC):
             )
         else:
             return None
+
+    def _stop_streams(self, streams_in_progress, stream_instances, timer, logger):
+        self._stream_read_threadpool.shutdown(wait=False, cancel_futures=True)
+        for stream_name in streams_in_progress:
+            stream = stream_instances[stream_name]
+            logger.info(f"Marking stream {stream.name} as STOPPED")
+            self._update_timer(stream, timer, logger)
+            yield stream_status_as_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.INCOMPLETE)
 
     def _update_timer(self, stream, timer, logger):
         timer.finish_event(stream.name)
