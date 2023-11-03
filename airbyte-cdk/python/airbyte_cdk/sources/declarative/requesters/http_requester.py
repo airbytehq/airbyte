@@ -503,7 +503,7 @@ class LowCodeHttpRequester(HttpRequester):
     url_base: Union[InterpolatedString, str]
     path: Union[InterpolatedString, str]
     config: Config
-    request_options_provider: Optional[Union[InterpolatedRequestOptionsProvider, dict]]
+    request_options_provider: Optional[Union[InterpolatedRequestOptionsProvider, dict[str, Any]]]
 
     def __init__(
         self,
@@ -512,7 +512,7 @@ class LowCodeHttpRequester(HttpRequester):
         path: Union[InterpolatedString, str],
         config: Config,
         parameters: Mapping[str, Any],
-        request_options_provider: Optional[Union[InterpolatedRequestOptionsProvider, dict]] = None,
+        request_options_provider: Optional[Union[InterpolatedRequestOptionsProvider, dict[str, Any]]] = None,
         authenticator: Optional[DeclarativeAuthenticator] = None,
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         error_handler: Optional[ErrorHandler] = None,
@@ -534,7 +534,7 @@ class LowCodeHttpRequester(HttpRequester):
             message_repository=message_repository,
         )
 
-    def __post_init__(self, parameters: Mapping[str, Any]):
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
         self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
         self._path = InterpolatedString.create(self.path, parameters=parameters)
         if self.request_options_provider is None:
@@ -631,10 +631,10 @@ class SourceHttpRequester(HttpRequester):
     ):
         self._url_base = url_base
         self._path = path
-        self._request_parameters = request_parameters or {}
-        self._request_headers = request_headers or {}
-        self._request_body_data = request_body_data or {}
-        self._request_body_json = request_body_json or {}
+        self.request_parameters = request_parameters or {}
+        self.request_headers = request_headers or {}
+        self.request_body_data = request_body_data or {}
+        self.request_body_json = request_body_json or {}
 
         super().__init__(
             name=name,
@@ -654,14 +654,14 @@ class SourceHttpRequester(HttpRequester):
     ) -> str:
         return self._path
 
-    def get_request_params(
+    def get_request_params(  # type: ignore[override]
         self,
         *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        return self._request_parameters
+    ) -> Mapping[str, Any]:
+        return self.request_parameters
 
     def get_request_headers(
         self,
@@ -670,16 +670,16 @@ class SourceHttpRequester(HttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Mapping[str, Any]:
-        return self._request_headers
+        return self.request_headers
 
-    def get_request_body_data(
+    def get_request_body_data(  # type: ignore[override]
         self,
         *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Union[Mapping[str, Any], str]:
-        return self._request_body_data
+        return self.request_body_data
 
     def get_request_body_json(
         self,
@@ -688,4 +688,4 @@ class SourceHttpRequester(HttpRequester):
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping[str, Any]]:
-        return self._request_body_json
+        return self.request_body_json

@@ -48,7 +48,7 @@ class CursorPaginationStrategy(PaginationStrategy, ABC):
         return token if token else None
 
     @abstractmethod
-    def stop(self, response: Union[Mapping[str, Any], list], headers: Mapping[str, Any], last_records: List[Record]) -> bool:
+    def stop(self, response: Union[Mapping[str, Any], List[Any]], headers: Mapping[str, Any], last_records: List[Record]) -> bool:
         """
         Returns the value of whether to continue pagination or stop
 
@@ -62,7 +62,7 @@ class CursorPaginationStrategy(PaginationStrategy, ABC):
 
     @abstractmethod
     def get_cursor_value(
-        self, response: Union[Mapping[str, Any], list], headers: Mapping[str, Any], last_records: List[Record]
+        self, response: Union[Mapping[str, Any], List[Any]], headers: Mapping[str, Any], last_records: List[Record]
     ) -> Optional[str]:
         """
         Returns the string of actual cursor field as next_page_token value
@@ -113,7 +113,7 @@ class LowCodeCursorPaginationStrategy(CursorPaginationStrategy):
         self.config = config
         super().__init__(page_size=page_size, decoder=decoder)
 
-    def stop(self, response: Union[Mapping[str, Any], list], headers: Mapping[str, Any], last_records: List[Record]) -> bool:
+    def stop(self, response: Union[Mapping[str, Any], List[Any]], headers: Mapping[str, Any], last_records: List[Record]) -> bool:
         if not self.stop_condition:
             return False
 
@@ -121,7 +121,7 @@ class LowCodeCursorPaginationStrategy(CursorPaginationStrategy):
         return stop_value
 
     def get_cursor_value(
-        self, response: Union[Mapping[str, Any], list], headers: Mapping[str, Any], last_records: List[Record]
+        self, response: Union[Mapping[str, Any], List[Any]], headers: Mapping[str, Any], last_records: List[Record]
     ) -> Optional[str]:
         cursor_value = self.cursor_value.eval(config=self.config, response=response, headers=headers, last_records=last_records)
         return cursor_value or None
