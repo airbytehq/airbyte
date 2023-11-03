@@ -132,9 +132,6 @@ class Step(ABC):
 
     retry_delay = timedelta(seconds=10)
 
-    id: ClassVar[str] = ""
-    extra_args: ClassVar[dict] = {}
-
     def __init__(self, context: PipelineContext) -> None:  # noqa D107
         self.context = context
         self.retry_count = 0
@@ -259,10 +256,6 @@ class Step(ABC):
             StepResult: A skipped step result.
         """
         return StepResult(self, StepStatus.SKIPPED, stdout=reason)
-
-    async def async_skip(self, reason: str = None) -> StepResult:
-        # TODO: Merge with skip method
-        return self.skip(reason)
 
     def get_step_status_from_exit_code(
         self,
