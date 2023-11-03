@@ -21,7 +21,6 @@ from source_stripe.streams import (
     CreatedCursorIncrementalStripeStream,
     CustomerBalanceTransactions,
     Events,
-    FilteringRecordExtractor,
     IncrementalStripeStream,
     Persons,
     SetupAttempts,
@@ -97,6 +96,18 @@ class SourceStripe(AbstractSource):
             return False, str(e)
         return True, None
 
+    @staticmethod
+    def customers(**args):
+        # The Customers stream is instantiated in a dedicated method to allow parametrization and avoid duplicated code.
+        # It can be used with and without expanded items (as an independent stream or as a parent stream for other streams).
+        return IncrementalStripeStream(
+            name="customers",
+            path="customers",
+            use_cache=True,
+            event_types=["customer.created", "customer.updated", "customer.deleted"],
+            **args,
+        )
+
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self.validate_and_fill_with_defaults(config)
         authenticator = TokenAuthenticator(config["client_secret"])
@@ -127,7 +138,7 @@ class SourceStripe(AbstractSource):
         subscription_items = StripeLazySubStream(
             name="subscription_items",
             path="subscription_items",
-            extra_request_params=lambda self, *args, stream_slice, **kwargs: {"subscription": stream_slice[self.parent_id]},
+            extra_request_params=lambda self, stream_slice, *args, **kwargs: {"subscription": stream_slice[self.parent_id]},
             parent=subscriptions,
             use_cache=True,
             parent_id="subscription_id",
@@ -146,13 +157,6 @@ class SourceStripe(AbstractSource):
             path="application_fees",
             use_cache=True,
             event_types=["application_fee.created", "application_fee.refunded"],
-            **args,
-        )
-        customers = IncrementalStripeStream(
-            name="customers",
-            path="customers",
-            use_cache=True,
-            event_types=["customer.created", "customer.updated", "customer.deleted"],
             **args,
         )
         invoices = IncrementalStripeStream(
@@ -185,7 +189,7 @@ class SourceStripe(AbstractSource):
                 event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 legacy_cursor_field=None,
                 extra_request_params={"object": "card"},
-                record_extractor=FilteringRecordExtractor("updated", None, "card"),
+                response_filter=lambda record: record["object"] == "card",
                 **args,
             ),
             UpdatedCursorIncrementalStripeStream(
@@ -194,7 +198,7 @@ class SourceStripe(AbstractSource):
                 event_types=["account.external_account.created", "account.external_account.updated", "account.external_account.deleted"],
                 legacy_cursor_field=None,
                 extra_request_params={"object": "bank_account"},
-                record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
+                response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
             Persons(**args),
@@ -246,7 +250,7 @@ class SourceStripe(AbstractSource):
                 event_types=["issuing_authorization.created", "issuing_authorization.request", "issuing_authorization.updated"],
                 **args,
             ),
-            customers,
+            self.customers(**args),
             IncrementalStripeStream(
                 name="cardholders",
                 path="issuing/cardholders",
@@ -397,19 +401,18 @@ class SourceStripe(AbstractSource):
             UpdatedCursorIncrementalStripeLazySubStream(
                 name="bank_accounts",
                 path=lambda self, stream_slice, *args, **kwargs: f"customers/{stream_slice[self.parent_id]}/sources",
-                parent=customers,
+                parent=self.customers(expand_items=["data.sources"], **args),
                 event_types=["customer.source.created", "customer.source.expiring", "customer.source.updated", "customer.source.deleted"],
                 legacy_cursor_field=None,
                 parent_id="customer_id",
                 sub_items_attr="sources",
-                response_filter={"attr": "object", "value": "bank_account"},
                 extra_request_params={"object": "bank_account"},
-                record_extractor=FilteringRecordExtractor("updated", None, "bank_account"),
+                response_filter=lambda record: record["object"] == "bank_account",
                 **args,
             ),
             StripeLazySubStream(
                 name="invoice_line_items",
-                path=lambda self, *args, stream_slice, **kwargs: f"invoices/{stream_slice[self.parent_id]}/lines",
+                path=lambda self, stream_slice, *args, **kwargs: f"invoices/{stream_slice[self.parent_id]}/lines",
                 parent=invoices,
                 parent_id="invoice_id",
                 sub_items_attr="lines",
