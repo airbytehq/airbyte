@@ -252,9 +252,6 @@ class ConnectorContext(PipelineContext):
         if self.should_save_report:
             await self.report.save()
 
-        if self.report.should_be_commented_on_pr:
-            self.report.post_comment_on_pr()
-
         await asyncify(update_commit_status_check)(**self.github_commit_status)
 
         if self.should_send_slack_message:

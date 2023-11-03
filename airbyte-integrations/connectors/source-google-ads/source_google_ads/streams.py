@@ -666,22 +666,48 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
             record[self.cursor_field] = cursor_value
             yield record
 
-    def _update_state(self):
+    def _update_state(self, stream_slice: MutableMapping[str, Any]):
+        customer_id = stream_slice.get("customer_id")
+
         # if parent stream was used - copy state from it, otherwise set default state
-        if self.parent_stream.state:
-            self._state = {self.parent_stream_name: self.parent_stream.state}
+        if isinstance(self.parent_stream.state, dict) and self.parent_stream.state.get(customer_id):
+            self._state[self.parent_stream_name][customer_id] = self.parent_stream.state[customer_id]
         else:
+            parent_state = {self.parent_cursor_field: pendulum.today().start_of("day").format(self.parent_stream.cursor_time_format)}
             # full refresh sync without parent stream
-            self._state = {
-                self.parent_stream_name: {
-                    self.parent_cursor_field: pendulum.today().start_of("day").format(self.parent_stream.cursor_time_format)
-                }
-            }
+            self._state[self.parent_stream_name].update({customer_id: parent_state})
 
     def _read_deleted_records(self, stream_slice: MutableMapping[str, Any] = None):
         # yield deleted records with id and time when record was deleted
         for deleted_record_id in stream_slice.get("deleted_ids", []):
             yield {self.id_field: deleted_record_id, "deleted_at": stream_slice["record_changed_time_map"].get(deleted_record_id)}
+
+    def _split_slice(self, child_slice: MutableMapping[str, Any], chunk_size: int = 10000) -> Iterable[Mapping[str, Any]]:
+        """
+        Splits a child slice into smaller chunks based on the chunk_size.
+
+        Parameters:
+        - child_slice (MutableMapping[str, Any]): The input dictionary to split.
+        - chunk_size (int, optional): The maximum number of ids per chunk. Defaults to 10000,
+            because it is the maximum number of ids that can be present in a query filter.
+
+        Yields:
+        - Mapping[str, Any]: A dictionary with a similar structure to child_slice.
+        """
+        updated_ids = list(child_slice["updated_ids"])
+        if not updated_ids:
+            yield child_slice
+            return
+
+        record_changed_time_map = child_slice["record_changed_time_map"]
+        customer_id = child_slice["customer_id"]
+
+        # Split the updated_ids into chunks and yield them
+        for i in range(0, len(updated_ids), chunk_size):
+            chunk_ids = set(updated_ids[i : i + chunk_size])
+            chunk_time_map = {k: record_changed_time_map[k] for k in chunk_ids}
+
+            yield {"updated_ids": chunk_ids, "record_changed_time_map": chunk_time_map, "customer_id": customer_id, "deleted_ids": set()}
 
     def read_records(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_slice: MutableMapping[str, Any] = None, **kwargs
@@ -690,12 +716,13 @@ class IncrementalEventsStream(GoogleAdsStream, IncrementalMixin, ABC):
         This method is overridden to read records using parent stream
         """
         # if state is present read records by ids from slice otherwise full refresh sync
-        yield from super().read_records(sync_mode, stream_slice=stream_slice)
+        for stream_slice_part in self._split_slice(stream_slice):
+            yield from super().read_records(sync_mode, stream_slice=stream_slice_part)
 
         # yield deleted items
         yield from self._read_deleted_records(stream_slice)
 
-        self._update_state()
+        self._update_state(stream_slice)
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
         table_name = get_resource_name(self.name)

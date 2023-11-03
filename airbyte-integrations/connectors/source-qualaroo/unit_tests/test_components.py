@@ -26,8 +26,5 @@ def test_extract_records_with_answered_questions():
     response = requests.Response()
     response._content = json.dumps(response_data).encode("utf-8")
     extracted_records = CustomExtractor().extract_records(response)
-    expected_records = [
-        {"id": 1, "answered_questions": ["A1", "A2"]},
-        {"id": 2, "answered_questions": ["A3"]}
-    ]
+    expected_records = [{"id": 1, "answered_questions": ["A1", "A2"]}, {"id": 2, "answered_questions": ["A3"]}]
     assert expected_records == extracted_records

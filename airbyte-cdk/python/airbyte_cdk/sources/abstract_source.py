@@ -225,56 +225,18 @@ class AbstractSource(Source, ABC):
 
         if stream_state and "state" in dir(stream_instance):
             stream_instance.state = stream_state  # type: ignore # we check that state in the dir(stream_instance)
-            logger.info(f"Setting state of {stream_name} stream to {stream_state}")
+            logger.info(f"Setting state of {self.name} stream to {stream_state}")
 
-        slices = stream_instance.stream_slices(
-            cursor_field=configured_stream.cursor_field,
-            sync_mode=SyncMode.incremental,
-            stream_state=stream_state,
-        )
-        logger.debug(f"Processing stream slices for {stream_name} (sync_mode: incremental)", extra={"stream_slices": slices})
-
-        total_records_counter = 0
-        has_slices = False
-        for _slice in slices:
-            has_slices = True
-            if self._slice_logger.should_log_slice_message(logger):
-                yield self._slice_logger.create_slice_log_message(_slice)
-            records = stream_instance.read_records(
-                sync_mode=SyncMode.incremental,
-                stream_slice=_slice,
-                stream_state=stream_state,
-                cursor_field=configured_stream.cursor_field or None,
-            )
-            record_counter = 0
-            for message_counter, record_data_or_message in enumerate(records, start=1):
-                message = self._get_message(record_data_or_message, stream_instance)
-                yield from self._emit_queued_messages()
-                yield message
-                if message.type == MessageType.RECORD:
-                    record = message.record
-                    stream_state = stream_instance.get_updated_state(stream_state, record.data)
-                    checkpoint_interval = stream_instance.state_checkpoint_interval
-                    record_counter += 1
-                    if checkpoint_interval and record_counter % checkpoint_interval == 0:
-                        yield self._checkpoint_state(stream_instance, stream_state, state_manager)
-
-                    total_records_counter += 1
-                    # This functionality should ideally live outside of this method
-                    # but since state is managed inside this method, we keep track
-                    # of it here.
-                    if internal_config.is_limit_reached(total_records_counter):
-                        # Break from slice loop to save state and exit from _read_incremental function.
-                        break
-
-            yield self._checkpoint_state(stream_instance, stream_state, state_manager)
-            if internal_config.is_limit_reached(total_records_counter):
-                return
-
-        if not has_slices:
-            # Safety net to ensure we always emit at least one state message even if there are no slices
-            checkpoint = self._checkpoint_state(stream_instance, stream_state, state_manager)
-            yield checkpoint
+        for record_data_or_message in stream_instance.read_incremental(
+            configured_stream.cursor_field,
+            logger,
+            self._slice_logger,
+            stream_state,
+            state_manager,
+            self.per_stream_state_enabled,
+            internal_config,
+        ):
+            yield self._get_message(record_data_or_message, stream_instance)
 
     def _emit_queued_messages(self) -> Iterable[AirbyteMessage]:
         if self.message_repository:
@@ -296,17 +258,6 @@ class AbstractSource(Source, ABC):
                 total_records_counter += 1
                 if internal_config.is_limit_reached(total_records_counter):
                     return
-
-    def _checkpoint_state(self, stream: Stream, stream_state: Mapping[str, Any], state_manager: ConnectorStateManager) -> AirbyteMessage:
-        # First attempt to retrieve the current state using the stream's state property. We receive an AttributeError if the state
-        # property is not implemented by the stream instance and as a fallback, use the stream_state retrieved from the stream
-        # instance's deprecated get_updated_state() method.
-        try:
-            state_manager.update_state_for_stream(stream.name, stream.namespace, stream.state)  # type: ignore # we know the field might not exist...
-
-        except AttributeError:
-            state_manager.update_state_for_stream(stream.name, stream.namespace, stream_state)
-        return state_manager.create_state_message(stream.name, stream.namespace, send_per_stream_state=self.per_stream_state_enabled)
 
     @staticmethod
     def _apply_log_level_to_stream_logger(logger: logging.Logger, stream_instance: Stream) -> None:

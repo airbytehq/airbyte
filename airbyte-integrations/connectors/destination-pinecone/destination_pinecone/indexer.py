@@ -8,7 +8,7 @@ from typing import Optional
 import pinecone
 from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, format_exception
+from airbyte_cdk.destinations.vector_db_based.utils import create_chunks, create_stream_identifier, format_exception
 from airbyte_cdk.models.airbyte_protocol import ConfiguredAirbyteCatalog, DestinationSyncMode
 from destination_pinecone.config import PineconeIndexingModel
 
@@ -38,30 +38,32 @@ class PineconeIndexer(Indexer):
         self._pod_type = index_description.pod_type
         for stream in catalog.streams:
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                self.delete_vectors(filter={METADATA_STREAM_FIELD: stream.stream.name})
+                self.delete_vectors(
+                    filter={METADATA_STREAM_FIELD: create_stream_identifier(stream.stream)}, namespace=stream.stream.namespace
+                )
 
     def post_sync(self):
         return []
 
-    def delete_vectors(self, filter):
+    def delete_vectors(self, filter, namespace=None):
         if self._pod_type == "starter":
             # Starter pod types have a maximum of 100000 rows
             top_k = 10000
-            self.delete_by_metadata(filter, top_k)
+            self.delete_by_metadata(filter, top_k, namespace)
         else:
-            self.pinecone_index.delete(filter=filter)
+            self.pinecone_index.delete(filter=filter, namespace=namespace)
 
-    def delete_by_metadata(self, filter, top_k):
+    def delete_by_metadata(self, filter, top_k, namespace=None):
         zero_vector = [0.0] * self.embedding_dimensions
-        query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k)
+        query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k, namespace=namespace)
         while len(query_result.matches) > 0:
             vector_ids = [doc.id for doc in query_result.matches]
             if len(vector_ids) > 0:
                 # split into chunks of 1000 ids to avoid id limit
                 batches = create_chunks(vector_ids, batch_size=MAX_IDS_PER_DELETE)
                 for batch in batches:
-                    self.pinecone_index.delete(ids=list(batch))
-            query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k)
+                    self.pinecone_index.delete(ids=list(batch), namespace=namespace)
+            query_result = self.pinecone_index.query(vector=zero_vector, filter=filter, top_k=top_k, namespace=namespace)
 
     def _truncate_metadata(self, metadata: dict) -> dict:
         """
@@ -92,7 +94,7 @@ class PineconeIndexer(Indexer):
         serial_batches = create_chunks(pinecone_docs, batch_size=PINECONE_BATCH_SIZE * PARALLELISM_LIMIT)
         for batch in serial_batches:
             async_results = [
-                self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False)
+                self.pinecone_index.upsert(vectors=ids_vectors_chunk, async_req=True, show_progress=False, namespace=namespace)
                 for ids_vectors_chunk in create_chunks(batch, batch_size=PINECONE_BATCH_SIZE)
             ]
             # Wait for and retrieve responses (this raises in case of error)
@@ -100,7 +102,7 @@ class PineconeIndexer(Indexer):
 
     def delete(self, delete_ids, namespace, stream):
         if len(delete_ids) > 0:
-            self.delete_vectors(filter={METADATA_RECORD_ID_FIELD: {"$in": delete_ids}})
+            self.delete_vectors(filter={METADATA_RECORD_ID_FIELD: {"$in": delete_ids}}, namespace=namespace)
 
     def check(self) -> Optional[str]:
         try:
