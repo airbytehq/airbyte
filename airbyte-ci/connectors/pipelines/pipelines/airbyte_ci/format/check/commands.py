@@ -45,7 +45,7 @@ async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
 
         print("Running all checks...")
 
-        # await ctx.invoke(java)
+        await ctx.invoke(java)
         await ctx.invoke(js)
         await ctx.invoke(license)
         await ctx.invoke(python)
