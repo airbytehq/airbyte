@@ -226,7 +226,8 @@ public class MongoDbCdcEventUtils {
               new Jsr310CodecProvider(),
               new JsonObjectCodecProvider(),
               new BsonCodecProvider(),
-              new DBRefCodecProvider()));
+              new DBRefCodecProvider()),
+              new Uuid);
 
       // Override the default codec registry
       return document.toBsonDocument(BsonDocument.class, customCodecRegistry);
