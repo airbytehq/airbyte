@@ -55,11 +55,10 @@ class MetadataDescriptor:
     def __get__(self, instance, owner):
         if not self._metadata:
             stream = GoogleAnalyticsDataApiMetadataStream(config=instance.config, authenticator=instance.config["authenticator"])
-
             try:
                 metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh), None)
             except HTTPError as e:
-                if e.response.status_code == HTTPStatus.UNAUTHORIZED:
+                if e.response.status_code in [HTTPStatus.UNAUTHORIZED, HTTPStatus.FORBIDDEN]:
                     internal_message = "Unauthorized error reached."
                     message = "Can not get metadata with unauthorized credentials. Try to re-authenticate in source settings."
 
