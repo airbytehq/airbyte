@@ -17,54 +17,34 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 @click_ignore_unused_kwargs
 async def python(ctx: ClickPipelineContext):
     """Format python code via black and isort."""
-    success = await format_python(ctx)
-    if not success:
-        click.Abort()
-
-
-async def format_python(ctx: ClickPipelineContext) -> bool:
-    """Checks whether the repository is formatted correctly.
-    Args:
-        fix (bool): Whether to automatically fix any formatting issues detected.
-    Returns:
-        bool: True if the check/format succeeded, false otherwise
-    """
-    logger = logging.getLogger(f"format")
-
     dagger_client = ctx.params["dagger_client"]
-    try:
-        format_container = await (
-            dagger_client.container()
-            .from_("python:3.10.13-slim")
-            .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
-            .with_exec(
-                sh_dash_c(
-                    [
-                        "apt-get update",
-                        "apt-get install -y bash git curl",
-                        "pip install pipx",
-                        "pipx ensurepath",
-                        "pipx install poetry",
-                    ]
-                )
+
+    format_container = await (
+        dagger_client.container()
+        .from_("python:3.10.13-slim")
+        .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
+        .with_exec(
+            sh_dash_c(
+                [
+                    "apt-get update",
+                    "apt-get install -y bash git curl",
+                    "pip install pipx",
+                    "pipx ensurepath",
+                    "pipx install poetry",
+                ]
             )
-            .with_mounted_directory(
-                "/src",
-                dagger_client.host().directory(
-                    ".", include=["**/*.py", "pyproject.toml", "poetry.lock"], exclude=DEFAULT_FORMAT_IGNORE_LIST
-                ),
-            )
-            .with_workdir(f"/src")
-            .with_exec(["poetry", "install"])
-            .with_exec(["poetry", "run", "isort", "--settings-file", "pyproject.toml", "."])
-            .with_exec(["poetry", "run", "black", "--config", "pyproject.toml", "."])
         )
+        .with_mounted_directory(
+            "/src",
+            dagger_client.host().directory(
+                ".", include=["**/*.py", "pyproject.toml", "poetry.lock"], exclude=DEFAULT_FORMAT_IGNORE_LIST
+            ),
+        )
+        .with_workdir(f"/src")
+        .with_exec(["poetry", "install"])
+        .with_exec(["poetry", "run", "isort", "--settings-file", "pyproject.toml", "."])
+        .with_exec(["poetry", "run", "black", "--config", "pyproject.toml", "."])
+    )
 
-        await format_container
-        await format_container.directory("/src").export(".")
-        return True
-
-    except dagger.ExecError as e:
-        logger.error("Format failed")
-        logger.error(e.stderr)
-        sys.exit(1)
+    await format_container
+    await format_container.directory("/src").export(".")
