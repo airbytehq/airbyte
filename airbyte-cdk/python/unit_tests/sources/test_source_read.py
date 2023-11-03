@@ -123,36 +123,16 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
     ]
     stream_1_slice_to_partition = {"1": records_stream_1_partition_1, "2": records_stream_1_partition_2}
     stream_2_slice_to_partition = {"A": records_stream_2_partition_1, "B": records_stream_2_partition_2}
+    state = None
 
     logger = Mock()
     logger.level = logging.INFO
     logger.isEnabledFor.return_value = False
     # FIXME: probably also need to test to verify the slices can be logged!
+    source, concurrent_source = _init_sources([stream_1_slice_to_partition, stream_2_slice_to_partition], state, logger)
 
-    source = _MockSource()
-    concurrent_source = _MockConcurrentSource()
-
-    state = None
-    cursor = NoopCursor()
-    threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-    streams = [
-        StreamFacade.create_from_stream(_MockStream(stream_1_slice_to_partition, "stream1"), source, logger, threadpool, state, cursor),
-        StreamFacade.create_from_stream(_MockStream(stream_2_slice_to_partition, "stream2"), source, logger, threadpool, state, cursor),
-    ]
-    source.set_streams(streams)
-    concurrent_source.set_streams(streams)
     config = {}
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(name=s.name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
-                sync_mode=SyncMode.full_refresh,
-                cursor_field=None,
-                destination_sync_mode=DestinationSyncMode.overwrite,
-            )
-            for s in streams
-        ]
-    )
+    catalog = _create_configured_catalog(source._streams)
     messages_from_abstract_source = list(source.read(logger, config, catalog, state))
     messages_from_concurrent_source = list(concurrent_source.read(logger, config, catalog, state))
 
@@ -165,11 +145,80 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
                 error=None,
                 estimate=None,
                 stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
+                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
                 ),
             ),
         ),
         # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "1"}')),
+        AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
+                ),
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.RECORD,
+            record=AirbyteRecordMessage(
+                stream="stream0",
+                data=records_stream_1_partition_1[0],
+                emitted_at=1577836800000,
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.RECORD,
+            record=AirbyteRecordMessage(
+                stream="stream0",
+                data=records_stream_1_partition_1[1],
+                emitted_at=1577836800000,
+            ),
+        ),
+        # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "2"}')),
+        AirbyteMessage(
+            type=MessageType.RECORD,
+            record=AirbyteRecordMessage(
+                stream="stream0",
+                data=records_stream_1_partition_2[0],
+                emitted_at=1577836800000,
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.RECORD,
+            record=AirbyteRecordMessage(
+                stream="stream0",
+                data=records_stream_1_partition_2[1],
+                emitted_at=1577836800000,
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
+                ),
+            ),
+        ),
+        AirbyteMessage(
+            type=MessageType.TRACE,
+            trace=AirbyteTraceMessage(
+                type=TraceType.STREAM_STATUS,
+                emitted_at=1577836800000.0,
+                error=None,
+                estimate=None,
+                stream_status=AirbyteStreamStatusTraceMessage(
+                    stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
+                ),
+            ),
+        ),
         AirbyteMessage(
             type=MessageType.TRACE,
             trace=AirbyteTraceMessage(
@@ -186,75 +235,6 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(
                 stream="stream1",
-                data=records_stream_1_partition_1[0],
-                emitted_at=1577836800000,
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.RECORD,
-            record=AirbyteRecordMessage(
-                stream="stream1",
-                data=records_stream_1_partition_1[1],
-                emitted_at=1577836800000,
-            ),
-        ),
-        # AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message='slice:{"partition": "2"}')),
-        AirbyteMessage(
-            type=MessageType.RECORD,
-            record=AirbyteRecordMessage(
-                stream="stream1",
-                data=records_stream_1_partition_2[0],
-                emitted_at=1577836800000,
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.RECORD,
-            record=AirbyteRecordMessage(
-                stream="stream1",
-                data=records_stream_1_partition_2[1],
-                emitted_at=1577836800000,
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
-                ),
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream2"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
-                ),
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.TRACE,
-            trace=AirbyteTraceMessage(
-                type=TraceType.STREAM_STATUS,
-                emitted_at=1577836800000.0,
-                error=None,
-                estimate=None,
-                stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream2"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
-                ),
-            ),
-        ),
-        AirbyteMessage(
-            type=MessageType.RECORD,
-            record=AirbyteRecordMessage(
-                stream="stream2",
                 data=records_stream_2_partition_1[0],
                 emitted_at=1577836800000,
             ),
@@ -262,7 +242,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
         AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(
-                stream="stream2",
+                stream="stream1",
                 data=records_stream_2_partition_1[1],
                 emitted_at=1577836800000,
             ),
@@ -270,7 +250,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
         AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(
-                stream="stream2",
+                stream="stream1",
                 data=records_stream_2_partition_2[0],
                 emitted_at=1577836800000,
             ),
@@ -278,7 +258,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
         AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(
-                stream="stream2",
+                stream="stream1",
                 data=records_stream_2_partition_2[1],
                 emitted_at=1577836800000,
             ),
@@ -291,7 +271,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
                 error=None,
                 estimate=None,
                 stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream2"), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
+                    stream_descriptor=StreamDescriptor(name="stream1"), status=AirbyteStreamStatus(AirbyteStreamStatus.COMPLETE)
                 ),
             ),
         ),
@@ -309,40 +289,14 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
 def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_a_traced_exception_is_raised():
     records = [{"id": 1, "partition": "1"}, AirbyteTracedException()]
     stream_slice_to_partition = {"1": records}
+
     logger = Mock()
     logger.level = logging.INFO
     logger.isEnabledFor.return_value = False
-
-    source = _MockSource()
-    concurrent_source = _MockConcurrentSource()
-
     state = None
-    cursor = NoopCursor()
-    threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-    streams = [
-        StreamFacade.create_from_stream(_MockStream(stream_slice_to_partition, "stream"), source, logger, threadpool, state, cursor),
-    ]
-    # Need to create a new threadpool because it'll be shutdown by the source
-    concurrent_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-    streams_concurrent = [
-        StreamFacade.create_from_stream(
-            _MockStream(stream_slice_to_partition, "stream"), source, logger, concurrent_threadpool, state, cursor
-        ),
-    ]
-    source.set_streams(streams)
-    concurrent_source.set_streams(streams_concurrent)
+    source, concurrent_source = _init_sources([stream_slice_to_partition], state, logger)
     config = {}
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(name=s.name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
-                sync_mode=SyncMode.full_refresh,
-                cursor_field=None,
-                destination_sync_mode=DestinationSyncMode.overwrite,
-            )
-            for s in streams
-        ]
-    )
+    catalog = _create_configured_catalog(source._streams)
     messages_from_abstract_source = []
     try:
         for m in source.read(logger, config, catalog, state):
@@ -367,7 +321,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_a_tr
                 error=None,
                 estimate=None,
                 stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
+                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
                 ),
             ),
         ),
@@ -380,14 +334,14 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_a_tr
                 error=None,
                 estimate=None,
                 stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
+                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
                 ),
             ),
         ),
         AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(
-                stream="stream",
+                stream="stream0",
                 data=records[0],
                 emitted_at=1577836800000,
             ),
@@ -400,7 +354,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_a_tr
                 error=None,
                 estimate=None,
                 stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream"), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
+                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
                 ),
             ),
         ),
@@ -417,36 +371,11 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
     logger.level = logging.INFO
     logger.isEnabledFor.return_value = False
 
-    source = _MockSource()
-    concurrent_source = _MockConcurrentSource()
-
     state = None
-    cursor = NoopCursor()
-    threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-    streams = [
-        StreamFacade.create_from_stream(_MockStream(stream_slice_to_partition, "stream"), source, logger, threadpool, state, cursor),
-    ]
-    # Need to create a new threadpool because it'll be shutdown by the source
-    concurrent_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-    streams_concurrent = [
-        StreamFacade.create_from_stream(
-            _MockStream(stream_slice_to_partition, "stream"), source, logger, concurrent_threadpool, state, cursor
-        ),
-    ]
-    source.set_streams(streams)
-    concurrent_source.set_streams(streams_concurrent)
+
+    source, concurrent_source = _init_sources([stream_slice_to_partition], state, logger)
     config = {}
-    catalog = ConfiguredAirbyteCatalog(
-        streams=[
-            ConfiguredAirbyteStream(
-                stream=AirbyteStream(name=s.name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
-                sync_mode=SyncMode.full_refresh,
-                cursor_field=None,
-                destination_sync_mode=DestinationSyncMode.overwrite,
-            )
-            for s in streams
-        ]
-    )
+    catalog = _create_configured_catalog(source._streams)
     messages_from_abstract_source = []
     try:
         for m in source.read(logger, config, catalog, state):
@@ -471,7 +400,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
                 error=None,
                 estimate=None,
                 stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
+                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.STARTED)
                 ),
             ),
         ),
@@ -484,14 +413,14 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
                 error=None,
                 estimate=None,
                 stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
+                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.RUNNING)
                 ),
             ),
         ),
         AirbyteMessage(
             type=MessageType.RECORD,
             record=AirbyteRecordMessage(
-                stream="stream",
+                stream="stream0",
                 data=records[0],
                 emitted_at=1577836800000,
             ),
@@ -504,7 +433,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
                 error=None,
                 estimate=None,
                 stream_status=AirbyteStreamStatusTraceMessage(
-                    stream_descriptor=StreamDescriptor(name="stream"), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
+                    stream_descriptor=StreamDescriptor(name="stream0"), status=AirbyteStreamStatus(AirbyteStreamStatus.INCOMPLETE)
                 ),
             ),
         ),
@@ -512,8 +441,36 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
     assert expected_messages == messages_from_abstract_source
     assert _compare(messages_from_abstract_source, messages_from_concurrent_source)
 
+def _init_sources(stream_slice_to_partitions, state, logger):
+    source = _init_source(stream_slice_to_partitions, state, logger, _MockSource())
+    concurrent_source = _init_source(stream_slice_to_partitions, state, logger, _MockConcurrentSource())
+    return source, concurrent_source
+def _init_source(stream_slice_to_partitions, state, logger, source):
+    cursor = NoopCursor()
+    threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+    streams = [
+        StreamFacade.create_from_stream(_MockStream(stream_slices, f"stream{i}"), source, logger, threadpool, state, cursor)
+        for i, stream_slices in enumerate(stream_slice_to_partitions)
+    ]
+    source.set_streams(streams)
+    return source
 
+def _create_configured_catalog(streams):
+    return ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(name=s.name, json_schema={}, supported_sync_modes=[SyncMode.full_refresh]),
+                sync_mode=SyncMode.full_refresh,
+                cursor_field=None,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+            for s in streams
+        ]
+    )
 def _compare(s, t):
+    # Use a compare method that does not require ordering or hashing the elements
+    # We can't rely on the ordering because of the multithreading
+    # AirbyteMessage does not implement __eq__ and __hash__
     t = list(t)
     try:
         for elem in s:
