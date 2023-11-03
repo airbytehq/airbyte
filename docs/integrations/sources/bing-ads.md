@@ -22,6 +22,17 @@ Please be sure to authenticate with the email (personal or work) that you used t
 :::
 
 4. Get your [Microsoft developer token](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token).
+
+:::info
+
+To use Bing Ads APIs, you must have a developer token and valid user credentials.  You can follow these steps to get a developer token for production.
+    -  Sign in with [Super Admin](https://learn.microsoft.com/en-us/advertising/guides/account-hierarchy-permissions?view=bingads-13#user-roles-permissions) credentials at the[ Microsoft Advertising Developer Portal](https://developers.ads.microsoft.com/Account) account tab. 
+    - Choose the user that you want associated with the developer token. Typically an application only needs one universal token regardless how many users will be supported. 
+    - Click on the Request Token button.
+See [Microsoft Advertising docs](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token) for more info.
+
+:::
+
 5. If your OAuth app has a custom tenant, and you cannot use Microsoft’s recommended common tenant, use the custom tenant in the **Tenant ID** field when you set up the connector.
 
 :::info
