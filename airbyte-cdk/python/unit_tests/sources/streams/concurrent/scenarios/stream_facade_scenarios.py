@@ -364,6 +364,7 @@ test_incremental_stream_with_slice_boundaries = (
             {"stream1": {"slices": [{"start": 0, "end": 2}], "state_type": "date-range", "legacy": {}}},
         ]
     )
+    .accept_unordered_records()
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
     .set_incremental_scenario_config(
         IncrementalScenarioConfig(

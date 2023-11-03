@@ -2,7 +2,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-import concurrent
 import time
 from concurrent.futures import Future
 from functools import lru_cache
@@ -11,6 +10,7 @@ from queue import Queue
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams.concurrent.abstract_stream import AbstractStream
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import AbstractAvailabilityStrategy, StreamAvailability
@@ -20,7 +20,7 @@ from airbyte_cdk.sources.streams.concurrent.partition_reader import PartitionRea
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL, PartitionCompleteSentinel, QueueItem
+from airbyte_cdk.sources.streams.concurrent.partitions.types import PartitionCompleteSentinel, QueueItem
 from airbyte_cdk.sources.utils.slice_logger import SliceLogger
 
 
@@ -85,7 +85,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._logger.debug(f"Processing stream slices for {self.name}")
         futures: List[Future[Any]] = []
         queue: Queue[QueueItem] = Queue()
-        partition_generator = PartitionEnqueuer(queue, PARTITIONS_GENERATED_SENTINEL)
+        partition_generator = PartitionEnqueuer(queue)
         partition_reader = PartitionReader(queue)
 
         self._submit_task(futures, partition_generator.generate_partitions, self._stream_partition_generator)
@@ -100,7 +100,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
                 # An exception was raised while processing the stream
                 # Stop the threadpool and raise it
                 self._stop_and_raise_exception(record_or_partition_or_exception)
-            elif record_or_partition_or_exception == PARTITIONS_GENERATED_SENTINEL:
+            elif isinstance(record_or_partition_or_exception, PartitionGenerationCompletedSentinel):
                 # All partitions were generated
                 finished_partitions = True
             elif isinstance(record_or_partition_or_exception, PartitionCompleteSentinel):

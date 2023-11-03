@@ -21,7 +21,7 @@ _single_worker_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1,
 _two_workers_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=2, thread_name_prefix="workerpool")
 _id_only_stream = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
-        [InMemoryPartition("partition1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
+        [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
     ),
     threadpool=_single_worker_threadpool,
     name="stream1",
@@ -42,7 +42,7 @@ _id_only_stream = ThreadBasedConcurrentStream(
 
 _id_only_stream_with_slice_logger = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
-        [InMemoryPartition("partition1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
+        [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
     ),
     threadpool=_single_worker_threadpool,
     name="stream1",
@@ -63,7 +63,7 @@ _id_only_stream_with_slice_logger = ThreadBasedConcurrentStream(
 
 _id_only_stream_with_primary_key = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
-        [InMemoryPartition("partition1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
+        [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")])]
     ),
     threadpool=_single_worker_threadpool,
     name="stream1",
@@ -85,8 +85,8 @@ _id_only_stream_with_primary_key = ThreadBasedConcurrentStream(
 _id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
         [
-            InMemoryPartition("partition1", {"p": "1"}, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")]),
-            InMemoryPartition("partition2", {"p": "2"}, [Record({"id": "3"}, "stream1"), Record({"id": "4"}, "stream1")]),
+            InMemoryPartition("partition1", "stream1", {"p": "1"}, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")]),
+            InMemoryPartition("partition2", "stream1", {"p": "2"}, [Record({"id": "3"}, "stream1"), Record({"id": "4"}, "stream1")]),
         ]
     ),
     threadpool=_single_worker_threadpool,
@@ -109,8 +109,8 @@ _id_only_stream_multiple_partitions = ThreadBasedConcurrentStream(
 _id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
         [
-            InMemoryPartition("partition1", {"p": "1"}, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")]),
-            InMemoryPartition("partition2", {"p": "2"}, [Record({"id": "3"}, "stream1"), Record({"id": "4"}, "stream1")]),
+            InMemoryPartition("partition1", "stream1", {"p": "1"}, [Record({"id": "1"}, "stream1"), Record({"id": "2"}, "stream1")]),
+            InMemoryPartition("partition2", "stream1", {"p": "2"}, [Record({"id": "3"}, "stream1"), Record({"id": "4"}, "stream1")]),
         ]
     ),
     threadpool=_two_workers_threadpool,
@@ -132,7 +132,7 @@ _id_only_stream_multiple_partitions_concurrency_level_two = ThreadBasedConcurren
 
 _stream_raising_exception = ThreadBasedConcurrentStream(
     partition_generator=InMemoryPartitionGenerator(
-        [InMemoryPartition("partition1", None, [Record({"id": "1"}, "stream1"), ValueError("test exception")])]
+        [InMemoryPartition("partition1", "stream1", None, [Record({"id": "1"}, "stream1"), ValueError("test exception")])]
     ),
     threadpool=_two_workers_threadpool,
     name="stream1",
@@ -258,6 +258,7 @@ test_concurrent_cdk_multiple_streams = (
                         [
                             InMemoryPartition(
                                 "partition1",
+                                "stream2",
                                 None,
                                 [Record({"id": "10", "key": "v1"}, "stream2"), Record({"id": "20", "key": "v2"}, "stream2")],
                             )

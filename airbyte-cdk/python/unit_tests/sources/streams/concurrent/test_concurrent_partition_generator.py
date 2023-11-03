@@ -7,9 +7,9 @@ from unittest.mock import Mock
 
 import pytest
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.concurrent_source.partition_generation_completed_sentinel import PartitionGenerationCompletedSentinel
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamPartition
 from airbyte_cdk.sources.streams.concurrent.partition_enqueuer import PartitionEnqueuer
-from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_GENERATED_SENTINEL
 
 
 @pytest.mark.parametrize(
@@ -17,7 +17,7 @@ from airbyte_cdk.sources.streams.concurrent.partitions.types import PARTITIONS_G
 )
 def test_partition_generator(slices):
     queue = Queue()
-    partition_generator = PartitionEnqueuer(queue, PARTITIONS_GENERATED_SENTINEL)
+    partition_generator = PartitionEnqueuer(queue)
 
     stream = Mock()
     message_repository = Mock()
@@ -31,7 +31,7 @@ def test_partition_generator(slices):
 
     actual_partitions = []
     while partition := queue.get(False):
-        if partition == PARTITIONS_GENERATED_SENTINEL:
+        if isinstance(partition, PartitionGenerationCompletedSentinel):
             break
         actual_partitions.append(partition)
 

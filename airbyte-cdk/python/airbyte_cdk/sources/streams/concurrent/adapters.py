@@ -315,6 +315,9 @@ class StreamPartition(Partition):
         else:
             return hash(self._stream.name)
 
+    def stream_name(self) -> str:
+        return self._stream.name
+
     def __repr__(self) -> str:
         return f"StreamPartition({self._stream.name}, {self._slice})"
 
@@ -348,6 +351,9 @@ class StreamPartitionGenerator(PartitionGenerator):
     def generate(self) -> Iterable[Partition]:
         for s in self._stream.stream_slices(sync_mode=self._sync_mode, cursor_field=self._cursor_field, stream_state=self._state):
             yield StreamPartition(self._stream, copy.deepcopy(s), self.message_repository, self._sync_mode, self._cursor_field, self._state)
+
+    def stream_name(self) -> str:
+        return self._stream.name
 
 
 @deprecated("This class is experimental. Use at your own risk.")

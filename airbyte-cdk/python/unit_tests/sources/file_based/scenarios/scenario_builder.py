@@ -178,6 +178,7 @@ class TestScenarioBuilder(Generic[SourceType]):
 
     def accept_unordered_records(self):
         self._records_must_be_ordered = False
+        return self
 
     def copy(self) -> "TestScenarioBuilder[SourceType]":
         return deepcopy(self)

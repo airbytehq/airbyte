@@ -80,7 +80,6 @@ def _verify_read_output(output: Dict[str, Any], scenario: TestScenario[AbstractS
     logs = [log for log in logs if log.get("level") in scenario.log_levels]
     expected_records = scenario.expected_records
     assert len(records) == len(expected_records)
-    # FIXME: need a flag for unordered records
     if scenario.records_must_be_ordered:
         for actual, expected in zip(records, expected_records):
             if "record" in actual:

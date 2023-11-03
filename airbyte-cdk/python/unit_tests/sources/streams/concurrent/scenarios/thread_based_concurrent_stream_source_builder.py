@@ -7,7 +7,6 @@ import logging
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
-from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
@@ -79,10 +78,17 @@ class InMemoryPartitionGenerator(PartitionGenerator):
     def generate(self) -> Iterable[Partition]:
         yield from self._partitions
 
+    def stream_name(self) -> str:
+        return self._partitions[0].stream_name()
+
 
 class InMemoryPartition(Partition):
-    def __init__(self, name, _slice, records):
+    def stream_name(self) -> str:
+        return self._stream_name
+
+    def __init__(self, name, stream_name, _slice, records):
         self._name = name
+        self._stream_name = stream_name
         self._slice = _slice
         self._records = records
 

@@ -78,6 +78,7 @@ test_incremental_stream_with_slice_boundaries_no_input_state = (
             {"stream1": {"slices": [{"start": 0, "end": 2}], "state_type": ConcurrencyCompatibleStateType.date_range.value, "legacy": {}}},
         ]
     )
+    .accept_unordered_records()
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
     .set_incremental_scenario_config(IncrementalScenarioConfig(input_state=_NO_INPUT_STATE))
     .build()
@@ -144,6 +145,7 @@ test_incremental_stream_with_slice_boundaries_with_legacy_state = (
         .set_incremental(CursorField(["cursor_field"]), ("from", "to"))
         .set_input_state(LEGACY_STATE)
     )
+    .accept_unordered_records()
     .set_expected_records(
         [
             {"data": {"id": "1", "cursor_field": 0}, "stream": "stream1"},
@@ -253,6 +255,7 @@ test_incremental_stream_with_slice_boundaries_with_concurrent_state = (
             {"stream1": {"slices": [{"start": 0, "end": 2}], "state_type": ConcurrencyCompatibleStateType.date_range.value}},
         ]
     )
+    .accept_unordered_records()
     .set_log_levels({"ERROR", "WARN", "WARNING", "INFO", "DEBUG"})
     .set_incremental_scenario_config(IncrementalScenarioConfig(input_state=CONCURRENT_STATE))
     .build()
