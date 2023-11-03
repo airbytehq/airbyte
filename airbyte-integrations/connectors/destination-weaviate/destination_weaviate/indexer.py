@@ -48,7 +48,9 @@ class WeaviateIndexer(Indexer):
             self.client = weaviate.Client(url=self.config.host, additional_headers=headers)
 
         # disable dynamic batching because it's handled asynchroniously in the client
-        self.client.batch.configure(batch_size=None, dynamic=False)
+        self.client.batch.configure(
+            batch_size=None, dynamic=False, weaviate_error_retries=weaviate.WeaviateErrorRetryConf(number_retries=5)
+        )
 
     def check(self) -> Optional[str]:
         deployment_mode = os.environ.get("DEPLOYMENT_MODE", "")
