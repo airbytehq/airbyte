@@ -250,7 +250,7 @@ class Subscriptions(RechargeStreamModernAPI, IncrementalRechargeStream):
     """
     Subscriptions Stream: https://developer.rechargepayments.com/v1-shopify?python#list-subscriptions
     """
-    
+
     # reduce the slice date range to avoid 504 - Gateway Timeout on the Server side,
     # since this stream could contain lots of data, causing the server to timeout.
     # related issue: https://github.com/airbytehq/oncall/issues/3424
