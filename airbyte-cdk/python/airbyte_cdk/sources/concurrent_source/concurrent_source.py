@@ -127,20 +127,17 @@ class ConcurrentSource(AbstractSource, ABC):
 
             elif isinstance(airbyte_message_or_record_or_exception, PartitionGenerationCompletedSentinel):
                 # this path is impossible?
-                partition_generator_running.remove(airbyte_message_or_record_or_exception.partition_generator.stream_name())
-                if partition_generators:
-                    stream_partition_generator = partition_generators.pop(0)
-                    streams_in_progress.add(stream_partition_generator.stream_name())
-                    self._submit_task(futures, partition_generator.generate_partitions, stream_partition_generator)
-                    partition_generator_running.append(stream_partition_generator.stream_name())
-                    logger.info(f"Marking stream {stream_partition_generator.stream_name()} as STARTED")
-                    logger.info(f"Syncing stream: {stream_partition_generator.stream_name()} ")
-                    yield stream_status_as_airbyte_message(
-                        # FIXME pass namespace
-                        stream_partition_generator.stream_name(),
-                        None,
-                        AirbyteStreamStatus.STARTED,
-                    )
+                status_message = self._handle_partition_generation_completed(
+                    airbyte_message_or_record_or_exception,
+                    partition_generator_running,
+                    partition_generators,
+                    streams_in_progress,
+                    partition_generator,
+                    futures,
+                    logger,
+                )
+                if status_message:
+                    yield status_message
 
             elif isinstance(airbyte_message_or_record_or_exception, Partition):
                 # A new partition was generated and must be processed
@@ -211,6 +208,26 @@ class ConcurrentSource(AbstractSource, ABC):
         if self._slice_logger.should_log_slice_message(logger):
             self._message_repository.emit_message(self._slice_logger.create_slice_log_message(partition.to_slice()))
         self._submit_task(futures, partition_reader.process_partition, partition)
+
+    def _handle_partition_generation_completed(
+        self, sentinel, partition_generator_running, partition_generators, streams_in_progress, partition_generator, futures, logger
+    ):
+        partition_generator_running.remove(sentinel.partition_generator.stream_name())
+        if partition_generators:
+            stream_partition_generator = partition_generators.pop(0)
+            streams_in_progress.add(stream_partition_generator.stream_name())
+            self._submit_task(futures, partition_generator.generate_partitions, stream_partition_generator)
+            partition_generator_running.append(stream_partition_generator.stream_name())
+            logger.info(f"Marking stream {stream_partition_generator.stream_name()} as STARTED")
+            logger.info(f"Syncing stream: {stream_partition_generator.stream_name()} ")
+            return stream_status_as_airbyte_message(
+                # FIXME pass namespace
+                stream_partition_generator.stream_name(),
+                None,
+                AirbyteStreamStatus.STARTED,
+            )
+        else:
+            return None
 
     def _update_timer(self, stream, timer, logger):
         timer.finish_event(stream.name)
