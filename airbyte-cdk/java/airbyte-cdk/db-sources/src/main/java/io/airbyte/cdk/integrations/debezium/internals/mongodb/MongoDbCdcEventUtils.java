@@ -27,14 +27,12 @@ import org.bson.BsonReader;
 import org.bson.BsonRegularExpression;
 import org.bson.BsonType;
 import org.bson.Document;
-import org.bson.UuidRepresentation;
 import org.bson.codecs.BsonCodecProvider;
 import org.bson.codecs.BsonValueCodecProvider;
 import org.bson.codecs.DocumentCodecProvider;
 import org.bson.codecs.IterableCodecProvider;
 import org.bson.codecs.JsonObjectCodecProvider;
 import org.bson.codecs.MapCodecProvider;
-import org.bson.codecs.UuidCodecProvider;
 import org.bson.codecs.ValueCodecProvider;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.jsr310.Jsr310CodecProvider;
@@ -228,8 +226,7 @@ public class MongoDbCdcEventUtils {
               new Jsr310CodecProvider(),
               new JsonObjectCodecProvider(),
               new BsonCodecProvider(),
-              new DBRefCodecProvider(),
-              new UuidCodecProvider(UuidRepresentation.JAVA_LEGACY)));
+              new DBRefCodecProvider()));
 
       // Override the default codec registry
       return document.toBsonDocument(BsonDocument.class, customCodecRegistry);
