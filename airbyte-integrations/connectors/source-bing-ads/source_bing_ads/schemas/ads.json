@@ -141,32 +141,32 @@
       }
     },
     "LongHeadline": {
-      "type" : ["null", "object"],
-        "properties" : {
-          "Asset": {
-            "type" : ["null", "object"],
-            "properties" : {
-              "Id": {
-                "type" : ["null", "integer"]
-              },
-              "Name": {
-                "type" : ["null", "integer"]
-              },
-              "Type": {
-                "type" : ["null", "integer"]
-              }
+      "type": ["null", "object"],
+      "properties": {
+        "Asset": {
+          "type": ["null", "object"],
+          "properties": {
+            "Id": {
+              "type": ["null", "integer"]
+            },
+            "Name": {
+              "type": ["null", "integer"]
+            },
+            "Type": {
+              "type": ["null", "integer"]
             }
-          },
-          "AssetPerformanceLabel": {
-            "type" : ["null", "string"]
-          },
-          "EditorialStatus": {
-            "type" : ["null", "string"]
-          },
-          "PinnedField": {
-            "type" : ["null", "string"]
           }
+        },
+        "AssetPerformanceLabel": {
+          "type": ["null", "string"]
+        },
+        "EditorialStatus": {
+          "type": ["null", "string"]
+        },
+        "PinnedField": {
+          "type": ["null", "string"]
         }
+      }
     },
     "LongHeadlineString": {
       "type": ["null", "string"]
