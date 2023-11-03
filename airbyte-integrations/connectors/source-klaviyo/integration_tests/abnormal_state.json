@@ -16,7 +16,12 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated": "2120-10-10 00:00:00" },
+      "stream_state": {
+        "updated": "2120-10-10 00:00:00",
+        "archived": {
+          "updated": "2120-10-10 00:00:00"
+        }
+      },
       "stream_descriptor": { "name": "flows" }
     }
   },
@@ -37,7 +42,12 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "updated_at": "2120-10-10 00:00:00" },
+      "stream_state": {
+        "updated_at": "2120-10-10 00:00:00",
+        "archived": {
+          "updated_at": "2120-10-10 00:00:00"
+        }
+      },
       "stream_descriptor": { "name": "campaigns" }
     }
   },

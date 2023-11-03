@@ -192,13 +192,23 @@ class ArchivedRecordsStream(IncrementalKlaviyoStream):
         return self._path
 
     def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
-        params = super().request_params(stream_state, next_page_token, **kwargs)
+        archived_stream_state = stream_state.get("archived") if stream_state else None
+        params = super().request_params(archived_stream_state, next_page_token, **kwargs)
         archived_filter = "equals(archived,true)"
         if "filter" in params:
             params["filter"] = f"and({params['filter']},{archived_filter})"
         else:
             params["filter"] = archived_filter
         return params
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        state = super().get_updated_state(current_stream_state, latest_record)
+        current_archived_stream_cursor_value = current_stream_state.get("archived", {}).get(self.cursor_field, self._start_ts)
+        latest_archived_cursor = pendulum.parse(latest_record[self.cursor_field])
+        if current_archived_stream_cursor_value:
+            latest_archived_cursor = max(latest_archived_cursor, pendulum.parse(current_archived_stream_cursor_value))
+        state["archived"] = {self.cursor_field: latest_archived_cursor}
+        return state
 
 
 class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
