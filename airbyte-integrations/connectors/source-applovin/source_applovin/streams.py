@@ -85,10 +85,12 @@ class Creatives(HttpSubStream, ApplovinStream):
             parent=Campaigns(authenticator=authenticator),
         )
 
-    # as of now Applovin's rate limit is arount 2000 request per *hour*
+    # as of now Applovin's rate limit is around 2000 request per *hour*
+    @property
     def max_retries(self) -> Union[int, None]:
         return 15
 
+    @property
     def retry_factor(self) -> float:
         return 10.0
 
