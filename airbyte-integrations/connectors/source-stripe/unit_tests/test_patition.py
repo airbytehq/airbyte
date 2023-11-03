@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
-from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
+from airbyte_cdk.sources.declarative.requesters import LowCodeHttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.paginators import LowCodePaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import LowCodeCursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
@@ -22,7 +22,7 @@ PAGE_SIZE = 10
 
 @pytest.fixture
 def paginated_requester(url_base: str = URL_BASE, stream: str = "accounts") -> PaginatedRequester:
-    requester = HttpRequester(
+    requester = LowCodeHttpRequester(
         url_base=url_base,
         request_options_provider=MagicMock(),
         path=stream,

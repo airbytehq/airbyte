@@ -11,11 +11,10 @@ from airbyte_cdk.entrypoint import logger as entrypoint_logger
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordSelector
-from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
+from airbyte_cdk.sources.declarative.requesters import RequestOption, SourceHttpRequester
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.requesters.request_path import RequestPath
 from airbyte_cdk.sources.message.repository import InMemoryMessageRepository
 from airbyte_cdk.sources.streams import Stream
@@ -130,15 +129,11 @@ class SourceStripe(AbstractSource):
         return True, None
 
     def _create_concurrent_stream(self, base_stream: HttpStream, concurrency_level: int = _MAX_CONCURRENCY) -> Stream:
-        http_requester = HttpRequester(
+        http_requester = SourceHttpRequester(
             url_base=base_stream.url_base,
-            request_options_provider=InterpolatedRequestOptionsProvider(
-                request_headers={**{"Stripe-Version": "", "Stripe-Account": ""}, **base_stream.authenticator.get_auth_header()},
-                parameters={},
-            ),
+            request_headers=base_stream.authenticator.get_auth_header(),
             path=base_stream.path(),
             name=base_stream.name,
-            config={},
             parameters={},
             message_repository=self.message_repository,
         )
