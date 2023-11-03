@@ -23,14 +23,6 @@ java {
     }
 }
 
-
-test {
-    testLogging {
-        // TODO: Remove this after debugging
-        showStandardStreams = true
-    }
-}
-
 project.configurations {
     // From `base-debezium`:
     testFixturesImplementation.extendsFrom implementation
