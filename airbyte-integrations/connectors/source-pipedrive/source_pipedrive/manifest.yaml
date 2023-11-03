@@ -11,7 +11,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_path: ["data", "*", "data"]
+      field_path: ["data"]
 
   selector_users:
     type: RecordSelector
