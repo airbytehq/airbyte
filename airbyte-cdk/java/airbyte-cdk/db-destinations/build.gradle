@@ -8,6 +8,7 @@ java {
 dependencies {
     // Depends on core CDK classes (OK 👍)
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
+
     compileOnly project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
     testImplementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
     testFixturesCompileOnly project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
@@ -28,8 +29,6 @@ dependencies {
 
 
     implementation ('com.github.airbytehq:json-avro-converter:1.1.0') { exclude group: 'ch.qos.logback', module: 'logback-classic'}
-
-    implementation 'com.github.alexmojaki:s3-stream-upload:2.2.2'
 
     testFixturesImplementation "org.hamcrest:hamcrest-all:1.3"
 
@@ -82,7 +81,6 @@ dependencies {
     testFixturesImplementation 'org.projectlombok:lombok:1.18.20'
     testFixturesAnnotationProcessor 'org.projectlombok:lombok:1.18.20' 
 
-    implementation ('org.apache.hadoop:hadoop-aws:3.3.3') { exclude group: 'org.slf4j', module: 'slf4j-log4j12'}
     implementation ('org.apache.hadoop:hadoop-common:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
     implementation ('org.apache.hadoop:hadoop-mapreduce-client-core:3.3.3') {exclude group: 'org.slf4j', module: 'slf4j-log4j12' exclude group: 'org.slf4j', module: 'slf4j-reload4j'}
 
