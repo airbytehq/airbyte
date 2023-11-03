@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useIntl, FormattedMessage } from "react-intl";
 // import styled from "styled-components";
 
-import { BigButton, ButtonRows } from "components/base/Button/BigButton";
+import { CustomButton, ButtonRows } from "components/base/Button/CustomButton";
 import { ConnectionStep } from "components/ConnectionStep";
 import DataPanel from "components/DataPanel";
 import HeadTitle from "components/HeadTitle";
@@ -90,9 +90,9 @@ const SelectDestinationCard: React.FC = () => {
         {/* </Container> */}
       </MainPageWithScroll>
       <ButtonRows top="0" position="absolute">
-        <BigButton onClick={clickSelect} disabled={destinationDefinitionId ? false : true}>
+        <CustomButton onClick={clickSelect} disabled={destinationDefinitionId ? false : true}>
           <FormattedMessage id="form.button.selectContinue" />
-        </BigButton>
+        </CustomButton>
       </ButtonRows>
     </>
   );

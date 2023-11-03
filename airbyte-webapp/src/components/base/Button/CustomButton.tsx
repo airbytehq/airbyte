@@ -23,7 +23,7 @@ export const ButtonRows = styled.div<ButtonRowsProps>`
   margin-top: ${({ top }) => (top ? top : 100)}px;
   margin-bottom: ${({ bottom }) => (bottom ? bottom : 0)}px;
   padding: 15px 0;
-  //background: ${({ background, theme }) => background || theme.white};
+  background: ${({ background, theme }) => background || theme.white};
   position: ${({ position }) => position || "static"};
   bottom: 0;
   z-index: 1;
@@ -52,7 +52,7 @@ export const BtnInnerContainer = styled.div`
   min-width: 150px;
 `;
 
-export const BigButton: React.FC<ButtonProps> = (props) => {
+export const CustomButton: React.FC<ButtonProps> = (props) => {
   return (
     <Button {...props}>
       <BtnInnerContainer>
