@@ -2,12 +2,12 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from airbyte_cdk.models import SyncMode
 from unittest import mock
 
 import pendulum
 import pytest
 import requests
+from airbyte_cdk.models import SyncMode
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
 from source_klaviyo.streams import (
