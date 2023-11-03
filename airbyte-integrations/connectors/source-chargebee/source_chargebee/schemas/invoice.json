@@ -28,7 +28,7 @@
       "type": [
         "string",
         "null"
-      ],
+      ]
     },
     "subscription_id": {
       "type": [
