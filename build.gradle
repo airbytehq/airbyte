@@ -509,7 +509,8 @@ subprojects { subproj ->
         testLogging() {
             events 'skipped', 'started', 'passed', 'failed'
             exceptionFormat 'full'
-            showStandardStreams = true
+            // Swallow the logs when running in airbyte-ci, rely on test reports instead.
+            showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
         }
 
         // Set the timezone to UTC instead of picking up the host machine's timezone,
