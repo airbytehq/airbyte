@@ -3,19 +3,16 @@
 #
 """This module groups factory like functions to dispatch tests steps according to the connector under test language."""
 
-import itertools
 from typing import List
 
 import anyio
-import asyncer
 from connector_ops.utils import METADATA_FILE_NAME, ConnectorLanguage
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.steps import java_connectors, python_connectors
 from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
 from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
-from pipelines.helpers.steps import StepToRun, new_run_steps
-from pipelines.models.steps import StepResult
+from pipelines.helpers.steps import StepToRun, run_steps
 
 LANGUAGE_MAPPING = {
     "get_test_steps": {
@@ -73,7 +70,7 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
 
     async with semaphore:
         async with context:
-            result_dict = await new_run_steps(
+            result_dict = await run_steps(
                 runnables=steps_to_run,
                 options=context.run_step_options,
             )

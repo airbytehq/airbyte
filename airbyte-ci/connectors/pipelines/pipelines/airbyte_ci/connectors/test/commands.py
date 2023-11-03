@@ -41,7 +41,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 @click.option(
     '--skip-step',
     '-x',
-    multiple=True
+    multiple=True,
     type=str,
     help="Skip a step by name. Can be used multiple times to skip multiple steps.",
 )
@@ -107,7 +107,7 @@ async def test(
     try:
         await run_connectors_pipelines(
             [connector_context for connector_context in connectors_tests_contexts],
-            new_run_connector_test_pipeline,
+            run_connector_test_pipeline,
             "Test Pipeline",
             ctx.obj["concurrency"],
             ctx.obj["dagger_logs_path"],

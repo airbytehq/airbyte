@@ -11,14 +11,13 @@ from pipelines import main_logger
 from typing import TYPE_CHECKING, Callable, Dict, List, Tuple, Union
 
 import asyncer
-from pipelines.models.contexts import PipelineContext
-from pipelines.models.steps import Step, StepStatus
+from pipelines.models.steps import StepStatus
 
 if TYPE_CHECKING:
-    from pipelines.models.steps import StepResult
+    from pipelines.models.steps import Step, StepResult
+    # dict, function that returns a dict, or a coroutine that returns a dict
+    ARGS_TYPE = Union[Dict, Callable[[Dict[str, StepResult]], Dict]]
 
-# dict, function that returns a dict, or a coroutine that returns a dict
-ARGS_TYPE = Union[Dict, Callable[[Dict[str, StepResult]], Dict]]
 
 @dataclass(frozen=True)
 class RunStepOptions:
@@ -111,6 +110,31 @@ async def run_steps(
     options: RunStepOptions = RunStepOptions(),
 ) -> Dict[str, StepResult]:
     """Run multiple steps sequentially, or in parallel if steps are wrapped into a sublist.
+
+    Examples
+    --------
+    >>> from pipelines.models.steps import Step, StepResult, StepStatus
+    >>> class TestStep(Step):
+    ...     async def _run(self) -> StepResult:
+    ...         return StepResult(self, StepStatus.SUCCESS)
+    >>> steps = [
+    ...     StepToRun(id="step1", step=TestStep()),
+    ...     [
+    ...         StepToRun(id="step2", step=TestStep()),
+    ...         StepToRun(id="step3", step=TestStep()),
+    ...     ],
+    ...     StepToRun(id="step4", step=TestStep()),
+    ... ]
+    >>> results = await run_steps(steps)
+    >>> results["step1"].status
+    <StepStatus.SUCCESS: 1>
+    >>> results["step2"].status
+    <StepStatus.SUCCESS: 1>
+    >>> results["step3"].status
+    <StepStatus.SUCCESS: 1>
+    >>> results["step4"].status
+    <StepStatus.SUCCESS: 1>
+
 
     Args:
         runnables (List[StepToRun]): List of steps to run.
