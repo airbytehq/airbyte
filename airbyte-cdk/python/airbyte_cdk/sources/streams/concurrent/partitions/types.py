@@ -5,6 +5,7 @@
 from typing import Union
 
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
+from airbyte_cdk.sources.streams.concurrent.partitions.partition_generator import PartitionGenerator
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 
 PARTITIONS_GENERATED_SENTINEL = object
