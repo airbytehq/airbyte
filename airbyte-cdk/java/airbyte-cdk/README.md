@@ -156,6 +156,8 @@ MavenLocal debugging steps:
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
 |:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.1   | 2023-11-03 | [\#32119](https://github.com/airbytehq/airbyte/pull/32119) | Add STANDARD UUID code to MongoDB debezium handler.                                                                                                            |
+| 0.4.0   | 2023-11-02 | [\#32118](https://github.com/airbytehq/airbyte/pull/32118) | [Internal Refactor] : Update CDK to export the proper API packages, fix warnings.                                                                              |
 | 0.3.0   | 2023-11-02 | [\#31983](https://github.com/airbytehq/airbyte/pull/31983) | Add deinterpolation feature to AirbyteExceptionHandler.                                                                                                        |
 | 0.2.4   | 2023-10-31 | [\#31807](https://github.com/airbytehq/airbyte/pull/31807) | Handle case of debezium update and delete of records in mongodb.                                                                                               |
 | 0.2.3   | 2023-10-31 | [\#32022](https://github.com/airbytehq/airbyte/pull/32022) | Update Debezium version from 2.20 -> 2.4.0.                                                                                                                    |
