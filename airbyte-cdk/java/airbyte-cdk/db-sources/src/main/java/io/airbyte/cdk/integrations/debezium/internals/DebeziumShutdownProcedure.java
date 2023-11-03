@@ -48,9 +48,9 @@ public class DebeziumShutdownProcedure<T> {
 
   private Runnable transfer() {
     return () -> {
-      while (!sourceQueue.isEmpty() || !MoreBooleans.isTruthy(publisherStatusSupplier.get())) {
+      while (!sourceQueue.isEmpty() || !hasEngineShutDown()) {
         try {
-          T event = sourceQueue.poll(10, TimeUnit.SECONDS);
+          final T event = sourceQueue.poll(100, TimeUnit.MILLISECONDS);
           if (event != null) {
             targetQueue.put(event);
           }
@@ -62,13 +62,17 @@ public class DebeziumShutdownProcedure<T> {
     };
   }
 
+  private boolean hasEngineShutDown() {
+    return MoreBooleans.isTruthy(publisherStatusSupplier.get());
+  }
+
   private void initiateTransfer() {
     executorService.execute(transfer());
   }
 
   public LinkedBlockingQueue<T> getRecordsRemainingAfterShutdown() {
     if (!hasTransferThreadShutdown) {
-      LOGGER.warn("Queue transfer thread has not shutdown, some records might be missing");
+      LOGGER.warn("Queue transfer thread has not shut down, some records might be missing.");
     }
     return targetQueue;
   }
@@ -83,8 +87,8 @@ public class DebeziumShutdownProcedure<T> {
    * complete we just have to read the remaining records from the {@link targetQueue}
    */
   public void initiateShutdownProcedure() {
-    if (publisherStatusSupplier.get()) {
-      LOGGER.info("Engine has already shutdown");
+    if (hasEngineShutDown()) {
+      LOGGER.info("Debezium Engine has already shut down.");
       return;
     }
     Exception exceptionDuringEngineClose = null;
