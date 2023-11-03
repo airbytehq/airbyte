@@ -51,12 +51,17 @@ class MongoDbCdcEventUtilsTest {
   @Test
   void testGenerateObjectIdDocument() {
     final String key = "{\"" + OBJECT_ID_FIELD + "\": \"" + OBJECT_ID + "\"}";
-    final JsonNode debeziumEventKey = Jsons.jsonNode(Map.of(ID_FIELD, key));
+    JsonNode debeziumEventKey = Jsons.jsonNode(Map.of(ID_FIELD, key));
 
-    final String updated = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
+    String updated = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
 
     assertTrue(updated.contains(DOCUMENT_OBJECT_ID_FIELD));
     assertEquals(key.replaceAll(OBJECT_ID_FIELD_PATTERN, DOCUMENT_OBJECT_ID_FIELD), updated);
+
+    debeziumEventKey = Jsons.jsonNode(Map.of(ID_FIELD, "\"" + OBJECT_ID + "\""));
+    updated = MongoDbCdcEventUtils.generateObjectIdDocument(debeziumEventKey);
+    assertTrue(updated.contains(DOCUMENT_OBJECT_ID_FIELD));
+    assertEquals(Jsons.serialize(debeziumEventKey).replaceAll(ID_FIELD, DOCUMENT_OBJECT_ID_FIELD), updated);
   }
 
   @Test

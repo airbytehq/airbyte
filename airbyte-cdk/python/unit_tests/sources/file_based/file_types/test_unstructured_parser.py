@@ -3,11 +3,13 @@
 #
 
 import asyncio
+from datetime import datetime
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 from airbyte_cdk.sources.file_based.exceptions import RecordParseError
 from airbyte_cdk.sources.file_based.file_types import UnstructuredParser
+from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from unstructured.documents.elements import ElementMetadata, Formula, ListItem, Text, Title
 from unstructured.file_utils.filetype import FileType
 
@@ -143,17 +145,31 @@ def test_infer_schema(mock_detect_filetype, filetype, raises):
         ),
     ],
 )
-@patch("unstructured.partition.auto.partition")
+@patch("unstructured.partition.pdf.partition_pdf")
+@patch("unstructured.partition.pptx.partition_pptx")
+@patch("unstructured.partition.docx.partition_docx")
 @patch("unstructured.partition.md.optional_decode")
 @patch("airbyte_cdk.sources.file_based.file_types.unstructured_parser.detect_filetype")
-def test_parse_records(mock_detect_filetype, mock_optional_decode, mock_partition, filetype, parse_result, raises, expected_records):
+def test_parse_records(
+    mock_detect_filetype,
+    mock_optional_decode,
+    mock_partition_docx,
+    mock_partition_pptx,
+    mock_partition_pdf,
+    filetype,
+    parse_result,
+    raises,
+    expected_records,
+):
     stream_reader = MagicMock()
     mock_open(stream_reader.open_file, read_data=bytes(str(parse_result), "utf-8"))
-    fake_file = MagicMock()
+    fake_file = RemoteFile(uri=FILE_URI, last_modified=datetime.now())
     fake_file.uri = FILE_URI
     logger = MagicMock()
     mock_detect_filetype.return_value = filetype
-    mock_partition.return_value = parse_result
+    mock_partition_docx.return_value = parse_result
+    mock_partition_pptx.return_value = parse_result
+    mock_partition_pdf.return_value = parse_result
     mock_optional_decode.side_effect = lambda x: x.decode("utf-8")
     if raises:
         with pytest.raises(RecordParseError):

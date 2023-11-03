@@ -6,17 +6,17 @@ plugins {
 }
 
 dependencies {
-    project(':airbyte-connector-test-harnesses:acceptance-test-harness')
+    project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness')
 }
 
 // we need to access the sshtunneling script from airbyte-workers for ssh support
 def copySshScript = tasks.register('copySshScript', Copy) {
-    from "${project(':airbyte-connector-test-harnesses:acceptance-test-harness').buildDir}/resources/main"
+    from "${project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness').buildDir}/resources/main"
     into "${buildDir}"
     include "sshtunneling.sh"
 }
 copySshScript.configure {
-    dependsOn project(':airbyte-connector-test-harnesses:acceptance-test-harness').tasks.named('processResources')
+    dependsOn project(':airbyte-cdk:java:airbyte-cdk:acceptance-test-harness').tasks.named('processResources')
 }
 
 // make sure the copy task above worked (if it fails, it fails silently annoyingly)
