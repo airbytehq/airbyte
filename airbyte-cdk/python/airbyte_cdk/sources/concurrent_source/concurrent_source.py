@@ -55,7 +55,7 @@ class ConcurrentSource(AbstractSource, ABC):
         futures: List[Future[Any]] = []
         queue: Queue = Queue()
         SENTINEL = object
-        stream_reader = StreamReader(queue, SENTINEL, self.message_repository)
+        stream_reader = StreamReader(queue, SENTINEL, self.message_repository, logger)
         logger.info(f"Starting syncing {self.name}")
         config, internal_config = split_config(config)
         # TODO assert all streams exist in the connector
