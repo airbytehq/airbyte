@@ -1,3 +1,10 @@
+
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-deprecation"
+    }
+}
+
 dependencies {
     // Depends on core CDK classes (OK 👍)
     implementation project(':airbyte-cdk:java:airbyte-cdk:core')
