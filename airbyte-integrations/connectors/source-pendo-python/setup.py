@@ -10,10 +10,12 @@ MAIN_REQUIREMENTS = [
 ]
 
 TEST_REQUIREMENTS = [
+    "airbyte-cdk~=0.2",
     "requests-mock~=1.9.3",
     "pytest~=6.2",
     "pytest-mock~=3.6.1",
     "connector-acceptance-test",
+    "responses",
 ]
 
 setup(
