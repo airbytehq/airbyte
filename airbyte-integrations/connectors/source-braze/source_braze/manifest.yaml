@@ -180,6 +180,11 @@ definitions:
       $ref: "#/definitions/datetime_14d_incremental_sync"
     retriever:
       $ref: "#/definitions/non_paginated_retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          include_variant_breakdown: "true"
+          include_step_breakdown: "true"
       record_selector:
         extractor:
           field_path: ["data", "stats"]
