@@ -20,7 +20,6 @@ import lombok.Getter;
 @Getter
 public class UploaderConfig {
 
-  private JsonNode config;
   /**
    * Taken directly from the {@link ConfiguredAirbyteStream}, except if the namespace was null, we set
    * it to the destination default namespace.
@@ -35,11 +34,11 @@ public class UploaderConfig {
   private BigQuery bigQuery;
   private Map<UploaderType, BigQueryRecordFormatter> formatterMap;
   private boolean isDefaultAirbyteTmpSchema;
+  private String datasetLocation;
+  private boolean gcsUploadingMode;
+  private Integer bigQueryClientChunkSize;
 
-  public boolean isGcsUploadingMode() {
-    return BigQueryUtils.getLoadingMethod(config) == UploadingMethod.GCS;
-  }
-
+  //TODO: Verify usages and remove, this code path is exercised only in Standard mode
   public UploaderType getUploaderType() {
     return (isGcsUploadingMode() ? UploaderType.CSV : UploaderType.STANDARD);
   }

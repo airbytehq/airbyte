@@ -18,6 +18,7 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 import io.airbyte.commons.exceptions.ConfigErrorException;
+import io.airbyte.integrations.destination.bigquery.BigQueryConsts;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
@@ -49,7 +50,7 @@ public class BigQueryUploaderFactory {
   public static AbstractBigQueryUploader<?> getUploader(final UploaderConfig uploaderConfig)
       throws IOException {
     final String dataset = uploaderConfig.getParsedStream().id().rawNamespace();
-    final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
+    final String datasetLocation = uploaderConfig.getDatasetLocation();
     final Set<String> existingDatasets = new HashSet<>();
 
     final BigQueryRecordFormatter recordFormatter = uploaderConfig.getFormatter();
@@ -70,7 +71,7 @@ public class BigQueryUploaderFactory {
         uploaderConfig.getConfigStream().getDestinationSyncMode());
 
     return getBigQueryDirectUploader(
-        uploaderConfig.getConfig(),
+        uploaderConfig.getBigQueryClientChunkSize(),
         targetTable,
         tmpTable,
         uploaderConfig.getBigQuery(),
@@ -79,8 +80,7 @@ public class BigQueryUploaderFactory {
         recordFormatter);
   }
 
-  private static BigQueryDirectUploader getBigQueryDirectUploader(
-                                                                  final JsonNode config,
+  private static BigQueryDirectUploader getBigQueryDirectUploader(final Integer bigQueryClientChunkSize,
                                                                   final TableId targetTable,
                                                                   final TableId tmpTable,
                                                                   final BigQuery bigQuery,
@@ -115,10 +115,12 @@ public class BigQueryUploaderFactory {
     }
 
     // this this optional value. If not set - use default client's value (15MiG)
-    final Integer bigQueryClientChunkSizeFomConfig =
-        BigQueryUtils.getBigQueryClientChunkSize(config);
-    if (bigQueryClientChunkSizeFomConfig != null) {
-      writer.setChunkSize(bigQueryClientChunkSizeFomConfig);
+    if (bigQueryClientChunkSize != null) {
+      if (bigQueryClientChunkSize <= 0) {
+        LOGGER.error("BigQuery client Chunk (buffer) size must be a positive number (MB), but was:" + bigQueryClientChunkSize);
+        throw new IllegalArgumentException("BigQuery client Chunk (buffer) size must be a positive number (MB)");
+      }
+      writer.setChunkSize(bigQueryClientChunkSize * BigQueryConsts.MiB);
     }
 
     return new BigQueryDirectUploader(
