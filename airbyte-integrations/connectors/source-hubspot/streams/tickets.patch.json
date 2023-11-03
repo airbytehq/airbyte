@@ -9,6 +9,16 @@
                   "null"
                 ]
               }
+        },
+        "contacts": {
+            "items": {
+                "format": "integer",
+                "type": [
+                  "integer",
+                  "string",
+                  "null"
+                ]
+              }
         }
     }
 }
