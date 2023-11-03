@@ -108,7 +108,7 @@ jsonSchema2Pojo {
         main {
             io.delimitersPropertyWord = '_'
             //io.source.setFrom files("${buildDir}/${project.name}-connection-specification.json")
-            io.source.setFrom files("${projectDir}/src/main/resources/bigquery-destination-connection-specification.json")
+            io.source.setFrom files("${sourceSets.main.output.resourcesDir}/destination-bigquery-connection-specification.json")
             klass.annotateGenerated = false
             klass.targetPackage = 'io.airbyte.integrations.destination.bigquery'
             //methods.builders = true
