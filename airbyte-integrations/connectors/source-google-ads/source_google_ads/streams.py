@@ -260,7 +260,7 @@ class Accounts(IncrementalGoogleAdsStream):
     Accounts stream: https://developers.google.com/google-ads/api/fields/v11/customer
     """
 
-    primary_key = ["customer.id", "segments.date"]
+    primary_key = ["customer.id"]
 
     def parse_response(self, response: SearchPager, stream_slice: Optional[Mapping[str, Any]] = None) -> Iterable[Mapping]:
         for record in super().parse_response(response):
@@ -292,7 +292,7 @@ class Campaigns(IncrementalGoogleAdsStream):
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["campaign.id", "segments.date", "segments.hour", "segments.ad_network_type"]
+    primary_key = ["campaign.id"]
 
 
 class CampaignBudget(IncrementalGoogleAdsStream):
@@ -303,10 +303,7 @@ class CampaignBudget(IncrementalGoogleAdsStream):
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
     primary_key = [
         "customer.id",
-        "campaign_budget.id",
-        "segments.date",
-        "segments.budget_campaign_association_status.campaign",
-        "segments.budget_campaign_association_status.status",
+        "campaign_budget.id"
     ]
 
 
@@ -316,7 +313,7 @@ class CampaignBiddingStrategies(IncrementalGoogleAdsStream):
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["campaign.id", "bidding_strategy.id", "segments.date"]
+    primary_key = ["campaign.id", "bidding_strategy.id"]
 
 
 class CampaignLabels(GoogleAdsStream):
@@ -333,7 +330,7 @@ class AdGroups(IncrementalGoogleAdsStream):
     AdGroups stream: https://developers.google.com/google-ads/api/fields/v11/ad_group
     """
 
-    primary_key = ["ad_group.id", "segments.date"]
+    primary_key = ["ad_group.id"]
 
 
 class AdGroupLabels(GoogleAdsStream):
@@ -351,7 +348,7 @@ class AdGroupBiddingStrategies(IncrementalGoogleAdsStream):
     """
 
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
-    primary_key = ["ad_group.id", "bidding_strategy.id", "segments.date"]
+    primary_key = ["ad_group.id", "bidding_strategy.id"]
 
 
 class AdGroupCriterionLabels(GoogleAdsStream):
@@ -368,7 +365,7 @@ class AdGroupAds(IncrementalGoogleAdsStream):
     AdGroups stream: https://developers.google.com/google-ads/api/fields/v11/ad_group_ad
     """
 
-    primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date"]
+    primary_key = ["ad_group.id", "ad_group_ad.ad.id"]
 
 
 class AdGroupAdLabels(GoogleAdsStream):
@@ -385,7 +382,7 @@ class AccountPerformanceReport(IncrementalGoogleAdsStream):
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance
     """
 
-    primary_key = ["customer.id", "segments.date", "segments.ad_network_type", "segments.device"]
+    primary_key = ["customer.id"]
 
 
 class AdGroupAdReport(IncrementalGoogleAdsStream):
@@ -394,7 +391,7 @@ class AdGroupAdReport(IncrementalGoogleAdsStream):
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#ad_performance
     """
 
-    primary_key = ["ad_group.id", "ad_group_ad.ad.id", "segments.date", "segments.ad_network_type"]
+    primary_key = ["ad_group.id", "ad_group_ad.ad.id"]
 
 
 class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
@@ -405,10 +402,7 @@ class DisplayKeywordPerformanceReport(IncrementalGoogleAdsStream):
 
     primary_key = [
         "ad_group.id",
-        "ad_group_criterion.criterion_id",
-        "segments.date",
-        "segments.ad_network_type",
-        "segments.device",
+        "ad_group_criterion.criterion_id"
     ]
 
 
@@ -420,10 +414,7 @@ class DisplayTopicsPerformanceReport(IncrementalGoogleAdsStream):
 
     primary_key = [
         "ad_group.id",
-        "ad_group_criterion.criterion_id",
-        "segments.date",
-        "segments.ad_network_type",
-        "segments.device",
+        "ad_group_criterion.criterion_id"
     ]
 
 
@@ -443,9 +434,7 @@ class UserLocationReport(IncrementalGoogleAdsStream):
     primary_key = [
         "customer.id",
         "user_location_view.country_criterion_id",
-        "user_location_view.targeting_location",
-        "segments.date",
-        "segments.ad_network_type",
+        "user_location_view.targeting_location"
     ]
 
 
@@ -454,7 +443,7 @@ class GeographicReport(IncrementalGoogleAdsStream):
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/geographic_view
     """
 
-    primary_key = ["customer.id", "geographic_view.country_criterion_id", "geographic_view.location_type", "segments.date"]
+    primary_key = ["customer.id", "geographic_view.country_criterion_id", "geographic_view.location_type"]
 
 
 class KeywordReport(IncrementalGoogleAdsStream):
@@ -462,7 +451,7 @@ class KeywordReport(IncrementalGoogleAdsStream):
     UserLocationReport stream: https://developers.google.com/google-ads/api/fields/v11/keyword_view
     """
 
-    primary_key = ["ad_group.id", "ad_group_criterion.criterion_id", "segments.date"]
+    primary_key = ["ad_group.id", "ad_group_criterion.criterion_id"]
 
 
 class ClickView(IncrementalGoogleAdsStream):
@@ -470,7 +459,7 @@ class ClickView(IncrementalGoogleAdsStream):
     ClickView stream: https://developers.google.com/google-ads/api/reference/rpc/v11/ClickView
     """
 
-    primary_key = ["click_view.gclid", "segments.date", "segments.ad_network_type"]
+    primary_key = ["click_view.gclid"]
     days_of_data_storage = 90
     # where clause for cursor is inclusive from both sides, duration 0 will result in - '"2022-01-01" <= cursor AND "2022-01-01" >= cursor'
     # Queries including ClickView must have a filter limiting the results to one day
