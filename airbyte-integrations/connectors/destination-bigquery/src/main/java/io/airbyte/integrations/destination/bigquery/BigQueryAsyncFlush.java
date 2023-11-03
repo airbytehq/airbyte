@@ -92,4 +92,9 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
     return 200 * 1024 * 1024;
   }
 
+  @Override
+  public long getQueueFlushThresholdBytes() {
+    return 200 * 1024 * 1024;
+  }
+
 }
