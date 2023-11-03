@@ -32,7 +32,8 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             testLogging() {
                 events 'skipped', 'started', 'passed', 'failed'
                 exceptionFormat 'full'
-                showStandardStreams = true
+                // Swallow the logs when running in airbyte-ci, rely on test reports instead.
+                showStandardStreams = !System.getenv().containsKey("RUN_IN_AIRBYTE_CI")
             }
 
             systemProperties = project.test.systemProperties
