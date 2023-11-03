@@ -19,7 +19,7 @@ async def license(ctx: ClickPipelineContext):
     """Add license to python and java code via addlicense."""
     success = await format_license(ctx)
     if not success:
-        click.Abort()
+        sys.exit(1)
 
 
 async def format_license(ctx: ClickPipelineContext) -> bool:
@@ -47,6 +47,7 @@ async def format_license(ctx: ClickPipelineContext) -> bool:
         await license_container
         return True
 
-    except Exception as e:
-        logger.error(f"Failed to apply license: {e}")
+    except dagger.ExecError as e:
+        logger.error("Failed to apply license")
+        logger.error(e.stderr)
         return False

@@ -19,7 +19,7 @@ async def python(ctx: ClickPipelineContext):
     """Format python code via black and isort."""
     success = await format_python(ctx)
     if not success:
-        click.Abort()
+        sys.exit(1)
 
 
 async def format_python(ctx: ClickPipelineContext) -> bool:
@@ -66,4 +66,4 @@ async def format_python(ctx: ClickPipelineContext) -> bool:
     except dagger.ExecError as e:
         logger.error("Format failed")
         logger.error(e.stderr)
-        sys.exit(1)
+        return False

@@ -20,7 +20,7 @@ async def js(ctx: ClickPipelineContext):
 
     success = await format_js(ctx)
     if not success:
-        click.Abort()
+        sys.exit(1)
 
 
 async def format_js(ctx: ClickPipelineContext) -> bool:
@@ -61,6 +61,7 @@ async def format_js(ctx: ClickPipelineContext) -> bool:
 
         await format_container
         return True
-    except Exception as e:
-        logger.error(f"Failed to format code: {e}")
+    except dagger.ExecError as e:
+        logger.error(f"Failed to format code")
+        logger.error(e.stderr)
         return False
