@@ -27,8 +27,8 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   // Basic deinterpolation helpers to avoid doing _really_ dumb deinterpolation.
   // E.g. if "id" is in the list of strings to remove, we don't want to modify the message "Invalid
   // identifier".
-  private static final String REGEX_PREFIX = "(^|\\W)";
-  private static final String REGEX_SUFFIX = "($|\\W)";
+  private static final String REGEX_PREFIX = "(^|[^A-Za-z0-9])";
+  private static final String REGEX_SUFFIX = "($|[^A-Za-z0-9])";
 
   /**
    * If this list is populated, then the exception handler will attempt to deinterpolate the error
@@ -45,6 +45,15 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
    */
   @VisibleForTesting
   static final List<String> STRINGS_TO_DEINTERPOLATE = new ArrayList<>();
+  static {
+    // Add some common strings to deinterpolate, regardless of what the connector is doing
+    STRINGS_TO_DEINTERPOLATE.add("description");
+    STRINGS_TO_DEINTERPOLATE.add("id");
+    STRINGS_TO_DEINTERPOLATE.add("location");
+    STRINGS_TO_DEINTERPOLATE.add("name");
+    STRINGS_TO_DEINTERPOLATE.add("status");
+    STRINGS_TO_DEINTERPOLATE.add("type");
+  }
   @VisibleForTesting
   static final Set<Class<? extends Throwable>> THROWABLES_TO_DEINTERPOLATE = new HashSet<>();
 
