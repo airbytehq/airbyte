@@ -4,8 +4,8 @@ plugins {
 }
 
 airbyteJavaConnector {
-    cdkVersionRequired = '0.2.0'
-    features = ['db-destinations']
+    cdkVersionRequired = '0.4.0'
+    features = ['db-destinations', 's3-destinations']
     useLocalCdk = false
 }
 
@@ -32,5 +32,9 @@ dependencies {
 
     // TODO: declare typing-deduping as a CDK feature instead of importing from source.
     implementation project(':airbyte-cdk:java:airbyte-cdk:typing-deduping')
+    implementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:s3-destinations'))
     testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
+    testImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:s3-destinations'))
+    integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:typing-deduping'))
+    integrationTestJavaImplementation testFixtures(project(':airbyte-cdk:java:airbyte-cdk:s3-destinations'))
 }
