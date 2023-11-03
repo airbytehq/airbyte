@@ -12,7 +12,7 @@
       "type": ["null", "string"]
     },
     "TimePeriod": {
-      "type": ["null", "string"]
+      "type": ["null", "string"], "format": "date"
     },
     "AllConversions": {
       "type": ["null", "integer"]

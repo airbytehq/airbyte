@@ -31,6 +31,7 @@ from source_bing_ads.reports import (
     PerformanceReportsMixin,
     ReportsMixin,
 )
+from source_bing_ads.utils import transform_bulk_datetime_format_to_rfc_3339, transform_date_format_to_rfc_3339
 from suds import sudsobject
 
 
@@ -193,9 +194,17 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
 
 class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
 
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
     cursor_field = "Modified Time"
     _state = {}
+
+    @staticmethod
+    @transformer.registerCustomTransform
+    def custom_transform_date_rfc3339(original_value, field_schema):
+        if original_value and "format" in field_schema and field_schema["format"] == "date-time":
+            transformed_value = transform_bulk_datetime_format_to_rfc_3339(original_value)
+            return transformed_value
+        return original_value
 
     @property
     @abstractmethod
@@ -226,7 +235,9 @@ class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
-        self._state.update({str(value["Account Id"]): {self.cursor_field: value[self.cursor_field]}})
+        self._state.update(
+            {str(value["Account Id"]): {self.cursor_field: transform_bulk_datetime_format_to_rfc_3339(value[self.cursor_field])}}
+        )
 
     def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
         """
@@ -567,6 +578,16 @@ class BudgetSummaryReport(ReportsMixin, BingAdsReportingServiceStream):
         "DailySpend",
         "MonthToDateSpend",
     ]
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization | TransformConfig.CustomSchemaNormalization)
+
+    @staticmethod
+    @transformer.registerCustomTransform
+    def custom_transform_date_rfc3339(original_value, field_schema):
+        if original_value and "format" in field_schema and field_schema["format"] == "date":
+            transformed_value = transform_date_format_to_rfc_3339(original_value)
+            return transformed_value
+        return original_value
 
 
 class CampaignPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream):
