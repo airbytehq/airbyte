@@ -62,6 +62,7 @@ The Klaviyo connector should not run into Klaviyo API limitations under normal u
 
 | Version  | Date       | Pull Request                                               | Subject                                                                                   |
 |:---------|:-----------| :--------------------------------------------------------- |:------------------------------------------------------------------------------------------|
+| `2.0.0`  | 2023-11-03 | [32128](https://github.com/airbytehq/airbyte/pull/32128)   | Use the latest API for streams `campaigns`, `email_templates`, `events`, `flows`, `global_exclusions`, `lists`, and `metrics`|
 | `1.1.0`  | 2023-10-23 | [31710](https://github.com/airbytehq/airbyte/pull/31710)   | Make `start_date` config field optional                                                   |
 | `1.0.0`  | 2023-10-18 | [31565](https://github.com/airbytehq/airbyte/pull/31565)   | added new known fields for 'events' stream                                                |
 | `0.5.0`  | 2023-10-19 | [31611](https://github.com/airbytehq/airbyte/pull/31611)   | Add `date-time` format for `datetime` field in `Events` stream                            |

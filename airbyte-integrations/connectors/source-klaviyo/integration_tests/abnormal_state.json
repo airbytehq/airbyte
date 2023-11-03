@@ -9,7 +9,7 @@
   {
     "type": "STREAM",
     "stream": {
-      "stream_state": { "timestamp": "2120-10-10T00:00:00Z" },
+      "stream_state": { "updated": "2120-10-10T00:00:00Z" },
       "stream_descriptor": { "name": "global_exclusions" }
     }
   },
