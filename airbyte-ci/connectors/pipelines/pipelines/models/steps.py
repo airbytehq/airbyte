@@ -260,6 +260,10 @@ class Step(ABC):
         """
         return StepResult(self, StepStatus.SKIPPED, stdout=reason)
 
+    async def async_skip(self, reason: str = None) -> StepResult:
+        # TODO: Merge with skip method
+        return self.skip(reason)
+
     def get_step_status_from_exit_code(
         self,
         exit_code: int,

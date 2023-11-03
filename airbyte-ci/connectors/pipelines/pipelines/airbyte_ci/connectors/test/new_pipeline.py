@@ -64,7 +64,13 @@ async def new_run_connector_test_pipeline(context: ConnectorContext, semaphore: 
 
     async with semaphore:
         async with context:
-            results = await new_run_steps(steps)
+            result_dict = await new_run_steps(
+                context=context,
+                runnables=steps
+            )
+
+            results = list(result_dict.values())
+            import pdb; pdb.set_trace()
             context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
 
         return context.report

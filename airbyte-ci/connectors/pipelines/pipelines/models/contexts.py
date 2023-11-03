@@ -62,6 +62,7 @@ class PipelineContext:
         ci_git_user: Optional[str] = None,
         ci_github_access_token: Optional[str] = None,
         open_report_in_browser: bool = True,
+        skip_steps: List[str] = [],
     ):
         """Initialize a pipeline context.
 
@@ -105,6 +106,7 @@ class PipelineContext:
         self.stopped_at = None
         self.secrets_to_mask = []
         self.open_report_in_browser = open_report_in_browser
+        self.skip_steps = skip_steps
         update_commit_status_check(**self.github_commit_status)
 
     @property

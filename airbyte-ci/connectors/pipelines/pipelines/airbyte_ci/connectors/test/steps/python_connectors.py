@@ -201,18 +201,18 @@ def get_test_steps(context: ConnectorContext) -> List[Runnable]:
         Runnable(
             id="unit",
             step=UnitTests(context),
-            args=lambda results: {"connector_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
+            args=lambda results: {"connector_under_test": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
         ),
         [
             Runnable(
                 id="integration",
                 step=IntegrationTests(context),
-                args=lambda results: {"connector_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
+                args=lambda results: {"connector_under_test": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
             ),
             Runnable(
                 id="acceptance",
                 step=AcceptanceTests(context, context.concurrent_cat),
-                args=lambda results: {"connector_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
+                args=lambda results: {"connector_under_test_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
             ),
             Runnable(id="check_base_image", step=CheckBaseImageIsUsed(context)),
         ],

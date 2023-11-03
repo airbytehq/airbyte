@@ -6,10 +6,12 @@
 
 from __future__ import annotations
 from dataclasses import dataclass, field
+from pipelines import main_logger
 
 from typing import TYPE_CHECKING, Callable, Dict, List, Tuple, Union
 
 import asyncer
+from pipelines.models.contexts import PipelineContext
 from pipelines.models.steps import Step, StepStatus
 
 if TYPE_CHECKING:
@@ -27,8 +29,38 @@ def evaluate_run_args(args: Union[Dict, Callable[[Dict[str, StepResult]], Dict]]
         return args(results)
     return args
 
+def _get_step_id_str(context: PipelineContext, step: Runnable) -> str:
+    will_be_skipped = step.id in context.skip_steps
+    return f"{step.id} (skipped)" if will_be_skipped else step.id
+
+def pretty_log_steps_tree(context: PipelineContext, steps: List[Runnable | List[Runnable]]):
+    """
+    Outout a pretty log of the steps tree based on the runnable
+
+    e.g.
+    Steps to run:
+    - metadata_validation
+    - [version_follow_check, version_increment_check]
+    - [run_all_tests, run_qa_checks]
+    - test_steps
+    """
+    main_logger.info("Steps to Run:")
+    for step in steps:
+        if isinstance(step, Runnable):
+            main_logger.info(f"- {_get_step_id_str(context, step)}")
+        elif isinstance(step, list):
+            ids = [_get_step_id_str(context, s) for s in step]
+            ids_str = ", ".join(ids)
+            main_logger.info(f"- [{ids_str}]")
+        else:
+            raise Exception(f"Unexpected step type: {type(step)}")
+
+
 async def new_run_steps(
-    runnables: List[Runnable], results: Dict[str, StepResult] = {}
+    context: PipelineContext,
+    runnables: List[Runnable | List[Runnable]],
+    results: Dict[str, StepResult] = {},
+    fail_fast: bool = True,
 ) -> Dict[str, StepResult]:
     """Run multiple steps sequentially, or in parallel if steps are wrapped into a sublist.
 
@@ -39,15 +71,25 @@ async def new_run_steps(
     Returns:
         Dict[str, StepResult]: Dictionary of step results.
     """
+    if runnables and results == {}:
+        pretty_log_steps_tree(context, runnables)
+
     # If there are no steps to run, return the results
     if not runnables:
         return results
 
     # If any of the previous steps failed, skip the remaining steps
-    if any(result.status is StepStatus.FAILURE for result in results.values()):
+    if fail_fast and any(result.status is StepStatus.FAILURE for result in results.values()):
         skipped_results = {}
         for runnable_step in runnables:
-            skipped_results[runnable_step.id] = runnable_step.step.skip()
+            if isinstance(runnable_step, Runnable):
+                skipped_results[runnable_step.id] = runnable_step.step.skip()
+            elif isinstance(runnable_step, list):
+                for step in runnable_step:
+                    skipped_results[step.id] = step.step.skip()
+            else:
+                raise Exception(f"Unexpected step type: {type(runnable_step)}")
+
         return {**results, **skipped_results}
 
     # Pop the next step to run
@@ -60,12 +102,17 @@ async def new_run_steps(
     async with asyncer.create_task_group() as task_group:
         tasks = []
         for step_to_run in steps_to_run:
-            args = evaluate_run_args(step_to_run.args, results)
-            tasks.append(task_group.soonify(step_to_run.step.run)(*args))
+            # skip step if its id is in the skip list
+            if step_to_run.id in context.skip_steps:
+                main_logger.info(f"Skipping step {step_to_run.id}")
+                tasks.append(task_group.soonify(step_to_run.step.async_skip)("Skipped by user"))
+            else:
+                step_args = evaluate_run_args(step_to_run.args, results)
+                tasks.append(task_group.soonify(step_to_run.step.run)(**step_args))
 
     new_results = {steps_to_run[i].id: task.value for i, task in enumerate(tasks)}
 
-    return await new_run_steps(remaining_steps, {**results, **new_results})
+    return await new_run_steps(context, remaining_steps, {**results, **new_results}, fail_fast)
 
 
 

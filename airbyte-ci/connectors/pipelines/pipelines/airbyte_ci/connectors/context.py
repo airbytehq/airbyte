@@ -6,7 +6,7 @@
 
 from datetime import datetime
 from types import TracebackType
-from typing import Optional
+from typing import List, Optional
 
 import yaml
 import functools
@@ -60,6 +60,7 @@ class ConnectorContext(PipelineContext):
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
         concurrent_cat: Optional[bool] = False,
+        skip_steps: List[str] = [],
     ):
         """Initialize a connector context.
 
@@ -124,6 +125,7 @@ class ConnectorContext(PipelineContext):
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
             open_report_in_browser=open_report_in_browser,
+            skip_steps=skip_steps,
         )
 
     @property

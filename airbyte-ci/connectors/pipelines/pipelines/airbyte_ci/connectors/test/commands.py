@@ -46,9 +46,7 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     type=bool,
     is_flag=True,
 )
-@click.option(
-    "--skip-step",
-)
+@click.option('--skip-step', '-x', multiple=True)
 @click.pass_context
 async def test(
     ctx: click.Context,
@@ -94,13 +92,14 @@ async def test(
             ci_context=ctx.obj.get("ci_context"),
             pull_request=ctx.obj.get("pull_request"),
             ci_gcs_credentials=ctx.obj["ci_gcs_credentials"],
-            code_tests_only=code_tests_only, # TODO ben: remove
+            code_tests_only=code_tests_only,
             use_local_cdk=ctx.obj.get("use_local_cdk"),
             s3_build_cache_access_key_id=ctx.obj.get("s3_build_cache_access_key_id"),
             s3_build_cache_secret_key=ctx.obj.get("s3_build_cache_secret_key"),
             docker_hub_username=ctx.obj.get("docker_hub_username"),
             docker_hub_password=ctx.obj.get("docker_hub_password"),
             concurrent_cat=concurrent_cat,
+            skip_steps=skip_step,
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
