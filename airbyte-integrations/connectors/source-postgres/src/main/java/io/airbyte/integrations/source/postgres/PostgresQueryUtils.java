@@ -148,7 +148,7 @@ public class PostgresQueryUtils {
    */
   public static Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> getCursorBasedSyncStatusForStreams(final JdbcDatabase database,
                                                                                                           final List<ConfiguredAirbyteStream> streams,
-                                                                                                          final StateManager<AirbyteStateMessage, AirbyteStreamState> stateManager,
+                                                                                                          final StateManager stateManager,
                                                                                                           final String quoteString) {
 
     final Map<AirbyteStreamNameNamespacePair, CursorBasedStatus> cursorBasedStatusMap = new HashMap<>();
