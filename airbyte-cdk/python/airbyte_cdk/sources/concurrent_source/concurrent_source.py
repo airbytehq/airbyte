@@ -145,14 +145,9 @@ class ConcurrentSource(AbstractSource, ABC):
             elif isinstance(airbyte_message_or_record_or_exception, Partition):
                 # A new partition was generated and must be processed
                 # partitions_to_done[record_or_partition_or_exception] = False
-                partition = airbyte_message_or_record_or_exception
-                stream_name = partition.stream_name()
-                streams_to_partitions_to_done[stream_name][partition] = False
-                if self._slice_logger.should_log_slice_message(logger):
-                    self._message_repository.emit_message(
-                        self._slice_logger.create_slice_log_message(airbyte_message_or_record_or_exception.to_slice())
-                    )
-                self._submit_task(futures, partition_reader.process_partition, airbyte_message_or_record_or_exception)
+                self._handle_partition(
+                    airbyte_message_or_record_or_exception, streams_to_partitions_to_done, futures, partition_reader, logger
+                )
             elif isinstance(airbyte_message_or_record_or_exception, PartitionCompleteSentinel):
                 # All records for a partition were generated
                 # if record_or_partition_or_exception.partition not in partitions_to_done:
@@ -209,6 +204,13 @@ class ConcurrentSource(AbstractSource, ABC):
         self._stream_read_threadpool.shutdown(wait=False, cancel_futures=True)
         logger.info(timer.report())
         logger.info(f"Finished syncing {self.name}")
+
+    def _handle_partition(self, partition, streams_to_partitions_to_done, futures, partition_reader, logger):
+        stream_name = partition.stream_name()
+        streams_to_partitions_to_done[stream_name][partition] = False
+        if self._slice_logger.should_log_slice_message(logger):
+            self._message_repository.emit_message(self._slice_logger.create_slice_log_message(partition.to_slice()))
+        self._submit_task(futures, partition_reader.process_partition, partition)
 
     def _update_timer(self, stream, timer, logger):
         timer.finish_event(stream.name)
