@@ -150,17 +150,6 @@ class ProjectRelatedStream(AsanaStream, ABC):
         yield from self.read_slices_from_records(stream_class=Projects, slice_field="project_gid")
 
 
-class ProjectDetails(ProjectRelatedStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        project_gid = stream_slice["project_gid"]
-        return f"projects/{project_gid}"
-
-
-class ProjectBriefs(WorkspaceRequestParamsRelatedStream):
-    def path(self, **kwargs) -> str:
-        return "projects"
-
-
 class AttachmentsCompact(AsanaStream):
     use_cache = True
 
@@ -198,28 +187,6 @@ class CustomFields(WorkspaceRelatedStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         workspace_gid = stream_slice["workspace_gid"]
         return f"workspaces/{workspace_gid}/custom_fields"
-
-
-class PortfoliosCompact(WorkspaceRequestParamsRelatedStream):
-    def path(self, **kwargs) -> str:
-        return "portfolios"
-
-
-class Portfolios(AsanaStream):
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        portfolio_gid = stream_slice["portfolio_gid"]
-        return f"portfolios/{portfolio_gid}"
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from self.read_slices_from_records(stream_class=PortfoliosCompact, slice_field="portfolio_gid")
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        response_json = response.json()
-        section_data = response_json.get("data", {})
-        if isinstance(section_data, dict):  # Check if section_data is a dictionary
-            yield section_data
-        elif isinstance(section_data, list):  # Check if section_data is a list
-            yield from section_data
 
 
 class Events(AsanaStream):
@@ -301,6 +268,41 @@ class Projects(WorkspaceRequestParamsRelatedStream):
         return "projects"
 
 
+class PortfoliosCompact(WorkspaceRequestParamsRelatedStream):
+    def path(self, **kwargs) -> str:
+        return "portfolios"
+
+
+class Portfolios(AsanaStream):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        portfolio_gid = stream_slice["portfolio_gid"]
+        return f"portfolios/{portfolio_gid}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.read_slices_from_records(stream_class=PortfoliosCompact, slice_field="portfolio_gid")
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        section_data = response_json.get("data", {})
+        if isinstance(section_data, dict):  # Check if section_data is a dictionary
+            yield section_data
+        elif isinstance(section_data, list):  # Check if section_data is a list
+            yield from section_data
+
+
+class PortfolioMemberships(AsanaStream):
+    def path(self, **kwargs) -> str:
+        return "portfolio_memberships"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.read_slices_from_records(stream_class=PortfoliosCompact, slice_field="portfolio_gid")
+
+    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(stream_slice=stream_slice, **kwargs)
+        params["portfolio"] = stream_slice["porfolio_gid"]
+        return params
+
+
 class SectionsCompact(ProjectRelatedStream):
     use_cache = True
 
@@ -365,50 +367,6 @@ class Stories(AsanaStream):
 class Tags(WorkspaceRequestParamsRelatedStream):
     def path(self, **kwargs) -> str:
         return "tags"
-
-
-class WorkspaceAndOwnerRelatedStream(AsanaStream, ABC):
-    """
-    Stream Portfolio depends on `workspace_gid` and `owner_gid`: argument in request.
-    """
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        workspaces_stream = Workspaces(authenticator=self.authenticator)
-        for workspace in workspaces_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"workspace_gid": workspace["gid"]}
-        project_details_stream = ProjectDetails(authenticator=self.authenticator)
-        for project_details in project_details_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield {"owner_gid": project_details["owner", "gid"]}
-
-    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(**kwargs)
-        params["workspace"] = stream_slice["workspace_gid"]
-        params["owner"] = stream_slice["owner_gid"]
-        return params
-
-
-class Portfolio(WorkspaceAndOwnerRelatedStream):
-    def path(self, **kwargs) -> str:
-        return "portfolios"
-
-
-class PortfolioRelatedStream(AsanaStream, ABC):
-    """
-    Stream Portfolio memberships depends on `portfolio`: argument in request.
-    """
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        yield from self.read_slices_from_records(stream_class=Portfolio, slice_field="gid")
-
-
-class PortfolioMemberships(PortfolioRelatedStream):
-    def path(self, **kwargs) -> str:
-        return "portfolio_memberships"
-    
-    def request_params(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_slice=stream_slice, **kwargs)
-        params["portfolio"] = stream_slice["gid"]
-        return params
 
 
 class Tasks(ProjectRelatedStream):

@@ -70,7 +70,7 @@ class SourceAsana(AbstractSource):
             Events(**args),
             PortfoliosCompact(**args),
             Portfolios(**args),
-            PortfolioMemberships(**args),
+            PortfoliosMemberships(**args),
             Projects(**args),
             SectionsCompact(**args),
             Sections(**args),
