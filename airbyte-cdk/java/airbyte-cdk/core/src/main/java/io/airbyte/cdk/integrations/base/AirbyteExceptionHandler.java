@@ -122,7 +122,9 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   }
 
   public static void addStringForDeinterpolation(final String string) {
-    STRINGS_TO_DEINTERPOLATE.add(string);
+    if (string != null) {
+      STRINGS_TO_DEINTERPOLATE.add(string);
+    }
   }
 
   public static void addAllStringsInConfigForDeinterpolation(final JsonNode node) {
