@@ -1,22 +1,56 @@
-{
-  "campaigns_analytics": {
-    "time": "2050-12-13",
-    "campaign_id": "a9b2442f-ff68-49dd-96e0-b9318957cd9a"
+[
+  {
+    "streamDescriptor": {
+      "name": "campaigns_analytics"
+    },
+    "streamState": {
+      "time": "2050-10-31",
+      "campaign_id": "8c846e45-a8ab-4afe-b315-04627504b526"
+    }
   },
-  "canvases_analytics": {
-    "time": "2050-12-13",
-    "canvas_id": "c73f8e7f-c6a5-441d-b227-46cb70f9f7d2"
+  {
+    "streamDescriptor": {
+      "name": "canvases_analytics"
+    },
+    "streamState": {
+      "time": "2050-10-31",
+      "canvas_id": "c73f8e7f-c6a5-441d-b227-46cb70f9f7d2"
+    }
   },
-  "events_analytics": {},
-  "kpi_daily_new_users": {},
-  "kpi_daily_active_users": {},
-  "kpi_daily_app_uninstalls": {},
-  "cards_analytics": {
-    "time": "2050-12-13",
-    "card_id": "609e4d4c-367b-4c87-a8ad-b1f903d058fd"
+  {
+    "streamDescriptor": {
+      "name": "cards_analytics"
+    },
+    "streamState": {
+      "time": "2050-10-31",
+      "card_id": "609e4d4c-367b-4c87-a8ad-b1f903d058fd"
+    }
   },
-  "segments_analytics": {
-    "time": "2050-12-13",
-    "segment_id": "8b922b25-dcc6-4e4d-b345-f7b06106046c"
+  {
+    "streamDescriptor": {
+      "name": "kpi_daily_active_users"
+    },
+    "streamState": {}
+  },
+  {
+    "streamDescriptor": {
+      "name": "kpi_daily_app_uninstalls"
+    },
+    "streamState": {}
+  },
+  {
+    "streamDescriptor": {
+      "name": "kpi_daily_new_users"
+    },
+    "streamState": {}
+  },
+  {
+    "streamDescriptor": {
+      "name": "segments_analytics"
+    },
+    "streamState": {
+      "time": "2050-10-31",
+      "segment_id": "8b922b25-dcc6-4e4d-b345-f7b06106046c"
+    }
   }
-}
+]
