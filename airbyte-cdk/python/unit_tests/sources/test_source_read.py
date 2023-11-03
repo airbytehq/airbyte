@@ -36,6 +36,7 @@ from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 from airbyte_cdk.utils import AirbyteTracedException
 
+
 # FIXME: should there be a test for a failing sync?
 
 
@@ -53,17 +54,17 @@ class _MockStream(Stream):
         return None
 
     def stream_slices(
-        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+            self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for partition in self._slice_to_records.keys():
             yield {"partition": partition}
 
     def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: Optional[List[str]] = None,
-        stream_slice: Optional[Mapping[str, Any]] = None,
-        stream_state: Optional[Mapping[str, Any]] = None,
+            self,
+            sync_mode: SyncMode,
+            cursor_field: Optional[List[str]] = None,
+            stream_slice: Optional[Mapping[str, Any]] = None,
+            stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         for record_or_exception in self._slice_to_records[stream_slice["partition"]]:
             if isinstance(record_or_exception, Exception):
@@ -76,7 +77,6 @@ class _MockStream(Stream):
 
 
 class _MockSource(AbstractSource):
-
     message_repository = InMemoryMessageRepository()
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -124,17 +124,15 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
     stream_1_slice_to_partition = {"1": records_stream_1_partition_1, "2": records_stream_1_partition_2}
     stream_2_slice_to_partition = {"A": records_stream_2_partition_1, "B": records_stream_2_partition_2}
     state = None
+    logger = _init_logger()
 
-    logger = Mock()
-    logger.level = logging.INFO
-    logger.isEnabledFor.return_value = False
     # FIXME: probably also need to test to verify the slices can be logged!
     source, concurrent_source = _init_sources([stream_1_slice_to_partition, stream_2_slice_to_partition], state, logger)
 
     config = {}
     catalog = _create_configured_catalog(source._streams)
-    messages_from_abstract_source = list(source.read(logger, config, catalog, state))
-    messages_from_concurrent_source = list(concurrent_source.read(logger, config, catalog, state))
+    messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, None)
+    messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, None)
 
     expected_messages = [
         AirbyteMessage(
@@ -276,13 +274,7 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_no_e
             ),
         ),
     ]
-
-    assert len(expected_messages) == len(messages_from_abstract_source)
-    assert _compare(expected_messages, messages_from_abstract_source)
-
-    # assert len(messages_from_abstract_source) == len(messages_from_concurrent_source)
-    # assert messages_from_abstract_source == messages_from_concurrent_source
-    assert _compare(messages_from_abstract_source, messages_from_concurrent_source)
+    _verify_messages(expected_messages, messages_from_abstract_source, messages_from_concurrent_source)
 
 
 @freezegun.freeze_time("2020-01-01T00:00:00")
@@ -290,27 +282,13 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_a_tr
     records = [{"id": 1, "partition": "1"}, AirbyteTracedException()]
     stream_slice_to_partition = {"1": records}
 
-    logger = Mock()
-    logger.level = logging.INFO
-    logger.isEnabledFor.return_value = False
+    logger = _init_logger()
     state = None
     source, concurrent_source = _init_sources([stream_slice_to_partition], state, logger)
     config = {}
     catalog = _create_configured_catalog(source._streams)
-    messages_from_abstract_source = []
-    try:
-        for m in source.read(logger, config, catalog, state):
-            messages_from_abstract_source.append(m)
-    except AirbyteTracedException:
-        # FIXME need to verify it
-        pass
-    messages_from_concurrent_source = []
-    try:
-        for m in concurrent_source.read(logger, config, catalog, state):
-            messages_from_concurrent_source.append(m)
-    except AirbyteTracedException:
-        # FIXME need to verify it
-        pass
+    messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, AirbyteTracedException)
+    messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, AirbyteTracedException)
 
     expected_messages = [
         AirbyteMessage(
@@ -359,37 +337,22 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_a_tr
             ),
         ),
     ]
-    assert expected_messages == messages_from_abstract_source
-    assert _compare(messages_from_abstract_source, messages_from_concurrent_source)
+    _verify_messages(expected_messages, messages_from_abstract_source, messages_from_concurrent_source)
 
 
 @freezegun.freeze_time("2020-01-01T00:00:00")
 def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_exception_is_raised():
     records = [{"id": 1, "partition": "1"}, RuntimeError()]
     stream_slice_to_partition = {"1": records}
-    logger = Mock()
-    logger.level = logging.INFO
-    logger.isEnabledFor.return_value = False
+    logger = _init_logger()
 
     state = None
 
     source, concurrent_source = _init_sources([stream_slice_to_partition], state, logger)
     config = {}
     catalog = _create_configured_catalog(source._streams)
-    messages_from_abstract_source = []
-    try:
-        for m in source.read(logger, config, catalog, state):
-            messages_from_abstract_source.append(m)
-    except RuntimeError as e:
-        # FIXME need to verify it
-        pass
-    messages_from_concurrent_source = []
-    try:
-        for m in concurrent_source.read(logger, config, catalog, state):
-            messages_from_concurrent_source.append(m)
-    except RuntimeError as e:
-        # FIXME need to verify it
-        pass
+    messages_from_abstract_source = _read_from_source(source, logger, config, catalog, state, RuntimeError)
+    messages_from_concurrent_source = _read_from_source(concurrent_source, logger, config, catalog, state, RuntimeError)
 
     expected_messages = [
         AirbyteMessage(
@@ -438,13 +401,20 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
             ),
         ),
     ]
-    assert expected_messages == messages_from_abstract_source
-    assert _compare(messages_from_abstract_source, messages_from_concurrent_source)
+    _verify_messages(expected_messages, messages_from_abstract_source, messages_from_concurrent_source)
+
+def _init_logger():
+    logger = Mock()
+    logger.level = logging.INFO
+    logger.isEnabledFor.return_value = False
+    return logger
 
 def _init_sources(stream_slice_to_partitions, state, logger):
     source = _init_source(stream_slice_to_partitions, state, logger, _MockSource())
     concurrent_source = _init_source(stream_slice_to_partitions, state, logger, _MockConcurrentSource())
     return source, concurrent_source
+
+
 def _init_source(stream_slice_to_partitions, state, logger, source):
     cursor = NoopCursor()
     threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
@@ -454,6 +424,7 @@ def _init_source(stream_slice_to_partitions, state, logger, source):
     ]
     source.set_streams(streams)
     return source
+
 
 def _create_configured_catalog(streams):
     return ConfiguredAirbyteCatalog(
@@ -467,6 +438,22 @@ def _create_configured_catalog(streams):
             for s in streams
         ]
     )
+
+
+def _read_from_source(source, logger, config, catalog, state, expected_exception):
+    messages = []
+    try:
+        for m in source.read(logger, config, catalog, state):
+            messages.append(m)
+    except Exception as e:
+        if expected_exception:
+            assert isinstance(e, expected_exception)
+    return messages
+
+def _verify_messages(expected_messages, messages_from_abstract_source, messages_from_concurrent_source):
+    assert expected_messages == messages_from_abstract_source
+    assert _compare(messages_from_abstract_source, messages_from_concurrent_source)
+
 def _compare(s, t):
     # Use a compare method that does not require ordering or hashing the elements
     # We can't rely on the ordering because of the multithreading
