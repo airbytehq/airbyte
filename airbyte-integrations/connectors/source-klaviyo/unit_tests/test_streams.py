@@ -288,7 +288,7 @@ class TestSemiIncrementalKlaviyoStream:
             "stream_slice": None,
             "stream_state": {stream.cursor_field: stream_state} if stream_state else None,
         }
-        assert stream.read_records(**inputs) == expected_records
+        assert list(stream.read_records(**inputs)) == expected_records
 
 
 class TestProfilesStream:

@@ -12,7 +12,6 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
 
@@ -152,14 +151,11 @@ class SemiIncrementalKlaviyoStream(KlaviyoStream, ABC):
     ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
         starting_point = stream_state.get(self.cursor_field) or self._start_ts
-        records = [
-            record
-            for record in super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            )
-            if starting_point and record[self.cursor_field] > starting_point or not starting_point
-        ]
-        return records
+        for record in super().read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            if starting_point and record[self.cursor_field] > starting_point or not starting_point:
+                yield record
 
 
 class ArchivedRecordsStream(IncrementalKlaviyoStream):
