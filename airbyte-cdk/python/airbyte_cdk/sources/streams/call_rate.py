@@ -197,7 +197,8 @@ class UnlimitedCallRatePolicy(BaseCallRatePolicy):
             ),
             FixedWindowCallRatePolicy(
                 matchers=[HttpRequestMatcher(url="/some/method")],
-                window=FixedWindow(start, start + timedelta(hours=1),
+                next_reset_ts=datetime.now(),
+                period=timedelta(hours=1)
                 call_limit=1000,
             ),
         ]
@@ -214,16 +215,17 @@ class UnlimitedCallRatePolicy(BaseCallRatePolicy):
 
 
 class FixedWindowCallRatePolicy(BaseCallRatePolicy):
-    def __init__(self, window: TimeWindow, call_limit: int, matchers: list[RequestMatcher]):
-        """A policy that allows {call_limit} calls within a {window} time interval
+    def __init__(self, next_reset_ts: datetime.datetime, period: timedelta, call_limit: int, matchers: list[RequestMatcher]):
+        """A policy that allows {call_limit} calls within a {period} time interval
 
-        :param window:
+        :param next_reset_ts: next call rate reset time point
+        :param period: call rate reset period
         :param call_limit:
         :param matchers:
         """
 
-        self._current_window = TimeWindow(window.start, window.end)
-        self._offset = window.end - window.start
+        self._next_reset_ts = next_reset_ts
+        self._offset = period
         self._call_limit = call_limit
         self._calls_num = 0
         self._lock = RLock()
@@ -239,7 +241,7 @@ class FixedWindowCallRatePolicy(BaseCallRatePolicy):
             self._update_current_window()
 
             if self._calls_num + weight > self._call_limit:
-                reset_in = self._current_window.end - datetime.datetime.now()
+                reset_in = self._next_reset_ts - datetime.datetime.now()
                 error_message = (
                     f"reached maximum number of allowed calls {self._call_limit} " f"per {self._offset} interval, next reset in {reset_in}."
                 )
@@ -265,20 +267,20 @@ class FixedWindowCallRatePolicy(BaseCallRatePolicy):
             current_available_calls = self._call_limit - self._calls_num
 
             if available_calls is not None and current_available_calls > available_calls:
-                logger.info(
+                logger.debug(
                     "got rate limit update from api, adjusting available calls from %s to %s", current_available_calls, available_calls
                 )
                 self._calls_num = self._call_limit - available_calls
 
-            if call_reset_ts is not None and call_reset_ts != self._current_window.end:
-                logger.info("got rate limit update from api, adjusting reset time from %s to %s", self._current_window.end, call_reset_ts)
-                self._current_window.end = call_reset_ts
+            if call_reset_ts is not None and call_reset_ts != self._next_reset_ts:
+                logger.debug("got rate limit update from api, adjusting reset time from %s to %s", self._next_reset_ts, call_reset_ts)
+                self._next_reset_ts = call_reset_ts
 
     def _update_current_window(self) -> None:
         now = datetime.datetime.now()
-        if now > self._current_window.end:
-            logger.debug("current window %s has being reset, %s calls available now", self._current_window, self._call_limit)
-            self._current_window = TimeWindow(self._current_window.end, self._current_window.end + self._offset)
+        if now > self._next_reset_ts:
+            logger.debug("started new window, %s calls available now", self._call_limit)
+            self._next_reset_ts = self._next_reset_ts + self._offset
             self._calls_num = 0
 
 
