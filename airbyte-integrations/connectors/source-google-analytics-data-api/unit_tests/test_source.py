@@ -8,7 +8,7 @@ import pytest
 from airbyte_cdk.models import AirbyteConnectionStatus, FailureType, Status
 from airbyte_cdk.utils import AirbyteTracedException
 from source_google_analytics_data_api import SourceGoogleAnalyticsDataApi
-from source_google_analytics_data_api.source import GoogleAnalyticsDataApiMetadataStream, MetadataDescriptor
+from source_google_analytics_data_api.source import MetadataDescriptor
 from source_google_analytics_data_api.utils import NO_DIMENSIONS, NO_METRICS, NO_NAME, WRONG_JSON_SYNTAX
 
 
