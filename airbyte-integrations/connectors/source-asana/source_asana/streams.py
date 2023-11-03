@@ -290,7 +290,7 @@ class Portfolios(AsanaStream):
             yield from section_data
 
 
-class PortfolioMemberships(AsanaStream):
+class PortfoliosMemberships(AsanaStream):
     def path(self, **kwargs) -> str:
         return "portfolio_memberships"
 
