@@ -133,7 +133,6 @@ class ConcurrentSource(AbstractSource, ABC):
 
             elif isinstance(airbyte_message_or_record_or_exception, Partition):
                 # A new partition was generated and must be processed
-                # partitions_to_done[record_or_partition_or_exception] = False
                 self._handle_partition(
                     airbyte_message_or_record_or_exception, streams_to_partitions_to_done, futures, partition_reader, logger
                 )
@@ -145,21 +144,21 @@ class ConcurrentSource(AbstractSource, ABC):
                 #     )
                 # self._cursor.close_partition(record_or_partition_or_exception.partition)
                 partition = airbyte_message_or_record_or_exception.partition
-                stream_name = partition.stream_name()
-                streams_to_partitions_to_done[stream_name][partition] = True
-                # Fixme hacky
-                self._stream_to_instance_map[stream_name]._cursor.close_partition(partition)
-                if all(streams_to_partitions_to_done[stream_name].values()) and stream_name not in partition_generator_running:
-                    # stream is done!
-                    streams_in_progress.remove(stream_name)
-                    logger.info(f"Read {record_counter[stream_name]} records from {stream_name} stream")
-                    logger.info(f"Marking stream {stream_name} as STOPPED")
-                    stream = stream_instances[stream_name]
-                    self._update_timer(stream, timer, logger)
-                    yield stream_status_as_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.COMPLETE)
-                    if not streams_in_progress:
-                        # If all streams are done -> break
-                        break
+                status_message = self._handle_partition_completed(
+                    partition,
+                    streams_to_partitions_to_done,
+                    streams_in_progress,
+                    record_counter,
+                    partition_generator_running,
+                    stream_instances,
+                    timer,
+                    logger,
+                )
+                if status_message:
+                    yield status_message
+                if not streams_in_progress:
+                    # If all streams are done -> break
+                    break
             else:
                 # record
                 # Do not pass a transformer or a schema
@@ -218,6 +217,32 @@ class ConcurrentSource(AbstractSource, ABC):
                 None,
                 AirbyteStreamStatus.STARTED,
             )
+        else:
+            return None
+
+    def _handle_partition_completed(
+        self,
+        partition,
+        streams_to_partitions_to_done,
+        streams_in_progress,
+        record_counter,
+        partition_generator_running,
+        stream_instances,
+        timer,
+        logger,
+    ):
+        stream_name = partition.stream_name()
+        streams_to_partitions_to_done[stream_name][partition] = True
+        # Fixme hacky
+        self._stream_to_instance_map[stream_name]._cursor.close_partition(partition)
+        if all(streams_to_partitions_to_done[stream_name].values()) and stream_name not in partition_generator_running:
+            # stream is done!
+            streams_in_progress.remove(stream_name)
+            logger.info(f"Read {record_counter[stream_name]} records from {stream_name} stream")
+            logger.info(f"Marking stream {stream_name} as STOPPED")
+            stream = stream_instances[stream_name]
+            self._update_timer(stream, timer, logger)
+            return stream_status_as_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.COMPLETE)
         else:
             return None
 
