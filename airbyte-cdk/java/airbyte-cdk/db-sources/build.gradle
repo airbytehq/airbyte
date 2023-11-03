@@ -17,6 +17,13 @@ plugins {
     id "java-test-fixtures"  // https://docs.gradle.org/current/userguide/java_testing.html#sec:java_test_fixtures
 }
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-try,-rawtypes,-unchecked,-removal"
+    }
+}
+
+
 test {
     testLogging {
         // TODO: Remove this after debugging
