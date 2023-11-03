@@ -8,6 +8,7 @@ import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.BigQueryOptions;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
@@ -18,6 +19,7 @@ import com.google.cloud.storage.StorageOptions;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import io.airbyte.cdk.integrations.BaseConnector;
+import io.airbyte.cdk.integrations.base.AirbyteExceptionHandler;
 import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.Destination;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
@@ -236,6 +238,8 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final BigQuery bigquery = getBigQuery(config);
     final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
 
+    AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
+
     if (uploadingMethod == UploadingMethod.STANDARD) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
           "Please use the GCS upload mode if you are syncing a large amount of data.");
@@ -283,7 +287,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
         randomSuffixMap.putIfAbsent(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream), RandomStringUtils.randomAlphabetic(3).toLowerCase());
 
-        String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
+        final String randomSuffix = randomSuffixMap.get(AirbyteStreamNameNamespacePair.fromAirbyteStream(stream));
         final String streamName = stream.getName();
         final String targetTableName;
 
@@ -305,7 +309,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
         try {
           putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
-        } catch (IOException e) {
+        } catch (final IOException e) {
           throw new RuntimeException(e);
         }
       }
@@ -337,10 +341,6 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     return Map.of(
         UploaderType.STANDARD, new DefaultBigQueryRecordFormatter(jsonSchema, namingResolver),
         UploaderType.CSV, new GcsCsvBigQueryRecordFormatter(jsonSchema, namingResolver));
-  }
-
-  protected String getTargetTableName(final String streamName) {
-    return namingResolver.getRawTableName(streamName);
   }
 
   private SerializedAirbyteMessageConsumer getStandardRecordConsumer(final BigQuery bigquery,
@@ -387,7 +387,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             typerDeduper.typeAndDedupe();
             typerDeduper.commitFinalTables();
             typerDeduper.cleanup();
-          } catch (Exception e) {
+          } catch (final Exception e) {
             throw new RuntimeException(e);
           }
         },
@@ -477,6 +477,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
   }
 
   public static void main(final String[] args) throws Exception {
+    AirbyteExceptionHandler.addThrowableForDeinterpolation(BigQueryException.class);
     final Destination destination = new BigQueryDestination();
     new IntegrationRunner(destination).run(args);
   }
