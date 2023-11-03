@@ -127,6 +127,17 @@ class TestKlaviyoStream:
         assert expected_status_code in reasons_for_unavailable_status_codes
         assert reasons_for_unavailable_status_codes[expected_status_code] == expected_message
 
+    @pytest.mark.parametrize(
+        ("status_code", "retry_after", "expected_time"),
+        ((429, 30, 30.0), (429, None, None), (200, 30, None), (200, None, None)),
+    )
+    def test_backoff_time(self, status_code, retry_after, expected_time):
+        stream = SomeStream(api_key=API_KEY)
+        response_mock = mock.MagicMock()
+        response_mock.status_code = status_code
+        response_mock.headers = {"Retry-After": retry_after}
+        assert stream.backoff_time(response_mock) == expected_time
+
 
 class TestIncrementalKlaviyoStream:
     def test_cursor_field_is_required(self):
@@ -255,9 +266,9 @@ class TestSemiIncrementalKlaviyoStream:
                     {"attributes": {"updated": "2021-11-08T00:00:00"}},
                 ],
                 [
-                    {"attributes": {"updated": "2021-11-08T00:00:00"}, "updated": "2021-11-08T00:00:00"},
                     {"attributes": {"updated": "2022-11-08T00:00:00"}, "updated": "2022-11-08T00:00:00"},
                     {"attributes": {"updated": "2023-11-08T00:00:00"}, "updated": "2023-11-08T00:00:00"},
+                    {"attributes": {"updated": "2021-11-08T00:00:00"}, "updated": "2021-11-08T00:00:00"},
                 ],
             ),
             (

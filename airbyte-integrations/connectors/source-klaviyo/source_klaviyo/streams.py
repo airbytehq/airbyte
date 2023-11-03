@@ -12,6 +12,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.exceptions import UserDefinedBackoffException
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
 
@@ -93,6 +94,11 @@ class KlaviyoStream(HttpStream, ABC):
             latest_cursor = max(latest_cursor, pendulum.parse(current_stream_cursor_value))
         return {self.cursor_field: latest_cursor.isoformat()}
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        if response.status_code == 429:
+            retry_after = response.headers.get("Retry-After")
+            return float(retry_after) if retry_after else None
+
 
 class IncrementalKlaviyoStream(KlaviyoStream, ABC):
     """Base class for all incremental streams, requires cursor_field to be declared"""
@@ -153,7 +159,6 @@ class SemiIncrementalKlaviyoStream(KlaviyoStream, ABC):
             )
             if starting_point and record[self.cursor_field] > starting_point or not starting_point
         ]
-        records.sort(key=lambda r: r[self.cursor_field])
         return records
 
 
