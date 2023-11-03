@@ -28,41 +28,26 @@ class AirbyteIntegrationTestJavaPlugin implements Plugin<Project> {
             testClassesDirs = project.sourceSets.integrationTestJava.output.classesDirs
             classpath += project.sourceSets.integrationTestJava.runtimeClasspath
 
-            useJUnitPlatform {
-                // todo (cgardens) - figure out how to de-dupe this exclusion with the one in build.gradle.
-                excludeTags 'log4j2-config', 'logger-client', 'cloud-storage'
-            }
-
+            useJUnitPlatform()
             testLogging() {
-                events "passed", "failed", "started"
-                exceptionFormat "full"
-                // uncomment to get the full log output
-                // showStandardStreams = true
+                events 'skipped', 'started', 'passed', 'failed'
+                exceptionFormat 'full'
+                showStandardStreams = true
             }
 
-            outputs.upToDateWhen { false }
-
+            systemProperties = project.test.systemProperties
             maxParallelForks = project.test.maxParallelForks
             maxHeapSize = project.test.maxHeapSize
 
-            systemProperties = [
-                // Allow tests to set @Execution(ExecutionMode.CONCURRENT)
-                'junit.jupiter.execution.parallel.enabled': 'true',
-            ]
-
-            // Limit the number of concurrent tests within a single test class.
-            // See also usages of numberThreads.
-            if (project.hasProperty('parallelExecutionsPerThread')) {
-                int parallelExecutionsPerThread = project.property('parallelExecutionsPerThread').toString() as int
-                systemProperties = systemProperties + [
-                    'junit.jupiter.execution.parallel.config.strategy': 'fixed',
-                    'junit.jupiter.execution.parallel.config.fixed.parallelism': parallelExecutionsPerThread,
-                ]
-            }
+            // Always re-run integration tests no matter what.
+            outputs.upToDateWhen { false }
         }
         integrationTestJava.configure {
             mustRunAfter project.tasks.named('check')
             dependsOn project.tasks.matching { it.name == 'assemble' }
+        }
+        project.tasks.named('build').configure {
+            dependsOn integrationTestJava
         }
     }
 }
