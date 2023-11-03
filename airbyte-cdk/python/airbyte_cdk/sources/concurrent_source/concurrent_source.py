@@ -138,11 +138,6 @@ class ConcurrentSource(AbstractSource, ABC):
                 )
             elif isinstance(airbyte_message_or_record_or_exception, PartitionCompleteSentinel):
                 # All records for a partition were generated
-                # if record_or_partition_or_exception.partition not in partitions_to_done:
-                #     raise RuntimeError(
-                #         f"Received sentinel for partition {record_or_partition_or_exception.partition} that was not in partitions. This is indicative of a bug in the CDK. Please contact support.partitions:\n{partitions_to_done}"
-                #     )
-                # self._cursor.close_partition(record_or_partition_or_exception.partition)
                 partition = airbyte_message_or_record_or_exception.partition
                 status_message = self._handle_partition_completed(
                     partition,
@@ -161,25 +156,7 @@ class ConcurrentSource(AbstractSource, ABC):
                     break
             else:
                 # record
-                # Do not pass a transformer or a schema
-                # AbstractStreams are expected to return data as they are expected.
-                # Any transformation on the data should be done before reaching this point
-                record = airbyte_message_or_record_or_exception
-                message = stream_data_to_airbyte_message(
-                    airbyte_message_or_record_or_exception.stream_name, airbyte_message_or_record_or_exception.data
-                )
-                stream = self._stream_to_instance_map[record.stream_name]
-                if record_counter[stream.name] == 0:
-                    logger.info(f"Marking stream {stream.name} as RUNNING")
-
-                    yield stream_status_as_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.RUNNING)
-                record_counter[stream.name] += 1
-                yield message
-                if message.type == MessageType.RECORD:
-                    total_records_counter += 1
-                # fixme hacky
-                self._stream_to_instance_map[record.stream_name]._cursor.observe(record)
-                yield from self._message_repository.consume_queue()
+                yield from self._handle_record(airbyte_message_or_record_or_exception, record_counter, total_records_counter, logger)
             if (
                 not partition_generator_running
                 and not partition_generators
@@ -192,6 +169,31 @@ class ConcurrentSource(AbstractSource, ABC):
         self._stream_read_threadpool.shutdown(wait=False, cancel_futures=True)
         logger.info(timer.report())
         logger.info(f"Finished syncing {self.name}")
+
+    def _handle_record(self, record, record_counter, total_records_counter, logger):
+        # Do not pass a transformer or a schema
+        # AbstractStreams are expected to return data as they are expected.
+        # Any transformation on the data should be done before reaching this point
+        message = stream_data_to_airbyte_message(record.stream_name, record.data)
+        stream = self._stream_to_instance_map[record.stream_name]
+        status_message = None
+        if record_counter[stream.name] == 0:
+            logger.info(f"Marking stream {stream.name} as RUNNING")
+
+            status_message = stream_status_as_airbyte_message(
+                stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.RUNNING
+            )
+        record_counter[stream.name] += 1
+        # yield message
+        if message.type == MessageType.RECORD:
+            total_records_counter += 1
+        # fixme hacky
+        self._stream_to_instance_map[record.stream_name]._cursor.observe(record)
+        # yield from self._message_repository.consume_queue()
+        if status_message:
+            return [status_message, message] + list(self._message_repository.consume_queue())
+        else:
+            return [message] + list(self._message_repository.consume_queue())
 
     def _handle_partition(self, partition, streams_to_partitions_to_done, futures, partition_reader, logger):
         stream_name = partition.stream_name()
