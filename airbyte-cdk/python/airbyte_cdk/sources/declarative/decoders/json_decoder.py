@@ -3,10 +3,10 @@
 #
 
 from dataclasses import InitVar, dataclass
-from typing import Any, Mapping
+from typing import Any, List, Mapping, Union
 
 import requests
-from airbyte_cdk.sources.declarative.decoders.decoder import DECODED_RESPONSE_TYPE, Decoder
+from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 
 
 @dataclass
@@ -17,9 +17,8 @@ class JsonDecoder(Decoder):
 
     parameters: InitVar[Mapping[str, Any]]
 
-    def decode(self, response: requests.Response) -> DECODED_RESPONSE_TYPE:
+    def decode(self, response: requests.Response) -> Union[Mapping[str, Any], List]:
         try:
-            decoded_data: DECODED_RESPONSE_TYPE = response.json()
-            return decoded_data
+            return response.json()
         except requests.exceptions.JSONDecodeError:
             return {}

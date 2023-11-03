@@ -16,7 +16,7 @@ from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
-from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, HttpRequester
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpMethod, LowCodeHttpRequester
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.types import Config
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
@@ -54,7 +54,7 @@ def test_http_requester():
 
     name = "stream_name"
 
-    requester = HttpRequester(
+    requester = LowCodeHttpRequester(
         name=name,
         url_base=InterpolatedString.create("{{ config['url'] }}", parameters={}),
         path=InterpolatedString.create("v1/{{ stream_slice['id'] }}", parameters={}),
@@ -86,7 +86,7 @@ def test_http_requester():
     ],
 )
 def test_base_url_has_a_trailing_slash(test_name, base_url, expected_base_url):
-    requester = HttpRequester(
+    requester = LowCodeHttpRequester(
         name="name",
         url_base=base_url,
         path="deals",
@@ -111,7 +111,7 @@ def test_base_url_has_a_trailing_slash(test_name, base_url, expected_base_url):
     ],
 )
 def test_path(test_name, path, expected_path):
-    requester = HttpRequester(
+    requester = LowCodeHttpRequester(
         name="name",
         url_base="https://example.com",
         path=path,
@@ -132,8 +132,8 @@ def create_requester(
     path: Optional[str] = None,
     authenticator: Optional[DeclarativeAuthenticator] = None,
     error_handler: Optional[ErrorHandler] = None,
-) -> HttpRequester:
-    requester = HttpRequester(
+) -> LowCodeHttpRequester:
+    requester = LowCodeHttpRequester(
         name="name",
         url_base=url_base or "https://example.com",
         path=path or "deals",
@@ -704,7 +704,7 @@ def test_default_parse_response_error_message(api_response: dict, expected_messa
     response = MagicMock()
     response.json.return_value = api_response
 
-    message = HttpRequester.parse_response_error_message(response)
+    message = LowCodeHttpRequester.parse_response_error_message(response)
     assert message == expected_message
 
 
@@ -712,7 +712,7 @@ def test_default_parse_response_error_message_not_json(requests_mock):
     requests_mock.register_uri("GET", "mock://test.com/not_json", text="this is not json")
     response = requests.get("mock://test.com/not_json")
 
-    message = HttpRequester.parse_response_error_message(response)
+    message = LowCodeHttpRequester.parse_response_error_message(response)
     assert message is None
 
 
@@ -734,7 +734,7 @@ def test_default_parse_response_error_message_not_json(requests_mock):
     ],
 )
 def test_join_url(test_name, base_url, path, expected_full_url):
-    requester = HttpRequester(
+    requester = LowCodeHttpRequester(
         name="name",
         url_base=base_url,
         path=path,
@@ -793,7 +793,7 @@ def test_join_url(test_name, base_url, path, expected_full_url):
     ],
 )
 def test_duplicate_request_params_are_deduped(path, params, expected_url):
-    requester = HttpRequester(
+    requester = LowCodeHttpRequester(
         name="name",
         url_base="https://test_base_url.com",
         path=path,
@@ -824,7 +824,7 @@ def test_duplicate_request_params_are_deduped(path, params, expected_url):
 )
 def test_log_requests(should_log, status_code, should_throw):
     repository = MagicMock()
-    requester = HttpRequester(
+    requester = LowCodeHttpRequester(
         name="name",
         url_base="https://test_base_url.com",
         path="/",

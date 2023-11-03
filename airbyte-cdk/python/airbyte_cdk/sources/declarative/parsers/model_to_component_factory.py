@@ -85,7 +85,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.partition_routers import ListPartitionRouter, SinglePartitionRouter, SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import ParentStreamConfig
-from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
+from airbyte_cdk.sources.declarative.requesters import HttpRequester, LowCodeHttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
 from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
     ConstantBackoffStrategy,
@@ -715,7 +715,7 @@ class ModelToComponentFactory:
             model.http_method if isinstance(model.http_method, str) else model.http_method.value if model.http_method is not None else "GET"
         )
 
-        return HttpRequester(
+        return LowCodeHttpRequester(
             name=name,
             url_base=model.url_base,
             path=model.path,

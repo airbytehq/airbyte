@@ -1,4 +1,10 @@
 
+java {
+    compileJava {
+        options.compilerArgs += "-Xlint:-deprecation,-try,-rawtypes,-overloads,-cast,-unchecked"
+    }
+}
+
 configurations.all {
     resolutionStrategy {
         // TODO: Diagnose conflicting dependencies and remove these force overrides:
@@ -63,8 +69,7 @@ dependencies {
     implementation libs.hikaricp
     implementation libs.bundles.debezium.bundle
 
-    implementation libs.bundles.datadog
-    // implementation 'com.datadoghq:dd-trace-api'
+    api libs.bundles.datadog
     implementation 'org.apache.sshd:sshd-mina:2.8.0'
 
     implementation libs.testcontainers

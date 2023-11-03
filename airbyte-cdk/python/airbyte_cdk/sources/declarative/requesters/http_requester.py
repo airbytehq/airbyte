@@ -5,6 +5,7 @@
 import logging
 import os
 import urllib
+from abc import ABC, abstractmethod
 from dataclasses import InitVar, dataclass
 from functools import lru_cache
 from typing import Any, Callable, Mapping, MutableMapping, Optional, Union
@@ -33,74 +34,55 @@ from requests.auth import AuthBase
 
 
 @dataclass
-class HttpRequester(Requester):
+class HttpRequester(Requester, ABC):
     """
-    Default implementation of a Requester
+    Abstract default implementation of a Requester
 
     Attributes:
         name (str): Name of the stream. Only used for request/response caching
-        url_base (Union[InterpolatedString, str]): Base url to send requests to
-        path (Union[InterpolatedString, str]): Path to send requests to
         http_method (Union[str, HttpMethod]): HTTP method to use when sending requests
-        request_options_provider (Optional[InterpolatedRequestOptionsProvider]): request option provider defining the options to set on outgoing requests
         authenticator (DeclarativeAuthenticator): Authenticator defining how to authenticate to the source
         error_handler (Optional[ErrorHandler]): Error handler defining how to detect and handle errors
-        config (Config): The user-provided configuration as specified by the source's spec
     """
 
     name: str
-    url_base: Union[InterpolatedString, str]
-    path: Union[InterpolatedString, str]
-    config: Config
     parameters: InitVar[Mapping[str, Any]]
-    authenticator: Optional[DeclarativeAuthenticator] = None
-    http_method: Union[str, HttpMethod] = HttpMethod.GET
-    request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
-    error_handler: Optional[ErrorHandler] = None
-    disable_retries: bool = False
-    message_repository: MessageRepository = NoopMessageRepository()
+    authenticator: Optional[DeclarativeAuthenticator]
+    http_method: Union[str, HttpMethod]
+    error_handler: Optional[ErrorHandler]
+    disable_retries: bool
+    message_repository: MessageRepository
 
     _DEFAULT_MAX_RETRY = 5
     _DEFAULT_RETRY_FACTOR = 5
     _DEFAULT_MAX_TIME = 60 * 10
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
-        self._path = InterpolatedString.create(self.path, parameters=parameters)
-        if self.request_options_provider is None:
-            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, parameters=parameters)
-        elif isinstance(self.request_options_provider, dict):
-            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
-        else:
-            self._request_options_provider = self.request_options_provider
         self._authenticator = self.authenticator or NoAuth(parameters=parameters)
         self._http_method = HttpMethod[self.http_method] if isinstance(self.http_method, str) else self.http_method
         self.error_handler = self.error_handler
-        self._parameters = parameters
         self.decoder = JsonDecoder(parameters={})
         self._session = requests.Session()
 
         if isinstance(self._authenticator, AuthBase):
             self._session.auth = self._authenticator
 
-    # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
-    # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),
-    # but this has a cascading effect where all dataclass fields must also be set to frozen.
-    def __hash__(self) -> int:
-        return hash(tuple(self.__dict__))
-
     def get_authenticator(self) -> DeclarativeAuthenticator:
         return self._authenticator
 
+    @abstractmethod
     def get_url_base(self) -> str:
-        return os.path.join(self._url_base.eval(self.config), "")
+        """
+        Returns the url base value
+        """
 
+    @abstractmethod
     def get_path(
         self, *, stream_state: Optional[StreamState], stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]]
     ) -> str:
-        kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
-        path = str(self._path.eval(self.config, **kwargs))
-        return path.lstrip("/")
+        """
+        Returns the path value
+        """
 
     def get_method(self) -> HttpMethod:
         return self._http_method
@@ -113,55 +95,6 @@ class HttpRequester(Requester):
         if self.error_handler is None:
             raise ValueError("Cannot interpret response status without an error handler")
         return self.error_handler.interpret_response(response)
-
-    def get_request_params(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        return self._request_options_provider.get_request_params(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-        )
-
-    def get_request_headers(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        return self._request_options_provider.get_request_headers(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-        )
-
-    # fixing request options provider types has a lot of dependencies
-    def get_request_body_data(  # type: ignore
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Union[Mapping[str, Any], str]:
-        return (
-            self._request_options_provider.get_request_body_data(
-                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-            )
-            or {}
-        )
-
-    # fixing request options provider types has a lot of dependencies
-    def get_request_body_json(  # type: ignore
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Optional[Mapping[str, Any]]:
-        return self._request_options_provider.get_request_body_json(
-            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
-        )
 
     @property
     def max_retries(self) -> Union[int, None]:
@@ -553,3 +486,206 @@ class HttpRequester(Requester):
             return str(error) if error else None
         except requests.exceptions.JSONDecodeError:
             return None
+
+
+@dataclass
+class LowCodeHttpRequester(HttpRequester):
+    """
+    Low code default implementation of a Requester
+
+    Attributes:
+        url_base (Union[InterpolatedString, str]): Base url to send requests to
+        path (Union[InterpolatedString, str]): Path to send requests to
+        config (Config): The user-provided configuration as specified by the source's spec
+        request_options_provider (Optional[InterpolatedRequestOptionsProvider]): request option provider defining the options to set on outgoing requests
+    """
+
+    url_base: Union[InterpolatedString, str]
+    path: Union[InterpolatedString, str]
+    config: Config
+    request_options_provider: Optional[Union[InterpolatedRequestOptionsProvider, dict[str, Any]]]
+
+    def __init__(
+        self,
+        name: str,
+        url_base: Union[InterpolatedString, str],
+        path: Union[InterpolatedString, str],
+        config: Config,
+        parameters: Mapping[str, Any],
+        request_options_provider: Optional[Union[InterpolatedRequestOptionsProvider, dict[str, Any]]] = None,
+        authenticator: Optional[DeclarativeAuthenticator] = None,
+        http_method: Union[str, HttpMethod] = HttpMethod.GET,
+        error_handler: Optional[ErrorHandler] = None,
+        disable_retries: bool = False,
+        message_repository: MessageRepository = NoopMessageRepository(),
+    ):
+        self.url_base = url_base
+        self.path = path
+        self.config = config
+        self.request_options_provider = request_options_provider
+
+        super().__init__(
+            name=name,
+            parameters=parameters,
+            authenticator=authenticator,
+            http_method=http_method,
+            error_handler=error_handler,
+            disable_retries=disable_retries,
+            message_repository=message_repository,
+        )
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
+        self._path = InterpolatedString.create(self.path, parameters=parameters)
+        if self.request_options_provider is None:
+            self._request_options_provider = InterpolatedRequestOptionsProvider(config={}, parameters=parameters)
+        elif isinstance(self.request_options_provider, dict):
+            self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
+        else:
+            self._request_options_provider = self.request_options_provider
+
+        super().__post_init__(parameters)
+
+    # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
+    # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),
+    # but this has a cascading effect where all dataclass fields must also be set to frozen.
+    def __hash__(self) -> int:
+        return hash(tuple(self.__dict__))
+
+    def get_url_base(self) -> str:
+        return os.path.join(self._url_base.eval(self.config), "")
+
+    def get_path(
+        self, *, stream_state: Optional[StreamState], stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]]
+    ) -> str:
+        kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
+        path = str(self._path.eval(self.config, **kwargs))
+        return path.lstrip("/")
+
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
+        return self._request_options_provider.get_request_params(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self._request_options_provider.get_request_headers(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
+
+    # fixing request options provider types has a lot of dependencies
+    def get_request_body_data(  # type: ignore
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Union[Mapping[str, Any], str]:
+        return (
+            self._request_options_provider.get_request_body_data(
+                stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            )
+            or {}
+        )
+
+    # fixing request options provider types has a lot of dependencies
+    def get_request_body_json(  # type: ignore
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        return self._request_options_provider.get_request_body_json(
+            stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+        )
+
+
+class SourceHttpRequester(HttpRequester):
+    def __init__(
+        self,
+        name: str,
+        url_base: str,
+        path: str,
+        parameters: Mapping[str, Any],
+        authenticator: Optional[DeclarativeAuthenticator] = None,
+        http_method: Union[str, HttpMethod] = HttpMethod.GET,
+        error_handler: Optional[ErrorHandler] = None,
+        disable_retries: bool = False,
+        message_repository: MessageRepository = NoopMessageRepository(),
+        request_parameters: Optional[Mapping[str, Any]] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Mapping[str, Any]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+    ):
+        self._url_base = url_base
+        self._path = path
+        self.request_parameters = request_parameters or {}
+        self.request_headers = request_headers or {}
+        self.request_body_data = request_body_data or {}
+        self.request_body_json = request_body_json or {}
+
+        super().__init__(
+            name=name,
+            parameters=parameters,
+            authenticator=authenticator,
+            http_method=http_method,
+            error_handler=error_handler,
+            disable_retries=disable_retries,
+            message_repository=message_repository,
+        )
+
+    def get_url_base(self) -> str:
+        return self._url_base
+
+    def get_path(
+        self, *, stream_state: Optional[StreamState], stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]]
+    ) -> str:
+        return self._path
+
+    def get_request_params(  # type: ignore[override]
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self.request_parameters
+
+    def get_request_headers(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Mapping[str, Any]:
+        return self.request_headers
+
+    def get_request_body_data(  # type: ignore[override]
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Union[Mapping[str, Any], str]:
+        return self.request_body_data
+
+    def get_request_body_json(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> Optional[Mapping[str, Any]]:
+        return self.request_body_json
