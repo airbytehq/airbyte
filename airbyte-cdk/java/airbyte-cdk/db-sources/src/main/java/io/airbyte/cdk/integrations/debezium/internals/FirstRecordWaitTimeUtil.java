@@ -16,7 +16,7 @@ public class FirstRecordWaitTimeUtil {
 
   public static final Duration MIN_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(2);
   public static final Duration MAX_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(20);
-  public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(5);
+  public static final Duration DEFAULT_FIRST_RECORD_WAIT_TIME = Duration.ofMinutes(15);
 
   public static void checkFirstRecordWaitTime(final JsonNode config) {
     // we need to skip the check because in tests, we set initial_waiting_seconds
