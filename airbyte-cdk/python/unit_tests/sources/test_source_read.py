@@ -458,6 +458,7 @@ def _verify_messages(expected_messages, messages_from_abstract_source, messages_
     assert _compare(expected_messages, messages_from_concurrent_source)
 
 
+
 def _compare(s, t):
     # Use a compare method that does not require ordering or hashing the elements
     # We can't rely on the ordering because of the multithreading
