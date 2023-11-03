@@ -12,7 +12,7 @@ from pipelines.airbyte_ci.steps.poetry import PoetryRunStep
 from pipelines.consts import DOCS_DIRECTORY_ROOT_PATH, INTERNAL_TOOL_PATHS
 from pipelines.dagger.actions.python.common import with_pip_packages
 from pipelines.dagger.containers.python import with_python_base
-from pipelines.helpers.steps import run_steps
+from pipelines.helpers.steps import StepToRun, run_steps
 from pipelines.helpers.utils import DAGGER_CONFIG, get_secret_host_variable
 from pipelines.models.reports import Report
 from pipelines.models.steps import MountPath, Step, StepResult
@@ -169,7 +169,17 @@ async def run_metadata_orchestrator_deploy_pipeline(
         metadata_pipeline_context.dagger_client = dagger_client.pipeline(metadata_pipeline_context.pipeline_name)
 
         async with metadata_pipeline_context:
-            steps = [TestOrchestrator(context=metadata_pipeline_context), DeployOrchestrator(context=metadata_pipeline_context)]
+            steps = [
+                StepToRun(
+                    id="test_orchestrator",
+                    step=TestOrchestrator(context=metadata_pipeline_context),
+                ),
+                StepToRun(
+                    id="deploy_orchestrator",
+                    step=DeployOrchestrator(context=metadata_pipeline_context),
+                    depends_on=["test_orchestrator"],
+                ),
+            ]
             steps_results = await run_steps(steps)
             metadata_pipeline_context.report = Report(
                 pipeline_context=metadata_pipeline_context, steps_results=steps_results, name="METADATA ORCHESTRATOR DEPLOY RESULTS"
