@@ -505,27 +505,51 @@ subprojects { subproj ->
     }
 
     test {
-        maxHeapSize = '3g'
-        maxParallelForks = Runtime.runtime.availableProcessors()
-        // This allows to set up a `gradle.properties` file inside the connector folder to reduce parallelization.
-        // This is especially useful for connectors that share resources, like Redshift or Snowflake.
-        // This limits the number of test classes that execute in parallel.
-        // See also usages of parallelExecutionsPerThread.
-        if (subproj.hasProperty('numberThreads')) {
-            int numberThreads = 0
-            String numberThreadsString = subproj.property('numberThreads').toString()
-            if (numberThreadsString.isInteger()) {
-                numberThreads = numberThreadsString as int
-            }
-            if (numberThreads > 0 && numberThreads < maxParallelForks) {
-                maxParallelForks = numberThreads
+        useJUnitPlatform()
+        testLogging() {
+            events 'skipped', 'started', 'passed', 'failed'
+            exceptionFormat 'full'
+            showStandardStreams = true
+        }
+
+        // Set the timezone to UTC instead of picking up the host machine's timezone,
+        // which on a developer's laptop is more likely to be PST.
+        systemProperty 'user.timezone', 'UTC'
+
+        // Enable parallel test execution in JUnit by default.
+        // This is to support @Execution(ExecutionMode.CONCURRENT) annotations
+        // See https://junit.org/junit5/docs/current/user-guide/#writing-tests-parallel-execution for details.
+        systemProperty 'junit.jupiter.execution.parallel.enabled', 'true'
+        // Concurrency takes place at the class level.
+        systemProperty 'junit.jupiter.execution.parallel.mode.classes.default', 'concurrent'
+        // Within a class, the test methods are still run serially on the same thread.
+        systemProperty 'junit.jupiter.execution.parallel.mode.default', 'same_thread'
+        // Effectively disable JUnit concurrency by running tests in only one thread by default.
+        systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'fixed'
+        systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', 1
+
+        if (!subproj.hasProperty('testExecutionConcurrency')) {
+            // By default, let gradle spawn as many independent workers as it wants.
+            maxParallelForks = Runtime.runtime.availableProcessors()
+            maxHeapSize = '3G'
+        } else {
+            // Otherwise, run tests within the same JVM.
+            // Let gradle spawn only one worker.
+            maxParallelForks = 1
+            maxHeapSize = '8G'
+            // Manage test execution concurrency in JUnit.
+            String concurrency = subproj.property('testExecutionConcurrency').toString()
+            if (concurrency.isInteger() && (concurrency as int) > 0) {
+                // Define a fixed number of threads when the property is set to a positive integer.
+                systemProperty 'junit.jupiter.execution.parallel.config.fixed.parallelism', concurrency
+            } else {
+                // Otherwise let JUnit manage the concurrency dynamically.
+                systemProperty 'junit.jupiter.execution.parallel.config.strategy', 'dynamic'
             }
         }
 
-        systemProperty 'user.timezone', 'UTC'
-
+        // Exclude all connector unit tests upon request.
         if (rootProject.ext.skipSlowTests) {
-            // Exclude all connector unit tests
             exclude '**/io/airbyte/integrations/source/**'
             exclude '**/io/airbyte/integrations/destination/**'
         }
@@ -533,15 +557,6 @@ subprojects { subproj ->
         jacoco {
             enabled = !rootProject.ext.skipSlowTests
             excludes = ['**/*Test*', '**/generated*']
-        }
-        useJUnitPlatform {
-            excludeTags('cloud-storage')
-        }
-        testLogging() {
-            events "passed", "skipped", "failed"
-            exceptionFormat 'full'
-            // uncomment to get the full log output
-            // showStandardStreams = true
         }
         finalizedBy jacocoTestReportTask
     }
@@ -587,8 +602,6 @@ subprojects { subproj ->
         implementation libs.airbyte.protocol
     }
 
-
-
     tasks.withType(SpotBugsTask).configureEach {
         // Reports can be found under each subproject in build/spotbugs/
         reports {
@@ -598,9 +611,6 @@ subprojects { subproj ->
     }
 
     javadoc.options.addStringOption('Xdoclint:none', '-quiet')
-    tasks.named('check').configure {
-        dependsOn tasks.named('jacocoTestCoverageVerification')
-    }
 }
 
 // integration and performance test tasks per project
@@ -610,7 +620,6 @@ allprojects {
             [
                     'integrationTestJava',
                     'integrationTestPython',
-                    'standardSourceTestFile',
             ].contains(it.name)
         }
     }
