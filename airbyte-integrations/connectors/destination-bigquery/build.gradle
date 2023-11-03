@@ -59,15 +59,21 @@ dependencies {
     implementation libs.s3
 }
 
+def connectionSpecificationSchemaFile = file(
+        "${buildDir}/generated/sources/connectionSpecification/${project.name}-connection-specification.json")
+
 tasks.register('extractConnectionSpecificationSchema') {
 
     def inputFile = file("${projectDir}/src/main/resources/spec.json")
+    inputs.file inputFile
 
-    def outputFile = file("${buildDir}/${project.name}-connection-specification.json")
+    def outputFile = connectionSpecificationSchemaFile
+    outputs.file outputFile
 
     doFirst {
         // Read the input JSON file
         def inputJson = new JsonSlurper().parseText(inputFile.text)
+        logger.info "Parsed JSON from input: ${inputFile}"
         def properties = inputJson["connectionSpecification"]["properties"]
         // underlying jsonschema2pojo library cannot generate ambigious oneOf classes.
         // alter the oneOf property to pull the common required fields to top level (should always be one in spec case)
@@ -96,7 +102,7 @@ tasks.register('extractConnectionSpecificationSchema') {
         outputFile.write(transformedJsonString)
 
         // Print a message indicating the transformation is done
-        println "Transformed JSON written to: ${outputFile}"
+        logger.info "Transformed JSON written to: ${outputFile}"
     }
 }
 
@@ -107,14 +113,19 @@ jsonSchema2Pojo {
     executions{
         main {
             io.delimitersPropertyWord = '_'
-            //io.source.setFrom files("${buildDir}/${project.name}-connection-specification.json")
-            io.source.setFrom files("${sourceSets.main.output.resourcesDir}/destination-bigquery-connection-specification.json")
+            io.source.setFrom connectionSpecificationSchemaFile
             klass.annotateGenerated = false
             klass.targetPackage = 'io.airbyte.integrations.destination.bigquery'
             //methods.builders = true
             //methods.buildersInnerClass= true
         }
     }
+}
+tasks.named('generateJsonSchema2DataClassConfigMain').configure {
+    dependsOn tasks.named('extractConnectionSpecificationSchema')
+}
+tasks.register('generate').configure {
+    dependsOn tasks.named('generateJsonSchema2DataClass')
 }
 
 configurations.all {
