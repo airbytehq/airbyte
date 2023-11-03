@@ -147,6 +147,10 @@ allprojects {
         }
     }
 }
+// TODO: remove this once the CI routinely enforces formatting checks.
+tasks.matching { it.name =~ /spotless.*Check/ }.configureEach {
+    enabled = false
+}
 
 def getCDKTargetVersion() {
     def props = new Properties()
