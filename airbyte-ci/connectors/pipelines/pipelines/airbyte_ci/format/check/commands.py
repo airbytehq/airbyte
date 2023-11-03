@@ -37,10 +37,15 @@ async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     # TODO: fix this client hacking
     ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Format License")
 
-    # TODO: check should handle async
-    # if ctx.invoked_subcommand is None:
-    #     dagger_client = await pipeline_ctx.get_dagger_client(pipeline_name="Format All Files")
-    #     await ctx.invoke(license, dagger_client)
-    #     await ctx.invoke(java, dagger_client)
-    #     await ctx.invoke(js, dagger_client)
-    #     await ctx.invoke(python, dagger_client)
+    if ctx.invoked_subcommand is None:
+        from pipelines.airbyte_ci.format.check.java.commands import java
+        from pipelines.airbyte_ci.format.check.js.commands import js
+        from pipelines.airbyte_ci.format.check.license.commands import license
+        from pipelines.airbyte_ci.format.check.python.commands import python
+
+        print("Running all checks...")
+
+        # await ctx.invoke(java)
+        await ctx.invoke(js)
+        await ctx.invoke(license)
+        await ctx.invoke(python)
