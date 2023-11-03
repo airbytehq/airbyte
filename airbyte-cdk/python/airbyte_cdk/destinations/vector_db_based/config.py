@@ -75,11 +75,17 @@ class CodeSplitterConfigModel(BaseModel):
 TextSplitterConfigModel = Union[SeparatorSplitterConfigModel, MarkdownHeaderSplitterConfigModel, CodeSplitterConfigModel]
 
 
+class FieldNameMappingConfigModel(BaseModel):
+    from_field: str = Field(title="From field name", description="The field name in the source")
+    to_field: str = Field(title="To field name", description="The field name to use in the destination")
+
+
 class ProcessingConfigModel(BaseModel):
     chunk_size: int = Field(
         ...,
         title="Chunk size",
         maximum=8191,
+        minimum=1,
         description="Size of chunks in tokens to store in vector store (make sure it is not too big for the context if your LLM)",
     )
     chunk_overlap: int = Field(
@@ -107,6 +113,11 @@ class ProcessingConfigModel(BaseModel):
         discriminator="mode",
         type="object",
         description="Split text fields into chunks based on the specified method.",
+    )
+    field_name_mappings: Optional[List[FieldNameMappingConfigModel]] = Field(
+        default=[],
+        title="Field name mappings",
+        description="List of fields to rename. Not applicable for nested fields, but can be used to rename fields already flattened via dot notation.",
     )
 
     class Config:

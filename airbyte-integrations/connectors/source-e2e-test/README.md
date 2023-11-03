@@ -24,8 +24,9 @@ No credential is needed for this connector.
 
 #### Build
 Build the connector image via Gradle:
+
 ```
-./gradlew :airbyte-integrations:connectors:source-e2e-test:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-e2e-test:buildConnectorImage
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.

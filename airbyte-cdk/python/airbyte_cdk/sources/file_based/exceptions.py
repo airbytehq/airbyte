@@ -3,6 +3,9 @@
 #
 
 from enum import Enum
+from typing import Union
+
+from airbyte_cdk.utils import AirbyteTracedException
 
 
 class FileBasedSourceError(Enum):
@@ -38,10 +41,10 @@ class FileBasedSourceError(Enum):
 
 
 class BaseFileBasedSourceError(Exception):
-    def __init__(self, error: FileBasedSourceError, **kwargs):  # type: ignore # noqa
-        super().__init__(
-            f"{FileBasedSourceError(error).value} Contact Support if you need assistance.\n{' '.join([f'{k}={v}' for k, v in kwargs.items()])}"
-        )
+    def __init__(self, error: Union[FileBasedSourceError, str], **kwargs):  # type: ignore # noqa
+        if isinstance(error, FileBasedSourceError):
+            error = FileBasedSourceError(error).value
+        super().__init__(f"{error} Contact Support if you need assistance.\n{' '.join([f'{k}={v}' for k, v in kwargs.items()])}")
 
 
 class ConfigValidationError(BaseFileBasedSourceError):
@@ -81,4 +84,14 @@ class StopSyncPerValidationPolicy(BaseFileBasedSourceError):
 
 
 class ErrorListingFiles(BaseFileBasedSourceError):
+    pass
+
+
+class CustomFileBasedException(AirbyteTracedException):
+    """
+    A specialized exception for file-based connectors.
+
+    This exception is designed to bypass the default error handling in the file-based CDK, allowing the use of custom error messages.
+    """
+
     pass

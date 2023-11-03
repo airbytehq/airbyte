@@ -1,13 +1,19 @@
 data:
+  ab_internal:
+    ql: 400
+    sl: 200
   allowedHosts:
     hosts:
       - mixpanel.com
       - eu.mixpanel.com
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:1.1.0@sha256:bd98f6505c6764b1b5f99d3aedc23dfc9e9af631a62533f60eb32b1d3dbab20c
   connectorSubtype: api
   connectorType: source
   definitionId: 12928b32-bf0a-4f1e-964f-07e12e37153a
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/source-mixpanel
+  documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
   githubIssueLabel: source-mixpanel
   icon: mixpanel.svg
   license: MIT
@@ -21,7 +27,12 @@ data:
   releases:
     breakingChanges:
       1.0.0:
-        message: In this release, the datetime field of stream engage has had its type changed from date-time to string due to inconsistent data from Mixpanel. Additionally, the primary key for stream export has been fixed to uniquely identify records. Users will need to refresh the source schema and reset affected streams after upgrading.
+        message:
+          In this release, the datetime field of stream engage has had its
+          type changed from date-time to string due to inconsistent data from Mixpanel.
+          Additionally, the primary key for stream export has been fixed to uniquely
+          identify records. Users will need to refresh the source schema and reset
+          affected streams after upgrading.
         upgradeDeadline: "2023-10-31"
   suggestedStreams:
     streams:
@@ -32,11 +43,7 @@ data:
       - annotations
       - revenue
       - funnels
-  documentationUrl: https://docs.airbyte.com/integrations/sources/mixpanel
+  supportLevel: certified
   tags:
     - language:python
-  ab_internal:
-    sl: 200
-    ql: 400
-  supportLevel: certified
 metadataSpecVersion: "1.0"

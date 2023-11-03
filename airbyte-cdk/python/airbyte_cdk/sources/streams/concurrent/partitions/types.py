@@ -26,4 +26,4 @@ class PartitionCompleteSentinel:
 """
 Typedef representing the items that can be added to the ThreadBasedConcurrentStream
 """
-QueueItem = Union[Record, Partition, PartitionCompleteSentinel, PARTITIONS_GENERATED_SENTINEL, Partition]
+QueueItem = Union[Record, Partition, PartitionCompleteSentinel, PARTITIONS_GENERATED_SENTINEL, Partition, Exception]

@@ -7,6 +7,7 @@ from unittest.mock import Mock, call
 
 from airbyte_cdk.models import AirbyteStream, SyncMode
 from airbyte_cdk.sources.streams.concurrent.availability_strategy import STREAM_AVAILABLE
+from airbyte_cdk.sources.streams.concurrent.cursor import Cursor
 from airbyte_cdk.sources.streams.concurrent.partitions.partition import Partition
 from airbyte_cdk.sources.streams.concurrent.partitions.record import Record
 from airbyte_cdk.sources.streams.concurrent.thread_based_concurrent_stream import ThreadBasedConcurrentStream
@@ -24,6 +25,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         self._slice_logger = Mock()
         self._logger = Mock()
         self._message_repository = Mock()
+        self._cursor = Mock(spec=Cursor)
         self._stream = ThreadBasedConcurrentStream(
             self._partition_generator,
             self._max_workers,
@@ -38,6 +40,7 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
             1,
             2,
             0,
+            cursor=self._cursor,
         )
 
     def test_get_json_schema(self):
@@ -49,6 +52,15 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         availability = self._stream.check_availability()
         assert availability == STREAM_AVAILABLE
         self._availability_strategy.check_availability.assert_called_once_with(self._logger)
+
+    def test_check_for_error_raises_an_exception_if_any_of_the_futures_are_not_done(self):
+        futures = [Mock() for _ in range(3)]
+        for f in futures:
+            f.exception.return_value = None
+        futures[0].done.return_value = False
+
+        with self.assertRaises(Exception):
+            self._stream._check_for_errors(futures)
 
     def test_check_for_error_raises_no_exception_if_all_futures_succeeded(self):
         futures = [Mock() for _ in range(3)]
@@ -66,14 +78,20 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         with self.assertRaises(Exception):
             self._stream._check_for_errors(futures)
 
-    def test_check_for_error_raises_an_exception_if_any_of_the_futures_are_not_done(self):
-        futures = [Mock() for _ in range(3)]
-        for f in futures:
-            f.exception.return_value = None
-        futures[0].done.return_value = False
+    def test_read_observe_records_and_close_partition(self):
+        partition = Mock(spec=Partition)
+        expected_records = [Record({"id": 1}), Record({"id": "2"})]
+        partition.read.return_value = expected_records
+        partition.to_slice.return_value = {"slice": "slice"}
+        self._slice_logger.should_log_slice_message.return_value = False
 
-        with self.assertRaises(Exception):
-            self._stream._check_for_errors(futures)
+        self._partition_generator.generate.return_value = [partition]
+        actual_records = list(self._stream.read())
+
+        assert expected_records == actual_records
+
+        self._cursor.observe.has_calls([call(record) for record in expected_records])
+        self._cursor.close_partition.assert_called_once_with(partition)
 
     def test_read_no_slice_message(self):
         partition = Mock(spec=Partition)
@@ -205,7 +223,6 @@ class ThreadBasedConcurrentStreamTest(unittest.TestCase):
         assert expected_airbyte_stream == airbyte_stream
 
     def test_as_airbyte_stream_with_a_cursor(self):
-
         json_schema = {
             "type": "object",
             "properties": {

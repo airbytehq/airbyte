@@ -2,12 +2,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping
+from typing import Any, List, Mapping, Optional
 from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk.destinations.vector_db_based.config import (
     CodeSplitterConfigModel,
+    FieldNameMappingConfigModel,
     MarkdownHeaderSplitterConfigModel,
     ProcessingConfigModel,
     SeparatorSplitterConfigModel,
@@ -392,6 +393,36 @@ def test_text_splitter_check(label, split_config, has_error_message):
         assert error is not None
     else:
         assert error is None
+
+
+@pytest.mark.parametrize(
+    "mappings, fields, expected_chunk_metadata",
+    [
+        (None, {"abc": "def", "xyz": 123}, {"abc": "def", "xyz": 123}),
+        ([], {"abc": "def", "xyz": 123}, {"abc": "def", "xyz": 123}),
+        ([FieldNameMappingConfigModel(from_field="abc", to_field="AAA")], {"abc": "def", "xyz": 123}, {"AAA": "def", "xyz": 123}),
+        ([FieldNameMappingConfigModel(from_field="non_existing", to_field="AAA")], {"abc": "def", "xyz": 123}, {"abc": "def", "xyz": 123}),
+    ],
+)
+def test_rename_metadata_fields(
+    mappings: Optional[List[FieldNameMappingConfigModel]], fields: Mapping[str, Any], expected_chunk_metadata: Mapping[str, Any]
+):
+    processor = initialize_processor()
+
+    record = AirbyteRecordMessage(
+        stream="stream1",
+        namespace="namespace1",
+        data={**fields, "text": "abc"},
+        emitted_at=1234,
+    )
+
+    processor.field_name_mappings = mappings
+    processor.text_fields = ["text"]
+
+    chunks, id_to_delete = processor.process(record)
+
+    assert len(chunks) == 1
+    assert chunks[0].metadata == {**expected_chunk_metadata, "_ab_stream": "namespace1_stream1", "text": "abc"}
 
 
 @pytest.mark.parametrize(

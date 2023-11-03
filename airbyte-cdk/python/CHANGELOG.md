@@ -1,5 +1,55 @@
 # Changelog
 
+## 0.52.10
+Fix class SessionTokenAuthenticator for CLASS_TYPES_REGISTRY mapper
+
+## 0.52.9
+File CDK: Improve file type detection in document file type parser
+
+## 0.52.8
+Concurrent CDK: incremental (missing state conversion). Outside of concurrent specific work, this includes the following changes:
+* Checkpointing state was acting on the number of records per slice. This has been changed to consider the number of records per syncs
+* `Source.read_state` and `Source._emit_legacy_state_format` are now classmethods to allow for developers to have access to the state before instantiating the source
+
+## 0.52.7
+File CDK: Add pptx support
+
+## 0.52.6
+make  parameter as not required for default backoff handler
+
+## 0.52.5
+use in-memory cache if no file path is provided
+
+## 0.52.4
+File CDK: Add unstructured parser
+
+## 0.52.3
+Update source-declarative-manifest base image to update Linux alpine and Python
+
+## 0.52.2
+
+
+## 0.52.1
+Add max time for backoff handler
+
+## 0.52.0
+File CDK: Add CustomFileBasedException for custom errors
+
+## 0.51.44
+low-code: Allow connector developers to specify the type of an added field
+
+## 0.51.43
+concurrent cdk: fail fast if a partition raises an exception
+
+## 0.51.42
+File CDK: Avoid listing all files for check command
+
+## 0.51.41
+Vector DB CDK: Expose stream identifier logic, add field remapping to processing | File CDK: Emit analytics message for used streams
+
+## 0.51.40
+Add filters for base64 encode and decode in Jinja Interpolation 
+
 ## 0.51.39
 Few bug fixes for concurrent cdk
 

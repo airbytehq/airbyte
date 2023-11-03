@@ -24,7 +24,13 @@ CONNECTOR_TESTING_REQUIREMENTS = [
 ]
 
 BUILD_PLATFORMS = [Platform("linux/amd64"), Platform("linux/arm64")]
-LOCAL_BUILD_PLATFORM = Platform(f"linux/{platform.machine()}")
+
+PLATFORM_MACHINE_TO_DAGGER_PLATFORM = {
+    "x86_64": Platform("linux/amd64"),
+    "arm64": Platform("linux/arm64"),
+    "amd64": Platform("linux/amd64"),
+}
+LOCAL_BUILD_PLATFORM = PLATFORM_MACHINE_TO_DAGGER_PLATFORM[platform.machine()]
 AMAZONCORRETTO_IMAGE = "amazoncorretto:17.0.8-al2023"
 DOCKER_VERSION = "24.0.2"
 DOCKER_DIND_IMAGE = f"docker:{DOCKER_VERSION}-dind"
@@ -42,6 +48,10 @@ DOCKER_TMP_VOLUME_NAME = "shared-tmp"
 REPO = git.Repo(search_parent_directories=True)
 REPO_PATH = REPO.working_tree_dir
 STATIC_REPORT_PREFIX = "airbyte-ci"
+PIP_CACHE_VOLUME_NAME = "pip_cache"
+PIP_CACHE_PATH = "/root/.cache/pip"
+POETRY_CACHE_VOLUME_NAME = "poetry_cache"
+POETRY_CACHE_PATH = "/root/.cache/pypoetry"
 
 
 class CIContext(str, Enum):

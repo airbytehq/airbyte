@@ -22,11 +22,21 @@ openai_dependency = "openai[embeddings]==0.27.9"
 cohere_dependency = "cohere==4.21"
 tiktoken_dependency = "tiktoken==0.4.0"
 
+unstructured_dependencies = [
+    "unstructured==0.10.19",
+    "unstructured[docx,pptx]==0.10.19",
+    "pdf2image==1.16.3",
+    "pdfminer.six==20221105",
+    "unstructured.pytesseract>=0.3.12",
+    "pytesseract==0.3.10",
+    "markdown",
+]
+
 setup(
     name="airbyte-cdk",
     # The version of the airbyte-cdk package is used at runtime to validate manifests. That validation must be
     # updated if our semver format changes such as using release candidate versions.
-    version="0.51.39",
+    version="0.52.10",
     description="A framework for writing Airbyte Connectors.",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -55,7 +65,7 @@ setup(
     packages=find_packages(exclude=("unit_tests",)),
     package_data={"airbyte_cdk": ["py.typed", "sources/declarative/declarative_component_schema.yaml"]},
     install_requires=[
-        "airbyte-protocol-models==0.4.0",
+        "airbyte-protocol-models==0.4.2",
         "backoff",
         "dpath~=2.0.1",
         "isodate~=0.6.1",
@@ -91,6 +101,7 @@ setup(
             openai_dependency,
             cohere_dependency,
             tiktoken_dependency,
+            *unstructured_dependencies,
         ],
         "sphinx-docs": [
             "Sphinx~=4.2",
@@ -100,6 +111,7 @@ setup(
             avro_dependency,
             fastavro_dependency,
             pyarrow_dependency,
+            *unstructured_dependencies,
         ],
         "vector-db-based": [langchain_dependency, openai_dependency, cohere_dependency, tiktoken_dependency],
     },
