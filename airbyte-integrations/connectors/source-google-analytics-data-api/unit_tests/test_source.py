@@ -105,7 +105,7 @@ def test_check(requests_mock, config_gen, config_values, is_successful, message)
         (401),
     ],
 )
-def test_missing_metadata(requests_mock, status_code):    
+def test_missing_metadata(requests_mock, status_code):
     # required for MetadataDescriptor $instance input
     class TestConfig:
         config = {
@@ -117,8 +117,8 @@ def test_missing_metadata(requests_mock, status_code):
     requests_mock.register_uri(
         "GET", "https://analyticsdata.googleapis.com/v1beta/properties/123/metadata", json={}, status_code=status_code
     )
-    
-    metadata_descriptor =  MetadataDescriptor()
+
+    metadata_descriptor = MetadataDescriptor()
     with pytest.raises(AirbyteTracedException) as e:
         metadata_descriptor.__get__(TestConfig(), None)
     assert e.value.failure_type == FailureType.config_error
