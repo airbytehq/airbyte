@@ -17,7 +17,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
 from pipelines.consts import LOCAL_BUILD_PLATFORM, PYPROJECT_TOML_FILE_PATH
 from pipelines.dagger.actions import secrets
-from pipelines.helpers.steps import Runnable
+from pipelines.helpers.steps import StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
@@ -163,58 +163,29 @@ class IntegrationTests(PytestStep):
     test_directory_name = "integration_tests"
     bind_to_docker_host = True
 
-
-async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
-    """Run all tests for a Python connector.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[StepResult]: The results of all the steps that ran or were skipped.
-    """
-    step_results = []
-    build_connector_image_results = await BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run()
-    if build_connector_image_results.status is StepStatus.FAILURE:
-        return [build_connector_image_results]
-    step_results.append(build_connector_image_results)
-
-    connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
-
-    unit_test_results = await UnitTests(context).run(connector_container)
-
-    if unit_test_results.status is StepStatus.FAILURE:
-        return step_results + [unit_test_results]
-    step_results.append(unit_test_results)
-    async with asyncer.create_task_group() as task_group:
-        tasks = [
-            task_group.soonify(IntegrationTests(context).run)(connector_container),
-            task_group.soonify(AcceptanceTests(context, context.concurrent_cat).run)(connector_container),
-            task_group.soonify(CheckBaseImageIsUsed(context).run)(),
-        ]
-
-    return step_results + [task.value for task in tasks]
-
-def get_test_steps(context: ConnectorContext) -> List[Runnable]:
+def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
     return [
-        Runnable(id="build", step=BuildConnectorImages(context, LOCAL_BUILD_PLATFORM)),
-        Runnable(
+        StepToRun(id="build", step=BuildConnectorImages(context, LOCAL_BUILD_PLATFORM)),
+        StepToRun(
             id="unit",
             step=UnitTests(context),
-            args=lambda results: {"connector_under_test": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
+            args=lambda results: {"connector_under_test": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
+            depends_on=["build"],
         ),
         [
-            Runnable(
+            StepToRun(
                 id="integration",
                 step=IntegrationTests(context),
-                args=lambda results: {"connector_under_test": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
+                args=lambda results: {"connector_under_test": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
+                depends_on=["build"],
             ),
-            Runnable(
+            StepToRun(
                 id="acceptance",
                 step=AcceptanceTests(context, context.concurrent_cat),
-                args=lambda results: {"connector_under_test_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
+                args=lambda results: {"connector_under_test_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
+                depends_on=["build"],
             ),
-            Runnable(id="check_base_image", step=CheckBaseImageIsUsed(context)),
+            StepToRun(id="check_base_image", step=CheckBaseImageIsUsed(context), depends_on=["build"]),
         ],
     ]
 

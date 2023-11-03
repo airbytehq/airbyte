@@ -52,8 +52,8 @@ If you face any installation problems feel free to reach out the Airbyte Connect
 ### Setting up connector secrets access
 
 If you plan to use Airbyte CI to run CAT (Connector Acceptance Tests), we recommend setting up GSM
-access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the 
-CI Credentials package (which Airbyte CI uses under the hood) README's 
+access so that Airbyte CI can pull remote secrets from GSM. For setup instructions, see the
+CI Credentials package (which Airbyte CI uses under the hood) README's
 [Get GSM Access](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/ci_credentials/README.md#get-gsm-access)
 instructions.
 
@@ -155,7 +155,7 @@ Available commands:
 | `--enable-dependency-scanning / --disable-dependency-scanning` | False    | ` --disable-dependency-scanning` |                             | When enabled the dependency scanning will be performed to detect the connectors to select according to a dependency change.                                                                                                                                                                                                                                                                                                                                                               |
 | `--docker-hub-username`                                        |          |                                  | DOCKER_HUB_USERNAME         | Your username to connect to DockerHub. Required for the publish subcommand.                                                                                                                                                                                                                                                                                                                                                                                                               |
 | `--docker-hub-password`                                        |          |                                  | DOCKER_HUB_PASSWORD         | Your password to connect to DockerHub. Required for the publish subcommand.                                                                                                                                                                                                                                                                                                                                                                                                               |
-                                                                                                                                           
+
 
 ### <a id="connectors-list-command"></a>`connectors list` command
 Retrieve the list of connectors satisfying the provided filters.
@@ -236,6 +236,7 @@ flowchart TD
 
 | Option              | Multiple | Default value | Description                                                                                                                                                                                              |
 | ------------------- | -------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--skip-step/-x`    | True     |               | Skip steps by id e.g. `-x unit -x acceptance`                                                                                                         |
 | `--fail-fast`       | False    | False         | Abort after any tests fail, rather than continuing to run additional tests. Use this setting to confirm a known bug is fixed (or not), or when you only require a pass/fail result.                      |
 | `--code-tests-only` | True     | False         | Skip any tests not directly related to code updates. For instance, metadata checks, version bump checks, changelog verification, etc. Use this setting to help focus on code quality during development. |
 | `--concurrent-cat`  | False    | False         | Make CAT tests run concurrently using pytest-xdist. Be careful about source or destination API rate limits.                                                                                              |
@@ -407,6 +408,7 @@ This command runs the Python tests for a airbyte-ci poetry package.
 ## Changelog
 | Version | PR                                                         | Description                                                                                               |
 | ------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| 2.6.0   | [#31974](https://github.com/airbytehq/airbyte/pull/?????)  | Add -x option to connector test to allow for skipping steps                                               |
 | 2.5.3   | [#31974](https://github.com/airbytehq/airbyte/pull/31974)  | Fix latest CDK install and pip cache mount on connector install.                            |
 | 2.5.2   | [#31871](https://github.com/airbytehq/airbyte/pull/31871)  | Deactivate PR comments, add HTML report links to the PR status when its ready.                            |
 | 2.5.1   | [#31774](https://github.com/airbytehq/airbyte/pull/31774)  | Add a docker configuration check on `airbyte-ci` startup.                                                 |

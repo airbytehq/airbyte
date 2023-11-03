@@ -13,7 +13,7 @@ from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pip
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import ContextState
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
-from pipelines.helpers.steps import run_steps
+from pipelines.helpers.steps import RunStepOptions, run_steps
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
@@ -33,31 +33,27 @@ from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
     is_flag=True,
 )
 @click.option(
-    "--fast-tests-only",
-    help="When enabled, slow tests are skipped.",
-    default=False,
-    type=bool,
-    is_flag=True,
-)
-@click.option(
     "--concurrent-cat",
     help="When enabled, the CAT tests will run concurrently. Be careful about rate limits",
     default=False,
     type=bool,
     is_flag=True,
 )
-@click.option('--skip-step', '-x', multiple=True)
+@click.option(
+    '--skip-step',
+    '-x',
+    multiple=True
+    type=str,
+    help="Skip a step by name. Can be used multiple times to skip multiple steps.",
+)
 @click.pass_context
 async def test(
     ctx: click.Context,
     code_tests_only: bool,
-    # TODO ben: consider removing
     fail_fast: bool,
-    fast_tests_only: bool,
     concurrent_cat: bool,
     skip_step: str,
 ) -> bool:
-    # TODO bring back the fail fast option
     """Runs a test pipeline for the selected connectors.
 
     Args:
@@ -75,6 +71,11 @@ async def test(
         main_logger.warn("No connector were selected for testing.")
         update_global_commit_status_check_for_tests(ctx.obj, "success")
         return True
+
+    run_step_options = RunStepOptions(
+        fail_fast=fail_fast,
+        skip_steps=skip_step,
+    )
 
     connectors_tests_contexts = [
         ConnectorContext(
@@ -99,7 +100,7 @@ async def test(
             docker_hub_username=ctx.obj.get("docker_hub_username"),
             docker_hub_password=ctx.obj.get("docker_hub_password"),
             concurrent_cat=concurrent_cat,
-            skip_steps=skip_step,
+            run_step_options=run_step_options,
         )
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]

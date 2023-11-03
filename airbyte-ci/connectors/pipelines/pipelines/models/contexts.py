@@ -18,6 +18,7 @@ from pipelines.consts import CIContext, ContextState
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
+from pipelines.helpers.steps import RunStepOptions
 from pipelines.helpers.utils import AIRBYTE_REPO_URL
 from pipelines.models.reports import Report
 
@@ -62,7 +63,7 @@ class PipelineContext:
         ci_git_user: Optional[str] = None,
         ci_github_access_token: Optional[str] = None,
         open_report_in_browser: bool = True,
-        skip_steps: List[str] = [],
+        run_step_options: RunStepOptions = RunStepOptions(),
     ):
         """Initialize a pipeline context.
 
@@ -106,7 +107,7 @@ class PipelineContext:
         self.stopped_at = None
         self.secrets_to_mask = []
         self.open_report_in_browser = open_report_in_browser
-        self.skip_steps = skip_steps
+        self.run_step_options = run_step_options
         update_commit_status_check(**self.github_commit_status)
 
     @property

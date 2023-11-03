@@ -21,7 +21,7 @@ from pipelines.airbyte_ci.steps.gradle import GradleTask
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.system import docker
-from pipelines.helpers.steps import Runnable
+from pipelines.helpers.steps import StepToRun
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import StepResult, StepStatus
 
@@ -65,8 +65,78 @@ class UnitTests(GradleTask):
     gradle_task_name = "test"
     bind_to_docker_host = True
 
-def get_test_steps(context: ConnectorContext) -> List[Runnable]:
-    pass
+# TODO handle async
+async def _create_integration_step_args(context, results):
+    connector_container = results["build"].output_artifact[LOCAL_BUILD_PLATFORM]
+    connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
+
+    if context.connector.supports_normalization:
+        tar_file_name = f"{context.connector.normalization_repository}_{context.git_revision}.tar"
+        build_normalization_results = results["build_normalization"]
+
+        normalization_container = build_normalization_results.output_artifact
+        normalization_tar_file, _ = await export_container_to_tarball(
+            context, normalization_container, tar_file_name=tar_file_name
+        )
+    else:
+        normalization_tar_file = None
+
+
+    return {
+        "connector_tar_file": connector_image_tar_file,
+        "normalization_tar_file": normalization_tar_file
+    }
+
+def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
+    build_steps = [
+        StepToRun(
+            id="build",
+            step=BuildConnectorImages(context, LOCAL_BUILD_PLATFORM),
+            args=lambda results: {"dist_dir": results["build_tar"].output_artifact.directory(dist_tar_directory_path(context))},
+            depends_on=["build_tar"],
+        ),
+    ]
+
+    if context.connector.supports_normalization:
+        normalization_image = f"{context.connector.normalization_repository}:dev"
+        context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
+        normalization_steps = [
+            StepToRun(
+                id="build_normalization",
+                step=BuildOrPullNormalization(context, normalization_image, LOCAL_BUILD_PLATFORM),
+                depends_on=["build"],
+            )
+        ]
+
+        build_steps += normalization_steps
+
+    # TODO get this running in parallel
+    test_steps = [
+        StepToRun(
+            id="integration",
+            step=IntegrationTests(context),
+            args=lambda results: _create_integration_step_args(context, results), ## TODO this wont work as its an async
+            depends_on=["build"],
+        ),
+        StepToRun(
+            id="acceptance",
+            step=AcceptanceTests(context, True),
+            args=lambda results: {"connector_under_test_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
+            depends_on=["build"],
+        ),
+    ]
+
+    return build_steps + test_steps
+
+
+def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
+    return [
+        StepToRun(id="build_tar", step=BuildConnectorDistributionTar(context, LOCAL_BUILD_PLATFORM)),
+        # TODO: Ensure unit and acceptance the build steps run in paralell
+        StepToRun(id="unit", step=UnitTests(context)),
+        _get_acceptance_test_steps(context),
+    ]
+
 
 async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """Run all tests for a Java connectors.

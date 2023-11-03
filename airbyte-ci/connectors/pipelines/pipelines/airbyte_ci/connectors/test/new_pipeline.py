@@ -14,15 +14,10 @@ from pipelines.airbyte_ci.connectors.reports import ConnectorReport
 from pipelines.airbyte_ci.connectors.test.steps import java_connectors, python_connectors
 from pipelines.airbyte_ci.connectors.test.steps.common import QaChecks, VersionFollowsSemverCheck, VersionIncrementCheck
 from pipelines.airbyte_ci.metadata.pipeline import MetadataValidation
-from pipelines.helpers.steps import Runnable, new_run_steps
+from pipelines.helpers.steps import StepToRun, new_run_steps
 from pipelines.models.steps import StepResult
 
 LANGUAGE_MAPPING = {
-    "run_all_tests": {
-        ConnectorLanguage.PYTHON: python_connectors.run_all_tests,
-        ConnectorLanguage.LOW_CODE: python_connectors.run_all_tests,
-        ConnectorLanguage.JAVA: java_connectors.run_all_tests,
-    },
     "get_test_steps": {
         ConnectorLanguage.PYTHON: python_connectors.get_test_steps,
         ConnectorLanguage.LOW_CODE: python_connectors.get_test_steps,
@@ -31,7 +26,7 @@ LANGUAGE_MAPPING = {
 }
 
 
-def get_test_steps(context: ConnectorContext) -> List[Runnable]:
+def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
     """Get all the tests steps according to the connector language.
 
     Args:
@@ -52,25 +47,38 @@ async def new_run_connector_test_pipeline(context: ConnectorContext, semaphore: 
     Compute the steps to run for a connector test pipeline.
     """
 
-    steps = get_test_steps(context)
+    """
+    TODO: main
+    - Update java connectors
+    - update metadata_service run_steps use
+    - clean up todos
+    - replace old functions with new functions
+    - fail fast?
+
+    NEXT PR
+    - add extra_args_support
+    """
+
+    steps_to_run = get_test_steps(context)
 
     if not context.code_tests_only:
-        steps += [
-            Runnable(id="metadata_validation", step=MetadataValidation(context)),
-            Runnable(id="version_follow_check", step=VersionFollowsSemverCheck(context)),
-            Runnable(id="version_inc_check", step=VersionIncrementCheck(context)),
-            Runnable(id="qa_checks", step=QaChecks(context)),
+        steps_to_run += [
+            [
+                StepToRun(id="metadata_validation", step=MetadataValidation(context)),
+                StepToRun(id="version_follow_check", step=VersionFollowsSemverCheck(context)),
+                StepToRun(id="version_inc_check", step=VersionIncrementCheck(context)),
+                StepToRun(id="qa_checks", step=QaChecks(context)),
+            ]
         ]
 
     async with semaphore:
         async with context:
             result_dict = await new_run_steps(
-                context=context,
-                runnables=steps
+                runnables=steps_to_run,
+                options=context.run_step_options,
             )
 
             results = list(result_dict.values())
-            import pdb; pdb.set_trace()
             context.report = ConnectorReport(context, steps_results=results, name="TEST RESULTS")
 
         return context.report

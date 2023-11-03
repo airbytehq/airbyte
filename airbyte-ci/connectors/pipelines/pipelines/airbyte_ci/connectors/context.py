@@ -20,6 +20,7 @@ from pipelines.dagger.actions import secrets
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
+from pipelines.helpers.steps import RunStepOptions
 from pipelines.helpers.utils import METADATA_FILE_NAME
 from pipelines.models.contexts import PipelineContext
 
@@ -60,7 +61,7 @@ class ConnectorContext(PipelineContext):
         s3_build_cache_access_key_id: Optional[str] = None,
         s3_build_cache_secret_key: Optional[str] = None,
         concurrent_cat: Optional[bool] = False,
-        skip_steps: List[str] = [],
+        run_step_options: RunStepOptions = RunStepOptions(),
     ):
         """Initialize a connector context.
 
@@ -125,7 +126,7 @@ class ConnectorContext(PipelineContext):
             ci_git_user=ci_git_user,
             ci_github_access_token=ci_github_access_token,
             open_report_in_browser=open_report_in_browser,
-            skip_steps=skip_steps,
+            run_step_options=run_step_options,
         )
 
     @property
