@@ -35,7 +35,6 @@ from suds import sudsobject
 
 class BingAdsBaseStream(Stream, ABC):
     primary_key: Optional[Union[str, List[str], List[List[str]]]] = None
-    need_transform = False
 
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
         super().__init__()
@@ -76,6 +75,12 @@ class BingAdsStream(BingAdsBaseStream, ABC):
         Expected format: field names separated by space
         """
         pass
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        """
+        Specifies additional transformation for the record. Can be overwritten if stream requires to transform a record.
+        """
+        return record
 
     @property
     def _service(self) -> Union[ServiceClient, ReportingServiceManager]:
@@ -143,10 +148,7 @@ class BingAdsStream(BingAdsBaseStream, ABC):
             )
             response = self.send_request(params, customer_id=customer_id, account_id=account_id)
             for record in self.parse_response(response):
-                if self.need_transform:
-                    yield self.transform(record, stream_slice)
-                else:
-                    yield record
+                yield self.transform(record, stream_slice)
 
             next_page_token = self.next_page_token(response, current_page_token=next_page_token)
             if not next_page_token:
@@ -412,7 +414,6 @@ class Campaigns(BingAdsStream):
         "VerifiedTrackingSetting",
     ]
     campaign_types: Iterable[str] = ["Audience", "DynamicSearchAds", "Search", "Shopping"]
-    need_transform = True
 
     def request_params(
         self,
@@ -455,7 +456,6 @@ class AdGroups(BingAdsStream):
     service_name: str = "CampaignManagement"
     operation_name: str = "GetAdGroupsByCampaignId"
     additional_fields: str = "AdGroupType AdScheduleUseSearcherTimeZone CpmBid CpvBid MultimediaAdsBidAdjustment"
-    need_transform = True
 
     def request_params(
         self,
@@ -506,7 +506,6 @@ class Ads(BingAdsStream):
         "ResponsiveAd",
         "ResponsiveSearch",
     ]
-    need_transform = True
 
     def request_params(
         self,
