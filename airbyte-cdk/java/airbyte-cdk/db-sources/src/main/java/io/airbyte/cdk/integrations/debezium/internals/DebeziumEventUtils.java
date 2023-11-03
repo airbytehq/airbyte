@@ -79,7 +79,7 @@ public class DebeziumEventUtils {
      * #formatMongoDbDeleteDebeziumData() for more details.
      */
     final JsonNode data = switch (operation) {
-      case "c", "i", "u" -> formatMongoDbDebeziumData(before, after, source, cdcMetadataInjector, configuredFields);
+      case "c", "i", "u" -> formatMongoDbDebeziumData(before, after, source, debeziumEventKey, cdcMetadataInjector, configuredFields);
       case "d" -> formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields);
       default -> throw new IllegalArgumentException("Unsupported MongoDB change event operation '" + operation + "'.");
     };
@@ -102,11 +102,19 @@ public class DebeziumEventUtils {
   private static JsonNode formatMongoDbDebeziumData(final JsonNode before,
                                                     final JsonNode after,
                                                     final JsonNode source,
+                                                    final JsonNode debeziumEventKey,
                                                     final CdcMetadataInjector cdcMetadataInjector,
                                                     final Set<String> configuredFields) {
 
-    final String eventJson = (after.isNull() ? before : after).asText();
-    return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields), source, cdcMetadataInjector, false);
+    if ((before == null || before.isNull()) && (after == null || after.isNull())) {
+      // In case a mongodb document was updated and then deleted, the update change event will not have
+      // any information ({after: null})
+      // We are going to treat it as a delete.
+      return formatMongoDbDeleteDebeziumData(before, debeziumEventKey, source, cdcMetadataInjector, configuredFields);
+    } else {
+      final String eventJson = (after.isNull() ? before : after).asText();
+      return addCdcMetadata(MongoDbCdcEventUtils.transformDataTypes(eventJson, configuredFields), source, cdcMetadataInjector, false);
+    }
   }
 
   private static JsonNode formatMongoDbDeleteDebeziumData(final JsonNode before,
