@@ -44,7 +44,7 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
    * </ol>
    */
   @VisibleForTesting
-  static final List<String> STRINGS_TO_DEINTERPOLATE = new ArrayList<>();
+  static final Set<String> STRINGS_TO_DEINTERPOLATE = new HashSet<>();
   static {
     // Add some common strings to deinterpolate, regardless of what the connector is doing
     STRINGS_TO_DEINTERPOLATE.add("description");
