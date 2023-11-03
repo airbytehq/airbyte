@@ -462,11 +462,7 @@ class AdGroups(BingAdsStream):
     operation_name: str = "GetAdGroupsByCampaignId"
     additional_fields: str = "AdGroupType AdScheduleUseSearcherTimeZone CpmBid CpvBid MultimediaAdsBidAdjustment"
 
-    parent_key_to_foreign_key_map = {
-        "CampaignId": "campaign_id",
-        "AccountId": "account_id",
-        "CustomerId": "customer_id"
-    }
+    parent_key_to_foreign_key_map = {"CampaignId": "campaign_id", "AccountId": "account_id", "CustomerId": "customer_id"}
 
     def request_params(
         self,
@@ -512,11 +508,7 @@ class Ads(BingAdsStream):
         "ResponsiveSearch",
     ]
 
-    parent_key_to_foreign_key_map = {
-        "AdGroupId": "ad_group_id",
-        "AccountId": "account_id",
-        "CustomerId": "customer_id"
-    }
+    parent_key_to_foreign_key_map = {"AdGroupId": "ad_group_id", "AccountId": "account_id", "CustomerId": "customer_id"}
 
     def request_params(
         self,
@@ -538,7 +530,6 @@ class Ads(BingAdsStream):
             for ad_group in ad_groups.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
                 yield {"ad_group_id": ad_group["Id"], "account_id": slice["account_id"], "customer_id": slice["customer_id"]}
         yield from []
-
 
 
 class BudgetSummaryReport(ReportsMixin, BingAdsStream):
