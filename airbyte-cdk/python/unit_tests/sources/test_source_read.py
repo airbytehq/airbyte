@@ -36,7 +36,6 @@ from airbyte_cdk.sources.utils.schema_helpers import InternalConfig
 from airbyte_cdk.sources.utils.slice_logger import DebugSliceLogger
 from airbyte_cdk.utils import AirbyteTracedException
 
-
 # FIXME: should there be a test for a failing sync?
 
 
@@ -54,17 +53,17 @@ class _MockStream(Stream):
         return None
 
     def stream_slices(
-            self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
+        self, *, sync_mode: SyncMode, cursor_field: Optional[List[str]] = None, stream_state: Optional[Mapping[str, Any]] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         for partition in self._slice_to_records.keys():
             yield {"partition": partition}
 
     def read_records(
-            self,
-            sync_mode: SyncMode,
-            cursor_field: Optional[List[str]] = None,
-            stream_slice: Optional[Mapping[str, Any]] = None,
-            stream_state: Optional[Mapping[str, Any]] = None,
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Iterable[StreamData]:
         for record_or_exception in self._slice_to_records[stream_slice["partition"]]:
             if isinstance(record_or_exception, Exception):
@@ -403,11 +402,13 @@ def test_concurrent_source_yields_the_same_messages_as_abstract_source_when_an_e
     ]
     _verify_messages(expected_messages, messages_from_abstract_source, messages_from_concurrent_source)
 
+
 def _init_logger():
     logger = Mock()
     logger.level = logging.INFO
     logger.isEnabledFor.return_value = False
     return logger
+
 
 def _init_sources(stream_slice_to_partitions, state, logger):
     source = _init_source(stream_slice_to_partitions, state, logger, _MockSource())
@@ -450,9 +451,11 @@ def _read_from_source(source, logger, config, catalog, state, expected_exception
             assert isinstance(e, expected_exception)
     return messages
 
+
 def _verify_messages(expected_messages, messages_from_abstract_source, messages_from_concurrent_source):
     assert expected_messages == messages_from_abstract_source
     assert _compare(messages_from_abstract_source, messages_from_concurrent_source)
+
 
 def _compare(s, t):
     # Use a compare method that does not require ordering or hashing the elements
