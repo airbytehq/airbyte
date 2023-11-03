@@ -21,6 +21,7 @@ from .streams import (
     Sections,
     SectionsCompact,
     Stories,
+    StoriesCompact,
     Tags,
     Tasks,
     TeamMemberships,
@@ -57,7 +58,7 @@ class SourceAsana(AbstractSource):
             )
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        args = {"authenticator": self._get_authenticator(config)}
+        args = {"authenticator": self._get_authenticator(config), "test_mode": config["test_mode"]}
         streams = [
             AttachmentsCompact(**args),
             Attachments(**args),
@@ -65,6 +66,7 @@ class SourceAsana(AbstractSource):
             Projects(**args),
             SectionsCompact(**args),
             Sections(**args),
+            StoriesCompact(**args),
             Stories(**args),
             Tags(**args),
             Tasks(**args),

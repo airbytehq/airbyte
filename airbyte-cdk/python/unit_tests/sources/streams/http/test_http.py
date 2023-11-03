@@ -388,6 +388,17 @@ def test_caching_sessions_are_different():
     assert stream_1.cache_filename == stream_2.cache_filename
 
 
+# def test_cached_streams_wortk_when_request_path_is_not_set(mocker, requests_mock):
+# This test verifies that HttpStreams with a cached session work even if the path is not set
+# For instance, when running in a unit test
+# stream = CacheHttpStream()
+# with mocker.patch.object(stream._session, "send", wraps=stream._session.send):
+#     requests_mock.register_uri("GET", stream.url_base)
+#     records = list(stream.read_records(sync_mode=SyncMode.full_refresh))
+#     assert records == [{"data": 1}]
+# ""
+
+
 def test_parent_attribute_exist():
     parent_stream = CacheHttpStream()
     child_stream = CacheHttpSubStream(parent=parent_stream)
@@ -519,7 +530,9 @@ def test_default_get_error_display_message_handles_http_error(mocker):
     non_http_err_msg = stream.get_error_display_message(RuntimeError("not me"))
     assert non_http_err_msg is None
 
-    http_err_msg = stream.get_error_display_message(requests.HTTPError())
+    response = requests.Response()
+    http_exception = requests.HTTPError(response=response)
+    http_err_msg = stream.get_error_display_message(http_exception)
     assert http_err_msg == "my custom message"
 
 
