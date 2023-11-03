@@ -10,6 +10,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from pydantic import BaseModel
 from source_klaviyo.availability_strategy import KlaviyoAvailabilityStrategy
+from source_klaviyo.exceptions import KlaviyoBackoffError
 from source_klaviyo.streams import (
     Campaigns,
     GlobalExclusions,
@@ -137,6 +138,17 @@ class TestKlaviyoStream:
         response_mock.status_code = status_code
         response_mock.headers = {"Retry-After": retry_after}
         assert stream.backoff_time(response_mock) == expected_time
+
+    def test_backoff_time_large_retry_after(self):
+        stream = SomeStream(api_key=API_KEY)
+        response_mock = mock.MagicMock()
+        response_mock.status_code = 429
+        retry_after = stream.max_time + 5
+        response_mock.headers = {"Retry-After": retry_after}
+        with pytest.raises(KlaviyoBackoffError) as e:
+            stream.backoff_time(response_mock)
+        error_message = f"Stream some_stream has reached rate limit with 'Retry-After' of {float(retry_after)} seconds, exit from stream."
+        assert str(e.value) == error_message
 
 
 class TestIncrementalKlaviyoStream:

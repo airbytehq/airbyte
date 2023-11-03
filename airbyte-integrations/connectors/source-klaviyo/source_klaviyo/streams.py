@@ -14,6 +14,7 @@ from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .availability_strategy import KlaviyoAvailabilityStrategy
+from .exceptions import KlaviyoBackoffError
 
 
 class KlaviyoStream(HttpStream, ABC):
@@ -96,7 +97,24 @@ class KlaviyoStream(HttpStream, ABC):
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == 429:
             retry_after = response.headers.get("Retry-After")
-            return float(retry_after) if retry_after else None
+            retry_after = float(retry_after) if retry_after else None
+            if retry_after and retry_after >= self.max_time:
+                raise KlaviyoBackoffError(
+                    f"Stream {self.name} has reached rate limit with 'Retry-After' of {retry_after} seconds, exit from stream."
+                )
+            return retry_after
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: Optional[List[str]] = None,
+        stream_slice: Optional[Mapping[str, Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Iterable[StreamData]:
+        try:
+            yield from super().read_records(sync_mode, cursor_field, stream_slice, stream_state)
+        except KlaviyoBackoffError as e:
+            self.logger.warning(repr(e))
 
 
 class IncrementalKlaviyoStream(KlaviyoStream, ABC):
