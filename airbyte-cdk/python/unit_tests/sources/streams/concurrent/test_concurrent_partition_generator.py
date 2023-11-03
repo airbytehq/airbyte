@@ -21,12 +21,13 @@ def test_partition_generator(slices):
 
     stream = Mock()
     message_repository = Mock()
-    partitions = [StreamPartition(stream, s, message_repository) for s in slices]
+    sync_mode = SyncMode.full_refresh
+    cursor_field = None
+    state = None
+    partitions = [StreamPartition(stream, s, message_repository, sync_mode, cursor_field, state) for s in slices]
     stream.generate.return_value = iter(partitions)
 
-    sync_mode = SyncMode.full_refresh
-
-    partition_generator.generate_partitions(stream, sync_mode)
+    partition_generator.generate_partitions(stream)
 
     actual_partitions = []
     while partition := queue.get(False):

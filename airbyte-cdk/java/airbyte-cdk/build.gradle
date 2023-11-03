@@ -11,7 +11,7 @@ allprojects {
 }
 
 subprojects { subproject ->
-    def artifactBaseName = 'airbyte-cdk-' + subproject.name.replace('-feature', '')
+    def artifactBaseName = 'airbyte-cdk-' + subproject.name
     // E.g. airbyte-cdk-core, airbyte-cdk-db-sources, airbyte-cdk-db-destinations, etc.
 
     publishing {

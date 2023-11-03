@@ -21,7 +21,7 @@ To configure incremental syncs for a stream in the connector builder, you have t
 In the builder UI, these things are specified like this:
 
 - The "Cursor field" is the property in the record that defines the date and time when the record got changed. It's used to decide which records are synced already and which records are "new"
-- The "Datetime format" specifies the format the cursor field is using to specify date and time. Check out the [YAML reference](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L562) for a full list of supported formats.
+- The "Datetime format" specifies the format the cursor field is using to specify date and time. Check out the [YAML reference](/connector-development/config-based/understanding-the-yaml-file/reference#/definitions/DatetimeBasedCursor) for a full list of supported formats.
 - "API time filtering capabilities" specifies if the API allows filtering by start and end datetime or whether it's a "feed" of data going from newest to oldest records. See the "Incremental sync without time filtering" section below for details.
 - The "Start datetime" is the initial start date of the time range to fetch records for. When doing incremental syncs, the second sync will overwrite this date with the last record that got synced so far.
 - The "End datetime" is the end date of the time range to fetch records for. In most cases it's set to the current date and time when the sync is started to sync all changes that happened so far.
@@ -85,7 +85,7 @@ curl 'https://content.guardianapis.com/search?from-date=<b>2023-04-15T07:30:58Z<
 The `from-date` is set to the cutoff date of articles synced already and the `to-date` is set to the current date.
 
 :::info
-In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_date }}` and `{{ stream_interval.end_date }}` [placeholders](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L2073). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
+In some cases, it's helpful to reference the start and end date of the interval that's currently synced, for example if it needs to be injected into the URL path of the current stream. In these cases it can be referenced using the `{{ stream_interval.start_date }}` and `{{ stream_interval.end_date }}` [placeholders](/connector-development/config-based/understanding-the-yaml-file/reference#variables). Check out [the tutorial](./tutorial.mdx#adding-incremental-reads) for such a case.
 :::
 
 ## Incremental sync without time filtering
@@ -162,7 +162,7 @@ Using the "Inject start time / end time into outgoing HTTP request" option in th
 - The value needs to be injected into the URL path
 - Some conditional logic needs to be applied
 
-To handle these cases, disable injection in the incremental sync form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml#L2073). You can also use these variables as part of the URL path.
+To handle these cases, disable injection in the incremental sync form and use the generic parameter section at the bottom of the stream configuration form to freely configure query parameters, headers and properties of the JSON body, by using jinja expressions and [available variables](/connector-development/config-based/understanding-the-yaml-file/reference/#/variables). You can also use these variables as part of the URL path.
 
 For example the [Sendgrid API](https://docs.sendgrid.com/api-reference/e-mail-activity/filter-all-messages) requires setting both start and end time in a `query` parameter.
 For this case, you can use the `stream_interval` variable to configure a query parameter with "key" `query` and "value" `last_event_time BETWEEN TIMESTAMP "{{stream_interval.start_time}}" AND TIMESTAMP "{{stream_interval.end_time}}"` to filter down to the right window in time.

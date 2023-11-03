@@ -4,3 +4,4 @@ connector_image: airbyte/source-mssql-strict-encrypt:dev
 tests:
   spec:
     - spec_path: "src/test/resources/expected_spec.json"
+      config_path: "src/test/resources/config.json"
