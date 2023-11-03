@@ -19,6 +19,8 @@ class StreamReader:
     def read_from_stream(self, stream: AbstractStream) -> None:
         # print(f"reading from stream: {stream.name}")
         try:
+            self._logger.info(f"Marking stream {stream.name} as STARTED")
+            self._logger.info(f"Syncing stream: {stream.name}")
             airbyte_stream = stream.as_airbyte_stream()
             self._message_repository.emit_message(
                 stream_status_as_airbyte_message(airbyte_stream.name, airbyte_stream.namespace, AirbyteStreamStatus.STARTED)
@@ -26,12 +28,13 @@ class StreamReader:
             record_counter = 0
             for record in stream.read():
                 if record_counter == 0:
+                    self._logger.info(f"Marking stream {stream.name} as RUNNING")
                     self._message_repository.emit_message(
                         stream_status_as_airbyte_message(airbyte_stream.name, airbyte_stream.namespace, AirbyteStreamStatus.RUNNING)
                     )
                 record_counter += 1
                 self._queue.put(record)
-            self._queue.put(StreamCompleteSentinel(stream))
             self._logger.info(f"Read {record_counter} records from {stream.name} stream")
+            self._queue.put(StreamCompleteSentinel(stream))
         except Exception as e:
             self._queue.put(e)

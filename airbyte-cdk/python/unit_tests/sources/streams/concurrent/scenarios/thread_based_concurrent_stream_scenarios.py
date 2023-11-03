@@ -210,11 +210,13 @@ test_concurrent_cdk_single_stream_with_primary_key = (
     .set_name("test_concurrent_cdk_single_stream_with_primary_key")
     .set_config({})
     .set_source_builder(
-        ConcurrentSourceBuilder().set_streams(
+        ConcurrentSourceBuilder()
+        .set_streams(
             [
                 _id_only_stream_with_primary_key,
             ]
         )
+        .set_message_repository(InMemoryMessageRepository())
     )
     .set_expected_records(
         [
@@ -247,7 +249,8 @@ test_concurrent_cdk_multiple_streams = (
     .set_name("test_concurrent_cdk_multiple_streams")
     .set_config({})
     .set_source_builder(
-        ConcurrentSourceBuilder().set_streams(
+        ConcurrentSourceBuilder()
+        .set_streams(
             [
                 _id_only_stream,
                 ThreadBasedConcurrentStream(
@@ -256,7 +259,7 @@ test_concurrent_cdk_multiple_streams = (
                             InMemoryPartition(
                                 "partition1",
                                 None,
-                                [Record({"id": "10", "key": "v1"}, "stream1"), Record({"id": "20", "key": "v2"}, "stream1")],
+                                [Record({"id": "10", "key": "v1"}, "stream2"), Record({"id": "20", "key": "v2"}, "stream2")],
                             )
                         ]
                     ),
@@ -279,6 +282,7 @@ test_concurrent_cdk_multiple_streams = (
                 ),
             ]
         )
+        .set_message_repository(InMemoryMessageRepository())
     )
     .set_expected_records(
         [
@@ -361,11 +365,13 @@ test_concurrent_cdk_single_stream_multiple_partitions = (
     .set_name("test_concurrent_cdk_single_stream_multiple_partitions")
     .set_config({})
     .set_source_builder(
-        ConcurrentSourceBuilder().set_streams(
+        ConcurrentSourceBuilder()
+        .set_streams(
             [
                 _id_only_stream_multiple_partitions,
             ]
         )
+        .set_message_repository(InMemoryMessageRepository())
     )
     .set_expected_records(
         [
@@ -399,11 +405,13 @@ test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_two = (
     .set_name("test_concurrent_cdk_single_stream_multiple_partitions_concurrency_level_2")
     .set_config({})
     .set_source_builder(
-        ConcurrentSourceBuilder().set_streams(
+        ConcurrentSourceBuilder()
+        .set_streams(
             [
                 _id_only_stream_multiple_partitions_concurrency_level_two,
             ]
         )
+        .set_message_repository(InMemoryMessageRepository())
     )
     .set_expected_records(
         [

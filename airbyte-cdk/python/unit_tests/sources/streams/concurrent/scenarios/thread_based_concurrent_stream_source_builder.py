@@ -8,6 +8,7 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog, ConnectorSpecification, DestinationSyncMode, SyncMode
 from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
 from airbyte_cdk.sources.message import MessageRepository
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.concurrent.adapters import StreamFacade
@@ -37,10 +38,12 @@ class LegacyStream(Stream):
         yield from []
 
 
-class ConcurrentCdkSource(AbstractSource):
-    def __init__(self, streams: List[ThreadBasedConcurrentStream], message_repository: Optional[MessageRepository]):
+class ConcurrentCdkSource(ConcurrentSource):
+    def __init__(
+        self, streams: List[ThreadBasedConcurrentStream], message_repository: Optional[MessageRepository], max_workers, timeout_in_seconds
+    ):
+        super().__init__(max_workers, timeout_in_seconds, message_repository)
         self._streams = streams
-        self._message_repository = message_repository
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         # Check is not verified because it is up to the source to implement this method
@@ -111,7 +114,7 @@ class ConcurrentSourceBuilder(SourceBuilder[ConcurrentCdkSource]):
         for stream in self._streams:
             if not stream._message_repository:
                 stream._message_repository = self._message_repository
-        return ConcurrentCdkSource(self._streams, self._message_repository)
+        return ConcurrentCdkSource(self._streams, self._message_repository, 1, 1)
 
     def set_streams(self, streams: List[ThreadBasedConcurrentStream]) -> "ConcurrentSourceBuilder":
         self._streams = streams

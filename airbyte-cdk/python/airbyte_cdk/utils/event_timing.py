@@ -12,6 +12,47 @@ from typing import Optional
 logger = logging.getLogger("airbyte")
 
 
+class MultiEventTimer:
+    """Simple nanosecond resolution event timer for debugging, initially intended to be used to record streams execution
+    time for a source.
+    """
+
+    def __init__(self, name):
+        self.name = name
+        self.events = {}
+        self.count = 0
+
+    def start_event(self, key, name):
+        """
+        Start a new event and push it to the stack.
+        """
+        self.events[key] = Event(name=name)
+        self.count += 1
+
+    def finish_event(self, key):
+        """
+        Finish the current event and pop it from the stack.
+        """
+
+        event = self.events.get(key)
+        if event:
+            event.finish()
+        else:
+            logger.warning(f"{self.name} finish_event called without start_event")
+
+    def report(self, order_by="name"):
+        """
+        :param order_by: 'name' or 'duration'
+        """
+        if order_by == "name":
+            events = sorted(self.events.values(), key=lambda event: event.name)
+        elif order_by == "duration":
+            events = sorted(self.events.values(), key=lambda event: event.duration)
+        text = f"{self.name} runtimes:\n"
+        text += "\n".join(str(event) for event in events)
+        return text
+
+
 class EventTimer:
     """Simple nanosecond resolution event timer for debugging, initially intended to be used to record streams execution
     time for a source.

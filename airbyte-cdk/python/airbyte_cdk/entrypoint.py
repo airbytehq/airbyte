@@ -117,7 +117,10 @@ class AirbyteEntrypoint(object):
                     else:
                         raise Exception("Unexpected command " + cmd)
         finally:
-            yield from [self.airbyte_message_to_string(queued_message) for queued_message in self._emit_queued_messages(self.source)]
+            for queued_message in self._emit_queued_messages(self.source):
+                print("unexpected queued message")
+                yield self.airbyte_message_to_string(queued_message)
+            # yield from [self.airbyte_message_to_string(queued_message) for queued_message in self._emit_queued_messages(self.source)]
 
     def check(self, source_spec: ConnectorSpecification, config: TConfig) -> Iterable[AirbyteMessage]:
         self.set_up_secret_filter(config, source_spec.connectionSpecification)
