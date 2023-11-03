@@ -89,6 +89,7 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
     """
     async with semaphore:
         async with context:
+
             async with asyncer.create_task_group() as task_group:
                 tasks = [
                     task_group.soonify(run_all_tests)(context),

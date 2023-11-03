@@ -5,7 +5,8 @@
 """This module groups steps made to run tests for a specific Python connector given a test context."""
 
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, List, Tuple
+from dataclasses import dataclass
+from typing import Callable, Dict, Iterable, List, Tuple, Union
 
 import asyncer
 import pipelines.dagger.actions.python.common
@@ -16,6 +17,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
 from pipelines.consts import LOCAL_BUILD_PLATFORM, PYPROJECT_TOML_FILE_PATH
 from pipelines.dagger.actions import secrets
+from pipelines.helpers.steps import Runnable
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
@@ -179,9 +181,6 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
     connector_container = build_connector_image_results.output_artifact[LOCAL_BUILD_PLATFORM]
 
-    # Question: Do we even need this?
-    context.connector_secrets = await secrets.get_connector_secrets(context)
-
     unit_test_results = await UnitTests(context).run(connector_container)
 
     if unit_test_results.status is StepStatus.FAILURE:
@@ -196,26 +195,26 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
 
     return step_results + [task.value for task in tasks]
 
-@dataclass
-def WrappedStep():
-    id: str
-    step: Step
-    depends_on: List[str] = field(default_factory=list)
-
-
-def construct_steps(context: ConnectorContext) -> List[Step]:
-    """Construct the steps to run for a connector test pipeline.
-
-    Args:
-        context (ConnectorContext): The current connector context.
-
-    Returns:
-        List[Step]: The steps to run for a connector test pipeline.
-    """
-    steps = [
-        WrappedStep(id="build_image", step=lambda ctx: BuildConnectorImages(context, LOCAL_BUILD_PLATFORM).run()),
-
-
+def get_test_steps(context: ConnectorContext) -> List[Runnable]:
+    return [
+        Runnable(id="build", step=BuildConnectorImages(context, LOCAL_BUILD_PLATFORM)),
+        Runnable(
+            id="unit",
+            step=UnitTests(context),
+            args=lambda results: {"connector_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
+        ),
+        [
+            Runnable(
+                id="integration",
+                step=IntegrationTests(context),
+                args=lambda results: {"connector_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
+            ),
+            Runnable(
+                id="acceptance",
+                step=AcceptanceTests(context, context.concurrent_cat),
+                args=lambda results: {"connector_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]}
+            ),
+            Runnable(id="check_base_image", step=CheckBaseImageIsUsed(context)),
+        ],
     ]
-    return steps
 

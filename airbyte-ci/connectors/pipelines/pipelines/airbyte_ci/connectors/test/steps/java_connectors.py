@@ -21,6 +21,7 @@ from pipelines.airbyte_ci.steps.gradle import GradleTask
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.system import docker
+from pipelines.helpers.steps import Runnable
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import StepResult, StepStatus
 
@@ -64,6 +65,8 @@ class UnitTests(GradleTask):
     gradle_task_name = "test"
     bind_to_docker_host = True
 
+def get_test_steps(context: ConnectorContext) -> List[Runnable]:
+    pass
 
 async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     """Run all tests for a Java connectors.
@@ -79,7 +82,6 @@ async def run_all_tests(context: ConnectorContext) -> List[StepResult]:
     Returns:
         List[StepResult]: The results of all the tests steps.
     """
-    context.connector_secrets = await secrets.get_connector_secrets(context)
     step_results = []
 
     build_distribution_tar_result = await BuildConnectorDistributionTar(context).run()

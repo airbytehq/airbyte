@@ -9,6 +9,8 @@ from types import TracebackType
 from typing import Optional
 
 import yaml
+import functools
+
 from anyio import Path
 from asyncer import asyncify
 from dagger import Directory, Secret
@@ -199,6 +201,12 @@ class ConnectorContext(PipelineContext):
         if self.docker_hub_password is None:
             return None
         return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
+
+
+
+    @functools.cache
+    async def connector_secrets(self):
+        return await secrets.get_connector_secrets(self)
 
     async def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.

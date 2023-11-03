@@ -5,14 +5,68 @@
 """The actions package is made to declare reusable pipeline components."""
 
 from __future__ import annotations
+from dataclasses import dataclass, field
 
-from typing import TYPE_CHECKING, List, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Tuple, Union
 
 import asyncer
 from pipelines.models.steps import Step, StepStatus
 
 if TYPE_CHECKING:
     from pipelines.models.steps import StepResult
+
+@dataclass
+class Runnable:
+    id: str
+    step: Step
+    # Dict or a function that takes a list of step results and returns a dict
+    args: Union[Dict, Callable[[Dict[str, StepResult]], Dict]] = field(default_factory=dict)
+
+def evaluate_run_args(args: Union[Dict, Callable[[Dict[str, StepResult]], Dict]], results: Dict[str, StepResult]) -> Dict:
+    if callable(args):
+        return args(results)
+    return args
+
+async def new_run_steps(
+    runnables: List[Runnable], results: Dict[str, StepResult] = {}
+) -> Dict[str, StepResult]:
+    """Run multiple steps sequentially, or in parallel if steps are wrapped into a sublist.
+
+    Args:
+        runnables (List[Runnable]): List of steps to run.
+        results (Dict[str, StepResult], optional): Dictionary of step results, used for recursion.
+
+    Returns:
+        Dict[str, StepResult]: Dictionary of step results.
+    """
+    # If there are no steps to run, return the results
+    if not runnables:
+        return results
+
+    # If any of the previous steps failed, skip the remaining steps
+    if any(result.status is StepStatus.FAILURE for result in results.values()):
+        skipped_results = {}
+        for runnable_step in runnables:
+            skipped_results[runnable_step.id] = runnable_step.step.skip()
+        return {**results, **skipped_results}
+
+    # Pop the next step to run
+    steps_to_run, remaining_steps = runnables[0], runnables[1:]
+
+    # wrap the step in a list if it is not already (allows for parallel steps)
+    if not isinstance(steps_to_run, list):
+        steps_to_run = [steps_to_run]
+
+    async with asyncer.create_task_group() as task_group:
+        tasks = []
+        for step_to_run in steps_to_run:
+            args = evaluate_run_args(step_to_run.args, results)
+            tasks.append(task_group.soonify(step_to_run.step.run)(*args))
+
+    new_results = {steps_to_run[i].id: task.value for i, task in enumerate(tasks)}
+
+    return await new_run_steps(remaining_steps, {**results, **new_results})
+
 
 
 async def run_steps(

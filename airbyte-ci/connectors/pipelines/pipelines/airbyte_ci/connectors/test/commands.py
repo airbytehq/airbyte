@@ -8,10 +8,12 @@ import asyncclick as click
 from pipelines import main_logger
 from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.pipeline import run_connectors_pipelines
+from pipelines.airbyte_ci.connectors.test.new_pipeline import new_run_connector_test_pipeline
 from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pipeline
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import ContextState
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
+from pipelines.helpers.steps import run_steps
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 
@@ -103,21 +105,10 @@ async def test(
         for connector in ctx.obj["selected_connectors_with_modified_files"]
     ]
 
-    """
-    contexts = [to_context(connector) for connector in ctx.obj["selected_connectors_with_modified_files"]]
-    contexts_with_steps = [context, compute_connector_test_steps(context) for context in contexts]
-    for context, steps in contexts_with_steps:
-        steps_results = await run_steps(steps)
-        context.report = Report(
-            pipeline_context=context,
-            steps_results=steps_results,
-            name="Connector test RESULTS"
-        )
-    """
     try:
         await run_connectors_pipelines(
             [connector_context for connector_context in connectors_tests_contexts],
-            run_connector_test_pipeline,
+            new_run_connector_test_pipeline,
             "Test Pipeline",
             ctx.obj["concurrency"],
             ctx.obj["dagger_logs_path"],
