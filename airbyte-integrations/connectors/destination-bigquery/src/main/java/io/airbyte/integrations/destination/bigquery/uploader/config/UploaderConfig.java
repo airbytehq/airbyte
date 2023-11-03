@@ -4,11 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery.uploader.config;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
-import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
-import io.airbyte.integrations.destination.bigquery.UploadingMethod;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
@@ -38,7 +35,7 @@ public class UploaderConfig {
   private boolean gcsUploadingMode;
   private Integer bigQueryClientChunkSize;
 
-  //TODO: Verify usages and remove, this code path is exercised only in Standard mode
+  // TODO: Verify usages and remove, this code path is exercised only in Standard mode
   public UploaderType getUploaderType() {
     return (isGcsUploadingMode() ? UploaderType.CSV : UploaderType.STANDARD);
   }

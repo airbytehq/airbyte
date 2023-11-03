@@ -242,7 +242,7 @@ public class BigQueryUtils {
     if (config.has(BigQueryConsts.CONFIG_CREDS)) {
       final JsonNode json = config.get(BigQueryConsts.CONFIG_CREDS);
       if (json.isObject()) {
-        ((ObjectNode)config).put(BigQueryConsts.CONFIG_CREDS, Jsons.serialize(json));
+        ((ObjectNode) config).put(BigQueryConsts.CONFIG_CREDS, Jsons.serialize(json));
       }
     }
     DestinationBigqueryConnectionSpecification spec = Jsons.convertValue(config, DestinationBigqueryConnectionSpecification.class);

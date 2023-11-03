@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,6 +47,7 @@ public class BigQueryExecutionConfig {
   }
 
   public static class BigQueryExecutionConfigBuilder {
+
     private static final String GCS_STAGING = "GCS Staging";
     private static final String S3_FORMAT_TYPE_KEY = "format_type";
     private static final String S3_FORMAT_TYPE_VALUE = "CSV";
@@ -78,11 +83,13 @@ public class BigQueryExecutionConfig {
         }
         // Lot of assumptions of the type of JsonNode.
         final JsonNode credentialConfig = gcsProperties.get(BigQueryConsts.CREDENTIAL);
-        // TODO: Move this logic to GcsCredentialConfigs, right now it expects a key credential inside JsonNode.
+        // TODO: Move this logic to GcsCredentialConfigs, right now it expects a key credential inside
+        // JsonNode.
         if (!credentialConfig.isObject()) {
           throw new RuntimeException("Unexpected credential: " + Jsons.serialize(credentialConfig));
         }
-        final GcsCredentialType credentialType = GcsCredentialType.valueOf(credentialConfig.get(BigQueryConsts.CREDENTIAL_TYPE).asText().toUpperCase());
+        final GcsCredentialType credentialType =
+            GcsCredentialType.valueOf(credentialConfig.get(BigQueryConsts.CREDENTIAL_TYPE).asText().toUpperCase());
 
         if (credentialType != GcsCredentialType.HMAC_KEY) {
           throw new RuntimeException("Unexpected credential: " + Jsons.serialize(credentialConfig));
@@ -92,8 +99,7 @@ public class BigQueryExecutionConfig {
             Jsons.jsonNode(ImmutableMap.builder().put(BigQueryConsts.FORMAT, ImmutableMap.builder()
                 .put(S3_FORMAT_TYPE_KEY, S3_FORMAT_TYPE_VALUE)
                 .put(S3_FLATTENING_KEY, S3_FLATTENING_VALUE)
-                .build()
-            ).build()));
+                .build()).build()));
         final GcsCredentialConfig gcsCredentialConfig = new GcsHmacKeyCredentialConfig(credentialConfig);
 
         destinationConfig = Optional.of(new GcsDestinationConfig(gcsBucketName, gcsBucketPath, gcsBucketRegion, gcsCredentialConfig, s3FormatConfig));
@@ -105,4 +111,5 @@ public class BigQueryExecutionConfig {
     }
 
   }
+
 }

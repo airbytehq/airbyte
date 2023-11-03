@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -39,7 +43,7 @@ public class BigQueryExecutionConfigTest {
       assertEquals("test_path", config.getDestinationConfig().get().getBucketPath());
       assertEquals("us-west1", config.getDestinationConfig().get().getBucketRegion());
       assertTrue(config.getDestinationConfig().get().getGcsCredentialConfig() instanceof GcsHmacKeyCredentialConfig);
-      GcsHmacKeyCredentialConfig credentialConfig = ((GcsHmacKeyCredentialConfig)config.getDestinationConfig().get().getGcsCredentialConfig());
+      GcsHmacKeyCredentialConfig credentialConfig = ((GcsHmacKeyCredentialConfig) config.getDestinationConfig().get().getGcsCredentialConfig());
       assertEquals("GOOGDEADBEEF11110000", credentialConfig.getHmacKeyAccessId());
       assertEquals("Garbagev012asdfas", credentialConfig.getHmacKeySecret());
       assertEquals("HMAC_KEY", credentialConfig.getCredentialType().name());
@@ -58,9 +62,9 @@ public class BigQueryExecutionConfigTest {
       System.out.println(config);
     };
     return Stream.of(Arguments.arguments("connection-spec/gcs.json", gcsConfigVerifier),
-                     Arguments.arguments("connection-spec/standard.json", standardConfigVerifier),
-                     Arguments.arguments("connection-spec/standard-missing-required.json", requiredMissingVerified),
-                     Arguments.arguments("connection-spec/gcs-credentials-object.json", credsOldStyleConfig));
+        Arguments.arguments("connection-spec/standard.json", standardConfigVerifier),
+        Arguments.arguments("connection-spec/standard-missing-required.json", requiredMissingVerified),
+        Arguments.arguments("connection-spec/gcs-credentials-object.json", credsOldStyleConfig));
   }
 
   public static void verifyAllFields(BigQueryExecutionConfig config) {

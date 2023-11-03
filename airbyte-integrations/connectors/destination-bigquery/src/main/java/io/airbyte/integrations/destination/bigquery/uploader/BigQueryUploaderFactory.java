@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery.uploader;
 import static software.amazon.awssdk.http.HttpStatusCode.FORBIDDEN;
 import static software.amazon.awssdk.http.HttpStatusCode.NOT_FOUND;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.FormatOptions;

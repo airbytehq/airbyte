@@ -183,8 +183,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final GoogleCredentials credentials;
       if (credentialsJson == null || credentialsJson.isEmpty()) {
         credentials = GoogleCredentials.getApplicationDefault();
-      }
-      else {
+      } else {
         credentials = GoogleCredentials.fromStream(new ByteArrayInputStream(credentialsJson.getBytes(Charsets.UTF_8)));
       }
       return bigQueryBuilder
@@ -197,6 +196,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       throw new RuntimeException(e);
     }
   }
+
   public static BigQuery getBigQuery(final JsonNode config) {
     final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
@@ -282,7 +282,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
 
     final StandardNameTransformer gcsNameTransformer = new GcsNameTransformer();
-    //noinspection UploadingMethod.STANDARD shortcircuits this.
+    // noinspection UploadingMethod.STANDARD shortcircuits this.
     final GcsDestinationConfig gcsConfig = executionConfig.getDestinationConfig().get();
     final UUID stagingId = UUID.randomUUID();
     final DateTime syncDatetime = DateTime.now(DateTimeZone.UTC);
