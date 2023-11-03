@@ -86,7 +86,7 @@ class BigQueryAsyncFlush implements DestinationFlushFunction {
   public long getOptimalBatchSizeBytes() {
     // Chosen arbitrarily (mostly to match legacy behavior). We have no reason to believe a larger
     // number would be worse.
-    // This was previously set to 25B, which ran into rate-limiting issues:
+    // This was previously set to 25MB, which ran into rate-limiting issues:
     // https://cloud.google.com/bigquery/quotas#standard_tables
     // > Your project can make up to 1,500 table modifications per table per day
     return 200 * 1024 * 1024;
