@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 from dataclasses import dataclass, field
+import inspect
 from pipelines import main_logger
 
 from typing import TYPE_CHECKING, Callable, Dict, List, Tuple, Union
@@ -36,7 +37,7 @@ class StepToRun:
     depends_on: List[str] = field(default_factory=list)
 
 async def evaluate_run_args(args: ARGS_TYPE, results: Dict[str, StepResult]) -> Dict:
-    if asyncer.is_coroutine(args):
+    if inspect.iscoroutinefunction(args):
         return await args(results)
     elif callable(args):
         return args(results)

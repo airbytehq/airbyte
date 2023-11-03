@@ -20,7 +20,7 @@ from pipelines.dagger.actions import secrets
 from pipelines.helpers.connectors.modifed import ConnectorWithModifiedFiles
 from pipelines.helpers.github import update_commit_status_check
 from pipelines.helpers.slack import send_message_to_webhook
-from pipelines.helpers.steps import RunStepOptions
+from pipelines.helpers.run_steps import RunStepOptions
 from pipelines.helpers.utils import METADATA_FILE_NAME
 from pipelines.models.contexts import PipelineContext
 

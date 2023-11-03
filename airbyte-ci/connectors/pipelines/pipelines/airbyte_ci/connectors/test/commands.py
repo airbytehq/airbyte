@@ -12,7 +12,7 @@ from pipelines.airbyte_ci.connectors.test.pipeline import run_connector_test_pip
 from pipelines.cli.dagger_pipeline_command import DaggerPipelineCommand
 from pipelines.consts import ContextState
 from pipelines.helpers.github import update_global_commit_status_check_for_tests
-from pipelines.helpers.steps import RunStepOptions
+from pipelines.helpers.run_steps import RunStepOptions
 from pipelines.helpers.utils import fail_if_missing_docker_hub_creds
 
 

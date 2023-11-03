@@ -21,7 +21,7 @@ from pipelines.airbyte_ci.steps.gradle import GradleTask
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.system import docker
-from pipelines.helpers.steps import StepToRun
+from pipelines.helpers.run_steps import StepToRun
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import StepResult, StepStatus
 

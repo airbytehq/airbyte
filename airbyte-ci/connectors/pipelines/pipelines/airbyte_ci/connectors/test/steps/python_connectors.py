@@ -17,7 +17,7 @@ from pipelines.airbyte_ci.connectors.context import ConnectorContext
 from pipelines.airbyte_ci.connectors.test.steps.common import AcceptanceTests, CheckBaseImageIsUsed
 from pipelines.consts import LOCAL_BUILD_PLATFORM, PYPROJECT_TOML_FILE_PATH
 from pipelines.dagger.actions import secrets
-from pipelines.helpers.steps import StepToRun
+from pipelines.helpers.run_steps import StepToRun
 from pipelines.models.steps import Step, StepResult, StepStatus
 
 
