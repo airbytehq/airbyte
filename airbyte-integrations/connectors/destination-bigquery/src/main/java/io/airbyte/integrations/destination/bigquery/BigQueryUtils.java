@@ -236,6 +236,19 @@ public class BigQueryUtils {
     }
   }
 
+  public static BigQueryExecutionConfig createExecutionConfig(final JsonNode config) {
+    // Adapt any older formats to newer formats for backward compatibility.
+    // This existed before in isUsingJsonCredentials method
+    if (config.has(BigQueryConsts.CONFIG_CREDS)) {
+      final JsonNode json = config.get(BigQueryConsts.CONFIG_CREDS);
+      if (json.isObject()) {
+        ((ObjectNode) config).put(BigQueryConsts.CONFIG_CREDS, Jsons.serialize(json));
+      }
+    }
+    DestinationBigqueryConnectionConfig spec = Jsons.convertValue(config, DestinationBigqueryConnectionConfig.class);
+    return BigQueryExecutionConfig.builder().connectionConfig(spec).build();
+  }
+
   public static JsonNode getGcsJsonNodeConfig(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final JsonNode gcsJsonNode = Jsons.jsonNode(ImmutableMap.builder()
@@ -306,14 +319,6 @@ public class BigQueryUtils {
     } else {
       return "US";
     }
-  }
-
-  public static boolean getDisableTypeDedupFlag(final JsonNode config) {
-    if (config.has(BigQueryConsts.DISABLE_TYPE_DEDUPE)) {
-      return config.get(BigQueryConsts.DISABLE_TYPE_DEDUPE).asBoolean(false);
-    }
-
-    return false;
   }
 
   static TableDefinition getTableDefinition(final BigQuery bigquery, final String datasetName, final String tableName) {
@@ -428,19 +433,6 @@ public class BigQueryUtils {
     } else {
       LOGGER.info("Selected loading method is set to: " + UploadingMethod.STANDARD);
       return UploadingMethod.STANDARD;
-    }
-  }
-
-  public static boolean isKeepFilesInGcs(final JsonNode config) {
-    final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
-    if (loadingMethod != null && loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES) != null
-        && BigQueryConsts.KEEP_GCS_FILES_VAL
-            .equals(loadingMethod.get(BigQueryConsts.KEEP_GCS_FILES).asText())) {
-      LOGGER.info("All tmp files GCS will be kept in bucket when replication is finished");
-      return true;
-    } else {
-      LOGGER.info("All tmp files will be removed from GCS when replication is finished");
-      return false;
     }
   }
 
