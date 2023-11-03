@@ -24,7 +24,7 @@ class Config(AbstractFileBasedSpec):
         title="AWS Access Key ID",
         default=None,
         description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
-                    "permissions. If accessing publicly available data, this field is not necessary.",
+        "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
         order=2,
     )
@@ -33,7 +33,7 @@ class Config(AbstractFileBasedSpec):
         title="AWS Secret Access Key",
         default=None,
         description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
-                    "permissions. If accessing publicly available data, this field is not necessary.",
+        "permissions. If accessing publicly available data, this field is not necessary.",
         airbyte_secret=True,
         order=3,
     )
@@ -42,10 +42,10 @@ class Config(AbstractFileBasedSpec):
         default="",
         title="Endpoint",
         description="Endpoint to an S3 compatible service. Leave empty to use AWS. "
-                    "The custom endpoint must be secure, but the 'https' prefix is not required.",
+        "The custom endpoint must be secure, but the 'https' prefix is not required.",
         examples=["my-s3-endpoint.com", "https://my-s3-endpoint.com"],
         pattern="^(?!http://).*$",
-        order=4
+        order=4,
     )
 
     @root_validator
