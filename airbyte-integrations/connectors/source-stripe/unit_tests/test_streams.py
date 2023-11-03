@@ -68,7 +68,7 @@ lazy_substream_test_suite = (
             {"id": "il_3", "invoice_id": "in_1KD6OVIEn5WyEQxn9xuASHsD", "object": "line_item"},
         ],
         "full_refresh",
-        {}
+        {},
     ),
     (
         {
@@ -123,7 +123,7 @@ lazy_substream_test_suite = (
             {"id": "si_3", "object": "subscription_item"},
         ],
         "full_refresh",
-        {}
+        {},
     ),
     (
         {
@@ -180,7 +180,7 @@ lazy_substream_test_suite = (
             {"id": "cs_4", "object": "bank_account", "updated": 1692802815},
         ],
         "full_refresh",
-        {}
+        {},
     ),
     (
         {
@@ -235,7 +235,7 @@ lazy_substream_test_suite = (
             {"id": "fr_3", "object": "application_fee_refund", "refund_id": "af_OptSP2o3XZUBpx", "updated": 1692802815},
         ],
         "full_refresh",
-        {}
+        {},
     ),
     (
         {
@@ -247,7 +247,9 @@ lazy_substream_test_suite = (
                         "object": "event",
                         "api_version": "2020-08-27",
                         "created": 1692802016,
-                        "data": {"object": {"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}},
+                        "data": {
+                            "object": {"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}
+                        },
                         "type": "customer.source.created",
                     },
                     {
@@ -257,18 +259,16 @@ lazy_substream_test_suite = (
                         "created": 1692802017,
                         "data": {"object": {"object": "card", "card": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716}},
                         "type": "customer.source.updated",
-                    }
+                    },
                 ],
                 "has_more": False,
             }
         },
         "customers",
         "bank_accounts",
-        [
-            {"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1692802016}
-        ],
+        [{"object": "bank_account", "bank_account": "cs_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1692802016}],
         "incremental",
-        {"updated": 1692802015}
+        {"updated": 1692802015},
     ),
     (
         {
@@ -283,7 +283,7 @@ lazy_substream_test_suite = (
                             "object": {
                                 "object": "application_fee_refund",
                                 "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
-                                "created": 1653341716
+                                "created": 1653341716,
                             }
                         },
                         "type": "application_fee.refund.updated",
@@ -297,11 +297,11 @@ lazy_substream_test_suite = (
                             "object": {
                                 "object": "application_fee_refund",
                                 "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
-                                "created": 1653341716
+                                "created": 1653341716,
                             }
                         },
                         "type": "application_fee.refund.updated",
-                    }
+                    },
                 ],
                 "has_more": False,
             }
@@ -309,11 +309,21 @@ lazy_substream_test_suite = (
         "application_fees",
         "application_fees_refunds",
         [
-            {"object": "application_fee_refund", "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1692802016},
-            {"object": "application_fee_refund", "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT", "created": 1653341716, "updated": 1692802017}
+            {
+                "object": "application_fee_refund",
+                "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
+                "created": 1653341716,
+                "updated": 1692802016,
+            },
+            {
+                "object": "application_fee_refund",
+                "application_fee_refund": "afr_1K9GK0EcXtiJtvvhSo2LvGqT",
+                "created": 1653341716,
+                "updated": 1692802017,
+            },
         ],
         "incremental",
-        {"updated": 1692802015}
+        {"updated": 1692802015},
     ),
 )
 

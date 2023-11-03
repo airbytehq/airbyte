@@ -187,6 +187,7 @@ def subscription_fixture(stream_args):
             ],
             **args,
         )
+
     return mocker
 
 
@@ -219,6 +220,7 @@ def application_fees_fixture(stream_args):
             event_types=["application_fee.created", "application_fee.refunded"],
             **args,
         )
+
     return mocker
 
 
@@ -237,4 +239,5 @@ def application_fees_refunds_fixture(application_fees, stream_args):
             add_parent_id=True,
             **args,
         )
+
     return mocker
