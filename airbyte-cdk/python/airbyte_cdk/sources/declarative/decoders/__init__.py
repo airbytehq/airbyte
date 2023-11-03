@@ -5,4 +5,4 @@
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.decoders.json_decoder import JsonDecoder
 
-__all__ = ["Decoder", "JsonDecoder", "DECODED_RESPONSE_TYPE"]
+__all__ = ["Decoder", "JsonDecoder"]
