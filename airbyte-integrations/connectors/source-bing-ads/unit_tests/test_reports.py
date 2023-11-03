@@ -11,6 +11,7 @@ from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord,
 from source_bing_ads.reports import PerformanceReportsMixin, ReportsMixin
 from source_bing_ads.source import SourceBingAds
 from source_bing_ads.streams import (
+    BingAdsReportingServiceStream,
     GeographicPerformanceReportDaily,
     GeographicPerformanceReportHourly,
     GeographicPerformanceReportMonthly,
@@ -22,7 +23,7 @@ class TestClient:
     pass
 
 
-class TestReport(ReportsMixin, SourceBingAds):
+class TestReport(ReportsMixin, BingAdsReportingServiceStream, SourceBingAds):
     date_format, report_columns, report_name, cursor_field = "YYYY-MM-DD", None, None, "Time"
     report_aggregation = "Monthly"
     report_schema_name = "campaign_performance_report"
@@ -31,7 +32,7 @@ class TestReport(ReportsMixin, SourceBingAds):
         self.client = TestClient()
 
 
-class TestPerformanceReport(PerformanceReportsMixin, SourceBingAds):
+class TestPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream, SourceBingAds):
     date_format, report_columns, report_name, cursor_field = "YYYY-MM-DD", None, None, "Time"
     report_aggregation = "Monthly"
     report_schema_name = "campaign_performance_report"
