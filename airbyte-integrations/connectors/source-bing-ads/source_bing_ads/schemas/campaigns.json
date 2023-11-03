@@ -3,10 +3,10 @@
   "type": "object",
   "properties": {
     "AccountId": {
-      "type" : ["null", "integer"]
+      "type": ["null", "integer"]
     },
     "CustomerId": {
-      "type" : ["null", "integer"]
+      "type": ["null", "integer"]
     },
     "AudienceAdsBidAdjustment": {
       "type": ["null", "number"]

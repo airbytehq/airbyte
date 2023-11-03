@@ -3,13 +3,13 @@
   "type": "object",
   "properties": {
     "AdGroupId": {
-      "type" : ["null", "integer"]
+      "type": ["null", "integer"]
     },
     "AccountId": {
-      "type" : ["null", "integer"]
+      "type": ["null", "integer"]
     },
     "CustomerId": {
-      "type" : ["null", "integer"]
+      "type": ["null", "integer"]
     },
     "AdFormatPreference": {
       "type": ["null", "string"]
