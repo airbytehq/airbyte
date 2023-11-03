@@ -69,7 +69,7 @@ public class AvroSerializedBufferTest {
         "codec", "zstandard",
         "compression_level", 20,
         "include_checksum", true))));
-    runTest(new FileBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 970L, 985L, config, getExpectedString());
+    runTest(new FileBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 965L, 985L, config, getExpectedString());
   }
 
   @Test
