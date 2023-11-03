@@ -44,14 +44,9 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   @VisibleForTesting
   static final Set<String> STRINGS_TO_DEINTERPOLATE = new HashSet<>();
   static {
-    // Add some common strings to deinterpolate, regardless of what the connector is doing
-    STRINGS_TO_DEINTERPOLATE.add("description");
-    STRINGS_TO_DEINTERPOLATE.add("id");
-    STRINGS_TO_DEINTERPOLATE.add("location");
-    STRINGS_TO_DEINTERPOLATE.add("name");
-    STRINGS_TO_DEINTERPOLATE.add("status");
-    STRINGS_TO_DEINTERPOLATE.add("type");
+    addCommonStringsToDeinterpolate();
   }
+
   @VisibleForTesting
   static final Set<Class<? extends Throwable>> THROWABLES_TO_DEINTERPOLATE = new HashSet<>();
 
@@ -139,6 +134,17 @@ public class AirbyteExceptionHandler implements Thread.UncaughtExceptionHandler 
   // properly
   protected void terminate() {
     System.exit(1);
+  }
+
+  @VisibleForTesting
+  static void addCommonStringsToDeinterpolate() {
+    // Add some common strings to deinterpolate, regardless of what the connector is doing
+    STRINGS_TO_DEINTERPOLATE.add("description");
+    STRINGS_TO_DEINTERPOLATE.add("id");
+    STRINGS_TO_DEINTERPOLATE.add("location");
+    STRINGS_TO_DEINTERPOLATE.add("name");
+    STRINGS_TO_DEINTERPOLATE.add("status");
+    STRINGS_TO_DEINTERPOLATE.add("type");
   }
 
 }

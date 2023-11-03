@@ -172,7 +172,10 @@ public class AirbyteExceptionHandlerTest {
   @AfterEach
   public void teardown() {
     System.setOut(originalOut);
+
     AirbyteExceptionHandler.STRINGS_TO_DEINTERPOLATE.clear();
+    AirbyteExceptionHandler.addCommonStringsToDeinterpolate();
+
     AirbyteExceptionHandler.THROWABLES_TO_DEINTERPOLATE.clear();
   }
 
