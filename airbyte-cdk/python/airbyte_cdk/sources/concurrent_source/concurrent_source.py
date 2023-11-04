@@ -55,7 +55,7 @@ class ConcurrentSource(AbstractSource, ABC):
         # TODO assert all streams exist in the connector
         # get the streams once in case the connector needs to make any queries to generate them
         stream_instances: Mapping[str, AbstractStream] = {s.name: s for s in self._streams_as_abstract_streams(config)}
-        max_number_of_partition_generator_in_progress = 1
+        max_number_of_partition_generator_in_progress = max(1, self._max_workers // 2)
         self._stream_to_instance_map = stream_instances
 
         stream_instances_to_read_from = []
