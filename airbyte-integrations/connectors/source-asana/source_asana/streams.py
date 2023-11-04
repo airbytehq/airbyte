@@ -194,6 +194,28 @@ class CustomFields(WorkspaceRelatedStream):
         return f"workspaces/{workspace_gid}/custom_fields"
 
 
+class PortfoliosCompact(WorkspaceRequestParamsRelatedStream):
+    def path(self, **kwargs) -> str:
+        return "portfolios"
+
+
+class Portfolios(AsanaStream):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        portfolio_gid = stream_slice["portfolio_gid"]
+        return f"portfolios/{portfolio_gid}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        yield from self.read_slices_from_records(stream_class=PortfoliosCompact, slice_field="portfolio_gid")
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        response_json = response.json()
+        section_data = response_json.get("data", {})
+        if isinstance(section_data, dict):  # Check if section_data is a dictionary
+            yield section_data
+        elif isinstance(section_data, list):  # Check if section_data is a list
+            yield from section_data
+
+
 class Events(AsanaStream):
     primary_key = "created_at"
     sync_token = None
