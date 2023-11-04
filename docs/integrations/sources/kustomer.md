@@ -6,7 +6,7 @@ The Kustomer source supports both Full Refresh and Incremental syncs. You can ch
 
 This source can sync data for the [Kustomer API](https://developer.kustomer.com/kustomer-api-docs).
 
-This Source Connector is based on a [Singer tap](https://github.com/singer-io/tap-kustomer).
+This Source Connector is based on airbyte low-code
 
 ### Output schema
 
@@ -40,8 +40,9 @@ Kustomer has some [rate limit restrictions](https://developer.kustomer.com/kusto
 
 ## Changelog
 
-| Version | Date       | Pull Request                                           | Subject                                                                           |
-| :------ | :--------- | :----------------------------------------------------- | :-------------------------------------------------------------------------------- |
-| 0.1.2   | 2021-12-25 | [8578](https://github.com/airbytehq/airbyte/pull/8578) | Update fields in source-connectors specifications                                 |
-| 0.1.1   | 2021-12-22 | [8738](https://github.com/airbytehq/airbyte/pull/8738) | Deleted `user-agent`, `date_window_size`, `page_size_limit` from `spec.json` file |
-| 0.1.0   | 2021-07-22 | [4550](https://github.com/airbytehq/airbyte/pull/4550) | Add Kustomer Source Connector                                                     |
+| Version | Date       | Pull Request                                              | Subject                                                                           |
+| :------ | :--------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------- |
+| 0.2.0   | 2023-10-10 | [00000](https://github.com/airbytehq/airbyte/pull/00000)  | Migrate connector to low code                                                     |
+| 0.1.2   | 2021-12-25 | [8578](https://github.com/airbytehq/airbyte/pull/8578)    | Update fields in source-connectors specifications                                 |
+| 0.1.1   | 2021-12-22 | [8738](https://github.com/airbytehq/airbyte/pull/8738)    | Deleted `user-agent`, `date_window_size`, `page_size_limit` from `spec.json` file |
+| 0.1.0   | 2021-07-22 | [4550](https://github.com/airbytehq/airbyte/pull/4550)    | Add Kustomer Source Connector                                                     |

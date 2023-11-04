@@ -1,0 +1,65 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-12-26T18:35:41.583Z" },
+      "stream_descriptor": { "name": "conversations" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-12-26T18:35:41.583Z" },
+      "stream_descriptor": { "name": "customers" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-12-26T18:35:41.583Z" },
+      "stream_descriptor": { "name": "kobjects" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-12-26T18:35:41.583Z" },
+      "stream_descriptor": { "name": "messages" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-12-26T18:35:41.583Z" },
+      "stream_descriptor": { "name": "notes" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-12-26T18:35:41.583Z" },
+      "stream_descriptor": { "name": "shortcuts" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-12-26T18:35:41.583Z" },
+      "stream_descriptor": { "name": "tags" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-12-26T18:35:41.583Z" },
+      "stream_descriptor": { "name": "teams" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": "2050-12-26T18:35:41.583Z" },
+      "stream_descriptor": { "name": "users" }
+    }
+  }
+]

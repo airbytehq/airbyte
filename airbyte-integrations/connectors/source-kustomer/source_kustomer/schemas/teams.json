@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "created_at": { "format": "date-time", "type": ["null", "string"] },
+    "created_by": {
+      "properties": {
+        "id": { "type": ["null", "string"] },
+        "type": { "type": ["null", "string"] }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": false
+    },
+    "deleted": { "type": ["null", "boolean"] },
+    "deleted_at": { "type": ["null", "string"] },
+    "deleted_by": {
+      "properties": {
+        "id": { "type": ["null", "string"] },
+        "type": { "type": ["null", "string"] }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": false
+    },
+    "display_name": { "type": ["null", "string"] },
+    "icon": { "type": ["null", "string"] },
+    "id": { "type": ["null", "string"] },
+    "links": {
+      "properties": { "self": { "type": ["null", "string"] } },
+      "type": ["null", "object"],
+      "additionalProperties": false
+    },
+    "members": {
+      "anyOf": [
+        { "items": { "type": ["null", "string"] }, "type": "array" },
+        { "type": "null" }
+      ]
+    },
+    "modified_at": { "type": ["null", "string"] },
+    "modified_by": {
+      "properties": {
+        "id": { "type": ["null", "string"] },
+        "type": { "type": ["null", "string"] }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": false
+    },
+    "name": { "type": ["null", "string"] },
+    "org": {
+      "properties": {
+        "id": { "type": ["null", "string"] },
+        "type": { "type": ["null", "string"] }
+      },
+      "type": ["null", "object"],
+      "additionalProperties": false
+    },
+    "role_groups": {
+      "anyOf": [
+        { "type": "array", "items": { "type": ["null", "string"] } },
+        { "type": "null" }
+      ]
+    },
+    "type": { "type": ["null", "string"] },
+    "updated_at": { "format": "date-time", "type": ["null", "string"] }
+  }
+}

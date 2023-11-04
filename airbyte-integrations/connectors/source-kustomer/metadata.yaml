@@ -1,0 +1,25 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.kustomerapp.com/v1/
+  registries:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  connectorSubtype: api
+  connectorType: source
+  definitionId: cd06e646-31bf-4dc8-af48-cbc6530fcad3
+  dockerImageTag: 0.2.0
+  dockerRepository: airbyte/source-kustomer
+  githubIssueLabel: source-kustomer
+  icon: kustomer.svg
+  license: MIT
+  name: Kustomer
+  releaseDate: 2023-10-20
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kustomer
+  tags:
+    - language:lowcode
+metadataSpecVersion: "1.0"
