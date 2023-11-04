@@ -1,8 +1,10 @@
+# See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference)
+# for more information about how to configure these tests
 connector_image: airbyte/source-paystack:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_paystack/spec.json"
+      - spec_path: "source_paystack/spec.yaml"
   connection:
     tests:
       - config_path: "secrets/config.json"
@@ -16,25 +18,14 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
-        empty_streams:
-          - name: disputes
-            bypass_reason: "unable to seed, this stream requires third party system"
-          - name: settlements
-            bypass_reason: "unable to seed, this stream requires third party system"
-        ignored_fields:
-          subscriptions:
-            - name: next_payment_date
-              bypass_reason: "Payment data is updated every month"
-            - name: open_invoice
-              bypass_reason: "Payment data is updated every month"
-            - name: payments_count
-              bypass_reason: "Payment data is updated every month"
-            - name: most_recent_invoice
-              bypass_reason: "Payment data is updated every month"
+        empty_streams: []
         expect_records:
           path: "integration_tests/expected_records.jsonl"
-        fail_on_extra_columns: false
-  incremental:
+          extra_fields: no
+          exact_order: no
+          extra_records: yes
+  incremental: 
+    # bypass_reason: "This connector does not implement incremental sync"
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
