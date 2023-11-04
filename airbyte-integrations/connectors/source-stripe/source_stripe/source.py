@@ -36,8 +36,14 @@ _MAX_CONCURRENCY = 3
 
 
 class SourceStripe(ConcurrentSource):
-    def __init__(self, catalog_path: Optional[str] = None, **kwargs):
-        super().__init__(2, 300, **kwargs)
+    def __init__(self, config_path: Optional[str], catalog_path: Optional[str] = None, **kwargs):
+        if config_path:
+            config = self.read_config(config_path)
+            max_workers = config.get("max_workers", 1)
+        else:
+            max_workers = 1
+        entrypoint_logger.info(f"Initializing source with {max_workers} workers")
+        super().__init__(max_workers, 300, **kwargs)
         if catalog_path:
             catalog = self.read_catalog(catalog_path)
             # Only use concurrent cdk if all streams are running in full_refresh
@@ -434,8 +440,6 @@ class SourceStripe(ConcurrentSource):
         if self._use_concurrent_cdk:
             # We cap the number of workers to avoid hitting the Stripe rate limit
             # The limit can be removed or increased once we have proper rate limiting
-            concurrency_level = min(config.get("num_workers", 2), _MAX_CONCURRENCY)
-            streams[0].logger.info(f"Using concurrent cdk with concurrency level {concurrency_level}")
 
             # The state is known to be empty because concurrent CDK is currently only used for full refresh
             state = {}
