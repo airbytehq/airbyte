@@ -179,6 +179,7 @@ public class PostgresDebeziumStateUtilTest {
       database.execute("CREATE TABLE public.test_table (id int primary key, name varchar(256));");
       database.execute("insert into public.test_table values (1, 'foo');");
       database.execute("insert into public.test_table values (2, 'bar');");
+      database.execute("CHECKPOINT");
 
       final var slotStateAtTheBeginning = getReplicationSlot(database, fullReplicationSlot, plugin, dbName);
       final Lsn lsnAtTheBeginning = Lsn.valueOf(slotStateAtTheBeginning.get("confirmed_flush_lsn").asText());
