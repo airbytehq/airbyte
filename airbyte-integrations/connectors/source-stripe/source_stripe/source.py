@@ -440,10 +440,9 @@ class SourceStripe(ConcurrentSource):
             # The state is known to be empty because concurrent CDK is currently only used for full refresh
             state = {}
             cursor = NoopCursor()
-            threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
             return [
                 # FIXME: maybe need a better to access the threadpool?
-                StreamFacade.create_from_stream(stream, self, entrypoint_logger, threadpool, state, cursor)
+                StreamFacade.create_from_stream(stream, self, entrypoint_logger, self._threadpool, state, cursor)
                 for stream in streams
             ]
         else:
