@@ -1,7 +1,6 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-import concurrent
 from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
 
 import pendulum
@@ -36,7 +35,7 @@ _MAX_CONCURRENCY = 3
 
 
 class SourceStripe(ConcurrentSource):
-    def __init__(self, config_path: Optional[str], catalog_path: Optional[str] = None, **kwargs):
+    def __init__(self, config_path: Optional[str] = None, catalog_path: Optional[str] = None, **kwargs):
         if config_path:
             config = self.read_config(config_path)
             max_workers = config.get("max_workers", 1)
