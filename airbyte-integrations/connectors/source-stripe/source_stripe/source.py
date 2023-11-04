@@ -38,7 +38,7 @@ class SourceStripe(ConcurrentSource):
     def __init__(self, config_path: Optional[str] = None, catalog_path: Optional[str] = None, **kwargs):
         if config_path:
             config = self.read_config(config_path)
-            max_workers = config.get("max_workers", 1)
+            max_workers = config.get("num_workers", 1)
         else:
             max_workers = 1
         entrypoint_logger.info(f"Initializing source with {max_workers} workers")
