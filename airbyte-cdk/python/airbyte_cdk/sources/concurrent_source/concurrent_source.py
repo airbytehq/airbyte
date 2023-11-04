@@ -30,7 +30,7 @@ class ConcurrentSource(AbstractSource, ABC):
         super().__init__(**kwargs)
         self._max_workers = max_workers
         self._timeout_seconds = timeout_in_seconds
-        self._stream_read_threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
+        self._threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
         self._message_repository = message_repository
 
     @property
@@ -103,9 +103,6 @@ class ConcurrentSource(AbstractSource, ABC):
                 AirbyteStreamStatus.STARTED,
             )
 
-        # FIXME: I added this for one of the scenarios, but I'm not sure what the issue is...
-        # time.sleep(0.5)
-
         total_records_counter = 0
         while airbyte_message_or_record_or_exception := queue.get(block=True, timeout=self._timeout_seconds):
             if isinstance(airbyte_message_or_record_or_exception, Exception):
@@ -164,7 +161,7 @@ class ConcurrentSource(AbstractSource, ABC):
                 if all([f.done() for f in futures]) and queue.empty():
                     break
         # TODO Some sort of error handling
-        self._stream_read_threadpool.shutdown(wait=False, cancel_futures=True)
+        self._threadpool.shutdown(wait=False, cancel_futures=True)
         logger.info(timer.report())
         logger.info(f"Finished syncing {self.name}")
 
@@ -268,7 +265,7 @@ class ConcurrentSource(AbstractSource, ABC):
         return stream_status_as_airbyte_message(stream.name, stream.as_airbyte_stream().namespace, AirbyteStreamStatus.COMPLETE)
 
     def _stop_streams(self, streams_in_progress, stream_instances, timer, logger):
-        self._stream_read_threadpool.shutdown(wait=False, cancel_futures=True)
+        self._threadpool.shutdown(wait=False, cancel_futures=True)
         for stream_name in streams_in_progress:
             stream = stream_instances[stream_name]
             logger.info(f"Marking stream {stream.name} as STOPPED")
@@ -282,7 +279,7 @@ class ConcurrentSource(AbstractSource, ABC):
     def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
         # Submit a task to the threadpool, waiting if there are too many pending tasks
         # self._wait_while_too_many_pending_futures(futures)
-        futures.append(self._stream_read_threadpool.submit(function, *args))
+        futures.append(self._threadpool.submit(function, *args))
 
     def _streams_as_abstract_streams(self, config) -> List[AbstractStream]:
         streams = self.streams(config)
