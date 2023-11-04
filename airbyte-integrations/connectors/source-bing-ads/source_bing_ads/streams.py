@@ -1,18 +1,23 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
-
-
+import os
 import ssl
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from datetime import timezone
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.error import URLError
 
+import pandas as pd
+import pendulum
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from bingads.service_client import ServiceClient
+from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord
 from bingads.v13.reporting.reporting_service_manager import ReportingServiceManager
+from numpy import nan
 from source_bing_ads.client import Client
 from source_bing_ads.reports import (
     ALL_CONVERSION_FIELDS,
@@ -29,7 +34,7 @@ from source_bing_ads.reports import (
 from suds import sudsobject
 
 
-class BingAdsStream(Stream, ABC):
+class BingAdsBaseStream(Stream, ABC):
     primary_key: Optional[Union[str, List[str], List[List[str]]]] = None
 
     def __init__(self, client: Client, config: Mapping[str, Any]) -> None:
@@ -37,22 +42,8 @@ class BingAdsStream(Stream, ABC):
         self.client = client
         self.config = config
 
-    @property
-    @abstractmethod
-    def data_field(self) -> str:
-        """
-        Specifies root object name in a stream response
-        """
-        pass
 
-    @property
-    @abstractmethod
-    def service_name(self) -> str:
-        """
-        Specifies bing ads service name for a current stream
-        """
-        pass
-
+class BingAdsStream(BingAdsBaseStream, ABC):
     @property
     @abstractmethod
     def operation_name(self) -> str:
@@ -63,10 +54,9 @@ class BingAdsStream(Stream, ABC):
 
     @property
     @abstractmethod
-    def additional_fields(self) -> Optional[str]:
+    def service_name(self) -> str:
         """
-        Specifies which additional fields to fetch for a current stream.
-        Expected format: field names separated by space
+        Specifies bing ads service name for a current stream
         """
         pass
 
@@ -85,7 +75,7 @@ class BingAdsStream(Stream, ABC):
             return self._service.GetUser().User.Id
         except URLError as error:
             if isinstance(error.reason, ssl.SSLError):
-                self.logger.warn("SSL certificate error, retrying...")
+                self.logger.warning("SSL certificate error, retrying...")
                 if number_of_retries > 0:
                     time.sleep(1)
                     return self._get_user_id(number_of_retries - 1)
@@ -97,12 +87,6 @@ class BingAdsStream(Stream, ABC):
         Default method for streams that don't support pagination
         """
         return None
-
-    def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
-        if response is not None and hasattr(response, self.data_field):
-            yield from self.client.asdict(response)[self.data_field]
-
-        yield from []
 
     def send_request(self, params: Mapping[str, Any], customer_id: str, account_id: str = None) -> Mapping[str, Any]:
         request_kwargs = {
@@ -143,6 +127,248 @@ class BingAdsStream(Stream, ABC):
                 break
 
         yield from []
+
+    def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
+        if response is not None and hasattr(response, self.data_field):
+            yield from self.client.asdict(response)[self.data_field]
+
+        yield from []
+
+
+class BingAdsCampaignManagementStream(BingAdsStream, ABC):
+    service_name: str = "CampaignManagement"
+
+    @property
+    @abstractmethod
+    def data_field(self) -> str:
+        """
+        Specifies root object name in a stream response
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def additional_fields(self) -> Optional[str]:
+        """
+        Specifies which additional fields to fetch for a current stream.
+        Expected format: field names separated by space
+        """
+        pass
+
+    def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
+        if response is not None and hasattr(response, self.data_field):
+            yield from self.client.asdict(response)[self.data_field]
+
+        yield from []
+
+
+class BingAdsReportingServiceStream(BingAdsStream, ABC):
+
+    cursor_field = "TimePeriod"
+    service_name: str = "ReportingService"
+    operation_name: str = "download_report"
+
+    def parse_response(self, response: sudsobject.Object, **kwargs: Mapping[str, Any]) -> Iterable[Mapping]:
+        if response is not None:
+            for row in response.report_records:
+                yield {column: self.get_column_value(row, column) for column in self.report_columns}
+
+        yield from []
+
+    @staticmethod
+    def get_column_value(row: _RowReportRecord, column: str) -> Union[str, None, int, float]:
+        """
+        Reads field value from row and transforms:
+        1. empty values to logical None
+        2. Percent values to numeric string e.g. "12.25%" -> "12.25"
+        """
+        value = row.value(column)
+        if not value or value == "--":
+            return None
+        if "%" in value:
+            value = value.replace("%", "")
+
+        return value
+
+
+class BingAdsBulkStream(BingAdsBaseStream, IncrementalMixin, ABC):
+
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    cursor_field = "Modified Time"
+    _state = {}
+
+    @property
+    @abstractmethod
+    def data_scope(self) -> List[str]:
+        """
+        Defines scopes or types of data to download. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/datascope?view=bingads-13
+        """
+
+    @property
+    @abstractmethod
+    def download_entities(self) -> List[str]:
+        """
+        Defines the entities that should be downloaded. Docs: https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13
+        """
+
+    def stream_slices(
+        self,
+        **kwargs: Mapping[str, Any],
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
+        for account in Accounts(self.client, self.config).read_records(SyncMode.full_refresh):
+            yield {"account_id": account["Id"], "customer_id": account["ParentCustomerId"]}
+
+        yield from []
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        return self._state
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state.update({str(value["Account Id"]): {self.cursor_field: value[self.cursor_field]}})
+
+    def get_start_date(self, stream_state: Mapping[str, Any] = None, account_id: str = None):
+        """
+        Start_date in request can be provided only if it is sooner than 30 days from now
+        """
+        min_available_date = pendulum.now().subtract(days=30).astimezone(tz=timezone.utc)
+        start_date = self.client.reports_start_date
+        if stream_state.get(account_id, {}).get(self.cursor_field):
+            start_date = pendulum.from_format(stream_state[account_id][self.cursor_field], "MM/DD/YYYY HH:mm:ss.SSS")
+        return None if start_date < min_available_date else min_available_date
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+        **kwargs: Mapping[str, Any],
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        account_id = str(stream_slice.get("account_id")) if stream_slice else None
+        customer_id = str(stream_slice.get("customer_id")) if stream_slice else None
+
+        report_file_path = self.client.get_bulk_entity(
+            data_scope=self.data_scope,
+            download_entities=self.download_entities,
+            customer_id=customer_id,
+            account_id=account_id,
+            start_date=self.get_start_date(stream_state, account_id),
+        )
+        for record in self.read_with_chunks(report_file_path):
+            record = self.transform(record, stream_slice)
+            yield record
+            self.state = record
+
+        yield from []
+
+    def read_with_chunks(self, path: str, chunk_size: int = 1024) -> Iterable[Tuple[int, Mapping[str, Any]]]:
+        try:
+            with open(path, "r") as data:
+                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix", dtype=object)
+                for chunk in chunks:
+                    chunk = chunk.replace({nan: None}).to_dict(orient="records")
+                    for row in chunk:
+                        if row.get("Type") not in ("Format Version", "Account"):
+                            yield row
+        except pd.errors.EmptyDataError as e:
+            self.logger.info(f"Empty data received. {e}")
+            yield from []
+        except IOError as ioe:
+            self.logger.fatal(
+                f"The IO/Error occurred while reading tmp data. Called: {path}. Stream: {self.name}",
+            )
+            raise ioe
+        finally:
+            # remove binary tmp file, after data is read
+            os.remove(path)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        """
+        Bing Ads Bulk API returns all available properties for all entities.
+        This method filter out only available properties.
+        """
+        actual_record = {key: value for key, value in record.items() if key in self.get_json_schema()["properties"].keys()}
+        actual_record["Account Id"] = stream_slice.get("account_id")
+        return actual_record
+
+
+class AppInstallAds(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad?view=bingads-13
+    """
+
+    data_scope = ["EntityData"]
+    download_entities = ["AppInstallAds"]
+
+    primary_key = "Id"
+
+
+class AppInstallAdLabels(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/app-install-ad-label?view=bingads-13
+    """
+
+    data_scope = ["EntityData"]
+    download_entities = ["AppInstallAdLabels"]
+
+    primary_key = "Id"
+
+
+class Labels(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/label?view=bingads-13
+    """
+
+    data_scope = ["EntityData"]
+    download_entities = ["Labels"]
+
+    primary_key = "Id"
+
+
+class KeywordLabels(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/keyword-label?view=bingads-13
+    """
+
+    data_scope = ["EntityData"]
+    download_entities = ["KeywordLabels"]
+
+    primary_key = "Id"
+
+
+class Keywords(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/keyword?view=bingads-13
+    """
+
+    data_scope = ["EntityData"]
+    download_entities = ["Keywords"]
+
+    primary_key = "Id"
+
+
+class CampaignLabels(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/campaign-label?view=bingads-13
+    """
+
+    data_scope = ["EntityData"]
+    download_entities = ["CampaignLabels"]
+
+    primary_key = "Id"
+
+
+class AdGroupLabels(BingAdsBulkStream):
+    """
+    https://learn.microsoft.com/en-us/advertising/bulk-service/ad-group-label?view=bingads-13
+    """
+
+    data_scope = ["EntityData"]
+    download_entities = ["AdGroupLabels"]
+
+    primary_key = "Id"
 
 
 class Accounts(BingAdsStream):
@@ -195,7 +421,7 @@ class Accounts(BingAdsStream):
         }
 
 
-class Campaigns(BingAdsStream):
+class Campaigns(BingAdsCampaignManagementStream):
     """
     Gets the campaigns for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getcampaignsbyaccountid?view=bingads-13
@@ -207,7 +433,6 @@ class Campaigns(BingAdsStream):
     # Stream caches incoming responses to avoid duplicated http requests
     use_cache: bool = True
     data_field: str = "Campaign"
-    service_name: str = "CampaignManagement"
     operation_name: str = "GetCampaignsByAccountId"
     additional_fields: Iterable[str] = [
         "AdScheduleUseSearcherTimeZone",
@@ -244,7 +469,7 @@ class Campaigns(BingAdsStream):
         yield from []
 
 
-class AdGroups(BingAdsStream):
+class AdGroups(BingAdsCampaignManagementStream):
     """
     Gets the ad groups for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadgroupsbycampaignid?view=bingads-13
@@ -256,7 +481,6 @@ class AdGroups(BingAdsStream):
     # Stream caches incoming responses to avoid duplicated http requests
     use_cache: bool = True
     data_field: str = "AdGroup"
-    service_name: str = "CampaignManagement"
     operation_name: str = "GetAdGroupsByCampaignId"
     additional_fields: str = "AdGroupType AdScheduleUseSearcherTimeZone CpmBid CpvBid MultimediaAdsBidAdjustment"
 
@@ -281,7 +505,7 @@ class AdGroups(BingAdsStream):
         yield from []
 
 
-class Ads(BingAdsStream):
+class Ads(BingAdsCampaignManagementStream):
     """
     Retrieves the ads for all provided accounts.
     API doc: https://docs.microsoft.com/en-us/advertising/campaign-management-service/getadsbyadgroupid?view=bingads-13
@@ -290,7 +514,6 @@ class Ads(BingAdsStream):
 
     primary_key = "Id"
     data_field: str = "Ad"
-    service_name: str = "CampaignManagement"
     operation_name: str = "GetAdsByAdGroupId"
     additional_fields: str = "ImpressionTrackingUrls Videos LongHeadlines"
     ad_types: Iterable[str] = [
@@ -326,12 +549,8 @@ class Ads(BingAdsStream):
         yield from []
 
 
-class BudgetSummaryReport(ReportsMixin, BingAdsStream):
-    data_field: str = ""
-    service_name: str = "ReportingService"
+class BudgetSummaryReport(ReportsMixin, BingAdsReportingServiceStream):
     report_name: str = "BudgetSummaryReport"
-    operation_name: str = "download_report"
-    additional_fields: str = ""
     report_aggregation = None
     cursor_field = "Date"
     report_schema_name = "budget_summary_report"
@@ -350,13 +569,9 @@ class BudgetSummaryReport(ReportsMixin, BingAdsStream):
     ]
 
 
-class CampaignPerformanceReport(PerformanceReportsMixin, BingAdsStream):
-    data_field: str = ""
-    service_name: str = "ReportingService"
+class CampaignPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream):
     report_name: str = "CampaignPerformanceReport"
-    operation_name: str = "download_report"
-    additional_fields: str = ""
-    cursor_field = "TimePeriod"
+
     report_schema_name = "campaign_performance_report"
     primary_key = [
         "AccountId",
@@ -435,13 +650,45 @@ class CampaignPerformanceReportMonthly(CampaignPerformanceReport):
     ]
 
 
-class AdPerformanceReport(PerformanceReportsMixin, BingAdsStream):
-    data_field: str = ""
-    service_name: str = "ReportingService"
+class CampaignImpressionPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
+    """
+    https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
+    Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
+    see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
+    """
+
+    report_name: str = "CampaignPerformanceReport"
+
+    report_schema_name = "campaign_impression_performance_report"
+
+    primary_key = None
+
+    @property
+    def report_columns(self) -> Iterable[str]:
+        return list(self.get_json_schema().get("properties", {}).keys())
+
+
+class CampaignImpressionPerformanceReportHourly(CampaignImpressionPerformanceReport):
+    report_aggregation = "Hourly"
+
+    report_schema_name = "campaign_impression_performance_report_hourly"
+
+
+class CampaignImpressionPerformanceReportDaily(CampaignImpressionPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class CampaignImpressionPerformanceReportWeekly(CampaignImpressionPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class CampaignImpressionPerformanceReportMonthly(CampaignImpressionPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class AdPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream):
     report_name: str = "AdPerformanceReport"
-    operation_name: str = "download_report"
-    additional_fields: str = ""
-    cursor_field = "TimePeriod"
+
     report_schema_name = "ad_performance_report"
     primary_key = [
         "AccountId",
@@ -507,13 +754,9 @@ class AdPerformanceReportMonthly(AdPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class AdGroupPerformanceReport(PerformanceReportsMixin, BingAdsStream, ABC):
-    data_field: str = ""
-    service_name: str = "ReportingService"
+class AdGroupPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
     report_name: str = "AdGroupPerformanceReport"
-    operation_name: str = "download_report"
-    additional_fields: str = ""
-    cursor_field = "TimePeriod"
+
     report_schema_name = "ad_group_performance_report"
 
     primary_key = [
@@ -594,13 +837,43 @@ class AdGroupPerformanceReportMonthly(AdGroupPerformanceReport):
     ]
 
 
-class KeywordPerformanceReport(PerformanceReportsMixin, BingAdsStream):
-    data_field: str = ""
-    service_name: str = "ReportingService"
+class AdGroupImpressionPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
+    """
+    https://learn.microsoft.com/en-us/advertising/reporting-service/adgroupperformancereportrequest?view=bingads-13
+    Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
+    see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
+    """
+
+    report_name: str = "AdGroupPerformanceReport"
+
+    report_schema_name = "ad_group_impression_performance_report"
+
+    @property
+    def report_columns(self) -> Iterable[str]:
+        return list(self.get_json_schema().get("properties", {}).keys())
+
+
+class AdGroupImpressionPerformanceReportHourly(AdGroupImpressionPerformanceReport):
+    report_aggregation = "Hourly"
+    report_schema_name = "ad_group_impression_performance_report_hourly"
+
+
+class AdGroupImpressionPerformanceReportDaily(AdGroupImpressionPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class AdGroupImpressionPerformanceReportWeekly(AdGroupImpressionPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class AdGroupImpressionPerformanceReportMonthly(AdGroupImpressionPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class KeywordPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
+
     report_name: str = "KeywordPerformanceReport"
-    operation_name: str = "download_report"
-    additional_fields: str = ""
-    cursor_field = "TimePeriod"
+
     report_schema_name = "keyword_performance_report"
     primary_key = [
         "AccountId",
@@ -679,13 +952,10 @@ class KeywordPerformanceReportMonthly(KeywordPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class GeographicPerformanceReport(PerformanceReportsMixin, BingAdsStream):
-    data_field: str = ""
-    service_name: str = "ReportingService"
+class GeographicPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
+
     report_name: str = "GeographicPerformanceReport"
-    operation_name: str = "download_report"
-    additional_fields: str = ""
-    cursor_field = "TimePeriod"
+
     report_schema_name = "geographic_performance_report"
 
     # Need to override the primary key here because the one inherited from the PerformanceReportsMixin
@@ -772,13 +1042,10 @@ class GeographicPerformanceReportMonthly(GeographicPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class AccountPerformanceReport(PerformanceReportsMixin, BingAdsStream):
-    data_field: str = ""
-    service_name: str = "ReportingService"
+class AccountPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream):
+
     report_name: str = "AccountPerformanceReport"
-    operation_name: str = "download_report"
-    additional_fields: str = ""
-    cursor_field = "TimePeriod"
+
     report_schema_name = "account_performance_report"
     primary_key = [
         "AccountId",
@@ -831,13 +1098,44 @@ class AccountPerformanceReportMonthly(AccountPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class AgeGenderAudienceReport(PerformanceReportsMixin, BingAdsStream, ABC):
-    data_field: str = ""
-    service_name: str = "ReportingService"
+class AccountImpressionPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
+    """
+    Report source: https://docs.microsoft.com/en-us/advertising/reporting-service/accountperformancereportrequest?view=bingads-13
+    Primary key cannot be set: due to included `Impression Share Performance Statistics` some fields should be removed,
+    see https://learn.microsoft.com/en-us/advertising/guides/reports?view=bingads-13#columnrestrictions for more info.
+    """
+
+    report_name: str = "AccountPerformanceReport"
+    report_schema_name = "account_impression_performance_report"
+    primary_key = None
+
+    @property
+    def report_columns(self):
+        return list(self.get_json_schema().get("properties", {}).keys())
+
+
+class AccountImpressionPerformanceReportHourly(AccountImpressionPerformanceReport):
+    report_aggregation = "Hourly"
+
+    report_schema_name = "account_impression_performance_report_hourly"
+
+
+class AccountImpressionPerformanceReportDaily(AccountImpressionPerformanceReport):
+    report_aggregation = "Daily"
+
+
+class AccountImpressionPerformanceReportWeekly(AccountImpressionPerformanceReport):
+    report_aggregation = "Weekly"
+
+
+class AccountImpressionPerformanceReportMonthly(AccountImpressionPerformanceReport):
+    report_aggregation = "Monthly"
+
+
+class AgeGenderAudienceReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
+
     report_name: str = "AgeGenderAudienceReport"
-    operation_name: str = "download_report"
-    additional_fields: str = ""
-    cursor_field = "TimePeriod"
+
     report_schema_name = "age_gender_audience_report"
     primary_key = ["AgeGroup", "Gender", "TimePeriod", "AccountId", "CampaignId", "Language", "AdDistribution"]
 
@@ -862,13 +1160,10 @@ class AgeGenderAudienceReportMonthly(AgeGenderAudienceReport):
     report_aggregation = "Monthly"
 
 
-class SearchQueryPerformanceReport(PerformanceReportsMixin, BingAdsStream, ABC):
-    data_field: str = ""
-    service_name: str = "ReportingService"
+class SearchQueryPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
+
     report_name: str = "SearchQueryPerformanceReport"
-    operation_name: str = "download_report"
-    additional_fields: str = ""
-    cursor_field = "TimePeriod"
+
     report_schema_name = "search_query_performance_report"
     primary_key = [
         "SearchQuery",
@@ -904,13 +1199,9 @@ class SearchQueryPerformanceReportMonthly(SearchQueryPerformanceReport):
     report_aggregation = "Monthly"
 
 
-class UserLocationPerformanceReport(PerformanceReportsMixin, BingAdsStream, ABC):
-    data_field: str = ""
-    service_name: str = "ReportingService"
+class UserLocationPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream, ABC):
+
     report_name: str = "UserLocationPerformanceReport"
-    operation_name: str = "download_report"
-    additional_fields: str = ""
-    cursor_field = "TimePeriod"
     report_schema_name = "user_location_performance_report"
     primary_key = [
         "AccountId",

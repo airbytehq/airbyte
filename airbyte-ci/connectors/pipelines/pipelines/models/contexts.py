@@ -14,7 +14,6 @@ from typing import List, Optional
 from asyncer import asyncify
 from dagger import Client, Directory, File, Secret
 from github import PullRequest
-from pipelines import hacks
 from pipelines.consts import CIContext, ContextState
 from pipelines.helpers.gcs import sanitize_gcs_credentials
 from pipelines.helpers.github import update_commit_status_check
@@ -147,10 +146,11 @@ class PipelineContext:
     @property
     def github_commit_status(self) -> dict:
         """Build a dictionary used as kwargs to the update_commit_status_check function."""
+        target_url = self.report.html_report_url if self.report else self.gha_workflow_run_url
         return {
             "sha": self.git_revision,
             "state": self.state.value["github_state"],
-            "target_url": self.gha_workflow_run_url,
+            "target_url": target_url,
             "description": self.state.value["description"],
             "context": self.pipeline_name,
             "should_send": self.is_pr,
@@ -230,7 +230,6 @@ class PipelineContext:
         self.state = ContextState.RUNNING
         self.started_at = datetime.utcnow()
         self.logger.info("Caching the latest CDK version...")
-        await hacks.cache_latest_cdk(self.dagger_client)
         await asyncify(update_commit_status_check)(**self.github_commit_status)
         if self.should_send_slack_message:
             await asyncify(send_message_to_webhook)(self.create_slack_message(), self.reporting_slack_channel, self.slack_webhook)

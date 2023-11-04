@@ -11,7 +11,6 @@ import com.google.cloud.bigquery.LegacySQLTypeName;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.Schema;
 import com.google.cloud.bigquery.Table;
-import com.google.cloud.bigquery.TableDefinition;
 import com.google.cloud.bigquery.TableId;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.destination.typing_deduping.StreamConfig;
@@ -21,7 +20,7 @@ import org.apache.commons.text.StringSubstitutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryV2TableMigrator implements V2TableMigrator<TableDefinition> {
+public class BigQueryV2TableMigrator implements V2TableMigrator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryV2TableMigrator.class);
 
