@@ -1,14 +1,30 @@
-{
-  "current_weather": {
-    "historical_date": "9999-01-01"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "historical_date": "9999-01-01" },
+      "stream_descriptor": { "name": "current_weather" }
+    }
   },
-  "forecast": {
-    "historical_date": "9999-01-01"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "historical_date": "9999-01-01" },
+      "stream_descriptor": { "name": "forecast" }
+    }
   },
-  "historical": {
-    "historical_date": "9999-01-01"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "historical_date": "9999-01-01" },
+      "stream_descriptor": { "name": "historical" }
+    }
   },
-  "location_lookup": {
-    "historical_date": "9999-01-01"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "historical_date": "9999-01-01" },
+      "stream_descriptor": { "name": "location_lookup" }
+    }
   }
-}
+]
