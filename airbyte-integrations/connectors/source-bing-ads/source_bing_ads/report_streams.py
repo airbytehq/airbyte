@@ -27,7 +27,7 @@ class HourlyReportTransformerMixin:
     @staticmethod
     @transformer.registerCustomTransform
     def custom_transform_datetime_rfc3339(original_value, field_schema):
-        if original_value and "format" in field_schema and field_schema["format"] == "date":
+        if original_value and "format" in field_schema and field_schema["format"] == "date-time":
             print(original_value)
             transformed_value = transform_report_hourly_datetime_format_to_rfc_3339(original_value)
             return transformed_value
@@ -475,6 +475,7 @@ class GeographicPerformanceReport(BingAdsReportingServicePerformanceStream, ABC)
 
 class GeographicPerformanceReportHourly(HourlyReportTransformerMixin, GeographicPerformanceReport):
     report_aggregation = "Hourly"
+    report_schema_name = "geographic_performance_report_hourly"
 
 
 class GeographicPerformanceReportDaily(GeographicPerformanceReport):
@@ -562,6 +563,7 @@ class AgeGenderAudienceReport(BingAdsReportingServicePerformanceStream, ABC):
 
 class AgeGenderAudienceReportHourly(HourlyReportTransformerMixin, AgeGenderAudienceReport):
     report_aggregation = "Hourly"
+    report_schema_name = "age_gender_audience_report_hourly"
 
 
 class AgeGenderAudienceReportDaily(AgeGenderAudienceReport):
@@ -577,10 +579,9 @@ class AgeGenderAudienceReportMonthly(AgeGenderAudienceReport):
 
 
 class SearchQueryPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
-
     report_name: str = "SearchQueryPerformanceReport"
-
     report_schema_name = "search_query_performance_report"
+
     primary_key = [
         "SearchQuery",
         "Keyword",
@@ -597,6 +598,7 @@ class SearchQueryPerformanceReport(BingAdsReportingServicePerformanceStream, ABC
 
 class SearchQueryPerformanceReportHourly(HourlyReportTransformerMixin, SearchQueryPerformanceReport):
     report_aggregation = "Hourly"
+    report_schema_name = "search_query_performance_report_hourly"
 
 
 class SearchQueryPerformanceReportDaily(SearchQueryPerformanceReport):
@@ -632,6 +634,7 @@ class UserLocationPerformanceReport(BingAdsReportingServicePerformanceStream, AB
 
 class UserLocationPerformanceReportHourly(HourlyReportTransformerMixin, UserLocationPerformanceReport):
     report_aggregation = "Hourly"
+    report_schema_name = "user_location_performance_report_hourly"
 
 
 class UserLocationPerformanceReportDaily(UserLocationPerformanceReport):
