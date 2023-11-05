@@ -8,8 +8,10 @@ from unittest.mock import patch
 import pytest
 import source_bing_ads
 from airbyte_cdk.models import SyncMode
+from source_bing_ads.base_streams import Accounts, AdGroups, Ads, Campaigns
+from source_bing_ads.bulk_streams import AppInstallAds
+from source_bing_ads.report_streams import AccountPerformanceReportMonthly
 from source_bing_ads.source import SourceBingAds
-from source_bing_ads.streams import AccountPerformanceReportMonthly, Accounts, AdGroups, Ads, AppInstallAds, Campaigns
 
 
 @pytest.fixture(name="config")

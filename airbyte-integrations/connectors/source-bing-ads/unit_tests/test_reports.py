@@ -8,22 +8,40 @@ from unittest.mock import Mock
 import pendulum
 import pytest
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
-from source_bing_ads.reports import PerformanceReportsMixin, ReportsMixin
-from source_bing_ads.source import SourceBingAds
-from source_bing_ads.streams import (
+from source_bing_ads.report_streams import (
+    AccountPerformanceReportHourly,
+    AdGroupImpressionPerformanceReportHourly,
+    AdGroupPerformanceReportHourly,
+    AdPerformanceReportHourly,
+    AgeGenderAudienceReportHourly,
+    BingAdsReportingServicePerformanceStream,
     BingAdsReportingServiceStream,
+    BudgetSummaryReport,
+    CampaignImpressionPerformanceReportHourly,
+    CampaignPerformanceReportHourly,
     GeographicPerformanceReportDaily,
     GeographicPerformanceReportHourly,
     GeographicPerformanceReportMonthly,
     GeographicPerformanceReportWeekly,
+    KeywordPerformanceReportHourly,
+    SearchQueryPerformanceReportHourly,
+    UserLocationPerformanceReportHourly,
 )
+from source_bing_ads.source import SourceBingAds
+
+TEST_CONFIG = {
+    "developer_token": "developer_token",
+    "client_id": "client_id",
+    "refresh_token": "refresh_token",
+    "reports_start_date": "2020-01-01T00:00:00Z",
+}
 
 
 class TestClient:
     pass
 
 
-class TestReport(ReportsMixin, BingAdsReportingServiceStream, SourceBingAds):
+class TestReport(BingAdsReportingServiceStream, SourceBingAds):
     date_format, report_columns, report_name, cursor_field = "YYYY-MM-DD", None, None, "Time"
     report_aggregation = "Monthly"
     report_schema_name = "campaign_performance_report"
@@ -32,7 +50,7 @@ class TestReport(ReportsMixin, BingAdsReportingServiceStream, SourceBingAds):
         self.client = TestClient()
 
 
-class TestPerformanceReport(PerformanceReportsMixin, BingAdsReportingServiceStream, SourceBingAds):
+class TestPerformanceReport(BingAdsReportingServicePerformanceStream, SourceBingAds):
     date_format, report_columns, report_name, cursor_field = "YYYY-MM-DD", None, None, "Time"
     report_aggregation = "Monthly"
     report_schema_name = "campaign_performance_report"
@@ -61,20 +79,20 @@ def test_get_updated_state_init_state():
     stream_state = {}
     latest_record = {"AccountId": 123, "Time": "2020-01-02"}
     new_state = test_report.get_updated_state(stream_state, latest_record)
-    assert new_state["123"]["Time"] == (pendulum.parse("2020-01-02")).timestamp()
+    assert new_state["123"]["Time"] == "2020-01-02"
 
 
 def test_get_updated_state_new_state():
     test_report = TestReport()
-    stream_state = {"123": {"Time": pendulum.parse("2020-01-01").timestamp()}}
+    stream_state = {"123": {"Time": "2020-01-01"}}
     latest_record = {"AccountId": 123, "Time": "2020-01-02"}
     new_state = test_report.get_updated_state(stream_state, latest_record)
-    assert new_state["123"]["Time"] == pendulum.parse("2020-01-02").timestamp()
+    assert new_state["123"]["Time"] == "2020-01-02"
 
 
 def test_get_updated_state_state_unchanged():
     test_report = TestReport()
-    stream_state = {"123": {"Time": pendulum.parse("2020-01-03").timestamp()}}
+    stream_state = {"123": {"Time": "2020-01-03"}}
     latest_record = {"AccountId": 123, "Time": "2020-01-02"}
     new_state = test_report.get_updated_state(copy.deepcopy(stream_state), latest_record)
     assert stream_state == new_state
@@ -82,29 +100,44 @@ def test_get_updated_state_state_unchanged():
 
 def test_get_updated_state_state_new_account():
     test_report = TestReport()
-    stream_state = {"123": {"Time": pendulum.parse("2020-01-03").timestamp()}}
+    stream_state = {"123": {"Time": "2020-01-03"}}
     latest_record = {"AccountId": 234, "Time": "2020-01-02"}
     new_state = test_report.get_updated_state(stream_state, latest_record)
     assert "234" in new_state and "123" in new_state
-    assert new_state["234"]["Time"] == pendulum.parse("2020-01-02").timestamp()
+    assert new_state["234"]["Time"] == "2020-01-02"
 
 
 def test_get_report_record_timestamp_daily():
     test_report = TestReport()
     test_report.report_aggregation = "Daily"
-    assert pendulum.parse("2020-01-01").timestamp() == test_report.get_report_record_timestamp("2020-01-01")
+    assert "2020-01-01" == test_report.get_report_record_timestamp("2020-01-01")
 
 
 def test_get_report_record_timestamp_without_aggregation():
-    test_report = TestReport()
-    test_report.report_aggregation = None
-    assert pendulum.parse("2020-07-20").timestamp() == test_report.get_report_record_timestamp("7/20/2020")
+    stream_report = BudgetSummaryReport(client=Mock(), config=TEST_CONFIG)
+    assert "2020-07-20" == stream_report.get_report_record_timestamp("7/20/2020")
 
 
-def test_get_report_record_timestamp_hourly():
-    test_report = TestReport()
-    test_report.report_aggregation = "Hourly"
-    assert pendulum.parse("2020-01-01T15:00:00").timestamp() == test_report.get_report_record_timestamp("2020-01-01|15")
+@pytest.mark.parametrize(
+    "stream_report_daily_cls",
+    (
+        AccountPerformanceReportHourly,
+        AdGroupImpressionPerformanceReportHourly,
+        AdGroupPerformanceReportHourly,
+        AgeGenderAudienceReportHourly,
+        AdPerformanceReportHourly,
+        CampaignImpressionPerformanceReportHourly,
+        CampaignPerformanceReportHourly,
+        KeywordPerformanceReportHourly,
+        SearchQueryPerformanceReportHourly,
+        UserLocationPerformanceReportHourly,
+        GeographicPerformanceReportHourly,
+        GeographicPerformanceReportHourly,
+     ),
+)
+def test_get_report_record_timestamp_hourly(stream_report_daily_cls):
+    stream_report = GeographicPerformanceReportHourly(client=Mock(), config=TEST_CONFIG)
+    assert "2020-01-01T15:00:00+00:00" == stream_report.get_report_record_timestamp("2020-01-01|15")
 
 
 def test_report_get_start_date_wo_stream_state():
@@ -158,11 +191,5 @@ def test_report_get_start_date_performance_report_wo_stream_state():
     ),
 )
 def test_geographic_performance_report_pk(performance_report_cls):
-    config = {
-        "developer_token": "developer_token",
-        "client_id": "client_id",
-        "refresh_token": "refresh_token",
-        "reports_start_date": "2020-01-01T00:00:00Z",
-    }
-    stream = performance_report_cls(client=Mock(), config=config)
+    stream = performance_report_cls(client=Mock(), config=TEST_CONFIG)
     assert stream.primary_key is None
