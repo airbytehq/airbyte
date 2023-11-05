@@ -31,7 +31,6 @@ class BingAdsStream(BingAdsBaseStream, ABC):
         """
         Specifies operation name to use for a current stream
         """
-        pass
 
     @property
     @abstractmethod
@@ -39,7 +38,6 @@ class BingAdsStream(BingAdsBaseStream, ABC):
         """
         Specifies bing ads service name for a current stream
         """
-        pass
 
     @property
     def _service(self) -> Union[ServiceClient, ReportingServiceManager]:
@@ -121,7 +119,6 @@ class BingAdsCampaignManagementStream(BingAdsStream, ABC):
         """
         Specifies root object name in a stream response
         """
-        pass
 
     @property
     @abstractmethod
@@ -130,7 +127,6 @@ class BingAdsCampaignManagementStream(BingAdsStream, ABC):
         Specifies which additional fields to fetch for a current stream.
         Expected format: field names separated by space
         """
-        pass
 
     def parse_response(self, response: sudsobject.Object, **kwargs) -> Iterable[Mapping]:
         if response is not None and hasattr(response, self.data_field):

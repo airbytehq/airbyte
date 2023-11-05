@@ -57,7 +57,6 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         """
         Specifies bing ads report naming
         """
-        pass
 
     @property
     @abstractmethod
@@ -66,7 +65,6 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         Specifies bing ads report aggregation type
         Supported types: Hourly, Daily, Weekly, Monthly
         """
-        pass
 
     @property
     @abstractmethod
@@ -74,7 +72,6 @@ class BingAdsReportingServiceStream(BingAdsStream, ABC):
         """
         Specifies file name with schema
         """
-        pass
 
     @property
     def report_columns(self) -> Iterable[str]:
