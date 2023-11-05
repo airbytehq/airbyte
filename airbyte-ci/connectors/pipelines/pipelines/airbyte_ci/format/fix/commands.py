@@ -30,14 +30,8 @@ async def fix(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Format License")
 
     if ctx.invoked_subcommand is None:
-        from pipelines.airbyte_ci.format.fix.java.commands import java
-        from pipelines.airbyte_ci.format.fix.js.commands import js
-        from pipelines.airbyte_ci.format.fix.license.commands import license
-        from pipelines.airbyte_ci.format.fix.python.commands import python
-
         print("Running all formatters...")
-
-        await ctx.invoke(java)
-        await ctx.invoke(js)
-        await ctx.invoke(license)
-        await ctx.invoke(python)
+        await ctx.invoke(fix.get_command(ctx, "java"))
+        await ctx.invoke(fix.get_command(ctx, "js"))
+        await ctx.invoke(fix.get_command(ctx, "license"))
+        await ctx.invoke(fix.get_command(ctx, "python"))

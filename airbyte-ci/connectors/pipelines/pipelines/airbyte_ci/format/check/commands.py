@@ -39,15 +39,11 @@ async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Format License")
 
     if ctx.invoked_subcommand is None:
-        from pipelines.airbyte_ci.format.check.java.commands import java
-        from pipelines.airbyte_ci.format.check.js.commands import js
-        from pipelines.airbyte_ci.format.check.license.commands import license
-        from pipelines.airbyte_ci.format.check.python.commands import python
-
         print("Running all checks...")
-
         async with anyio.create_task_group() as check_group:
-            check_group.start_soon(ctx.invoke, java)
-            check_group.start_soon(ctx.invoke, js)
-            check_group.start_soon(ctx.invoke, license)
-            check_group.start_soon(ctx.invoke, python)
+            check_group.start_soon(ctx.invoke, check.get_command(ctx, "java"))
+            check_group.start_soon(ctx.invoke, check.get_command(ctx, "js"))
+            check_group.start_soon(ctx.invoke, check.get_command(ctx, "license"))
+            check_group.start_soon(ctx.invoke, check.get_command(ctx, "python"))
+    
+
