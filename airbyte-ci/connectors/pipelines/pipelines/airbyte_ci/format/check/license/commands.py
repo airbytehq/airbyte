@@ -28,7 +28,7 @@ async def format_license(ctx: ClickPipelineContext) -> bool:
 
     dagger_client = ctx.params["dagger_client"]
     try:
-        license_container = await (
+        license_container = (
             dagger_client.container()
             .from_("golang:1.17")
             .with_exec(sh_dash_c(["apt-get update", "apt-get install -y bash tree", "go get -u github.com/google/addlicense"]))

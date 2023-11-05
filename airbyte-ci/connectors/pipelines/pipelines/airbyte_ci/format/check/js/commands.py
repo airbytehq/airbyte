@@ -34,7 +34,7 @@ async def format_js(ctx: ClickPipelineContext) -> bool:
 
     dagger_client = ctx.params["dagger_client"]
     try:
-        format_container = await (
+        format_container = (
             dagger_client.container()
             .from_("node:18.18.0-slim")
             .with_exec(

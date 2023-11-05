@@ -19,7 +19,7 @@ async def java(ctx: ClickPipelineContext):
     """Format java, groovy, and sql code via spotless."""
     dagger_client = ctx.params["dagger_client"]
 
-    format_container = await (
+    format_container = (
         dagger_client.container()
         .from_("openjdk:17.0.1-jdk-slim")
         .with_exec(

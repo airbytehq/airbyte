@@ -19,7 +19,7 @@ async def js(ctx: ClickPipelineContext):
     """Format yaml and json code via prettier."""
 
     dagger_client = ctx.params["dagger_client"]
-    format_container = await (
+    format_container = (
         dagger_client.container()
         .from_("node:18.18.0-slim")
         .with_exec(

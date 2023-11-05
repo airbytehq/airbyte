@@ -33,7 +33,7 @@ async def format_python(ctx: ClickPipelineContext) -> bool:
 
     dagger_client = ctx.params["dagger_client"]
     try:
-        format_container = await (
+        format_container = (
             dagger_client.container()
             .from_("python:3.10.13-slim")
             .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
