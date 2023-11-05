@@ -7,6 +7,7 @@ from typing import Optional
 import asyncclick as click
 import dagger
 from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
+from pipelines.airbyte_ci.format.fix.utils import format
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs
 from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
@@ -17,41 +18,22 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 @click_ignore_unused_kwargs
 async def java(ctx: ClickPipelineContext):
     """Format java, groovy, and sql code via spotless."""
-    dagger_client = ctx.params["dagger_client"]
-
-    base_jdk_container = dagger_client.container().from_("openjdk:17.0.1-jdk-slim")
-
-    format_container = (
-        base_jdk_container.with_exec(
-            sh_dash_c(
-                [
-                    "apt-get update",
-                    "apt-get install -y bash",
-                ]
-            )
-        )
-        .with_mounted_directory(
-            "/src",
-            dagger_client.host().directory(
-                ".",
-                include=[
-                    "**/*.java",
-                    "**/*.sql",
-                    "**/*.gradle",
-                    "gradlew",
-                    "gradle",
-                    "deps.toml",
-                    "**/gradle.properties",
-                    "**/version.properties",
-                    "tools/gradle/codestyle/java-google-style.xml",
-                    "tools/gradle/codestyle/sql-dbeaver.properties",
-                ],
-                exclude=DEFAULT_FORMAT_IGNORE_LIST,
-            ),
-        )
-        .with_workdir(f"/src")
-        .with_exec(["./gradlew", "spotlessApply"])
+    await format(
+        ctx,
+        base_image="openjdk:17.0.1-jdk-slim",
+        include=[
+            "**/*.java",
+            "**/*.sql",
+            "**/*.gradle",
+            "gradlew",
+            "gradlew.bat",
+            "gradle",
+            "**/deps.toml",
+            "**/gradle.properties",
+            "**/version.properties",
+            "tools/gradle/codestyle/java-google-style.xml",
+            "tools/gradle/codestyle/sql-dbeaver.properties",
+        ],
+        install_commands=[],
+        format_commands=["./gradlew spotlessApply --scan"],
     )
-
-    await format_container
-    await format_container.directory("/src").export(".")

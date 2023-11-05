@@ -14,6 +14,31 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContext)
 
 
+def build_container(
+    ctx: ClickPipelineContext, base_image: str, include: List[str], install_commands: List[str], env_vars: Optional[Dict[str, Any]] = {}
+) -> dagger.Container:
+
+    dagger_client = ctx.params["dagger_client"]
+
+    base_container = dagger_client.container().from_(base_image)
+    for key, value in env_vars.items():
+        base_container = base_container.with_env_variable(key, value)
+
+    check_container = (
+        base_container.with_mounted_directory(
+            "/src",
+            dagger_client.host().directory(
+                ".",
+                include=include,
+                exclude=DEFAULT_FORMAT_IGNORE_LIST,
+            ),
+        )
+        .with_exec(sh_dash_c(install_commands))
+        .with_workdir("/src")
+    )
+    return check_container
+
+
 async def check(
     ctx: ClickPipelineContext,
     base_image: str,
@@ -35,27 +60,9 @@ async def check(
     """
     logger = logging.getLogger(f"format")
 
-    dagger_client = ctx.params["dagger_client"]
-
-    base_container = dagger_client.container().from_(base_image)
-    for key, value in env_vars.items():
-        base_container = base_container.with_env_variable(key, value)
-
-    check_container = (
-        base_container.with_mounted_directory(
-            "/src",
-            dagger_client.host().directory(
-                ".",
-                include=include,
-                exclude=DEFAULT_FORMAT_IGNORE_LIST,
-            ),
-        )
-        .with_exec(sh_dash_c(install_commands))
-        .with_workdir("/src")
-    )
-
+    container = build_container(ctx, base_image, include, install_commands, check_commands, env_vars)
     try:
-        await check_container.with_exec(sh_dash_c(check_commands))
+        await container.with_exec(sh_dash_c(check_commands))
         return True
     except dagger.ExecError as e:
         logger.error(f"Failed to format code: {e}")
