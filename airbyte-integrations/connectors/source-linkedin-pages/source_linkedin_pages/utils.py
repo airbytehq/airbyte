@@ -362,6 +362,15 @@ def parse_post_media_content(content: Mapping[str, Any], media_type: str):
                     "id": "urn:li:image:D4E22AQFokVOemJ9jrg"
                 }
             },
+    article:
+    "content: {
+                "article": {
+                    "description": "The AI Copilot for modern Marketers. Arcane accelerates and automates mundane tasks. Join the waitlist today.",
+                    "source": "https://tryarcane.com/blog/interview-jacqueline",
+                    "thumbnail": "urn:li:image:D4E22AQFOtNFCx-Eqmw",
+                    "title": "Q&A: Jacqueline's career has merged interest with impact, now she’s using AI to amplify both | Arcane Blog"
+                }
+            }
     multi-image:
     "content": {
                 "multiImage": {
@@ -398,6 +407,10 @@ def parse_post_media_content(content: Mapping[str, Any], media_type: str):
     # Check for single media content
     if "media" in content and content["media"]["id"].startswith(f"urn:li:{media_type}:"):
         media_ids.append(content["media"]["id"])
+
+    # Check for aricle content
+    if "article" in content and content["article"]["thumbnail"].startswith(f"urn:li:{media_type}:"):
+        media_ids.append(content["article"]["thumbnail"])
 
     # Check for multi-image
     if media_type == "image" and "multiImage" in content:
