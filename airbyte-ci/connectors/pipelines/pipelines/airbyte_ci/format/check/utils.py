@@ -39,7 +39,7 @@ def build_container(
     return check_container
 
 
-async def check(
+async def run_check(
     ctx: ClickPipelineContext,
     base_image: str,
     include: List[str],
@@ -60,10 +60,5 @@ async def check(
     """
     logger = logging.getLogger(f"format")
 
-    container = build_container(ctx, base_image, include, install_commands, check_commands, env_vars)
-    try:
-        await container.with_exec(sh_dash_c(check_commands))
-        return True
-    except dagger.ExecError as e:
-        logger.error(f"Failed to format code: {e}")
-        return False
+    container = build_container(ctx, base_image, include, install_commands, env_vars)
+    await container.with_exec(sh_dash_c(check_commands))

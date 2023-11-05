@@ -4,7 +4,7 @@ from typing import Optional
 
 import asyncclick as click
 import dagger
-from pipelines.airbyte_ci.format.fix.utils import format
+from pipelines.airbyte_ci.format.fix.utils import run_format
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
@@ -36,7 +36,7 @@ async def fix(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
 @click_ignore_unused_kwargs
 async def java(ctx: ClickPipelineContext):
     """Format java, groovy, and sql code via spotless."""
-    await format(
+    await run_format(
         ctx,
         base_image="openjdk:17.0.1-jdk-slim",
         include=[
@@ -61,7 +61,7 @@ async def java(ctx: ClickPipelineContext):
 @pass_pipeline_context
 @click_ignore_unused_kwargs
 async def js(ctx: ClickPipelineContext):
-    await format(
+    await run_format(
         ctx,
         base_image="node:18.18.0-slim",
         include=["**/*.yaml", "**/*.yml", "**.*/json", "package.json", "package-lock.json"],
@@ -77,7 +77,7 @@ async def license(ctx: ClickPipelineContext):
     """Add license to python and java code via addlicense."""
     license_file = "LICENSE_SHORT"
 
-    await format(
+    await run_format(
         ctx,
         base_image="golang:1.17",
         include=["**/*.java", "**/*.py", license_file],
@@ -91,7 +91,7 @@ async def license(ctx: ClickPipelineContext):
 @click_ignore_unused_kwargs
 async def python(ctx: ClickPipelineContext):
     """Format python code via black and isort."""
-    await format(
+    await run_format(
         ctx,
         base_image="python:3.10.13-slim",
         env_vars={"PIPX_BIN_DIR": "/usr/local/bin"},

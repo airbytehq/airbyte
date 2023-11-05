@@ -15,7 +15,7 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 pass_pipeline_context: LazyPassDecorator = LazyPassDecorator(ClickPipelineContext)
 
 
-async def format(
+async def run_format(
     ctx: ClickPipelineContext,
     base_image: str,
     include: List[str],
