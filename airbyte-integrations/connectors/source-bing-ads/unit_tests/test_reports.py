@@ -133,7 +133,7 @@ def test_get_report_record_timestamp_without_aggregation():
         UserLocationPerformanceReportHourly,
         GeographicPerformanceReportHourly,
         GeographicPerformanceReportHourly,
-     ),
+    ),
 )
 def test_get_report_record_timestamp_hourly(stream_report_daily_cls):
     stream_report = GeographicPerformanceReportHourly(client=Mock(), config=TEST_CONFIG)
