@@ -5,9 +5,10 @@ from itertools import product
 from typing import Any, List, Mapping, Tuple
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.utils import AirbyteTracedException
 from source_bing_ads.client import Client
 from source_bing_ads.streams import (  # noqa: F401
     AccountImpressionPerformanceReportDaily,
@@ -19,6 +20,10 @@ from source_bing_ads.streams import (  # noqa: F401
     AccountPerformanceReportMonthly,
     AccountPerformanceReportWeekly,
     Accounts,
+    AdGroupImpressionPerformanceReportDaily,
+    AdGroupImpressionPerformanceReportHourly,
+    AdGroupImpressionPerformanceReportMonthly,
+    AdGroupImpressionPerformanceReportWeekly,
     AdGroupLabels,
     AdGroupPerformanceReportDaily,
     AdGroupPerformanceReportHourly,
@@ -37,6 +42,10 @@ from source_bing_ads.streams import (  # noqa: F401
     AppInstallAdLabels,
     AppInstallAds,
     BudgetSummaryReport,
+    CampaignImpressionPerformanceReportDaily,
+    CampaignImpressionPerformanceReportHourly,
+    CampaignImpressionPerformanceReportMonthly,
+    CampaignImpressionPerformanceReportWeekly,
     CampaignLabels,
     CampaignPerformanceReportDaily,
     CampaignPerformanceReportHourly,
@@ -77,7 +86,11 @@ class SourceBingAds(AbstractSource):
             if account_ids:
                 return True, None
             else:
-                raise Exception("You don't have accounts assigned to this user.")
+                raise AirbyteTracedException(
+                    message="Config validation error: You don't have accounts assigned to this user.",
+                    internal_message="You don't have accounts assigned to this user.",
+                    failure_type=FailureType.config_error,
+                )
         except Exception as error:
             return False, error
 
@@ -105,7 +118,9 @@ class SourceBingAds(AbstractSource):
             "KeywordPerformanceReport",
             "AdGroupPerformanceReport",
             "AdPerformanceReport",
+            "AdGroupImpressionPerformanceReport",
             "CampaignPerformanceReport",
+            "CampaignImpressionPerformanceReport",
             "GeographicPerformanceReport",
             "SearchQueryPerformanceReport",
             "UserLocationPerformanceReport",
