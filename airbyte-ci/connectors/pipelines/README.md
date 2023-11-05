@@ -100,6 +100,9 @@ At this point you can run `airbyte-ci` commands.
 - [`connectors bump_version` command](#connectors-bump_version)
 - [`connectors upgrade_base_image` command](#connectors-upgrade_base_image)
 - [`connectors migrate_to_base_image` command](#connectors-migrate_to_base_image)
+- [`format` command subgroup](#format-subgroup)
+  * [`format check` command](#format-check-command)
+  * [`format fix` command](#format-fix-command)
 - [`metadata` command subgroup](#metadata-command-subgroup)
 - [`metadata validate` command](#metadata-validate-command)
   * [Example](#example)
@@ -367,6 +370,25 @@ Migrate source-openweather to use the base image: `airbyte-ci connectors --name=
 | Argument              | Description                                                 |
 | --------------------- | ----------------------------------------------------------- |
 | `PULL_REQUEST_NUMBER` | The GitHub pull request number, used in the changelog entry |
+
+### <a id="format-subgroup"></a>`format` command subgroup
+
+Available commands:
+* `airbyte-ci format check`
+* `airbyte-ci format fix`
+
+### <a id="format-check-command"></a>`format check` command
+
+This command runs formatting checks, but does not format the code in place. It will exit 1 as soon as a failure is encountered. To fix errors, use `airbyte-ci format fix`.
+
+Running `airbyte-ci format check` will run checks on all different types of code. Run `airbyte-ci format check --help` for subcommands to check formatting for only certain types of files.
+
+### <a id="format-fix-command"></a>`format fix` command
+
+This command runs formatting checks and reformats any code that would be reformatted, so it's recommended to stage changes you might have before running this command.
+
+Running `airbyte-ci format fix` will format all of the different types of code. Run `airbyte-ci format fix --help` for subcommands to format only certain types of files.
+
 
 ### <a id="metadata-validate-command-subgroup"></a>`metadata` command subgroup
 
