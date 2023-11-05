@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+import anyio
 import asyncclick as click
 import dagger
 from pipelines.airbyte_ci.format.check.java.commands import java
@@ -45,7 +46,8 @@ async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
 
         print("Running all checks...")
 
-        await ctx.invoke(java)
-        await ctx.invoke(js)
-        await ctx.invoke(license)
-        await ctx.invoke(python)
+        async with anyio.create_task_group() as check_group:
+            check_group.start_soon(ctx.invoke, java)
+            check_group.start_soon(ctx.invoke, js)
+            check_group.start_soon(ctx.invoke, license)
+            check_group.start_soon(ctx.invoke, python)
