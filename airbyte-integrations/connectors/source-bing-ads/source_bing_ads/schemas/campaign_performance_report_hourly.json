@@ -1,24 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "additionalProperties": true,
   "properties": {
     "AccountId": {
       "type": ["null", "integer"]
     },
     "CampaignId": {
-      "type": ["null", "integer"]
-    },
-    "AdGroupId": {
-      "type": ["null", "integer"]
-    },
-    "KeywordId": {
-      "type": ["null", "integer"]
-    },
-    "Keyword": {
-      "type": ["null", "string"]
-    },
-    "AdId": {
       "type": ["null", "integer"]
     },
     "TimePeriod": {
@@ -28,19 +15,16 @@
     "CurrencyCode": {
       "type": ["null", "string"]
     },
-    "DeliveredMatchType": {
-      "type": ["null", "string"]
-    },
     "AdDistribution": {
       "type": ["null", "string"]
     },
     "DeviceType": {
       "type": ["null", "string"]
     },
-    "Language": {
+    "Network": {
       "type": ["null", "string"]
     },
-    "Network": {
+    "DeliveredMatchType": {
       "type": ["null", "string"]
     },
     "DeviceOS": {
@@ -58,10 +42,13 @@
     "CampaignName": {
       "type": ["null", "string"]
     },
-    "AdGroupName": {
+    "CampaignType": {
       "type": ["null", "string"]
     },
-    "KeywordStatus": {
+    "CampaignStatus": {
+      "type": ["null", "string"]
+    },
+    "CampaignLabels": {
       "type": ["null", "string"]
     },
     "Impressions": {
@@ -73,9 +60,6 @@
     "Ctr": {
       "type": ["null", "number"]
     },
-    "CurrentMaxCpc": {
-      "type": ["null", "number"]
-    },
     "Spend": {
       "type": ["null", "number"]
     },
@@ -85,16 +69,19 @@
     "QualityScore": {
       "type": ["null", "number"]
     },
-    "ExpectedCtr": {
-      "type": ["null", "string"]
-    },
     "AdRelevance": {
       "type": ["null", "number"]
     },
     "LandingPageExperience": {
       "type": ["null", "number"]
     },
-    "QualityImpact": {
+    "PhoneImpressions": {
+      "type": ["null", "integer"]
+    },
+    "PhoneCalls": {
+      "type": ["null", "integer"]
+    },
+    "Ptr": {
       "type": ["null", "number"]
     },
     "Assists": {
@@ -109,26 +96,8 @@
     "CustomParameters": {
       "type": ["null", "string"]
     },
-    "FinalAppUrl": {
-      "type": ["null", "string"]
-    },
-    "Mainline1Bid": {
-      "type": ["null", "number"]
-    },
-    "MainlineBid": {
-      "type": ["null", "number"]
-    },
-    "FirstPageBid": {
-      "type": ["null", "number"]
-    },
-    "FinalUrlSuffix": {
-      "type": ["null", "string"]
-    },
     "ViewThroughConversions": {
       "type": ["null", "integer"]
-    },
-    "ViewThroughConversionsQualified": {
-      "type": ["null", "number"]
     },
     "AllCostPerConversion": {
       "type": ["null", "number"]
@@ -136,13 +105,19 @@
     "AllReturnOnAdSpend": {
       "type": ["null", "number"]
     },
-    "Conversions": {
-      "type": ["null", "number"]
-    },
-    "ConversionRate": {
-      "type": ["null", "number"]
+    "AllConversions": {
+      "type": ["null", "integer"]
     },
     "ConversionsQualified": {
+      "type": ["null", "number"]
+    },
+    "AllConversionRate": {
+      "type": ["null", "number"]
+    },
+    "AllRevenue": {
+      "type": ["null", "number"]
+    },
+    "AllRevenuePerConversion": {
       "type": ["null", "number"]
     },
     "AverageCpc": {
@@ -154,16 +129,28 @@
     "AverageCpm": {
       "type": ["null", "number"]
     },
-    "AllConversions": {
+    "Conversions": {
+      "type": ["null", "number"]
+    },
+    "ConversionRate": {
+      "type": ["null", "number"]
+    },
+    "LowQualityClicks": {
       "type": ["null", "integer"]
     },
-    "AllConversionRate": {
+    "LowQualityClicksPercent": {
       "type": ["null", "number"]
     },
-    "AllRevenue": {
-      "type": ["null", "number"]
+    "LowQualityImpressions": {
+      "type": ["null", "integer"]
     },
-    "AllRevenuePerConversion": {
+    "LowQualitySophisticatedClicks": {
+      "type": ["null", "integer"]
+    },
+    "LowQualityConversions": {
+      "type": ["null", "integer"]
+    },
+    "LowQualityConversionRate": {
       "type": ["null", "number"]
     },
     "Revenue": {
@@ -174,6 +161,15 @@
     },
     "RevenuePerAssist": {
       "type": ["null", "number"]
+    },
+    "BudgetName": {
+      "type": ["null", "string"]
+    },
+    "BudgetStatus": {
+      "type": ["null", "string"]
+    },
+    "BudgetAssociationStatus": {
+      "type": ["null", "string"]
     }
   }
 }
