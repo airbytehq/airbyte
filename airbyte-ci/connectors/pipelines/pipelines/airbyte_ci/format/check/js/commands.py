@@ -33,33 +33,32 @@ async def format_js(ctx: ClickPipelineContext) -> bool:
     logger = logging.getLogger(f"format")
 
     dagger_client = ctx.params["dagger_client"]
-    try:
-        format_container = (
-            dagger_client.container()
-            .from_("node:18.18.0-slim")
-            .with_exec(
-                sh_dash_c(
-                    [
-                        "apt-get update",
-                        "apt-get install -y bash",
-                    ]
-                )
-            )
-            .with_mounted_directory(
-                "/src",
-                dagger_client.host().directory(
-                    ".",
-                    include=["**/*.yaml", "**/*.yml", "**.*/json", "package.json", "package-lock.json"],
-                    exclude=DEFAULT_FORMAT_IGNORE_LIST,
-                ),
-            )
-            .with_workdir(f"/src")
-            .with_exec(["npm", "install", "-g", "npm@10.1.0"])
-            .with_exec(["npm", "install", "-g", "prettier@2.8.1"])
-            .with_exec(["prettier", "--check", "."])
-        )
 
-        await format_container
+    base_node_container = dagger_client.container().from_("node:18.18.0-slim")
+    check_js_container = (
+        base_node_container.with_exec(
+            sh_dash_c(
+                [
+                    "apt-get update",
+                    "apt-get install -y bash",
+                ]
+            )
+        )
+        .with_mounted_directory(
+            "/src",
+            dagger_client.host().directory(
+                ".",
+                include=["**/*.yaml", "**/*.yml", "**.*/json", "package.json", "package-lock.json"],
+                exclude=DEFAULT_FORMAT_IGNORE_LIST,
+            ),
+        )
+        .with_workdir("/src")
+        .with_exec(["npm", "install", "-g", "npm@10.1.0"])
+        .with_exec(["npm", "install", "-g", "prettier@2.8.1"])
+    )
+
+    try:
+        await check_js_container.with_exec(["prettier", "--check", "."])
         return True
     except dagger.ExecError as e:
         logger.error(f"Failed to format code")

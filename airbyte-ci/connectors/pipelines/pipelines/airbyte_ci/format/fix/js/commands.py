@@ -19,10 +19,10 @@ async def js(ctx: ClickPipelineContext):
     """Format yaml and json code via prettier."""
 
     dagger_client = ctx.params["dagger_client"]
+
+    base_node_container = dagger_client.container().from_("node:18.18.0-slim")
     format_container = (
-        dagger_client.container()
-        .from_("node:18.18.0-slim")
-        .with_exec(
+        base_node_container.with_exec(
             sh_dash_c(
                 [
                     "apt-get update",

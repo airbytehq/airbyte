@@ -19,10 +19,10 @@ async def java(ctx: ClickPipelineContext):
     """Format java, groovy, and sql code via spotless."""
     dagger_client = ctx.params["dagger_client"]
 
+    base_jdk_container = dagger_client.container().from_("openjdk:17.0.1-jdk-slim")
+
     format_container = (
-        dagger_client.container()
-        .from_("openjdk:17.0.1-jdk-slim")
-        .with_exec(
+        base_jdk_container.with_exec(
             sh_dash_c(
                 [
                     "apt-get update",

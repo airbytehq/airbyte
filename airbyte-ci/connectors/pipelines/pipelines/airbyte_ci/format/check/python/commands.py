@@ -32,35 +32,37 @@ async def format_python(ctx: ClickPipelineContext) -> bool:
     logger = logging.getLogger(f"format")
 
     dagger_client = ctx.params["dagger_client"]
-    try:
-        format_container = (
-            dagger_client.container()
-            .from_("python:3.10.13-slim")
-            .with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
-            .with_exec(
-                sh_dash_c(
-                    [
-                        "apt-get update",
-                        "apt-get install -y bash git curl",
-                        "pip install pipx",
-                        "pipx ensurepath",
-                        "pipx install poetry",
-                    ]
-                )
-            )
-            .with_mounted_directory(
-                "/src",
-                dagger_client.host().directory(
-                    ".", include=["**/*.py", "pyproject.toml", "poetry.lock"], exclude=DEFAULT_FORMAT_IGNORE_LIST
-                ),
-            )
-            .with_workdir(f"/src")
-            .with_exec(["poetry", "install"])
-            .with_exec(["poetry", "run", "isort", "--settings-file", "pyproject.toml", "--check-only", "."])
-            .with_exec(["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."])
-        )
 
-        await format_container
+    base_python_container = dagger_client.container().from_("python:3.10.13-slim")
+    check_python_container = (
+        base_python_container.with_env_variable("PIPX_BIN_DIR", "/usr/local/bin")
+        .with_exec(
+            sh_dash_c(
+                [
+                    "apt-get update",
+                    "apt-get install -y bash git curl",
+                    "pip install pipx",
+                    "pipx ensurepath",
+                    "pipx install poetry",
+                ]
+            )
+        )
+        .with_mounted_directory(
+            "/src",
+            dagger_client.host().directory(".", include=["**/*.py", "pyproject.toml", "poetry.lock"], exclude=DEFAULT_FORMAT_IGNORE_LIST),
+        )
+        .with_workdir(f"/src")
+        .with_exec(["poetry", "install"])
+        .with_exec(["poetry", "run", "isort", "--settings-file", "pyproject.toml", "--check-only", "."])
+        .with_exec(["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."])
+    )
+
+    try:
+        await (
+            check_python_container.with_exec(
+                ["poetry", "run", "isort", "--settings-file", "pyproject.toml", "--check-only", "."]
+            ).with_exec(["poetry", "run", "black", "--config", "pyproject.toml", "--check", "."])
+        )
         return True
 
     except dagger.ExecError as e:

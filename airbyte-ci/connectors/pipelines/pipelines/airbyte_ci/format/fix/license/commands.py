@@ -20,10 +20,11 @@ async def license(ctx: ClickPipelineContext):
     license_file = "LICENSE_SHORT"
 
     dagger_client = ctx.params["dagger_client"]
+
+    base_go_container = dagger_client.container().from_("golang:1.17")
+
     license_container = (
-        dagger_client.container()
-        .from_("golang:1.17")
-        .with_exec(sh_dash_c(["apt-get update", "apt-get install -y bash tree", "go get -u github.com/google/addlicense"]))
+        base_go_container.with_exec(sh_dash_c(["apt-get update", "apt-get install -y bash tree", "go get -u github.com/google/addlicense"]))
         .with_mounted_directory(
             "/src",
             dagger_client.host().directory(
