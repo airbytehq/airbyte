@@ -342,6 +342,7 @@ class AdPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
 
 class AdPerformanceReportHourly(HourlyReportTransformerMixin, AdPerformanceReport):
     report_aggregation = "Hourly"
+    report_schema_name = "ad_performance_report_hourly"
 
 
 class AdPerformanceReportDaily(AdPerformanceReport):
@@ -358,7 +359,6 @@ class AdPerformanceReportMonthly(AdPerformanceReport):
 
 class AdGroupPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
     report_name: str = "AdGroupPerformanceReport"
-
     report_schema_name = "ad_group_performance_report"
 
     primary_key = [
@@ -380,7 +380,6 @@ class AdGroupPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
 
 class AdGroupPerformanceReportHourly(HourlyReportTransformerMixin, AdGroupPerformanceReport):
     report_aggregation = "Hourly"
-
     report_schema_name = "ad_group_performance_report_hourly"
 
 
@@ -404,7 +403,6 @@ class AdGroupImpressionPerformanceReport(BingAdsReportingServicePerformanceStrea
     """
 
     report_name: str = "AdGroupPerformanceReport"
-
     report_schema_name = "ad_group_impression_performance_report"
 
 
@@ -428,7 +426,6 @@ class AdGroupImpressionPerformanceReportMonthly(AdGroupImpressionPerformanceRepo
 class KeywordPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
 
     report_name: str = "KeywordPerformanceReport"
-
     report_schema_name = "keyword_performance_report"
     primary_key = [
         "AccountId",
@@ -469,7 +466,6 @@ class KeywordPerformanceReportMonthly(KeywordPerformanceReport):
 class GeographicPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
 
     report_name: str = "GeographicPerformanceReport"
-
     report_schema_name = "geographic_performance_report"
 
     # Need to override the primary key here because the one inherited from the PerformanceReportsMixin
@@ -496,7 +492,6 @@ class GeographicPerformanceReportMonthly(GeographicPerformanceReport):
 class AccountPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
 
     report_name: str = "AccountPerformanceReport"
-
     report_schema_name = "account_performance_report"
     primary_key = [
         "AccountId",
@@ -542,7 +537,6 @@ class AccountImpressionPerformanceReport(BingAdsReportingServicePerformanceStrea
 
 class AccountImpressionPerformanceReportHourly(HourlyReportTransformerMixin, AccountImpressionPerformanceReport):
     report_aggregation = "Hourly"
-
     report_schema_name = "account_impression_performance_report_hourly"
 
 

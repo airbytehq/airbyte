@@ -18,12 +18,6 @@
       "type": ["null", "string"],
       "format": "date"
     },
-    "AbsoluteTopImpressionRatePercent": {
-      "type": ["null", "number"]
-    },
-    "TopImpressionRatePercent": {
-      "type": ["null", "number"]
-    },
     "CurrencyCode": {
       "type": ["null", "string"]
     },
