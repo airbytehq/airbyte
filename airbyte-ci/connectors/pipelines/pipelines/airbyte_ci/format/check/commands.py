@@ -45,5 +45,3 @@ async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
             check_group.start_soon(ctx.invoke, check.get_command(ctx, "js"))
             check_group.start_soon(ctx.invoke, check.get_command(ctx, "license"))
             check_group.start_soon(ctx.invoke, check.get_command(ctx, "python"))
-    
-

@@ -6,6 +6,7 @@ from typing import Optional
 
 import asyncclick as click
 import dagger
+from pipelines.airbyte_ci.format.check.utils import check
 from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs
 from pipelines.helpers.utils import sh_dash_c
@@ -17,37 +18,14 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 @click_ignore_unused_kwargs
 async def license(ctx: ClickPipelineContext):
     """Add license to python and java code via addlicense."""
-    success = await format_license(ctx)
+    license_file = "LICENSE_SHORT"
+
+    success = await check(
+        ctx,
+        base_image="golang:1.17",
+        include=["**/*.java", "**/*.py", license_file],
+        install_commands=["go get -u github.com/google/addlicense"],
+        check_commands=[f"addlicense -c 'Airbyte, Inc.' -l apache -v -f {license_file} --check ."],
+    )
     if not success:
         sys.exit(1)
-
-
-async def format_license(ctx: ClickPipelineContext) -> bool:
-    license_text = "LICENSE_SHORT"
-    logger = logging.getLogger(f"format")
-
-    dagger_client = ctx.params["dagger_client"]
-
-    base_go_container = dagger_client.container().from_("golang:1.17")
-    check_license_container = (
-        base_go_container.with_exec(sh_dash_c(["apt-get update", "apt-get install -y bash tree", "go get -u github.com/google/addlicense"]))
-        .with_mounted_directory(
-            "/src",
-            dagger_client.host().directory(
-                ".",
-                include=["**/*.java", "**/*.py", "LICENSE_SHORT"],
-                exclude=DEFAULT_FORMAT_IGNORE_LIST,
-            ),
-        )
-        .with_workdir("/src")
-    )
-
-    try:
-        await check_license_container.with_exec(
-            ["addlicense", "-c", "Airbyte, Inc.", "-l", "apache", "-v", "-f", license_text, "--check", "."]
-        )
-        return True
-    except dagger.ExecError as e:
-        logger.error("Failed to apply license")
-        logger.error(e.stderr)
-        return False

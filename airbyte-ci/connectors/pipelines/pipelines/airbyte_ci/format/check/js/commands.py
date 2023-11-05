@@ -6,6 +6,7 @@ from typing import Optional
 
 import asyncclick as click
 import dagger
+from pipelines.airbyte_ci.format.check.utils import check
 from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs
 from pipelines.helpers.utils import sh_dash_c
@@ -17,50 +18,12 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 @click_ignore_unused_kwargs
 async def js(ctx: ClickPipelineContext):
     """Format yaml and json code via prettier."""
-
-    success = await format_js(ctx)
+    success = await check(
+        ctx,
+        base_image="node:18.18.0-slim",
+        include=["**/*.yaml", "**/*.yml", "**.*/json", "package.json", "package-lock.json"],
+        install_commands=["npm install -g npm@10.1.0", "npm install -g prettier@2.8.1"],
+        check_commands=["prettier --check ."],
+    )
     if not success:
         sys.exit(1)
-
-
-async def format_js(ctx: ClickPipelineContext) -> bool:
-    """Checks whether the repository is formatted correctly.
-    Args:
-        fix (bool): Whether to automatically fix any formatting issues detected.
-    Returns:
-        bool: True if the check/format succeeded, false otherwise
-    """
-    logger = logging.getLogger(f"format")
-
-    dagger_client = ctx.params["dagger_client"]
-
-    base_node_container = dagger_client.container().from_("node:18.18.0-slim")
-    check_js_container = (
-        base_node_container.with_exec(
-            sh_dash_c(
-                [
-                    "apt-get update",
-                    "apt-get install -y bash",
-                ]
-            )
-        )
-        .with_mounted_directory(
-            "/src",
-            dagger_client.host().directory(
-                ".",
-                include=["**/*.yaml", "**/*.yml", "**.*/json", "package.json", "package-lock.json"],
-                exclude=DEFAULT_FORMAT_IGNORE_LIST,
-            ),
-        )
-        .with_workdir("/src")
-        .with_exec(["npm", "install", "-g", "npm@10.1.0"])
-        .with_exec(["npm", "install", "-g", "prettier@2.8.1"])
-    )
-
-    try:
-        await check_js_container.with_exec(["prettier", "--check", "."])
-        return True
-    except dagger.ExecError as e:
-        logger.error(f"Failed to format code")
-        logger.error(e.stderr)
-        return False
