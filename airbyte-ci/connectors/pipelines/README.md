@@ -377,6 +377,10 @@ Available commands:
 * `airbyte-ci format check`
 * `airbyte-ci format fix`
 
+### Examples
+- Check for formatting errors in the repository: `airbyte-ci format check`
+- Fix formatting for only python files: `airbyte-ci format fix python`
+
 ### <a id="format-check-command"></a>`format check` command
 
 This command runs formatting checks, but does not format the code in place. It will exit 1 as soon as a failure is encountered. To fix errors, use `airbyte-ci format fix`.
