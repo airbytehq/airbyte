@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { BigButton, ButtonRows } from "components/base/Button/BigButton";
+import { CustomButton, ButtonRows } from "components/base/Button/CustomButton";
 
 import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
 
@@ -55,12 +55,12 @@ const CreateControls: React.FC<CreateControlProps> = ({
       {errorMessage && !fetchingConnectorError && <TestingConnectionError errorMessage={errorMessage} />}
       {fetchingConnectorError && <FetchingConnectorError />}
       <ButtonRows top="0" width={isEditMode ? "calc(100% - 18px)" : "calc(100% - 90px)"} position="absolute">
-        <BigButton type="button" onClick={onBack} secondary>
+        <CustomButton type="button" onClick={onBack} secondary>
           <FormattedMessage id="form.button.back" />
-        </BigButton>
-        <BigButton type="submit" disabled={disabled}>
+        </CustomButton>
+        <CustomButton type="submit" disabled={disabled}>
           <FormattedMessage id="form.button.saveTest" />
-        </BigButton>
+        </CustomButton>
       </ButtonRows>
     </ButtonContainer>
   );
