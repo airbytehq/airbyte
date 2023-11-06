@@ -88,11 +88,15 @@ class Creatives(HttpSubStream, ApplovinStream):
     # as of now Applovin's rate limit is around 2000 request per *hour*
     @property
     def max_retries(self) -> Union[int, None]:
-        return 15
+        return None
 
     @property
     def retry_factor(self) -> float:
         return 120.0
+
+    @property
+    def max_time(self) -> float:
+        return 7200
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         campaign_id = stream_slice["campaign_id"]
