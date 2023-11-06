@@ -585,7 +585,7 @@ class LowCodeHttpRequester(HttpRequester):
         )
 
     # fixing request options provider types has a lot of dependencies
-    def get_request_body_data(  # type: ignore
+    def get_request_body_data(  # type: ignore[override]
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -599,8 +599,7 @@ class LowCodeHttpRequester(HttpRequester):
             or {}
         )
 
-    # fixing request options provider types has a lot of dependencies
-    def get_request_body_json(  # type: ignore
+    def get_request_body_json(
         self,
         *,
         stream_state: Optional[StreamState] = None,
@@ -624,7 +623,7 @@ class SourceHttpRequester(HttpRequester):
         error_handler: Optional[ErrorHandler] = None,
         disable_retries: bool = False,
         message_repository: MessageRepository = NoopMessageRepository(),
-        request_parameters: Optional[Mapping[str, Any]] = None,
+        request_parameters: Optional[MutableMapping[str, Any]] = None,
         request_headers: Optional[Mapping[str, Any]] = None,
         request_body_data: Optional[Mapping[str, Any]] = None,
         request_body_json: Optional[Mapping[str, Any]] = None,
@@ -654,13 +653,13 @@ class SourceHttpRequester(HttpRequester):
     ) -> str:
         return self._path
 
-    def get_request_params(  # type: ignore[override]
+    def get_request_params(
         self,
         *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
+    ) -> MutableMapping[str, Any]:
         return self.request_parameters
 
     def get_request_headers(
@@ -672,13 +671,13 @@ class SourceHttpRequester(HttpRequester):
     ) -> Mapping[str, Any]:
         return self.request_headers
 
-    def get_request_body_data(  # type: ignore[override]
+    def get_request_body_data(
         self,
         *,
         stream_state: Optional[StreamState] = None,
         stream_slice: Optional[StreamSlice] = None,
         next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Union[Mapping[str, Any], str]:
+    ) -> Optional[Mapping[str, Any]]:
         return self.request_body_data
 
     def get_request_body_json(
