@@ -29,8 +29,8 @@ public class PostgresUtils {
   public static PgLsn getLsnImpl(final JdbcDatabase database, final String lsnFuncName) throws SQLException {
     final String query = "SELECT * FROM " + lsnFuncName + "()";
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
-            conn -> conn.createStatement().executeQuery(query),
-            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+        conn -> conn.createStatement().executeQuery(query),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
     return PgLsn.fromPgString(jsonNodes.get(0).get(lsnFuncName).asText());
   }
