@@ -239,6 +239,12 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final TyperDeduper typerDeduper = buildTyperDeduper(sqlGenerator, parsedCatalog, bigquery, datasetLocation, disableTypeDedupe);
 
     AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(config);
+    final JsonNode serviceAccountKey = config.get(BigQueryConsts.CONFIG_CREDS);
+    if (serviceAccountKey.isTextual()) {
+      AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(Jsons.deserialize(serviceAccountKey.asText()));
+    } else {
+      AirbyteExceptionHandler.addAllStringsInConfigForDeinterpolation(serviceAccountKey);
+    }
 
     if (uploadingMethod == UploadingMethod.STANDARD) {
       LOGGER.warn("The \"standard\" upload mode is not performant, and is not recommended for production. " +
