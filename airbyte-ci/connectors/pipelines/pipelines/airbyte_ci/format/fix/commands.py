@@ -1,16 +1,16 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import Optional
+from typing import List, Optional
 
 import asyncclick as click
 import dagger
+from pipelines.airbyte_ci.format.actions import run_format
 from pipelines.airbyte_ci.format.containers import (
     format_java_container,
     format_js_container,
     format_license_container,
     format_python_container,
 )
-from pipelines.airbyte_ci.format.fix.utils import run_format
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
 from pipelines.cli.lazy_group import LazyGroup
 from pipelines.helpers.utils import sh_dash_c
