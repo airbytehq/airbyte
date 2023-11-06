@@ -182,7 +182,7 @@ def test_report_get_start_date_with_stream_state():
     test_report = TestReport()
     test_report.cursor_field = "cursor_field"
     test_report.client.reports_start_date = "2020-01-01"
-    stream_state = {"123": {"cursor_field": 1681766997}}
+    stream_state = {"123": {"cursor_field": "2023-04-17T21:29:57+00:00"}}
     account_id = "123"
     assert expected_start_date == test_report.get_start_date(stream_state, account_id)
 
@@ -192,7 +192,7 @@ def test_report_get_start_date_performance_report_with_stream_state():
     test_report = TestPerformanceReport()
     test_report.cursor_field = "cursor_field"
     test_report.config = {"lookback_window": 10}
-    stream_state = {"123": {"cursor_field": 1681766997}}
+    stream_state = {"123": {"cursor_field": "2023-04-17T21:29:57+00:00"}}
     account_id = "123"
     assert expected_start_date == test_report.get_start_date(stream_state, account_id)
 
