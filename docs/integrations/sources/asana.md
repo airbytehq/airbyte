@@ -41,6 +41,7 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 - [Custom fields](https://developers.asana.com/docs/custom-fields)
 - [Projects](https://developers.asana.com/docs/projects)
 - [Portfolios](https://developers.asana.com/docs/portfolios)
+- [PortfolioMemberships](https://developers.asana.com/reference/portfolio-memberships)
 - [Sections](https://developers.asana.com/docs/sections)
 - [Stories](https://developers.asana.com/docs/stories)
 - [Tags](https://developers.asana.com/docs/tags)
@@ -69,6 +70,7 @@ The connector is restricted by normal Asana [requests limitation](https://develo
 
 | Version | Date       | Pull Request                                             | Subject                                                           |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------------- |
+| 0.6.0   | 2023-11-03 | [31110](https://github.com/airbytehq/airbyte/pull/31110) | Add new stream Portfolio Memberships with Parent Portfolio        |
 | 0.5.0   | 2023-10-30 | [31114](https://github.com/airbytehq/airbyte/pull/31114) | Add Portfolios stream |
 | 0.4.0   | 2023-10-24 | [31084](https://github.com/airbytehq/airbyte/pull/31084) | Add StoriesCompact stream                                         |
 | 0.3.0   | 2023-10-24 | [31634](https://github.com/airbytehq/airbyte/pull/31634) | Add OrganizationExports stream                                    |
