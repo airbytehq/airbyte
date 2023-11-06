@@ -1,55 +1,50 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
-    "object": { "type": "string" },
+    "type": { "type": "string" },
     "id": { "type": "string" },
-    "name": { "type": "string" },
-    "created": { "type": ["null", "string"], "format": "date-time" },
-    "updated": { "type": ["null", "string"], "format": "date-time" },
-    "status": { "type": "string" },
-    "status_id": { "type": "integer" },
-    "status_label": { "type": "string" },
-    "from_name": { "type": "string" },
-    "from_email": { "type": "string" },
-    "num_recipients": { "type": "integer" },
-    "lists": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "object": { "type": "string" },
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "created": { "type": "string", "format": "date-time" },
-          "updated": { "type": "string", "format": "date-time" },
-          "person_count": { "type": "integer" },
-          "list_type": { "type": "string" },
-          "folder": { "type": ["null", "string"] }
-        }
+    "updated_at": { "type": ["null", "string"], "format": "date-time" },
+    "attributes": {
+      "type": ["null", "object"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string" },
+        "status": { "type": "string" },
+        "archived": { "type": "boolean" },
+        "channel": { "type": "string" },
+        "audiences": {
+          "type": ["null", "object"],
+          "additionalProperties": true
+        },
+        "send_options": {
+          "type": ["null", "object"],
+          "properties": {
+            "use_smart_sending": { "type": "boolean" }
+          }
+        },
+        "message": { "type": "string" },
+        "tracking_options": {
+          "type": ["null", "object"],
+          "additionalProperties": true
+        },
+        "send_strategy": {
+          "type": ["null", "object"],
+          "additionalProperties": true
+        },
+        "created_at": { "type": ["null", "string"], "format": "date-time" },
+        "scheduled_at": { "type": ["null", "string"], "format": "date-time" },
+        "updated_at": { "type": ["null", "string"], "format": "date-time" },
+        "send_time": { "type": ["null", "string"], "format": "date-time" }
       }
     },
-    "excluded_lists": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "object": { "type": "string" },
-          "id": { "type": "string" },
-          "name": { "type": "string" },
-          "created": { "type": "string", "format": "date-time" },
-          "updated": { "type": "string", "format": "date-time" },
-          "person_count": { "type": "integer" },
-          "list_type": { "type": "string" },
-          "folder": { "type": ["null", "string"] }
-        }
-      }
+    "links": {
+      "type": ["null", "object"],
+      "additionalProperties": true
     },
-    "is_segmented": { "type": "boolean" },
-    "send_time": { "type": ["null", "string"], "format": "date-time" },
-    "sent_at": { "type": ["null", "string"], "format": "date-time" },
-    "campaign_type": { "type": "string" },
-    "subject": { "type": ["null", "string"] },
-    "message_type": { "type": "string" },
-    "template_id": { "type": ["null", "string"] }
+    "relationships": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    }
   }
 }
