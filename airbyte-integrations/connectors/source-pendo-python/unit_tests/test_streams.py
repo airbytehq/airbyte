@@ -3,12 +3,9 @@
 #
 
 from http import HTTPStatus
-import json
 from unittest.mock import MagicMock
 
 import pytest
-import requests
-import responses
 from source_pendo_python.source import SourcePendoPython
 from source_pendo_python.streams import (
   PendoPythonStream,
@@ -70,24 +67,49 @@ def test_parse_response(patch_base_class):
     assert next(stream.parse_response(**inputs)) == expected_parsed_object[0]
 
 
-def test_get_valid_field_info(patch_base_class):
+@pytest.mark.parametrize(
+    ("input_type", "output"),
+    [
+        ("time", {
+            "type": ["null", "integer"]
+        }),
+        ("list", {
+            "type": ["null", "array"]
+        }),
+        ("", {
+            "type": ["null", "array", "string", "integer", "boolean"]
+        }),
+        ("random", {
+            "type": ["null", "random"]
+        }),
+    ],
+)
+def test_get_valid_field_info(patch_base_class, input_type, output):
     stream = PendoPythonStream()
-    input = "time"
-    assert stream.get_valid_field_info(input) == {
-        "type": ["null", "integer"]
-    }
-    input = "list"
-    assert stream.get_valid_field_info(input) == {
-        "type": ["null", "array"]
-    }
-    input = ""
-    assert stream.get_valid_field_info(input) == {
-        "type": ["null", "array", "string", "integer", "boolean"]
-    }
-    input = "random"
-    assert stream.get_valid_field_info(input) == {
-        "type": ["null", "random"]
-    }
+    assert stream.get_valid_field_info(input_type) == output
+
+
+@pytest.mark.parametrize(
+    ("http_status", "should_retry"),
+    [
+        (HTTPStatus.OK, False),
+        (HTTPStatus.BAD_REQUEST, False),
+        (HTTPStatus.TOO_MANY_REQUESTS, True),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, True),
+    ],
+)
+def test_should_retry(patch_base_class, http_status, should_retry):
+    response_mock = MagicMock()
+    response_mock.status_code = http_status
+    stream = PendoPythonStream()
+    assert stream.should_retry(response_mock) == should_retry
+
+
+def test_backoff_time(patch_base_class):
+    response_mock = MagicMock()
+    stream = PendoPythonStream()
+    expected_backoff_time = None
+    assert stream.backoff_time(response_mock) == expected_backoff_time
 
 
 # THE FOLLOWING TEST THE PendoAggregationStream SUBCLASS
@@ -192,65 +214,20 @@ def test_build_request_body_pagination(patch_aggregation_class):
     assert stream.build_request_body(**inputs) == expected_body
 
 
-# @pytest.mark.parametrize(
-#     ("http_status", "should_retry"),
-#     [
-#         (HTTPStatus.OK, False),
-#         (HTTPStatus.BAD_REQUEST, False),
-#         (HTTPStatus.TOO_MANY_REQUESTS, True),
-#         (HTTPStatus.INTERNAL_SERVER_ERROR, True),
-#     ],
-# )
-# def test_should_retry(patch_base_class, http_status, should_retry):
-#     response_mock = MagicMock()
-#     response_mock.status_code = http_status
-#     stream = PendoPythonStream()
-#     assert stream.should_retry(response_mock) == should_retry
-
-
-# def test_backoff_time(patch_base_class):
-#     response_mock = MagicMock()
-#     stream = PendoPythonStream()
-#     expected_backoff_time = None
-#     assert stream.backoff_time(response_mock) == expected_backoff_time
-
-
-# def test_account_stream(config):
-#     authenticator = SourcePendoPython._get_authenticator(config)
-#     stream = Accounts(authenticator)
-#     assert True is True
-
-
-# def test_feature_stream():
-#     stream = Feature()
-#     assert True is True
-
-
-# def test_guide_stream():
-#     stream = Guide()
-#     assert True is True
-
-
-# def test_page_stream():
-#     stream = Page()
-#     assert True is True
-
-
-# def test_report_stream():
-#     stream = Report()
-#     assert True is True
-
-
-# def test_account_metadata_stream():
-#     stream = AccountMetadata()
-#     assert True is True
-
-
-# def test_visitor_metadata_stream():
-#     stream = VisitorMetadata()
-#     assert True is True
-
-
-# def test_visitor_stream():
-#     stream = Visitors()
-#     assert True is True
+@pytest.mark.parametrize(
+    ("stream_to_test", "name"),
+    [
+        (Accounts, "account"),
+        (Feature, "feature"),
+        (Guide, "guide"),
+        (Page, "page"),
+        (Report, "report"),
+        (AccountMetadata, "account metadata"),
+        (VisitorMetadata, "visitor metadata"),
+        (Visitors, "visitor"),
+    ],
+)
+def test_stream_instances(config, stream_to_test, name):
+    authenticator = SourcePendoPython._get_authenticator(config)
+    stream = stream_to_test(authenticator)
+    assert stream.name == name
