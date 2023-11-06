@@ -36,6 +36,9 @@ class StepToRun:
     args: ARGS_TYPE = field(default_factory=dict)
     depends_on: List[str] = field(default_factory=list)
 
+STEP_TREE = List[StepToRun | List[StepToRun]]
+
+
 async def evaluate_run_args(args: ARGS_TYPE, results: Dict[str, StepResult]) -> Dict:
     if inspect.iscoroutinefunction(args):
         return await args(results)
@@ -48,36 +51,37 @@ def _get_step_id_str(step: StepToRun, skip_steps: List[str] = []) -> str:
     will_be_skipped = step.id in skip_steps
     return f"{step.id} (skipped)" if will_be_skipped else step.id
 
-def pretty_log_steps_tree(steps: List[StepToRun | List[StepToRun]], skip_steps: List[str] = []):
+def pretty_log_steps_tree(steps: STEP_TREE, skip_steps: List[str] = [], level: int = 0):
     """
     Outout a pretty log of the steps tree based on the runnable
 
     e.g.
     Steps to run:
     - metadata_validation
-    - [version_follow_check, version_increment_check]
-    - [run_all_tests, run_qa_checks]
+        - metadata_checks
+        - metadata_bump
+        - version_follow_check, version_increment_check
+    - run_all_tests, run_qa_checks
     - test_steps
     """
+    indent = "    " * level
     main_logger.info("Steps to Run:")
     for step in steps:
         if isinstance(step, StepToRun):
-            main_logger.info(f"- {_get_step_id_str(step, skip_steps)}")
+            main_logger.info(f"{indent}- {_get_step_id_str(step, skip_steps)}")
         elif isinstance(step, list):
-            ids = [_get_step_id_str(step, skip_steps) for step in step]
-            ids_str = ", ".join(ids)
-            main_logger.info(f"- [{ids_str}]")
+            pretty_log_steps_tree(step, skip_steps, level + 1)
         else:
             raise Exception(f"Unexpected step type: {type(step)}")
 
-def _skip_remaining_steps(remaining_steps: List[str]) -> bool:
+def _skip_remaining_steps(remaining_steps: STEP_TREE) -> bool:
     skipped_results = {}
     for runnable_step in remaining_steps:
         if isinstance(runnable_step, StepToRun):
             skipped_results[runnable_step.id] = runnable_step.step.skip()
         elif isinstance(runnable_step, list):
-            for step in runnable_step:
-                skipped_results[step.id] = step.step.skip()
+            nested_skipped_results = _skip_remaining_steps(runnable_step)
+            skipped_results = {**skipped_results, **nested_skipped_results}
         else:
             raise Exception(f"Unexpected step type: {type(runnable_step)}")
 
@@ -86,9 +90,15 @@ def _skip_remaining_steps(remaining_steps: List[str]) -> bool:
 def _step_dependencies_succeeded(depends_on: List[str], results: Dict[str, StepResult]) -> bool:
     return all(results[step_id].status is StepStatus.SUCCESS for step_id in depends_on)
 
-def _filter_skipped_steps(steps_to_evaluate: List[StepToRun], skip_steps: List[str], results: Dict[str, StepResult]) -> Tuple[List[StepToRun], Dict[str, StepResult]]:
+def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], results: Dict[str, StepResult]) -> Tuple[STEP_TREE, Dict[str, StepResult]]:
     steps_to_run = []
     for step_to_eval in steps_to_evaluate:
+
+        # ignore nested steps
+        if isinstance(step_to_eval, list):
+            steps_to_run.append(step_to_eval)
+            continue
+
         # skip step if its id is in the skip list
         if step_to_eval.id in skip_steps:
             main_logger.info(f"Skipping step {step_to_eval.id}")
@@ -104,9 +114,17 @@ def _filter_skipped_steps(steps_to_evaluate: List[StepToRun], skip_steps: List[s
 
     return steps_to_run, results
 
-# TODO add tests
+def _get_next_step_group(steps: STEP_TREE) -> Tuple[STEP_TREE, STEP_TREE]:
+    if not steps:
+        return [], []
+
+    if isinstance(steps[0], list):
+        return steps[0], steps[1:]
+    else:
+        return steps, []
+
 async def run_steps(
-    runnables: List[StepToRun | List[StepToRun]],
+    runnables: STEP_TREE,
     results: Dict[str, StepResult] = {},
     options: RunStepOptions = RunStepOptions(),
 ) -> Dict[str, StepResult]:
@@ -144,8 +162,8 @@ async def run_steps(
     Returns:
         Dict[str, StepResult]: Dictionary of step results.
     """
-    if runnables and results == {}:
-        pretty_log_steps_tree(runnables, options.skip_steps)
+    # if runnables and results == {}:
+    #     pretty_log_steps_tree(runnables, options.skip_steps)
 
     # If there are no steps to run, return the results
     if not runnables:
@@ -157,21 +175,31 @@ async def run_steps(
         return {**results, **skipped_results}
 
     # Pop the next step to run
-    steps_to_evaluate, remaining_steps = runnables[0], runnables[1:]
+    steps_to_evaluate, remaining_steps = _get_next_step_group(runnables)
 
-    # wrap the step in a list if it is not already (allows for parallel steps)
-    if not isinstance(steps_to_evaluate, list):
-        steps_to_evaluate = [steps_to_evaluate]
-
+    # Remove any skipped steps
     steps_to_run, results = _filter_skipped_steps(steps_to_evaluate, options.skip_steps, results)
 
+    # Run all steps in list concurrently
     async with asyncer.create_task_group() as task_group:
         tasks = []
         for step_to_run in steps_to_run:
-            step_args = await evaluate_run_args(step_to_run.args, results)
-            tasks.append(task_group.soonify(step_to_run.step.run)(**step_args))
+            # if the step to run is a list, run it in parallel
+            if isinstance(step_to_run, list):
+                tasks.append(task_group.soonify(run_steps)(step_to_run, results, options))
+            else:
+                step_args = await evaluate_run_args(step_to_run.args, results)
+                tasks.append(task_group.soonify(step_to_run.step.run)(**step_args))
 
-    new_results = {steps_to_run[i].id: task.value for i, task in enumerate(tasks)}
+    # apply new results
+    new_results = {}
+    for i, task in enumerate(tasks):
+        # steps_to_run[i].id: task.value
+        step_to_run = steps_to_run[i]
+        if isinstance(step_to_run, list):
+            new_results = {**new_results, **task.value}
+        else:
+            new_results[step_to_run.id] = task.value
 
     return await run_steps(
         runnables=remaining_steps,
