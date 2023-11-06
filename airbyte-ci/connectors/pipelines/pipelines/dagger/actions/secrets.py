@@ -133,7 +133,7 @@ async def get_connector_secrets(context: ConnectorContext) -> dict[str, Secret]:
     return connector_secrets
 
 
-async def mounted_connector_secrets(context: PipelineContext, secret_directory_path: str) -> Callable[[Container], Container]:
+async def mounted_connector_secrets(context: ConnectorContext, secret_directory_path: str) -> Callable[[Container], Container]:
     # By default, mount the secrets properly as dagger secret files.
     #
     # This will cause the contents of these files to be scrubbed from the logs. This scrubbing comes at the cost of

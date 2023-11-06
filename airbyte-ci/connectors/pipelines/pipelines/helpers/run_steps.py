@@ -159,6 +159,7 @@ async def run_steps(
                 tasks.append(task_group.soonify(run_steps)(step_to_run, results, options))
             else:
                 step_args = await evaluate_run_args(step_to_run.args, results)
+                main_logger.info(f"QUEUING STEP {step_to_run.id}")
                 tasks.append(task_group.soonify(step_to_run.step.run)(**step_args))
 
     # apply new results

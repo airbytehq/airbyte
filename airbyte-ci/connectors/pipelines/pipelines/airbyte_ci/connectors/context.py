@@ -108,6 +108,7 @@ class ConnectorContext(PipelineContext):
         self.s3_build_cache_access_key_id = s3_build_cache_access_key_id
         self.s3_build_cache_secret_key = s3_build_cache_secret_key
         self.concurrent_cat = concurrent_cat
+        self._connector_secrets = None
 
         super().__init__(
             pipeline_name=pipeline_name,
@@ -205,11 +206,10 @@ class ConnectorContext(PipelineContext):
             return None
         return self.dagger_client.set_secret("docker_hub_password", self.docker_hub_password)
 
-
-
-    @functools.cache
     async def connector_secrets(self):
-        return await secrets.get_connector_secrets(self)
+        if self._connector_secrets is None:
+            self._connector_secrets = await secrets.get_connector_secrets(self)
+        return self._connector_secrets
 
     async def get_connector_dir(self, exclude=None, include=None) -> Directory:
         """Get the connector under test source code directory.
