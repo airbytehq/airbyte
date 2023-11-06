@@ -448,6 +448,7 @@ class KeywordPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
 
 class KeywordPerformanceReportHourly(HourlyReportTransformerMixin, KeywordPerformanceReport):
     report_aggregation = "Hourly"
+    report_schema_name = "keyword_performance_report_hourly"
 
 
 class KeywordPerformanceReportDaily(KeywordPerformanceReport):
@@ -510,6 +511,7 @@ class AccountPerformanceReport(BingAdsReportingServicePerformanceStream, ABC):
 
 class AccountPerformanceReportHourly(HourlyReportTransformerMixin, AccountPerformanceReport):
     report_aggregation = "Hourly"
+    report_schema_name = "account_performance_report_hourly"
 
 
 class AccountPerformanceReportDaily(AccountPerformanceReport):

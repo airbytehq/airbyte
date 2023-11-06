@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "AccountId": {
       "type": ["null", "integer"]
@@ -11,6 +12,12 @@
     "AdGroupId": {
       "type": ["null", "integer"]
     },
+    "KeywordId": {
+      "type": ["null", "integer"]
+    },
+    "Keyword": {
+      "type": ["null", "string"]
+    },
     "AdId": {
       "type": ["null", "integer"]
     },
@@ -20,6 +27,9 @@
       "airbyte_type": "timestamp_with_timezone"
     },
     "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "DeliveredMatchType": {
       "type": ["null", "string"]
     },
     "AdDistribution": {
@@ -43,19 +53,16 @@
     "BidMatchType": {
       "type": ["null", "string"]
     },
-    "DeliveredMatchType": {
-      "type": ["null", "string"]
-    },
     "AccountName": {
       "type": ["null", "string"]
     },
     "CampaignName": {
       "type": ["null", "string"]
     },
-    "CampaignType": {
+    "AdGroupName": {
       "type": ["null", "string"]
     },
-    "AdGroupName": {
+    "KeywordStatus": {
       "type": ["null", "string"]
     },
     "Impressions": {
@@ -67,14 +74,29 @@
     "Ctr": {
       "type": ["null", "number"]
     },
+    "CurrentMaxCpc": {
+      "type": ["null", "number"]
+    },
     "Spend": {
       "type": ["null", "number"]
     },
     "CostPerConversion": {
       "type": ["null", "number"]
     },
-    "DestinationUrl": {
+    "QualityScore": {
+      "type": ["null", "number"]
+    },
+    "ExpectedCtr": {
       "type": ["null", "string"]
+    },
+    "AdRelevance": {
+      "type": ["null", "number"]
+    },
+    "LandingPageExperience": {
+      "type": ["null", "number"]
+    },
+    "QualityImpact": {
+      "type": ["null", "number"]
     },
     "Assists": {
       "type": ["null", "integer"]
@@ -91,10 +113,16 @@
     "FinalAppUrl": {
       "type": ["null", "string"]
     },
-    "AdDescription": {
-      "type": ["null", "string"]
+    "Mainline1Bid": {
+      "type": ["null", "number"]
     },
-    "AdDescription2": {
+    "MainlineBid": {
+      "type": ["null", "number"]
+    },
+    "FirstPageBid": {
+      "type": ["null", "number"]
+    },
+    "FinalUrlSuffix": {
       "type": ["null", "string"]
     },
     "ViewThroughConversions": {

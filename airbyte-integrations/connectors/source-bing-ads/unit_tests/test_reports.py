@@ -9,6 +9,7 @@ import pendulum
 import pytest
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
 from source_bing_ads.report_streams import (
+    AccountImpressionPerformanceReportHourly,
     AccountPerformanceReportHourly,
     AdGroupImpressionPerformanceReportHourly,
     AdGroupPerformanceReportHourly,
@@ -121,6 +122,7 @@ def test_get_report_record_timestamp_without_aggregation():
 @pytest.mark.parametrize(
     "stream_report_daily_cls",
     (
+        AccountImpressionPerformanceReportHourly,
         AccountPerformanceReportHourly,
         AdGroupImpressionPerformanceReportHourly,
         AdGroupPerformanceReportHourly,
@@ -132,11 +134,10 @@ def test_get_report_record_timestamp_without_aggregation():
         SearchQueryPerformanceReportHourly,
         UserLocationPerformanceReportHourly,
         GeographicPerformanceReportHourly,
-        GeographicPerformanceReportHourly,
     ),
 )
 def test_get_report_record_timestamp_hourly(stream_report_daily_cls):
-    stream_report = GeographicPerformanceReportHourly(client=Mock(), config=TEST_CONFIG)
+    stream_report = stream_report_daily_cls(client=Mock(), config=TEST_CONFIG)
     assert "2020-01-01T15:00:00+00:00" == stream_report.get_report_record_timestamp("2020-01-01|15")
 
 
