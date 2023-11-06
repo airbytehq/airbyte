@@ -16,6 +16,7 @@ For Airbyte Open Source set up your application to get **Client ID**, **Client S
 1. [Register your application](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-register?view=bingads-13) in the Azure portal.
 2. [Request user consent](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-consent?view=bingads-13l) to get the authorization code.
 3. Use the authorization code to [get a refresh token](https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13).
+
 :::note
 
 The refresh token expires in 90 days. Repeat the authorization process to get a new refresh token. The full authentication process described [here](https://docs.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#access-token).
@@ -135,6 +136,10 @@ The Bing Ads source connector supports the following streams. For more informati
 - [Campaign Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [Campaign Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [Campaign Performance Report Monthly](https://docs.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Hourly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Daily](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Weekly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
+- [Campaign Impression Performance Report Monthly](https://learn.microsoft.com/en-us/advertising/reporting-service/campaignperformancereportrequest?view=bingads-13)
 - [Keyword Performance Report Hourly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
 - [Keyword Performance Report Daily](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
 - [Keyword Performance Report Weekly](https://docs.microsoft.com/en-us/advertising/reporting-service/keywordperformancereportrequest?view=bingads-13)
@@ -164,6 +169,8 @@ The Bing Ads API limits the number of requests for all Microsoft Advertising cli
 
 | Version | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.9.0   | 2023-11-03 | [32131](https://github.com/airbytehq/airbyte/pull/32131)                                                                         | Add  "CampaignId", "AccountId", "CustomerId" fields to Ad Groups, Ads and Campaigns streams.                                                 |
+| 1.8.0   | 2023-11-02 | [32059](https://github.com/airbytehq/airbyte/pull/32059)                                                                         | Add new streams `CampaignImpressionPerformanceReport` (daily, hourly, weekly, monthly)                                                       |
 | 1.7.1   | 2023-11-02 | [32088](https://github.com/airbytehq/airbyte/pull/32088)                                                                         | Raise config error when user does not have accounts                                                                                          |
 | 1.7.0   | 2023-11-01 | [32027](https://github.com/airbytehq/airbyte/pull/32027)                                                                         | Add new streams `AdGroupImpressionPerformanceReport`                                                                                         |
 | 1.6.0   | 2023-10-31 | [32008](https://github.com/airbytehq/airbyte/pull/32008)                                                                         | Add new streams `Keywords`                                                                                                                   |

@@ -33,7 +33,7 @@ def logger_mock_fixture():
 @patch.object(source_bing_ads.source, "Client")
 def test_streams_config_based(mocked_client, config):
     streams = SourceBingAds().streams(config)
-    assert len(streams) == 56
+    assert len(streams) == 60
 
 
 @patch.object(source_bing_ads.source, "Client")
@@ -229,4 +229,21 @@ def test_bulk_stream_read_with_chunks(mocked_client, config):
         "Title": "Contoso Quick Setup",
         "Tracking Template": None,
         "Type": "App Install Ad",
+    }
+
+
+@patch.object(source_bing_ads.source, "Client")
+def test_transform(mocked_client, config):
+    record = {"AdFormatPreference": "All", "DevicePreference": 0, "EditorialStatus": "ActiveLimited", "FinalAppUrls": None}
+    transformed_record = Ads(mocked_client, config).transform(
+        record=record, stream_slice={"ad_group_id": 90909090, "account_id": 909090, "customer_id": 9090909}
+    )
+    assert transformed_record == {
+        "AccountId": 909090,
+        "AdFormatPreference": "All",
+        "AdGroupId": 90909090,
+        "CustomerId": 9090909,
+        "DevicePreference": 0,
+        "EditorialStatus": "ActiveLimited",
+        "FinalAppUrls": None,
     }

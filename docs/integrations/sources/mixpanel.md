@@ -43,6 +43,10 @@ Note: Incremental sync returns duplicated \(old records\) for the state date due
 - [Cohorts](https://developer.mixpanel.com/reference/cohorts-list) \(Incremental\)
 - [Cohort Members](https://developer.mixpanel.com/reference/engage-query) \(Incremental\)
 
+### Primary key selection for Export stream
+
+Mixpanel recommends using `[insert_id, event_time, event_name, distinct_id]` as the primary key. However, note that some rows might lack an `insert_id` for certain users. Ensure you select a primary key that aligns with your data.
+
 ## Performance considerations
 
 Syncing huge date windows may take longer due to Mixpanel's low API rate-limits \(**60 reqs per hour**\).
@@ -51,7 +55,8 @@ Syncing huge date windows may take longer due to Mixpanel's low API rate-limits 
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------|
-| 1.0.1 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 2.0.0   | 2023-10-30 | [31955](https://github.com/airbytehq/airbyte/pull/31955) | Delete the default primary key for the Export stream                                                        |
+| 1.0.1   | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image                             |
 | 1.0.0   | 2023-09-27 | [30025](https://github.com/airbytehq/airbyte/pull/30025) | Fix type of datetime field in engage stream; fix primary key for export stream.                             |
 | 0.1.41  | 2023-09-26 | [30149](https://github.com/airbytehq/airbyte/pull/30149) | Change config schema; set checkpointing interval; add suggested streams; add casting datetime fields.       |
 | 0.1.40  | 2022-09-20 | [30090](https://github.com/airbytehq/airbyte/pull/30090) | Handle 400 error when the credentials become expired                                                        |
