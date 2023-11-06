@@ -10,7 +10,7 @@ import requests
 import responses
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
-from source_mailchimp.streams import Campaigns, EmailActivity, ListMembers, Lists, Segments
+from source_mailchimp.streams import Campaigns, EmailActivity, ListMembers, Lists, SegmentMembers, Segments
 from utils import read_full_refresh, read_incremental
 
 
@@ -182,11 +182,25 @@ def test_list_child_request_params(auth, stream_class, stream_slice, stream_stat
             {"list_id": "list_2", "last_changed": "2023-10-14T00:00:00Z"},
             {"list_1": {"last_changed": "2023-10-15T00:00:00Z"}, "list_2": {"last_changed": "2023-10-15T00:00:00Z"}},
         ),
+        (
+            SegmentMembers,
+            {"category_1": {"last_changed": "2023-10-15T00:00:00Z"}, "category_2": {"last_changed": "2023-10-15T00:00:00Z"}},
+            {"category_id": "category_1", "last_changed": "2023-10-16T00:00:00Z"},
+            {"category_1": {"last_changed": "2023-10-16T00:00:00Z"}, "category_2": {"last_changed": "2023-10-15T00:00:00Z"}},
+        ),
+        (
+            SegmentMembers,
+            {"category_1": {"last_changed": "2023-10-15T00:00:00Z"}},
+            {"category_id": "category_2", "last_changed": "2023-10-16T00:00:00Z"},
+            {"category_1": {"last_changed": "2023-10-15T00:00:00Z"}, "category_2": {"last_changed": "2023-10-16T00:00:00Z"}},
+        )
     ],
     ids=[
         "Segments: no current_stream_state",
         "Segments: latest_record's cursor > than current_stream_state for list_1",
         "ListMembers: latest_record's cursor < current_stream_state for list_2",
+        "SegmentMembers: latest_record's cursor > current_stream_state for category_1",
+        "SegmentMembers: no stream_state for current slice, new slice added to state"
     ],
 )
 def test_list_child_get_updated_state(auth, stream_class, current_stream_state, latest_record, expected_state):
@@ -197,6 +211,56 @@ def test_list_child_get_updated_state(auth, stream_class, current_stream_state, 
     segments_stream = stream_class(authenticator=auth)
     updated_state = segments_stream.get_updated_state(current_stream_state, latest_record)
     assert updated_state == expected_state
+
+
+@pytest.mark.parametrize(
+    "stream_state, records, expected",
+    [
+        # Test case 1: No stream state, all records should be yielded
+        (
+          {},
+          {"members": [
+            {"id": 1, "category_id": "category_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "category_id": "category_1", "last_changed": "2021-01-02T00:00:00Z"}
+          ]},
+          [
+            {"id": 1, "category_id": "category_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "category_id": "category_1", "last_changed": "2021-01-02T00:00:00Z"}
+          ]
+        ),
+        
+        # Test case 2: Records older than stream state should be filtered out
+        (
+          {"category_1": {"last_changed": "2021-02-01T00:00:00Z"}},
+          {"members": [
+            {"id": 1, "category_id": "category_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "category_id": "category_1", "last_changed": "2021-03-01T00:00:00Z"}
+          ]},
+          [{"id": 2, "category_id": "category_1", "last_changed": "2021-03-01T00:00:00Z"}]
+        ),
+        
+        # Test case 3: Two lists in stream state, only state for category_id_1 determines filtering
+        (
+          {"category_1": {"last_changed": "2021-01-02T00:00:00Z"}, "category_2": {"last_changed": "2022-01-01T00:00:00Z"}},
+          {"members": [            
+            {"id": 1, "category_id": "category_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "category_id": "category_1", "last_changed": "2021-03-01T00:00:00Z"}
+          ]}, 
+          [{"id": 2, "category_id": "category_1", "last_changed": "2021-03-01T00:00:00Z"}]
+        ),
+    ],
+    ids=[
+        "No stream state, all records should be yielded",
+        "Record < stream state, should be filtered out",
+        "Record >= stream state, should be yielded",
+    ]
+)
+def test_segment_members_parse_response(auth, stream_state, records, expected):
+    segment_members_stream = SegmentMembers(authenticator=auth)  # Replace with actual initialization if needed
+    response = MagicMock()
+    response.json.return_value = records
+    parsed_records = list(segment_members_stream.parse_response(response, stream_state))
+    assert parsed_records == expected, f"Expected: {expected}, Actual: {parsed_records}"
 
 
 def test_unsubscribes_stream_slices(requests_mock, unsubscribes_stream, campaigns_stream, mock_campaigns_response):

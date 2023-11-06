@@ -278,6 +278,59 @@ class Reports(IncrementalMailChimpStream):
         return "reports"
 
 
+class SegmentMembers(MailChimpListSubStream):
+    """
+    Get information about members in a specific segment.
+    Docs link: https://mailchimp.com/developer/marketing/api/list-segment-members/list-members-in-segment/
+    """
+    cursor_field = "last_changed"
+    data_field = "members"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        """
+        Each slice consists of a list_id and segment_id pair
+        """
+        segments_slices = Segments(authenticator=self.authenticator).stream_slices(sync_mode=SyncMode.full_refresh)
+
+        for slice in segments_slices:
+            segment_records = Segments(authenticator=self.authenticator).read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice)
+
+            for segment in segment_records:
+                self.logger.info(f"Reading segment {segment['id']} from list {segment['list_id']}")
+                yield {"list_id": segment["list_id"], "segment_id": segment["id"]}
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        list_id = stream_slice.get("list_id")
+        segment_id = stream_slice.get("segment_id")
+        return f"lists/{list_id}/segments/{segment_id}/members"
+    
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        """
+        SegmentMembers endpoint does not support sorting, so we need to filter out records that are older than the current state
+        """
+        response = super().parse_response(response, **kwargs)
+
+        for record in response:
+            current_cursor_value = stream_state.get(record.get("category_id"), {}).get(self.cursor_field)
+            record_cursor_value = record.get(self.cursor_field)
+            if current_cursor_value is None or record_cursor_value >= current_cursor_value:
+                yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        current_stream_state = current_stream_state or {}
+        category_id = latest_record.get("category_id")
+        latest_cursor_value = latest_record.get(self.cursor_field)
+
+        # Get the current state value for this list, if it exists
+        list_state = current_stream_state.get(category_id, {})
+        current_cursor_value = list_state.get(self.cursor_field, latest_cursor_value)
+
+        # Update the cursor value and set it in state
+        updated_cursor_value = max(current_cursor_value, latest_cursor_value)
+        current_stream_state[category_id] = {self.cursor_field: updated_cursor_value}
+
+        return current_stream_state
+
 class Segments(MailChimpListSubStream):
     """
     Get information about all available segments for a specific list.
