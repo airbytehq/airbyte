@@ -29,10 +29,16 @@ acceptance_tests:
       - config_path: "secrets/config.json"
         expect_records:
           bypass_reason: "Risk to disclose internal data. Need to set up a sandbox account - https://github.com/airbytehq/airbyte/issues/20726"
+        empty_streams:
+        - name: "segment_members"
+          bypass_reason: "No data in current account, sandbox account is being set up"
         fail_on_extra_columns: false
       - config_path: "secrets/config_oauth.json"
         expect_records:
           bypass_reason: "Risk to disclose internal data. Need to set up a sandbox account - https://github.com/airbytehq/airbyte/issues/20726"
+        empty_streams:
+        - name: "segment_members"
+          bypass_reason: "No data in current account, sandbox account is being set up"
         fail_on_extra_columns: false
   incremental:
     tests:
