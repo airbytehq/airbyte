@@ -12,11 +12,11 @@ This change remapped date, datetime, datetime2, datetimeoffset, smalldatetime, a
 | smalldatetime  | string               | timestamp         |
 | time           | string               | time              |
 
-If your streams do not contain any column of an affected data type, your connection will be unaffected. After opting in to the new version, refresh your schema, but no stream resets are necessary.  
+For current source-mssql users: 
+- If your streams do not contain any column of an affected data type, your connection will be unaffected. No further action is required from you.
+- If your streams contain at least one column of an affected data type, you can opt in, refresh your schema, but *do not* reset your stream data. Once the sync starts, the Airbyte platform will trigger a schema change that will propagate to the destination tables. *Note:* In the case that your sync fails, please reset your data and rerun the sync. This will drop, recreate all the necessary tables, and reread the source data from the beginning.
 
-If your streams contain at least one column of an affected data type, you can opt in, refresh your schema, and start a sync. The new data type will be propagated to the destination. In the case that normalization fails, please reset your data and run another sync.
-
-In the case that resetting your stream data is an issue, please reach out to Airbyte Cloud support for assistance.
+If resetting your stream data is an issue, please reach out to Airbyte Cloud support for assistance.
 
 ## Upgrading to 2.0.0
 CDC syncs now has default cursor field called `_ab_cdc_cursor`. You will need to force normalization to rebuild your destination tables by manually dropping the SCD tables, refreshing the connection schema (skipping the reset), and running a sync. Alternatively, you can just run a reset.
