@@ -161,6 +161,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     this.stateEmissionFrequency = INTERMEDIATE_STATE_EMISSION_FREQUENCY;
   }
 
+  // comment
   @Override
   public ConnectorSpecification spec() throws Exception {
     if (DEPLOYMENT_MODE != null && DEPLOYMENT_MODE.equalsIgnoreCase(AdaptiveSourceRunner.CLOUD_MODE)) {
