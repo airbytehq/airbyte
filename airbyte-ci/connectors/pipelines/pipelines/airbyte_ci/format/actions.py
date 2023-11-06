@@ -29,3 +29,23 @@ async def run_format(
     """
     format_container = container.with_exec(sh_dash_c(format_commands), skip_entrypoint=True)
     await format_container.directory("/src").export(".")
+
+
+def mount_repo_for_formatting(
+    container: dagger.Container,
+    include: List[str],
+) -> dagger.Container:
+    """Mounts the relevant parts of the repository: the code to format and the formatting config
+    Args:
+        container: (dagger.Container): The container to mount the repository in
+        include (List[str]): The list of files to include in the container
+    """
+    container = container.with_mounted_directory(
+        "/src",
+        dagger.host().directory(
+            ".",
+            include=include,
+        ),
+    ).with_workdir("/src")
+
+    return container

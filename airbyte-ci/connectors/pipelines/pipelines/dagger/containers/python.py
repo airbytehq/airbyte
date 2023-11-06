@@ -6,7 +6,6 @@ from dagger import CacheSharingMode, CacheVolume, Client, Container
 from pipelines.airbyte_ci.connectors.context import PipelineContext
 from pipelines.consts import (
     CONNECTOR_TESTING_REQUIREMENTS,
-    LICENSE_SHORT_FILE_PATH,
     PIP_CACHE_PATH,
     PIP_CACHE_VOLUME_NAME,
     POETRY_CACHE_PATH,
