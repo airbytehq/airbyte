@@ -1,9 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
-from typing import List, Optional
-
 import asyncclick as click
-import dagger
 from pipelines.airbyte_ci.format.actions import run_format
 from pipelines.airbyte_ci.format.containers import (
     format_java_container,
@@ -12,8 +9,6 @@ from pipelines.airbyte_ci.format.containers import (
     format_python_container,
 )
 from pipelines.cli.click_decorators import click_ignore_unused_kwargs, click_merge_args_into_context_obj
-from pipelines.cli.lazy_group import LazyGroup
-from pipelines.helpers.utils import sh_dash_c
 from pipelines.models.contexts.click_pipeline_context import ClickPipelineContext, pass_pipeline_context
 
 
