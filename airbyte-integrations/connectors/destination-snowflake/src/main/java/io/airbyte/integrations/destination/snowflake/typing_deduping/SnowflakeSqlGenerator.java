@@ -273,7 +273,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
                           final Optional<Instant> minRawTimestamp,
                           final boolean useTryCast) {
     final String columnList = streamColumns.keySet().stream().map(quotedColumnId -> quotedColumnId.name(QUOTE) + ",").collect(joining("\n"));
-    final String extractNewRawRecords = extractNewRawRecords(stream, minRawTimestamp);
+    final String extractNewRawRecords = extractNewRawRecords(stream, minRawTimestamp, useTryCast);
 
     return new StringSubstitutor(Map.of(
         "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix.toUpperCase()),
@@ -290,7 +290,7 @@ public class SnowflakeSqlGenerator implements SqlGenerator<SnowflakeTableDefinit
             ${extractNewRawRecords};""");
   }
 
-  private String extractNewRawRecords(final StreamConfig stream, final Optional<Instant> minRawTimestamp) {
+  private String extractNewRawRecords(final StreamConfig stream, final Optional<Instant> minRawTimestamp, final boolean useTryCast) {
     final String columnCasts = stream.columns().entrySet().stream().map(
         col -> extractAndCast(col.getKey(), col.getValue(), useTryCast) + " as " + col.getKey().name(QUOTE) + ",")
         .collect(joining("\n"));
