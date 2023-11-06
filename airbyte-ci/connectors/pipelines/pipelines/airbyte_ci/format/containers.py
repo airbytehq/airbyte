@@ -6,6 +6,7 @@ import click
 import dagger
 from pipelines.airbyte_ci.format.actions import mount_repo_for_formatting
 from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
+from pipelines.consts import GO_IMAGE, JDK_IMAGE, NODE_IMAGE
 from pipelines.dagger.actions.python.pipx import with_installed_pipx_package, with_pipx
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.helpers.utils import sh_dash_c
@@ -63,7 +64,7 @@ def format_java_container(ctx: ClickPipelineContext) -> dagger.Container:
     """Format java, groovy, and sql code via spotless."""
     return build_container(
         ctx,
-        base_image="openjdk:17.0.1-jdk-slim",
+        base_image=JDK_IMAGE,
         include=[
             "**/*.java",
             "**/*.sql",
@@ -84,7 +85,7 @@ def format_js_container(ctx: ClickPipelineContext) -> dagger.Container:
     """Format yaml and json code via prettier."""
     return build_container(
         ctx,
-        base_image="node:18.18.0-slim",
+        base_image=NODE_IMAGE,
         include=["**/*.yaml", "**/*.yml", "**.*/json", "package.json", "package-lock.json"],
         install_commands=["npm install -g npm@10.1.0", "npm install -g prettier@2.8.1"],
     )
@@ -93,7 +94,7 @@ def format_js_container(ctx: ClickPipelineContext) -> dagger.Container:
 def format_license_container(ctx: ClickPipelineContext, license_file: str) -> dagger.Container:
     return build_container(
         ctx,
-        base_image="golang:1.17",
+        base_image=GO_IMAGE,
         include=["**/*.java", "**/*.py", license_file],
         install_commands=["go get -u github.com/google/addlicense"],
     )
