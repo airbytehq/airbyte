@@ -14,7 +14,6 @@ const Container = styled.div`
   display: flex;
   color: #6b7280;
   align-items: center;
-  padding: 0 26px;
   font-weight: 500;
   line-height: 30px;
 `;

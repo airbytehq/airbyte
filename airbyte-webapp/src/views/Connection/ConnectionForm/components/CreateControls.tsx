@@ -3,7 +3,7 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Spinner, StatusIcon } from "components";
-import { BigButton, ButtonRows } from "components/base/Button/BigButton";
+import { CustomButton, ButtonRows } from "components/base/Button/CustomButton";
 
 interface CreateControlsProps {
   isSubmitting: boolean;
@@ -86,13 +86,13 @@ const CreateControls: React.FC<CreateControlsProps> = ({ isSubmitting, errorMess
           </div>
         </ErrorBlock>
       ) : null}
-      <ButtonRows top="0" position="static" width="calc(100% - 18px)">
-        <BigButton type="button" onClick={onBack} secondary>
+      <ButtonRows top="0" position="absolute" width="calc(100% - 18px)">
+        <CustomButton type="button" onClick={onBack} secondary>
           <FormattedMessage id="form.button.back" />
-        </BigButton>
-        <BigButton type="submit" disabled={isSubmitting || !isValid}>
+        </CustomButton>
+        <CustomButton type="submit" disabled={isSubmitting || !isValid}>
           <FormattedMessage id="form.button.finishSetup" />
-        </BigButton>
+        </CustomButton>
       </ButtonRows>
     </ButtonContainer>
   );

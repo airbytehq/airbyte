@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { BigButton, ButtonRows } from "components/base/Button/BigButton";
+import { CustomButton, ButtonRows } from "components/base/Button/CustomButton";
 
 import TestingLoading from "views/Connector/TestConnection/components/TestingLoading";
 import TestingSuccess from "views/Connector/TestConnection/components/TestingSuccess";
@@ -35,14 +35,14 @@ const TestConnection: React.FC<Iprops> = ({ isLoading, type, onBack, onFinish })
       <LoadingContainer>{isLoading ? <TestingLoading /> : <TestingSuccess type={type} />}</LoadingContainer>
       <ButtonRows>
         {((isLoading && type === "connection") || type !== "connection") && (
-          <BigButton disabled={isLoading} secondary onClick={onBack}>
+          <CustomButton disabled={isLoading} secondary onClick={onBack}>
             <FormattedMessage id="form.button.back" />
-          </BigButton>
+          </CustomButton>
         )}
         {((!isLoading && type === "connection") || type !== "connection") && (
-          <BigButton disabled={isLoading} onClick={onFinish}>
+          <CustomButton disabled={isLoading} onClick={onFinish}>
             <FormattedMessage id={type === "connection" ? "form.button.returnToDashoard" : "form.button.continue"} />
-          </BigButton>
+          </CustomButton>
         )}
       </ButtonRows>
     </Container>

@@ -86,7 +86,8 @@ const Footer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
-  justify-content: flex-end;
+  justify-content: center;
+  align-items: center;
 `;
 const SourceItemPage: React.FC<SettingsPageProps> = ({ pageConfig: pageConfigs }) => {
   useTrackPage(PageTrackingCodes.SOURCE_ITEM);

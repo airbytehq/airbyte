@@ -3,6 +3,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 // import styled from "styled-components";
 
 import { BigButton, ButtonRows } from "components/base/Button/BigButton";
+import { CustomButton, ButtonRows as ButtonsRows } from "components/base/Button/CustomButton";
 import { ConnectionStep, CreateStepTypes } from "components/ConnectionStep";
 import DataPanel from "components/DataPanel";
 import HeadTitle from "components/HeadTitle";
@@ -256,16 +257,19 @@ const SelectNewConnectionCard: React.FC<{
         )}
         {/* </Container> */}
       </MainPageWithScroll>
-      <ButtonRows top="0" position="absolute">
-        {(currentStep === CreateStepTypes.CREATE_DESTINATION || backtrack) && (
+
+      {(currentStep === CreateStepTypes.CREATE_DESTINATION || backtrack) && (
+        <ButtonRows top="0" position="absolute">
           <BigButton onClick={clickCancel} secondary>
             <FormattedMessage id="form.button.back" />
           </BigButton>
-        )}
-        <BigButton onClick={clickSelect} disabled={disabled}>
+        </ButtonRows>
+      )}
+      <ButtonsRows top="0" position="absolute">
+        <CustomButton onClick={clickSelect} disabled={disabled}>
           <FormattedMessage id="form.button.selectContinue" />
-        </BigButton>
-      </ButtonRows>
+        </CustomButton>
+      </ButtonsRows>
     </>
   );
 };
