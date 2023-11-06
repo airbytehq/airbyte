@@ -131,6 +131,12 @@ pub fn fix_document_schema_keys(
                     current, original
                 )))
                 }
+                doc::ptr::Token::NextProperty => {
+                    return Err(Error::InvalidSchema(format!(
+                        "cannot use JSONPointer NextToken(/*/) in key pointer at {:?} in {:?}",
+                        current, original
+                    )))
+                }
             }
         }
     }
@@ -154,7 +160,8 @@ where
                 }
                 _ => (),
             });
-            map.get_mut("items").map(|item| traverse_jsonschema(item, f, format!("{ptr}/*")));
+            map.get_mut("items")
+                .map(|item| traverse_jsonschema(item, f, format!("{ptr}/*")));
         }
         _ => (),
     }
@@ -188,7 +195,9 @@ pub fn fix_nonstandard_jsonschema_attributes(schema: &mut serde_json::Value) {
                 if f == "int32" || f == "int64" {
                     // Insert updates values
                     map.insert("format".to_string(), json!("integer"));
-                } else if let Err(_) = serde_json::from_value::<Format>(serde_json::Value::String(f.to_string())) {
+                } else if let Err(_) =
+                    serde_json::from_value::<Format>(serde_json::Value::String(f.to_string()))
+                {
                     // a non-standard format output by salesforce connector
                     map.remove("format");
                 }
@@ -275,8 +284,9 @@ mod test {
     use serde_json::json;
 
     use super::{
-        fix_document_schema_keys, fix_nonstandard_jsonschema_attributes, remove_enums,
-        normalize_schema_date_to_datetime};
+        fix_document_schema_keys, fix_nonstandard_jsonschema_attributes,
+        normalize_schema_date_to_datetime, remove_enums,
+    };
 
     #[test]
     fn test_fix_document_schema_keys_prop() {
