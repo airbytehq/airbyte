@@ -11,7 +11,7 @@ jmh = "1.36"
 jooq = "3.13.4"
 junit-jupiter = "5.9.1"
 kotlin = "1.9.0"
-log4j = "2.17.2"
+log4j = "2.21.1"
 lombok = "1.18.24"
 micronaut = "3.8.3"
 micronaut-data = "3.9.4"
@@ -21,7 +21,7 @@ micronaut-test = "3.8.0"
 postgresql = "42.6.0"
 reactor = "3.5.2"
 segment = "2.1.1"
-slf4j = "1.7.36"
+slf4j = "2.0.9"
 temporal = "1.17.0"
 debezium = "2.4.0.Final"
 
@@ -85,7 +85,7 @@ kotlinx-cli-jvm = { module = "org.jetbrains.kotlinx:kotlinx-cli-jvm", version = 
 launchdarkly = { module = "com.launchdarkly:launchdarkly-java-server-sdk", version = "6.0.1" }
 log4j-api = { module = "org.apache.logging.log4j:log4j-api", version.ref = "log4j" }
 log4j-core = { module = "org.apache.logging.log4j:log4j-core", version.ref = "log4j" }
-log4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version.ref = "log4j" }
+log4j-impl = { module = "org.apache.logging.log4j:log4j-slf4j2-impl", version.ref = "log4j" }
 log4j-over-slf4j = { module = "org.slf4j:log4j-over-slf4j", version.ref = "slf4j" }
 log4j-web = { module = "org.apache.logging.log4j:log4j-web", version.ref = "log4j" }
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
