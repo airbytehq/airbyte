@@ -5,15 +5,15 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "cumulio"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "luzmo-sdk"]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]
 
 setup(
-    name="destination_cumulio",
-    description="Airbyte destination connector implementation for Cumul.io.",
-    author="Cumul.io",
-    author_email="support@cumul.io",
+    name="destination_luzmo",
+    description="Airbyte destination connector implementation for Luzmo.",
+    author="Luzmo",
+    author_email="support@luzmo.com",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
     package_data={"": ["*.json"]},

@@ -33,10 +33,10 @@ RUN pip install duckdb
 
 # copy payload code only
 COPY main.py ./
-COPY destination_cumulio ./destination_cumulio
+COPY destination_luzmo ./destination_luzmo
 
 ENV AIRBYTE_ENTRYPOINT "python /airbyte/integration_code/main.py"
 ENTRYPOINT ["python", "/airbyte/integration_code/main.py"]
 
-LABEL io.airbyte.version=0.1.0
-LABEL io.airbyte.name=airbyte/destination-cumulio
+LABEL io.airbyte.version=0.2.0
+LABEL io.airbyte.name=airbyte/destination-luzmo

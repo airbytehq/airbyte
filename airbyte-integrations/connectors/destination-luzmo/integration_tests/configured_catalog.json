@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "cumulio_example_table",
+        "name": "luzmo_example_table",
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
         "json_schema": {

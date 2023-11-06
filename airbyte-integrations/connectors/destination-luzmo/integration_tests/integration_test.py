@@ -20,8 +20,8 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-from destination_cumulio import DestinationCumulio
-from destination_cumulio.client import CumulioClient
+from destination_luzmo import DestinationLuzmo
+from destination_luzmo.client import LuzmoClient
 
 
 @pytest.fixture(name="logger")
@@ -72,15 +72,15 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
 @pytest.fixture(autouse=True)
 def delete_datasets(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, logger: Logger):
-    cumulio_client = CumulioClient(config, logger)
+    luzmo_client = LuzmoClient(config, logger)
     for stream in configured_catalog.streams:
-        dataset = cumulio_client.get_dataset_and_columns_from_stream_name(stream.stream.name)
+        dataset = luzmo_client.get_dataset_and_columns_from_stream_name(stream.stream.name)
         if dataset:
             logger.info(
-                f"Existing integration test dataset found. Will delete Cumul.io dataset for integration test stream {stream.stream.name}."
+                f"Existing integration test dataset found. Will delete Luzmo dataset for integration test stream {stream.stream.name}."
             )
             try:
-                cumulio_client.client.delete("securable", dataset["id"])
+                luzmo_client.client.delete("securable", dataset["id"])
             except Exception as e:
                 logger.info(
                     f"The following exception occurred when trying to delete the dataset "
@@ -89,17 +89,17 @@ def delete_datasets(config: Mapping, configured_catalog: ConfiguredAirbyteCatalo
 
 
 def test_check_valid_config(config: Mapping, logger: Logger):
-    outcome = DestinationCumulio().check(logger, config)
+    outcome = DestinationLuzmo().check(logger, config)
     assert outcome.status == Status.SUCCEEDED
 
 
 def test_check_incomplete_config(logger: Logger):
-    outcome = DestinationCumulio().check(logger, {"api_host": "https://api.cumul.io"})
+    outcome = DestinationLuzmo().check(logger, {"api_host": "https://api.luzmo.com"})
     assert outcome.status == Status.FAILED
 
 
 def test_check_invalid_config(logger: Logger):
-    outcome = DestinationCumulio().check(
+    outcome = DestinationLuzmo().check(
         logger,
         {
             "api_host": ".invalid.url",
@@ -130,12 +130,12 @@ def _record(stream_name: str, str_value: str, int_value: int, obj_value: dict, a
     )
 
 
-def _retrieve_all_records(cumulio_client, stream_name):
-    dataset_and_columns = cumulio_client.get_dataset_and_columns_from_stream_name(stream_name)
+def _retrieve_all_records(luzmo_client, stream_name):
+    dataset_and_columns = luzmo_client.get_dataset_and_columns_from_stream_name(stream_name)
     # Wait 5 seconds before trying to retrieve the data to ensure it can be properly retrieved
     time.sleep(5)
     if dataset_and_columns is not None:
-        ordered_columns = cumulio_client.get_ordered_columns(stream_name)
+        ordered_columns = luzmo_client.get_ordered_columns(stream_name)
         dimension_columns = list(
             map(
                 lambda x, y: {
@@ -159,7 +159,7 @@ def _retrieve_all_records(cumulio_client, stream_name):
                 }
             ],
         }
-        raw_data = cumulio_client.client.get("data", raw_data_query)
+        raw_data = luzmo_client.client.get("data", raw_data_query)
         airbyte_data_to_return = []
         for row in raw_data["data"]:
             airbyte_data_row = {}
@@ -187,10 +187,10 @@ def test_write_append(
     This test verifies that:
      - Writing a stream in "append" mode appends new records while preserving existing data.
      - The correct state message is output by the connector at the end of the sync.
-     - Object and Array data is appropriately stringified in Cumul.io.
+     - Object and Array data is appropriately stringified in Luzmo.
     """
     stream_name = configured_catalog.streams[0].stream.name
-    destination = DestinationCumulio()
+    destination = DestinationLuzmo()
 
     state_message = _state({"state": "3"})
     record_chunk_1 = [_record(stream_name, "test-" + str(i), i, {"test": i}, ["test", i]) for i in range(1, 3)]
@@ -203,9 +203,9 @@ def test_write_append(
     output_states_2 = list(destination.write(config, configured_catalog, [*record_chunk_2, state_message]))
     assert [state_message] == output_states_2
 
-    cumulio_client = CumulioClient(config, logger)
+    luzmo_client = LuzmoClient(config, logger)
 
-    records_in_destination = _retrieve_all_records(cumulio_client, stream_name)
+    records_in_destination = _retrieve_all_records(luzmo_client, stream_name)
 
     expected_records = [
         AirbyteMessage(
@@ -236,10 +236,10 @@ def test_write_overwrite(
     This test verifies that:
      - writing a stream in "append" mode overwrite all exiting data.
      - the correct state message is output by the connector at the end of the sync.
-     - Object and Array data is appropriately stringified in Cumul.io.
+     - Object and Array data is appropriately stringified in Luzmo.
     """
     stream_name = configured_catalog.streams[1].stream.name
-    destination = DestinationCumulio()
+    destination = DestinationLuzmo()
 
     state_message = _state({"state": "3"})
     record_chunk_1 = [_record(stream_name, "oldtest-" + str(i), i, {"oldtest": i}, ["oldtest", i]) for i in range(1, 3)]
@@ -252,9 +252,9 @@ def test_write_overwrite(
     output_states_2 = list(destination.write(config, configured_catalog, [*record_chunk_2, state_message]))
     assert [state_message] == output_states_2
 
-    cumulio_client = CumulioClient(config, logger)
+    luzmo_client = LuzmoClient(config, logger)
 
-    records_in_destination = _retrieve_all_records(cumulio_client, stream_name)
+    records_in_destination = _retrieve_all_records(luzmo_client, stream_name)
 
     expected_records = [
         AirbyteMessage(

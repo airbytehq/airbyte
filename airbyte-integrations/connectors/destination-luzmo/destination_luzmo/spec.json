@@ -1,0 +1,37 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/luzmo",
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "supportsIncremental": true,
+  "supportsDBT": false,
+  "supportsNormalization": false,
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Destination Luzmo",
+    "type": "object",
+    "required": ["api_host", "api_key", "api_token"],
+    "additionalProperties": true,
+    "properties": {
+      "api_host": {
+        "title": "Luzmo API Host URL",
+        "description": "URL of the Luzmo API (e.g. 'https://api.luzmo.com', 'https://api.us.luzmo.com', or VPC-specific API url). Defaults to 'https://api.luzmo.com'.",
+        "default": "https://api.luzmo.com",
+        "type": "string",
+        "order": 0
+      },
+      "api_key": {
+        "title": "Luzmo API Key",
+        "description": "An API key generated in Luzmo's platform (can be generated here: https://app.luzmo.com/start/profile/integration).",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 1
+      },
+      "api_token": {
+        "title": "Luzmo API Token",
+        "description": "The corresponding API token generated in Luzmo's platform (can be generated here: https://app.luzmo.com/start/profile/integration).",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 2
+      }
+    }
+  }
+}
