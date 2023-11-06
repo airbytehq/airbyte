@@ -11,13 +11,9 @@ import static java.util.stream.Collectors.toList;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
 import io.airbyte.cdk.db.jdbc.JdbcDatabase;
-import io.airbyte.cdk.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.base.SerializedAirbyteMessageConsumer;
 import io.airbyte.cdk.integrations.destination.NamingConventionTransformer;
-import io.airbyte.cdk.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.cdk.integrations.destination.jdbc.WriteConfig;
-import io.airbyte.cdk.integrations.destination.record_buffer.BufferCreateFunction;
-import io.airbyte.cdk.integrations.destination.record_buffer.SerializedBufferingStrategy;
 import io.airbyte.cdk.integrations.destination_async.AsyncStreamConsumer;
 import io.airbyte.cdk.integrations.destination_async.buffers.BufferManager;
 import io.airbyte.commons.exceptions.ConfigErrorException;
@@ -49,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * Uses both Factory and Consumer design pattern to create a single point of creation for consuming
  * {@link AirbyteMessage} for processing
  */
-public class StagingConsumerFactory {
+public class StagingConsumerFactory extends SerialStagingConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StagingConsumerFactory.class);
 
@@ -63,33 +59,6 @@ public class StagingConsumerFactory {
   // to load (or reload backups?) in the connection's staging area to be loaded at the next sync.
   private static final DateTime SYNC_DATETIME = DateTime.now(DateTimeZone.UTC);
   public static final UUID RANDOM_CONNECTION_ID = UUID.randomUUID();
-
-  public AirbyteMessageConsumer create(final Consumer<AirbyteMessage> outputRecordCollector,
-                                       final JdbcDatabase database,
-                                       final StagingOperations stagingOperations,
-                                       final NamingConventionTransformer namingResolver,
-                                       final BufferCreateFunction onCreateBuffer,
-                                       final JsonNode config,
-                                       final ConfiguredAirbyteCatalog catalog,
-                                       final boolean purgeStagingData,
-                                       final TypeAndDedupeOperationValve typerDeduperValve,
-                                       final TyperDeduper typerDeduper,
-                                       final ParsedCatalog parsedCatalog,
-                                       final String defaultNamespace,
-                                       final boolean useDestinationsV2Columns) {
-    final List<WriteConfig> writeConfigs = createWriteConfigs(namingResolver, config, catalog, parsedCatalog, useDestinationsV2Columns);
-    return new BufferedStreamConsumer(
-        outputRecordCollector,
-        GeneralStagingFunctions.onStartFunction(database, stagingOperations, writeConfigs, typerDeduper),
-        new SerializedBufferingStrategy(
-            onCreateBuffer,
-            catalog,
-            SerialFlush.function(database, stagingOperations, writeConfigs, catalog, typerDeduperValve, typerDeduper)),
-        GeneralStagingFunctions.onCloseFunction(database, stagingOperations, writeConfigs, purgeStagingData, typerDeduper),
-        catalog,
-        stagingOperations::isValidData,
-        defaultNamespace);
-  }
 
   public SerializedAirbyteMessageConsumer createAsync(final Consumer<AirbyteMessage> outputRecordCollector,
                                                       final JdbcDatabase database,

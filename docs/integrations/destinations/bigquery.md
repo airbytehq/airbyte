@@ -140,6 +140,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.6   | 2023-11-06 | [#32193](https://github.com/airbytehq/airbyte/pull/32193)  | Adopt java CDK version 0.4.1.                                                                                                                        |
 | 2.3.5   | 2023-11-02 | [31983](https://github.com/airbytehq/airbyte/pull/31983)   | Improve error reporting                                                                                                                                         |
 | 2.3.4   | 2023-10-31 | [32010](https://github.com/airbytehq/airbyte/pull/32010)   | Add additional data centers.                                                                                                                                    |
 | 2.3.3   | 2023-10-30 | [31985](https://github.com/airbytehq/airbyte/pull/31985)   | Delay upgrade deadline to Nov 7                                                                                                                                 |
