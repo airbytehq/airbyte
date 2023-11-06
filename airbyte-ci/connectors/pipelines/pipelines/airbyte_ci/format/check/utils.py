@@ -39,7 +39,7 @@ def build_container(
     return check_container
 
 
-async def run_check(
+async def run_check_old(
     ctx: ClickPipelineContext,
     base_image: str,
     include: List[str],
@@ -61,4 +61,16 @@ async def run_check(
     logger = logging.getLogger(f"format")
 
     container = build_container(ctx, base_image, include, install_commands, env_vars)
+    await container.with_exec(sh_dash_c(check_commands))
+
+
+async def run_check(
+    container: dagger.Container,
+    check_commands: List[str],
+) -> dagger.Container:
+    """Checks whether the repository is formatted correctly.
+    Args:
+        container: (dagger.Container): The container to run the formatting check in
+        check_commands (List[str]): The list of commands to run to check the formatting
+    """
     await container.with_exec(sh_dash_c(check_commands))
