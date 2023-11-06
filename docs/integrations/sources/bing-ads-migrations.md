@@ -2,7 +2,7 @@
 
 ## Upgrading to 2.0.0
 
-This version update affects next streams:
+This version update affects all hourly reports (end in report_hourly) and the following streams:
 
 - Accounts
 - Campaigns
@@ -15,10 +15,7 @@ This version update affects next streams:
 - Ad Group Labels
 - Keywords
 - Budget Summary Report
-- All Hourly Reports (end with report_hourly)
 
-Version 2.0.0 updates schemas for Accounts, Campaigns and Search Query Performance Report streams. LinkedAgencies was changed from string to object in Accounts stream. 
-BiddingScheme.MaxCpc.Amount was changed from string to number in Campaigns stream. And CostPerConversion was changed from integer to number. 
 All `date` and `date-time` fields will be converted to standard `RFC3339`. Stream state format will be updated as well.
 
 For the changes to take effect, please refresh the source schema and reset affected streams after you have applied the upgrade.

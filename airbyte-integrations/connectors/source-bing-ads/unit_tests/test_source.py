@@ -184,7 +184,7 @@ def test_bulk_stream_stream_slices(mocked_client, config):
 
 
 @patch.object(source_bing_ads.source, "Client")
-def test_bulk_stream_transfrom(mocked_client, config):
+def test_bulk_stream_transform(mocked_client, config):
     record = {"Ad Group": "Ad Group", "App Id": "App Id", "Campaign": "Campaign", "Custom Parameter": "Custom Parameter"}
     transformed_record = AppInstallAds(mocked_client, config).transform(
         record=record, stream_slice={"account_id": 180519267, "customer_id": 100}
