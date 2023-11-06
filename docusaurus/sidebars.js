@@ -274,7 +274,6 @@ const connectorCatalog = {
     },
   ],
 };
-console.log(connectorCatalog.items[0].items)
 
 const contributeToAirbyte = {
   type: "category",
