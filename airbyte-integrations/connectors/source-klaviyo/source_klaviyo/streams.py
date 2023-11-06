@@ -92,7 +92,8 @@ class KlaviyoStream(HttpStream, ABC):
         latest_cursor = pendulum.parse(latest_record[self.cursor_field])
         if current_stream_cursor_value:
             latest_cursor = max(latest_cursor, pendulum.parse(current_stream_cursor_value))
-        return {self.cursor_field: latest_cursor.isoformat()}
+        current_stream_state[self.cursor_field] = latest_cursor.isoformat()
+        return current_stream_state
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         if response.status_code == 429:
@@ -149,7 +150,7 @@ class IncrementalKlaviyoStream(KlaviyoStream, ABC):
 
 
 class SemiIncrementalKlaviyoStream(KlaviyoStream, ABC):
-    """Base class for all streams that natively incremental, but either do not have sorting or filtering"""
+    """Base class for all streams that have a cursor field, but underlying API does not support either sorting or filtering"""
 
     @property
     @abstractmethod
@@ -201,15 +202,6 @@ class ArchivedRecordsStream(IncrementalKlaviyoStream):
             params["filter"] = archived_filter
         return params
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        state = super().get_updated_state(current_stream_state, latest_record)
-        current_archived_stream_cursor_value = current_stream_state.get("archived", {}).get(self.cursor_field, self._start_ts)
-        latest_archived_cursor = pendulum.parse(latest_record[self.cursor_field])
-        if current_archived_stream_cursor_value:
-            latest_archived_cursor = max(latest_archived_cursor, pendulum.parse(current_archived_stream_cursor_value))
-        state["archived"] = {self.cursor_field: latest_archived_cursor}
-        return state
-
 
 class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
     """A mixin class which should be used when archived records need to be read"""
@@ -217,6 +209,21 @@ class ArchivedRecordsMixin(IncrementalKlaviyoStream, ABC):
     @property
     def archived_campaigns(self) -> ArchivedRecordsStream:
         return ArchivedRecordsStream(self.path(), self.cursor_field, self._start_ts, self.api_revision, api_key=self._api_key)
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        """
+        Extend the stream state with `archived` property to store such records' state separately from the stream state
+        """
+
+        if latest_record.get("attributes", {}).get("archived", False):
+            current_archived_stream_cursor_value = current_stream_state.get("archived", {}).get(self.cursor_field, self._start_ts)
+            latest_archived_cursor = pendulum.parse(latest_record[self.cursor_field])
+            if current_archived_stream_cursor_value:
+                latest_archived_cursor = max(latest_archived_cursor, pendulum.parse(current_archived_stream_cursor_value))
+            current_stream_state["archived"] = {self.cursor_field: latest_archived_cursor.isoformat()}
+            return current_stream_state
+        else:
+            return super().get_updated_state(current_stream_state, latest_record)
 
     def read_records(
         self,

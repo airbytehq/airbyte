@@ -2,7 +2,7 @@
 
 ## Upgrading to 2.0.0
 
-Streams `campaigns`, `email_templates`, `events`, `flows`, `global_exclusions`, `lists`, and `metrics` are now pulling data using the latest API which has a different schema.
+Streams `campaigns`, `email_templates`, `events`, `flows`, `global_exclusions`, `lists`, and `metrics` are now pulling data using latest API which has a different schema.
 Users will need to refresh the source schemas and reset these streams after upgrading.
 
 ## Upgrading to 1.0.0

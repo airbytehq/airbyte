@@ -26,6 +26,7 @@ START_DATE = pendulum.datetime(2020, 10, 10)
 
 class SomeStream(KlaviyoStream):
     schema = mock.Mock(spec=BaseModel)
+    max_time = 60 * 10
 
     def path(self, **kwargs) -> str:
         return "sub_path"
@@ -226,8 +227,7 @@ class TestIncrementalKlaviyoStream:
     def test_get_updated_state(self, config_start_date, current_cursor, latest_cursor, expected_cursor):
         stream = SomeIncrementalStream(api_key=API_KEY, start_date=config_start_date)
         inputs = {
-            # {"key": "value"} is needed to mimic the case when current_stream_state doesn't have cursor key
-            "current_stream_state": {stream.cursor_field: current_cursor} if current_cursor else {"key": "value"},
+            "current_stream_state": {stream.cursor_field: current_cursor} if current_cursor else {},
             "latest_record": {stream.cursor_field: latest_cursor},
         }
         assert stream.get_updated_state(**inputs) == {stream.cursor_field: expected_cursor}
@@ -431,3 +431,42 @@ class TestCampaignsStream:
             },
         ]
         assert list(stream.read_records(**inputs)) == expected_records
+
+    @pytest.mark.parametrize(
+        ("latest_record", "current_stream_state", "expected_state"),
+        (
+            (
+                {"attributes": {"archived": False, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {"updated_at": "2023-01-01T00:00:00+00:00", "archived": {"updated_at": "2023-01-01T00:00:00+00:00"}},
+                {"updated_at": "2023-01-02T00:00:00+00:00", "archived": {"updated_at": "2023-01-01T00:00:00+00:00"}},
+            ),
+            (
+                {"attributes": {"archived": False, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {"updated_at": "2023-01-01T00:00:00+00:00"},
+                {"updated_at": "2023-01-02T00:00:00+00:00"},
+            ),
+            (
+                {"attributes": {"archived": True, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {"updated_at": "2023-01-01T00:00:00+00:00", "archived": {"updated_at": "2023-01-01T00:00:00+00:00"}},
+                {"updated_at": "2023-01-01T00:00:00+00:00", "archived": {"updated_at": "2023-01-02T00:00:00+00:00"}},
+            ),
+            (
+                {"attributes": {"archived": True, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {"updated_at": "2023-01-01T00:00:00+00:00"},
+                {"updated_at": "2023-01-01T00:00:00+00:00", "archived": {"updated_at": "2023-01-02T00:00:00+00:00"}},
+            ),
+            (
+                {"attributes": {"archived": False, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {},
+                {"updated_at": "2023-01-02T00:00:00+00:00"},
+            ),
+            (
+                {"attributes": {"archived": True, "updated_at": "2023-01-02T00:00:00+00:00"}, "updated_at": "2023-01-02T00:00:00+00:00"},
+                {},
+                {"archived": {"updated_at": "2023-01-02T00:00:00+00:00"}},
+            ),
+        ),
+    )
+    def test_get_updated_state(self, latest_record, current_stream_state, expected_state):
+        stream = Campaigns(api_key=API_KEY)
+        assert stream.get_updated_state(current_stream_state, latest_record) == expected_state
