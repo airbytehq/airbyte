@@ -27,10 +27,8 @@ async def fix(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
 
     if ctx.invoked_subcommand is None:
         print("Running all formatters...")
-        await ctx.invoke(java)
-        await ctx.invoke(js)
-        await ctx.invoke(license)
-        await ctx.invoke(python)
+        for command in fix.commands.values():
+            await ctx.invoke(command)
 
 
 @fix.command()
@@ -70,7 +68,7 @@ async def python(ctx: ClickPipelineContext):
     """Format python code via black and isort."""
     container = format_python_container(ctx)
     format_commands = [
-        "poetry install",
+        "poetry install --no-root",
         "poetry run isort --settings-file pyproject.toml .",
         "poetry run black --config pyproject.toml .",
     ]

@@ -31,10 +31,8 @@ async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     if ctx.invoked_subcommand is None:
         print("Running all checks...")
         async with anyio.create_task_group() as check_group:
-            check_group.start_soon(ctx.invoke, java)
-            check_group.start_soon(ctx.invoke, js)
-            check_group.start_soon(ctx.invoke, license)
-            check_group.start_soon(ctx.invoke, python)
+            for command in check.commands.values():
+                check_group.start_soon(ctx.invoke, command)
 
 
 @check.command()
@@ -75,7 +73,7 @@ async def python(ctx: ClickPipelineContext):
     """Format python code via black and isort."""
     container = format_python_container(ctx)
     check_commands = [
-        "poetry install",
+        "poetry install --no-root",
         "poetry run isort --settings-file pyproject.toml --check-only .",
         "poetry run black --config pyproject.toml --check .",
     ]
