@@ -10,28 +10,50 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 
 
 def build_container(
-    ctx: ClickPipelineContext, base_image: str, include: List[str], install_commands: List[str], env_vars: Optional[Dict[str, Any]] = {}
+    ctx: ClickPipelineContext,
+    base_image: str,
+    include: List[str],
+    install_commands: Optional[List[str]],
+    env_vars: Optional[Dict[str, Any]] = {},
 ) -> dagger.Container:
-
+    """Build a container for formatting code.
+    Args:
+        ctx (ClickPipelineContext): The context of the pipeline
+        base_image (str): The base image to use for the container
+        include (List[str]): The list of files to include in the container
+        install_commands (Optional[List[str]]): The list of commands to run to install dependencies for the formatter
+        env_vars (Optional[Dict[str, Any]]): The list of environment variables to set on the container
+    Returns:
+        dagger.Container: The container to use for formatting
+    """
     dagger_client = ctx.params["dagger_client"]
 
-    base_container = dagger_client.container().from_(base_image)
-    for key, value in env_vars.items():
-        base_container = base_container.with_env_variable(key, value)
+    # Create container from base image
+    container = dagger_client.container().from_(base_image)
 
-    check_container = (
-        base_container.with_mounted_directory(
-            "/src",
-            dagger_client.host().directory(
-                ".",
-                include=include,
-                exclude=DEFAULT_FORMAT_IGNORE_LIST,
-            ),
-        )
-        .with_exec(sh_dash_c(install_commands))
-        .with_workdir("/src")
+    # Add any environment variables
+    for key, value in env_vars.items():
+        container = container.with_env_variable(key, value)
+
+    # Mount the relevant parts of the repository: the code to format and the formatting config
+    # Exclude the default ignore list to keep things as small as possible
+    container = container.with_mounted_directory(
+        "/src",
+        dagger_client.host().directory(
+            ".",
+            include=include,
+            exclude=DEFAULT_FORMAT_IGNORE_LIST,
+        ),
     )
-    return check_container
+
+    # Install any dependencies of the formatter
+    if install_commands:
+        container = container.with_exec(sh_dash_c(install_commands))
+
+    # Set the working directory to the code to format
+    container = container.with_workdir("/src")
+
+    return container
 
 
 def format_java_container(ctx: click.Context) -> dagger.Container:
@@ -52,7 +74,6 @@ def format_java_container(ctx: click.Context) -> dagger.Container:
             "tools/gradle/codestyle/java-google-style.xml",
             "tools/gradle/codestyle/sql-dbeaver.properties",
         ],
-        install_commands=[],
     )
 
 
