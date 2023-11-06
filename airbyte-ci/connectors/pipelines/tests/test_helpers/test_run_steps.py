@@ -183,14 +183,14 @@ class TestStep(Step):
         RunStepOptions(fail_fast=True)
     ),
 ])
-async def test_run_steps_sequential(steps, expected_results, options):
+async def test_run_steps_output(steps, expected_results, options):
     results = await run_steps(steps, options=options)
 
     for step_id, expected_status in expected_results.items():
         assert results[step_id].status == expected_status
 
 @pytest.mark.anyio
-async def test_run_steps_concurrency():
+async def test_run_steps_concurrent():
     ran_at = {}
     class SleepStep(Step):
         title = "Sleep Step"
@@ -212,3 +212,27 @@ async def test_run_steps_concurrency():
     assert ran_at["step4"] < ran_at["step1"]
     assert ran_at["step4"] < ran_at["step2"]
     assert ran_at["step4"] < ran_at["step3"]
+
+@pytest.mark.anyio
+async def test_run_steps_sequential():
+    ran_at = {}
+    class SleepStep(Step):
+        title = "Sleep Step"
+        async def _run(self, name, sleep) -> StepResult:
+            await anyio.sleep(sleep)
+            ran_at[name] = time.time()
+            return StepResult(self, StepStatus.SUCCESS)
+
+    steps = [
+        [StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step1", "sleep": 1})],
+        [StepToRun(id="step1", step=SleepStep(test_context), args={"name": "step2", "sleep": 1})],
+        [StepToRun(id="step3", step=SleepStep(test_context), args={"name": "step3", "sleep": 1})],
+        [StepToRun(id="step4", step=SleepStep(test_context), args={"name": "step4", "sleep": 0})],
+    ]
+
+    await run_steps(steps)
+
+    # assert that steps are run in order
+    assert ran_at["step1"] < ran_at["step2"]
+    assert ran_at["step2"] < ran_at["step3"]
+    assert ran_at["step3"] < ran_at["step4"]

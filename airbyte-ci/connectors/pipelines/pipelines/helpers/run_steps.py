@@ -24,14 +24,17 @@ if TYPE_CHECKING:
 @dataclass(frozen=True)
 class RunStepOptions:
     """Options for the run_step function."""
-
-    # If true, the step will be skipped if any of the previous steps failed
     fail_fast: bool = True
     skip_steps: List[str] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
 class StepToRun:
+    """
+    A class to wrap a Step with its id and args.
+
+    Used to coordinate the execution of multiple steps inside a pipeline.
+    """
     id: str
     step: Step
     args: ARGS_TYPE = field(default_factory=dict)
@@ -41,6 +44,9 @@ STEP_TREE = List[StepToRun | List[StepToRun]]
 
 
 async def evaluate_run_args(args: ARGS_TYPE, results: RESULTS_DICT) -> Dict:
+    """
+    Evaluate the args of a StepToRun using the results of previous steps.
+    """
     if inspect.iscoroutinefunction(args):
         return await args(results)
     elif callable(args):
@@ -49,6 +55,9 @@ async def evaluate_run_args(args: ARGS_TYPE, results: RESULTS_DICT) -> Dict:
     return args
 
 def _skip_remaining_steps(remaining_steps: STEP_TREE) -> bool:
+    """
+    Skip all remaining steps.
+    """
     skipped_results = {}
     for runnable_step in remaining_steps:
         if isinstance(runnable_step, StepToRun):
@@ -62,10 +71,18 @@ def _skip_remaining_steps(remaining_steps: STEP_TREE) -> bool:
     return skipped_results
 
 def _step_dependencies_succeeded(depends_on: List[str], results: RESULTS_DICT) -> bool:
+    """
+    Check if all dependencies of a step have succeeded.
+    """
     main_logger.info(f"Checking if dependencies {depends_on} have succeeded")
     return all(results.get(step_id) and results.get(step_id).status is StepStatus.SUCCESS for step_id in depends_on)
 
 def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], results: RESULTS_DICT) -> Tuple[STEP_TREE, RESULTS_DICT]:
+    """
+    Filter out steps that should be skipped.
+
+    Either because they are in the skip list or because one of their dependencies failed.
+    """
     steps_to_run = []
     for step_to_eval in steps_to_evaluate:
 
@@ -90,12 +107,16 @@ def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], r
     return steps_to_run, results
 
 def _get_next_step_group(steps: STEP_TREE) -> Tuple[STEP_TREE, STEP_TREE]:
+    """
+    Get the next group of steps to run concurrently.
+    """
     if not steps:
         return [], []
 
     if isinstance(steps[0], list):
         return steps[0], steps[1:]
     else:
+        # Termination case: if the next step is not a list that means we have reached the max depth
         return steps, []
 
 async def run_steps(
@@ -164,7 +185,7 @@ async def run_steps(
                 main_logger.info(f"QUEUING STEP {step_to_run.id}")
                 tasks.append(task_group.soonify(step_to_run.step.run)(**step_args))
 
-    # apply new results
+    # Apply new results
     new_results = {}
     for i, task in enumerate(tasks):
         step_to_run = steps_to_run[i]
