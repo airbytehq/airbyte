@@ -65,26 +65,31 @@ class UnitTests(GradleTask):
     bind_to_docker_host = True
 
 # TODO (ben) handle async
-async def _create_integration_step_args(context, results):
-    connector_container = results["build"].output_artifact[LOCAL_BUILD_PLATFORM]
-    connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
+def _create_integration_step_args_factory(context):
 
-    if context.connector.supports_normalization:
-        tar_file_name = f"{context.connector.normalization_repository}_{context.git_revision}.tar"
-        build_normalization_results = results["build_normalization"]
+    async def _create_integration_step_args(results):
 
-        normalization_container = build_normalization_results.output_artifact
-        normalization_tar_file, _ = await export_container_to_tarball(
-            context, normalization_container, tar_file_name=tar_file_name
-        )
-    else:
-        normalization_tar_file = None
+        connector_container = results["build"].output_artifact[LOCAL_BUILD_PLATFORM]
+        connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
+
+        if context.connector.supports_normalization:
+            tar_file_name = f"{context.connector.normalization_repository}_{context.git_revision}.tar"
+            build_normalization_results = results["build_normalization"]
+
+            normalization_container = build_normalization_results.output_artifact
+            normalization_tar_file, _ = await export_container_to_tarball(
+                context, normalization_container, tar_file_name=tar_file_name
+            )
+        else:
+            normalization_tar_file = None
 
 
-    return {
-        "connector_tar_file": connector_image_tar_file,
-        "normalization_tar_file": normalization_tar_file
-    }
+        return {
+            "connector_tar_file": connector_image_tar_file,
+            "normalization_tar_file": normalization_tar_file
+        }
+
+    return _create_integration_step_args
 
 def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
     build_steps = [
@@ -110,11 +115,12 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
         build_steps += normalization_steps
 
     # Run tests in parallel
+
     test_steps = [[
         StepToRun(
             id="integration",
             step=IntegrationTests(context),
-            args=lambda results: _create_integration_step_args(context, results), ## TODO (Ben) this wont work as its an async
+            args=_create_integration_step_args_factory(context),
             depends_on=["build"],
         ),
         StepToRun(
@@ -134,7 +140,7 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
     """
 
     return [
-        [StepToRun(id="build_tar", step=BuildConnectorDistributionTar(context, LOCAL_BUILD_PLATFORM))],
+        [StepToRun(id="build_tar", step=BuildConnectorDistributionTar(context))],
         [StepToRun(id="unit", step=UnitTests(context))],
         _get_acceptance_test_steps(context),
     ]

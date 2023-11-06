@@ -61,7 +61,8 @@ def _skip_remaining_steps(remaining_steps: STEP_TREE) -> bool:
     return skipped_results
 
 def _step_dependencies_succeeded(depends_on: List[str], results: Dict[str, StepResult]) -> bool:
-    return all(results[step_id].status is StepStatus.SUCCESS for step_id in depends_on)
+    main_logger.info(f"Checking if dependencies {depends_on} have succeeded")
+    return all(results.get(step_id) and results.get(step_id).status is StepStatus.SUCCESS for step_id in depends_on)
 
 def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], results: Dict[str, StepResult]) -> Tuple[STEP_TREE, Dict[str, StepResult]]:
     steps_to_run = []
