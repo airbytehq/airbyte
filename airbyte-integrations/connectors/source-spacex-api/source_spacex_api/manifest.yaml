@@ -29,7 +29,7 @@ definitions:
     $parameters:
       name: "launches"
       primary_key: "id"
-      path: "/launches/{{config['options'] or config['id'] or latest}}"
+      path: "/launches/{{config['options'] or config['id'] or 'latest'}}"
 
   capsules_stream:
     $ref: "#/definitions/base_stream"
