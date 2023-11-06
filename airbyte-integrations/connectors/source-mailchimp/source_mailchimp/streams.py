@@ -304,31 +304,40 @@ class SegmentMembers(MailChimpListSubStream):
         segment_id = stream_slice.get("segment_id")
         return f"lists/{list_id}/segments/{segment_id}/members"
     
-    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], stream_slice, **kwargs) -> Iterable[Mapping]:
         """
         SegmentMembers endpoint does not support sorting, so we need to filter out records that are older than the current state
         """
         response = super().parse_response(response, **kwargs)
 
         for record in response:
-            current_cursor_value = stream_state.get(record.get("category_id"), {}).get(self.cursor_field)
+
+            record["segment_id"] = stream_slice.get("segment_id")
+
+            current_cursor_value = stream_state.get(record.get("segment_id"), {}).get(self.cursor_field)
             record_cursor_value = record.get(self.cursor_field)
             if current_cursor_value is None or record_cursor_value >= current_cursor_value:
                 yield record
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
-        category_id = latest_record.get("category_id")
+
+        segment_id = latest_record.get("segment_id")
         latest_cursor_value = latest_record.get(self.cursor_field)
 
+        self.logger.info(f"Segment_id: {segment_id}")
+
         # Get the current state value for this list, if it exists
-        list_state = current_stream_state.get(category_id, {})
+        list_state = current_stream_state.get(segment_id, {})
         current_cursor_value = list_state.get(self.cursor_field, latest_cursor_value)
 
         # Update the cursor value and set it in state
         updated_cursor_value = max(current_cursor_value, latest_cursor_value)
-        current_stream_state[category_id] = {self.cursor_field: updated_cursor_value}
+        current_stream_state[segment_id] = {self.cursor_field: updated_cursor_value}
 
+        self.logger.info(f"Current state: {current_stream_state}")
+        self.logger.info(f"Latest record: {current_stream_state[segment_id]}")
+        self.logger.info(f"Segment_id: {segment_id}")
         return current_stream_state
 
 class Segments(MailChimpListSubStream):

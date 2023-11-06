@@ -184,22 +184,22 @@ def test_list_child_request_params(auth, stream_class, stream_slice, stream_stat
         ),
         (
             SegmentMembers,
-            {"category_1": {"last_changed": "2023-10-15T00:00:00Z"}, "category_2": {"last_changed": "2023-10-15T00:00:00Z"}},
-            {"category_id": "category_1", "last_changed": "2023-10-16T00:00:00Z"},
-            {"category_1": {"last_changed": "2023-10-16T00:00:00Z"}, "category_2": {"last_changed": "2023-10-15T00:00:00Z"}},
+            {"segment_1": {"last_changed": "2023-10-15T00:00:00Z"}, "segment_2": {"last_changed": "2023-10-15T00:00:00Z"}},
+            {"segment_id": "segment_1", "last_changed": "2023-10-16T00:00:00Z"},
+            {"segment_1": {"last_changed": "2023-10-16T00:00:00Z"}, "segment_2": {"last_changed": "2023-10-15T00:00:00Z"}},
         ),
         (
             SegmentMembers,
-            {"category_1": {"last_changed": "2023-10-15T00:00:00Z"}},
-            {"category_id": "category_2", "last_changed": "2023-10-16T00:00:00Z"},
-            {"category_1": {"last_changed": "2023-10-15T00:00:00Z"}, "category_2": {"last_changed": "2023-10-16T00:00:00Z"}},
+            {"segment_1": {"last_changed": "2023-10-15T00:00:00Z"}},
+            {"segment_id": "segment_2", "last_changed": "2023-10-16T00:00:00Z"},
+            {"segment_1": {"last_changed": "2023-10-15T00:00:00Z"}, "segment_2": {"last_changed": "2023-10-16T00:00:00Z"}},
         )
     ],
     ids=[
         "Segments: no current_stream_state",
         "Segments: latest_record's cursor > than current_stream_state for list_1",
         "ListMembers: latest_record's cursor < current_stream_state for list_2",
-        "SegmentMembers: latest_record's cursor > current_stream_state for category_1",
+        "SegmentMembers: latest_record's cursor > current_stream_state for segment_1",
         "SegmentMembers: no stream_state for current slice, new slice added to state"
     ],
 )
@@ -220,33 +220,33 @@ def test_list_child_get_updated_state(auth, stream_class, current_stream_state, 
         (
           {},
           {"members": [
-            {"id": 1, "category_id": "category_1", "last_changed": "2021-01-01T00:00:00Z"},
-            {"id": 2, "category_id": "category_1", "last_changed": "2021-01-02T00:00:00Z"}
+            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-01-02T00:00:00Z"}
           ]},
           [
-            {"id": 1, "category_id": "category_1", "last_changed": "2021-01-01T00:00:00Z"},
-            {"id": 2, "category_id": "category_1", "last_changed": "2021-01-02T00:00:00Z"}
+            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-01-02T00:00:00Z"}
           ]
         ),
         
         # Test case 2: Records older than stream state should be filtered out
         (
-          {"category_1": {"last_changed": "2021-02-01T00:00:00Z"}},
+          {"segment_1": {"last_changed": "2021-02-01T00:00:00Z"}},
           {"members": [
-            {"id": 1, "category_id": "category_1", "last_changed": "2021-01-01T00:00:00Z"},
-            {"id": 2, "category_id": "category_1", "last_changed": "2021-03-01T00:00:00Z"}
+            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}
           ]},
-          [{"id": 2, "category_id": "category_1", "last_changed": "2021-03-01T00:00:00Z"}]
+          [{"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}]
         ),
         
-        # Test case 3: Two lists in stream state, only state for category_id_1 determines filtering
+        # Test case 3: Two lists in stream state, only state for segment_id_1 determines filtering
         (
-          {"category_1": {"last_changed": "2021-01-02T00:00:00Z"}, "category_2": {"last_changed": "2022-01-01T00:00:00Z"}},
+          {"segment_1": {"last_changed": "2021-01-02T00:00:00Z"}, "segment_2": {"last_changed": "2022-01-01T00:00:00Z"}},
           {"members": [            
-            {"id": 1, "category_id": "category_1", "last_changed": "2021-01-01T00:00:00Z"},
-            {"id": 2, "category_id": "category_1", "last_changed": "2021-03-01T00:00:00Z"}
+            {"id": 1, "segment_id": "segment_1", "last_changed": "2021-01-01T00:00:00Z"},
+            {"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}
           ]}, 
-          [{"id": 2, "category_id": "category_1", "last_changed": "2021-03-01T00:00:00Z"}]
+          [{"id": 2, "segment_id": "segment_1", "last_changed": "2021-03-01T00:00:00Z"}]
         ),
     ],
     ids=[
