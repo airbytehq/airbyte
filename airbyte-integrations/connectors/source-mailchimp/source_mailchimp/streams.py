@@ -295,7 +295,6 @@ class Interests(MailChimpStream, HttpSubStream):
         """
         Get the list_id from the parent stream slice and use it to construct the path.
         """
-        self.logger.info(f"stream_slice: {stream_slice}")
         list_id = stream_slice.get("parent").get("list_id")
         category_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories/{category_id}/interests"
