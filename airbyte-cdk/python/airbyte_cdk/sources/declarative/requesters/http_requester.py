@@ -46,7 +46,6 @@ class HttpRequester(Requester, ABC):
     """
 
     name: str
-    parameters: InitVar[Mapping[str, Any]]
     authenticator: Optional[DeclarativeAuthenticator]
     http_method: Union[str, HttpMethod]
     error_handler: Optional[ErrorHandler]
@@ -57,8 +56,8 @@ class HttpRequester(Requester, ABC):
     _DEFAULT_RETRY_FACTOR = 5
     _DEFAULT_MAX_TIME = 60 * 10
 
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._authenticator = self.authenticator or NoAuth(parameters=parameters)
+    def __post_init__(self) -> None:
+        self._authenticator = self.authenticator or NoAuth(parameters={})
         self._http_method = HttpMethod[self.http_method] if isinstance(self.http_method, str) else self.http_method
         self.error_handler = self.error_handler
         self.decoder = JsonDecoder(parameters={})
@@ -503,6 +502,7 @@ class LowCodeHttpRequester(HttpRequester):
     url_base: Union[InterpolatedString, str]
     path: Union[InterpolatedString, str]
     config: Config
+    parameters: Mapping[str, Any]
     request_options_provider: Optional[Union[InterpolatedRequestOptionsProvider, dict[str, Any]]]
 
     def __init__(
@@ -522,11 +522,11 @@ class LowCodeHttpRequester(HttpRequester):
         self.url_base = url_base
         self.path = path
         self.config = config
+        self._parameters = parameters
         self.request_options_provider = request_options_provider
 
         super().__init__(
             name=name,
-            parameters=parameters,
             authenticator=authenticator,
             http_method=http_method,
             error_handler=error_handler,
@@ -534,17 +534,17 @@ class LowCodeHttpRequester(HttpRequester):
             message_repository=message_repository,
         )
 
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        self._url_base = InterpolatedString.create(self.url_base, parameters=parameters)
-        self._path = InterpolatedString.create(self.path, parameters=parameters)
+    def __post_init__(self) -> None:
+        self._url_base = InterpolatedString.create(self.url_base, parameters=self._parameters)
+        self._path = InterpolatedString.create(self.path, parameters=self._parameters)
         if self.request_options_provider is None:
-            self._request_options_provider = InterpolatedRequestOptionsProvider(config={}, parameters=parameters)
+            self._request_options_provider = InterpolatedRequestOptionsProvider(config={}, parameters=self._parameters)
         elif isinstance(self.request_options_provider, dict):
             self._request_options_provider = InterpolatedRequestOptionsProvider(config=self.config, **self.request_options_provider)
         else:
             self._request_options_provider = self.request_options_provider
 
-        super().__post_init__(parameters)
+        super().__post_init__()
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
     # Dataclasses by default are not hashable, so we need to define __hash__(). Alternatively, we can set @dataclass(frozen=True),
@@ -617,7 +617,6 @@ class SourceHttpRequester(HttpRequester):
         name: str,
         url_base: str,
         path: str,
-        parameters: Mapping[str, Any],
         authenticator: Optional[DeclarativeAuthenticator] = None,
         http_method: Union[str, HttpMethod] = HttpMethod.GET,
         error_handler: Optional[ErrorHandler] = None,
@@ -637,7 +636,6 @@ class SourceHttpRequester(HttpRequester):
 
         super().__init__(
             name=name,
-            parameters=parameters,
             authenticator=authenticator,
             http_method=http_method,
             error_handler=error_handler,
