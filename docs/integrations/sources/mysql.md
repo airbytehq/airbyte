@@ -7,7 +7,7 @@ Airbyte's certified MySQL connector offers the following features:
 
 The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs).
 
-![Airbyte MySQL Connection](./mysql/assets/airbyte_mysql_source.png)
+![Airbyte MySQL Connection](https://raw.githubusercontent.com/airbytehq/airbyte/3a9264666b7b9b9d10ef8d174b8454a6c7e57560/docs/integrations/sources/mysql/assets/airbyte_mysql_source.png)
 
 ## Quick Start
 
