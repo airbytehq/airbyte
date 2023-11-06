@@ -30,8 +30,8 @@ use tempfile::{Builder, TempDir};
 use json_patch::merge;
 
 use super::fix_document_schema::{
-    fix_document_schema_keys, fix_nonstandard_jsonschema_attributes, remove_enums,
-    normalize_schema_date_to_datetime
+    fix_document_schema_keys, fix_nonstandard_jsonschema_attributes,
+    normalize_schema_date_to_datetime, remove_enums,
 };
 use super::normalize::{automatic_normalizations, normalize_doc, NormalizationEntry};
 use super::remap::remap;
@@ -188,7 +188,8 @@ impl AirbyteSourceInterceptor {
             let schema_normalizations = std::fs::read_to_string(SCHEMA_NORMALIZATIONS_FILE_NAME)
                 .ok()
                 .map(|p| sj::from_str::<Vec<String>>(&p))
-                .transpose()?.unwrap_or(Vec::new());
+                .transpose()?
+                .unwrap_or(Vec::new());
 
             let mut resp = response::Discovered::default();
             for stream in catalog.streams {
@@ -198,6 +199,8 @@ impl AirbyteSourceInterceptor {
                         disable = true;
                     }
                 }
+                let recommended_name = stream_to_recommended_name(&stream.name);
+                let resource_path = stream_to_resource_path(&stream);
 
                 let has_incremental = stream
                     .supported_sync_modes
@@ -218,8 +221,6 @@ impl AirbyteSourceInterceptor {
                             .to_string()
                     })
                     .collect();
-
-                let recommended_name = stream_to_recommended_name(&stream.name);
 
                 let doc_pk = std::fs::read_to_string(format!(
                     "{}/{}{}",
@@ -244,7 +245,10 @@ impl AirbyteSourceInterceptor {
                 }
 
                 // cursor_field does not accept JSON Pointers, but keys directly, so we remove the initial `/` from keys
-                let non_pointer_key = key.iter().map(|ptr| ptr.get(1..).unwrap().to_string()).collect();
+                let non_pointer_key = key
+                    .iter()
+                    .map(|ptr| ptr.get(1..).unwrap().to_string())
+                    .collect();
 
                 // Sometimes the cursor_field is Some([]), this block handles that case and defaults to the primary key
                 let cursor_field = if let Some(cf) = stream.default_cursor_field {
@@ -291,7 +295,7 @@ impl AirbyteSourceInterceptor {
                     match normalization.as_str() {
                         "date-to-datetime" => {
                             normalize_schema_date_to_datetime(&mut doc_schema);
-                        },
+                        }
                         _ => {}
                     }
                 }
@@ -302,6 +306,7 @@ impl AirbyteSourceInterceptor {
                     key: key.clone(),
                     document_schema_json: fix_document_schema_keys(doc_schema, key)?.to_string(),
                     disable,
+                    resource_path,
                 })
             }
 
@@ -356,7 +361,7 @@ impl AirbyteSourceInterceptor {
             for binding in &req.bindings {
                 let resource: ResourceSpec = serde_json::from_str(&binding.resource_config_json)?;
                 resp.bindings.push(response::validated::Binding {
-                    resource_path: vec![resource.stream],
+                    resource_path: resource_spec_to_resource_path(&resource),
                 });
             }
 
@@ -658,6 +663,32 @@ impl AirbyteSourceInterceptor {
     }
 }
 
+/// Returns a resource path for the given resource spec. This is really just the
+/// `stream` property, which corresponds to the `name` of the airbyte `Stream`.
+/// This must be consistent with `stream_to_resource_path`, so that the resource
+/// paths returned by `Discover` and `Validate` are the same.
+fn resource_spec_to_resource_path(res: &ResourceSpec) -> Vec<String> {
+    let mut path = Vec::new();
+    if let Some(ns) = &res.namespace {
+        path.push(ns.clone());
+    }
+    path.push(res.stream.clone());
+    path
+}
+
+/// Returns a resource path for the given stream. This is really just the
+/// `name` of the stream, which corresponds to the `stream` of a resource spec.
+/// This must be consistent with `resource_spec_to_resource_path`, so that the
+/// resource paths returned by `Discover` and `Validate` are the same.
+fn stream_to_resource_path(stream: &airbyte_catalog::Stream) -> Vec<String> {
+    let mut path = Vec::new();
+    if let Some(ns) = &stream.namespace {
+        path.push(ns.clone());
+    }
+    path.push(stream.name.clone());
+    path
+}
+
 // stream names have no constraints.
 // Strip and sanitize them to be valid collection names.
 fn stream_to_recommended_name(stream: &str) -> String {
@@ -676,7 +707,7 @@ fn stream_to_recommended_name(stream: &str) -> String {
 
 #[cfg(test)]
 mod test {
-    use super::stream_to_recommended_name;
+    use super::*;
 
     #[test]
     fn test_stream_to_recommended_name() {
@@ -685,5 +716,41 @@ mod test {
             stream_to_recommended_name("/&foo!/B ar// b+i-n.g /"),
             "foo/Bar/bi-n.g"
         );
+    }
+
+    #[test]
+    fn test_resource_paths() {
+        let spec_a = ResourceSpec {
+            stream: "foo".to_string(),
+            namespace: None,
+            sync_mode: SyncMode::Incremental,
+            cursor_field: None,
+        };
+
+        let stream_a = airbyte_catalog::Stream {
+            name: "foo".to_string(),
+            json_schema: Default::default(),
+            supported_sync_modes: None,
+            source_defined_cursor: None,
+            default_cursor_field: None,
+            source_defined_primary_key: None,
+            namespace: None,
+        };
+
+        let expected = vec!["foo".to_string()];
+        assert_eq!(&expected, &resource_spec_to_resource_path(&spec_a));
+        assert_eq!(&expected, &stream_to_resource_path(&stream_a));
+
+        let spec_b = ResourceSpec {
+            namespace: Some("toe".to_string()),
+            ..spec_a
+        };
+        let stream_b = airbyte_catalog::Stream {
+            namespace: Some("toe".to_string()),
+            ..stream_a
+        };
+        let expected = vec!["toe".to_string(), "foo".to_string()];
+        assert_eq!(&expected, &resource_spec_to_resource_path(&spec_b));
+        assert_eq!(&expected, &stream_to_resource_path(&stream_b));
     }
 }
