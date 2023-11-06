@@ -382,7 +382,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
             }
             """)));
 
-
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, stream, Optional.empty(), "");
 
     final List<JsonNode> rawRecords = dumpRawTableRecords(streamId);
@@ -587,7 +586,7 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
                 """)));
 
     TypeAndDedupeTransaction.executeTypeAndDedupe(generator, destinationHandler, incrementalAppendStream,
-                                                  Optional.of(Instant.parse("2023-01-01T00:00:00Z")), "");
+        Optional.of(Instant.parse("2023-01-01T00:00:00Z")), "");
 
     final List<JsonNode> rawRecords = dumpRawTableRecords(streamId);
     final List<JsonNode> finalRecords = dumpFinalTableRecords(streamId, "");
@@ -1039,7 +1038,6 @@ public abstract class BaseSqlGeneratorIntegrationTest<DialectTableDefinition> {
       teardownNamespace(modifiedStreamId.finalNamespace());
     }
   }
-
 
   /**
    * Verify column names that are reserved keywords are handled successfully. Each destination should
