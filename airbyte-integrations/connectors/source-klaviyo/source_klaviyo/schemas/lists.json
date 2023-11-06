@@ -1,13 +1,25 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
-    "object": { "type": "string" },
+    "type": { "type": "string" },
     "id": { "type": "string" },
-    "name": { "type": "string" },
-    "created": { "type": "string", "format": "date-time" },
-    "updated": { "type": "string", "format": "date-time" },
-    "person_count": { "type": "integer" },
-    "list_type": { "type": "string" },
-    "folder": { "type": ["null", "string"] }
+    "updated": { "type": ["null", "string"], "format": "date-time" },
+    "attributes": {
+      "type": ["null", "object"],
+      "properties": {
+        "name": { "type": "string" },
+        "created": { "type": ["null", "string"], "format": "date-time" },
+        "updated": { "type": ["null", "string"], "format": "date-time" }
+      }
+    },
+    "links": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    },
+    "relationships": {
+      "type": ["null", "object"],
+      "additionalProperties": true
+    }
   }
 }
