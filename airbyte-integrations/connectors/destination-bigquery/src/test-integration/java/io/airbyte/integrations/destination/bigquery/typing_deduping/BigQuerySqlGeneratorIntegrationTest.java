@@ -423,14 +423,8 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
    */
   @Override
   @Disabled
-  public void noCrashOnSpecialCharactersSafe(final String specialChars) throws Exception {
-    super.noCrashOnSpecialCharactersSafe(specialChars);
-  }
-
-  @Override
-  @Disabled
-  public void noCrashOnSpecialCharactersUnsafe(final String specialChars) throws Exception {
-    super.noCrashOnSpecialCharactersSafe(specialChars);
+  public void noCrashOnSpecialCharacters(final String specialChars) throws Exception {
+    super.noCrashOnSpecialCharacters(specialChars);
   }
 
   /**
