@@ -208,11 +208,12 @@ class SourceStripe(AbstractSource):
             CreatedCursorIncrementalStripeStream(name="balance_transactions", path="balance_transactions", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="files", path="files", **incremental_args),
             CreatedCursorIncrementalStripeStream(name="file_links", path="file_links", **incremental_args),
+            CreatedCursorIncrementalStripeStream(name="refunds", path="refunds", **incremental_args),
             UpdatedCursorIncrementalStripeStream(
                 name="checkout_sessions",
                 path="checkout/sessions",
                 use_cache=True,
-                legacy_cursor_field="expires_at",
+                legacy_cursor_field="created",
                 event_types=[
                     "checkout.session.async_payment_failed",
                     "checkout.session.async_payment_succeeded",
@@ -337,9 +338,6 @@ class SourceStripe(AbstractSource):
                 **args,
             ),
             transfers,
-            IncrementalStripeStream(
-                name="refunds", path="refunds", use_cache=True, event_types=["refund.created", "refund.updated"], **args
-            ),
             IncrementalStripeStream(
                 name="payment_intents",
                 path="payment_intents",

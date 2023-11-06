@@ -30,7 +30,7 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 5. For **Account ID**, enter your Stripe Account ID. This ID begins with `acct_`, and can be found in the top-right corner of your Stripe [account settings page](https://dashboard.stripe.com/settings/account).
 6. For **Secret Key**, enter the restricted key you created for the connection.
 7. For **Replication Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated.
-8. (Optional) For **Lookback Window**, you may specify a number of days from the present day to reread data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments. This applies only to streams that do not support event-based incremental syncs, please see the list below.
+8. (Optional) For **Lookback Window**, you may specify a number of days from the present day to reread data. This allows the connector to retrieve data that might have been updated after its initial creation, and is useful for handling any post-transaction adjustments. This applies only to streams that do not support event-based incremental syncs, please see [the list below](#cursor-fields).
 
    - Leaving the **Lookback Window** at its default value of 0 means Airbyte will not re-export data after it has been synced.
    - Setting the **Lookback Window** to 1 means Airbyte will re-export data from the past day, capturing any changes made in the last 24 hours.
@@ -113,7 +113,8 @@ The Stripe source connector supports the following streams:
 Please be aware: this also means that any change older than 30 days will not be replicated using the incremental sync mode. If you want all your synced data to remain up to date, please set up your sync frequency to no more than 30 days.
 :::
 
-:::note
+## Cursor fields
+
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
 - `BalanceTransactions`
@@ -121,6 +122,7 @@ However, not all the entities are supported by the Events API, so the Stripe con
 - `Events`
 - `FileLinks`
 - `Files`
+- `Refunds`
 - `SetupAttempts`
 - `ShippingRates`
 
@@ -150,7 +152,6 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Plans`
 - `Prices`
 - `Products`
-- `Refunds`
 - `Reviews`
 - `Setup Intents`
 - `Subscription Schedule`
@@ -159,9 +160,8 @@ On the other hand, the following streams use the `updated` field value as a curs
 - `Transactions`
 - `Transfers`
 
-  :::
+## Incremental deletes
 
-:::note
 The Stripe API also provides a way to implement incremental deletes for a limited number of streams:
 - `Bank Accounts`
 - `Coupons`
@@ -177,8 +177,6 @@ The Stripe API also provides a way to implement incremental deletes for a limite
 - `Subscriptions`
 
 Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
-
-  :::
 
 ### Data type mapping
 

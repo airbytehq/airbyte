@@ -248,7 +248,8 @@ class CreatedCursorIncrementalStripeStream(StripeStream):
 
     def get_start_timestamp(self, stream_state) -> int:
         start_point = self.start_date
-        start_point = max(start_point, stream_state.get(self.cursor_field, 0))
+        # we use +1 second because date range is inclusive
+        start_point = max(start_point, stream_state.get(self.cursor_field, 0) + 1)
 
         if start_point and self.lookback_window_days:
             self.logger.info(f"Applying lookback window of {self.lookback_window_days} days to stream {self.name}")
@@ -485,7 +486,7 @@ class CheckoutSessionsLineItems(CreatedCursorIncrementalStripeStream):
             name="checkout_sessions",
             path="checkout/sessions",
             use_cache=True,
-            legacy_cursor_field="expires_at",
+            legacy_cursor_field="created",
             event_types=[
                 "checkout.session.async_payment_failed",
                 "checkout.session.async_payment_succeeded",
