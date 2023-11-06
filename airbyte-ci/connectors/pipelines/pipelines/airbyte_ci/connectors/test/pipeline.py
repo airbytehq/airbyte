@@ -44,15 +44,6 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
     Compute the steps to run for a connector test pipeline.
     """
 
-    """
-    TODO: main
-    - Update java connectors
-    - clean up todos
-
-    NEXT PR
-    - add extra_args_support
-    """
-
     steps_to_run = get_test_steps(context)
 
     if not context.code_tests_only:

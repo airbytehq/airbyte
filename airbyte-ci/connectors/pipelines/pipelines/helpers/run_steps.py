@@ -12,12 +12,13 @@ from pipelines import main_logger
 from typing import TYPE_CHECKING, Callable, Dict, List, Tuple, Union
 
 import asyncer
-from pipelines.models.steps import StepStatus
+from pipelines.models.steps import StepStatus, StepResult
+
+RESULTS_DICT = Dict[str, StepResult]
+ARGS_TYPE = Union[Dict, Callable[[RESULTS_DICT], Dict]]
 
 if TYPE_CHECKING:
     from pipelines.models.steps import Step, StepResult
-    # dict, function that returns a dict, or a coroutine that returns a dict
-    ARGS_TYPE = Union[Dict, Callable[[Dict[str, StepResult]], Dict]]
 
 
 @dataclass(frozen=True)
@@ -39,7 +40,7 @@ class StepToRun:
 STEP_TREE = List[StepToRun | List[StepToRun]]
 
 
-async def evaluate_run_args(args: ARGS_TYPE, results: Dict[str, StepResult]) -> Dict:
+async def evaluate_run_args(args: ARGS_TYPE, results: RESULTS_DICT) -> Dict:
     if inspect.iscoroutinefunction(args):
         return await args(results)
     elif callable(args):
@@ -60,11 +61,11 @@ def _skip_remaining_steps(remaining_steps: STEP_TREE) -> bool:
 
     return skipped_results
 
-def _step_dependencies_succeeded(depends_on: List[str], results: Dict[str, StepResult]) -> bool:
+def _step_dependencies_succeeded(depends_on: List[str], results: RESULTS_DICT) -> bool:
     main_logger.info(f"Checking if dependencies {depends_on} have succeeded")
     return all(results.get(step_id) and results.get(step_id).status is StepStatus.SUCCESS for step_id in depends_on)
 
-def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], results: Dict[str, StepResult]) -> Tuple[STEP_TREE, Dict[str, StepResult]]:
+def _filter_skipped_steps(steps_to_evaluate: STEP_TREE, skip_steps: List[str], results: RESULTS_DICT) -> Tuple[STEP_TREE, RESULTS_DICT]:
     steps_to_run = []
     for step_to_eval in steps_to_evaluate:
 
@@ -99,9 +100,9 @@ def _get_next_step_group(steps: STEP_TREE) -> Tuple[STEP_TREE, STEP_TREE]:
 
 async def run_steps(
     runnables: STEP_TREE,
-    results: Dict[str, StepResult] = {},
+    results: RESULTS_DICT = {},
     options: RunStepOptions = RunStepOptions(),
-) -> Dict[str, StepResult]:
+) -> RESULTS_DICT:
     """Run multiple steps sequentially, or in parallel if steps are wrapped into a sublist.
 
     Examples
@@ -131,10 +132,10 @@ async def run_steps(
 
     Args:
         runnables (List[StepToRun]): List of steps to run.
-        results (Dict[str, StepResult], optional): Dictionary of step results, used for recursion.
+        results (RESULTS_DICT, optional): Dictionary of step results, used for recursion.
 
     Returns:
-        Dict[str, StepResult]: Dictionary of step results.
+        RESULTS_DICT: Dictionary of step results.
     """
     # If there are no steps to run, return the results
     if not runnables:

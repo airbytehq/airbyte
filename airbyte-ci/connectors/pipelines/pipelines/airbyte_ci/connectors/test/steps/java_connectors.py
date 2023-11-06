@@ -4,7 +4,7 @@
 
 """This module groups steps made to run tests for a specific Java connector given a test context."""
 
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 import anyio
 from dagger import Directory, File, QueryError
@@ -20,7 +20,7 @@ from pipelines.airbyte_ci.steps.gradle import GradleTask
 from pipelines.consts import LOCAL_BUILD_PLATFORM
 from pipelines.dagger.actions import secrets
 from pipelines.dagger.actions.system import docker
-from pipelines.helpers.run_steps import StepToRun
+from pipelines.helpers.run_steps import RESULTS_DICT, StepToRun
 from pipelines.helpers.utils import export_container_to_tarball
 from pipelines.models.steps import StepResult, StepStatus
 
@@ -64,10 +64,11 @@ class UnitTests(GradleTask):
     gradle_task_name = "test"
     bind_to_docker_host = True
 
-# TODO (ben) handle async
-def _create_integration_step_args_factory(context):
-
-    async def _create_integration_step_args(results):
+def _create_integration_step_args_factory(context: ConnectorContext) -> Callable[[RESULTS_DICT], dict]:
+    """
+    Create a function that can process the args for the integration step.
+    """
+    async def _create_integration_step_args(results: RESULTS_DICT):
 
         connector_container = results["build"].output_artifact[LOCAL_BUILD_PLATFORM]
         connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
