@@ -10,7 +10,7 @@ import requests
 import responses
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
-from source_mailchimp.streams import Campaigns, EmailActivity, ListMembers, Lists, Segments
+from source_mailchimp.streams import Automations, Campaigns, EmailActivity, InterestCategories, ListMembers, Lists, Reports, Segments, Unsubscribes
 from utils import read_full_refresh, read_incremental
 
 
@@ -413,3 +413,37 @@ def test_403_error_handling(
     # Handle non-403 error
     except HTTPError as e:
         assert e.response.status_code == status_code
+
+
+@pytest.mark.parametrize(
+    "stream, stream_slice, endpoint",
+    [
+        (Automations, {}, "automations"),
+        (Lists, {}, "lists"),
+        (Campaigns, {}, "campaigns"),
+        (EmailActivity, {"campaign_id": "123"}, "reports/123/email-activity"),
+        (InterestCategories, {"parent": {"id": "123"}}, "lists/123/interest-categories"),
+        (ListMembers, {"list_id": "123"}, "lists/123/members"),
+        (Reports, {}, "reports"),
+        (Segments, {"list_id": "123"}, "lists/123/segments"),
+        (Unsubscribes, {"campaign_id": "123"}, "reports/123/unsubscribed")
+    ],
+    ids=[
+        "Automations",
+        "Lists",
+        "Campaigns",
+        "EmailActivity",
+        "InterestCategories",
+        "ListMembers",
+        "Reports",
+        "Segments",
+        "Unsubscribes"
+    ]
+)
+def test_path(auth, stream, stream_slice, endpoint):
+
+    if stream == InterestCategories:
+        stream = stream(authenticator=auth, parent=Lists(authenticator=auth))
+    else:
+        stream = stream(authenticator=auth)
+    assert stream.path(stream_slice=stream_slice) == endpoint

@@ -10,7 +10,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 
 logger = logging.getLogger("airbyte")
 
@@ -259,6 +259,22 @@ class EmailActivity(IncrementalMailChimpStream):
             for activity_item in item.pop("activity", []):
                 yield {**item, **activity_item}
 
+
+class InterestCategories(MailChimpStream, HttpSubStream):
+    """
+    Get information about interest categories for a specific list.
+    Docs link: https://mailchimp.com/developer/marketing/api/interest-categories/list-interest-categories/
+    """
+
+    data_field = "categories"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        """
+        Get the list_id from the parent stream slice and use it to construct the path.
+        """
+        list_id = stream_slice.get("parent").get("id")
+        return f"lists/{list_id}/interest-categories"
+            
 
 class ListMembers(MailChimpListSubStream):
     """
