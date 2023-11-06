@@ -1,5 +1,6 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import logging
 import asyncclick as click
 from pipelines.airbyte_ci.format.actions import run_format
 from pipelines.airbyte_ci.format.containers import (
@@ -22,11 +23,11 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 @click_ignore_unused_kwargs
 async def fix(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     """Run code format checks and fix any failures."""
-    # TODO: fix this client hacking
+    logger = logging.getLogger("format")
     ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Format repository")
 
     if ctx.invoked_subcommand is None:
-        print("Running all formatters...")
+        logger.info("Running all formatters...")
         for command in fix.commands.values():
             await ctx.invoke(command)
 

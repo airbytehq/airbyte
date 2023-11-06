@@ -6,7 +6,7 @@ import click
 import dagger
 from pipelines.airbyte_ci.format.actions import mount_repo_for_formatting
 from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
-from pipelines.consts import AMAZONCORRETTO_IMAGE, GO_IMAGE, JDK_IMAGE, NODE_IMAGE
+from pipelines.consts import AMAZONCORRETTO_IMAGE, GO_IMAGE, NODE_IMAGE
 from pipelines.dagger.actions.python.pipx import with_installed_pipx_package, with_pipx
 from pipelines.dagger.containers.python import with_python_base
 from pipelines.helpers.utils import sh_dash_c
@@ -82,7 +82,7 @@ def format_java_container(ctx: ClickPipelineContext) -> dagger.Container:
             "yum update -y",
             "yum install -y findutils",  # gradle requires xargs, which is shipped in findutils.
             "yum clean all",
-        ]
+        ],
     )
 
 

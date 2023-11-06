@@ -1,10 +1,14 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import logging
+import sys
 from typing import List
 
 import anyio
 import asyncclick as click
+import dagger
 from pipelines.airbyte_ci.format.actions import run_check
+from pipelines.airbyte_ci.format.check.utils import log_output
 from pipelines.airbyte_ci.format.containers import (
     format_java_container,
     format_js_container,
@@ -20,19 +24,35 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
     invoke_without_command=True,
     chain=True,
 )
+@click.option("--list-errors", is_flag=True, default=False, help="Show detailed error messages for failed checks.")
 @click_merge_args_into_context_obj
 @pass_pipeline_context
 @click_ignore_unused_kwargs
-async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
+async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext, list_errors: bool):
     """Run code format checks and fail if any checks fail."""
-    # TODO: fix this client hacking
+    logger = logging.getLogger("check")
+
     ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Check repository formatting")
+    ctx.obj["check_results"] = {}
 
     if ctx.invoked_subcommand is None:
-        print("Running all checks...")
+        logger.info("Running all checks...")
         async with anyio.create_task_group() as check_group:
-            for command in check.commands.values():
-                check_group.start_soon(ctx.invoke, command)
+            for command in ctx.command.commands.values():
+                check_group.start_soon(run_check_command, ctx, command)
+
+    log_output(ctx.obj["check_results"], list_errors, logger)
+
+    if any(not succeeded for (succeeded, _) in ctx.obj["check_results"].values()):
+        sys.exit(1)
+
+
+async def run_check_command(ctx, command):
+    try:
+        await ctx.invoke(command)
+        ctx.obj["check_results"][command.name] = (True, None)
+    except dagger.ExecError as e:
+        ctx.obj["check_results"][command.name] = (False, str(e))
 
 
 @check.command()
