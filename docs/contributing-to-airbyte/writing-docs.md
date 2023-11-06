@@ -90,13 +90,13 @@ Airbyte's markdown documentation—particularly connector-specific documentation
 Please familiarize yourself with all the tools available to you when writing documentation for a connector, so that you can provide appropriately tailored information to your readers in whichever context they see it. 
 
 :::note
-As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com. If you want to test out these in-app features in a local Airbyte build, ensure that you have the `airbyte` git repository checked out to the same parent directory as the airbyte platform repository: if so, development builds will by default fetch connector documentation from your local filesystem, allowing you to freely edit their content and view the rendered output.
+As a general rule, features that introduce new behavior or prevent certain content from rendering will affect how the Airbyte UI displays markdown content, but have no impact on https://docs.airbyte.com. If you want to test out these in-app features in [a local Airbyte build](https://docs.airbyte.com/contributing-to-airbyte/resources/developing-locally/#develop-on-airbyte-webapp), ensure that you have the `airbyte` git repository checked out to the same parent directory as the airbyte platform repository: if so, development builds will by default fetch connector documentation from your local filesystem, allowing you to freely edit their content and view the rendered output.
 :::
 
 #### Jump to the relevant documentation section when specific Connector Builder inputs are focused with `<FieldAnchor>`
-In the documentation, the relevant section needs to be wrapped in a `<FieldAnchor field="path.to.field" />` component. These are rendered as regular divs in the documentation site, so they have no effect in places other than the in-app documentation panel—however, note that there must be blank lines between a custom tag like `FieldAnchor` the content it wraps for the documentation site to render markdown syntax inside the custom tag to html.
+In the documentation, the relevant section needs to be wrapped in a `<FieldAnchor field="path.to.field" />` component. When a user focuses the field identified by the `field` attribute in the Connector Builder UI, the documentation pane will automatically scroll to the associated section of the documentation, highlighting all content contained inside the `<FieldAnchor></FieldAnchor>` tag. These are rendered as regular divs in the documentation site, so they have no effect in places other than the in-app documentation panel—however, note that there must be blank lines between a custom tag like `FieldAnchor` the content it wraps for the documentation site to render markdown syntax inside the custom tag to html.
 
-The `field` attribute must be a valid json path to one of the properties nested under `connectionSpecification.properties` in that connector's `spec.json` or `spec.yaml` file. To mark a section as highlighted after the user picks an option from a `oneOf`: use a `field` prop like `path.to.field[value-of-selection-key]`. It's also possible to highlight the same section for multiple fields by separating them with commas, like `<FieldAnchor path="path.to.field1,path.to.field.2">`.
+The `field` attribute must be a valid json path to one of the properties nested under `connectionSpecification.properties` in that connector's `spec.json` or `spec.yaml` file. For example, if the connector spec contains a `connectionSpecification.properties.replication_method.replication_slot`, you would mark the start of the related documentation section with `<FieldAnchor field="replication_method.replication_slot" />` and its end with `</FieldAnchor>`. To mark a section as highlighted after the user picks an option from a `oneOf`: use a `field` prop like `path.to.field[value-of-selection-key]`, where the `value-of-selection-key` is the value of a `const` field nested inside that `oneOf`; for example, if the replication method should be one of `Standard` or `CDC`, you can wrap a specific replication method's documentation section with a `<FieldAnchor field="replication_method[CDC]">...</FieldAnchor>` tag, and it will be highlighted if the user selects that replication method in the UI. It's also possible to highlight the same section for multiple fields by separating them with commas, like `<FieldAnchor path="replication_method.replication_slot,replication_method.queue_size">`.
 
 #### Prevent specific content from rendering in the UI with `<HideInUI>`
 Certain content is important to document, but unhelpful in the context of the Airbyte UI's inline documentation views: 
@@ -131,7 +131,7 @@ Only cloud builds of the Airbyte UI will render this content.
 
 Content outside of the magic-comment-delimited blocks will be rendered everywhere.
 ```
-Note that the documentation site will render _all_ environment-specific content, so please introduce environment-specific variants with some documentation-site-only context (e.g. a subheading) to disambiguate.
+Note that the documentation site will render _all_ environment-specific content, so please introduce environment-specific variants with some documentation-site-only context (like the hidden subheadings in the example above) to disambiguate.
 
 #### Contextually-styled callouts with admonition blocks
 We have added support for [Docusaurus' admonition syntax](https://docusaurus.io/docs/markdown-features/admonitions) to Airbyte's in-app markdown renderer.
@@ -210,23 +210,17 @@ Some **dangerous** content with _Markdown_ `syntax`.
 
 :::
 
-```md
 #### Collapsible content with `<details>` and `<summary>`
-```md
-## Ordinary markdown content
-<details>
-  <summary>Here is an expandible section! Everything but this title is hidden by default.</summary>
-```
 
-#### Collapsible content with `<details>` and `<summary>`
 ```md
 ## Ordinary markdown content
+
 <details>
   <summary>Here is an expandible section! Everything but this title is hidden by default.</summary>
   Here is the dropdown content; if users expand this section, they will be able to read your valuable but perhaps nonessential content.
 </details>
 
-Markdown content
+Back to ordinary markdown content.
 ```
 Eagle-eyed readers may note that _all_ markdown should support this feature since it's part of the html spec. However, it's worth special mention since these dropdowns have been styled to be a graceful visual fit within our rendered documentation in all environments.
 
