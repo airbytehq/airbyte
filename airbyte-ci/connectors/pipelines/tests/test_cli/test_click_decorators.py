@@ -1,3 +1,5 @@
+# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
+
 import asyncclick as click
 import pytest
 from asyncclick.testing import CliRunner
