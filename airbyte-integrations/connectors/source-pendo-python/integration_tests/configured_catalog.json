@@ -11,6 +11,15 @@
     },
     {
       "stream": {
+        "name": "account_metadata",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "feature",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
@@ -48,6 +57,15 @@
     {
       "stream": {
         "name": "visitor",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "visitor_metadata",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
