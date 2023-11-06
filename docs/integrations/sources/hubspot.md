@@ -1,31 +1,53 @@
 # HubSpot
 
+<HideInUI>
+
 This page contains the setup guide and reference information for the [HubSpot](https://www.hubspot.com/) source connector.
+
+</HideInUI>
 
 ## Prerequisites
 
 - HubSpot Account
+
+<!-- env:oss -->
 - **For Airbyte Open Source**: Private App with Access Token
+<!-- /env:oss -->
 
 ## Setup guide
 
+<!-- env:cloud -->
 **For Airbyte Cloud** users, we highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process.
+<!-- /env:cloud -->
 
+<!-- env:oss -->
 **For Airbyte Open Source** users we recommend Private App authentication.
+<!-- /env:oss -->
 
 More information on HubSpot authentication methods can be found
 [here](https://developers.hubspot.com/docs/api/intro-to-auth).
 
 ### Step 1: Set up the authentication method
 
+<!-- env:cloud -->
+### Airbyte Cloud
+
+**OAuth** (Recommended for Airbyte Cloud)
+
+
+**Private App** - If you are using a Private App, you will need to use your Access Token to set up the connector. Please refer to the
+  [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+### Airbyte Open Source
+
 #### Private App setup (Recommended for Airbyte Open Source)
 
 If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the
 [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) for a detailed guide.
 
-<!-- env:oss -->
-
-#### OAuth setup for Airbyte Open Source (Not recommended)
+#### OAuth setup
 
 If you are using Oauth to authenticate on Airbyte Open Source, please refer to [Hubspot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
 
@@ -37,8 +59,14 @@ If you are using Oauth to authenticate on Airbyte Open Source, please refer to [
 
 ### Step 2: Configure the scopes for your streams
 
+<!-- env:cloud -->
+Unless you are authenticating via OAuth on **Airbyte Cloud**, you must manually configure scopes to ensure Airbyte can sync all available data. To see a breakdown of the specific scopes each stream uses, see our full [Hubspot documentation](https://docs.airbyte.com/integrations/sources/hubspot/).
+<!-- /env:cloud -->
+
+<!-- env:oss -->
 Next, you need to configure the appropriate scopes for the following streams. Please refer to
 [Hubspot's page on scopes](https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes) for instructions.
+<!-- /env:oss -->
 
 | Stream                      | Required Scope                                                                                               |
 | :-------------------------- | :----------------------------------------------------------------------------------------------------------- |
@@ -47,7 +75,7 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 | `contact_lists`             | `crm.objects.lists.read`                                                                                     |
 | `contacts`                  | `crm.objects.contacts.read`                                                                                  |
 | `contacts_list_memberships` | `crm.objects.contacts.read`                                                                                  |
-| Custom CRM OBjects          | `crm.objects.custom.read`                                                                                    |
+| Custom CRM Objects          | `crm.objects.custom.read`                                                                                    |
 | `deal_pipelines`            | `crm.objects.contacts.read`                                                                                  |
 | `deals`                     | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
 | `deals_archived`            | `crm.objects.deals.read`, `crm.schemas.deals.read`                                                           |
@@ -74,7 +102,6 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 4. From the **Authentication** dropdown, select your chosen authentication method:
 
 <!-- env:cloud -->
-
 #### For Airbyte Cloud users:
 
 - **Recommended:** To authenticate using OAuth, select **OAuth** and click **Authenticate your HubSpot account** to sign in with HubSpot and authorize your account.
@@ -82,17 +109,17 @@ Next, you need to configure the appropriate scopes for the following streams. Pl
 <!-- /env:cloud -->
 
 <!-- env:oss -->
-
 #### For Airbyte Open Source users:
 
 - **Recommended:** To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
 - **Not Recommended:**To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
-
 <!-- /env:oss -->
 
 5. For **Start date**, use the provided datepicker or enter the date programmatically in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated.
 6. Click **Set up source** and wait for the tests to complete.
+
+<HideInUI>
 
 ## Supported sync modes
 
@@ -146,12 +173,14 @@ The HubSpot source connector supports the following streams:
 
 Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above.
 
-If you set up your connections before April 15th, 2023 (on Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
+If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
 
 First you need to give the connector some additional permissions:
 
-- **If you are using OAuth on Cloud** go to the Hubspot source settings page in the Airbyte UI and reauthenticate via Oauth to allow Airbyte the permissions to access custom objects.
-- **If you are using OAuth on OSS or Private App auth (on OSS or Cloud)**: you'll need to go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+<!-- env:cloud -->
+- **If you are using OAuth on Airbyte Cloud** go to the Hubspot source settings page in the Airbyte UI and reauthenticate via Oauth to allow Airbyte the permissions to access custom objects.
+<!-- /env:cloud -->
+- **If you are using OAuth on OSS or Private App auth** go into the Hubspot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See HubSpot's instructions [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
 
 Then, go to the replication settings of your connection and click **refresh source schema** to pull in those new streams for syncing.
 
@@ -174,9 +203,20 @@ Then, go to the replication settings of your connection and click **refresh sour
 
 Because of this, the `engagements` stream can be slow to sync if it hasn't synced within the last 30 days and/or is generating large volumes of new data. We therefore recommend scheduling frequent syncs.
 
-## Performance considerations
+## Limitations & Troubleshooting
+
+<details>
+<summary>
+Expand to see details about Hubspot connector limitations and troubleshooting.
+</summary>
+
+### Connector limitations
+
+#### Rate limiting
 
 The connector is restricted by normal HubSpot [rate limitations](https://legacydocs.hubspot.com/apps/api_guidelines).
+
+#### Performance considerations
 
 Some streams, such as `workflows`, need to be enabled before they can be read using a connector authenticated using an `API Key`. If reading a stream that is not enabled, a log message returned to the output and the sync operation only sync the other streams available.
 
@@ -192,30 +232,53 @@ Example of the output message when trying to read `workflows` stream with missin
 }
 ```
 
-HubSpot's API will [rate limit](https://developers.hubspot.com/docs/api/usage-details) the amount of records you can sync daily, so make sure that you are on the appropriate plan if you are planning on syncing more than 250,000 records per day.
+### Troubleshooting
 
-## Tutorials
+<!-- Review common issues here: https://www.notion.so/512cf64f0ca54a1e9ea0034aaded84e8?v=77f3aa662f3641acaab5607c85966bb8 -->
+* Consider checking out the following Hubspot tutorial: [Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view).
+* **Unnesting top level properties**: Since version 1.5.0, in order to not make the users query their destinations for complicated json fields, we duplicate most of nested data as top level fields.
 
-Now that you have set up the Hubspot source connector, check out the following Hubspot tutorial:
+    For instance:
 
-[Build a single customer view with open-source tools](https://airbyte.com/tutorials/single-customer-view)
+    ```text
+    {
+      "id": 1,
+      "updatedAt": "2020-01-01",
+      "properties": {
+        "hs_note_body": "World's best boss",
+        "hs_created_by": "Michael Scott"
+      }
+    }
+    ```
 
-## Unnesting top level properties
+    becomes
 
-Since version 1.5.0, in order to not make the users query their destinations for complicated json fields, we duplicate most of nested data as top level fields.
-For instance:
+    ```text
+    {
+        "id": 1,
+        "updatedAt": "2020-01-01",
+        "properties": {
+          "hs_note_body": "World's best boss",
+          "hs_created_by": "Michael Scott"
+        },
+        "properties_hs_note_body": "World's best boss",
+        "properties_hs_created_by": "Michael Scott"
+    }
+    ```
+* **403 Forbidden Error**
+    * Hubspot has **scopes** for each API call.
+    * Each stream is tied to a scope and will need access to that scope to sync data.
+    * Review the Hubspot OAuth scope documentation [here](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+    * Additional permissions:
 
-`{"id": 1, "updatedAt": "2020-01-01", "properties": {"hs_note_body": "World's best boss", "hs_created_by": "Michael Scott"}}`
+        `feedback_submissions`: Service Hub Professional account
 
-becomes
+        `marketing_emails`: Market Hub Starter account
 
-`{
-    "id": 1,
-    "updatedAt": "2020-01-01",
-    "properties": {"hs_note_body": "World's best boss", "hs_created_by": "Michael Scott"},
-    "properties_hs_note_body": "World's best boss",
-    "properties_hs_created_by": "Michael Scott"
-}`
+        `workflows`: Sales, Service, and Marketing Hub Professional accounts
+* Check out common troubleshooting issues for the Hubspot source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
+
+</details>
 
 ## Changelog
 
@@ -336,3 +399,5 @@ becomes
 | 0.1.9   | 2021-08-11 | [5334](https://github.com/airbytehq/airbyte/pull/5334)   | Fix empty strings inside float datatype                                                                                                                                            |
 | 0.1.8   | 2021-08-06 | [5250](https://github.com/airbytehq/airbyte/pull/5250)   | Fix issue with printing exceptions                                                                                                                                                 |
 | 0.1.7   | 2021-07-27 | [4913](https://github.com/airbytehq/airbyte/pull/4913)   | Update fields schema                                                                                                                                                               |
+
+</HideInUI>
