@@ -57,7 +57,8 @@ public class BigQueryExecutionConfigTest {
       assertNull(config.getConnectionSpecification().getDatasetLocation());
       assertNull(config.getConnectionSpecification().getProjectId());
     };
-    // At somepoint credentials_json was an object. Preserve backward compatibility for config migrations
+    // At somepoint credentials_json was an object. Preserve backward compatibility for config
+    // migrations
     final Consumer<BigQueryExecutionConfig> credsOldStyleConfig = config -> {
       assertNotNull(config.getConnectionSpecification().getCredentialsJson());
       assertFalse(config.getConnectionSpecification().getCredentialsJson().isEmpty());
