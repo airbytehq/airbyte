@@ -15,7 +15,7 @@ async def run_check(
         container: (dagger.Container): The container to run the formatting check in
         check_commands (List[str]): The list of commands to run to check the formatting
     """
-    await container.with_exec(sh_dash_c(check_commands))
+    await container.with_exec(sh_dash_c(check_commands), skip_entrypoint=True)
 
 
 async def run_format(
@@ -27,5 +27,5 @@ async def run_format(
         container: (dagger.Container): The container to run the formatter in
         format_commands (List[str]): The list of commands to run to format the repository
     """
-    format_container = container.with_exec(sh_dash_c(format_commands))
+    format_container = container.with_exec(sh_dash_c(format_commands), skip_entrypoint=True)
     await format_container.directory("/src").export(".")

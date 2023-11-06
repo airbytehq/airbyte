@@ -13,7 +13,7 @@ def build_container(
     ctx: ClickPipelineContext,
     base_image: str,
     include: List[str],
-    install_commands: Optional[List[str]],
+    install_commands: Optional[List[str]] = None,
     env_vars: Optional[Dict[str, Any]] = {},
 ) -> dagger.Container:
     """Build a container for formatting code.
@@ -35,6 +35,10 @@ def build_container(
     for key, value in env_vars.items():
         container = container.with_env_variable(key, value)
 
+    # Install any dependencies of the formatter
+    if install_commands:
+        container = container.with_exec(sh_dash_c(install_commands), skip_entrypoint=True)
+
     # Mount the relevant parts of the repository: the code to format and the formatting config
     # Exclude the default ignore list to keep things as small as possible
     container = container.with_mounted_directory(
@@ -45,10 +49,6 @@ def build_container(
             exclude=DEFAULT_FORMAT_IGNORE_LIST,
         ),
     )
-
-    # Install any dependencies of the formatter
-    if install_commands:
-        container = container.with_exec(sh_dash_c(install_commands))
 
     # Set the working directory to the code to format
     container = container.with_workdir("/src")
