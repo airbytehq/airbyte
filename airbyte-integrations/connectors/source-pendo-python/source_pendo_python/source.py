@@ -17,8 +17,8 @@ from .streams import (
     Report,
     VisitorMetadata,
     AccountMetadata,
-    Visitors,
-    Accounts
+    Visitor,
+    Account
 )
 
 
@@ -55,6 +55,6 @@ class SourcePendoPython(AbstractSource):
             Report(authenticator=auth),
             VisitorMetadata(authenticator=auth),
             AccountMetadata(authenticator=auth),
-            Visitors(authenticator=auth),
-            Accounts(authenticator=auth)
+            Visitor(authenticator=auth),
+            Account(authenticator=auth)
         ]

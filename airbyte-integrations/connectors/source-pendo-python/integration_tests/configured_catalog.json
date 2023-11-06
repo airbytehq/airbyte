@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "customers",
+        "name": "account",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]
       },
@@ -11,12 +11,48 @@
     },
     {
       "stream": {
-        "name": "employees",
+        "name": "feature",
         "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"]
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode": "incremental",
-      "destination_sync_mode": "append"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "guide",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "page",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "report",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "visitor",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

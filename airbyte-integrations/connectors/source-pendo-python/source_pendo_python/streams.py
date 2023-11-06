@@ -133,7 +133,8 @@ class Report(PendoPythonStream):
 
 
 class VisitorMetadata(PendoPythonStream):
-    name = "visitor metadata"
+    name = "visitor_metadata"
+    primary_key = []
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "metadata/schema/visitor"
@@ -143,7 +144,8 @@ class VisitorMetadata(PendoPythonStream):
 
 
 class AccountMetadata(PendoPythonStream):
-    name = "account metadata"
+    name = "account_metadata"
+    primary_key = []
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return "metadata/schema/account"
@@ -152,7 +154,7 @@ class AccountMetadata(PendoPythonStream):
         yield from [response.json()]
 
 
-class Visitors(PendoAggregationStream):
+class Visitor(PendoAggregationStream):
     primary_key = "visitorId"
 
     name = "visitor"
@@ -210,7 +212,7 @@ class Visitors(PendoAggregationStream):
         return self.build_request_body("visitor-list", source, next_page_token)
 
 
-class Accounts(PendoAggregationStream):
+class Account(PendoAggregationStream):
     primary_key = "accountId"
 
     name = "account"

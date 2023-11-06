@@ -16,8 +16,8 @@ from source_pendo_python.streams import (
   Report,
   VisitorMetadata,
   AccountMetadata,
-  Visitors,
-  Accounts
+  Visitor,
+  Account
 )
 
 fake_token = 'ABC123'
@@ -217,14 +217,14 @@ def test_build_request_body_pagination(patch_aggregation_class):
 @pytest.mark.parametrize(
     ("stream_to_test", "name"),
     [
-        (Accounts, "account"),
+        (Account, "account"),
         (Feature, "feature"),
         (Guide, "guide"),
         (Page, "page"),
         (Report, "report"),
-        (AccountMetadata, "account metadata"),
-        (VisitorMetadata, "visitor metadata"),
-        (Visitors, "visitor"),
+        (AccountMetadata, "account_metadata"),
+        (VisitorMetadata, "visitor_metadata"),
+        (Visitor, "visitor"),
     ],
 )
 def test_stream_instances(config, stream_to_test, name):
