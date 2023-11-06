@@ -200,11 +200,11 @@ public class PostgresDebeziumStateUtilTest {
 
       // Now check that maybeReplicationStreamIntervalHasRecords behaves as expected.
 
-      final long lsnBeforeBookkeepingStatements = PostgresUtils.getLsn(database).asLong();
+      final long lsnBeforeBookkeepingStatements = PostgresUtils.getInsertLsn(database).asLong();
 
       database.execute("SELECT txid_current();");
       database.execute("CHECKPOINT");
-      final long lsnAfterBookkeepingStatements = PostgresUtils.getLsn(database).asLong();
+      final long lsnAfterBookkeepingStatements = PostgresUtils.getInsertLsn(database).asLong();
       Assertions.assertNotEquals(lsnBeforeBookkeepingStatements, lsnAfterBookkeepingStatements);
 
       Assertions.assertFalse(postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
@@ -216,8 +216,8 @@ public class PostgresDebeziumStateUtilTest {
           lsnAfterBookkeepingStatements));
 
       database.execute("INSERT INTO public.test_table VALUES (3, 'baz');");
-      final long lsnAfterMeaningfulStatement = PostgresUtils.getLsn(database).asLong();
-      Assertions.assertNotEquals(lsnBeforeBookkeepingStatements, lsnAfterMeaningfulStatement);
+      final long lsnAfterMeaningfulStatement = PostgresUtils.getInsertLsn(database).asLong();
+      Assertions.assertNotEquals(lsnAfterBookkeepingStatements, lsnAfterMeaningfulStatement);
 
       Assertions.assertTrue(postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
           Jsons.jsonNode(databaseConfig),

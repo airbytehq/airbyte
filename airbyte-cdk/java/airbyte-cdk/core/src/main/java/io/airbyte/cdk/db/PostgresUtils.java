@@ -18,12 +18,21 @@ public class PostgresUtils {
 
   public static PgLsn getLsn(final JdbcDatabase database) throws SQLException {
     // pg version >= 10. For versions < 10 use query select * from pg_current_xlog_location()
-    final List<JsonNode> jsonNodes = database
-        .bufferedResultSetQuery(conn -> conn.createStatement().executeQuery("select * from pg_current_wal_lsn()"),
-            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+    return getLsnImpl(database, "pg_current_wal_lsn");
+  }
 
+  public static PgLsn getInsertLsn(final JdbcDatabase database) throws SQLException {
+    // pg version >= 10. For versions < 10 use query select * from pg_current_xlog_location()
+    return getLsnImpl(database, "pg_current_wal_insert_lsn");
+  }
+
+  public static PgLsn getLsnImpl(final JdbcDatabase database, final String lsnFuncName) throws SQLException {
+    final String query = "SELECT * FROM " + lsnFuncName + "()";
+    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(
+            conn -> conn.createStatement().executeQuery(query),
+            resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
-    return PgLsn.fromPgString(jsonNodes.get(0).get("pg_current_wal_lsn").asText());
+    return PgLsn.fromPgString(jsonNodes.get(0).get(lsnFuncName).asText());
   }
 
   @VisibleForTesting
