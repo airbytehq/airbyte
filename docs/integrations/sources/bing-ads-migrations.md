@@ -23,12 +23,16 @@ All `date` and `date-time` fields will be converted to standard `RFC3339`. Strea
 
 For the changes to take effect, please refresh the source schema and reset affected streams after you have applied the upgrade.
 
-| Stream field                | Current Airbyte Type | New Airbyte Type |
-|-----------------------------|----------------------|------------------|
-| LinkedAgencies              | string               | object           |
-| BiddingScheme.MaxCpc.Amount | string               | number           |
-| CostPerConversion           | integer              | number           |
+| Stream field                | Current Airbyte Type | New Airbyte Type   |
+|-----------------------------|----------------------|--------------------|
+| LinkedAgencies              | string               | object             |
+| BiddingScheme.MaxCpc.Amount | string               | number             |
+| CostPerConversion           | integer              | number             |
+| Modified Time               | string               | timestamp with tz  |
+| Date                        | string               | timestamp with tz  |
+| TimePeriod                  | string               | timestamp with tz  |
 
+Detailed date-time field change examples:
 
 | Affected streams                                                                                                     | Field_name      | Old type                  | New type (`RFC3339`)            |
 |----------------------------------------------------------------------------------------------------------------------|-----------------|---------------------------|---------------------------------|
