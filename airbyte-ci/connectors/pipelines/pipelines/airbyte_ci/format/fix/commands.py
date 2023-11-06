@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import logging
+
 import asyncclick as click
 from pipelines.airbyte_ci.format.actions import run_format
 from pipelines.airbyte_ci.format.containers import (
