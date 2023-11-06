@@ -29,140 +29,79 @@ definitions:
       type: CursorPagination
       cursor_value: '{{ response.get("paging", {}).get("next", {}) }}'
       stop_condition: '{{ not response.get("paging", {}).get("next", {}) }}'
-check:
-  type: CheckStream
-  stream_names:
-    - users
-streams:
-  - type: DeclarativeStream
-    name: users
-    primary_key:
-      - id
+
+  requester:
+    type: HttpRequester
+    url_base: "https://{{ config['endpoint'] }}"
+    http_method: GET
+    request_parameters: {}
+    request_headers:
+      Accept: application/json
+    authenticator:
+      $ref: "#/definitions/auth"
+    error_handler:
+      $ref: "#/definitions/on_error"
+    request_body_json: {}
+
+  retriever:
+    type: SimpleRetriever
+    requester:
+      $ref: "#/definitions/requester"
+    record_selector:
+      $ref: "#/definitions/selector"
+    paginator:
+      $ref: "#/definitions/pagination"
+
+  base_stream:
     schema_loader:
       type: JsonFileSchemaLoader
-      file_path: "./source_opsgenie/schemas/users.json"
+      file_path: "./source_opsgenie/schemas/{{ parameters['name'] }}.json"
     retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: "https://{{ config['endpoint'] }}"
-        path: v2/users
-        http_method: GET
-        request_parameters: {}
-        request_headers:
-          Accept: application/json
-        authenticator:
-          $ref: "#/definitions/auth"
-        error_handler:
-          $ref: "#/definitions/on_error"
-        request_body_json: {}
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/pagination"
-  - type: DeclarativeStream
-    name: teams
-    primary_key:
-      - id
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_opsgenie/schemas/teams.json"
+      $ref: "#/definitions/retriever"
+
+  users_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "users"
+      primary_key: "id"
+      path: "v2/users"
+
+  teams_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "teams"
+      primary_key: "id"
+      path: "v2/teams"
+
+  services_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "services"
+      primary_key: "id"
+      path: "v1/services"
+
+  integrations_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "integrations"
+      primary_key: "id"
+      path: "v2/integrations"
+
+  incidents_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "incidents"
+      primary_key: "id"
+      path: "v1/incidents"
+
+  alerts_stream:
+    $ref: "#/definitions/base_stream"
     retriever:
-      type: SimpleRetriever
+      $ref: "#/definitions/base_stream/retriever"
       requester:
-        type: HttpRequester
-        url_base: "https://{{ config['endpoint'] }}"
-        path: v2/teams
-        http_method: GET
-        request_parameters: {}
-        request_headers:
-          Accept: application/json
-        authenticator:
-          $ref: "#/definitions/auth"
-        error_handler:
-          $ref: "#/definitions/on_error"
-        request_body_json: {}
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/pagination"
-  - type: DeclarativeStream
-    name: services
-    primary_key:
-      - id
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_opsgenie/schemas/services.json"
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: "https://{{ config['endpoint'] }}"
-        path: v1/services
-        http_method: GET
-        request_parameters: {}
-        request_headers:
-          Accept: application/json
-        authenticator:
-          $ref: "#/definitions/auth"
-        error_handler:
-          $ref: "#/definitions/on_error"
-        request_body_json: {}
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/pagination"
-  - type: DeclarativeStream
-    name: integrations
-    primary_key:
-      - id
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_opsgenie/schemas/integrations.json"
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: "https://{{ config['endpoint'] }}"
-        path: v2/integrations
-        http_method: GET
-        request_parameters: {}
-        request_headers:
-          Accept: application/json
-        authenticator:
-          $ref: "#/definitions/auth"
-        error_handler:
-          $ref: "#/definitions/on_error"
-        request_body_json: {}
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/pagination"
-  - type: DeclarativeStream
-    name: alerts
-    primary_key:
-      - id
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: "https://{{ config['endpoint'] }}"
-        path: v2/alerts
-        http_method: GET
+        $ref: "#/definitions/requester"
         request_parameters:
-          order: '["asc"]'
-          query: '{"updatedAt>={{ stream_interval.start_time if stream_interval else config['start_date']  }}"}'
-        request_headers:
-          Accept: application/json
-        authenticator:
-          $ref: "#/definitions/auth"
-        error_handler:
-          $ref: "#/definitions/on_error"
-        request_body_json: {}
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/pagination"
+          order: "asc"
     incremental_sync:
       type: DatetimeBasedCursor
       cursor_field: updatedAt
@@ -172,196 +111,46 @@ streams:
       start_datetime:
         datetime: "{{ config['start_date'] }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-  - type: DeclarativeStream
-    name: user_teams
-    primary_key:
-      - id
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_opsgenie/schemas/user_teams.json"
+    $parameters:
+      name: "alerts"
+      primary_key: "id"
+      path: "v2/alerts"
+
+  user_teams_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "user_teams"
+      primary_key: "id"
+      path: "v2/users/{{stream_partition.user_id}}/teams"
     retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: "https://{{ config['endpoint'] }}"
-        path: v2/users/{{ stream_partition.user_id }}/teams
-        http_method: GET
-        request_parameters: {}
-        request_headers:
-          Accept: application/json
-        authenticator:
-          $ref: "#/definitions/auth"
-        error_handler:
-          $ref: "#/definitions/on_error"
-        request_body_json: {}
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/pagination"
-      partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: user_id
-              stream:
-                type: DeclarativeStream
-                name: users
-                primary_key:
-                  - id
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $schema: http://json-schema.org/draft-07/schema#
-                    additionalProperties: true
-                    properties: {}
-                    type: object
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: "https://{{ config['endpoint'] }}"
-                    path: v2/users
-                    http_method: GET
-                    request_parameters: {}
-                    request_headers:
-                      Accept: application/json
-                    authenticator:
-                      $ref: "#/definitions/auth"
-                    error_handler:
-                      $ref: "#/definitions/on_error"
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - data
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestPath
-                    pagination_strategy:
-                      type: CursorPagination
-                      cursor_value: '{{ response.get("paging", {}).get("next", {}) }}'
-                      stop_condition: '{{ not response.get("paging", {}).get("next", {}) }}'
+      $ref: "#/definitions/base_stream/retriever"
+      users_partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/users_stream"
+            parent_key: id
+            partition_field: user_id
     transformations:
       - type: AddFields
         fields:
           - path:
               - user_id
             value: "{{ stream_partition.user_id }}"
-  - type: DeclarativeStream
-    name: incidents
-    primary_key:
-      - id
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_opsgenie/schemas/incidents.json"
+
+  alert_recipients_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "alert_recipients"
+      primary_key: "id"
+      path: "v2/alerts/{{ stream_partition.alert_id }}/recipients"
     retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: "https://{{ config['endpoint'] }}"
-        path: v1/incidents
-        http_method: GET
-        request_parameters: {}
-        request_headers:
-          Accept: application/json
-        authenticator:
-          $ref: "#/definitions/auth"
-        error_handler:
-          $ref: "#/definitions/on_error"
-        request_body_json: {}
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/pagination"
-  - type: DeclarativeStream
-    name: alert_recipients
-    primary_key:
-      - user_id
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_opsgenie/schemas/alert_recipients.json"
-    retriever:
-      type: SimpleRetriever
-      requester:
-        type: HttpRequester
-        url_base: "https://{{ config['endpoint'] }}"
-        path: v2/alerts/{{ stream_partition.alert_id }}/recipients
-        http_method: GET
-        request_parameters: {}
-        request_headers:
-          Accept: application/json
-        authenticator:
-          $ref: "#/definitions/auth"
-        error_handler:
-          $ref: "#/definitions/on_error"
-        request_body_json: {}
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/pagination"
-      partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: alert_id
-              stream:
-                type: DeclarativeStream
-                name: alerts
-                primary_key:
-                  - id
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $schema: http://json-schema.org/draft-07/schema#
-                    additionalProperties: true
-                    properties: {}
-                    type: object
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: "https://{{ config['endpoint'] }}"
-                    path: v2/alerts
-                    http_method: GET
-                    request_parameters:
-                      order: '["asc"]'
-                      query: '{"updatedAt>={{ stream_interval.start_time }}"}'
-                    request_headers:
-                      Accept: application/json
-                    authenticator:
-                      $ref: "#/definitions/auth"
-                    error_handler:
-                      $ref: "#/definitions/on_error"
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - data
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestPath
-                    pagination_strategy:
-                      type: CursorPagination
-                      cursor_value: '{{ response.get("paging", {}).get("next", {}) }}'
-                      stop_condition: '{{ not response.get("paging", {}).get("next", {}) }}'
-                incremental_sync:
-                  type: DatetimeBasedCursor
-                  cursor_field: updatedAt
-                  cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%S.%fZ"
-                  datetime_format: "%s"
-                  start_datetime:
-                    type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      $ref: "#/definitions/base_stream/retriever"
+      alerts_partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/alerts_stream"
+            parent_key: id
+            partition_field: alert_id
     transformations:
       - type: AddFields
         fields:
@@ -381,95 +170,52 @@ streams:
       - type: RemoveFields
         field_pointers:
           - - user
-  - type: DeclarativeStream
-    name: alert_logs
-    primary_key:
-      - offset
-    schema_loader:
-      type: JsonFileSchemaLoader
-      file_path: "./source_opsgenie/schemas/alert_logs.json"
+
+  alert_logs_stream:
+    $ref: "#/definitions/base_stream"
+    $parameters:
+      name: "alert_logs"
+      primary_key: "offset"
+      path: "v2/alerts/{{ stream_partition.alert_id }}/logs"
     retriever:
-      type: SimpleRetriever
+      $ref: "#/definitions/base_stream/retriever"
       requester:
-        type: HttpRequester
-        url_base: "https://{{ config['endpoint'] }}"
-        path: v2/alerts/{{ stream_partition.alert_id }}/logs
-        http_method: GET
+        $ref: "#/definitions/requester"
         request_parameters:
           order: asc
-        request_headers:
-          Accept: application/json
-        authenticator:
-          $ref: "#/definitions/auth"
-        error_handler:
-          $ref: "#/definitions/on_error"
-        request_body_json: {}
-      record_selector:
-        $ref: "#/definitions/selector"
-      paginator:
-        $ref: "#/definitions/pagination"
-      partition_router:
-        - type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: alert_id
-              stream:
-                type: DeclarativeStream
-                name: alerts
-                primary_key:
-                  - id
-                schema_loader:
-                  type: InlineSchemaLoader
-                  schema:
-                    $schema: http://json-schema.org/draft-07/schema#
-                    additionalProperties: true
-                    properties: {}
-                    type: object
-                retriever:
-                  type: SimpleRetriever
-                  requester:
-                    type: HttpRequester
-                    url_base: "https://{{ config['endpoint'] }}"
-                    path: v2/alerts
-                    http_method: GET
-                    request_parameters:
-                      order: '["asc"]'
-                      query: '{"updatedAt>={{ stream_interval.start_time }}"}'
-                    request_headers:
-                      Accept: application/json
-                    authenticator:
-                      $ref: "#/definitions/auth"
-                    error_handler:
-                      $ref: "#/definitions/on_error"
-                    request_body_json: {}
-                  record_selector:
-                    type: RecordSelector
-                    extractor:
-                      type: DpathExtractor
-                      field_path:
-                        - data
-                  paginator:
-                    type: DefaultPaginator
-                    page_token_option:
-                      type: RequestPath
-                    pagination_strategy:
-                      type: CursorPagination
-                      cursor_value: '{{ response.get("paging", {}).get("next", {}) }}'
-                      stop_condition: '{{ not response.get("paging", {}).get("next", {}) }}'
-                incremental_sync:
-                  type: DatetimeBasedCursor
-                  cursor_field: updatedAt
-                  cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%S.%fZ"
-                  datetime_format: "%s"
-                  start_datetime:
-                    type: MinMaxDatetime
-                    datetime: "{{ config['start_date'] }}"
-                    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      alerts_partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - stream: "#/definitions/alerts_stream"
+            parent_key: id
+            partition_field: alert_id
     transformations:
       - type: AddFields
         fields:
           - path:
               - alert_id
             value: "{{ stream_partition.alert_id }}"
+
+check:
+  type: CheckStream
+  stream_names:
+    # - users
+    # - teams
+    # - services
+    # - incidents
+    # - integrations
+    # - alerts
+    # - user_teams
+    # - alert_recipients
+    - alert_logs
+
+streams:
+  - "#/definitions/users_stream"
+  - "#/definitions/teams_stream"
+  - "#/definitions/services_stream"
+  - "#/definitions/integrations_stream"
+  - "#/definitions/incidents_stream"
+  - "#/definitions/alerts_stream"
+  - "#/definitions/user_teams_stream"
+  - "#/definitions/alert_recipients_stream"
+  - "#/definitions/alert_logs_stream"
