@@ -78,6 +78,7 @@ tasks.register('extractConnectionSpecificationSchema') {
         // underlying jsonschema2pojo library cannot generate ambigious oneOf classes.
         // alter the oneOf property to pull the common required fields to top level (should always be one in spec case)
         // and add it as a property, let others be additionalProperties to use JsonNode functions
+        def additionalPropertiesType = [type: 'object', existingJavaType: 'com.fasterxml.jackson.databind.JsonNode']
         properties.each { property ->
             if (property.value.type == "object" && property.value.oneOf != null) {
                 def requiredFieldsList = property.value.oneOf.collect {it.required}
@@ -85,12 +86,13 @@ tasks.register('extractConnectionSpecificationSchema') {
                 commonRequiredFields.each {fieldname ->
                     def requiredObjectFromOneOf = property.value.oneOf.first()['properties'][fieldname as String]
                     property.value.properties = [(fieldname):requiredObjectFromOneOf]
-                    property.value.additionalProperties =
-                            [type: 'object', existingJavaType: 'com.fasterxml.jackson.databind.JsonNode']
+                    property.value.additionalProperties = additionalPropertiesType
+
                 }
                 property.value.remove('oneOf')
             }
         }
+        inputJson["connectionSpecification"].additionalProperties = additionalPropertiesType
         // Get schema part
         // def transformedJson = inputJson["connectionSpecification"]
         def connectionSpec = inputJson["connectionSpecification"]

@@ -56,10 +56,12 @@ public class BigQueryExecutionConfigTest {
       assertEquals(UploadingMethod.STANDARD, config.getUploadingMethod());
       assertNull(config.getConnectionSpecification().getDatasetLocation());
       assertNull(config.getConnectionSpecification().getProjectId());
-      System.out.println(config);
     };
+    // At somepoint credentials_json was an object. Preserve backward compatibility for config migrations
     final Consumer<BigQueryExecutionConfig> credsOldStyleConfig = config -> {
-      System.out.println(config);
+      assertNotNull(config.getConnectionSpecification().getCredentialsJson());
+      assertFalse(config.getConnectionSpecification().getCredentialsJson().isEmpty());
+      assertFalse(config.getConnectionSpecification().getCredentialsJson().isBlank());
     };
     return Stream.of(Arguments.arguments("connection-spec/gcs.json", gcsConfigVerifier),
         Arguments.arguments("connection-spec/standard.json", standardConfigVerifier),
@@ -79,7 +81,7 @@ public class BigQueryExecutionConfigTest {
     assertEquals(15, config.getConnectionSpecification().getBigQueryClientBufferSizeMb());
 
     // Test unknown properties to be preserved during config migration phases.
-    assertEquals("data", config.getConnectionSpecification().getAdditionalProperties().get("unknown_property_from_spec"));
+    assertEquals("data", config.getConnectionSpecification().getAdditionalProperties().get("unknown_property_from_spec").asText());
   }
 
 }
