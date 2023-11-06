@@ -26,7 +26,7 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     """Run code format checks and fail if any checks fail."""
     # TODO: fix this client hacking
-    ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Format License")
+    ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Check repository formatting")
 
     if ctx.invoked_subcommand is None:
         print("Running all checks...")

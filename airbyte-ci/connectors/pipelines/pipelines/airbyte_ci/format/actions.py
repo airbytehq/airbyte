@@ -5,7 +5,6 @@ from typing import List
 import dagger
 from pipelines.helpers.utils import sh_dash_c
 
-
 async def run_check(
     container: dagger.Container,
     check_commands: List[str],

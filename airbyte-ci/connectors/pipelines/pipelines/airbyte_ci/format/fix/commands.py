@@ -23,7 +23,7 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 async def fix(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     """Run code format checks and fix any failures."""
     # TODO: fix this client hacking
-    ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Format License")
+    ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Format repository")
 
     if ctx.invoked_subcommand is None:
         print("Running all formatters...")
