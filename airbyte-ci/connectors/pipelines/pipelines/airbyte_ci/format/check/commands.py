@@ -6,7 +6,13 @@ from typing import Optional
 import anyio
 import asyncclick as click
 import dagger
-from pipelines.airbyte_ci.format.check.utils import build_container, run_check, run_check_old
+from pipelines.airbyte_ci.format.check.utils import run_check
+from pipelines.airbyte_ci.format.containers import (
+    format_java_container,
+    format_js_container,
+    format_license_container,
+    format_python_container,
+)
 from pipelines.cli.click_decorators import (
     LazyPassDecorator,
     click_append_to_context_object,
@@ -46,24 +52,7 @@ async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
 @click_ignore_unused_kwargs
 async def java(ctx: ClickPipelineContext):
     """Format java, groovy, and sql code via spotless."""
-    container = build_container(
-        ctx,
-        base_image="openjdk:17.0.1-jdk-slim",
-        include=[
-            "**/*.java",
-            "**/*.sql",
-            "**/*.gradle",
-            "gradlew",
-            "gradlew.bat",
-            "gradle",
-            "**/deps.toml",
-            "**/gradle.properties",
-            "**/version.properties",
-            "tools/gradle/codestyle/java-google-style.xml",
-            "tools/gradle/codestyle/sql-dbeaver.properties",
-        ],
-        install_commands=[],
-    )
+    container = format_java_container(ctx)
     check_commands = ["./gradlew spotlessCheck --scan"]
     await run_check(container, check_commands)
 
@@ -73,12 +62,7 @@ async def java(ctx: ClickPipelineContext):
 @click_ignore_unused_kwargs
 async def js(ctx: ClickPipelineContext):
     """Format yaml and json code via prettier."""
-    container = build_container(
-        ctx,
-        base_image="node:18.18.0-slim",
-        include=["**/*.yaml", "**/*.yml", "**.*/json", "package.json", "package-lock.json"],
-        install_commands=["npm install -g npm@10.1.0", "npm install -g prettier@2.8.1"],
-    )
+    container = format_js_container(ctx)
     check_commands = ["prettier --check ."]
     await run_check(container, check_commands)
 
@@ -89,12 +73,7 @@ async def js(ctx: ClickPipelineContext):
 async def license(ctx: ClickPipelineContext):
     """Add license to python and java code via addlicense."""
     license_file = "LICENSE_SHORT"
-    container = build_container(
-        ctx,
-        base_image="golang:1.17",
-        include=["**/*.java", "**/*.py", license_file],
-        install_commands=["go get -u github.com/google/addlicense"],
-    )
+    container = format_license_container(ctx, license_file)
     check_commands = [f"addlicense -c 'Airbyte, Inc.' -l apache -v -f {license_file} --check ."]
     await run_check(container, check_commands)
 
@@ -104,13 +83,7 @@ async def license(ctx: ClickPipelineContext):
 @click_ignore_unused_kwargs
 async def python(ctx: ClickPipelineContext):
     """Format python code via black and isort."""
-    container = build_container(
-        ctx,
-        base_image="python:3.10.13-slim",
-        env_vars={"PIPX_BIN_DIR": "/usr/local/bin"},
-        include=["**/*.py", "pyproject.toml", "poetry.lock"],
-        install_commands=["pip install pipx", "pipx ensurepath", "pipx install poetry"],
-    )
+    container = format_python_container(ctx)
     check_commands = [
         "poetry install",
         "poetry run isort --settings-file pyproject.toml --check-only .",

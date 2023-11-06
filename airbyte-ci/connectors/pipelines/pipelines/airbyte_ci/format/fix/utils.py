@@ -6,7 +6,6 @@ from typing import Any, Dict, List, Optional
 
 import asyncclick as click
 import dagger
-from pipelines.airbyte_ci.format.check.utils import build_container
 from pipelines.airbyte_ci.format.consts import DEFAULT_FORMAT_IGNORE_LIST
 from pipelines.cli.click_decorators import LazyPassDecorator, click_ignore_unused_kwargs
 from pipelines.helpers.utils import sh_dash_c
