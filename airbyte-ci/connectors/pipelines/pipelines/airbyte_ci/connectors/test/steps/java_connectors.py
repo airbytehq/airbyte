@@ -92,32 +92,25 @@ def _create_integration_step_args_factory(context: ConnectorContext) -> Callable
 
     return _create_integration_step_args
 
-def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
-    build_steps = [
+def _get_normalization_steps(context: ConnectorContext) -> List[StepToRun]:
+    normalization_image = f"{context.connector.normalization_repository}:dev"
+    context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
+    normalization_steps = [
         StepToRun(
-            id="build",
-            step=BuildConnectorImages(context, LOCAL_BUILD_PLATFORM),
-            args=lambda results: {"dist_dir": results["build_tar"].output_artifact.directory(dist_tar_directory_path(context))},
-            depends_on=["build_tar"],
-        ),
+            id="build_normalization",
+            step=BuildOrPullNormalization(context, normalization_image, LOCAL_BUILD_PLATFORM),
+            depends_on=["build"],
+        )
     ]
 
-    if context.connector.supports_normalization:
-        normalization_image = f"{context.connector.normalization_repository}:dev"
-        context.logger.info(f"This connector supports normalization: will build {normalization_image}.")
-        normalization_steps = [
-            StepToRun(
-                id="build_normalization",
-                step=BuildOrPullNormalization(context, normalization_image, LOCAL_BUILD_PLATFORM),
-                depends_on=["build"],
-            )
-        ]
+    return normalization_steps
 
-        build_steps += normalization_steps
-
+def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
+    """
+    Generate the steps to run the acceptance tests for a Java connector.
+    """
     # Run tests in parallel
-
-    test_steps = [[
+    return [
         StepToRun(
             id="integration",
             step=IntegrationTests(context),
@@ -130,9 +123,7 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
             args=lambda results: {"connector_under_test_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
             depends_on=["build"],
         ),
-    ]]
-
-    return build_steps + test_steps
+    ]
 
 
 def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
@@ -140,8 +131,24 @@ def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
     Get all the tests steps for a Java connector.
     """
 
-    return [
+    steps = [
         [StepToRun(id="build_tar", step=BuildConnectorDistributionTar(context))],
         [StepToRun(id="unit", step=UnitTests(context))],
-        _get_acceptance_test_steps(context),
+        [
+            StepToRun(
+                id="build",
+                step=BuildConnectorImages(context, LOCAL_BUILD_PLATFORM),
+                args=lambda results: {"dist_dir": results["build_tar"].output_artifact.directory(dist_tar_directory_path(context))},
+                depends_on=["build_tar"],
+            ),
+        ],
     ]
+
+    if context.connector.supports_normalization:
+        normalization_steps = _get_normalization_steps(context)
+        steps.append(normalization_steps)
+
+    acceptance_test_steps = _get_acceptance_test_steps(context)
+    steps.append(acceptance_test_steps)
+
+    return steps;

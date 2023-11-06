@@ -21,11 +21,12 @@ if TYPE_CHECKING:
     from pipelines.models.steps import Step, StepResult
 
 
-@dataclass(frozen=True)
+@dataclass
 class RunStepOptions:
     """Options for the run_step function."""
     fail_fast: bool = True
     skip_steps: List[str] = field(default_factory=list)
+    log_step_tree: bool = True
 
 
 @dataclass(frozen=True)
@@ -119,6 +120,31 @@ def _get_next_step_group(steps: STEP_TREE) -> Tuple[STEP_TREE, STEP_TREE]:
         # Termination case: if the next step is not a list that means we have reached the max depth
         return steps, []
 
+def _log_step_tree(step_tree: STEP_TREE, options: RunStepOptions, depth: int = 0):
+    """
+    Log the step tree to the console.
+
+    e.g.
+    Step tree
+    - step1
+    - step2
+        - step3
+        - step4 (skip)
+            - step5
+    - step6
+    """
+    indent = "    "
+    for steps in step_tree:
+        if isinstance(steps, list):
+            main_logger.info(f"{indent * depth}- {steps[0].id} (parallel)")
+            _log_step_tree(steps, options, depth + 1)
+        else:
+            if steps.id in options.skip_steps:
+                main_logger.info(f"{indent * depth}- {steps.id} (skip)")
+            else:
+                main_logger.info(f"{indent * depth}- {steps.id}")
+
+
 async def run_steps(
     runnables: STEP_TREE,
     results: RESULTS_DICT = {},
@@ -161,6 +187,12 @@ async def run_steps(
     # If there are no steps to run, return the results
     if not runnables:
         return results
+
+    # Log the step tree
+    if options.log_step_tree:
+        main_logger.info(f"STEP TREE: {runnables}")
+        _log_step_tree(runnables, options)
+        options.log_step_tree = False
 
     # If any of the previous steps failed, skip the remaining steps
     if options.fail_fast and any(result.status is StepStatus.FAILURE for result in results.values()):
