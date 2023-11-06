@@ -32,6 +32,7 @@ async def run_format(
 
 
 def mount_repo_for_formatting(
+    dagger_client: dagger.Client,
     container: dagger.Container,
     include: List[str],
 ) -> dagger.Container:
@@ -42,7 +43,7 @@ def mount_repo_for_formatting(
     """
     container = container.with_mounted_directory(
         "/src",
-        dagger.host().directory(
+        dagger_client.host().directory(
             ".",
             include=include,
         ),

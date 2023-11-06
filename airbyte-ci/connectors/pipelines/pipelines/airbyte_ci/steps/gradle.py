@@ -69,7 +69,6 @@ class GradleTask(Step, ABC):
             "gradle.properties",
             "gradle",
             "gradlew",
-            "LICENSE_SHORT",
             "settings.gradle",
             "build.gradle",
             "tools/gradle",
