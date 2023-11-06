@@ -179,9 +179,10 @@ public class PostgresDebeziumStateUtilTest {
       database.execute("CREATE TABLE public.test_table (id int primary key, name varchar(256));");
       database.execute("insert into public.test_table values (1, 'foo');");
       database.execute("insert into public.test_table values (2, 'bar');");
+      database.execute("CHECKPOINT");
 
-      final Lsn lsnAtTheBeginning = Lsn.valueOf(
-          getReplicationSlot(database, fullReplicationSlot, plugin, dbName).get("confirmed_flush_lsn").asText());
+      final var slotStateAtTheBeginning = getReplicationSlot(database, fullReplicationSlot, plugin, dbName);
+      final Lsn lsnAtTheBeginning = Lsn.valueOf(slotStateAtTheBeginning.get("confirmed_flush_lsn").asText());
 
       final long targetLsn = PostgresUtils.getLsn(database).asLong();
       postgresDebeziumStateUtil.commitLSNToPostgresDatabase(Jsons.jsonNode(databaseConfig),
@@ -190,11 +191,52 @@ public class PostgresDebeziumStateUtilTest {
           publication,
           plugin);
 
-      final Lsn lsnAfterCommit = Lsn.valueOf(
-          getReplicationSlot(database, fullReplicationSlot, plugin, dbName).get("confirmed_flush_lsn").asText());
+      final var slotStateAfterCommit = getReplicationSlot(database, fullReplicationSlot, plugin, dbName);
+      final Lsn lsnAfterCommit = Lsn.valueOf(slotStateAfterCommit.get("confirmed_flush_lsn").asText());
 
       Assertions.assertEquals(1, lsnAfterCommit.compareTo(lsnAtTheBeginning));
       Assertions.assertEquals(targetLsn, lsnAfterCommit.asLong());
+      Assertions.assertNotEquals(slotStateAtTheBeginning, slotStateAfterCommit);
+
+      // Now check that maybeReplicationStreamIntervalHasRecords behaves as expected.
+
+      final long lsnBeforeBookkeepingStatements = PostgresUtils.getLsn(database).asLong();
+
+      database.execute("SELECT txid_current();");
+      database.execute("CHECKPOINT");
+      final long lsnAfterBookkeepingStatements = PostgresUtils.getLsn(database).asLong();
+      Assertions.assertNotEquals(lsnBeforeBookkeepingStatements, lsnAfterBookkeepingStatements);
+
+      Assertions.assertFalse(postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
+          Jsons.jsonNode(databaseConfig),
+          fullReplicationSlot,
+          publication,
+          plugin,
+          lsnBeforeBookkeepingStatements,
+          lsnAfterBookkeepingStatements));
+
+      database.execute("INSERT INTO public.test_table VALUES (3, 'baz');");
+      final long lsnAfterMeaningfulStatement = PostgresUtils.getLsn(database).asLong();
+      Assertions.assertNotEquals(lsnBeforeBookkeepingStatements, lsnAfterMeaningfulStatement);
+
+      Assertions.assertTrue(postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
+          Jsons.jsonNode(databaseConfig),
+          fullReplicationSlot,
+          publication,
+          plugin,
+          lsnBeforeBookkeepingStatements,
+          lsnAfterMeaningfulStatement));
+      Assertions.assertTrue(postgresDebeziumStateUtil.maybeReplicationStreamIntervalHasRecords(
+          Jsons.jsonNode(databaseConfig),
+          fullReplicationSlot,
+          publication,
+          plugin,
+          lsnAfterBookkeepingStatements,
+          lsnAfterMeaningfulStatement));
+
+      final var slotStateAtTheEnd = getReplicationSlot(database, fullReplicationSlot, plugin, dbName);
+      Assertions.assertEquals(slotStateAfterCommit, slotStateAtTheEnd);
+
       container.stop();
     }
   }

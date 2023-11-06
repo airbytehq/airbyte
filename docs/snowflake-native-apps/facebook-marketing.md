@@ -3,7 +3,7 @@
 The Facebook Marketing Connector by Airbyte is a Snowflake Native Application that allows you to extract data from your Facebook Marketing account and load records into a Snowflake database of your choice.
 
 :::info
-The Snowflake Native Apps platform is new and rapidly evolving. The Facebook Marketing Connector by Airbyte is in _private preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a [full table refresh](../understanding-airbyte/connections/full-refresh-overwrite.md) without deduplication is supported.  
+The Snowflake Native Apps platform is new and rapidly evolving. The Facebook Marketing Connector by Airbyte is in _public preview_ and is subject to further development that may affect setup and configuration of the application. Please note that, at this time, only a [full table refresh](../understanding-airbyte/connections/full-refresh-overwrite.md) without deduplication is supported.  
 :::
 
 # Getting started
@@ -19,20 +19,16 @@ Do not refresh the Apps page while the application is being installed. This may 
 
 1. Log into your Snowflake account.
 2. On the left sidebar, click `Marketplace`.
-3. Search for `Facebook Marketing Connector` by Airbyte or navigate to https://app.snowflake.com/marketplace/listing/GZTYZ9BCRT8/airbyte-facebook-marketing-connector-by-airbyte
-4. Click `Request`. This will send a request that we will manually service as soon as we can.
-
-![](./facebook-marketing-shared-application.png)
-
-5. On the left sidebar, click `Apps`.
-6. Under the `Recently Shared with You` section, you should see the `Airbyte Facebook Marketing Connector` by Airbyte. Click `Get`.
-7. Expand `Options`.
+3. Search for `Facebook Marketing Connector` by Airbyte or navigate to https://app.snowflake.com/marketplace/listing/GZTYZ9BCRTG/airbyte-facebook-marketing-connector
+4. Click `Get`. This will open a pop-up where you can specify install options. Expand `Options`.
     1. You can rename the application or leave the default. This is how you will reference the application from a worksheet.
     2. Specify the warehouse that the application will be installed to.
-8. Click `Get`.
-9. Wait for the application to install. Once complete, the pop-up window should automatically close.
+5. Wait for the application to install. Once complete, the pop-up window should automatically close.
+6. On the left sidebar, click `Apps`.
 
-You should now see the Facebook Marketing Connector by Airbyte application under `Installed Apps`. You may need to refresh the page.
+![](./facebook-marketing-app-install.png)
+
+7. Once your installation is complete, under the `Installed Apps` section, you should see the `Facebook Marketing Connector` by Airbyte. 
 
 ## Facebook Marketing Account
 In order for the Facebook Marketing Connector by Airbyte to query Facebook's APIs, you will need an account with the right permissions. Please follow the [Facebook Marketing authentication guide](https://docs.airbyte.com/integrations/sources/facebook-marketing#for-airbyte-open-source-generate-an-access-token-and-request-a-rate-limit-increase) for further information.
@@ -40,21 +36,19 @@ In order for the Facebook Marketing Connector by Airbyte to query Facebook's API
 ## Snowflake Native App Authorizations
 
 :::note
-By default the app will be installed using the name `AIRBYTE_FACEBOOK_MARKETING_CONNECTOR`, but if you renamed the app during installation, you will have to use that name as a reference.
+By default the app will be installed using the name `FACEBOOK_MARKETING_CONNECTOR`, but if you renamed the app during installation, you will have to use that name as a reference.
 :::
+
+### Adding Credentials and Configuring External API Access
+Before using the application, you will need to perform a few prerequisite steps to prepare the application to make outbound API requests and use your authentication credentials. From a SQL worksheet, you will need to run a series of commands.
 
 1. Create the database where the app will access the authorization.
 ```
-CREATE DATABASE AIRBYTE_FACEBOOK_MARKETING_DB ;
+CREATE DATABASE AIRBYTE_FACEBOOK_MARKETING_DB;
 USE AIRBYTE_FACEBOOK_MARKETING_DB;
 ```
 
-2. The native app will validate the output database and create it if it does not exist. In order to do that, the app needs access to the database:
-```
-GRANT CREATE DATABASE ON ACCOUNT TO APPLICATION AIRBYTE_FACEBOOK_MARKETING_CONNECTOR;
-```
-
-3. You will need to allow outgoing network traffic based on the domain of the source. In the case of Facebook Marketing, simply run:
+2. You will need to allow outgoing network traffic based on the domain of the source. In the case of Facebook Marketing, simply run:
 ```
 CREATE OR REPLACE NETWORK RULE FACEBOOK_MARKETING_APIS_NETWORK_RULE
   MODE = EGRESS
@@ -66,7 +60,7 @@ CREATE OR REPLACE NETWORK RULE FACEBOOK_MARKETING_APIS_NETWORK_RULE
 As of 2023-09-13, the [Snowflake documentation](https://docs.snowflake.com/en/sql-reference/sql/create-external-access-integration) mentions that direct external access is a preview feature and that it is `available to all accounts on AWS` which might restrict the number of users able to use the connector.
 :::
 
-4. Once you have external access configured, you need define your authorization/authentication. Provide the credentials to the app as such:
+3. Once you have external access configured, you need define your authorization/authentication. Provide the credentials to the app as such:
 ```
 CREATE OR REPLACE SECRET AIRBYTE_APP_SECRET
   TYPE = GENERIC_STRING
@@ -76,7 +70,7 @@ CREATE OR REPLACE SECRET AIRBYTE_APP_SECRET
 ```
 ... where `client_id`, `client_secret` and `refresh_token` are strings. For more information, see the [Facebook Marketing authentication guide](https://docs.airbyte.com/integrations/sources/facebook-marketing#for-airbyte-open-source-generate-an-access-token-and-request-a-rate-limit-increase).
 
-5. Once the network rule and the secret are defined in Snowflake, you need to make them available to the app by using an external access integration.
+4. Once the network rule and the secret are defined in Snowflake, you need to make them available to the app by using an external access integration.
 ```
 CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION AIRBYTE_APP_INTEGRATION
   ALLOWED_NETWORK_RULES = (facebook_marketing_apis_network_rule)
@@ -84,29 +78,38 @@ CREATE OR REPLACE EXTERNAL ACCESS INTEGRATION AIRBYTE_APP_INTEGRATION
   ENABLED = true;
 ```
 
-6. Grant permission for the app to access the integration.
+5. Grant permission for the app to access the integration.
 ```
-GRANT USAGE ON INTEGRATION AIRBYTE_APP_INTEGRATION TO APPLICATION AIRBYTE_FACEBOOK_MARKETING_CONNECTOR;
-```
-
-7. Grant permissions for the app to access the database that houses the secret and read the secret.
-```
-GRANT USAGE ON DATABASE AIRBYTE_FACEBOOK_MARKETING_DB TO APPLICATION AIRBYTE_FACEBOOK_MARKETING_CONNECTOR;
-GRANT USAGE ON SCHEMA PUBLIC TO APPLICATION AIRBYTE_FACEBOOK_MARKETING_CONNECTOR;
-GRANT READ ON SECRET AIRBYTE_APP_SECRET TO APPLICATION AIRBYTE_FACEBOOK_MARKETING_CONNECTOR;
+GRANT USAGE ON INTEGRATION AIRBYTE_APP_INTEGRATION TO APPLICATION FACEBOOK_MARKETING_CONNECTOR;
 ```
 
-8. Grant permissions for the app to create a warehouse on which to execute sync tasks, and to execute tasks.
+6. Grant permissions for the app to access the database that houses the secret and read the secret.
 ```
-GRANT CREATE WAREHOUSE ON ACCOUNT TO APPLICATION AIRBYTE_FACEBOOK_MARKETING_CONNECTOR;
-GRANT EXECUTE TASK ON ACCOUNT TO APPLICATION AIRBYTE_FACEBOOK_MARKETING_CONNECTOR;
+GRANT USAGE ON DATABASE AIRBYTE_FACEBOOK_MARKETING_DB TO APPLICATION FACEBOOK_MARKETING_CONNECTOR;
+GRANT USAGE ON SCHEMA PUBLIC TO APPLICATION FACEBOOK_MARKETING_CONNECTOR;
+GRANT READ ON SECRET AIRBYTE_APP_SECRET TO APPLICATION FACEBOOK_MARKETING_CONNECTOR;
 ```
 
+### Granting Account Privileges
+Once you have completed the prerequisite SQL setup steps, you will need to grant privileges to allow the application to create databases, create warehouses, and execute tasks. 
+All of these privileges are required for the application to extract data into Snowflake database successfully.
 
-## Configure a Connection
-Once this is all set up, you can now configure a connection. To do so, use the Streamlit app by going in the `Apps` section and selecting `AIRBYTE_FACEBOOK_MARKETING`. You will have to accept the Anaconda terms in order to use Streamlit. 
+1. Start by going in the `Apps` section and selecting `Facebook Marketing Connector`. You will have to accept the Anaconda terms in order to use Streamlit.
+2. After the application has loaded click the shield icon in the top right corner to modify `Security` settings.
 
-Once you have access to the app, select `New Connection` and fill the following fields:
+![](./facebook-marketing-security-button.png)
+
+3. Under `Account level privileges`, click `Review` which will then present will open a pop-up of security privileges the application needs granted.
+4. Enable each of the privileges and click `Update Privileges`.
+
+![](./facebook-marketing-privileges.png)
+
+5. Reload the application to ensure that the application privileges have been updated.
+
+You are now ready to begin syncing your data.
+
+## Configuring a Connection
+Navigate back to the application by clicking `STREAMLIT` in the top left corner. Select `New Connection` and fill the following fields:
 
 --- 
 
