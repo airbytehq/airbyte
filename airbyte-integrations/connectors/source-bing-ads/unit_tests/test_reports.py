@@ -9,23 +9,34 @@ import pendulum
 import pytest
 from bingads.v13.internal.reporting.row_report_iterator import _RowReportRecord, _RowValues
 from source_bing_ads.report_streams import (
+    AccountImpressionPerformanceReportDaily,
     AccountImpressionPerformanceReportHourly,
+    AccountPerformanceReportDaily,
     AccountPerformanceReportHourly,
+    AdGroupImpressionPerformanceReportDaily,
     AdGroupImpressionPerformanceReportHourly,
+    AdGroupPerformanceReportDaily,
     AdGroupPerformanceReportHourly,
+    AdPerformanceReportDaily,
     AdPerformanceReportHourly,
+    AgeGenderAudienceReportDaily,
     AgeGenderAudienceReportHourly,
     BingAdsReportingServicePerformanceStream,
     BingAdsReportingServiceStream,
     BudgetSummaryReport,
+    CampaignImpressionPerformanceReportDaily,
     CampaignImpressionPerformanceReportHourly,
+    CampaignPerformanceReportDaily,
     CampaignPerformanceReportHourly,
     GeographicPerformanceReportDaily,
     GeographicPerformanceReportHourly,
     GeographicPerformanceReportMonthly,
     GeographicPerformanceReportWeekly,
+    KeywordPerformanceReportDaily,
     KeywordPerformanceReportHourly,
+    SearchQueryPerformanceReportDaily,
     SearchQueryPerformanceReportHourly,
+    UserLocationPerformanceReportDaily,
     UserLocationPerformanceReportHourly,
 )
 from source_bing_ads.source import SourceBingAds
@@ -108,10 +119,26 @@ def test_get_updated_state_state_new_account():
     assert new_state["234"]["Time"] == "2020-01-02"
 
 
-def test_get_report_record_timestamp_daily():
-    test_report = TestReport()
-    test_report.report_aggregation = "Daily"
-    assert "2020-01-01" == test_report.get_report_record_timestamp("2020-01-01")
+@pytest.mark.parametrize(
+    "stream_report_daily_cls",
+    (
+        AccountImpressionPerformanceReportDaily,
+        AccountPerformanceReportDaily,
+        AdGroupImpressionPerformanceReportDaily,
+        AdGroupPerformanceReportDaily,
+        AgeGenderAudienceReportDaily,
+        AdPerformanceReportDaily,
+        CampaignImpressionPerformanceReportDaily,
+        CampaignPerformanceReportDaily,
+        KeywordPerformanceReportDaily,
+        SearchQueryPerformanceReportDaily,
+        UserLocationPerformanceReportDaily,
+        GeographicPerformanceReportDaily,
+    ),
+)
+def test_get_report_record_timestamp_daily(stream_report_daily_cls):
+    stream_report = stream_report_daily_cls(client=Mock(), config=TEST_CONFIG)
+    assert "2020-01-01" == stream_report.get_report_record_timestamp("2020-01-01")
 
 
 def test_get_report_record_timestamp_without_aggregation():
@@ -120,7 +147,7 @@ def test_get_report_record_timestamp_without_aggregation():
 
 
 @pytest.mark.parametrize(
-    "stream_report_daily_cls",
+    "stream_report_hourly_cls",
     (
         AccountImpressionPerformanceReportHourly,
         AccountPerformanceReportHourly,
@@ -136,8 +163,8 @@ def test_get_report_record_timestamp_without_aggregation():
         GeographicPerformanceReportHourly,
     ),
 )
-def test_get_report_record_timestamp_hourly(stream_report_daily_cls):
-    stream_report = stream_report_daily_cls(client=Mock(), config=TEST_CONFIG)
+def test_get_report_record_timestamp_hourly(stream_report_hourly_cls):
+    stream_report = stream_report_hourly_cls(client=Mock(), config=TEST_CONFIG)
     assert "2020-01-01T15:00:00+00:00" == stream_report.get_report_record_timestamp("2020-01-01|15")
 
 
