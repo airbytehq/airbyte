@@ -148,9 +148,9 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     availableServices,
     onBack,
   } = props;
-  console.log(selectedConnectorDefinitionSpecification, "connector");
+
   const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
-  console.log(specifications, "specs");
+
   const jsonSchema: JSONSchema7 = useMemo(
     () => ({
       type: "object",
@@ -169,8 +169,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   );
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
-  console.log(formFields, "formFields");
-  console.log(initialValues, "initialValues");
+
   const { setDocumentationUrl, setDocumentationPanelOpen, setSelectedServiceName } = useDocumentationPanelContext();
 
   useEffect(() => {
@@ -224,7 +223,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
   );
 
   const validationSchema = useConstructValidationSchema(jsonSchema, uiWidgetsInfo);
-  console.log(validationSchema, "validationSchema");
+
   const getValues = useCallback(
     (values: ServiceFormValues) =>
       validationSchema.cast(values, {
