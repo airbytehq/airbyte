@@ -274,7 +274,38 @@ class InterestCategories(MailChimpStream, HttpSubStream):
         """
         list_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories"
-            
+
+    def request_params(self, **kwargs):
+
+        # Exclude the _links field, as it is not user-relevant data
+        params = super().request_params(**kwargs)
+        params["exclude_fields"] = "categories._links"
+        return params
+
+
+class Interests(MailChimpStream, HttpSubStream):
+    """
+    Get a list of interests for a specific interest category.
+    Docs link: https://mailchimp.com/developer/marketing/api/interests/list-interests-in-category/
+    """
+
+    data_field = "interests"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        """
+        Get the list_id from the parent stream slice and use it to construct the path.
+        """
+        self.logger.info(f"stream_slice: {stream_slice}")
+        list_id = stream_slice.get("parent").get("list_id")
+        category_id = stream_slice.get("parent").get("id")
+        return f"lists/{list_id}/interest-categories/{category_id}/interests"
+    
+    def request_params(self, **kwargs):
+
+        # Exclude the _links field, as it is not user-relevant data
+        params = super().request_params(**kwargs)
+        params["exclude_fields"] = "interests._links"
+        return params
 
 class ListMembers(MailChimpListSubStream):
     """

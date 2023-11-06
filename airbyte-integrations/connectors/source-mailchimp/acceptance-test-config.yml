@@ -30,10 +30,20 @@ acceptance_tests:
         expect_records:
           bypass_reason: "Risk to disclose internal data. Need to set up a sandbox account - https://github.com/airbytehq/airbyte/issues/20726"
         fail_on_extra_columns: false
+        empty_streams:
+          - name: "interests"
+            bypass_reason: "No data in internal account. Migration to sandbox account is impending."
+          - name: "interest_categories"
+            bypass_reason: "No data in internal account. Migration to sandbox account is impending."
       - config_path: "secrets/config_oauth.json"
         expect_records:
           bypass_reason: "Risk to disclose internal data. Need to set up a sandbox account - https://github.com/airbytehq/airbyte/issues/20726"
         fail_on_extra_columns: false
+        empty_streams:
+          - name: "interests"
+            bypass_reason: "No data in internal account. Migration to sandbox account is impending."
+          - name: "interest_categories"
+            bypass_reason: "No data in internal account. Migration to sandbox account is impending."
   incremental:
     tests:
       - config_path: "secrets/config.json"
