@@ -7,6 +7,8 @@ Airbyte's certified MySQL connector offers the following features:
 
 The contents below include a 'Quick Start' guide, advanced setup steps, and reference information (data type mapping, and changelogs).
 
+![Airbyte MySQL Connection](./mysql/assets/airbyte_mysql_source.png)
+
 ## Quick Start
 
 Here is an outline of the minimum required steps to configure a MySQL connector:
@@ -16,11 +18,9 @@ Here is an outline of the minimum required steps to configure a MySQL connector:
 
 Once this is complete, you will be able to select MySQL as a source for replicating data.
 
-<FieldAnchor field="host">
-</FieldAnchor>
+<FieldAnchor field="username,password">
 
 #### Step 1: Create a dedicated read-only MySQL user
-
 
 These steps create a dedicated read-only user for replicating data. Alternatively, you can use an existing MySQL user in your database.
 
@@ -38,8 +38,9 @@ GRANT SELECT, RELOAD, SHOW DATABASES, REPLICATION SLAVE, REPLICATION CLIENT ON *
 
 If choosing to run using the `STANDARD` replication method (not recommended), only the `SELECT` permission is required.
 
-<FieldAnchor field="replication_method">
 </FieldAnchor>
+
+<FieldAnchor field="replication_method[CDC]">
 
 #### Step 2: Enable binary logging on your MySQL server
 
@@ -66,8 +67,9 @@ binlog_expire_logs_seconds  = 864000
 
 </details>
 
-<FieldAnchor field="host, port, database">
 </FieldAnchor>
+
+<FieldAnchor field="host, port, database">
 
 #### Step 3: Create a new MySQL source in Airbyte UI
 
@@ -94,6 +96,8 @@ our [Airbyte Security docs](../../../operator-guides/security#network-security-1
 Now, click `Set up source` in the Airbyte UI. Airbyte will now test connecting to your database. Once this succeeds, you've configured an Airbyte MySQL source!
 <!-- /env:cloud -->
 
+</FieldAnchor>
+
 ## MySQL Replication Modes
 
 ### Change Data Capture \(CDC\)
@@ -112,7 +116,6 @@ Airbyte offers incremental replication using a custom cursor available in your s
 ## Connecting with SSL or SSH Tunneling
 
 <FieldAnchor field="ssl">
-</FieldAnchor>
 
 ### SSL Modes
 
@@ -126,7 +129,6 @@ Here is a breakdown of available SSL connection modes:
 - `verify-ca` to always require encryption and verify that the source has a valid SSL certificate
 - `verify-full` to always require encryption and verify the identity of the source
 
-<FieldAnchor field="ssl">
 </FieldAnchor>
 
 ### Connection via SSH Tunnel
