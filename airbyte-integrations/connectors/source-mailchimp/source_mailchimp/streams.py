@@ -298,13 +298,14 @@ class Interests(MailChimpStream, HttpSubStream):
         list_id = stream_slice.get("parent").get("list_id")
         category_id = stream_slice.get("parent").get("id")
         return f"lists/{list_id}/interest-categories/{category_id}/interests"
-    
+
     def request_params(self, **kwargs):
 
         # Exclude the _links field, as it is not user-relevant data
         params = super().request_params(**kwargs)
         params["exclude_fields"] = "interests._links"
         return params
+
 
 class ListMembers(MailChimpListSubStream):
     """

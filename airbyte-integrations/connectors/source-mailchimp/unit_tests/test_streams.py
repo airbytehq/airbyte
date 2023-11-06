@@ -10,7 +10,18 @@ import requests
 import responses
 from airbyte_cdk.models import SyncMode
 from requests.exceptions import HTTPError
-from source_mailchimp.streams import Automations, Campaigns, EmailActivity, InterestCategories, Interests, ListMembers, Lists, Reports, Segments, Unsubscribes
+from source_mailchimp.streams import (
+    Automations,
+    Campaigns,
+    EmailActivity,
+    InterestCategories,
+    Interests,
+    ListMembers,
+    Lists,
+    Reports,
+    Segments,
+    Unsubscribes,
+)
 from utils import read_full_refresh, read_incremental
 
 
@@ -79,14 +90,14 @@ def test_next_page_token(auth):
             Interests,
             {"stream_slice": {"parent": {"id": "123"}}, "stream_state": None, "next_page_token": {"offset": 2000}},
             {"count": 1000, "exclude_fields": "interests._links", "offset": 2000},
-        )
+        ),
     ],
     ids=[
         "Lists: no next_page_token or state to add to request params",
         "Lists: next_page_token added to request params",
         "InterestCategories: no next_page_token to add to request params",
-        "Interests: next_page_token added to request params"
-    ]
+        "Interests: next_page_token added to request params",
+    ],
 )
 def test_request_params(auth, stream, inputs, expected_params):
     args = {"authenticator": auth}
@@ -449,7 +460,7 @@ def test_403_error_handling(
         (ListMembers, {"list_id": "123"}, "lists/123/members"),
         (Reports, {}, "reports"),
         (Segments, {"list_id": "123"}, "lists/123/segments"),
-        (Unsubscribes, {"campaign_id": "123"}, "reports/123/unsubscribed")
+        (Unsubscribes, {"campaign_id": "123"}, "reports/123/unsubscribed"),
     ],
     ids=[
         "Automations",
@@ -461,8 +472,8 @@ def test_403_error_handling(
         "ListMembers",
         "Reports",
         "Segments",
-        "Unsubscribes"
-    ]
+        "Unsubscribes",
+    ],
 )
 def test_path(auth, stream, stream_slice, expected_endpoint):
     """
