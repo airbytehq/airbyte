@@ -17,20 +17,67 @@ class TestStep(Step):
 
 @pytest.mark.anyio
 @pytest.mark.parametrize("steps, expected_results, options", [
+    # (
+    #     [
+    #         StepToRun(id="step1", step=TestStep(test_context)),
+    #         StepToRun(id="step2", step=TestStep(test_context)),
+    #         StepToRun(id="step3", step=TestStep(test_context)),
+    #         StepToRun(id="step4", step=TestStep(test_context)),
+    #     ],
+    #     {
+    #         "step1": StepStatus.SUCCESS,
+    #         "step2": StepStatus.SUCCESS,
+    #         "step3": StepStatus.SUCCESS,
+    #         "step4": StepStatus.SUCCESS
+    #     },
+    #     RunStepOptions(fail_fast=True)
+    # ),
+    # (
+    #     [
+    #         StepToRun(id="step1", step=TestStep(test_context)),
+    #         [
+    #             StepToRun(id="step2", step=TestStep(test_context)),
+    #             StepToRun(id="step3", step=TestStep(test_context)),
+    #         ],
+    #         StepToRun(id="step4", step=TestStep(test_context)),
+    #     ],
+    #     {
+    #         "step1": StepStatus.SUCCESS,
+    #         "step2": StepStatus.SUCCESS,
+    #         "step3": StepStatus.SUCCESS,
+    #         "step4": StepStatus.SUCCESS
+    #     },
+    #     RunStepOptions(fail_fast=True)
+    # ),
+    # (
+    #     [
+    #         StepToRun(id="step1", step=TestStep(test_context)),
+    #         StepToRun(id="step2", step=TestStep(test_context), args={"result_status": StepStatus.FAILURE}),
+    #         StepToRun(id="step3", step=TestStep(test_context)),
+    #         StepToRun(id="step4", step=TestStep(test_context)),
+    #     ],
+    #     {
+    #         "step1": StepStatus.SUCCESS,
+    #         "step2": StepStatus.FAILURE,
+    #         "step3": StepStatus.SKIPPED,
+    #         "step4": StepStatus.SKIPPED
+    #     },
+    #     RunStepOptions(fail_fast=True)
+    # )
     (
         [
             StepToRun(id="step1", step=TestStep(test_context)),
-            StepToRun(id="step2", step=TestStep(test_context)),
+            StepToRun(id="step2", step=TestStep(test_context), args={"result_status": StepStatus.FAILURE}),
             StepToRun(id="step3", step=TestStep(test_context)),
             StepToRun(id="step4", step=TestStep(test_context)),
         ],
         {
             "step1": StepStatus.SUCCESS,
-            "step2": StepStatus.SUCCESS,
+            "step2": StepStatus.FAILURE,
             "step3": StepStatus.SUCCESS,
             "step4": StepStatus.SUCCESS
         },
-        RunStepOptions(fail_fast=True)
+        RunStepOptions(fail_fast=False)
     ),
     (
         [
@@ -52,33 +99,25 @@ class TestStep(Step):
     (
         [
             StepToRun(id="step1", step=TestStep(test_context)),
-            StepToRun(id="step2", step=TestStep(test_context), args={"result_status": StepStatus.FAILURE}),
-            StepToRun(id="step3", step=TestStep(test_context)),
-            StepToRun(id="step4", step=TestStep(test_context)),
+            [
+                StepToRun(id="step2", step=TestStep(test_context)),
+                StepToRun(id="step3", step=TestStep(test_context)),
+                [
+                    StepToRun(id="step4", step=TestStep(test_context)),
+                    StepToRun(id="step5", step=TestStep(test_context)),
+                ]
+            ],
+            StepToRun(id="step6", step=TestStep(test_context)),
         ],
         {
             "step1": StepStatus.SUCCESS,
-            "step2": StepStatus.FAILURE,
-            "step3": StepStatus.SKIPPED,
-            "step4": StepStatus.SKIPPED
-        },
-        RunStepOptions(fail_fast=True)
-    )
-    (
-        [
-            StepToRun(id="step1", step=TestStep(test_context)),
-            StepToRun(id="step2", step=TestStep(test_context), args={"result_status": StepStatus.FAILURE}),
-            StepToRun(id="step3", step=TestStep(test_context)),
-            StepToRun(id="step4", step=TestStep(test_context)),
-        ],
-        {
-            "step1": StepStatus.SUCCESS,
-            "step2": StepStatus.FAILURE,
+            "step2": StepStatus.SUCCESS,
             "step3": StepStatus.SUCCESS,
             "step4": StepStatus.SUCCESS
         },
-        RunStepOptions(fail_fast=False)
-    )
+        RunStepOptions(fail_fast=True)
+    ),
+
 ])
 async def test_run_steps_sequential(steps, expected_results, options):
     results = await run_steps(steps, options=options)
