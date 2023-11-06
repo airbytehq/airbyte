@@ -248,7 +248,9 @@ class Stream(ABC):
         """
         return True
 
-    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+    def check_availability(
+        self, logger: logging.Logger, source: Optional["Source"] = None, stream_state: Optional[typing.Mapping[str, typing.Any]] = None
+    ) -> Tuple[bool, Optional[str]]:
         """
         Checks whether this stream is available.
 
@@ -260,7 +262,7 @@ class Stream(ABC):
           resolve the unavailability, if possible.
         """
         if self.availability_strategy:
-            return self.availability_strategy.check_availability(self, logger, source)
+            return self.availability_strategy.check_availability(self, logger, source, stream_state)
         return True, None
 
     @property

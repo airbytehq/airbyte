@@ -209,7 +209,12 @@ class StreamFacade(Stream):
     def supports_incremental(self) -> bool:
         return self._legacy_stream.supports_incremental
 
-    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
+    def check_availability(
+        self,
+        logger: logging.Logger,
+        source: Optional["Source"] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
+    ) -> Tuple[bool, Optional[str]]:
         """
         Verifies the stream is available. Delegates to the underlying AbstractStream and ignores the parameters
         :param logger: (ignored)

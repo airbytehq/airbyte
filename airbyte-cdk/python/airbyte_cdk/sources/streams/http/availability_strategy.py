@@ -17,7 +17,13 @@ if typing.TYPE_CHECKING:
 
 
 class HttpAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, Optional[str]]:
+    def check_availability(
+        self,
+        stream: Stream,
+        logger: logging.Logger,
+        source: Optional["Source"],
+        stream_state: Optional[typing.Mapping[str, typing.Any]] = None,
+    ) -> Tuple[bool, Optional[str]]:
         """
         Check stream availability by attempting to read the first record of the
         stream.
@@ -33,7 +39,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         try:
             # Some streams need a stream slice to read records (e.g. if they have a SubstreamPartitionRouter)
             # Streams that don't need a stream slice will return `None` as their first stream slice.
-            stream_slice = get_first_stream_slice(stream)
+            stream_slice = get_first_stream_slice(stream, stream_state)
         except StopIteration:
             # If stream_slices has no `next()` item (Note - this is different from stream_slices returning [None]!)
             # This can happen when a substream's `stream_slices` method does a `for record in parent_records: yield <something>`
@@ -47,7 +53,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             return is_available, reason
 
         try:
-            get_first_record_for_slice(stream, stream_slice)
+            get_first_record_for_slice(stream, stream_slice, stream_state)
             return True, None
         except StopIteration:
             logger.info(f"Successfully connected to stream {stream.name}, but got 0 records.")

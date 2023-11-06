@@ -54,7 +54,7 @@ def test_check_stream_with_slices_as_list(test_name, record, streams_to_check, s
 
 
 def mock_read_records(responses, default_response=None, **kwargs):
-    return lambda stream_slice, sync_mode: responses[frozenset(stream_slice)] if frozenset(stream_slice) in responses else default_response
+    return lambda stream_slice, sync_mode, stream_state: responses[frozenset(stream_slice)] if frozenset(stream_slice) in responses else default_response
 
 
 def test_check_empty_stream():
