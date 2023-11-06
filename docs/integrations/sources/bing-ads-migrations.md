@@ -2,10 +2,24 @@
 
 ## Upgrading to 2.0.0
 
-This version update only affects the Accounts, Campaigns and Search Query Performance Report streams. 
+This version update affects next streams:
+
+- Accounts
+- Campaigns
+- Search Query Performance Report 
+- AppInstallAds
+- AppInstallAdLabels
+- Labels
+- Campaign Labels
+- Keyword Labels
+- Ad Group Labels
+- Keywords
+- Budget Summary Report
+- All Hourly Reports (end with report_hourly)
 
 Version 2.0.0 updates schemas for Accounts, Campaigns and Search Query Performance Report streams. LinkedAgencies was changed from string to object in Accounts stream. 
 BiddingScheme.MaxCpc.Amount was changed from string to number in Campaigns stream. And CostPerConversion was changed from integer to number. 
+All `date` and `date-time` fields will be converted to standard `RFC3339`. Stream state format will be updated as well.
 
 For the changes to take effect, please refresh the source schema and reset affected streams after you have applied the upgrade.
 
@@ -14,6 +28,13 @@ For the changes to take effect, please refresh the source schema and reset affec
 | LinkedAgencies              | string               | object           |
 | BiddingScheme.MaxCpc.Amount | string               | number           |
 | CostPerConversion           | integer              | number           |
+
+
+| Affected streams                                                                                                     | Field_name      | Old type                  | New type (`RFC3339`)            |
+|----------------------------------------------------------------------------------------------------------------------|-----------------|---------------------------|---------------------------------|
+| `AppInstallAds`, `AppInstallAdLabels`, `Labels`, `Campaign Labels`, `Keyword Labels`, `Ad Group Labels`, `Keywords`  | `Modified Time` | `04/27/2023 18:00:14.970` | `2023-04-27T16:00:14.970+00:00` |
+| `Budget Summary Report`                                                                                              | `Date`          | `6/10/2021`               | `2021-06-10`                    |
+| `* Report Hourly`                                                                                                    | `TimePeriod`    | `2023-11-04\|11`          | `2023-11-04T11:00:00+00:00`     |
 
 ## Upgrading to 1.0.0
 
