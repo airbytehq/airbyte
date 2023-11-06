@@ -121,7 +121,7 @@ definitions:
     $parameters:
       name: "user_teams"
       primary_key: "id"
-      path: "v2/users/{{stream_partition.user_id}}/teams"
+      path: "v2/users/{{ stream_partition['user_id'] }}/teams"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       users_partition_router:
@@ -135,14 +135,14 @@ definitions:
         fields:
           - path:
               - user_id
-            value: "{{ stream_partition.user_id }}"
+            value: "{{ stream_partition['user_id'] }}"
 
   alert_recipients_stream:
     $ref: "#/definitions/base_stream"
     $parameters:
       name: "alert_recipients"
       primary_key: "id"
-      path: "v2/alerts/{{ stream_partition.alert_id }}/recipients"
+      path: "v2/alerts/{{ record }}/recipients"
     retriever:
       $ref: "#/definitions/base_stream/retriever"
       alerts_partition_router:
@@ -199,14 +199,14 @@ definitions:
 check:
   type: CheckStream
   stream_names:
-    # - users
-    # - teams
-    # - services
-    # - incidents
-    # - integrations
-    # - alerts
-    # - user_teams
-    # - alert_recipients
+    - users
+    - teams
+    - services
+    - incidents
+    - integrations
+    - alerts
+    - user_teams
+    - alert_recipients
     - alert_logs
 
 streams:
