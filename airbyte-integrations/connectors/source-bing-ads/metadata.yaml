@@ -41,10 +41,12 @@ data:
         upgradeDeadline: "2023-10-25"
       2.0.0:
         message:
-          Version 2.0.0 updates schemas for Accounts, Campaigns and Search Query Performance Report streams.
-          LinkedAgencies was changed from string to object in Accounts stream. BiddingScheme.MaxCpc.Amount
-          was changed from string to number in Campaigns stream. And CostPerConversion was changed from integer
-          to number. Users will need to refresh the source schema and reset affected streams after upgrading.
+          Version 2.0.0 updates schemas for Accounts, Campaigns, Search Query Performance Report, AppInstallAds, AppInstallAdLabels, Labels, Campaign Labels, Keyword Labels, Ad Group Labels, Keywords, Budget Summary Report and All Hourly Reports (end with report_hourly).
+          `LinkedAgencies` was changed from string to object in Accounts stream. `BiddingScheme.MaxCpc.Amount`
+          was changed from string to number in Campaigns stream. And `CostPerConversion` was changed from integer
+          to number. `Modified Time` was changed from string to `timestamp with timezone` in AppInstallAds, AppInstallAdLabels, Labels, Campaign Labels, Keyword Labels, Ad Group Labels, Keywords streams. `TimePeriod` was changed from string to `timestamp with timezone` in all hourly Report streams. 
+          `Date` was changed from string to `date` in Budget Summary Report stream. 
+          Users will need to refresh the source schema and reset affected streams after upgrading.
         upgradeDeadline: "2023-11-17"
   supportLevel: certified
   tags:
