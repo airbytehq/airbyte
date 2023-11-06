@@ -7,7 +7,7 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.destinations.vector_db_based.embedder import AzureOpenAIEmbedder, CohereEmbedder, Embedder, FakeEmbedder, OpenAIEmbedder
+from airbyte_cdk.destinations.vector_db_based.embedder import Embedder, create_from_config
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
 from airbyte_cdk.destinations.vector_db_based.writer import Writer
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, ConnectorSpecification, Status
@@ -18,18 +18,12 @@ from destination_pinecone.indexer import PineconeIndexer
 BATCH_SIZE = 32
 
 
-embedder_map = {"openai": OpenAIEmbedder, "cohere": CohereEmbedder, "fake": FakeEmbedder, "azure_openai": AzureOpenAIEmbedder}
-
-
 class DestinationPinecone(Destination):
     indexer: Indexer
     embedder: Embedder
 
     def _init_indexer(self, config: ConfigModel):
-        if config.embedding.mode == "azure_openai" or config.embedding.mode == "openai":
-            self.embedder = embedder_map[config.embedding.mode](config.embedding, config.processing.chunk_size)
-        else:
-            self.embedder = embedder_map[config.embedding.mode](config.embedding)
+        self.embedder = create_from_config(config.embedding, config.processing)
         self.indexer = PineconeIndexer(config.indexing, self.embedder.embedding_dimensions)
 
     def write(

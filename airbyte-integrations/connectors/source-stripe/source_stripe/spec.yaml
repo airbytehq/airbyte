@@ -57,3 +57,14 @@ connectionSpecification:
         the less requests will be made and faster the sync will be. On the other hand, the more seldom
         the state is persisted.
       order: 4
+    num_workers:
+      type: integer
+      title: Number of concurrent workers
+      minimum: 1
+      maximum: 3
+      default: 2
+      examples: [1, 2, 3]
+      description: >-
+        The number of worker thread to use for the sync. The bigger the value is, the faster the sync will be.
+        Be careful as rate limiting is not implemented.
+      order: 5

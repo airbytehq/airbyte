@@ -2,21 +2,21 @@
 
 This page will walk through the process of developing with the Java CDK.
 
-- [Developing with the Java CDK](#developing-with-the-java-cdk)
-  - [Intro to the Java CDK](#intro-to-the-java-cdk)
-    - [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
-    - [How is the CDK published?](#how-is-the-cdk-published)
-  - [Using the Java CDK](#using-the-java-cdk)
-    - [Building the CDK](#building-the-cdk)
-    - [Bumping the CDK version](#bumping-the-cdk-version)
-    - [Publishing the CDK](#publishing-the-cdk)
-  - [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
-    - [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
-    - [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
-    - [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
-  - [Common Debugging Tips](#common-debugging-tips)
-  - [Changelog](#changelog)
-    - [Java CDK](#java-cdk)
+* [Developing with the Java CDK](#developing-with-the-java-cdk)
+   * [Intro to the Java CDK](#intro-to-the-java-cdk)
+      * [What is included in the Java CDK?](#what-is-included-in-the-java-cdk)
+      * [How is the CDK published?](#how-is-the-cdk-published)
+   * [Using the Java CDK](#using-the-java-cdk)
+      * [Building the CDK](#building-the-cdk)
+      * [Bumping the CDK version](#bumping-the-cdk-version)
+      * [Publishing the CDK](#publishing-the-cdk)
+   * [Developing Connectors with the Java CDK](#developing-connectors-with-the-java-cdk)
+      * [Referencing the CDK from Java connectors](#referencing-the-cdk-from-java-connectors)
+      * [Developing a connector alongside the CDK](#developing-a-connector-alongside-the-cdk)
+      * [Developing a connector against a pinned CDK version](#developing-a-connector-against-a-pinned-cdk-version)
+   * [Common Debugging Tips](#common-debugging-tips)
+   * [Changelog](#changelog)
+      * [Java CDK](#java-cdk)
 
 ## Intro to the Java CDK
 
@@ -99,7 +99,7 @@ plugins {
 airbyteJavaConnector {
     cdkVersionRequired = '0.1.0'   // The CDK version to pin to.
     features = ['db-destinations'] // An array of CDK features to depend on.
-    useLocalCdk = false            // Use 'true' to use a live reference to the 
+    useLocalCdk = false            // Use 'true' to use a live reference to the
                                    // local cdk project.
 }
 
@@ -155,7 +155,20 @@ MavenLocal debugging steps:
 ### Java CDK
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                        |
-|:--------|:-----------| :--------------------------------------------------------- |:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:--------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.4.0   | 2023-11-02 | [\#32050](https://github.com/airbytehq/airbyte/pull/32050) | Add 's3-destinations' CDK module.                                                                                                                              |
+| 0.3.0   | 2023-11-02 | [\#31983](https://github.com/airbytehq/airbyte/pull/31983) | Add deinterpolation feature to AirbyteExceptionHandler.                                                                                                        |
+| 0.2.4   | 2023-10-31 | [\#31807](https://github.com/airbytehq/airbyte/pull/31807) | Handle case of debezium update and delete of records in mongodb.                                                                                               |
+| 0.2.3   | 2023-10-31 | [\#32022](https://github.com/airbytehq/airbyte/pull/32022) | Update Debezium version from 2.20 -> 2.4.0.                                                                                                                    |
+| 0.2.2   | 2023-10-31 | [\#31976](https://github.com/airbytehq/airbyte/pull/31976) | Debezium tweaks to make tests run faster.                                                                                                                      |
+| 0.2.0   | 2023-10-30 | [\#31960](https://github.com/airbytehq/airbyte/pull/31960) | Hoist top-level gradle subprojects into CDK.                                                                                                                   |
+| 0.1.12  | 2023-10-24 | [\#31674](https://github.com/airbytehq/airbyte/pull/31674) | Fail sync when Debezium does not shut down properly.                                                                                                           |
+| 0.1.11  | 2023-10-18 | [\#31486](https://github.com/airbytehq/airbyte/pull/31486) | Update constants in AdaptiveSourceRunner.                                                                                                                      |
+| 0.1.9   | 2023-10-12 | [\#31309](https://github.com/airbytehq/airbyte/pull/31309) | Use toPlainString() when handling BigDecimals in PostgresConverter                                                                                             |
+| 0.1.8   | 2023-10-11 | [\#31322](https://github.com/airbytehq/airbyte/pull/31322) | Cap log line length to 32KB to prevent loss of records                                                                                                         |
+| 0.1.7   | 2023-10-10 | [\#31194](https://github.com/airbytehq/airbyte/pull/31194) | Deallocate unused per stream buffer memory when empty                                                                                                          |
+| 0.1.6   | 2023-10-10 | [\#31083](https://github.com/airbytehq/airbyte/pull/31083) | Fix precision of numeric values in async destinations                                                                                                          |
+| 0.1.5   | 2023-10-09 | [\#31196](https://github.com/airbytehq/airbyte/pull/31196) | Update typo in CDK (CDN_LSN -> CDC_LSN)                                                                                                                        |
 | 0.1.4   | 2023-10-06 | [\#31139](https://github.com/airbytehq/airbyte/pull/31139) | Reduce async buffer                                                                                                                                            |
 | 0.1.1   | 2023-09-28 | [\#30835](https://github.com/airbytehq/airbyte/pull/30835) | JDBC destinations now avoid staging area name collisions by using the raw table name as the stage name. (previously we used the stream name as the stage name) |
 | 0.1.0   | 2023-09-27 | [\#30445](https://github.com/airbytehq/airbyte/pull/30445) | First launch, including shared classes for all connectors.                                                                                                     |

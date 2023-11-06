@@ -305,3 +305,20 @@ class TestBaseInsightsStream:
         )
 
         assert stream.level == "adset"
+
+    def test_breackdowns_fields_present_in_response_data(self, api):
+        stream = AdsInsights(
+            api=api,
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            breakdowns=["age", "gender"],
+            insights_lookback_window=28,
+        )
+
+        data = {"age": "0-100", "gender": "male"}
+
+        assert stream._response_data_is_valid(data)
+
+        data = {"id": "0000001", "name": "Pipenpodl Absakopalis"}
+
+        assert not stream._response_data_is_valid(data)

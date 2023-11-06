@@ -27,6 +27,8 @@ acceptance_tests:
             bypass_reason: "can't populate stream because it requires real ad campaign"
           - name: sponsored_products_report_stream
             bypass_reason: "can't populate stream because it requires real ad campaign"
+          - name: sponsored_display_creatives
+            bypass_reason: "can't populate stream because it requires real ad campaign"
         ignored_fields:
           sponsored_product_campaigns:
             - name: dailyBudget

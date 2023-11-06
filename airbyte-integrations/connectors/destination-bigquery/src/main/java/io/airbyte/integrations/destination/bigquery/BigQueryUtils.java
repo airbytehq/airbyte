@@ -246,7 +246,7 @@ public class BigQueryUtils {
             + "}"))
         .build());
 
-    LOGGER.debug("Composed GCS config is: \n" + gcsJsonNode.toPrettyString());
+    // Do not log the gcsJsonNode to avoid accidentally emitting credentials (even at DEBUG/TRACE level)
     return gcsJsonNode;
   }
 
@@ -303,6 +303,14 @@ public class BigQueryUtils {
     } else {
       return "US";
     }
+  }
+
+  public static boolean getDisableTypeDedupFlag(final JsonNode config) {
+    if (config.has(BigQueryConsts.DISABLE_TYPE_DEDUPE)) {
+      return config.get(BigQueryConsts.DISABLE_TYPE_DEDUPE).asBoolean(false);
+    }
+
+    return false;
   }
 
   static TableDefinition getTableDefinition(final BigQuery bigquery, final String datasetName, final String tableName) {

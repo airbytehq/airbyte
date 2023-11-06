@@ -142,7 +142,9 @@ class TestMilvusIndexer(unittest.TestCase):
 
     def test_index_calls_insert(self):
         self.milvus_indexer._primary_key = "id"
-        self.milvus_indexer.index([Mock(metadata={"key": "value", "id": 5}, page_content="some content", embedding=[1, 2, 3])], [])
+        self.milvus_indexer.index(
+            [Mock(metadata={"key": "value", "id": 5}, page_content="some content", embedding=[1, 2, 3])], None, "some_stream"
+        )
 
         self.milvus_indexer._collection.insert.assert_called_with([{"key": "value", "vector": [1, 2, 3], "text": "some content", "_id": 5}])
 
@@ -151,7 +153,7 @@ class TestMilvusIndexer(unittest.TestCase):
         mock_iterator.next.side_effect = [[{"id": "123"}, {"id": "456"}], [{"id": "789"}], []]
         self.milvus_indexer._collection.query_iterator.return_value = mock_iterator
 
-        self.milvus_indexer.index([], ["some_id"])
+        self.milvus_indexer.delete(["some_id"], None, "some_stream")
 
         self.milvus_indexer._collection.query_iterator.assert_called_with(expr='_ab_record_id in ["some_id"]')
         self.milvus_indexer._collection.delete.assert_has_calls([call(expr="id in [123, 456]"), call(expr="id in [789]")], any_order=False)

@@ -5,11 +5,11 @@
 
 import os
 from multiprocessing import Process
-from typing import List, Optional
+from typing import Optional
 
-from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD, Chunk
+from airbyte_cdk.destinations.vector_db_based.document_processor import METADATA_RECORD_ID_FIELD, METADATA_STREAM_FIELD
 from airbyte_cdk.destinations.vector_db_based.indexer import Indexer
-from airbyte_cdk.destinations.vector_db_based.utils import format_exception
+from airbyte_cdk.destinations.vector_db_based.utils import create_stream_identifier, format_exception
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode
 from destination_milvus.config import MilvusIndexingConfigModel
@@ -83,7 +83,7 @@ class MilvusIndexer(Indexer):
         self._create_client()
         for stream in catalog.streams:
             if stream.destination_sync_mode == DestinationSyncMode.overwrite:
-                self._delete_for_filter(f'{METADATA_STREAM_FIELD} == "{stream.stream.name}"')
+                self._delete_for_filter(f'{METADATA_STREAM_FIELD} == "{create_stream_identifier(stream.stream)}"')
 
     def _delete_for_filter(self, expr: str) -> None:
         iterator = self._collection.query_iterator(expr=expr)
@@ -107,11 +107,7 @@ class MilvusIndexer(Indexer):
 
         return result
 
-    def index(self, document_chunks: List[Chunk], delete_ids: List[str]) -> None:
-        if len(delete_ids) > 0:
-            id_list_expr = ", ".join([f'"{id}"' for id in delete_ids])
-            id_expr = f"{METADATA_RECORD_ID_FIELD} in [{id_list_expr}]"
-            self._delete_for_filter(id_expr)
+    def index(self, document_chunks, namespace, stream):
         entities = []
         for i in range(len(document_chunks)):
             chunk = document_chunks[i]
@@ -119,3 +115,9 @@ class MilvusIndexer(Indexer):
                 {**self._normalize(chunk.metadata), self.config.vector_field: chunk.embedding, self.config.text_field: chunk.page_content}
             )
         self._collection.insert(entities)
+
+    def delete(self, delete_ids, namespace, stream):
+        if len(delete_ids) > 0:
+            id_list_expr = ", ".join([f'"{id}"' for id in delete_ids])
+            id_expr = f"{METADATA_RECORD_ID_FIELD} in [{id_list_expr}]"
+            self._delete_for_filter(id_expr)

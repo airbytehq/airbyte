@@ -24,7 +24,7 @@ import smart_open
 import smart_open.ssh
 from airbyte_cdk.entrypoint import logger
 from airbyte_cdk.models import AirbyteStream, FailureType, SyncMode
-from airbyte_cdk.utils import AirbyteTracedException
+from airbyte_cdk.utils import AirbyteTracedException, is_cloud_environment
 from azure.storage.blob import BlobServiceClient
 from genson import SchemaBuilder
 from google.cloud.storage import Client as GCSClient
@@ -36,7 +36,7 @@ from paramiko import SSHException
 from urllib3.exceptions import ProtocolError
 from yaml import safe_load
 
-from .utils import backoff_handler
+from .utils import LOCAL_STORAGE_NAME, backoff_handler
 
 SSH_TIMEOUT = 60
 
@@ -252,7 +252,6 @@ class Client:
     """Class that manages reading and parsing data from streams"""
 
     CSV_CHUNK_SIZE = 10_000
-    reader_class = URLFile
     binary_formats = {"excel", "excel_binary", "feather", "parquet", "orc", "pickle"}
 
     def __init__(self, dataset_name: str, url: str, provider: dict, format: str = None, reader_options: dict = None):
@@ -263,6 +262,13 @@ class Client:
         self._reader_options = reader_options or {}
         self.binary_source = self._reader_format in self.binary_formats
         self.encoding = self._reader_options.get("encoding")
+
+    @property
+    def reader_class(self):
+        if is_cloud_environment():
+            return URLFileSecure
+
+        return URLFile
 
     @property
     def stream_name(self) -> str:
@@ -497,3 +503,15 @@ class Client:
                 df = pd.DataFrame(data=(next(data) for _ in range(start, min(start + step, end))), columns=cols)
                 yield df
                 start += step
+
+
+class URLFileSecure(URLFile):
+    """Updating of default logic:
+    This connector shouldn't work with local files.
+    """
+
+    def __init__(self, url: str, provider: dict, binary=None, encoding=None):
+        storage_name = provider["storage"].lower()
+        if url.startswith("file://") or storage_name == LOCAL_STORAGE_NAME:
+            raise RuntimeError("the local file storage is not supported by this connector.")
+        super().__init__(url, provider, binary, encoding)

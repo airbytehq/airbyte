@@ -2,9 +2,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: secrets/config.json
-        empty_streams:
-          - name: flows
-            bypass_reason: "the 'trigger' object may mutate often"
         expect_records:
           path: integration_tests/expected_records.jsonl
           extra_records: true
@@ -21,6 +18,9 @@ acceptance_tests:
   discovery:
     tests:
       - config_path: secrets/config.json
+        backward_compatibility_tests_config:
+          disable_for_version: "1.0.0"
+          previous_connector_version: "0.5.0"
   full_refresh:
     tests:
       - config_path: secrets/config.json

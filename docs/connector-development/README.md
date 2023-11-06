@@ -53,7 +53,7 @@ If you are building a connector in any of the following languages/frameworks, th
 #### Sources
 
 * **Python Source Connector**
-* [**Singer**](https://singer.io)**-based Python Source Connector**. [Singer.io](https://singer.io/) is an open source framework with a large community and many available connectors \(known as taps & targets\). To build an Airbyte connector from a Singer tap, wrap the tap in a thin Python package to make it Airbyte Protocol-compatible. See the [Github Connector](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-github-singer) for an example of an Airbyte Connector implemented on top of a Singer tap.
+* [**Singer**](https://singer.io)**-based Python Source Connector**. [Singer.io](https://singer.io/) is an open source framework with a large community and many available connectors \(known as taps & targets\). To build an Airbyte connector from a Singer tap, wrap the tap in a thin Python package to make it Airbyte Protocol-compatible. See the [Github Connector](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors/source-github) for an example of an Airbyte Connector implemented on top of a Singer tap.
 * **Generic Connector**: This template provides a basic starting point for any language.
 
 #### Destinations
@@ -77,7 +77,6 @@ Search the generated directory for "TODO"s and follow them to implement your con
 * [Speedrun: Building a HTTP source with the CDK](tutorials/cdk-speedrun.md)
 * [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http/getting-started.md)
 * [Building a Python source](tutorials/building-a-python-source.md)
-* [Building a Python destination](tutorials/building-a-python-destination.md)
 * [Building a Java destination](tutorials/building-a-java-destination.md)
 
 As you implement your connector, make sure to review the [Best Practices for Connector Development](best-practices.md) guide. Following best practices is not a requirement for merging your contribution to Airbyte, but it certainly doesn't hurt ;\)
@@ -140,7 +139,7 @@ The presence of these fields will enable normalization for the connector, and de
 
 Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions to ship the new version of the connector with Airbyte out of the box.
 
-1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\). 
+1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\).
 2. Bump the docker image version in the [metadata.yaml](connector-metadata-file.md) of the connector.
 3. Submit a PR containing the changes you made.
 4. One of Airbyte maintainers will review the change in the new version and make sure the tests are passing.

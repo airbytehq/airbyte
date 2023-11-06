@@ -41,4 +41,6 @@ jobs:
           sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
           git_branch: ${{ steps.extract_branch.outputs.branch }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          s3_build_cache_access_key_id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          s3_build_cache_secret_key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           subcommand: "connectors ${{ inputs.test-connectors-options || '--concurrency=8 --support-level=certified' }} test"

@@ -274,10 +274,7 @@ public class BigQuerySqlGeneratorIntegrationTest extends BaseSqlGeneratorIntegra
         new StringSubstitutor(Map.of(
             "raw_table_id", streamId.rawTableId(BigQuerySqlGenerator.QUOTE),
             "records", recordsText)).replace(
-                // Note the parse_json call, and that _airbyte_data is declared as a string.
-                // This is needed because you can't insert a string literal into a JSON column
-                // so we build a struct literal with a string field, and then parse the field when inserting to the
-                // table.
+                // TODO: Perform a normal insert - edward
                 """
                 INSERT INTO ${raw_table_id} (_airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data)
                 SELECT _airbyte_raw_id, _airbyte_extracted_at, _airbyte_loaded_at, _airbyte_data FROM UNNEST([

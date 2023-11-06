@@ -21,7 +21,7 @@ To set up email notifications:
 
 2. Click **Notifications**.
 
-3. Toggle which messages you'd like to receive from Airbyte. All email notifications will be sent to the owner of this workspace. The owner of your workspace is noted at the top of the page.
+3. Toggle which messages you'd like to receive from Airbyte. All email notifications will be sent by default to the creator of the workspace. To change the recipient, edit and save the **notification email recipient**. If you would like to send email notifications to more than one recipient, you can enter an email distribution list (ie Google Group) as the recipient.
 
 4. Click **Save changes**.
 
