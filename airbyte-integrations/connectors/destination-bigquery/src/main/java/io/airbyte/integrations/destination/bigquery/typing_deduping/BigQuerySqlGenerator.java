@@ -697,51 +697,6 @@ public class BigQuerySqlGenerator implements SqlGenerator<TableDefinition> {
   }
 
   @VisibleForTesting
-  String dedupFinalTable(final StreamId id,
-                         final String finalSuffix,
-                         final List<ColumnId> primaryKey,
-                         final Optional<ColumnId> cursor) {
-    final String pkList = primaryKey.stream().map(columnId -> columnId.name(QUOTE)).collect(joining(","));
-    final String cursorOrderClause = cursor
-        .map(cursorId -> cursorId.name(QUOTE) + " DESC NULLS LAST,")
-        .orElse("");
-
-    return new StringSubstitutor(Map.of(
-        "project_id", '`' + projectId + '`',
-        "final_table_id", id.finalTableId(QUOTE, finalSuffix),
-        "pk_list", pkList,
-        "cursor_order_clause", cursorOrderClause)).replace(
-            """
-            DELETE FROM ${project_id}.${final_table_id}
-            WHERE
-              `_airbyte_raw_id` IN (
-                SELECT `_airbyte_raw_id` FROM (
-                  SELECT `_airbyte_raw_id`, row_number() OVER (
-                    PARTITION BY ${pk_list} ORDER BY ${cursor_order_clause} `_airbyte_extracted_at` DESC
-                  ) as row_number FROM ${project_id}.${final_table_id}
-                )
-                WHERE row_number != 1
-              )
-            ;""");
-  }
-
-  private String cdcDeletes(final StreamConfig stream, final String finalSuffix) {
-    if (stream.destinationSyncMode() != DestinationSyncMode.APPEND_DEDUP) {
-      return "";
-    }
-    if (!stream.columns().containsKey(CDC_DELETED_AT_COLUMN)) {
-      return "";
-    }
-
-    return new StringSubstitutor(Map.of(
-        "project_id", '`' + projectId + '`',
-        "final_table_id", stream.id().finalTableId(QUOTE, finalSuffix))).replace(
-            """
-            DELETE FROM ${project_id}.${final_table_id}
-            WHERE _ab_cdc_deleted_at IS NOT NULL;""");
-  }
-
-  @VisibleForTesting
   String commitRawTable(final StreamId id, final Optional<Instant> minRawTimestamp) {
     return new StringSubstitutor(Map.of(
         "project_id", '`' + projectId + '`',
