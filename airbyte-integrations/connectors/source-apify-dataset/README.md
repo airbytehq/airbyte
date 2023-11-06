@@ -37,16 +37,6 @@ Integration tests - read operation from the API
 python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 
-#### Building via Gradle
-
-You can also build the connector in Gradle. This is typically used in CI and not needed for your development workflow.
-
-To build using Gradle, from the Airbyte repository root, run:
-
-```
-./gradlew :airbyte-integrations:connectors:source-apify-dataset:build
-```
-
 #### Create credentials
 
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/apify-dataset)
@@ -59,22 +49,19 @@ and place them into `secrets/config.json`.
 
 ### Locally running the connector docker image
 
+
 #### Build
-
-First, make sure you build the latest Docker image:
-
-```
-docker build . -t airbyte/source-apify-dataset:dev
+**Via [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md) (recommended):**
+```bash
+airbyte-ci connectors --name=source-apify-dataset build
 ```
 
-You can also build the connector image via Gradle:
+An image will be built with the tag `airbyte/source-apify-dataset:dev`.
 
+**Via `docker build`:**
+```bash
+docker build -t airbyte/source-apify-dataset:dev .
 ```
-./gradlew :airbyte-integrations:connectors:source-apify-dataset:airbyteDocker
-```
-
-When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
-the Dockerfile.
 
 #### Run
 
@@ -87,33 +74,16 @@ docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-apify-dataset:dev disc
 docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-apify-dataset:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
 ```
 
+
 ## Testing
+You can run our full test suite locally using [`airbyte-ci`](https://github.com/airbytehq/airbyte/blob/master/airbyte-ci/connectors/pipelines/README.md):
+```bash
+airbyte-ci connectors --name=source-apify-dataset test
+```
 
-#### Acceptance Tests
-
+### Customizing acceptance Tests
 Customize `acceptance-test-config.yml` file to configure tests. See [Connector Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
-
-To run your integration tests with Docker, run:
-
-```
-./acceptance-test-docker.sh
-```
-
-### Using gradle to run tests
-
-All commands should be run from airbyte project root.
-To run unit tests:
-
-```
-./gradlew :airbyte-integrations:connectors:source-apify-dataset:unitTest
-```
-
-To run acceptance and custom integration tests:
-
-```
-./gradlew :airbyte-integrations:connectors:source-apify-dataset:integrationTest
-```
 
 ## Dependency Management
 
@@ -124,11 +94,12 @@ We split dependencies between two groups, dependencies that are:
 - required for the testing need to go to `TEST_REQUIREMENTS` list
 
 ### Publishing a new version of the connector
-
 You've checked out the repo, implemented a million dollar feature, and you're ready to share your changes with the world. Now what?
+1. Make sure your changes are passing our test suite: `airbyte-ci connectors --name=source-apify-dataset test`
+2. Bump the connector version in `metadata.yaml`: increment the `dockerImageTag` value. Please follow [semantic versioning for connectors](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#semantic-versioning-for-connectors).
+3. Make sure the `metadata.yaml` content is up to date.
+4. Make the connector documentation and its changelog is up to date (`docs/integrations/sources/apify-dataset.md`).
+5. Create a Pull Request: use [our PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/resources/pull-requests-handbook/#pull-request-title-convention).
+6. Pat yourself on the back for being an awesome contributor.
+7. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
 
-1. Make sure your changes are passing unit and integration tests.
-1. Bump the connector version in `Dockerfile` -- just increment the value of the `LABEL io.airbyte.version` appropriately (we use [SemVer](https://semver.org/)).
-1. Create a Pull Request.
-1. Pat yourself on the back for being an awesome contributor.
-1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
