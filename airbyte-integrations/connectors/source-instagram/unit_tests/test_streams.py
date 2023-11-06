@@ -299,7 +299,10 @@ def test_stories_insights_read(api, requests_mock, user_stories_data, user_media
         {"json": {"error": {"type": "OAuthException", "code": 1}}},
         {"json": {"error": {"code": 4}}},
         {"json": {}, "status_code": 429},
-        {"json": {"error": {"code": 1, "message": "Please reduce the amount of data you're asking for, then retry your request"}}, "status_code": 500},
+        {
+            "json": {"error": {"code": 1, "message": "Please reduce the amount of data you're asking for, then retry your request"}},
+            "status_code": 500,
+        },
         {"json": {"error": {"code": 1, "message": "An unknown error occurred"}}, "status_code": 500},
         {"json": {"error": {"type": "OAuthException", "message": "(#10) Not enough viewers for the media to show insights", "code": 10}}},
         {"json": {"error": {"code": 100, "error_subcode": 33}}, "status_code": 400},
