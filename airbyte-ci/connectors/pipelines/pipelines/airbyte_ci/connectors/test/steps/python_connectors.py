@@ -164,14 +164,17 @@ class IntegrationTests(PytestStep):
     bind_to_docker_host = True
 
 def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
+    """
+    Get all the tests steps for a Python connector.
+    """
     return [
-        StepToRun(id="build", step=BuildConnectorImages(context, LOCAL_BUILD_PLATFORM)),
-        StepToRun(
+        [StepToRun(id="build", step=BuildConnectorImages(context, LOCAL_BUILD_PLATFORM))],
+        [StepToRun(
             id="unit",
             step=UnitTests(context),
             args=lambda results: {"connector_under_test": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
             depends_on=["build"],
-        ),
+        )],
         [
             StepToRun(
                 id="integration",

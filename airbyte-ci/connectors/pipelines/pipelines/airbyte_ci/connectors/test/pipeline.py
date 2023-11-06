@@ -47,10 +47,7 @@ async def run_connector_test_pipeline(context: ConnectorContext, semaphore: anyi
     """
     TODO: main
     - Update java connectors
-    - update metadata_service run_steps use
     - clean up todos
-    - replace old functions with new functions
-    - fail fast?
 
     NEXT PR
     - add extra_args_support

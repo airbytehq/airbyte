@@ -7,7 +7,6 @@
 from typing import List, Optional
 
 import anyio
-import asyncer
 from dagger import Directory, File, QueryError
 from pipelines.airbyte_ci.connectors.build_image.steps.java_connectors import (
     BuildConnectorDistributionTar,
@@ -65,7 +64,7 @@ class UnitTests(GradleTask):
     gradle_task_name = "test"
     bind_to_docker_host = True
 
-# TODO handle async
+# TODO (ben) handle async
 async def _create_integration_step_args(context, results):
     connector_container = results["build"].output_artifact[LOCAL_BUILD_PLATFORM]
     connector_image_tar_file, _ = await export_container_to_tarball(context, connector_container)
@@ -110,12 +109,12 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
 
         build_steps += normalization_steps
 
-    # TODO get this running in parallel
-    test_steps = [
+    # Run tests in parallel
+    test_steps = [[
         StepToRun(
             id="integration",
             step=IntegrationTests(context),
-            args=lambda results: _create_integration_step_args(context, results), ## TODO this wont work as its an async
+            args=lambda results: _create_integration_step_args(context, results), ## TODO (Ben) this wont work as its an async
             depends_on=["build"],
         ),
         StepToRun(
@@ -124,15 +123,18 @@ def _get_acceptance_test_steps(context: ConnectorContext) -> List[StepToRun]:
             args=lambda results: {"connector_under_test_container": results["build"].output_artifact[LOCAL_BUILD_PLATFORM]},
             depends_on=["build"],
         ),
-    ]
+    ]]
 
     return build_steps + test_steps
 
 
 def get_test_steps(context: ConnectorContext) -> List[StepToRun]:
+    """
+    Get all the tests steps for a Java connector.
+    """
+
     return [
-        StepToRun(id="build_tar", step=BuildConnectorDistributionTar(context, LOCAL_BUILD_PLATFORM)),
-        # TODO: Ensure unit and acceptance the build steps run in paralell
-        StepToRun(id="unit", step=UnitTests(context)),
+        [StepToRun(id="build_tar", step=BuildConnectorDistributionTar(context, LOCAL_BUILD_PLATFORM))],
+        [StepToRun(id="unit", step=UnitTests(context))],
         _get_acceptance_test_steps(context),
     ]

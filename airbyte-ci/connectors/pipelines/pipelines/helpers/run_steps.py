@@ -47,33 +47,6 @@ async def evaluate_run_args(args: ARGS_TYPE, results: Dict[str, StepResult]) -> 
 
     return args
 
-def _get_step_id_str(step: StepToRun, skip_steps: List[str] = []) -> str:
-    will_be_skipped = step.id in skip_steps
-    return f"{step.id} (skipped)" if will_be_skipped else step.id
-
-def pretty_log_steps_tree(steps: STEP_TREE, skip_steps: List[str] = [], level: int = 0):
-    """
-    Outout a pretty log of the steps tree based on the runnable
-
-    e.g.
-    Steps to run:
-    - metadata_validation
-        - metadata_checks
-        - metadata_bump
-        - version_follow_check, version_increment_check
-    - run_all_tests, run_qa_checks
-    - test_steps
-    """
-    indent = "    " * level
-    main_logger.info("Steps to Run:")
-    for step in steps:
-        if isinstance(step, StepToRun):
-            main_logger.info(f"{indent}- {_get_step_id_str(step, skip_steps)}")
-        elif isinstance(step, list):
-            pretty_log_steps_tree(step, skip_steps, level + 1)
-        else:
-            raise Exception(f"Unexpected step type: {type(step)}")
-
 def _skip_remaining_steps(remaining_steps: STEP_TREE) -> bool:
     skipped_results = {}
     for runnable_step in remaining_steps:
@@ -162,9 +135,6 @@ async def run_steps(
     Returns:
         Dict[str, StepResult]: Dictionary of step results.
     """
-    # if runnables and results == {}:
-    #     pretty_log_steps_tree(runnables, options.skip_steps)
-
     # If there are no steps to run, return the results
     if not runnables:
         return results
@@ -194,7 +164,6 @@ async def run_steps(
     # apply new results
     new_results = {}
     for i, task in enumerate(tasks):
-        # steps_to_run[i].id: task.value
         step_to_run = steps_to_run[i]
         if isinstance(step_to_run, list):
             new_results = {**new_results, **task.value}
