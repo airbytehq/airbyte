@@ -39,6 +39,15 @@ data:
           primary keys. A data reset and schema refresh of all the affected streams
           is required for the changes to take effect.
         upgradeDeadline: "2023-10-25"
+  suggestedStreams:
+    streams:
+      - campaigns
+      - ad_performance_report_daily
+      - campaign_performance_report_daily
+      - account_performance_report_daily
+      - ad_group_performance_report_daily
+      - accounts
+      - ad_groups
   supportLevel: certified
   tags:
     - language:python
