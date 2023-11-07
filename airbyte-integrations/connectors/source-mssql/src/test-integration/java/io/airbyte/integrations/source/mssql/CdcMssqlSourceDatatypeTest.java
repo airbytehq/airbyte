@@ -26,8 +26,7 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest")
-        .acceptLicense();
+    container = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     container.addEnv("MSSQL_AGENT_ENABLED", "True"); // need this running for cdc to work
     container.start();
 
@@ -115,6 +114,11 @@ public class CdcMssqlSourceDatatypeTest extends AbstractMssqlSourceDatatypeTest 
         + "END\n"
         + "CLOSE CDC_Cursor\n"
         + "DEALLOCATE CDC_Cursor");
+  }
+
+  @Override
+  public boolean testCatalog() {
+    return true;
   }
 
 }
