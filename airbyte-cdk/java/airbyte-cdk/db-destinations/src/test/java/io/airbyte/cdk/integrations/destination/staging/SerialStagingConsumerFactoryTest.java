@@ -11,7 +11,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class StagingConsumerFactoryTest {
+class SerialStagingConsumerFactoryTest {
 
   @Test()
   void detectConflictingStreams() {
