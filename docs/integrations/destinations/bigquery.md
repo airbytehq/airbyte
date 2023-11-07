@@ -140,6 +140,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.10  | 2023-11-07 | [\#32261](https://github.com/airbytehq/airbyte/pull/32261) | Further improve error reporting                                                                                                                                 |
 | 2.3.9   | 2023-11-07 | [\#32112](https://github.com/airbytehq/airbyte/pull/32112) | GCS staging mode: reduce flush frequency to use rate limit more efficiently                                                                                     |
 | 2.3.8   | 2023-11-06 | [\#32026](https://github.com/airbytehq/airbyte/pull/32026) | Move SAFE_CAST transaction to separate transactions                                                                                                             |
 | 2.3.7   | 2023-11-06 | [\#32190](https://github.com/airbytehq/airbyte/pull/32190) | Further improve error reporting                                                                                                                                 |
