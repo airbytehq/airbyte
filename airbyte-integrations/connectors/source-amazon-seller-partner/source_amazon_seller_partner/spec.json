@@ -5,7 +5,9 @@
     "title": "Amazon Seller Partner Spec",
     "type": "object",
     "required": [
+      "aws_access_key",
       "aws_environment",
+      "aws_secret_key",
       "region",
       "lwa_app_id",
       "lwa_client_secret",
