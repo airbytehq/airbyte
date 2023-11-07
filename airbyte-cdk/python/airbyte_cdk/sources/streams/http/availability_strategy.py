@@ -4,7 +4,7 @@
 
 import logging
 import typing
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Tuple, Mapping, Any
 
 import requests
 from airbyte_cdk.sources.streams import Stream
@@ -22,7 +22,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         stream: Stream,
         logger: logging.Logger,
         source: Optional["Source"],
-        stream_state: Optional[typing.Mapping[str, typing.Any]] = None,
+        stream_state: Optional[Mapping[str, Any]] = None,
     ) -> Tuple[bool, Optional[str]]:
         """
         Check stream availability by attempting to read the first record of the
@@ -31,6 +31,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         :param stream: stream
         :param logger: source logger
         :param source: (optional) source
+        :param stream_state: (optional) The stream state
         :return: A tuple of (boolean, str). If boolean is true, then the stream
           is available, and no str is required. Otherwise, the stream is unavailable
           for some reason and the str should describe what went wrong and how to
