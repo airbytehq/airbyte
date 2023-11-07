@@ -1,5 +1,3 @@
-# Copyright (c) 2023 Airbyte, Inc., all rights reserved.
-
 from source_azure_blob_storage.legacy_config_transformer import LegacyConfigTransformer
 
 
