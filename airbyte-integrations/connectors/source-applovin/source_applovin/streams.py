@@ -108,7 +108,7 @@ class Creatives(HttpSubStream, ApplovinStream):
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(authenticator=self._session.auth)
-        campaign_records = list(islice(campaigns.read_records(sync_mode=SyncMode.full_refresh), 50))
+        campaign_records = list(islice(campaigns.read_records(sync_mode=SyncMode.full_refresh), 1000))
         for campaign in campaign_records:
             yield {"campaign_id": campaign["campaign_id"]}
             continue
@@ -144,7 +144,7 @@ class Targets(HttpSubStream, ApplovinStream):
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(authenticator=self._session.auth)
-        campaign_records = list(islice(campaigns.read_records(sync_mode=SyncMode.full_refresh), 50))
+        campaign_records = list(islice(campaigns.read_records(sync_mode=SyncMode.full_refresh), 1000))
         for campaign in campaign_records:
             yield {"campaign_id": campaign["campaign_id"]}
             continue
