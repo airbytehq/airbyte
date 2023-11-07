@@ -24,11 +24,11 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc() }}"
       datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
-    step: "P5D"
+    step: "P1Y"
     datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
     cursor_datetime_formats:
       - "%Y-%m-%dT%H:%M:%S.%f%z"
-    cursor_granularity: "PT0.000001S"
+    cursor_granularity: "P1D"
     cursor_field: "created_time"
     start_time_option:
       type: RequestOption
@@ -97,6 +97,10 @@ definitions:
       path: "/calls"
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          has_ancestry: "true"
       record_selector:
         type: RecordSelector
         extractor:
@@ -111,6 +115,10 @@ definitions:
       path: "/call_metrics"
     retriever:
       $ref: "#/definitions/retriever"
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          has_ancestry: "true"
       record_selector:
         type: RecordSelector
         extractor:
