@@ -13,7 +13,7 @@
     },
     {
       "stream": {
-        "name": "targets",
+        "name": "creatives",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
@@ -24,7 +24,7 @@
     },
     {
       "stream": {
-        "name": "creatives",
+        "name": "targets",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": false,
