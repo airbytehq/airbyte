@@ -16,7 +16,6 @@ from airbyte_cdk.sources.streams.call_rate import (
     HttpRequestMatcher,
     MovingWindowCallRatePolicy,
     Rate,
-    TimeWindow,
     UnlimitedCallRatePolicy,
 )
 from airbyte_cdk.sources.streams.http import HttpStream
