@@ -165,8 +165,7 @@ class TestUnlimitedCallRatePolicy:
 
 class TestFixedWindowCallRatePolicy:
     def test_limit_rate(self, mocker):
-        start = datetime.now()
-        policy = FixedWindowCallRatePolicy(matchers=[], window=TimeWindow(start=start, end=start + timedelta(hours=1)), call_limit=100)
+        policy = FixedWindowCallRatePolicy(matchers=[], next_reset_ts=datetime.now(), period=timedelta(hours=1), call_limit=100)
         policy.try_acquire(mocker.Mock(), weight=1)
         policy.try_acquire(mocker.Mock(), weight=20)
         with pytest.raises(ValueError, match="Weight can not exceed the call limit"):
@@ -180,8 +179,7 @@ class TestFixedWindowCallRatePolicy:
         assert exc.value.item
 
     def test_update_available_calls(self, mocker):
-        start = datetime.now()
-        policy = FixedWindowCallRatePolicy(matchers=[], window=TimeWindow(start=start, end=start + timedelta(hours=1)), call_limit=100)
+        policy = FixedWindowCallRatePolicy(matchers=[], next_reset_ts=datetime.now(), period=timedelta(hours=1), call_limit=100)
         # update to decrease number of calls available
         policy.update(available_calls=2, call_reset_ts=None)
         # hit the limit with weight=3
