@@ -29,7 +29,17 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 
 ### Set up the Stripe source connector in Airbyte
 
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or your Airbyte Open Source account.
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+**For Airbyte Open Source:**
+
+1. Navigate to the Airbyte Open Source dashboard.
+<!-- /env:oss -->
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Stripe** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
@@ -208,7 +218,7 @@ The Stripe API also provides a way to implement incremental deletes for a limite
 Each record is marked with `is_deleted` flag when the appropriate event happens upstream.
 :::
 
-* Check out common troubleshooting issues for the Stripe source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions)
+* Check out common troubleshooting issues for the Stripe source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
 
