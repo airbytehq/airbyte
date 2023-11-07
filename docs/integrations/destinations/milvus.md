@@ -81,7 +81,7 @@ When using a self-hosted Milvus cluster, the collection needs to be created usin
 ```python
 from pymilvus import CollectionSchema, FieldSchema, DataType, connections, Collection
 
-connections.connection() # connect to locally running Milvus instance without authentication
+connections.connect() # connect to locally running Milvus instance without authentication
 
 pk = FieldSchema(name="pk",dtype=DataType.INT64, is_primary=True, auto_id=True)
 vector = FieldSchema(name="vector",dtype=DataType.FLOAT_VECTOR,dim=1536)
