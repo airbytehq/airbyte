@@ -164,7 +164,6 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return System.getenv(AdaptiveSourceRunner.DEPLOYMENT_MODE_KEY);
   }
 
-
   @Override
   public ConnectorSpecification spec() throws Exception {
     String deploymentMode = getDeploymentMode();
