@@ -144,62 +144,6 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     throw new NotImplementedException("Should use the getSerializedMessageConsumer instead");
   }
 
-  @Override
-  public SerializedAirbyteMessageConsumer getSerializedMessageConsumer(JsonNode config,
-                                                                       ConfiguredAirbyteCatalog catalog,
-                                                                       Consumer<AirbyteMessage> outputRecordCollector)
-      throws Exception {
-    final EncryptionConfig encryptionConfig =
-        config.has(UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
-    final JsonNode s3Options = findS3Options(config);
-    final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
-    final int numberOfFileBuffers = getNumberOfFileBuffers(s3Options);
-    if (numberOfFileBuffers > FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER) {
-      LOGGER.warn("""
-                  Increasing the number of file buffers past {} can lead to increased performance but
-                  leads to increased memory usage. If the number of file buffers exceeds the number
-                  of streams {} this will create more buffers than necessary, leading to nonexistent gains
-                  """, FileBuffer.SOFT_CAP_CONCURRENT_STREAM_IN_BUFFER, catalog.getStreams().size());
-    }
-
-    return new StagingConsumerFactory().createAsync(
-        outputRecordCollector,
-        getDatabase(getDataSource(config)),
-        new RedshiftS3StagingSqlOperations(getNamingResolver(), s3Config.getS3Client(), s3Config, encryptionConfig),
-        getNamingResolver(),
-        config,
-        catalog,
-        isPurgeStagingData(s3Options),
-        new TypeAndDedupeOperationValve(),
-        new NoopTyperDeduper(),
-        // The parsedcatalog is only used in v2 mode, so just pass null for now
-        null,
-        // Overwriting null namespace with null is perfectly safe
-        null,
-        // still using v1 table format
-        false);
-  }
-
-  /**
-   * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number of
-   * file buffers and sets the minimum number to the default
-   *
-   * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit has
-   * not been thoroughly load tested across all instance sizes
-   *
-   * @param config user configurations
-   * @return number of file buffers if configured otherwise default
-   */
-  @VisibleForTesting
-  public int getNumberOfFileBuffers(final JsonNode config) {
-    int numOfFileBuffers = FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
-    if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
-      numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
-    }
-    // Only allows for values 10 <= numOfFileBuffers <= 50
-    return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
-  }
-
   private boolean isPurgeStagingData(final JsonNode config) {
     return !config.has("purge_staging_data") || config.get("purge_staging_data").asBoolean();
   }

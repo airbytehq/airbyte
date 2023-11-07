@@ -118,33 +118,6 @@ public abstract class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDes
     assertTrue(status.getMessage().contains("State code: 3D000; Error code: 500310;"));
   }
 
-  /*
-   * FileBuffer Default Tests
-   */
-  @Test
-  public void testGetFileBufferDefault() {
-    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
-    assertEquals(destination.getNumberOfFileBuffers(config), FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
-  }
-
-  @Test
-  public void testGetFileBufferMaxLimited() {
-    final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
-    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
-    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
-  }
-
-  @Test
-  public void testGetMinimumFileBufferCount() {
-    final JsonNode defaultConfig = Jsons.clone(config);
-    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 1);
-    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
-    // User cannot set number of file counts below the default file buffer count, which is existing
-    // behavior
-    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
-  }
-
   @Override
   protected TestDataComparator getTestDataComparator() {
     return new RedshiftTestDataComparator();
