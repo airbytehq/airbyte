@@ -20,7 +20,6 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.jooq.DSLContext;
 import org.junit.jupiter.api.AfterAll;
 import org.testcontainers.containers.MSSQLServerContainer;
-import org.testcontainers.utility.DockerImageName;
 
 public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTest {
 
@@ -35,10 +34,7 @@ public class SslEnabledMssqlSourceAcceptanceTest extends MssqlSourceAcceptanceTe
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws SQLException {
     if (db == null) {
-      db = new MSSQLServerContainer<>(DockerImageName
-          .parse("airbyte/mssql_ssltest:dev")
-          .asCompatibleSubstituteFor("mcr.microsoft.com/mssql/server"))
-              .acceptLicense().withUrlParam("trustServerCertificate", "true");
+      db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2022-RTM-CU2-ubuntu-20.04").acceptLicense();
       db.start();
     }
 
