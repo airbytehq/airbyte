@@ -76,7 +76,7 @@ def test_media_insights_read(api, user_stories_data, user_media_insights_data, r
 def test_media_insights_read_error(api, requests_mock):
     test_id = "test_id"
     stream = MediaInsights(api=api)
-    media_response = [{"id": "test_id"}, {"id": "test_id_2"}, {"id": "test_id_3"}, {"id": "test_id_4"}]
+    media_response = [{"id": "test_id"}, {"id": "test_id_2"}, {"id": "test_id_3"}, {"id": "test_id_4"}, {"id": "test_id_5"}]
     requests_mock.register_uri("GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/{test_id}/media", json={"data": media_response})
 
     media_insights_response_test_id = {
@@ -132,6 +132,21 @@ def test_media_insights_read_error(api, requests_mock):
     }
     requests_mock.register_uri(
         "GET", FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_4/insights", json=media_insights_response_test_id_4
+    )
+
+    error_response_wrong_permissions_code_10 = {
+        "error": {
+            "message": "(#10) Application does not have permission for this action",
+            "type": "OAuthException",
+            "code": 10,
+            "fbtrace_id": "fake_trace_id",
+        }
+    }
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FB_API_VERSION}/test_id_5/insights",
+        json=error_response_wrong_permissions_code_10,
+        status_code=400,
     )
 
     records = read_full_refresh(stream)
