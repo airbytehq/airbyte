@@ -13,10 +13,13 @@ The Google Sheets source connector pulls data from a single Google Sheets spread
 ### Prerequisites
 - Spreadsheet Link - The link to the Google spreadsheet you want to sync.
 <!-- env:cloud -->
-- **For Airbyte Cloud** A Google Workspace user with access to the spreadsheet
+
+**For Airbyte Cloud:**
+- A Google Workspace user with access to the spreadsheet
 <!-- /env:cloud -->
 <!-- env:oss -->
--  **For Airbyte Open Source:**
+
+**For Airbyte Open Source:**
   - A GCP project
   - Enable the Google Sheets API in your GCP project
   - Service Account Key with access to the Spreadsheet you want to replicate
@@ -82,6 +85,9 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 4. For **Source name**, enter a name to help you identify this source.
 5. Select your authentication method:
   - **(Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
+6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
+7. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
+8. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 <!-- env:oss -->
 
@@ -104,10 +110,10 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
   ```
 
   - To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
-<!-- /env:oss -->
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
 7. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
 8. Click **Set up source** and wait for the tests to complete.
+<!-- /env:oss -->
 
 <HideInUI>
 

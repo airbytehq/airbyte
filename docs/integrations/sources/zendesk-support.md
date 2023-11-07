@@ -57,6 +57,9 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 4. For **Source name**, enter a name to help you identify this source.
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
    - To authenticate using OAuth, select **OAuth 2.0** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
+6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
+7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
+8. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 <!-- env:oss -->
 
@@ -68,10 +71,10 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 4. For **Source name**, enter a name to help you identify this source.
 5. You can use OAuth or an API token to authenticate your Zendesk Support account.
    - To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account.
-<!-- /env:oss -->
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
 8. Click **Set up source** and wait for the tests to complete.
+<!-- /env:oss -->
 
 <HideInUI>
 
