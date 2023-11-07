@@ -14,13 +14,13 @@ This connector supports **OAuth** and **Personal Access Tokens**. Please follow 
 
 <!-- env:cloud -->
 
-### Airbyte Cloud
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. Set the name for your source
+3. Set the name for your source.
 4. Authenticate using OAuth (recommended) or enter your `personal_access_token`.
-5. Click **Set up source**
+5. Click **Set up source**.
 
 ### Syncing Multiple Projects
 If you have access to multiple projects, Airbyte will sync data related to all projects you have access to. The ability to filter to specific projects is not available at this time.
@@ -29,13 +29,13 @@ If you have access to multiple projects, Airbyte will sync data related to all p
 
 <!-- env:oss -->
 
-### Airbyte Open Source
+**For Airbyte Open Source:**
 
-1. Navigate to the Airbyte Open Source dashboard
+1. Navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. Set the name for your source
-4. Enter your `personal_access_token`
-5. Click **Set up source**
+3. Set the name for your source.
+4. Enter your `personal_access_token`.
+5. Click **Set up source**.
 
 <!-- /env:oss -->
 
@@ -79,7 +79,7 @@ The Asana source connector supports the following [sync modes](https://docs.airb
 
 <details>
 <summary>
-Expand to see details about Asana connector limitations and troubleshooting
+Expand to see details about Asana connector limitations and troubleshooting.
 </summary>
 
 ### Connector limitations
