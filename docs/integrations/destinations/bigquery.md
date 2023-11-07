@@ -139,7 +139,7 @@ Now that you have set up the BigQuery destination connector, check out the follo
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                         |
-|:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------ | :--------- | :--------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 2.3.9   | 2023-11-06 | [\#32234](https://github.com/airbytehq/airbyte/pull/32234) | Remove unused config option.                                                                                                                                    |
 | 2.3.8   | 2023-11-06 | [\#32026](https://github.com/airbytehq/airbyte/pull/32026) | Move SAFE_CAST transaction to separate transactions                                                                                                             |
 | 2.3.7   | 2023-11-06 | [\#32190](https://github.com/airbytehq/airbyte/pull/32190) | Further improve error reporting                                                                                                                                 |
