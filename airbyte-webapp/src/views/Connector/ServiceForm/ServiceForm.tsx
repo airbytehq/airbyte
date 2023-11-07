@@ -13,8 +13,6 @@ import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/For
 import { isDefined } from "utils/common";
 import RequestConnectorModal from "views/Connector/RequestConnectorModal";
 
-import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
-import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { FormRoot } from "./FormRoot";
 import { ServiceFormContextProvider, useServiceForm } from "./serviceFormContext";
@@ -26,6 +24,8 @@ import {
   useConstructValidationSchema,
   usePatchFormik,
 } from "./useBuildForm";
+import { CheckConnectionRead } from "../../../core/request/AirbyteClient";
+import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 
 const FormikPatch: React.FC = () => {
   usePatchFormik();
@@ -148,6 +148,7 @@ const ServiceForm: React.FC<ServiceFormProps> = (props) => {
     availableServices,
     onBack,
   } = props;
+
   const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
 
   const jsonSchema: JSONSchema7 = useMemo(

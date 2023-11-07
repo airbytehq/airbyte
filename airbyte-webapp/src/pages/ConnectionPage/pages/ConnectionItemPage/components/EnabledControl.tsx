@@ -30,7 +30,7 @@ const Content = styled.div`
   align-items: center;
   justify-content: center;
   border: 1px solid #d1d5db;
-  width: 152px;
+  width: 100%;
   height: 40px;
   border-radius: 6px;
 
