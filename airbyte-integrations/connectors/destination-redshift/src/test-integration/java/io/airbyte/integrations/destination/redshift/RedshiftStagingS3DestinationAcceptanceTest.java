@@ -15,7 +15,6 @@ import io.airbyte.cdk.db.factory.ConnectionFactory;
 import io.airbyte.cdk.db.factory.DatabaseDriver;
 import io.airbyte.cdk.db.jdbc.JdbcUtils;
 import io.airbyte.cdk.integrations.base.JavaBaseConstants;
-import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.cdk.integrations.standardtest.destination.TestingNamespaces;
 import io.airbyte.cdk.integrations.standardtest.destination.comparator.TestDataComparator;

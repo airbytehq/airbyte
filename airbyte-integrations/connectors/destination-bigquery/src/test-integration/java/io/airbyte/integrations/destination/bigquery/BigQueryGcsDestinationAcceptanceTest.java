@@ -4,21 +4,15 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.cdk.integrations.base.DestinationConfig;
-import io.airbyte.cdk.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.cdk.integrations.standardtest.destination.DestinationAcceptanceTest;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import java.nio.file.Path;
 import java.util.HashSet;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,4 +64,5 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   protected void tearDownGcs() {
     BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER);
   }
+
 }
