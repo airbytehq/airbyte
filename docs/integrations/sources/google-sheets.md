@@ -76,15 +76,12 @@ If your spreadsheet is viewable by anyone with its link, no further action is ne
 
 **For Airbyte Cloud:**
 
-To set up Google Sheets as a source in Airbyte Cloud:
-
 1. [Log in to your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Sheets** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
 5. Select your authentication method:
-    - **(Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
-
+  - **(Recommended)** Select **Authenticate via Google (OAuth)** from the Authentication dropdown, click **Sign in with Google** and complete the authentication workflow.
 <!-- /env:cloud -->
 <!-- env:oss -->
 
@@ -95,22 +92,19 @@ To set up Google Sheets as a source in Airbyte Cloud:
 3. Find and select **Google Sheets** from the list of available sources.
 4. For **Source name**, enter a name to help you identify this source.
 5. Select your authentication method:
+  - **(Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
 
-    - **(Recommended)** Select **Service Account Key Authentication** from the dropdown and enter your Google Cloud service account key in JSON format:
+  ```json
+    {
+      "type": "service_account",
+      "project_id": "YOUR_PROJECT_ID",
+      "private_key_id": "YOUR_PRIVATE_KEY",
+      ...
+    }
+  ```
 
-        ```js
-        {
-          "type": "service_account",
-          "project_id": "YOUR_PROJECT_ID",
-          "private_key_id": "YOUR_PRIVATE_KEY",
-          ...
-        }
-        ```
-
-    - To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
-
+  - To authenticate your Google account via OAuth, select **Authenticate via Google (OAuth)** from the dropdown and enter your Google application's client ID, client secret, and refresh token.
 <!-- /env:oss -->
-
 6. For **Spreadsheet Link**, enter the link to the Google spreadsheet. To get the link, go to the Google spreadsheet you want to sync, click **Share** in the top right corner, and click **Copy Link**.
 7. (Optional) You may enable the option to **Convert Column Names to SQL-Compliant Format**. Enabling this option will allow the connector to convert column names to a standardized, SQL-friendly format. For example, a column name of `Café Earnings 2022` will be converted to `cafe_earnings_2022`. We recommend enabling this option if your target destination is SQL-based (ie Postgres, MySQL). Set to false by default.
 8. Click **Set up source** and wait for the tests to complete.
