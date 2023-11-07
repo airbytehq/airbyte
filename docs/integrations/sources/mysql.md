@@ -163,6 +163,10 @@ ssh-keygen -t rsa -m PEM -f myuser_rsa
 
 This produces the private key in pem format, and the public key remains in the standard format used by the `authorized_keys` file on your bastion host. The public key should be added to your bastion host to whichever user you want to use with Airbyte. The private key is provided via copy-and-paste to the Airbyte connector configuration screen, so it may log in to the bastion.
 
+## Limitations & Troubleshooting
+
+To see connector limitations, or troubleshoot your MySQL connector, see more [in our MySQL troubleshooting guide](https://docs.airbyte.com/integrations/sources/mysql/mysql-troubleshooting).
+
 ## Data Type Mapping
 
 MySQL data types are mapped to the following data types when synchronizing data. You can check test example values [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSourceDatatypeTest.java). If you can't find the data type you are looking for, feel free to add a new test.
