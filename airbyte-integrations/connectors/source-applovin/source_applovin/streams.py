@@ -1,6 +1,7 @@
 import logging
 from time import sleep
 from typing import Iterable, Mapping, Optional, Any, List, Union
+from itertools import islice
 
 import requests
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
@@ -107,7 +108,7 @@ class Creatives(HttpSubStream, ApplovinStream):
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         campaigns = Campaigns(authenticator=self._session.auth)
-        campaign_records = campaigns.read_records(sync_mode=SyncMode.full_refresh)[:50]
+        campaign_records = list(islice(campaigns.read_records(sync_mode=SyncMode.full_refresh), 50))
         for campaign in campaign_records:
             yield {"campaign_id": campaign["campaign_id"]}
             continue
