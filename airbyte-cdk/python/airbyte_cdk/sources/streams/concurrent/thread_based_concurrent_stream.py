@@ -3,6 +3,7 @@
 #
 
 import concurrent
+import threading
 import time
 from concurrent.futures import Future
 from functools import lru_cache
@@ -51,6 +52,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
         self._stream_partition_generator = partition_generator
         self._max_workers = max_workers
         self._threadpool = concurrent.futures.ThreadPoolExecutor(max_workers=self._max_workers, thread_name_prefix="workerpool")
+        self._future_pruning_lock = threading.Lock()
         self._name = name
         self._json_schema = json_schema
         self._availability_strategy = availability_strategy
@@ -127,6 +129,7 @@ class ThreadBasedConcurrentStream(AbstractStream):
             if finished_partitions and all(partitions_to_done.values()):
                 # All partitions were generated and process. We're done here
                 break
+
         self._check_for_errors(futures)
 
     def _submit_task(self, futures: List[Future[Any]], function: Callable[..., Any], *args: Any) -> None:
@@ -135,13 +138,38 @@ class ThreadBasedConcurrentStream(AbstractStream):
         futures.append(self._threadpool.submit(function, *args))
 
     def _wait_while_too_many_pending_futures(self, futures: List[Future[Any]]) -> None:
+        self._prune_futures(futures)
+
         # Wait until the number of pending tasks is < self._max_concurrent_tasks
         while True:
-            pending_futures = [f for f in futures if not f.done()]
-            if len(pending_futures) < self._max_concurrent_tasks:
+            if len(futures) < self._max_concurrent_tasks:
                 break
             self._logger.info("Main thread is sleeping because the task queue is full...")
             time.sleep(self._sleep_time)
+
+    def _prune_futures(self, futures: List[Future[Any]]) -> None:
+        """
+        Take a list in input and remove the futures that are completed. If a future has an exception, it'll raise and kill the stream
+        operation.
+
+        Pruning this list thread-safely relies on the assumption that items are only added at the end for the list
+        """
+        if len(futures) < self._max_concurrent_tasks:
+            return
+
+        if self._future_pruning_lock.acquire(blocking=False):
+            for index in reversed(range(len(futures))):
+                future = futures[index]
+                optional_exception = future.exception()
+                if optional_exception:
+                    exception = RuntimeError(f"Failed reading from stream {self.name} with error: {optional_exception}")
+                    self._future_pruning_lock.release()
+                    self._stop_and_raise_exception(exception)
+
+                if future.done():
+                    futures.pop(index)
+
+            self._future_pruning_lock.release()
 
     def _check_for_errors(self, futures: List[Future[Any]]) -> None:
         exceptions_from_futures = [f for f in [future.exception() for future in futures] if f is not None]
