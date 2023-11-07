@@ -20,27 +20,12 @@ This page contains the setup guide and reference information for the [Sendgrid](
 
 ## Step 2: Set up the Sendgrid connector in Airbyte
 
-<!-- env:cloud -->
-
-### For Airbyte Cloud:
-
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
 3. On the Set up the source page, enter the name for the Sendgrid connector and select **Sendgrid** from the Source type dropdown.
 4. Enter your `apikey`.
 5. Enter your `start_time`.
 6. Click **Set up source**.
-<!-- /env:cloud -->
-
-<!-- env:oss -->
-### For Airbyte OSS:
-
-1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source.
-3. Enter your `apikey`.
-4. Enter your `start_time`.
-5. Click **Set up source**.
-<!-- /env:oss -->
 
 <HideInUI>
 
