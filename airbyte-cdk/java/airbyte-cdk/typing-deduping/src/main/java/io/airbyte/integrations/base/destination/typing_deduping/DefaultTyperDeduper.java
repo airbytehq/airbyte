@@ -143,8 +143,7 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
 
           } else if (!sqlGenerator.existingSchemaMatchesStreamConfig(stream, existingTable.get())) {
             // We're loading data directly into the existing table. Make sure it has the right schema.
-            LOGGER.info("Existing schema for stream {} is different from expected schema. Executing soft reset.", stream.id().finalTableId(""));
-            destinationHandler.execute(sqlGenerator.softReset(stream));
+            TypeAndDedupeTransaction.executeSoftReset(sqlGenerator, destinationHandler, stream);
           }
         } else {
           LOGGER.info("Final Table does not exist for stream {}, creating.", stream.id().finalName());
@@ -218,10 +217,9 @@ public class DefaultTyperDeduper<DialectTableDefinition> implements TyperDeduper
           final Lock externalLock = tdLocks.get(streamConfig.id()).writeLock();
           externalLock.lock();
           try {
-            LOGGER.info("Attempting typing and deduping for {}.{}", originalNamespace, originalName);
-            final String suffix = getFinalTableSuffix(streamConfig.id());
-            final String sql = sqlGenerator.updateTable(streamConfig, suffix, minExtractedAtByStream.get(streamConfig.id()));
-            destinationHandler.execute(sql);
+            TypeAndDedupeTransaction.executeTypeAndDedupe(sqlGenerator, destinationHandler, streamConfig,
+                minExtractedAtByStream.get(streamConfig.id()),
+                getFinalTableSuffix(streamConfig.id()));
           } finally {
             LOGGER.info("Allowing other threads to proceed for {}.{}", originalNamespace, originalName);
             externalLock.unlock();

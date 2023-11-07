@@ -142,7 +142,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_DATE)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'", "null")
             .addExpectedValues("0001-01-01", "9999-12-31", "1999-01-08", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -151,7 +151,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smalldatetime")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("'1900-01-01'", "'2079-06-06'", "null")
             .addExpectedValues("1900-01-01T00:00:00.000000", "2079-06-06T00:00:00.000000", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -160,7 +160,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("'1753-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04'",
                 "'9999-12-31T13:00:04.123'", "null")
             .addExpectedValues("1753-01-01T00:00:00.000000", "9999-12-31T00:00:00.000000", "9999-12-31T13:00:04",
@@ -171,7 +171,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetime2")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("'0001-01-01'", "'9999-12-31'", "'9999-12-31T13:00:04.123456'", "null")
             .addExpectedValues("0001-01-01T00:00:00.000000", "9999-12-31T00:00:00.000000", "9999-12-31T13:00:04.123456", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -180,7 +180,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'13:00:01'", "'13:00:04Z'", "'13:00:04.123456Z'")
             .addExpectedValues(null, "13:00:01", "13:00:04", "13:00:04.123456")
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -189,7 +189,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("datetimeoffset")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
             .addInsertValues("'0001-01-10 00:00:00 +01:00'", "'9999-01-10 00:00:00 +01:00'", "null")
             .addExpectedValues("0001-01-10 00:00:00.0000000 +01:00",
                 "9999-01-10 00:00:00.0000000 +01:00", null)
