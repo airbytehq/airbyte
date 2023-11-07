@@ -83,6 +83,35 @@ streams:
             type:
               - 'null'
               - string
+          static_fire_date_unix:
+            type:
+              - 'null'
+              - number
+          static_fire_date_utc:
+            type:
+              - 'null'
+              - string
+          window:
+            type:
+              - 'null'
+              - number
+          details:
+            type: string
+          fairings:
+            properties:
+              recovered:
+                type: boolean
+              recovery_attempt:
+                type: boolean
+              reused:
+                type: boolean
+              ships:
+                items:
+                  type:
+                    - 'null'
+                    - string
+                type: array
+            type: object
           failures:
             type: array
           flight_number:
@@ -104,6 +133,10 @@ streams:
               flickr:
                 properties:
                   original:
+                    items:
+                      type:
+                        - 'null'
+                        - string
                     type: array
                   small:
                     type: array
@@ -126,18 +159,22 @@ streams:
                       - 'null'
                       - string
                 type: object
+              article:
+                type:
+                  - 'null'
+                  - string
               webcast:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               wikipedia:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               youtube_id:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
             type: object
           name:
             type:
@@ -281,16 +318,16 @@ streams:
             properties:
               address:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               city:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               state:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
             type: object
           id:
             type:
@@ -302,20 +339,20 @@ streams:
             properties:
               elon_twitter:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               flickr:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               twitter:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               website:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
             type: object
           name:
             type:
@@ -517,12 +554,12 @@ streams:
             properties:
               dev_partner:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               material:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               size_meters:
                 type: number
               temp_degrees:
@@ -1029,12 +1066,12 @@ streams:
                 type: number
               propellant_1:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               propellant_2:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               thrust_sea_level:
                 properties:
                   kN:
@@ -1053,12 +1090,12 @@ streams:
                 type: object
               type:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               version:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
             type: object
           first_flight:
             type:
@@ -1369,6 +1406,18 @@ streams:
             type:
               - 'null'
               - number
+          course_deg:
+            type:
+              - 'null'
+              - number
+          last_ais_update:
+            type:
+              - 'null'
+              - string
+          speed_kn:
+            type:
+              - 'null'
+              - number
           launches:
             items:
               type:
@@ -1484,28 +1533,28 @@ streams:
                 type: number
               CCSDS_OMM_VERS:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               CENTER_NAME:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               CLASSIFICATION_TYPE:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               COMMENT:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               COUNTRY_CODE:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               CREATION_DATE:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               DECAYED:
                 type: number
               DECAY_DATE:
@@ -1520,8 +1569,8 @@ streams:
                 type: number
               EPOCH:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               FILE:
                 type: number
               GP_ID:
@@ -1530,14 +1579,14 @@ streams:
                 type: number
               LAUNCH_DATE:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               MEAN_ANOMALY:
                 type: number
               MEAN_ELEMENT_THEORY:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               MEAN_MOTION:
                 type: number
               MEAN_MOTION_DDOT:
@@ -1548,20 +1597,20 @@ streams:
                 type: number
               OBJECT_ID:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               OBJECT_NAME:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               OBJECT_TYPE:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               ORIGINATOR:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               PERIAPSIS:
                 type: number
               PERIOD:
@@ -1574,32 +1623,32 @@ streams:
                   - string
               REF_FRAME:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               REV_AT_EPOCH:
                 type: number
               SEMIMAJOR_AXIS:
                 type: number
               SITE:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               TIME_SYSTEM:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               TLE_LINE0:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               TLE_LINE1:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
               TLE_LINE2:
                 type:
-                - 'null'
-                - string
+                  - 'null'
+                  - string
             type: object
           velocity_kms:
             type:
