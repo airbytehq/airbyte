@@ -36,14 +36,6 @@ class Rate:
     interval: timedelta
 
 
-@dataclasses.dataclass
-class TimeWindow:
-    """Time interval for a fixed window"""
-
-    start: datetime.datetime
-    end: datetime.datetime
-
-
 class CallRateLimitHit(Exception):
     def __init__(self, error: str, item: Any, weight: int, rate: str, time_to_wait: timedelta):
         """Constructor
