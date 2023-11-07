@@ -122,6 +122,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                     "type": "boolean",
                                                 },
                                             },
+                                            "required": ["filetype"],
                                         },
                                         {
                                             "title": "CSV Format",
@@ -258,6 +259,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                     "enum": ["None", "Primitive Types Only"],
                                                 },
                                             },
+                                            "required": ["filetype"],
                                         },
                                         {
                                             "title": "Jsonl Format",
@@ -265,6 +267,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                             "properties": {
                                                 "filetype": {"title": "Filetype", "default": "jsonl", "const": "jsonl", "type": "string"}
                                             },
+                                            "required": ["filetype"],
                                         },
                                         {
                                             "title": "Parquet Format",
@@ -283,6 +286,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                     "type": "boolean",
                                                 },
                                             },
+                                            "required": ["filetype"],
                                         },
                                         {
                                             "title": "Document File Type Format (Experimental)",
@@ -296,6 +300,7 @@ single_csv_scenario: TestScenario[InMemoryFilesSource] = (
                                                 }
                                             },
                                             "description": "Extract text from document formats (.pdf, .docx, .md, .pptx) and emit as one record per file.",
+                                            "required": ["filetype"],
                                         },
                                     ],
                                 },

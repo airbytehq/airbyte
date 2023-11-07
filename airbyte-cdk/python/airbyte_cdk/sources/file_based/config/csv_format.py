@@ -6,6 +6,7 @@ import codecs
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Union
 
+from airbyte_cdk.utils.oneof_option_config import OneOfOptionConfig
 from pydantic import BaseModel, Field, ValidationError, root_validator, validator
 
 
@@ -74,8 +75,9 @@ DEFAULT_FALSE_VALUES = ["n", "no", "f", "false", "off", "0"]
 
 
 class CsvFormat(BaseModel):
-    class Config:
+    class Config(OneOfOptionConfig):
         title = "CSV Format"
+        discriminator = "filetype"
 
     filetype: str = Field(
         "csv",

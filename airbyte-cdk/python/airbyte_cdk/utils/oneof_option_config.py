@@ -27,5 +27,7 @@ class OneOfOptionConfig:
 
     @staticmethod
     def schema_extra(schema: dict, model: Any) -> None:
-        schema["description"] = model.Config.description
-        schema.setdefault("required", []).append(model.Config.discriminator)
+        if hasattr(model.Config, "description"):
+            schema["description"] = model.Config.description
+        if hasattr(model.Config, "discriminator"):
+            schema.setdefault("required", []).append(model.Config.discriminator)
