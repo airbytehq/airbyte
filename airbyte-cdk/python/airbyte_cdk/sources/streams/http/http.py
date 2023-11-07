@@ -15,6 +15,7 @@ import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.streams.call_rate import APIBudget, CachedLimiterSession, LimiterSession
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.types import JsonType
@@ -38,12 +39,9 @@ class HttpStream(Stream, ABC):
     page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
     # TODO: remove legacy HttpAuthenticator authenticator references
-    def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None):
-        if self.use_cache:
-            self._session = self.request_cache()
-        else:
-            self._session = requests.Session()
-
+    def __init__(self, authenticator: Optional[Union[AuthBase, HttpAuthenticator]] = None, api_budget: Optional[APIBudget] = None):
+        self._api_budget: APIBudget = api_budget or APIBudget(policies=[])
+        self._session = self.request_session()
         self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
@@ -66,19 +64,26 @@ class HttpStream(Stream, ABC):
         """
         return False
 
-    def request_cache(self) -> requests.Session:
-        cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
-        # Use in-memory cache if cache_dir is not set
-        # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
-        if cache_dir:
-            sqlite_path = str(Path(cache_dir) / self.cache_filename)
+    def request_session(self) -> requests.Session:
+        """
+        Session factory based on use_cache property and call rate limits (api_budget parameter)
+        :return: instance of request-based session
+        """
+        if self.use_cache:
+            cache_dir = os.getenv(ENV_REQUEST_CACHE_PATH)
+            # Use in-memory cache if cache_dir is not set
+            # This is a non-obvious interface, but it ensures we don't write sql files when running unit tests
+            if cache_dir:
+                sqlite_path = str(Path(cache_dir) / self.cache_filename)
+            else:
+                sqlite_path = "file::memory:?cache=shared"
+            return CachedLimiterSession(sqlite_path, backend="sqlite", api_budget=self._api_budget)  # type: ignore # there are no typeshed stubs for requests_cache
         else:
-            sqlite_path = "file::memory:?cache=shared"
-        return requests_cache.CachedSession(sqlite_path, backend="sqlite")  # type: ignore # there are no typeshed stubs for requests_cache
+            return LimiterSession(api_budget=self._api_budget)
 
     def clear_cache(self) -> None:
         """
-        clear cached requests for current session, can be called any time
+        Clear cached requests for current session, can be called any time
         """
         if isinstance(self._session, requests_cache.CachedSession):
             self._session.cache.clear()  # type: ignore # cache.clear is not typed
@@ -316,7 +321,9 @@ class HttpStream(Stream, ABC):
                 args["json"] = json
             elif data:
                 args["data"] = data
-        return self._session.prepare_request(requests.Request(**args))
+        prepared_request: requests.PreparedRequest = self._session.prepare_request(requests.Request(**args))
+
+        return prepared_request
 
     @classmethod
     def _join_url(cls, url_base: str, path: str) -> str:
