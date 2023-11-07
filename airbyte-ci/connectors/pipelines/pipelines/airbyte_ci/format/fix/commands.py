@@ -25,7 +25,6 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 async def fix(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
     """Run code format checks and fix any failures."""
     logger = logging.getLogger("format")
-    ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Format repository")
 
     if ctx.invoked_subcommand is None:
         logger.info("Running all formatters...")
@@ -38,7 +37,8 @@ async def fix(ctx: click.Context, pipeline_ctx: ClickPipelineContext):
 @click_ignore_unused_kwargs
 async def java(ctx: ClickPipelineContext):
     """Format java, groovy, and sql code via spotless."""
-    container = format_java_container(ctx)
+    dagger_client = await ctx.get_dagger_client(pipeline_name="Format java")
+    container = format_java_container(dagger_client)
     format_commands = ["./gradlew spotlessApply --scan"]
     await run_format(container, format_commands)
 
@@ -47,7 +47,8 @@ async def java(ctx: ClickPipelineContext):
 @pass_pipeline_context
 @click_ignore_unused_kwargs
 async def js(ctx: ClickPipelineContext):
-    container = format_js_container(ctx)
+    dagger_client = await ctx.get_dagger_client(pipeline_name="Format js")
+    container = format_js_container(dagger_client)
     format_commands = ["prettier --write ."]
     await run_format(container, format_commands)
 
@@ -58,7 +59,8 @@ async def js(ctx: ClickPipelineContext):
 async def license(ctx: ClickPipelineContext):
     """Add license to python and java code via addlicense."""
     license_file = "LICENSE_SHORT"
-    container = format_license_container(ctx, license_file)
+    dagger_client = await ctx.get_dagger_client(pipeline_name="Add license")
+    container = format_license_container(dagger_client, license_file)
     format_commands = [f"addlicense -c 'Airbyte, Inc.' -l apache -v -f {license_file} ."]
     await run_format(container, format_commands)
 
@@ -68,7 +70,8 @@ async def license(ctx: ClickPipelineContext):
 @click_ignore_unused_kwargs
 async def python(ctx: ClickPipelineContext):
     """Format python code via black and isort."""
-    container = format_python_container(ctx)
+    dagger_client = await ctx.get_dagger_client(pipeline_name="Format python")
+    container = format_python_container(dagger_client)
     format_commands = [
         "poetry install --no-root",
         "poetry run isort --settings-file pyproject.toml .",

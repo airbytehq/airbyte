@@ -14,7 +14,7 @@ from pipelines.models.contexts.click_pipeline_context import ClickPipelineContex
 
 
 def build_container(
-    ctx: ClickPipelineContext,
+    dagger_client: dagger.Client,
     base_image: str,
     include: List[str],
     install_commands: Optional[List[str]] = None,
@@ -30,8 +30,6 @@ def build_container(
     Returns:
         dagger.Container: The container to use for formatting
     """
-    dagger_client = ctx.params["dagger_client"]
-
     # Create container from base image
     container = dagger_client.container().from_(base_image)
 
@@ -60,10 +58,10 @@ def build_container(
     return container
 
 
-def format_java_container(ctx: ClickPipelineContext) -> dagger.Container:
+def format_java_container(dagger_client: dagger.Client) -> dagger.Container:
     """Format java, groovy, and sql code via spotless."""
     return build_container(
-        ctx,
+        dagger_client,
         base_image=AMAZONCORRETTO_IMAGE,
         include=[
             "**/*.java",
@@ -86,26 +84,26 @@ def format_java_container(ctx: ClickPipelineContext) -> dagger.Container:
     )
 
 
-def format_js_container(ctx: ClickPipelineContext) -> dagger.Container:
+def format_js_container(dagger_client: dagger.Client) -> dagger.Container:
     """Format yaml and json code via prettier."""
     return build_container(
-        ctx,
+        dagger_client,
         base_image=NODE_IMAGE,
         include=["**/*.yaml", "**/*.yml", "**.*/json", "package.json", "package-lock.json"],
         install_commands=["npm install -g npm@10.1.0", "npm install -g prettier@2.8.1"],
     )
 
 
-def format_license_container(ctx: ClickPipelineContext, license_file: str) -> dagger.Container:
+def format_license_container(dagger_client: dagger.Client, license_file: str) -> dagger.Container:
     return build_container(
-        ctx,
+        dagger_client,
         base_image=GO_IMAGE,
         include=["**/*.java", "**/*.py", license_file],
         install_commands=["go get -u github.com/google/addlicense"],
     )
 
 
-def format_python_container(ctx: ClickPipelineContext) -> dagger.Container:
+def format_python_container(dagger_client: dagger.Client) -> dagger.Container:
     """Format python code via black and isort."""
 
     # Here's approximately what it would look like if we built it the other way. Doesn't
@@ -117,7 +115,7 @@ def format_python_container(ctx: ClickPipelineContext) -> dagger.Container:
     # return container
 
     return build_container(
-        ctx,
+        dagger_client,
         base_image="python:3.10.13-slim",
         env_vars={"PIPX_BIN_DIR": "/usr/local/bin"},
         include=["**/*.py", "pyproject.toml", "poetry.lock"],

@@ -32,7 +32,6 @@ async def check(ctx: click.Context, pipeline_ctx: ClickPipelineContext, list_err
     """Run code format checks and fail if any checks fail."""
     logger = logging.getLogger("check")
 
-    ctx.obj["dagger_client"] = await pipeline_ctx.get_dagger_client(pipeline_name="Check repository formatting")
     ctx.obj["check_results"] = {}
 
     if ctx.invoked_subcommand is None:
@@ -60,7 +59,8 @@ async def run_check_command(ctx, command):
 @click_ignore_unused_kwargs
 async def java(ctx: ClickPipelineContext):
     """Format java, groovy, and sql code via spotless."""
-    container = format_java_container(ctx)
+    dagger_client = await ctx.get_dagger_client(pipeline_name="Check java formatting")
+    container = format_java_container(dagger_client)
     check_commands = ["./gradlew spotlessCheck --scan"]
     await run_check(container, check_commands)
 
@@ -70,7 +70,8 @@ async def java(ctx: ClickPipelineContext):
 @click_ignore_unused_kwargs
 async def js(ctx: ClickPipelineContext):
     """Format yaml and json code via prettier."""
-    container = format_js_container(ctx)
+    dagger_client = await ctx.get_dagger_client(pipeline_name="Check js formatting")
+    container = format_js_container(dagger_client)
     check_commands = ["prettier --check ."]
     await run_check(container, check_commands)
 
@@ -81,7 +82,8 @@ async def js(ctx: ClickPipelineContext):
 async def license(ctx: ClickPipelineContext):
     """Add license to python and java code via addlicense."""
     license_file = "LICENSE_SHORT"
-    container = format_license_container(ctx, license_file)
+    dagger_client = await ctx.get_dagger_client(pipeline_name="Check license header")
+    container = format_license_container(dagger_client, license_file)
     check_commands = [f"addlicense -c 'Airbyte, Inc.' -l apache -v -f {license_file} --check ."]
     await run_check(container, check_commands)
 
@@ -91,7 +93,8 @@ async def license(ctx: ClickPipelineContext):
 @click_ignore_unused_kwargs
 async def python(ctx: ClickPipelineContext):
     """Format python code via black and isort."""
-    container = format_python_container(ctx)
+    dagger_client = await ctx.get_dagger_client(pipeline_name="Check python formatting")
+    container = format_python_container(dagger_client)
     check_commands = [
         "poetry install --no-root",
         "poetry run isort --settings-file pyproject.toml --check-only .",
